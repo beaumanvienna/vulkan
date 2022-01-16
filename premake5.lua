@@ -134,3 +134,5 @@ project "vulkan"
         defines { "PROFILING"}
 
     include "vendor/glfw.lua"
+    include "vendor/SPIRV-Cross/premake5.lua"
+    include "vendor/shaderc/premake5.lua"

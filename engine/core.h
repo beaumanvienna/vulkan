@@ -37,10 +37,8 @@ public:
     bool Start();
     void OnUpdate();
     void OnRender();
-    void Shutdown(bool switchOffComputer = false);
+    void Shutdown();
     void Quit();
-
-    void InitSettings();
 
     bool IsRunning() const { return m_Running; }
     std::string GetConfigFilePath() const { return m_ConfigFilePath; }

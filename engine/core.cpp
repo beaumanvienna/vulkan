@@ -26,6 +26,9 @@
 #include "engine.h"
 #include "instrumentation.h"
 
+#define GLFW_INCLUDE_VULKAN
+#include "GLFW/glfw3.h"
+
 Engine* Engine::m_Engine = nullptr;
 
 Engine::Engine(const std::string& configFilePath) :
@@ -41,27 +44,28 @@ Engine::~Engine()
 
 bool Engine::Start()
 {
-
-    m_Running = false;
     // init logger
     if (!Log::Init())
     {
         std::cout << "Could not initialize logger" << std::endl;
     }
 
-    InitSettings();
+    //signal handling
+    signal(SIGINT, SignalHandler);
+
+    glfwInit();
 
     // create main window
     std::string title = "Vulkan Engine v" ENGINE_VERSION;
     
-    m_Running = true;
 
-    signal(SIGINT, SignalHandler);
+
+    m_Running = true;
 
     return true;
 }
 
-void Engine::Shutdown(bool switchOffComputer)
+void Engine::Shutdown()
 {
     m_Running = false;
 }
@@ -86,8 +90,3 @@ void Engine::SignalHandler(int signal)
         exit(0);
     }
 }
-
-void Engine::InitSettings()
-{
-}
-
