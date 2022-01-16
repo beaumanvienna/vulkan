@@ -42,4 +42,8 @@ private:
 
     static void ConsoleInputHandler();
 
+private:
+
+    static std::shared_ptr<Application> m_Instance;
+
 };

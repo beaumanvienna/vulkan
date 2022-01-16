@@ -62,6 +62,13 @@ bool Engine::Start()
 
     LOG_CORE_INFO("{0}  extensions supported", extensionCount);
 
+    std::vector<VkExtensionProperties> extensions(extensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()); //populate buffer
+    for (auto& extension : extensions)
+    {
+        LOG_CORE_INFO("extension found: {0}", extension.extensionName);
+    }
+
     m_Running = true;
 
     return true;

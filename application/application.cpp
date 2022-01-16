@@ -26,6 +26,8 @@
 #include "engine.h"
 #include "application.h"
 
+std::shared_ptr<Application> Application::m_Instance;
+
 Application::Application()
 {
 }
@@ -48,7 +50,11 @@ void Application::OnUpdate()
 
 std::shared_ptr<Application> Application::Create()
 {
-    return std::make_shared<Application>();
+    if (!m_Instance)
+    {
+        m_Instance = std::make_shared<Application>();
+    }
+    return m_Instance;
 }
 
 void Application::ConsoleInputHandler()
