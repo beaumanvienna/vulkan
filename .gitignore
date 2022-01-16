@@ -1,0 +1,61 @@
+# git ignore file for project Engine (gfxRenderEngine)
+bin
+obj
+Makefile
+Makefile.in
+build
+vendor/atlas/sheets/sheet.png
+imgui.ini
+internalDB.txt
+*.sln
+*.vcxproj
+*.vcxproj.user
+*.vcxproj.filters
+*.make
+.vs/
+engine.cfg
+resources/gnuEmbeddedResources.cpp
+resources/gnuEmbeddedResources.h
+.marley
+*.json
+resources/nsis/marleyInstaller.exe
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+emulators/mednafen/aclocal.m4
+emulators/mednafen/ar-lib
+emulators/mednafen/compile
+emulators/mednafen/configure
+emulators/mednafen/depcomp
+emulators/mednafen/install-sh
+emulators/mednafen/missing
