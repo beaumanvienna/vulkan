@@ -1,7 +1,7 @@
 -- premake5.lua
 workspace "vulkanRenderEngine"
     architecture "x86_64"
-    startproject "vulkan"
+    startproject "engine"
     configurations 
     {
         "Debug",
@@ -9,7 +9,7 @@ workspace "vulkanRenderEngine"
         "Dist"
     }
 
-project "vulkan"
+project "engine"
     language "C++"
     cppdialect "C++17"
     targetdir "bin/%{cfg.buildcfg}"
@@ -17,10 +17,11 @@ project "vulkan"
     defines
     {
         "ENGINE_VERSION=\"0.1.1\"",
+        "PROFILING"
     }
 
     files 
-    { 
+    {
         "engine/**.h", 
         "engine/**.cpp",
         "application/**.h", 
@@ -31,12 +32,13 @@ project "vulkan"
     }
 
     includedirs 
-    { 
+    {
         "engine",
         "engine/log",
         "engine/auxiliary",
         "engine/platform/",
         "engine/platform/Vulkan",
+        "vendor",
         "vendor/glfw/include",
         "vendor/stb",
         "vendor/glm",
@@ -63,10 +65,11 @@ project "vulkan"
         }
 
         files 
-        { 
+        {
         }
         includedirs 
-        { 
+        {
+            "/usr/include"
         }
         links
         {
@@ -74,6 +77,10 @@ project "vulkan"
             "dl", 
             "pthread",
             "glfw3",
+            "vulkan",
+            "X11",
+            "Xrandr",
+            "Xi"
         }
         libdirs
         {
@@ -128,11 +135,6 @@ project "vulkan"
         optimize "On"
         kind "WindowedApp"
 
-    -- activates profiling macros to output
-    -- a json file for chrome://tracing
-    filter { }
-        defines { "PROFILING"}
-
     include "vendor/glfw.lua"
-    include "vendor/SPIRV-Cross/premake5.lua"
-    include "vendor/shaderc/premake5.lua"
+    include "vendor/SPIRV-Cross.lua"
+    include "vendor/shaderc.lua"

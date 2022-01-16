@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
     LOG_CORE_INFO("entering main application");
     while (engine.IsRunning())
     {
+        engine.OnUpdate();
         application->OnUpdate();
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

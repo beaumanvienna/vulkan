@@ -24,6 +24,11 @@
 
 #include <string>
 
+#include "engine.h"
+
+#define GLFW_INCLUDE_VULKAN
+#include "glfw/include/GLFW/glfw3.h"
+
 class Engine
 {
 public:
@@ -51,7 +56,7 @@ private:
 private:
     
     std::string m_ConfigFilePath;
-
+    GLFWwindow* m_Window;
     bool m_Running;
 
 };
