@@ -50,23 +50,16 @@ bool Engine::Start()
     //signal handling
     signal(SIGINT, SignalHandler);
 
-    glfwInit();
+    
     
     // create main window
     std::string title = "Vulkan Engine v" ENGINE_VERSION;
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_Window = glfwCreateWindow(800, 600, title.c_str(), nullptr, nullptr);
-
-    uint extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-    LOG_CORE_INFO("{0}  extensions supported", extensionCount);
-
-    std::vector<VkExtensionProperties> extensions(extensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()); //populate buffer
-    for (auto& extension : extensions)
+    WindowProperties windowProperties(title);
+    m_Window = Window::Create(windowProperties);
+    if (!m_Window->IsOK())
     {
-        LOG_CORE_INFO("extension found: {0}", extension.extensionName);
+        LOG_CORE_CRITICAL("Could not create main window");
+        return false;
     }
 
     m_Running = true;
@@ -76,8 +69,6 @@ bool Engine::Start()
 
 void Engine::Shutdown()
 {
-    glfwDestroyWindow(m_Window);
-    glfwTerminate();
     m_Running = false;
 }
 
@@ -87,13 +78,10 @@ void Engine::Quit()
 
 void Engine::OnUpdate()
 {
-    if (glfwWindowShouldClose(m_Window))
+    m_Window->OnUpdate();
+    if (!m_Window->IsOK())
     {
         Shutdown();
-    }
-    else
-    {
-        glfwPollEvents();
     }
 }
 

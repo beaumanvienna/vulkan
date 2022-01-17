@@ -36,6 +36,7 @@ project "engine"
         "engine",
         "engine/log",
         "engine/auxiliary",
+        "engine/renderer",
         "engine/platform/",
         "engine/platform/Vulkan",
         "vendor",
