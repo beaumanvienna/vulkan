@@ -44,9 +44,14 @@ VK_Window::VK_Window(const WindowProperties& props)
     }
     if (m_GLFWIsInitialized)
     {
+        int count;
+        GLFWmonitor** monitors = glfwGetMonitors(&count);
+        const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
+        m_RefreshRate = videoMode->refreshRate;
+        
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    
+
         m_Window = glfwCreateWindow(800, 600, props.m_Title.c_str(), nullptr, nullptr);
 
         uint extensionCount = 0;
@@ -61,6 +66,7 @@ VK_Window::VK_Window(const WindowProperties& props)
         {
             LOG_CORE_INFO("extension found: {0}", extension.extensionName);
         }
+        m_GraphicsContext = GraphicsContext::Create(m_Window, m_RefreshRate);
         if (m_Window) m_OK = true;
     }
     //    int count;

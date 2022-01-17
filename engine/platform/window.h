@@ -42,7 +42,7 @@ struct WindowProperties
     int m_Width;
     int m_Height;
     int m_VSync;
-    
+
     WindowProperties(const std::string& title = "", const bool vsync = 1 /*true*/,
                      const int width = -1, const int height = -1)
         : m_Title(title), m_VSync(vsync), m_Width(width), m_Height(height)
