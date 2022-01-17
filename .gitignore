@@ -1,4 +1,4 @@
-# git ignore file for project Engine (gfxRenderEngine)
+*.spv
 bin
 obj
 Makefile
