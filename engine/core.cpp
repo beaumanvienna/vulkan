@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
