@@ -118,6 +118,13 @@ project "engine"
         {
         }
 
+    filter { "action:gmake*"}
+        prebuildcommands
+        {
+            "scripts/compileShaders.sh"
+        }
+
+
     filter { "configurations:Debug" }
         defines { "DEBUG" }
         symbols "On"

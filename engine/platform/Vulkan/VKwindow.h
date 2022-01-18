@@ -26,6 +26,7 @@
 #include "window.h"
 #include "VKdevice.h"
 #include "VKpipeline.h"
+#include "VKswapChain.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
@@ -45,6 +46,7 @@ public:
     bool InitGLFW();
     void Shutdown();
     void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+    VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
     //void* GetWindow() const override { return (void*)m_Window; }
     //std::shared_ptr<GraphicsContext> GetGraphicsContent() const override { return m_GraphicsContext; }
     void OnUpdate() override;    
@@ -72,6 +74,13 @@ protected:
 
 private:
 
+    void CreatePipelineLayout();
+    void CreatePipeline();
+    void CreateCommandBuffers();
+    void DrawFrame();
+
+private:
+
     GLFWwindow* m_Window;
 
     struct WindowData
@@ -91,7 +100,10 @@ private:
 
     WindowData m_WindowProperties;
     std::shared_ptr<VK_Device> m_Device;
-    std::shared_ptr<VK_Pipeline> m_Pipeline;
+    std::unique_ptr<VK_Pipeline> m_Pipeline;
+    std::shared_ptr<VK_SwapChain> m_SwapChain;
+    VkPipelineLayout m_PipelineLayout;
+    std::vector<VkCommandBuffer> m_CommandBuffers;
 
     uint m_RefreshRate;
     bool m_IsFullscreen;
