@@ -59,15 +59,20 @@ VK_Window::VK_Window(const WindowProperties& props)
 
         LOG_CORE_INFO("{0}  extensions supported", extensionCount);
 
-        std::vector<VkExtensionProperties> extensions(extensionCount);
-        //populate buffer
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()); 
-        for (auto& extension : extensions)
+        // create a device and a pipeline
+        m_Device = std::make_shared<VK_Device>(this);
+        auto spec = VK_Pipeline::DefaultPipelineConfigInfo(800, 600);
+        m_Pipeline = std::make_shared<VK_Pipeline>
+        (
+            m_Device,
+            "bin/simpleShader.vert.spv",
+            "bin/simpleShader.frag.spv",
+            spec
+        );
+        if ((m_Window) && (m_Pipeline))
         {
-            LOG_CORE_INFO("extension found: {0}", extension.extensionName);
+            m_OK = true;
         }
-        m_GraphicsContext = GraphicsContext::Create(m_Window, m_RefreshRate);
-        if (m_Window) m_OK = true;
     }
     //    int count;
     //    GLFWmonitor** monitors = glfwGetMonitors(&count);
@@ -447,3 +452,10 @@ bool VK_Window::InitGLFW()
 //    m_AllowCursor = false;
 //    DisableMousePointer();
 //}
+void VK_Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+{
+    if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
+    {
+        LOG_CORE_CRITICAL("Could not create surface");
+    }
+}

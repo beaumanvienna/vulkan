@@ -28,8 +28,6 @@
 #include "engine.h"
 #include "window.h"
 
-
-
 class Engine
 {
 public:
@@ -57,7 +55,8 @@ private:
 private:
     
     std::string m_ConfigFilePath;
-    std::unique_ptr<Window> m_Window;
+    std::shared_ptr<Window> m_Window;
+
     bool m_Running;
 
 };
