@@ -10,7 +10,11 @@ sudo add-apt-repository ppa:beauman/marley<br/>
 sudo add-apt-repository universe<br/>
 sudo apt-get update<br/>
 sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev <br/>
-<br/>
+<br>
+<br>
+Get the Vulkan SDK from here:<br>
+https://vulkan.lunarg.com/doc/sdk/1.2.198.1/linux/getting_started_ubuntu.html
+<br>
 <br>
 Install the source code: <br/>
 git clone --recurse-submodules https://github.com/beaumanvienna/vulkan<br/>
@@ -25,6 +29,9 @@ premake5 gmake2<br/>
 #e.g. "-j4" <br />
 #To use all available CPU cores, say:<br />
 export MAKEFLAGS=-j$(nproc)<br />
+<br />
+<br />
+Compile the shaders: ./scripts/compileShader.sh<br />
 <br />
 <br />
 Compile and run debug target: make verbose=1 && ./bin/Debug/engine <br/>
