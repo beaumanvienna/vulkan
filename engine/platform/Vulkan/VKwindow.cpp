@@ -65,9 +65,18 @@ VK_Window::VK_Window(const WindowProperties& props)
         // create the swapchain
         m_SwapChain = std::make_shared<VK_SwapChain>(m_Device, GetExtend());
 
+        std::vector<VK_Model::Vertex> verticies =
+        {
+            {glm::vec2( 0.0f, -0.5f)},
+            {glm::vec2( 0.5f,  0.5f)},
+            {glm::vec2(-0.5f,  0.5f)}
+        };
+        m_Model = std::make_shared<VK_Model>(m_Device, verticies);
+
         CreatePipelineLayout();
         CreatePipeline();
         CreateCommandBuffers();
+
         
         if (m_Window && m_SwapChain && m_Pipeline)
         {
@@ -538,9 +547,9 @@ void VK_Window::CreateCommandBuffers()
 
         vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         m_Pipeline->Bind(m_CommandBuffers[i]);
+        m_Model->Bind(m_CommandBuffers[i]);
+        m_Model->Draw(m_CommandBuffers[i]);
 
-        vkCmdDraw(m_CommandBuffers[i], 3, 1, 0, 0);
-        
         vkCmdEndRenderPass(m_CommandBuffers[i]);
         if (vkEndCommandBuffer(m_CommandBuffers[i]) != VK_SUCCESS)
         {

@@ -23,6 +23,7 @@
 #include <fstream>
 
 #include "VKpipeline.h"
+#include "VKmodel.h"
 
 VK_Pipeline::VK_Pipeline(std::shared_ptr<VK_Device> device,
                          const std::string& filePathVertexShader_SPV,
@@ -93,12 +94,14 @@ void VK_Pipeline::CreateGraphicsPipeline(const std::string& filePathVertexShader
     shaderStages[1].pNext = nullptr;
     shaderStages[1].pSpecializationInfo = nullptr;
 
+    auto bindingDescription = VK_Model::Vertex::GetBindingDescriptions();
+    auto attributeDescription = VK_Model::Vertex::GetAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint>(attributeDescription.size());
+    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint>(bindingDescription.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescription.data();
 
     VkPipelineViewportStateCreateInfo viewportInfo{};
     viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

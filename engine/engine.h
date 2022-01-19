@@ -27,6 +27,9 @@
 
 #include "log.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "glm.hpp"
+
 #undef far
 #undef near
 #undef CopyFile

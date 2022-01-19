@@ -27,6 +27,7 @@
 #include "VKdevice.h"
 #include "VKpipeline.h"
 #include "VKswapChain.h"
+#include "VKmodel.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
@@ -102,6 +103,7 @@ private:
     std::shared_ptr<VK_Device> m_Device;
     std::unique_ptr<VK_Pipeline> m_Pipeline;
     std::shared_ptr<VK_SwapChain> m_SwapChain;
+    std::shared_ptr<VK_Model> m_Model;
     VkPipelineLayout m_PipelineLayout;
     std::vector<VkCommandBuffer> m_CommandBuffers;
 
