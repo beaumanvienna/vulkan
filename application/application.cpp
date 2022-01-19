@@ -37,6 +37,10 @@ bool Application::Start()
     std::thread consoleInputHandler(ConsoleInputHandler);
     consoleInputHandler.detach();
 
+    auto window = Engine::m_Engine->GetWindow();
+    window->SetWindowAspectRatio();
+    window->DisallowCursor();
+
     return true;
 }
 

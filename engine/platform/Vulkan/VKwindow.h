@@ -32,6 +32,12 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
+struct VK_SimplePushConstantData
+{
+    glm::vec2 m_Offset;
+    alignas(16) glm::vec3 m_Color;
+};
+
 class VK_Window : public Window
 {
 
@@ -48,7 +54,7 @@ public:
     void Shutdown();
     void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
     VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
-    //void* GetWindow() const override { return (void*)m_Window; }
+    void* GetWindow() const override { return (void*)m_Window; }
     //std::shared_ptr<GraphicsContext> GetGraphicsContent() const override { return m_GraphicsContext; }
     void OnUpdate() override;    
     uint GetWidth()  const override { return m_WindowProperties.m_Width; }
@@ -56,30 +62,32 @@ public:
     //
     void SetEventCallback(const EventCallbackFunction& callback) override;
     //void SetVSync(int interval) override;
-    //void ToggleFullscreen() override;
-    //bool IsFullscreen() override { return m_IsFullscreen; }
+    void ToggleFullscreen() override;
+    bool IsFullscreen() override { return m_IsFullscreen; }
     bool IsOK() const override { return m_OK; }
-    //void SetWindowAspectRatio() override;
-    //void SetWindowAspectRatio(int numer, int denom) override;
+    void SetWindowAspectRatio() override;
+    void SetWindowAspectRatio(int numer, int denom) override;
     float GetWindowAspectRatio() const override { return m_WindowProperties.m_Width / (1.0f * m_WindowProperties.m_Height); }
-    //double GetTime() const override { return glfwGetTime(); }
-    //
+    double GetTime() const override { return glfwGetTime(); }
+
     static void OnError(int errorCode, const char* description);
-    //
-    //void EnableMousePointer() override;
-    //void DisableMousePointer() override;
-    //virtual void AllowCursor() override;
-    //virtual void DisallowCursor() override;
+
+    void EnableMousePointer() override;
+    void DisableMousePointer() override;
+    virtual void AllowCursor() override;
+    virtual void DisallowCursor() override;
 
 protected:
 
 private:
 
-    void CreatePipelineLayout();
+    void DrawFrame();
+    void CreateWindow();
     void CreatePipeline();
+    void CreatePipelineLayout();
     void CreateCommandBuffers();
     void FreeCommandBuffers();
-    void DrawFrame();
+    void LoadModels();
 
     void RecreateSwapChain();
     void RecordCommandBuffer(int imageIndex);
@@ -118,8 +126,8 @@ private:
     uint m_RefreshRate;
     bool m_IsFullscreen;
 
-    //int m_WindowedWidth, m_WindowedHeight;
-    //int m_WindowPositionX, m_WindowPositionY;
-    //bool m_AllowCursor;
+    int m_WindowedWidth, m_WindowedHeight;
+    int m_WindowPositionX, m_WindowPositionY;
+    bool m_AllowCursor;
 
 };

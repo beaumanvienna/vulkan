@@ -143,7 +143,10 @@ void Engine::OnEvent(Event& event)
             {
                 case ENGINE_KEY_F:
                     LOG_CORE_INFO("toggle fullscreen");
-                    //ToggleFullscreen();
+                    ToggleFullscreen();
+                    break;
+                case ENGINE_KEY_ESCAPE:
+                    Shutdown();
                     break;
             }
             return false;
@@ -172,4 +175,10 @@ void Engine::OnEvent(Event& event)
     //    }
     //}
     //if (!event.IsHandled()) m_AppEventCallback(event);
+}
+
+
+void Engine::ToggleFullscreen()
+{
+    m_Window->ToggleFullscreen();
 }

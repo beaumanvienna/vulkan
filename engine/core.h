@@ -48,11 +48,13 @@ public:
 
     bool IsRunning() const { return m_Running; }
     std::string GetConfigFilePath() const { return m_ConfigFilePath; }
+    std::shared_ptr<Window> GetWindow() const { return m_Window; }
 
     static Engine* m_Engine;
 
 private:
     static void SignalHandler(int signal);
+    void ToggleFullscreen();
 
 private:
     

@@ -47,15 +47,8 @@ VK_Window::VK_Window(const WindowProperties& props)
     }
     if (m_GLFWIsInitialized)
     {
-        int count;
-        GLFWmonitor** monitors = glfwGetMonitors(&count);
-        const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
-        m_RefreshRate = videoMode->refreshRate;
-        
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        m_Window = glfwCreateWindow(800, 600, props.m_Title.c_str(), nullptr, nullptr);
+        CreateWindow();
 
         uint extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -65,14 +58,7 @@ VK_Window::VK_Window(const WindowProperties& props)
         // create a device
         m_Device = std::make_shared<VK_Device>(this);
 
-        std::vector<VK_Model::Vertex> vertices =
-        {
-            {glm::vec2( 0.0f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)}
-        };
-        m_Model = std::make_shared<VK_Model>(m_Device, vertices);
-
+        LoadModels();
         CreatePipelineLayout();
         RecreateSwapChain();
         CreateCommandBuffers();
@@ -87,142 +73,23 @@ VK_Window::VK_Window(const WindowProperties& props)
             LOG_APP_WARN("Houston, we have problem: (m_Window && m_SwapChain && m_Pipeline) failed");
         }
     }
-    //    int count;
-    //    GLFWmonitor** monitors = glfwGetMonitors(&count);
-    //    const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
-    //    m_RefreshRate = videoMode->refreshRate;
-    //
-    //    // make window invisible before it gets created
-    //    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    //
-    //    int monitorX, monitorY;
-    //    glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
-    //
-    //    if (m_WindowProperties.m_Width == -1)
+
+    //    // set app icon
+    //    GLFWimage icon;
+    //    size_t fileSize;
+    //    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_ENGINE.png", IDB_ENGINE_LOGO, "PNG");
+    //    icon.pixels = stbi_load_from_memory(data, fileSize, &icon.width, &icon.height, 0, 4); //rgba channels
+    //    if (icon.pixels) 
     //    {
-    //        m_WindowedWidth = videoMode->width / 1.5f;
-    //        m_WindowedHeight = m_WindowedWidth / 16 * 9;
-    //        m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
-    //        m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
-    //
-    //        if (CoreSettings::m_EnableFullscreen)
-    //        {
-    //            #ifdef _WIN32    
-    //                m_WindowProperties.m_Width = videoMode->width;
-    //                m_WindowProperties.m_Height = videoMode->height;
-    //                m_Window = glfwCreateWindow(
-    //                    m_WindowProperties.m_Width,
-    //                    m_WindowProperties.m_Height,
-    //                    m_WindowProperties.m_Title.c_str(),
-    //                    monitors[0], NULL);
-    //                m_IsFullscreen = true;
-    //            #else
-    //                m_WindowProperties.m_Width  = m_WindowedWidth;
-    //                m_WindowProperties.m_Height = m_WindowedHeight;
-    //
-    //                m_Window = glfwCreateWindow(
-    //                    m_WindowProperties.m_Width,
-    //                    m_WindowProperties.m_Height,
-    //                    m_WindowProperties.m_Title.c_str(),
-    //                    NULL, NULL);
-    //                // center window
-    //                glfwSetWindowPos(m_Window,
-    //                    monitorX + m_WindowPositionX,
-    //                    monitorY + m_WindowPositionY);
-    //                m_IsFullscreen = false;
-    //                ToggleFullscreen();
-    //            #endif
-    //        }
-    //        else
-    //        {
-    //            m_WindowProperties.m_Width  = m_WindowedWidth;
-    //            m_WindowProperties.m_Height = m_WindowedHeight;
-    //
-    //            m_Window = glfwCreateWindow(
-    //                        m_WindowProperties.m_Width, 
-    //                        m_WindowProperties.m_Height, 
-    //                        m_WindowProperties.m_Title.c_str(), 
-    //                        NULL, NULL);
-    //        }
+    //        glfwSetWindowIcon(m_Window, 1, &icon); 
+    //        stbi_image_free(icon.pixels);
     //    }
     //    else
     //    {
-    //        m_WindowedWidth = m_WindowProperties.m_Width;
-    //        m_WindowedHeight = m_WindowProperties.m_Height;
-    //        m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
-    //        m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
-    //
-    //        m_WindowProperties.m_Width = m_WindowedWidth;
-    //        m_WindowProperties.m_Height = m_WindowedHeight;
-    //
-    //        m_Window = glfwCreateWindow(
-    //            m_WindowProperties.m_Width,
-    //            m_WindowProperties.m_Height,
-    //            m_WindowProperties.m_Title.c_str(),
-    //            NULL, NULL);
+    //        LOG_CORE_WARN("Could not load app icon");
     //    }
-    //    
-    //    if (!m_Window)
-    //    {
-    //        LOG_CORE_CRITICAL("Failed to create main window");
-    //        char description[1024];
-    //        int errorCode = glfwGetError((const char **)(&description));
     //
-    //        if (errorCode != GLFW_NO_ERROR)
-    //        {
-    //            LOG_CORE_CRITICAL("glfw error code: {0}", errorCode);
-    //        }
-    //        glfwTerminate();
-    //    }
-    //    else
-    //    {
-    //        if (!CoreSettings::m_EnableFullscreen)
-    //        {
-    //            // center window
-    //            glfwSetWindowPos(m_Window,
-    //                monitorX + m_WindowPositionX,
-    //                monitorY + m_WindowPositionY);
-    //        }
-    //        
-    //        
-    //        // make the window visible
-    //        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-    //        glfwShowWindow(m_Window);
-    //
-    //        // set app icon
-    //        GLFWimage icon;
-    //        size_t fileSize;
-    //        const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_ENGINE.png", IDB_ENGINE_LOGO, "PNG");
-    //        icon.pixels = stbi_load_from_memory(data, fileSize, &icon.width, &icon.height, 0, 4); //rgba channels
-    //        if (icon.pixels) 
-    //        {
-    //            glfwSetWindowIcon(m_Window, 1, &icon); 
-    //            stbi_image_free(icon.pixels);
-    //        }
-    //        else
-    //        {
-    //            LOG_CORE_WARN("Could not load app icon");
-    //        }
-    //        
-    //        m_GraphicsContext = GraphicsContext::Create(m_Window, m_RefreshRate);
-    //        if (!m_GraphicsContext->Init())
-    //        {
-    //            LOG_CORE_CRITICAL("Could not create a rendering context");
-    //            
-    //        }
-    //        else
-    //        {
-    //            SetVSync(props.m_VSync);
-    //        }
-    //
-    //        // init glew
-    //        if (InitGLEW())
-    //        {
-    //            // all good
-    //            m_OK = true;
-    //        }
-    //    }
-    //}
+
 }
 
 VK_Window::~VK_Window()
@@ -244,30 +111,30 @@ void VK_Window::Shutdown()
 //    m_GraphicsContext->SetVSync(interval);
 //}
 //
-//void VK_Window::ToggleFullscreen()
-//{ 
-//    int count;
-//    GLFWmonitor** monitors = glfwGetMonitors(&count);
-//    const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
-//    if (m_IsFullscreen)
-//    {
-//        m_WindowProperties.m_Width  = m_WindowedWidth;
-//        m_WindowProperties.m_Height = m_WindowedHeight;
-//
-//        glfwSetWindowMonitor(m_Window, nullptr, m_WindowPositionX, m_WindowPositionY, m_WindowedWidth, m_WindowedHeight, videoMode->refreshRate);
-//        glfwSetWindowPos(m_Window, m_WindowPositionX, m_WindowPositionY);
-//    }
-//    else
-//    {
-//        m_WindowedWidth = m_WindowProperties.m_Width; 
-//        m_WindowedHeight = m_WindowProperties.m_Height;
-//        glfwGetWindowPos(m_Window, &m_WindowPositionX, &m_WindowPositionY);
-//
-//        glfwSetWindowMonitor(m_Window, monitors[0], 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
-//    }
-//    m_IsFullscreen = !m_IsFullscreen;
-//}
-//
+void VK_Window::ToggleFullscreen()
+{ 
+    int count;
+    GLFWmonitor** monitors = glfwGetMonitors(&count);
+    const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
+    if (m_IsFullscreen)
+    {
+        m_WindowProperties.m_Width  = m_WindowedWidth;
+        m_WindowProperties.m_Height = m_WindowedHeight;
+
+        glfwSetWindowMonitor(m_Window, nullptr, m_WindowPositionX, m_WindowPositionY, m_WindowedWidth, m_WindowedHeight, videoMode->refreshRate);
+        glfwSetWindowPos(m_Window, m_WindowPositionX, m_WindowPositionY);
+    }
+    else
+    {
+        m_WindowedWidth = m_WindowProperties.m_Width; 
+        m_WindowedHeight = m_WindowProperties.m_Height;
+        glfwGetWindowPos(m_Window, &m_WindowPositionX, &m_WindowPositionY);
+
+        glfwSetWindowMonitor(m_Window, monitors[0], 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
+    }
+    m_IsFullscreen = !m_IsFullscreen;
+}
+
 //void VK_Window::SetWindowAspectRatio()
 //{
 //    // set aspect ratio to current ratio
@@ -495,12 +362,17 @@ void VK_Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 
 void VK_Window::CreatePipelineLayout()
 {
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(VK_SimplePushConstantData);
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pSetLayouts = nullptr;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
     {
         LOG_CORE_CRITICAL("failed to create pipeline layout!");
@@ -594,7 +466,31 @@ void VK_Window::RecordCommandBuffer(int imageIndex)
 
     m_Pipeline->Bind(m_CommandBuffers[imageIndex]);
     m_Model->Bind(m_CommandBuffers[imageIndex]);
-    m_Model->Draw(m_CommandBuffers[imageIndex]);
+
+    static auto sysTimeOld = GetTime();
+    auto sysTime = GetTime();
+    auto timeStep = sysTime - sysTimeOld;
+    sysTimeOld = sysTime;
+    static float xOffset = 0.0f;
+    const float X_SPEED = 1.0f;
+    xOffset = (xOffset > 2.0f ? 0.0f : xOffset + timeStep * X_SPEED);
+
+    // push constants
+    for (uint j = 0; j < 4; j++)
+    {
+        VK_SimplePushConstantData push{};
+        float actualOffsetX = xOffset * (j + 1);
+        push.m_Offset = glm::vec2(0.0f + actualOffsetX - 1.0f, -0.4f + j * 0.25f);
+        push.m_Color  = glm::vec3(0.0f, 0.0f, 0.2f + 0.2f * j);
+        vkCmdPushConstants(
+            m_CommandBuffers[imageIndex],
+            m_PipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_SimplePushConstantData),
+            &push);
+        m_Model->Draw(m_CommandBuffers[imageIndex]);
+    }
 
     vkCmdEndRenderPass(m_CommandBuffers[imageIndex]);
     if (vkEndCommandBuffer(m_CommandBuffers[imageIndex]) != VK_SUCCESS)
@@ -672,4 +568,92 @@ void VK_Window::DrawFrame()
     {
         LOG_CORE_CRITICAL("failed to present swap chain image");
     }
+}
+void VK_Window::LoadModels()
+{
+    ASSERT(m_Device != nullptr);
+    std::vector<VK_Model::Vertex> vertices =
+    {
+        {glm::vec2( 0.0f, -0.4f), glm::vec3(0.0f, 1.0f, 0.0f)},
+        {glm::vec2( 0.5f,  0.4f), glm::vec3(1.0f, 0.0f, 0.0f)},
+        {glm::vec2(-0.5f,  0.4f), glm::vec3(0.0f, 0.0f, 1.0f)}
+    };
+    m_Model = std::make_shared<VK_Model>(m_Device, vertices);   
+}
+void VK_Window::CreateWindow()
+{
+    int count;
+    GLFWmonitor** monitors = glfwGetMonitors(&count);
+    const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
+    m_RefreshRate = videoMode->refreshRate;
+    
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+    // make window invisible before it gets created
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    
+    int monitorX, monitorY;
+    glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
+    
+    m_WindowedWidth = videoMode->width / 2.5f;
+    m_WindowedHeight = m_WindowedWidth;// / 16 * 9;
+    m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
+    m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
+    
+    m_WindowProperties.m_Width  = m_WindowedWidth;
+    m_WindowProperties.m_Height = m_WindowedHeight;
+
+    m_Window = glfwCreateWindow(
+                m_WindowProperties.m_Width, 
+                m_WindowProperties.m_Height, 
+                m_WindowProperties.m_Title.c_str(),
+                nullptr,
+                nullptr);
+
+    // center window
+    glfwSetWindowPos(
+            m_Window,
+            monitorX + m_WindowPositionX,
+            monitorY + m_WindowPositionY);
+
+    // make the window visible
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    glfwShowWindow(m_Window);
+
+}
+
+void VK_Window::SetWindowAspectRatio()
+{
+    // set aspect ratio to current ratio
+    int numer = m_WindowProperties.m_Width;
+    int denom = m_WindowProperties.m_Height;
+    glfwSetWindowAspectRatio(m_Window, numer, denom);
+}
+
+void VK_Window::SetWindowAspectRatio(int numer, int denom)
+{
+    glfwSetWindowAspectRatio(m_Window, numer, denom);
+}
+void VK_Window::EnableMousePointer()
+{
+    if (m_AllowCursor)
+    {
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+}
+
+void VK_Window::DisableMousePointer()
+{
+    glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void VK_Window::AllowCursor()
+{
+    m_AllowCursor = true;
+}
+void VK_Window::DisallowCursor()
+{
+    m_AllowCursor = false;
+    DisableMousePointer();
 }
