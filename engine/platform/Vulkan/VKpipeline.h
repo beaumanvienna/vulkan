@@ -59,7 +59,7 @@ public:
     ~VK_Pipeline();
 
     VK_Pipeline(const VK_Pipeline&) = delete;
-    void operator=(const VK_Pipeline&) = delete;
+    VK_Pipeline& operator=(const VK_Pipeline&) = delete;
 
     void Bind(VkCommandBuffer commandBuffer);
 

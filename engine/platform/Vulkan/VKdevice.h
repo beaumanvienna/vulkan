@@ -57,9 +57,9 @@ public:
     
     // Not copyable or movable
     VK_Device(const VK_Device &) = delete;
-    void operator=(const VK_Device &) = delete;
+    VK_Device& operator=(const VK_Device &) = delete;
     VK_Device(VK_Device &&) = delete;
-    VK_Device &operator=(VK_Device &&) = delete;
+    VK_Device& operator=(VK_Device &&) = delete;
     
     VkCommandPool GetCommandPool() { return commandPool; }
     VkDevice Device() { return m_Device; }

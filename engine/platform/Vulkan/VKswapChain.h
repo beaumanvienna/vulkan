@@ -40,7 +40,7 @@ public:
     ~VK_SwapChain();
 
     VK_SwapChain(const VK_SwapChain &) = delete;
-    void operator=(const VK_SwapChain &) = delete;
+    VK_SwapChain& operator=(const VK_SwapChain &) = delete;
 
     VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
     VkRenderPass GetRenderPass() { return m_RenderPass; }

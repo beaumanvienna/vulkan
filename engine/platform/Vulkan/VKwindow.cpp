@@ -50,7 +50,7 @@ VK_Window::VK_Window(const WindowProperties& props)
         m_RefreshRate = videoMode->refreshRate;
         
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         m_Window = glfwCreateWindow(800, 600, props.m_Title.c_str(), nullptr, nullptr);
 
@@ -65,13 +65,13 @@ VK_Window::VK_Window(const WindowProperties& props)
         // create the swapchain
         m_SwapChain = std::make_shared<VK_SwapChain>(m_Device, GetExtend());
 
-        std::vector<VK_Model::Vertex> verticies =
+        std::vector<VK_Model::Vertex> vertices =
         {
-            {glm::vec2( 0.0f, -0.5f)},
-            {glm::vec2( 0.5f,  0.5f)},
-            {glm::vec2(-0.5f,  0.5f)}
+            {glm::vec2( 0.0f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
+            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
+            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)}
         };
-        m_Model = std::make_shared<VK_Model>(m_Device, verticies);
+        m_Model = std::make_shared<VK_Model>(m_Device, vertices);
 
         CreatePipelineLayout();
         CreatePipeline();
