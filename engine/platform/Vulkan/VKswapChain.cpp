@@ -20,19 +20,23 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-
-//#include <array>
-//#include <cstdlib>
-//#include <cstring>
-//#include <iostream>
-//#include <limits>
-//#include <set>
-
 #include "engine.h"
 #include "VKswapChain.h"
 
 VK_SwapChain::VK_SwapChain(std::shared_ptr<VK_Device> device, VkExtent2D extent)
     : m_Device{device}, m_WindowExtent{extent}
+{
+    Init();
+}
+
+VK_SwapChain::VK_SwapChain(std::shared_ptr<VK_Device> device, VkExtent2D extent, std::shared_ptr<VK_SwapChain> previous)
+    : m_Device{device}, m_WindowExtent{extent}, m_OldSwapChain{previous}
+{
+    Init();
+    m_OldSwapChain.reset();
+}
+
+void VK_SwapChain::Init()
 {
     CreateSwapChain();
     CreateImageViews();
@@ -197,7 +201,7 @@ void VK_SwapChain::CreateSwapChain()
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = (m_OldSwapChain == nullptr ? VK_NULL_HANDLE : m_OldSwapChain->m_SwapChain);
 
     if (vkCreateSwapchainKHR(m_Device->Device(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
     {

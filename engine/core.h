@@ -27,6 +27,7 @@
 
 #include "engine.h"
 #include "window.h"
+#include "event.h"
 
 class Engine
 {
@@ -40,6 +41,7 @@ public:
 
     bool Start();
     void OnUpdate();
+    void OnEvent(Event& event);
     void OnRender();
     void Shutdown();
     void Quit();

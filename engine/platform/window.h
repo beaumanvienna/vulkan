@@ -26,9 +26,9 @@
 #include <memory>
 
 #include "engine.h"
-//#include "event.h"
+#include "event.h"
 
-//class GraphicsContext;
+typedef std::function<void(Event&)> EventCallbackFunction;
 
 struct WindowProperties
 {
@@ -63,7 +63,7 @@ public:
     //virtual std::shared_ptr<GraphicsContext> GetGraphicsContent() const = 0;
     //virtual double GetTime() const = 0;
     //
-    //virtual void SetEventCallback(const EventCallbackFunction& callback) = 0;
+    virtual void SetEventCallback(const EventCallbackFunction& callback) = 0;
     //virtual void SetVSync(int interval) = 0;
     //virtual void ToggleFullscreen() = 0;
     //virtual bool IsFullscreen() = 0;

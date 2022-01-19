@@ -23,6 +23,8 @@
 #include <memory>
 
 #include "VKwindow.h"
+#include "applicationEvent.h"
+#include "keyEvent.h"
 
 bool VK_Window::m_GLFWIsInitialized = false;
 
@@ -35,6 +37,7 @@ VK_Window::VK_Window(const WindowProperties& props)
     //m_WindowProperties.m_VSync    = props.m_VSync;
     //m_WindowProperties.m_MousePosX= 0.0f;
     //m_WindowProperties.m_MousePosY= 0.0f;
+    m_WindowProperties.m_FramebufferResized = false;
 
     //m_AllowCursor = false;
     if (!m_GLFWIsInitialized)
@@ -62,9 +65,6 @@ VK_Window::VK_Window(const WindowProperties& props)
         // create a device
         m_Device = std::make_shared<VK_Device>(this);
 
-        // create the swapchain
-        m_SwapChain = std::make_shared<VK_SwapChain>(m_Device, GetExtend());
-
         std::vector<VK_Model::Vertex> vertices =
         {
             {glm::vec2( 0.0f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
@@ -74,7 +74,7 @@ VK_Window::VK_Window(const WindowProperties& props)
         m_Model = std::make_shared<VK_Model>(m_Device, vertices);
 
         CreatePipelineLayout();
-        CreatePipeline();
+        RecreateSwapChain();
         CreateCommandBuffers();
 
         
@@ -296,144 +296,159 @@ void VK_Window::OnUpdate()
     vkDeviceWaitIdle(m_Device->Device());
 }
 
-//void VK_Window::OnError(int errorCode, const char* description) 
-//{
-//        LOG_CORE_CRITICAL("GLEW error, code: {0}, description: {1}", std::to_string(errorCode), description);
-//
-//}
-//
-//void VK_Window::SetEventCallback(const EventCallbackFunction& callback)
-//{
-//    m_WindowProperties.m_EventCallback = callback;
-//    glfwSetWindowUserPointer(m_Window,&m_WindowProperties);
-//    
-//    glfwSetErrorCallback([](int errorCode, const char* description) { VK_Window::OnError(errorCode, description);});
-//    
-//    glfwSetKeyCallback(m_Window,[](GLFWwindow* window, int key, int scancode, int action, int modes)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//            
-//            switch (action)
-//            {
-//                case GLFW_PRESS:
-//                {
-//                    KeyPressedEvent event(key);
-//                    OnEvent(event);
-//                    break;
-//                }
-//                case GLFW_RELEASE:
-//                {
-//                    KeyReleasedEvent event(key);
-//                    OnEvent(event);
-//                    break;
-//                }
-//                case GLFW_REPEAT:
-//                    break;
-//            }
-//        }
-//    );
-//    
-//    glfwSetWindowCloseCallback(m_Window,[](GLFWwindow* window)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//                
-//            WindowCloseEvent event;
-//            OnEvent(event);
-//        }
-//    );
-//
-//    glfwSetWindowSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//            
-//            windowProperties.m_Width = width;
-//            windowProperties.m_Height = height;
-//                
-//            WindowResizeEvent event(width, height);
-//            OnEvent(event);
-//        }
-//    );
-//
-//    glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
-//        {
-//            GLCall(glViewport(0, 0, width, height));
-//        }
-//    );
-//
-//    glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
-//        {
-//            int width, height;
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//            
-//            if (iconified)
-//            {
-//                width = height = 0;
-//            }
-//            else
-//            {
-//                glfwGetWindowSize(window, &width, &height);
-//            }
-//            
-//            windowProperties.m_Width = width;
-//            windowProperties.m_Height = height;
-//                
-//            WindowResizeEvent event(width, height);
-//            OnEvent(event);
-//        }
-//    );
-//
-//    glfwSetMouseButtonCallback(m_Window,[](GLFWwindow* window, int button, int action, int mods)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//            
-//            switch (action)
-//            {
-//                case GLFW_PRESS:
-//                {
-//                    MouseButtonPressedEvent event(button,windowProperties.m_MousePosX,windowProperties.m_MousePosY);
-//                    OnEvent(event);
-//                    break;
-//                }
-//                case GLFW_RELEASE:
-//                {
-//                    MouseButtonReleasedEvent event(button);
-//                    OnEvent(event);
-//                    break;
-//                }
-//            }
-//        }
-//    );
-//    
-//    glfwSetCursorPosCallback(m_Window,[](GLFWwindow* window, double xpos, double ypos)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//            
-//            windowProperties.m_MousePosX = xpos;
-//            windowProperties.m_MousePosY = ypos;
-//                        
-//            MouseMovedEvent event(xpos, ypos);
-//            OnEvent(event);
-//            
-//        }
-//    );
-//    
-//    glfwSetScrollCallback(m_Window,[](GLFWwindow* window, double xoffset, double yoffset)
-//        {
-//            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-//            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-//                        
-//            MouseScrolledEvent event(xoffset, yoffset);
-//            OnEvent(event);
-//            
-//        }
-//    );
-//}
+void VK_Window::OnError(int errorCode, const char* description) 
+{
+        LOG_CORE_CRITICAL("GLEW error, code: {0}, description: {1}", std::to_string(errorCode), description);
+
+}
+
+void VK_Window::SetEventCallback(const EventCallbackFunction& callback)
+{
+    m_WindowProperties.m_EventCallback = callback;
+    glfwSetWindowUserPointer(m_Window,&m_WindowProperties);
+    
+    glfwSetErrorCallback([](int errorCode, const char* description) { VK_Window::OnError(errorCode, description);});
+    
+    glfwSetKeyCallback(m_Window,[](GLFWwindow* window, int key, int scancode, int action, int modes)
+        {
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+            
+            switch (action)
+            {
+                case GLFW_PRESS:
+                {
+                    KeyPressedEvent event(key);
+                    OnEvent(event);
+                    break;
+                }
+                case GLFW_RELEASE:
+                {
+                    KeyReleasedEvent event(key);
+                    OnEvent(event);
+                    break;
+                }
+                case GLFW_REPEAT:
+                    break;
+            }
+        }
+    );
+    
+    //glfwSetWindowCloseCallback(m_Window,[](GLFWwindow* window)
+    //    {
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //            
+    //        WindowCloseEvent event;
+    //        OnEvent(event);
+    //    }
+    //);
+
+    glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
+        {
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+
+            windowProperties.m_Width = width;
+            windowProperties.m_Height = height;
+            windowProperties.m_FramebufferResized = true;
+
+            WindowResizeEvent event(width, height);
+            OnEvent(event);
+        }
+    );
+
+    //glfwSetWindowSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
+    //    {
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //
+    //        windowProperties.m_Width = width;
+    //        windowProperties.m_Height = height;
+    //        windowProperties.m_FramebufferResized = true;
+    //
+    //        WindowResizeEvent event(width, height);
+    //        OnEvent(event);
+    //    }
+    //);
+
+    //glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
+    //    {
+    //        GLCall(glViewport(0, 0, width, height));
+    //    }
+    //);
+    //
+    //glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
+    //    {
+    //        int width, height;
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //        
+    //        if (iconified)
+    //        {
+    //            width = height = 0;
+    //        }
+    //        else
+    //        {
+    //            glfwGetWindowSize(window, &width, &height);
+    //        }
+    //        
+    //        windowProperties.m_Width = width;
+    //        windowProperties.m_Height = height;
+    //            
+    //        WindowResizeEvent event(width, height);
+    //        OnEvent(event);
+    //    }
+    //);
+
+    //glfwSetMouseButtonCallback(m_Window,[](GLFWwindow* window, int button, int action, int mods)
+    //    {
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //        
+    //        switch (action)
+    //        {
+    //            case GLFW_PRESS:
+    //            {
+    //                MouseButtonPressedEvent event(button,windowProperties.m_MousePosX,windowProperties.m_MousePosY);
+    //                OnEvent(event);
+    //                break;
+    //            }
+    //            case GLFW_RELEASE:
+    //            {
+    //                MouseButtonReleasedEvent event(button);
+    //                OnEvent(event);
+    //                break;
+    //            }
+    //        }
+    //    }
+    //);
+    
+    //glfwSetCursorPosCallback(m_Window,[](GLFWwindow* window, double xpos, double ypos)
+    //    {
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //        
+    //        windowProperties.m_MousePosX = xpos;
+    //        windowProperties.m_MousePosY = ypos;
+    //                    
+    //        MouseMovedEvent event(xpos, ypos);
+    //        OnEvent(event);
+    //        
+    //    }
+    //);
+    //
+    //glfwSetScrollCallback(m_Window,[](GLFWwindow* window, double xoffset, double yoffset)
+    //    {
+    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+    //                    
+    //        MouseScrolledEvent event(xoffset, yoffset);
+    //        OnEvent(event);
+    //        
+    //    }
+    //);
+}
 
 bool VK_Window::InitGLFW()
 {
@@ -493,7 +508,12 @@ void VK_Window::CreatePipelineLayout()
 }
 void VK_Window::CreatePipeline()
 {
-    auto pipelineConfig = VK_Pipeline::DefaultPipelineConfigInfo(m_SwapChain->Width(), m_SwapChain->Height());
+    ASSERT(m_SwapChain != nullptr);
+    ASSERT(m_PipelineLayout != nullptr);
+
+    PipelineConfigInfo pipelineConfig{};
+
+    VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.renderPass = m_SwapChain->GetRenderPass();
     pipelineConfig.pipelineLayout = m_PipelineLayout;
 
@@ -520,53 +540,107 @@ void VK_Window::CreateCommandBuffers()
     {
         LOG_CORE_CRITICAL("failed to allocate command buffers");
     }
+}
 
-    for (uint i = 0; i < m_CommandBuffers.size(); i++)
+void VK_Window::FreeCommandBuffers()
+{
+    vkFreeCommandBuffers
+    (
+        m_Device->Device(),
+        m_Device->GetCommandPool(),
+        static_cast<uint>(m_CommandBuffers.size()),
+        m_CommandBuffers.data()
+    );
+    m_CommandBuffers.clear();
+}
+
+void VK_Window::RecordCommandBuffer(int imageIndex)
+{
+    
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    
+    if (vkBeginCommandBuffer(m_CommandBuffers[imageIndex], &beginInfo) != VK_SUCCESS)
     {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        
-        if (vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to begin recording command buffer");
-        }
-        
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
-        renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(i);
-        
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        m_Pipeline->Bind(m_CommandBuffers[i]);
-        m_Model->Bind(m_CommandBuffers[i]);
-        m_Model->Draw(m_CommandBuffers[i]);
-
-        vkCmdEndRenderPass(m_CommandBuffers[i]);
-        if (vkEndCommandBuffer(m_CommandBuffers[i]) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("recording of command buffer failed");
-        }
-
-        //VkViewport viewport{};
-        //viewport.x = 0.0f;
-        //viewport.y = 0.0f;
-        //viewport.width = static_cast<float>(lveSwapChain->getSwapChainExtent().width);
-        //viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
-        //viewport.minDepth = 0.0f;
-        //viewport.maxDepth = 1.0f;
-        //VkRect2D scissor{{0, 0}, lveSwapChain->getSwapChainExtent()};
-        //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+        LOG_CORE_CRITICAL("failed to begin recording command buffer");
     }
+    
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
+    renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(imageIndex);
+    
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(m_CommandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(m_SwapChain->GetSwapChainExtent().width);
+    viewport.height = static_cast<float>(m_SwapChain->GetSwapChainExtent().height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
+    vkCmdSetViewport(m_CommandBuffers[imageIndex], 0, 1, &viewport);
+    vkCmdSetScissor(m_CommandBuffers[imageIndex], 0, 1, &scissor);
+
+    m_Pipeline->Bind(m_CommandBuffers[imageIndex]);
+    m_Model->Bind(m_CommandBuffers[imageIndex]);
+    m_Model->Draw(m_CommandBuffers[imageIndex]);
+
+    vkCmdEndRenderPass(m_CommandBuffers[imageIndex]);
+    if (vkEndCommandBuffer(m_CommandBuffers[imageIndex]) != VK_SUCCESS)
+    {
+        LOG_CORE_CRITICAL("recording of command buffer failed");
+    }
+
+    //VkViewport viewport{};
+    //viewport.x = 0.0f;
+    //viewport.y = 0.0f;
+    //viewport.width = static_cast<float>(lveSwapChain->getSwapChainExtent().width);
+    //viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
+    //viewport.minDepth = 0.0f;
+    //viewport.maxDepth = 1.0f;
+    //VkRect2D scissor{{0, 0}, lveSwapChain->getSwapChainExtent()};
+    //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+void VK_Window::RecreateSwapChain()
+{
+    auto extent = GetExtend();
+    while (extent.width == 0 || extent.height == 0)
+    {
+        extent = GetExtend();
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(m_Device->Device());
+
+    // create the swapchain and pipeline
+    
+    if (m_SwapChain == nullptr)
+    {
+        m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent);
+    }
+    else
+    {
+        m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, std::move(m_SwapChain));
+        if (m_SwapChain->ImageCount() != m_CommandBuffers.size())
+        {
+            FreeCommandBuffers();
+            CreateCommandBuffers();
+        }
+    }
+    CreatePipeline();
 }
 
 void VK_Window::DrawFrame()
@@ -574,12 +648,26 @@ void VK_Window::DrawFrame()
     uint imageIndex = 0;
     auto result = m_SwapChain->AcquireNextImage(&imageIndex);
     
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain();
+        return;
+    }
+
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
         LOG_CORE_CRITICAL("failed to acquire next swap chain image");
     }
-    
+
+    RecordCommandBuffer(imageIndex);
     result = m_SwapChain->SubmitCommandBuffers(&m_CommandBuffers[imageIndex], &imageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || WasResized())
+    {
+        ResetWindowResizedFlag();
+        RecreateSwapChain();
+        return;
+    }
+
     if (result != VK_SUCCESS)
     {
         LOG_CORE_CRITICAL("failed to present swap chain image");
