@@ -23,39 +23,48 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
 #include "engine.h"
-#include "VKdevice.h"
-#include "model.h"
+#include "VKmodel.h"
 
-class VK_Model
+struct Transform2DComponent
+{
+	glm::vec2 m_Translation{};
+	glm::mat2 Mat2() { return glm::mat2{1.0f}; }
+};
+
+class Entity
 {
 
 public:
 
-	struct VK_Vertex : public Vertex
-	{
-		static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
-		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
-	};
+	using id_t = uint;
 
 public:
 
-    VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
-    ~VK_Model();
+    ~Entity();
 
-    VK_Model(const VK_Model&) = delete;
-    VK_Model& operator=(const VK_Model&) = delete;
+    Entity(const Entity&) = delete;
+    Entity& operator=(const Entity&) = delete;
+    Entity(Entity&&) = default;
+    Entity& operator=(Entity&&) = default;
 
-    void CreateVertexBuffers(const std::vector<Vertex>& vertices);
+    id_t GetID() const { return m_ID; }
 
-    void Bind(VkCommandBuffer commandBuffer);
-    void Draw(VkCommandBuffer commandBuffer);
+    static Entity CreateEnity();
+
+public:
+
+	std::shared_ptr<VK_Model> m_Model{};
+	glm::vec3 m_Color;
+	Transform2DComponent m_Transform2D{};
 
 private:
-    std::shared_ptr<VK_Device> m_Device;
-    VkBuffer m_VertexBuffer;
-    VkDeviceMemory m_VertexBufferMemory;
-    uint m_VertexCount;
+
+    Entity(id_t id): m_ID(id) {}
+
+private:
+
+	id_t m_ID;
+
 };

@@ -20,57 +20,5 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "model.h"
 
-#include <memory>
-#include <string>
-
-#include "event.h"
-#include "engine.h"
-#include "window.h"
-#include "audio.h"
-#include "controller.h"
-
-class Engine
-{
-public:
-
-
-public:
-
-    Engine(const std::string& configFilePath);
-    ~Engine();
-
-    bool Start();
-    void OnUpdate();
-    void OnEvent(Event& event);
-    void OnRender();
-    void Shutdown();
-    void Quit();
-
-    bool IsRunning() const { return m_Running; }
-    std::string GetConfigFilePath() const { return m_ConfigFilePath; }
-    std::shared_ptr<Window> GetWindow() const { return m_Window; }
-    double GetTime() const { return m_Window->GetTime(); }
-    void LoadModels(std::vector<Vertex>& vertices) { m_Window->LoadModels(vertices); }
-
-public:
-
-    static Engine* m_Engine;
-
-private:
-
-    static void SignalHandler(int signal);
-    void ToggleFullscreen();
-	void AudioCallback(int eventType);
-
-private:
-    
-    std::string m_ConfigFilePath;
-    std::shared_ptr<Window> m_Window;
-    std::shared_ptr<Audio> m_Audio;
-    Controller m_Controller;
-
-    bool m_Running;
-
-};

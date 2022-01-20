@@ -20,42 +20,15 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "entity.h"
 
-#include <memory>
-#include <vector>
-
-#include "engine.h"
-#include "VKdevice.h"
-#include "model.h"
-
-class VK_Model
+Entity::~Entity()
 {
+}
 
-public:
-
-	struct VK_Vertex : public Vertex
-	{
-		static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
-		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
-	};
-
-public:
-
-    VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
-    ~VK_Model();
-
-    VK_Model(const VK_Model&) = delete;
-    VK_Model& operator=(const VK_Model&) = delete;
-
-    void CreateVertexBuffers(const std::vector<Vertex>& vertices);
-
-    void Bind(VkCommandBuffer commandBuffer);
-    void Draw(VkCommandBuffer commandBuffer);
-
-private:
-    std::shared_ptr<VK_Device> m_Device;
-    VkBuffer m_VertexBuffer;
-    VkDeviceMemory m_VertexBufferMemory;
-    uint m_VertexCount;
-};
+Entity Entity::CreateEnity()
+{
+	static id_t currentID = 0;
+	
+	return Entity{currentID++};
+}

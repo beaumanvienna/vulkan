@@ -58,7 +58,6 @@ VK_Window::VK_Window(const WindowProperties& props)
         // create a device
         m_Device = std::make_shared<VK_Device>(this);
 
-        LoadModels();
         CreatePipelineLayout();
         RecreateSwapChain();
         CreateCommandBuffers();
@@ -569,15 +568,10 @@ void VK_Window::DrawFrame()
         LOG_CORE_CRITICAL("failed to present swap chain image");
     }
 }
-void VK_Window::LoadModels()
+void VK_Window::LoadModels(std::vector<Vertex>& vertices)
 {
     ASSERT(m_Device != nullptr);
-    std::vector<VK_Model::Vertex> vertices =
-    {
-        {glm::vec2( 0.0f, -0.4f), glm::vec3(0.0f, 1.0f, 0.0f)},
-        {glm::vec2( 0.5f,  0.4f), glm::vec3(1.0f, 0.0f, 0.0f)},
-        {glm::vec2(-0.5f,  0.4f), glm::vec3(0.0f, 0.0f, 1.0f)}
-    };
+
     m_Model = std::make_shared<VK_Model>(m_Device, vertices);   
 }
 void VK_Window::CreateWindow()

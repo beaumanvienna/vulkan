@@ -24,6 +24,11 @@
 
 #include <memory>
 
+#include "engine.h"
+#include "entity.h"
+#include "window.h"
+#include "core.h"
+
 class Application
 {
 
@@ -41,9 +46,13 @@ public:
 private:
 
     static void ConsoleInputHandler();
+    void LoadEnities();
+    void SubmitEnities();
 
 private:
 
     static std::shared_ptr<Application> m_Instance;
+    std::vector<Entity> m_Entities;
+    std::shared_ptr<Window> m_Window;
 
 };

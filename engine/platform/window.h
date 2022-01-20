@@ -27,6 +27,7 @@
 
 #include "engine.h"
 #include "event.h"
+#include "model.h"
 
 typedef std::function<void(Event&)> EventCallbackFunction;
 
@@ -72,6 +73,8 @@ public:
     virtual void DisableMousePointer() = 0;
     virtual void AllowCursor() = 0;
     virtual void DisallowCursor() = 0;
+
+	virtual void LoadModels(std::vector<Vertex>& vertices) = 0;
     
     static std::unique_ptr<Window> Create(const WindowProperties& props);
 

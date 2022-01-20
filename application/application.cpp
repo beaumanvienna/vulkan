@@ -25,6 +25,7 @@
 #include "core.h"
 #include "engine.h"
 #include "application.h"
+#include "VKmodel.h"
 
 std::shared_ptr<Application> Application::m_Instance;
 
@@ -37,9 +38,11 @@ bool Application::Start()
     std::thread consoleInputHandler(ConsoleInputHandler);
     consoleInputHandler.detach();
 
-    auto window = Engine::m_Engine->GetWindow();
-    window->SetWindowAspectRatio();
-    window->DisallowCursor();
+    m_Window = Engine::m_Engine->GetWindow();
+    m_Window->SetWindowAspectRatio();
+    m_Window->DisallowCursor();
+
+    LoadEnities();
 
     return true;
 }
@@ -71,4 +74,19 @@ void Application::ConsoleInputHandler()
         break;
     }
 
+}
+
+void Application::LoadEnities()
+{
+	std::vector<Vertex> vertices =
+    {
+        {glm::vec2( 0.0f, -0.4f), glm::vec3(0.0f, 1.0f, 0.0f)},
+        {glm::vec2( 0.5f,  0.4f), glm::vec3(1.0f, 0.0f, 0.0f)},
+        {glm::vec2(-0.5f,  0.4f), glm::vec3(0.0f, 0.0f, 1.0f)}
+    };
+    Engine::m_Engine->LoadModels(vertices);
+}
+
+void Application::SubmitEnities()
+{
 }

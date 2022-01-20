@@ -40,6 +40,7 @@ project "engine"
         "engine/auxiliary",
         "engine/renderer",
         "engine/events",
+        "engine/scene",
         "engine/platform/",
         "engine/platform/SDL",
         "engine/platform/Vulkan",

@@ -23,7 +23,7 @@
 #include "VKmodel.h"
 
 // Vertex
-std::vector<VkVertexInputBindingDescription> VK_Model::Vertex::GetBindingDescriptions()
+std::vector<VkVertexInputBindingDescription> VK_Model::VK_Vertex::GetBindingDescriptions()
 {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 
@@ -34,7 +34,7 @@ std::vector<VkVertexInputBindingDescription> VK_Model::Vertex::GetBindingDescrip
     return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription> VK_Model::Vertex::GetAttributeDescriptions()
+std::vector<VkVertexInputAttributeDescription> VK_Model::VK_Vertex::GetAttributeDescriptions()
 {
     std::vector<VkVertexInputAttributeDescription>  attributeDescriptions(2);
 
