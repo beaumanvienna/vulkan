@@ -21,7 +21,6 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "audio.h"
-#include "sound.h"
 #include "SDLaudio.h"
 
 std::shared_ptr<Audio> Audio::Create()

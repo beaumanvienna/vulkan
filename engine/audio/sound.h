@@ -24,9 +24,10 @@
 
 #include <functional>
 
+#include "engine.h"
+    
 #ifdef LINUX
 
-    #include "engine.h"
     #include "SoundDeviceManager.h"
 
     class Sound
@@ -49,7 +50,6 @@
 
 #else
 
-    #include "engine.h"
 
     class Sound
     {

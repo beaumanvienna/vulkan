@@ -29,6 +29,7 @@
 #include "engine.h"
 #include "window.h"
 #include "audio.h"
+#include "controller.h"
 
 class Engine
 {
@@ -55,15 +56,19 @@ public:
     static Engine* m_Engine;
 
 private:
+
     static void SignalHandler(int signal);
     void ToggleFullscreen();
+    void AudioOnUpdate();
 
 private:
     
     std::string m_ConfigFilePath;
     std::shared_ptr<Window> m_Window;
     std::shared_ptr<Audio> m_Audio;
+    Controller m_Controller;
 
     bool m_Running;
+    bool m_AudioReady;
 
 };

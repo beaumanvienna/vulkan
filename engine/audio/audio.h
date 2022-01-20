@@ -31,6 +31,7 @@
 #include <iostream>
 
 #include "engine.h"
+#include "sound.h"
 
 class Audio
 {

@@ -21,6 +21,8 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <csignal>
+#include <chrono>
+#include <thread>
 
 #include "core.h"
 #include "engine.h"
@@ -32,7 +34,7 @@ Engine* Engine::m_Engine = nullptr;
 
 Engine::Engine(const std::string& configFilePath) :
             m_ConfigFilePath(configFilePath),
-            m_Running(false)
+            m_Running(false), m_AudioReady(false)
 {
     m_Engine = this;
 }
@@ -68,6 +70,23 @@ bool Engine::Start()
     // init audio
     m_Audio = Audio::Create();
     m_Audio->Start();
+	#ifdef LINUX
+		Sound::SetCallback([=](const LibPAmanager::Event& event)
+		{
+			m_AudioReady = true;
+		});
+	#endif
+    
+    // init controller
+    if (!m_Controller.Start())
+    {
+        LOG_CORE_CRITICAL("Could not create controller");
+        return false;
+    }
+    else
+    {
+        m_Controller.SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+    }
 
     m_Running = true;
 
@@ -90,6 +109,9 @@ void Engine::OnUpdate()
     {
         Shutdown();
     }
+    m_Controller.OnUpdate();
+
+	AudioOnUpdate();
 }
 
 void Engine::OnRender()
@@ -185,4 +207,17 @@ void Engine::OnEvent(Event& event)
 void Engine::ToggleFullscreen()
 {
     m_Window->ToggleFullscreen();
+}
+
+void Engine::AudioOnUpdate()
+{
+	static bool displayMessage = true;
+	if (displayMessage)
+	{
+		if (m_AudioReady)
+		{
+			displayMessage = false;
+			LOG_CORE_INFO("audio output: {0}", Sound::GetDefaultOutputDevice());
+		}
+	}
 }

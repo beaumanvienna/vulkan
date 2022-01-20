@@ -161,7 +161,8 @@ void VK_Device::PickPhysicalDevice()
         if (IsDeviceSuitable(device))
         {
             physicalDevice = device;
-            break;
+            vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+			std::cout << "physical device: " << properties.deviceName << std::endl;
         }
     }
 
@@ -170,8 +171,7 @@ void VK_Device::PickPhysicalDevice()
         LOG_CORE_CRITICAL("failed to find a suitable GPU!");
     }
 
-    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-    std::cout << "physical device: " << properties.deviceName << std::endl;
+    
 }
 
 void VK_Device::CreateLogicalDevice()
