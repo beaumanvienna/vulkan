@@ -59,7 +59,7 @@ private:
 
     static void SignalHandler(int signal);
     void ToggleFullscreen();
-    void AudioOnUpdate();
+	void AudioCallback(int eventType);
 
 private:
     
@@ -69,6 +69,5 @@ private:
     Controller m_Controller;
 
     bool m_Running;
-    bool m_AudioReady;
 
 };

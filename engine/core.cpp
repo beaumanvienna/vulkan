@@ -34,7 +34,7 @@ Engine* Engine::m_Engine = nullptr;
 
 Engine::Engine(const std::string& configFilePath) :
             m_ConfigFilePath(configFilePath),
-            m_Running(false), m_AudioReady(false)
+            m_Running(false)
 {
     m_Engine = this;
 }
@@ -53,8 +53,6 @@ bool Engine::Start()
 
     //signal handling
     signal(SIGINT, SignalHandler);
-
-    
     
     // create main window
     std::string title = "Vulkan Engine v" ENGINE_VERSION;
@@ -73,7 +71,7 @@ bool Engine::Start()
 	#ifdef LINUX
 		Sound::SetCallback([=](const LibPAmanager::Event& event)
 		{
-			m_AudioReady = true;
+			AudioCallback((int)event.GetType());
 		});
 	#endif
     
@@ -110,8 +108,6 @@ void Engine::OnUpdate()
         Shutdown();
     }
     m_Controller.OnUpdate();
-
-	AudioOnUpdate();
 }
 
 void Engine::OnRender()
@@ -209,15 +205,33 @@ void Engine::ToggleFullscreen()
     m_Window->ToggleFullscreen();
 }
 
-void Engine::AudioOnUpdate()
+void Engine::AudioCallback(int eventType)
 {
-	static bool displayMessage = true;
-	if (displayMessage)
-	{
-		if (m_AudioReady)
+	#ifdef LINUX
+		switch (eventType)
 		{
-			displayMessage = false;
-			LOG_CORE_INFO("audio output: {0}", Sound::GetDefaultOutputDevice());
+	
+			case LibPAmanager::Event::OUTPUT_DEVICE_CHANGED:
+			{
+				LOG_CORE_INFO("current audio output device: {0}", Sound::GetDefaultOutputDevice());
+				break;
+			}
+			case LibPAmanager::Event::OUTPUT_DEVICE_LIST_CHANGED:
+			{
+				auto outputDeviceList = Sound::GetOutputDeviceList();
+				for (auto device : outputDeviceList)
+				{
+					LOG_CORE_INFO("list all audio output devices: {0}", device);
+				}
+				break;
+			}
+			case LibPAmanager::Event::OUTPUT_DEVICE_VOLUME_CHANGED:
+			{
+				auto volume = Sound::GetDesktopVolume();
+				// user code goes here
+				LOG_CORE_INFO("output volume changed to: {0}", volume);
+				break;
+			}
 		}
-	}
+	#endif
 }
