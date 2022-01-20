@@ -21,7 +21,7 @@ jobs:
       run: wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add - && sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list http://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list && sudo apt update
 
     - name: getdeps
-      run: sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev vulkan-sdk
+      run: sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev vulkan-sdk  libpulse-dev libibus-1.0-dev libglib2.0-dev libsamplerate0-dev libasound2-dev libudev-dev
 
     - name: submodules
       run: git submodule update --init --recursive

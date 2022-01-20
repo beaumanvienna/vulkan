@@ -27,6 +27,7 @@ project "sdl_mixer"
         path.join(SDL_MIXER_DIR, "src/codecs/timidity"),
         path.join(SDL_MIXER_DIR, "src/codecs/native_midi"),
         path.join(SDL_MIXER_DIR, "external/flac-1.3.3/include"),
+        path.join(SDL_MIXER_DIR, "external/libvorbis-1.3.6/include"),
         path.join(SDL2_DIR, "include")
     }
     files
