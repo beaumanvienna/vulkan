@@ -34,11 +34,11 @@ class VK_Model
 
 public:
 
-	struct VK_Vertex : public Vertex
-	{
-		static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
-		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
-	};
+    struct VK_Vertex : public Vertex
+    {
+        static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
+        static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+    };
 
 public:
 

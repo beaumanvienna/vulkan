@@ -568,7 +568,7 @@ void VK_Window::DrawFrame()
         LOG_CORE_CRITICAL("failed to present swap chain image");
     }
 }
-void VK_Window::LoadModels(std::vector<Vertex>& vertices)
+void VK_Window::LoadModel(std::vector<Vertex>& vertices)
 {
     ASSERT(m_Device != nullptr);
 

@@ -28,7 +28,7 @@ Entity::~Entity()
 
 Entity Entity::CreateEnity()
 {
-	static id_t currentID = 0;
-	
-	return Entity{currentID++};
+    static id_t currentID = 0;
+    
+    return Entity{currentID++};
 }

@@ -46,7 +46,7 @@ public:
 private:
 
     static void ConsoleInputHandler();
-    void LoadEnities();
+    void LoadEntities();
     void SubmitEnities();
 
 private:

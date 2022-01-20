@@ -42,7 +42,7 @@ bool Application::Start()
     m_Window->SetWindowAspectRatio();
     m_Window->DisallowCursor();
 
-    LoadEnities();
+    LoadEntities();
 
     return true;
 }
@@ -76,15 +76,20 @@ void Application::ConsoleInputHandler()
 
 }
 
-void Application::LoadEnities()
+void Application::LoadEntities()
 {
-	std::vector<Vertex> vertices =
+    std::vector<Vertex> vertices =
     {
         {glm::vec2( 0.0f, -0.4f), glm::vec3(0.0f, 1.0f, 0.0f)},
         {glm::vec2( 0.5f,  0.4f), glm::vec3(1.0f, 0.0f, 0.0f)},
         {glm::vec2(-0.5f,  0.4f), glm::vec3(0.0f, 0.0f, 1.0f)}
     };
-    Engine::m_Engine->LoadModels(vertices);
+    Engine::m_Engine->LoadModel(vertices);
+    
+    auto triangle = Entity::CreateEnity();
+    triangle.m_Color = glm::vec3{0.1f, 0.8f, 0.1f};
+    triangle.m_Transform2D.m_Translation.x = 0.2f;
+    m_Entities.push_back(std::move(triangle));
 }
 
 void Application::SubmitEnities()

@@ -69,7 +69,7 @@ public:
     void SetWindowAspectRatio(int numer, int denom) override;
     float GetWindowAspectRatio() const override { return m_WindowProperties.m_Width / (1.0f * m_WindowProperties.m_Height); }
     double GetTime() const override { return glfwGetTime(); }
-    void LoadModels(std::vector<Vertex>& vertices) override;
+    void LoadModel(std::vector<Vertex>& vertices) override;
 
     static void OnError(int errorCode, const char* description);
 

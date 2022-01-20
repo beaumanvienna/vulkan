@@ -29,8 +29,8 @@
 
 struct Transform2DComponent
 {
-	glm::vec2 m_Translation{};
-	glm::mat2 Mat2() { return glm::mat2{1.0f}; }
+    glm::vec2 m_Translation{};
+    glm::mat2 Mat2() { return glm::mat2{1.0f}; }
 };
 
 class Entity
@@ -38,7 +38,7 @@ class Entity
 
 public:
 
-	using id_t = uint;
+    using id_t = uint;
 
 public:
 
@@ -55,9 +55,9 @@ public:
 
 public:
 
-	std::shared_ptr<VK_Model> m_Model{};
-	glm::vec3 m_Color;
-	Transform2DComponent m_Transform2D{};
+    std::shared_ptr<VK_Model> m_Model{};
+    glm::vec3 m_Color;
+    Transform2DComponent m_Transform2D{};
 
 private:
 
@@ -65,6 +65,6 @@ private:
 
 private:
 
-	id_t m_ID;
+    id_t m_ID;
 
 };

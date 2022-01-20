@@ -68,12 +68,12 @@ bool Engine::Start()
     // init audio
     m_Audio = Audio::Create();
     m_Audio->Start();
-	#ifdef LINUX
-		Sound::SetCallback([=](const LibPAmanager::Event& event)
-		{
-			AudioCallback((int)event.GetType());
-		});
-	#endif
+    #ifdef LINUX
+        Sound::SetCallback([=](const LibPAmanager::Event& event)
+        {
+            AudioCallback((int)event.GetType());
+        });
+    #endif
     
     // init controller
     if (!m_Controller.Start())
@@ -207,31 +207,31 @@ void Engine::ToggleFullscreen()
 
 void Engine::AudioCallback(int eventType)
 {
-	#ifdef LINUX
-		switch (eventType)
-		{
-	
-			case LibPAmanager::Event::OUTPUT_DEVICE_CHANGED:
-			{
-				LOG_CORE_INFO("current audio output device: {0}", Sound::GetDefaultOutputDevice());
-				break;
-			}
-			case LibPAmanager::Event::OUTPUT_DEVICE_LIST_CHANGED:
-			{
-				auto outputDeviceList = Sound::GetOutputDeviceList();
-				for (auto device : outputDeviceList)
-				{
-					LOG_CORE_INFO("list all audio output devices: {0}", device);
-				}
-				break;
-			}
-			case LibPAmanager::Event::OUTPUT_DEVICE_VOLUME_CHANGED:
-			{
-				auto volume = Sound::GetDesktopVolume();
-				// user code goes here
-				LOG_CORE_INFO("output volume changed to: {0}", volume);
-				break;
-			}
-		}
-	#endif
+    #ifdef LINUX
+        switch (eventType)
+        {
+    
+            case LibPAmanager::Event::OUTPUT_DEVICE_CHANGED:
+            {
+                LOG_CORE_INFO("current audio output device: {0}", Sound::GetDefaultOutputDevice());
+                break;
+            }
+            case LibPAmanager::Event::OUTPUT_DEVICE_LIST_CHANGED:
+            {
+                auto outputDeviceList = Sound::GetOutputDeviceList();
+                for (auto device : outputDeviceList)
+                {
+                    LOG_CORE_INFO("list all audio output devices: {0}", device);
+                }
+                break;
+            }
+            case LibPAmanager::Event::OUTPUT_DEVICE_VOLUME_CHANGED:
+            {
+                auto volume = Sound::GetDesktopVolume();
+                // user code goes here
+                LOG_CORE_INFO("output volume changed to: {0}", volume);
+                break;
+            }
+        }
+    #endif
 }

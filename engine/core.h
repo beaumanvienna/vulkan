@@ -52,7 +52,7 @@ public:
     std::string GetConfigFilePath() const { return m_ConfigFilePath; }
     std::shared_ptr<Window> GetWindow() const { return m_Window; }
     double GetTime() const { return m_Window->GetTime(); }
-    void LoadModels(std::vector<Vertex>& vertices) { m_Window->LoadModels(vertices); }
+    void LoadModel(std::vector<Vertex>& vertices) { m_Window->LoadModel(vertices); }
 
 public:
 
@@ -62,7 +62,7 @@ private:
 
     static void SignalHandler(int signal);
     void ToggleFullscreen();
-	void AudioCallback(int eventType);
+    void AudioCallback(int eventType);
 
 private:
     
