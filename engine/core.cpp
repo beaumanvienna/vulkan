@@ -64,6 +64,10 @@ bool Engine::Start()
         return false;
     }
     m_Window->SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+    
+    // init audio
+    m_Audio = Audio::Create();
+    m_Audio->Start();
 
     m_Running = true;
 

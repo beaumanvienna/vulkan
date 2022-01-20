@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/simpleShader.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/simpleShader.frag</file>
+    </gresource>
+    <gresource prefix="/images/">
+        <file>images/cursor.png</file>
+    </gresource>
+    <gresource prefix="/images/">
+        <file>images/cursorEmpty.png</file>
+    </gresource>
+    <gresource prefix="/images/">
+        <file>images/I_BARREL.png</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>sdl/gamecontrollerdb.txt</file>
+    </gresource>
+    <gresource prefix="/sounds/">
+        <file>waves.ogg</file>
+    </gresource>
+</gresources>

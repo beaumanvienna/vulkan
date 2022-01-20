@@ -1,3 +1,9 @@
 [submodule "vendor/glfw"]
 	path = vendor/glfw
 	url = https://github.com/glfw/glfw
+[submodule "vendor/pamanager"]
+	path = vendor/pamanager
+	url = https://github.com/beaumanvienna/pamanager/
+[submodule "vendor/SDL"]
+	path = vendor/sdl
+	url = https://github.com/beaumanvienna/SDL

@@ -26,6 +26,7 @@ project "engine"
         "engine/**.cpp",
         "application/**.h", 
         "application/**.cpp",
+        "resources/resources.cpp",
         "vendor/glfw/**.h", 
         "vendor/glfw/**.cpp",
         "vendor/stb/**.cpp",
@@ -35,17 +36,22 @@ project "engine"
     {
         "engine",
         "engine/log",
+        "engine/audio",
         "engine/auxiliary",
         "engine/renderer",
         "engine/events",
         "engine/platform/",
+        "engine/platform/SDL",
         "engine/platform/Vulkan",
+        "application",
+        "resources",
         "vendor",
         "vendor/glfw/include",
         "vendor/stb",
         "vendor/glm",
         "vendor/spdlog/include",
-        "application",
+        "vendor/sdl/include",
+        "vendor/sdl_mixer/include",
     }
 
     libdirs
@@ -67,14 +73,25 @@ project "engine"
         }
 
         files 
-        {
+        { 
+            "resources/gnuEmbeddedResources.cpp"
         }
         includedirs 
         {
-            "/usr/include"
+            "/usr/include",
+            "vendor/pamanager/libpamanager/src",
+
+            -- resource system: glib-2.0
+            -- this should actually be `pkg-config glib-2.0 --cflags`
+            "/usr/include/glib-2.0",
+            "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
+            "/usr/lib/glib-2.0/include/",
+            "/usr/lib64/glib-2.0/include/",
+            -- end resource system: glib-2.0
         }
         links
         {
+            "sdl_mixer",
             "m",
             "dl", 
             "pthread",
@@ -82,7 +99,14 @@ project "engine"
             "vulkan",
             "X11",
             "Xrandr",
-            "Xi"
+            "Xi",
+            "libpamanager",
+            "sdl",
+            "pulse",
+            "glib-2.0",
+            "gio-2.0",
+            "libvorbis",
+            "libogg",
         }
         libdirs
         {
@@ -147,3 +171,19 @@ project "engine"
     include "vendor/glfw.lua"
     include "vendor/SPIRV-Cross.lua"
     include "vendor/shaderc.lua"
+    include "vendor/sdl_mixer.lua"
+    include "vendor/sdl.lua"
+
+    if os.host() == "linux" then
+
+        include "vendor/pamanager/libpamanager/libpamanager.lua"
+
+    end
+
+    if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2") ) then
+
+        project "resource-system-gnu"
+            kind "StaticLib"
+            os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.cpp --sourcedir=resources/ --generate-source")
+            os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.h   --sourcedir=resources/ --generate-header")
+    end

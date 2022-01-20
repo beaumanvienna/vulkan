@@ -1,0 +1,20 @@
+
+#include "windowsEmbeddedResources.h"
+
+// PNG
+IDB_ATLAS                PNG                     "resources\\atlas\\atlas.png"
+IDB_FONTS_RETRO          PNG                     "resources\\atlas\\fontAtlas.png"
+IDB_CURSOR_RETRO         PNG                     "resources\\images\\cursor.png"
+IDB_CURSOR_EMPTY         PNG                     "resources\\images\\cursorEmpty.png"
+IDB_ENGINE_LOGO          PNG                     "resources\\atlas\\images\\I_ENGINE.png"
+IDB_TILEMAP              PNG                     "application\\appResources\\urban\\tilemap\\tilemap.png"
+IDB_SPLASH               PNG                     "resources\\splashscreen\\splash_spritesheet.png"
+IDB_FIREWORKS            PNG                     "resources\\splashscreen\\splash_fireworks.png"
+IDB_CONTROLLER_SETUP     PNG                     "resources\\images\\I_CONTROLLER_SETUP.png"
+IDB_BARREL               PNG                     "resources\\images\\I_BARREL.png"
+IDB_DK                   PNG                     "resources\\images\\I_DK.png"
+IDR_VERTEX_SHADER        TEXT                    "engine\\shader\\vertexShader.vert"
+IDR_FRAGMENT_SHADER      TEXT                    "engine\\shader\\fragmentShader.frag"
+IDR_SD_LCTRL_DB          TEXT                    "resources\\sdl\\gamecontrollerdb.txt"
+IDR_WAVES                OGG                     "resources\\waves.ogg"
+
