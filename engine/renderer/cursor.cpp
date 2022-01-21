@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,52 +20,23 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include <chrono>
-#include <thread>
+#include "rendererAPI.h"
+#include "cursor.h"
+#include "VKcursor.h"
 
-#include "core.h"
-#include "engine.h"
-#include "instrumentation.h"
-#include "application.h"
-
-int main(int argc, char* argv[])
+std::shared_ptr<Cursor> Cursor::Create()
 {
-    PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
+    std::shared_ptr<Cursor> cursor;
 
-    std::unique_ptr<Engine> engine;
-    std::shared_ptr<Application> application;
-
+    switch(RendererAPI::GetAPI())
     {
-        PROFILE_SCOPE("engine startup");
-        engine = std::make_unique<Engine>("./");
-        
-        if (!engine->Start())
-        {
-            return -1;
-        }
-    }
-    {
-        PROFILE_SCOPE("application startup");
-        application = Application::Create();
-        if (!application->Start())
-        {
-            return -1;
-        }
+        case RendererAPI::VULKAN:
+            cursor = std::make_shared<VK_Cursor>();
+            break;
+        default:
+            cursor = nullptr;
+            break;
     }
 
-    LOG_CORE_INFO("entering main application");
-    while (engine->IsRunning())
-    {
-        {
-            PROFILE_SCOPE("OnUpdate()");
-            engine->OnUpdate();
-            application->OnUpdate();
-        }
-        std::this_thread::sleep_for(16ms);
-    }
-
-    application->Shutdown();
-    engine->Quit();
-
-    PROFILE_END_SESSION();
-};
+    return cursor;
+}

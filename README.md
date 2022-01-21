@@ -2,7 +2,7 @@
 A Vulkan Render Engine<br/>
 <br/>
 <br/>
-Features: Vulkan support, gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system<br/>
+Features: Vulkan support for 3D rendering, gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system<br/>
 <br/>
 Press "f" to toggle fullscreen and ESC to exit
 <br/>

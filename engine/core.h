@@ -52,8 +52,13 @@ public:
     bool IsRunning() const { return m_Running; }
     std::string GetConfigFilePath() const { return m_ConfigFilePath; }
     std::shared_ptr<Window> GetWindow() const { return m_Window; }
+    void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
     double GetTime() const { return m_Window->GetTime(); }
     std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
+    void SetEntities(std::vector<Entity>* entities) { m_Window->SetEntities(entities); }
+
+    void AllowCursor()    { m_Window->AllowCursor(); }
+    void DisallowCursor() { m_Window->DisallowCursor(); }
 
 public:
 

@@ -54,7 +54,7 @@ public:
     Window() {}
     virtual ~Window() {}
     
-    virtual void* GetWindow() const = 0;
+    virtual void* GetBackendWindow() const = 0;
     virtual bool  IsOK() const = 0;
     virtual float GetWindowAspectRatio() const = 0;
     virtual void  SetWindowAspectRatio() = 0;
@@ -62,7 +62,6 @@ public:
     virtual void  OnUpdate() = 0;
     virtual uint  GetWidth() const = 0;
     virtual uint  GetHeight() const = 0;
-    //virtual std::shared_ptr<GraphicsContext> GetGraphicsContent() const = 0;
     virtual double GetTime() const = 0;
     //
     virtual void SetEventCallback(const EventCallbackFunction& callback) = 0;

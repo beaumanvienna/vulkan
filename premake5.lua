@@ -45,6 +45,7 @@ project "engine"
         "engine/platform/SDL",
         "engine/platform/Vulkan",
         "application",
+        "application/lucre",
         "resources",
         "vendor",
         "vendor/glfw/include",

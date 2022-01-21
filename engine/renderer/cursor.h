@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,52 +20,25 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include <chrono>
-#include <thread>
+#pragma once
 
-#include "core.h"
+#include <iostream>
+#include <memory>
+
 #include "engine.h"
-#include "instrumentation.h"
-#include "application.h"
 
-int main(int argc, char* argv[])
+class Cursor
 {
-    PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
+public:
 
-    std::unique_ptr<Engine> engine;
-    std::shared_ptr<Application> application;
+    ~Cursor() {}
 
-    {
-        PROFILE_SCOPE("engine startup");
-        engine = std::make_unique<Engine>("./");
-        
-        if (!engine->Start())
-        {
-            return -1;
-        }
-    }
-    {
-        PROFILE_SCOPE("application startup");
-        application = Application::Create();
-        if (!application->Start())
-        {
-            return -1;
-        }
-    }
+    virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) = 0;
+    virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) = 0;
+    virtual void DisallowCursor() = 0;
+    virtual void RestoreCursor() = 0;
+    virtual void AllowCursor() = 0;
 
-    LOG_CORE_INFO("entering main application");
-    while (engine->IsRunning())
-    {
-        {
-            PROFILE_SCOPE("OnUpdate()");
-            engine->OnUpdate();
-            application->OnUpdate();
-        }
-        std::this_thread::sleep_for(16ms);
-    }
+    static std::shared_ptr<Cursor> Create();
 
-    application->Shutdown();
-    engine->Quit();
-
-    PROFILE_END_SESSION();
 };

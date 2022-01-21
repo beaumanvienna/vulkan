@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,52 +20,34 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include <chrono>
-#include <thread>
+#pragma once
 
-#include "core.h"
 #include "engine.h"
-#include "instrumentation.h"
-#include "application.h"
+#include "entity.h"
 
-int main(int argc, char* argv[])
+namespace LucreApp
 {
-    PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
 
-    std::unique_ptr<Engine> engine;
-    std::shared_ptr<Application> application;
-
+    struct InputHandlerSpec
     {
-        PROFILE_SCOPE("engine startup");
-        engine = std::make_unique<Engine>("./");
-        
-        if (!engine->Start())
-        {
-            return -1;
-        }
-    }
+        float m_Deadzone{0.2f};
+        float m_Sensitivity{0.05f};
+    };
+
+    class InputHandler
     {
-        PROFILE_SCOPE("application startup");
-        application = Application::Create();
-        if (!application->Start())
-        {
-            return -1;
-        }
-    }
 
-    LOG_CORE_INFO("entering main application");
-    while (engine->IsRunning())
-    {
-        {
-            PROFILE_SCOPE("OnUpdate()");
-            engine->OnUpdate();
-            application->OnUpdate();
-        }
-        std::this_thread::sleep_for(16ms);
-    }
+    public:
 
-    application->Shutdown();
-    engine->Quit();
+        InputHandler(const InputHandlerSpec& spec);
+        ~InputHandler() {}
 
-    PROFILE_END_SESSION();
-};
+        void OnUpdate(Transform2DComponent& transform);
+
+    private:
+
+        float m_Deadzone;
+        float m_Sensitivity;
+
+    };
+}

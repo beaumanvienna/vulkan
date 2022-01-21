@@ -20,52 +20,56 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include <chrono>
-#include <thread>
+#pragma once
 
-#include "core.h"
+#include <memory>
+
 #include "engine.h"
-#include "instrumentation.h"
+#include "entity.h"
+#include "window.h"
+#include "core.h"
+#include "cursor.h"
+#include "inputHandler.h"
 #include "application.h"
 
-int main(int argc, char* argv[])
+namespace LucreApp
 {
-    PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
-
-    std::unique_ptr<Engine> engine;
-    std::shared_ptr<Application> application;
-
+    class Lucre : public Application
     {
-        PROFILE_SCOPE("engine startup");
-        engine = std::make_unique<Engine>("./");
-        
-        if (!engine->Start())
-        {
-            return -1;
-        }
-    }
-    {
-        PROFILE_SCOPE("application startup");
-        application = Application::Create();
-        if (!application->Start())
-        {
-            return -1;
-        }
-    }
 
-    LOG_CORE_INFO("entering main application");
-    while (engine->IsRunning())
-    {
-        {
-            PROFILE_SCOPE("OnUpdate()");
-            engine->OnUpdate();
-            application->OnUpdate();
-        }
-        std::this_thread::sleep_for(16ms);
-    }
+    public:
 
-    application->Shutdown();
-    engine->Quit();
+        Lucre();
+        ~Lucre() {}
 
-    PROFILE_END_SESSION();
-};
+        bool Start() override;
+        void Shutdown() override;
+        void OnUpdate() override;
+
+        static std::shared_ptr<Lucre> Create();
+
+    private:
+
+        void InitCursor();
+        void ShowCursor();
+        void HideCursor();
+
+        static void ConsoleInputHandler();
+        void LoadModel();
+
+    private:
+
+        static std::shared_ptr<Lucre> m_Instance;
+        static Engine* m_Engine;
+        std::vector<Entity> m_Entities;
+
+        std::shared_ptr<Window> m_Window;
+        std::shared_ptr<Cursor> m_Cursor;
+        std::shared_ptr<Cursor> m_EmptyCursor;
+        std::shared_ptr<Model> m_Model;
+
+        std::unique_ptr<InputHandler> m_InputHandler;
+        Transform2DComponent m_UserInput;
+
+    };
+}

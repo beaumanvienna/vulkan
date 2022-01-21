@@ -29,7 +29,8 @@
 bool VK_Window::m_GLFWIsInitialized = false;
 
 VK_Window::VK_Window(const WindowProperties& props)
-    : m_OK(false), m_IsFullscreen(false)
+    : m_OK(false), m_IsFullscreen(false),
+      m_AllowCursor(false)
 {
     m_WindowProperties.m_Title    = props.m_Title;
     m_WindowProperties.m_Width    = props.m_Width;
@@ -39,7 +40,6 @@ VK_Window::VK_Window(const WindowProperties& props)
     //m_WindowProperties.m_MousePosY= 0.0f;
     m_WindowProperties.m_FramebufferResized = false;
 
-    //m_AllowCursor = false;
     if (!m_GLFWIsInitialized)
     {
         // init glfw
@@ -329,28 +329,29 @@ bool VK_Window::InitGLFW()
     return true;
 }
 
-//void VK_Window::EnableMousePointer()
-//{
-//    if (m_AllowCursor)
-//    {
-//        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-//    }
-//}
-//
-//void VK_Window::DisableMousePointer()
-//{
-//    glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-//}
-//
-//void VK_Window::AllowCursor()
-//{
-//    m_AllowCursor = true;
-//}
-//void VK_Window::DisallowCursor()
-//{
-//    m_AllowCursor = false;
-//    DisableMousePointer();
-//}
+void VK_Window::EnableMousePointer()
+{
+    if (m_AllowCursor)
+    {
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+}
+
+void VK_Window::DisableMousePointer()
+{
+    glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void VK_Window::AllowCursor()
+{
+    m_AllowCursor = true;
+}
+void VK_Window::DisallowCursor()
+{
+    m_AllowCursor = false;
+    DisableMousePointer();
+}
+
 void VK_Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 {
     if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
@@ -613,26 +614,4 @@ void VK_Window::SetWindowAspectRatio()
 void VK_Window::SetWindowAspectRatio(int numer, int denom)
 {
     glfwSetWindowAspectRatio(m_Window, numer, denom);
-}
-void VK_Window::EnableMousePointer()
-{
-    if (m_AllowCursor)
-    {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-}
-
-void VK_Window::DisableMousePointer()
-{
-    glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-}
-
-void VK_Window::AllowCursor()
-{
-    m_AllowCursor = true;
-}
-void VK_Window::DisallowCursor()
-{
-    m_AllowCursor = false;
-    DisableMousePointer();
 }

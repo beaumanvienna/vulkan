@@ -24,36 +24,22 @@
 
 #include <memory>
 
-#include "engine.h"
-#include "entity.h"
-#include "window.h"
-#include "core.h"
-
 class Application
 {
 
 public:
 
-    Application();
-    ~Application() {}
+    Application() {}
+    virtual ~Application() {}
 
-    bool Start();
-    void Shutdown();
-    void OnUpdate();
+    virtual bool Start() = 0;
+    virtual void Shutdown() = 0;
+    virtual void OnUpdate() = 0;
 
     static std::shared_ptr<Application> Create();
 
 private:
 
-    static void ConsoleInputHandler();
-    void LoadModel();
-    void HandleInput(Transform2DComponent& transform);
-
-private:
-
     static std::shared_ptr<Application> m_Instance;
-    std::vector<Entity> m_Entities;
-    std::shared_ptr<Window> m_Window;
-    std::shared_ptr<Model> m_Model;
 
 };

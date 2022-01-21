@@ -58,7 +58,7 @@ public:
     void Shutdown();
     void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
     VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
-    void* GetWindow() const override { return (void*)m_Window; }
+    void* GetBackendWindow() const override { return (void*)m_Window; }
     //std::shared_ptr<GraphicsContext> GetGraphicsContent() const override { return m_GraphicsContext; }
     void OnUpdate() override;    
     uint GetWidth()  const override { return m_WindowProperties.m_Width; }
