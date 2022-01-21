@@ -29,6 +29,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm.hpp"
+#include "gtc/constants.hpp"
 
 #undef far
 #undef near

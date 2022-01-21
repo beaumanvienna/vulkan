@@ -22,8 +22,11 @@
 
 #pragma once
 
+#include <memory>
+
 #include "engine.h"
 #include "window.h"
+#include "entity.h"
 #include "VKdevice.h"
 #include "VKpipeline.h"
 #include "VKswapChain.h"
@@ -34,8 +37,9 @@
 
 struct VK_SimplePushConstantData
 {
-    glm::vec2 m_Offset;
-    alignas(16) glm::vec3 m_Color;
+    glm::mat2 m_Transform{1.0f};
+    glm::vec2 m_Offset{0.0f};
+    alignas(16) glm::vec3 m_Color{1.0f};
 };
 
 class VK_Window : public Window
@@ -69,7 +73,8 @@ public:
     void SetWindowAspectRatio(int numer, int denom) override;
     float GetWindowAspectRatio() const override { return m_WindowProperties.m_Width / (1.0f * m_WindowProperties.m_Height); }
     double GetTime() const override { return glfwGetTime(); }
-    void LoadModel(std::vector<Vertex>& vertices) override;
+    std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) override;
+    void SetEntities(std::vector<Entity>* entities) override { m_Entities = entities; }
 
     static void OnError(int errorCode, const char* description);
 
@@ -77,8 +82,6 @@ public:
     void DisableMousePointer() override;
     virtual void AllowCursor() override;
     virtual void DisallowCursor() override;
-
-protected:
 
 private:
 
@@ -88,6 +91,7 @@ private:
     void CreatePipelineLayout();
     void CreateCommandBuffers();
     void FreeCommandBuffers();
+    void RenderEntities(VkCommandBuffer commandBuffer);
 
     void RecreateSwapChain();
     void RecordCommandBuffer(int imageIndex);
@@ -119,10 +123,10 @@ private:
     std::shared_ptr<VK_Device> m_Device;
     std::unique_ptr<VK_Pipeline> m_Pipeline;
     std::unique_ptr<VK_SwapChain> m_SwapChain;
-    std::shared_ptr<VK_Model> m_Model;
     VkPipelineLayout m_PipelineLayout;
     std::vector<VkCommandBuffer> m_CommandBuffers;
-
+    std::vector<Entity>* m_Entities;
+    
     uint m_RefreshRate;
     bool m_IsFullscreen;
 

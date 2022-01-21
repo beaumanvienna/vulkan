@@ -32,3 +32,14 @@ Entity Entity::CreateEnity()
     
     return Entity{currentID++};
 }
+
+glm::mat2 Transform2DComponent::Mat2()
+{
+    auto scale = glm::mat2{{m_Scale.x, 0.0f} /* 1st column*/, {0.0f, m_Scale.y} /* 2nd column*/};
+    
+    const float s = glm::sin(m_Rotation);
+    const float c = glm::cos(m_Rotation);
+    auto rotation = glm::mat2{{c, s}, {-s, c}};
+
+    return rotation * scale;
+}

@@ -29,7 +29,7 @@
 #include "VKdevice.h"
 #include "model.h"
 
-class VK_Model
+class VK_Model : public Model
 {
 
 public:
@@ -43,19 +43,21 @@ public:
 public:
 
     VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
-    ~VK_Model();
+    ~VK_Model() override;
 
     VK_Model(const VK_Model&) = delete;
     VK_Model& operator=(const VK_Model&) = delete;
 
-    void CreateVertexBuffers(const std::vector<Vertex>& vertices);
+    void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
 
     void Bind(VkCommandBuffer commandBuffer);
     void Draw(VkCommandBuffer commandBuffer);
 
 private:
+
     std::shared_ptr<VK_Device> m_Device;
     VkBuffer m_VertexBuffer;
     VkDeviceMemory m_VertexBufferMemory;
     uint m_VertexCount;
+
 };

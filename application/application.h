@@ -40,19 +40,20 @@ public:
     bool Start();
     void Shutdown();
     void OnUpdate();
-    
+
     static std::shared_ptr<Application> Create();
 
 private:
 
     static void ConsoleInputHandler();
-    void LoadEntities();
-    void SubmitEnities();
+    void LoadModel();
+    void HandleInput(Transform2DComponent& transform);
 
 private:
 
     static std::shared_ptr<Application> m_Instance;
     std::vector<Entity> m_Entities;
     std::shared_ptr<Window> m_Window;
+    std::shared_ptr<Model> m_Model;
 
 };

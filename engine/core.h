@@ -27,9 +27,10 @@
 
 #include "event.h"
 #include "engine.h"
+#include "controller.h"
 #include "window.h"
 #include "audio.h"
-#include "controller.h"
+#include "model.h"
 
 class Engine
 {
@@ -52,7 +53,7 @@ public:
     std::string GetConfigFilePath() const { return m_ConfigFilePath; }
     std::shared_ptr<Window> GetWindow() const { return m_Window; }
     double GetTime() const { return m_Window->GetTime(); }
-    void LoadModel(std::vector<Vertex>& vertices) { m_Window->LoadModel(vertices); }
+    std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
 
 public:
 

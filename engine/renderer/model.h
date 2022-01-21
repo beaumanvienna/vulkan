@@ -29,3 +29,18 @@ struct Vertex
     glm::vec2 position;
     glm::vec3 color;
 };
+
+class Model
+{
+
+public:
+
+    Model() {}
+    virtual ~Model() {}
+
+    Model(const Model&) = delete;
+    Model& operator=(const Model&) = delete;
+
+    virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
+
+};

@@ -28,6 +28,7 @@
 #include "engine.h"
 #include "event.h"
 #include "model.h"
+#include "entity.h"
 
 typedef std::function<void(Event&)> EventCallbackFunction;
 
@@ -74,7 +75,8 @@ public:
     virtual void AllowCursor() = 0;
     virtual void DisallowCursor() = 0;
 
-    virtual void LoadModel(std::vector<Vertex>& vertices) = 0;
+    virtual std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) = 0;
+    virtual void SetEntities(std::vector<Entity>* entities) = 0;
     
     static std::unique_ptr<Window> Create(const WindowProperties& props);
 

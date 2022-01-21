@@ -463,50 +463,34 @@ void VK_Window::RecordCommandBuffer(int imageIndex)
     vkCmdSetViewport(m_CommandBuffers[imageIndex], 0, 1, &viewport);
     vkCmdSetScissor(m_CommandBuffers[imageIndex], 0, 1, &scissor);
 
-    m_Pipeline->Bind(m_CommandBuffers[imageIndex]);
-    m_Model->Bind(m_CommandBuffers[imageIndex]);
-
-    static auto sysTimeOld = GetTime();
-    auto sysTime = GetTime();
-    auto timeStep = sysTime - sysTimeOld;
-    sysTimeOld = sysTime;
-    static float xOffset = 0.0f;
-    const float X_SPEED = 1.0f;
-    xOffset = (xOffset > 2.0f ? 0.0f : xOffset + timeStep * X_SPEED);
-
-    // push constants
-    for (uint j = 0; j < 4; j++)
-    {
-        VK_SimplePushConstantData push{};
-        float actualOffsetX = xOffset * (j + 1);
-        push.m_Offset = glm::vec2(0.0f + actualOffsetX - 1.0f, -0.4f + j * 0.25f);
-        push.m_Color  = glm::vec3(0.0f, 0.0f, 0.2f + 0.2f * j);
-        vkCmdPushConstants(
-            m_CommandBuffers[imageIndex],
-            m_PipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(VK_SimplePushConstantData),
-            &push);
-        m_Model->Draw(m_CommandBuffers[imageIndex]);
-    }
+    RenderEntities(m_CommandBuffers[imageIndex]);
 
     vkCmdEndRenderPass(m_CommandBuffers[imageIndex]);
     if (vkEndCommandBuffer(m_CommandBuffers[imageIndex]) != VK_SUCCESS)
     {
         LOG_CORE_CRITICAL("recording of command buffer failed");
     }
+}
 
-    //VkViewport viewport{};
-    //viewport.x = 0.0f;
-    //viewport.y = 0.0f;
-    //viewport.width = static_cast<float>(lveSwapChain->getSwapChainExtent().width);
-    //viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
-    //viewport.minDepth = 0.0f;
-    //viewport.maxDepth = 1.0f;
-    //VkRect2D scissor{{0, 0}, lveSwapChain->getSwapChainExtent()};
-    //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+void VK_Window::RenderEntities(VkCommandBuffer commandBuffer)
+{
+    m_Pipeline->Bind(commandBuffer);
+    for (auto& entity : m_Entities[0])
+    {
+        VK_SimplePushConstantData push{};
+        push.m_Offset = entity.m_Transform2D.m_Translation;
+        push.m_Color  = entity.m_Color;
+        push.m_Transform = entity.m_Transform2D.Mat2();
+        vkCmdPushConstants(
+            commandBuffer,
+            m_PipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_SimplePushConstantData),
+            &push);
+        static_cast<VK_Model*>(entity.m_Model.get())->Bind(commandBuffer);
+        static_cast<VK_Model*>(entity.m_Model.get())->Draw(commandBuffer);
+    }
 }
 
 void VK_Window::RecreateSwapChain()
@@ -568,11 +552,12 @@ void VK_Window::DrawFrame()
         LOG_CORE_CRITICAL("failed to present swap chain image");
     }
 }
-void VK_Window::LoadModel(std::vector<Vertex>& vertices)
+
+std::shared_ptr<Model> VK_Window::LoadModel(std::vector<Vertex>& vertices)
 {
     ASSERT(m_Device != nullptr);
-
-    m_Model = std::make_shared<VK_Model>(m_Device, vertices);   
+    auto model = std::make_shared<VK_Model>(m_Device, vertices);
+    return std::move(model);
 }
 void VK_Window::CreateWindow()
 {

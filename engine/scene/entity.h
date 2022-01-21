@@ -25,12 +25,15 @@
 #include <memory>
 
 #include "engine.h"
-#include "VKmodel.h"
+#include "model.h"
 
 struct Transform2DComponent
 {
-    glm::vec2 m_Translation{};
-    glm::mat2 Mat2() { return glm::mat2{1.0f}; }
+    glm::vec2 m_Scale{1.0f, 1.0f};
+    float m_Rotation{0.0f};
+    glm::vec2 m_Translation{0.0f, 0.0f};
+    
+    glm::mat2 Mat2();
 };
 
 class Entity
@@ -55,7 +58,7 @@ public:
 
 public:
 
-    std::shared_ptr<VK_Model> m_Model{};
+    std::shared_ptr<Model> m_Model;
     glm::vec3 m_Color;
     Transform2DComponent m_Transform2D{};
 

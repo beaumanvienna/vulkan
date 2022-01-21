@@ -1,7 +1,11 @@
 # vulkan
-A Vulkan Render Engine
-
-
+A Vulkan Render Engine<br/>
+<br/>
+<br/>
+Features: Vulkan support, gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system<br/>
+<br/>
+Press "f" to toggle fullscreen and ESC to exit
+<br/>
 ## Build Instructions<br/>
 
 Ubuntu:<br/>
@@ -9,7 +13,7 @@ Ubuntu:<br/>
 sudo add-apt-repository ppa:beauman/marley<br/>
 sudo add-apt-repository universe<br/>
 sudo apt-get update<br/>
-sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev <br/>
+sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev libpulse-dev libibus-1.0-dev libglib2.0-dev libsamplerate0-dev libasound2-dev libudev-dev <br/>
 <br>
 <br>
 Get the Vulkan SDK from here:<br>
@@ -29,9 +33,6 @@ premake5 gmake2<br/>
 #e.g. "-j4" <br />
 #To use all available CPU cores, say:<br />
 export MAKEFLAGS=-j$(nproc)<br />
-<br />
-<br />
-Compile the shaders: ./scripts/compileShader.sh<br />
 <br />
 <br />
 Compile and run debug target: make verbose=1 && ./bin/Debug/engine <br/>
