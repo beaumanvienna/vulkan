@@ -27,26 +27,30 @@
 #include "settings/settings.h"
 #include "renderer/rendererAPI.h"
 
-class CoreSettings
+namespace GfxRenderEngine
 {
+
+    class CoreSettings
+    {
+        
+    public: 
     
-public: 
-
-    CoreSettings(SettingsManager* settingsManager)
-        : m_SettingsManager(settingsManager) {}
-
-    void InitDefaults();
-    void RegisterSettings();
-    void PrintSettings() const;
-
-    static std::string         m_EngineVersion;
-    static RendererAPI::API    m_RendererAPI;
-    static bool                m_EnableFullscreen;
-    static bool                m_EnableSystemSounds;
-    static std::string         m_BlacklistedDevice;
-
-private:
-
-    SettingsManager* m_SettingsManager;
-
-};
+        CoreSettings(SettingsManager* settingsManager)
+            : m_SettingsManager(settingsManager) {}
+    
+        void InitDefaults();
+        void RegisterSettings();
+        void PrintSettings() const;
+    
+        static std::string         m_EngineVersion;
+        static RendererAPI::API    m_RendererAPI;
+        static bool                m_EnableFullscreen;
+        static bool                m_EnableSystemSounds;
+        static std::string         m_BlacklistedDevice;
+    
+    private:
+    
+        SettingsManager* m_SettingsManager;
+    
+    };
+}

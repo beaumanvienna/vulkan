@@ -23,19 +23,23 @@
 #include "audio/audio.h"
 #include "platform/SDL/SDLaudio.h"
 
-std::shared_ptr<Audio> Audio::Create()
-{
-    std::shared_ptr<Audio> audio;
 
-    switch(GetBackend())
+namespace GfxRenderEngine
+{
+    std::shared_ptr<Audio> Audio::Create()
     {
-        case AudioBackend::SDL:
-            audio = std::make_shared<SDLAudio>();
-            break;
-        default:
-            audio = nullptr;
-            break;
+        std::shared_ptr<Audio> audio;
+    
+        switch(GetBackend())
+        {
+            case AudioBackend::SDL:
+                audio = std::make_shared<SDLAudio>();
+                break;
+            default:
+                audio = nullptr;
+                break;
+        }
+        Sound::Start();
+        return audio;
     }
-    Sound::Start();
-    return audio;
 }

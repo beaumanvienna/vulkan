@@ -36,56 +36,59 @@
     #include <windows.h>
 #endif
 
-namespace ResourceSystem
+namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> GetTextureFromMemory(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
-    const void* GetDataPointer(size_t& fileSize, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
-    bool GetResourceString(std::string_view& destination, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
-}
-
-#ifndef _MSC_VER
-
     namespace ResourceSystem
     {
-        const void* GetDataPointer(std::size_t& fileSize, const char* path);
+        std::shared_ptr<Texture> GetTextureFromMemory(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
+        const void* GetDataPointer(size_t& fileSize, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
+        bool GetResourceString(std::string_view& destination, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
     }
-
-#else
     
-    class Resource 
-    {
-    public:
+    #ifndef _MSC_VER
     
-        Resource(int resourceID, const std::string &resourceClass) 
+        namespace ResourceSystem
         {
-            m_HResource = FindResourceA(nullptr, MAKEINTRESOURCEA(resourceID), resourceClass.c_str());
-            m_HMemory   = LoadResource(nullptr, m_HResource);
-
-            m_Parameters.m_SizeBytes = SizeofResource(nullptr, m_HResource);
-            m_Parameters.m_DataPointer = LockResource(m_HMemory);
+            const void* GetDataPointer(std::size_t& fileSize, const char* path);
         }
-
-        std::size_t GetSize() const { return m_Parameters.m_SizeBytes; }
-        const void* GetDataPointer() const { return m_Parameters.m_DataPointer; }
-
-    public:
     
-        struct Parameters 
+    #else
+        
+        class Resource 
         {
-            std::size_t m_SizeBytes = 0;
-            void* m_DataPointer = nullptr;
+        public:
+        
+            Resource(int resourceID, const std::string &resourceClass) 
+            {
+                m_HResource = FindResourceA(nullptr, MAKEINTRESOURCEA(resourceID), resourceClass.c_str());
+                m_HMemory   = LoadResource(nullptr, m_HResource);
+    
+                m_Parameters.m_SizeBytes = SizeofResource(nullptr, m_HResource);
+                m_Parameters.m_DataPointer = LockResource(m_HMemory);
+            }
+    
+            std::size_t GetSize() const { return m_Parameters.m_SizeBytes; }
+            const void* GetDataPointer() const { return m_Parameters.m_DataPointer; }
+    
+        public:
+        
+            struct Parameters 
+            {
+                std::size_t m_SizeBytes = 0;
+                void* m_DataPointer = nullptr;
+            };
+    
+        private:
+            HRSRC m_HResource = nullptr;
+            HGLOBAL m_HMemory = nullptr;
+    
+            Parameters m_Parameters;
         };
-
-    private:
-        HRSRC m_HResource = nullptr;
-        HGLOBAL m_HMemory = nullptr;
-
-        Parameters m_Parameters;
-    };
-
-    namespace ResourceSystem
-    {
-        const void* GetDataPointer(std::size_t& fileSize, int resourceID, const std::string& resourceClass);
-    }
-
-#endif
+    
+        namespace ResourceSystem
+        {
+            const void* GetDataPointer(std::size_t& fileSize, int resourceID, const std::string& resourceClass);
+        }
+    
+    #endif
+}

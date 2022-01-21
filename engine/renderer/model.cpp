@@ -22,3 +22,6 @@
 
 #include "renderer/model.h"
 
+namespace GfxRenderEngine
+{
+}

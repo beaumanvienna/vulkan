@@ -25,19 +25,23 @@
 
 #include "VKcursor.h"
 
-std::shared_ptr<Cursor> Cursor::Create()
+namespace GfxRenderEngine
 {
-    std::shared_ptr<Cursor> cursor;
 
-    switch(RendererAPI::GetAPI())
+    std::shared_ptr<Cursor> Cursor::Create()
     {
-        case RendererAPI::VULKAN:
-            cursor = std::make_shared<VK_Cursor>();
-            break;
-        default:
-            cursor = nullptr;
-            break;
+        std::shared_ptr<Cursor> cursor;
+    
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                cursor = std::make_shared<VK_Cursor>();
+                break;
+            default:
+                cursor = nullptr;
+                break;
+        }
+    
+        return cursor;
     }
-
-    return cursor;
 }

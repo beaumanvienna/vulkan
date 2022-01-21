@@ -25,45 +25,52 @@
 #include <functional>
 
 #include "engine.h"
-    
+
 #ifdef LINUX
 
     #include "SoundDeviceManager.h"
 
-    class Sound
+    namespace GfxRenderEngine
     {
 
-    public:
-        static void Start();
-        static uint GetDesktopVolume();
-        static std::string& GetDefaultOutputDevice();
-        static void SetDesktopVolume(uint desktopVolume);
-        static std::vector<std::string>& GetOutputDeviceList();
-        static void SetOutputDevice(const std::string& outputDevice);
-        static void SetCallback(std::function<void(const LibPAmanager::Event&)> callback);
-
-    private:
-
-        static LibPAmanager::SoundDeviceManager* m_SoundDeviceManager;
-
-    };
+        class Sound
+        {
+    
+        public:
+            static void Start();
+            static uint GetDesktopVolume();
+            static std::string& GetDefaultOutputDevice();
+            static void SetDesktopVolume(uint desktopVolume);
+            static std::vector<std::string>& GetOutputDeviceList();
+            static void SetOutputDevice(const std::string& outputDevice);
+            static void SetCallback(std::function<void(const LibPAmanager::Event&)> callback);
+    
+        private:
+    
+            static LibPAmanager::SoundDeviceManager* m_SoundDeviceManager;
+    
+        };
+    }
 
 #else
 
-
-    class Sound
+    namespace GfxRenderEngine
     {
-
-    public:
-        static void Start();
-        static uint GetDesktopVolume();
-        static std::string& GetDefaultOutputDevice();
-        static void SetDesktopVolume(uint desktopVolume);
-        static std::vector<std::string>& GetOutputDeviceList();
-        static void SetOutputDevice(const std::string& outputDevice);
-
-    private:
-
-    };
+        class Sound
+        {
+    
+        public:
+            static void Start();
+            static uint GetDesktopVolume();
+            static std::string& GetDefaultOutputDevice();
+            static void SetDesktopVolume(uint desktopVolume);
+            static std::vector<std::string>& GetOutputDeviceList();
+            static void SetOutputDevice(const std::string& outputDevice);
+    
+        private:
+    
+        };
+    }
 
 #endif
+

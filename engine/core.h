@@ -35,62 +35,65 @@
 #include "audio/audio.h"
 #include "renderer/model.h"
 
-class Engine
+namespace GfxRenderEngine
 {
-public:
-
-
-public:
-
-    Engine(const std::string& configFilePath);
-    ~Engine();
-
-    bool Start();
-    void OnUpdate();
-    void OnEvent(Event& event);
-    void OnRender();
-    void Shutdown();
-    void Quit();
-
-    void InitSettings();
-    void ApplyAppSettings();
-    bool IsPaused() const { return m_Paused; }
-    bool IsRunning() const { return m_Running; }
-    std::string& GetHomeDirectory() { return m_HomeDir; }
-    std::string GetConfigFilePath() const { return m_ConfigFilePath; }
-    std::shared_ptr<Window> GetWindow() const { return m_Window; }
-    void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
-    double GetTime() const { return m_Window->GetTime(); }
-    std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
-    void SetEntities(std::vector<Entity>* entities) { m_Window->SetEntities(entities); }
-    bool IsFullscreen() const { return m_Window->IsFullscreen(); }
-
-    void EnableMousePointer() { m_Window->EnableMousePointer(); }
-    void DisableMousePointer() { m_Window->DisableMousePointer(); }
-    void AllowCursor()    { m_Window->AllowCursor(); }
-    void DisallowCursor() { m_Window->DisallowCursor(); }
-
-public:
-
-    static Engine* m_Engine;
-    static SettingsManager m_SettingsManager;
-    CoreSettings m_CoreSettings{&m_SettingsManager};
-
-private:
-
-    static void SignalHandler(int signal);
-    void ToggleFullscreen();
-    void AudioCallback(int eventType);
-
-private:
-
-    std::string m_HomeDir;
-    std::string m_ConfigFilePath;
-    std::shared_ptr<Window> m_Window;
-    std::shared_ptr<Audio> m_Audio;
-    Controller m_Controller;
-    Timer m_DisableMousePointerTimer;
-
-    bool m_Running, m_Paused;
-
-};
+    class Engine
+    {
+    public:
+    
+    
+    public:
+    
+        Engine(const std::string& configFilePath);
+        ~Engine();
+    
+        bool Start();
+        void OnUpdate();
+        void OnEvent(Event& event);
+        void OnRender();
+        void Shutdown();
+        void Quit();
+    
+        void InitSettings();
+        void ApplyAppSettings();
+        bool IsPaused() const { return m_Paused; }
+        bool IsRunning() const { return m_Running; }
+        std::string& GetHomeDirectory() { return m_HomeDir; }
+        std::string GetConfigFilePath() const { return m_ConfigFilePath; }
+        std::shared_ptr<Window> GetWindow() const { return m_Window; }
+        void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
+        double GetTime() const { return m_Window->GetTime(); }
+        std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
+        void SetEntities(std::vector<Entity>* entities) { m_Window->SetEntities(entities); }
+        bool IsFullscreen() const { return m_Window->IsFullscreen(); }
+    
+        void EnableMousePointer() { m_Window->EnableMousePointer(); }
+        void DisableMousePointer() { m_Window->DisableMousePointer(); }
+        void AllowCursor()    { m_Window->AllowCursor(); }
+        void DisallowCursor() { m_Window->DisallowCursor(); }
+    
+    public:
+    
+        static Engine* m_Engine;
+        static SettingsManager m_SettingsManager;
+        CoreSettings m_CoreSettings{&m_SettingsManager};
+    
+    private:
+    
+        static void SignalHandler(int signal);
+        void ToggleFullscreen();
+        void AudioCallback(int eventType);
+    
+    private:
+    
+        std::string m_HomeDir;
+        std::string m_ConfigFilePath;
+        std::shared_ptr<Window> m_Window;
+        std::shared_ptr<Audio> m_Audio;
+        Controller m_Controller;
+        Timer m_DisableMousePointerTimer;
+    
+        bool m_Running, m_Paused;
+    
+    };
+}

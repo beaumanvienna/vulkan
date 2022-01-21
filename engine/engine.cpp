@@ -32,12 +32,12 @@ int main(int argc, char* argv[])
 {
     PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
 
-    std::unique_ptr<Engine> engine;
-    std::shared_ptr<Application> application;
+    std::unique_ptr<GfxRenderEngine::Engine> engine;
+    std::shared_ptr<GfxRenderEngine::Application> application;
 
     {
         PROFILE_SCOPE("engine startup");
-        engine = std::make_unique<Engine>("./");
+        engine = std::make_unique<GfxRenderEngine::Engine>("./");
         
         if (!engine->Start())
         {
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     }
     {
         PROFILE_SCOPE("application startup");
-        application = Application::Create();
+        application = GfxRenderEngine::Application::Create();
         if (!application->Start())
         {
             return -1;

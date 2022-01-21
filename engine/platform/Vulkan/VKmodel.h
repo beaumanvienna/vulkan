@@ -28,36 +28,38 @@
 #include "engine.h"
 #include "VKdevice.h"
 #include "renderer/model.h"
-
-class VK_Model : public Model
+namespace GfxRenderEngine
 {
-
-public:
-
-    struct VK_Vertex : public Vertex
+    class VK_Model : public Model
     {
-        static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
-        static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+    
+    public:
+    
+        struct VK_Vertex : public Vertex
+        {
+            static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
+            static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+        };
+    
+    public:
+    
+        VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
+        ~VK_Model() override;
+    
+        VK_Model(const VK_Model&) = delete;
+        VK_Model& operator=(const VK_Model&) = delete;
+    
+        void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
+    
+        void Bind(VkCommandBuffer commandBuffer);
+        void Draw(VkCommandBuffer commandBuffer);
+    
+    private:
+    
+        std::shared_ptr<VK_Device> m_Device;
+        VkBuffer m_VertexBuffer;
+        VkDeviceMemory m_VertexBufferMemory;
+        uint m_VertexCount;
+    
     };
-
-public:
-
-    VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
-    ~VK_Model() override;
-
-    VK_Model(const VK_Model&) = delete;
-    VK_Model& operator=(const VK_Model&) = delete;
-
-    void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
-
-    void Bind(VkCommandBuffer commandBuffer);
-    void Draw(VkCommandBuffer commandBuffer);
-
-private:
-
-    std::shared_ptr<VK_Device> m_Device;
-    VkBuffer m_VertexBuffer;
-    VkDeviceMemory m_VertexBufferMemory;
-    uint m_VertexCount;
-
-};
+}

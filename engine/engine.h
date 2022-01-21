@@ -41,17 +41,17 @@
 #define BIT(x) (1 << (x))
 #define CastToFloat(x) (((float*)(&x))[0])
 
-#define LOG_CORE_TRACE(...)    Log::GetLogger()->trace(__VA_ARGS__)
-#define LOG_CORE_INFO(...)     Log::GetLogger()->info(__VA_ARGS__)
-#define LOG_CORE_WARN(...)     Log::GetLogger()->warn(__VA_ARGS__)
-#define LOG_CORE_ERROR(...)    Log::GetLogger()->error(__VA_ARGS__)
-#define LOG_CORE_CRITICAL(...) Log::GetLogger()->critical(__VA_ARGS__)
+#define LOG_CORE_TRACE(...)     GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
+#define LOG_CORE_INFO(...)      GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
+#define LOG_CORE_WARN(...)      GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
+#define LOG_CORE_ERROR(...)     GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
+#define LOG_CORE_CRITICAL(...)  GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
 
-#define LOG_APP_TRACE(...)    Log::GetAppLogger()->trace(__VA_ARGS__)
-#define LOG_APP_INFO(...)     Log::GetAppLogger()->info(__VA_ARGS__)
-#define LOG_APP_WARN(...)     Log::GetAppLogger()->warn(__VA_ARGS__)
-#define LOG_APP_ERROR(...)    Log::GetAppLogger()->error(__VA_ARGS__)
-#define LOG_APP_CRITICAL(...) Log::GetAppLogger()->critical(__VA_ARGS__)
+#define LOG_APP_TRACE(...)      GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
+#define LOG_APP_INFO(...)       GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
+#define LOG_APP_WARN(...)       GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
+#define LOG_APP_ERROR(...)      GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
+#define LOG_APP_CRITICAL(...)   GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
 
 typedef uint8_t  uchar;
 typedef uint32_t uint;
@@ -59,6 +59,7 @@ typedef int64_t  int64;
 typedef uint64_t uint64;
 
 using namespace std::chrono_literals;
+using namespace GfxRenderEngine;
 
 #define ENUM_CLASS_BITOPS(T) \
     static inline T operator |(const T &lhs, const T &rhs) { \

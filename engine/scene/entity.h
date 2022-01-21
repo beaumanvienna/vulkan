@@ -27,47 +27,51 @@
 #include "engine.h"
 #include "renderer/model.h"
 
-struct Transform2DComponent
+namespace GfxRenderEngine
 {
-    glm::vec2 m_Scale{1.0f, 1.0f};
-    float m_Rotation{0.0f};
-    glm::vec2 m_Translation{0.0f, 0.0f};
+
+    struct Transform2DComponent
+    {
+        glm::vec2 m_Scale{1.0f, 1.0f};
+        float m_Rotation{0.0f};
+        glm::vec2 m_Translation{0.0f, 0.0f};
+        
+        glm::mat2 Mat2();
+    };
     
-    glm::mat2 Mat2();
-};
-
-class Entity
-{
-
-public:
-
-    using id_t = uint;
-
-public:
-
-    ~Entity();
-
-    Entity(const Entity&) = delete;
-    Entity& operator=(const Entity&) = delete;
-    Entity(Entity&&) = default;
-    Entity& operator=(Entity&&) = default;
-
-    id_t GetID() const { return m_ID; }
-
-    static Entity CreateEnity();
-
-public:
-
-    std::shared_ptr<Model> m_Model;
-    glm::vec3 m_Color;
-    Transform2DComponent m_Transform2D{};
-
-private:
-
-    Entity(id_t id): m_ID(id) {}
-
-private:
-
-    id_t m_ID;
-
-};
+    class Entity
+    {
+    
+    public:
+    
+        using id_t = uint;
+    
+    public:
+    
+        ~Entity();
+    
+        Entity(const Entity&) = delete;
+        Entity& operator=(const Entity&) = delete;
+        Entity(Entity&&) = default;
+        Entity& operator=(Entity&&) = default;
+    
+        id_t GetID() const { return m_ID; }
+    
+        static Entity CreateEnity();
+    
+    public:
+    
+        std::shared_ptr<Model> m_Model;
+        glm::vec3 m_Color;
+        Transform2DComponent m_Transform2D{};
+    
+    private:
+    
+        Entity(id_t id): m_ID(id) {}
+    
+    private:
+    
+        id_t m_ID;
+    
+    };
+}

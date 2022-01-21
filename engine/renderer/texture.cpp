@@ -23,35 +23,39 @@
 #include "renderer/rendererAPI.h"
 #include "renderer/texture.h"
 
-std::shared_ptr<Texture> Texture::Create()
+namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> texture;
 
-    switch(RendererAPI::GetAPI())
+    std::shared_ptr<Texture> Texture::Create()
     {
-        case RendererAPI::OPENGL:
-            texture = nullptr;
-            break;
-        default:
-            texture = nullptr;
-            break;
+        std::shared_ptr<Texture> texture;
+    
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::OPENGL:
+                texture = nullptr;
+                break;
+            default:
+                texture = nullptr;
+                break;
+        }
+    
+        return texture;
     }
-
-    return texture;
-}
-std::shared_ptr<Texture> Texture::Create(uint ID, int internalFormat, int dataFormat, int type)
-{
-    std::shared_ptr<Texture> texture;
-
-    switch(RendererAPI::GetAPI())
+    std::shared_ptr<Texture> Texture::Create(uint ID, int internalFormat, int dataFormat, int type)
     {
-        case RendererAPI::OPENGL:
-            texture = nullptr;
-            break;
-        default:
-            texture = nullptr;
-            break;
+        std::shared_ptr<Texture> texture;
+    
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::OPENGL:
+                texture = nullptr;
+                break;
+            default:
+                texture = nullptr;
+                break;
+        }
+    
+        return texture;
     }
-
-    return texture;
 }

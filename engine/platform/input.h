@@ -35,40 +35,43 @@
 #include "platform/mouseButtonCodes.h"
 #include "platform/keyCodes.h"
 
-class Input
+namespace GfxRenderEngine
 {
-
-public:
-    static void Start(Controller* controller);
-
-    // keyboard
-    static bool IsKeyPressed(const KeyCode key);
-
-    // mouse
-    static bool IsMouseButtonPressed(const MouseCode button);
-    static glm::vec2 GetMousePosition();
-    static float GetMouseX();
-    static float GetMouseY();
+    class Input
+    {
     
-    // controller
-    static glm::vec2 GetControllerStick(const int indexID, Controller::ControllerSticks stick);
-    static float GetControllerTrigger(const int indexID, Controller::Axis axis);
-    static bool IsControllerButtonPressed(const int indexID, const Controller::ControllerCode button);
-    static uint GetControllerCount();
-    static int GetActiveController();
-    static void StartControllerConfig(int controllerID);
-    static bool ConfigurationRunning();
-    static int GetConfigurationStep();
-    static int GetConfigurationActiveController();
-    static int ControllerMappingCreated();
-    static std::string GetControlerName(int controllerID);
-    static void GetControllerGUID(int controllerID, std::string& guid);
+    public:
+        static void Start(Controller* controller);
     
-    static void* GetControllerJoy(const int indexID);
-    static void* GetControllerGamecontroller(const int indexID);
-
-private:
-
-    static Controller* m_Controller;
-
-};
+        // keyboard
+        static bool IsKeyPressed(const KeyCode key);
+    
+        // mouse
+        static bool IsMouseButtonPressed(const MouseCode button);
+        static glm::vec2 GetMousePosition();
+        static float GetMouseX();
+        static float GetMouseY();
+        
+        // controller
+        static glm::vec2 GetControllerStick(const int indexID, Controller::ControllerSticks stick);
+        static float GetControllerTrigger(const int indexID, Controller::Axis axis);
+        static bool IsControllerButtonPressed(const int indexID, const Controller::ControllerCode button);
+        static uint GetControllerCount();
+        static int GetActiveController();
+        static void StartControllerConfig(int controllerID);
+        static bool ConfigurationRunning();
+        static int GetConfigurationStep();
+        static int GetConfigurationActiveController();
+        static int ControllerMappingCreated();
+        static std::string GetControlerName(int controllerID);
+        static void GetControllerGUID(int controllerID, std::string& guid);
+        
+        static void* GetControllerJoy(const int indexID);
+        static void* GetControllerGamecontroller(const int indexID);
+    
+    private:
+    
+        static Controller* m_Controller;
+    
+    };
+}

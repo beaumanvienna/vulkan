@@ -25,28 +25,32 @@
 #include <functional>
 
 #include "engine.h"
+namespace GfxRenderEngine
 
-typedef uint (*TimerCallbackFunction) (uint, void*);
-
-class Timer
 {
-    
-public:
 
-    Timer(uint interval);
-    Timer(uint interval, TimerCallbackFunction& callback);
-    ~Timer();
+    typedef uint (*TimerCallbackFunction) (uint, void*);
     
-    void Start();
-    void Stop();
-    int GetID() const { return m_TimerID; }
-    void SetTimerInterval(uint interval) { m_Interval = interval; }
-    void SetEventCallback(const TimerCallbackFunction& callback);
+    class Timer
+    {
+        
+    public:
     
-private:
-
-    uint m_Interval;
-    int m_TimerID;
-    TimerCallbackFunction m_TimerCallback;
-
-};
+        Timer(uint interval);
+        Timer(uint interval, TimerCallbackFunction& callback);
+        ~Timer();
+        
+        void Start();
+        void Stop();
+        int GetID() const { return m_TimerID; }
+        void SetTimerInterval(uint interval) { m_Interval = interval; }
+        void SetEventCallback(const TimerCallbackFunction& callback);
+        
+    private:
+    
+        uint m_Interval;
+        int m_TimerID;
+        TimerCallbackFunction m_TimerCallback;
+    
+    };
+}

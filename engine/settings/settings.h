@@ -33,49 +33,52 @@
 #include "engine.h"
 #include "yaml-cpp/yaml.h"
 
-class SettingsManager
+namespace GfxRenderEngine
 {
-public:
 
-    SettingsManager();
-
-    void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
-
-    void SaveToFile();
-    void SaveToFile(const std::string& filepath);
-
-    bool LoadFromFile();
-    bool LoadFromFile(const std::string& filepath);
-    bool SettingsLoadedFromFile() const { return m_SettingsLoadedFromFile; }
-    
-    void ApplySettings();
-    void PrintSettings() const;
-    
-    template <typename T>
-    void PushSetting(std::string key, T* value); 
-
-private:
-
-    enum class ElementType
+    class SettingsManager
     {
-        TYPE_INT,
-        TYPE_BOOL,
-        TYPE_STRING,
-        TYPE_RENDERERAPI_API
+    public:
+    
+        SettingsManager();
+    
+        void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
+    
+        void SaveToFile();
+        void SaveToFile(const std::string& filepath);
+    
+        bool LoadFromFile();
+        bool LoadFromFile(const std::string& filepath);
+        bool SettingsLoadedFromFile() const { return m_SettingsLoadedFromFile; }
+        
+        void ApplySettings();
+        void PrintSettings() const;
+        
+        template <typename T>
+        void PushSetting(std::string key, T* value); 
+    
+    private:
+    
+        enum class ElementType
+        {
+            TYPE_INT,
+            TYPE_BOOL,
+            TYPE_STRING,
+            TYPE_RENDERERAPI_API
+        };
+    
+        struct ListElement
+        {
+            ElementType m_Type;
+            void* m_Pointer;
+        };
+    
+    private:
+    
+        std::string m_Filepath;
+        bool m_SettingsLoadedFromFile;
+        YAML::Node m_YAMLData;
+        std::map<std::string, ListElement> m_Settings;
+    
     };
-
-    struct ListElement
-    {
-        ElementType m_Type;
-        void* m_Pointer;
-    };
-
-private:
-
-    std::string m_Filepath;
-    bool m_SettingsLoadedFromFile;
-    YAML::Node m_YAMLData;
-    std::map<std::string, ListElement> m_Settings;
-
-};
-
+}
