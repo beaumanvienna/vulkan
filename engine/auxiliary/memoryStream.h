@@ -25,7 +25,7 @@
 #include <iostream>
 #include <streambuf>
 
-#include "resources.h"
+#include "resources/resources.h"
 
 class memoryBuffer : public std::basic_streambuf<char>
 {

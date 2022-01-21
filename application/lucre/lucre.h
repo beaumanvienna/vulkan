@@ -24,11 +24,12 @@
 
 #include <memory>
 
-#include "engine.h"
-#include "entity.h"
-#include "window.h"
 #include "core.h"
-#include "cursor.h"
+#include "engine.h"
+#include "scene/entity.h"
+#include "platform/window.h"
+#include "renderer/cursor.h"
+
 #include "inputHandler.h"
 #include "application.h"
 #include "appSettings.h"

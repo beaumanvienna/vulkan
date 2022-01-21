@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "engine.h"
-#include "model.h"
+#include "renderer/model.h"
 
 struct Transform2DComponent
 {

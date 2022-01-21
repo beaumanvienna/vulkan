@@ -30,7 +30,7 @@
 #include <iostream>
 
 #include "engine.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "SDL_mixer.h"
 
 class SDLAudio: public Audio

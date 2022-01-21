@@ -25,12 +25,12 @@
 #include <thread>
 
 #include "core.h"
-#include "file.h"
 #include "engine.h"
-#include "instrumentation.h"
-#include "applicationEvent.h"
-#include "mouseEvent.h"
-#include "keyEvent.h"
+#include "auxiliary/file.h"
+#include "auxiliary/instrumentation.h"
+#include "events/applicationEvent.h"
+#include "events/mouseEvent.h"
+#include "events/keyEvent.h"
 
 Engine* Engine::m_Engine = nullptr;
 SettingsManager Engine::m_SettingsManager;

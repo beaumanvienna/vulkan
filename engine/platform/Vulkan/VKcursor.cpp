@@ -20,9 +20,10 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "VKcursor.h"
-#include "stb_image.h"
 #include "core.h"
+#include "stb_image.h"
+
+#include "VKcursor.h"
 
 VK_Cursor::VK_Cursor()
     : m_Width(0), m_Height(0), m_BitsPerPixel(0),

@@ -1,41 +1,39 @@
--- premake5.lua
-workspace "vulkanRenderEngine"
-    architecture "x86_64"
-    startproject "lucre"
-    configurations 
-    {
-        "Debug",
-        "Release",
-        "Dist"
-    }
-
-project "lucre"
+-- engine.lua
+project "engine"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     targetdir "bin/%{cfg.buildcfg}"
 
     defines
     {
-        "LUCRE_VERSION=\"0.1.1\"",
+        "ENGINE_VERSION=\"0.1.1\"",
+        "PROFILING"
     }
 
     files 
     {
-        "application/**.h", 
-        "application/**.cpp",
+        "engine/**.h", 
+        "engine/**.cpp",
+        "resources/resources.cpp",
+        "vendor/glfw/**.h", 
+        "vendor/glfw/**.cpp",
+        "vendor/stb/**.cpp",
     }
 
     includedirs 
     {
         "./",
-        "application",
-        "application/lucre",
         "engine",
-        "resources",
-        "vendor/sdl/include",
-        "vendor/spdlog/include",
-        "vendor/yaml-cpp/include",
+        "engine/platform/Vulkan",
+        "vendor",
+        "vendor/glfw/include",
+        "vendor/stb",
         "vendor/glm",
+        "vendor/spdlog/include",
+        "vendor/sdl/include",
+        "vendor/sdl_mixer/include",
+        "vendor/yaml-cpp/include",
     }
 
     libdirs
@@ -45,22 +43,6 @@ project "lucre"
     flags
     {
         "MultiProcessorCompile"
-    }
-
-    links
-    {
-        "engine",
-        "glfw3",
-        "sdl_mixer",
-        "sdl",
-        "libvorbis",
-        "libogg",
-        "yaml-cpp",
-    }
-
-    prebuildcommands
-    {
-        "scripts/compileShaders.sh"
     }
 
     filter "system:linux"
@@ -73,9 +55,11 @@ project "lucre"
 
         files 
         { 
+            "resources/gnuEmbeddedResources.cpp"
         }
         includedirs 
         {
+            "/usr/include",
             "vendor/pamanager/libpamanager/src",
 
             -- resource system: glib-2.0
@@ -88,17 +72,6 @@ project "lucre"
         }
         links
         {
-            "m",
-            "dl", 
-            "vulkan",
-            "pthread",
-            "X11",
-            "Xrandr",
-            "Xi",
-            "libpamanager",
-            "pulse",
-            "glib-2.0",
-            "gio-2.0",
         }
         libdirs
         {
@@ -117,18 +90,6 @@ project "lucre"
         }
         links
         {
-            "imagehlp", 
-            "dinput8", 
-            "dxguid", 
-            "user32", 
-            "gdi32", 
-            "imm32", 
-            "ole32",
-            "oleaut32",
-            "shell32",
-            "version",
-            "uuid",
-            "Setupapi",
         }
         libdirs 
         {
@@ -137,12 +98,10 @@ project "lucre"
     filter { "configurations:Debug" }
         defines { "DEBUG" }
         symbols "On"
-        kind "ConsoleApp"
 
     filter { "configurations:Release" }
         defines { "NDEBUG" }
         optimize "On"
-        kind "ConsoleApp"
 
     filter { "configurations:Dist" }
         defines {
@@ -150,7 +109,24 @@ project "lucre"
             "DISTRIBUTION_BUILD"
         }
         optimize "On"
-        kind "WindowedApp"
 
-    include "engine.lua"
+    include "vendor/glfw.lua"
+    include "vendor/yaml.lua"
+    include "vendor/SPIRV-Cross.lua"
+    include "vendor/shaderc.lua"
+    include "vendor/sdl_mixer.lua"
+    include "vendor/sdl.lua"
 
+    if os.host() == "linux" then
+
+        include "vendor/pamanager/libpamanager/libpamanager.lua"
+
+    end
+
+    if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2") ) then
+
+        project "resource-system-gnu"
+            kind "StaticLib"
+            os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.cpp --sourcedir=resources/ --generate-source")
+            os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.h   --sourcedir=resources/ --generate-header")
+    end

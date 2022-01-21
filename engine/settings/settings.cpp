@@ -28,8 +28,8 @@
 #include <fstream>
 #include <filesystem>
 
-#include "settings.h"
-#include "rendererAPI.h"
+#include "settings/settings.h"
+#include "renderer/rendererAPI.h"
 
 SettingsManager::SettingsManager()
     : m_Filepath("engine.cfg")

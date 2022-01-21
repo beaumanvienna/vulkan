@@ -24,13 +24,13 @@
 #include <filesystem>
 #include <cmath>
 
-#include "controller.h"
-#include "controllerEvent.h"
-#include "joystickEvent.h"
-#include "input.h"
-#include "resources.h"
-#include "memoryStream.h"
 #include "core.h"
+#include "platform/input.h"
+#include "events/joystickEvent.h"
+#include "events/controllerEvent.h"
+#include "platform/SDL/controller.h"
+#include "auxiliary/memoryStream.h"
+#include "resources/resources.h"
 
 ControllerConfiguration Controller::m_ControllerConfiguration;
 

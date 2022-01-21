@@ -20,8 +20,9 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "rendererAPI.h"
-#include "cursor.h"
+#include "renderer/rendererAPI.h"
+#include "renderer/cursor.h"
+
 #include "VKcursor.h"
 
 std::shared_ptr<Cursor> Cursor::Create()

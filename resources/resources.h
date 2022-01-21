@@ -25,11 +25,11 @@
 #include <memory>
 #include <iostream>
 
-#include "texture.h"
-#include "windowsEmbeddedResources.h"
+#include "renderer/texture.h"
+#include "resources/windowsEmbeddedResources.h"
 
 #ifndef _MSC_VER
-    #include "gnuEmbeddedResources.h"
+    #include "resources/gnuEmbeddedResources.h"
 #else
     #include <cstddef>
     #include <string_view>

@@ -20,8 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "audio.h"
-#include "SDLaudio.h"
+#include "audio/audio.h"
+#include "platform/SDL/SDLaudio.h"
 
 std::shared_ptr<Audio> Audio::Create()
 {

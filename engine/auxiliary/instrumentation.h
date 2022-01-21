@@ -36,18 +36,18 @@
     #include <thread>
     #include <mutex>
 
-	#if (defined(__FUNCSIG__) || defined(_MSC_VER))
-		#define FUNC_SIGNATURE __FUNCSIG__
+    #if (defined(__FUNCSIG__) || defined(_MSC_VER))
+        #define FUNC_SIGNATURE __FUNCSIG__
     #elif defined(__GNUC__)
         #define FUNC_SIGNATURE __PRETTY_FUNCTION__
-	#endif
+    #endif
 
-	#define PROFILE_BEGIN_SESSION(name, filepath) ::Instrumentation::SessionManager::Get().Begin(name, filepath)
-	#define PROFILE_END_SESSION() ::Instrumentation::SessionManager::Get().End()
+    #define PROFILE_BEGIN_SESSION(name, filepath) ::Instrumentation::SessionManager::Get().Begin(name, filepath)
+    #define PROFILE_END_SESSION() ::Instrumentation::SessionManager::Get().End()
 
     #define PROFILE_SCOPE_LINE2(name, line) ::Instrumentation::Timer timer##line(name)
-	#define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
-	#define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
+    #define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
+    #define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
     #define PROFILE_FUNCTION() PROFILE_SCOPE(FUNC_SIGNATURE)
 
     namespace Instrumentation
@@ -115,9 +115,9 @@
     }
 
 #else
-	#define PROFILE_BEGIN_SESSION(name, filepath)
-	#define PROFILE_END_SESSION()
-	#define PROFILE_SCOPE(name)
-	#define PROFILE_FUNCTION()
+    #define PROFILE_BEGIN_SESSION(name, filepath)
+    #define PROFILE_END_SESSION()
+    #define PROFILE_SCOPE(name)
+    #define PROFILE_FUNCTION()
 #endif
 

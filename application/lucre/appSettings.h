@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-#include "settings.h"
+#include "settings/settings.h"
 
 namespace LucreApp
 {

@@ -23,7 +23,7 @@
 #pragma once
 
 #include "engine.h"
-#include "entity.h"
+#include "scene/entity.h"
 
 namespace LucreApp
 {

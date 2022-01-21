@@ -30,10 +30,10 @@
 #include <memory>
 
 #include "engine.h"
-#include "controller.h"
-#include "controllerEvent.h"
-#include "mouseButtonCodes.h"
-#include "keyCodes.h"
+#include "SDL/controller.h"
+#include "events/controllerEvent.h"
+#include "platform/mouseButtonCodes.h"
+#include "platform/keyCodes.h"
 
 class Input
 {

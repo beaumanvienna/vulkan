@@ -24,8 +24,8 @@
 
 #include <iostream>
 
-#include "settings.h"
-#include "rendererAPI.h"
+#include "settings/settings.h"
+#include "renderer/rendererAPI.h"
 
 class CoreSettings
 {

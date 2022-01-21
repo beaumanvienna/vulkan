@@ -26,9 +26,9 @@
 #include <memory>
 
 #include "engine.h"
-#include "event.h"
-#include "model.h"
-#include "entity.h"
+#include "events/event.h"
+#include "renderer/model.h"
+#include "scene/entity.h"
 
 typedef std::function<void(Event&)> EventCallbackFunction;
 

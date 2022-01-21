@@ -28,8 +28,8 @@
 #pragma once
 
 #include "engine.h"
-#include "event.h"
-#include "keyCodes.h"
+#include "events/event.h"
+#include "platform/keyCodes.h"
 
 class KeyEvent : public Event
 {

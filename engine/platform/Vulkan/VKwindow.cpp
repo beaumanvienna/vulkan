@@ -22,11 +22,12 @@
 
 #include <memory>
 
-#include "VKwindow.h"
 #include "coreSettings.h"
-#include "applicationEvent.h"
-#include "mouseEvent.h"
-#include "keyEvent.h"
+#include "events/applicationEvent.h"
+#include "events/mouseEvent.h"
+#include "events/keyEvent.h"
+
+#include "VKwindow.h"
 
 bool VK_Window::m_GLFWIsInitialized = false;
 

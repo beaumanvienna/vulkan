@@ -20,8 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "rendererAPI.h"
-#include "texture.h"
+#include "renderer/rendererAPI.h"
+#include "renderer/texture.h"
 
 std::shared_ptr<Texture> Texture::Create()
 {

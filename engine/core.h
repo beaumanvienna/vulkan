@@ -25,15 +25,15 @@
 #include <memory>
 #include <string>
 
-#include "event.h"
 #include "engine.h"
-#include "settings.h"
+#include "events/event.h"
+#include "settings/settings.h"
 #include "coreSettings.h"
-#include "controller.h"
-#include "window.h"
-#include "audio.h"
-#include "model.h"
-#include "timer.h"
+#include "platform/SDL/controller.h"
+#include "platform/SDL/timer.h"
+#include "platform/window.h"
+#include "audio/audio.h"
+#include "renderer/model.h"
 
 class Engine
 {

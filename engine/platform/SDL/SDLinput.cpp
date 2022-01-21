@@ -25,8 +25,8 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
-#include "input.h"
-#include "controllerEvent.h"
+#include "platform/input.h"
+#include "events/controllerEvent.h"
 
 Controller* Input::m_Controller;
 

@@ -27,7 +27,7 @@
 
 #include "engine.h"
 #include "VKdevice.h"
-#include "model.h"
+#include "renderer/model.h"
 
 class VK_Model : public Model
 {

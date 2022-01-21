@@ -27,12 +27,11 @@
 
 #pragma once
 
-//#include <memory>
-//
-//#include "engine.h"
-//
+#include <memory>
+
+#include "engine.h"
+
 //#include "vertexArray.h"
-//#include "glm.hpp"
 
 class RendererAPI
 {

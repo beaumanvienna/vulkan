@@ -20,8 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "controllerConfiguration.h"
-#include "input.h"
+#include "platform/SDL/controllerConfiguration.h"
+#include "platform/input.h"
 
 void ControllerConfiguration::Start(int controllerID)
 {

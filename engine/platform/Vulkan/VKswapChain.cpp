@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "engine.h"
+
 #include "VKswapChain.h"
 
 VK_SwapChain::VK_SwapChain(std::shared_ptr<VK_Device> device, VkExtent2D extent)

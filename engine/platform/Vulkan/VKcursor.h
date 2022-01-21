@@ -23,7 +23,8 @@
 #pragma once
 
 #include "engine.h"
-#include "cursor.h"
+#include "renderer/cursor.h"
+
 #include "VKwindow.h"
 
 class VK_Cursor: public Cursor

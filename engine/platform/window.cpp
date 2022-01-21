@@ -25,8 +25,9 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
-#include "window.h"
-#include "rendererAPI.h"
+#include "platform/window.h"
+#include "renderer/rendererAPI.h"
+
 #include "VKwindow.h"
 
 std::unique_ptr<Window> Window::Create(const WindowProperties& props)

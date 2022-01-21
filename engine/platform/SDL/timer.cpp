@@ -22,7 +22,7 @@
 
 #include <SDL.h>
 
-#include "timer.h"
+#include "platform/SDL/timer.h"
 
 Timer::Timer(uint interval)
     : m_Interval(interval), m_TimerID(0), m_TimerCallback(nullptr)

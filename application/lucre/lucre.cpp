@@ -22,11 +22,10 @@
    
 #include <thread>
 
-#include "engine.h"
 #include "lucre.h"
-#include "VKmodel.h"
-#include "resources.h"
+#include "engine.h"
 #include "coreSettings.h"
+#include "resources/resources.h"
 
 namespace LucreApp
 {

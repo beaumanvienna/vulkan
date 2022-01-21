@@ -25,7 +25,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "log.h"
+#include "log/log.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm.hpp"

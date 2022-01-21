@@ -26,8 +26,8 @@
 
     #include "core.h"
     #include "engine.h"
-    #include "instrumentation.h"
-    #include "file.h"
+    #include "auxiliary/instrumentation.h"
+    #include "auxiliary/file.h"
 
     namespace Instrumentation
     {

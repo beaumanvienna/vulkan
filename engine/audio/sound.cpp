@@ -23,7 +23,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "sound.h"
+#include "audio/sound.h"
 
 #ifdef LINUX
 

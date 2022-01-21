@@ -23,8 +23,8 @@
 #pragma once
 
 #include "engine.h"
-#include "event.h"
-#include "controller.h"
+#include "events/event.h"
+#include "platform/SDL/controller.h"
 
 class ControllerAxisMovedEvent : public Event
 {

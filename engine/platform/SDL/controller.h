@@ -29,8 +29,8 @@
 #include <functional>
 
 #include "engine.h"
-#include "event.h"
-#include "controllerConfiguration.h"
+#include "events/event.h"
+#include "platform/SDL/controllerConfiguration.h"
 
 class Controller
 {

@@ -27,9 +27,9 @@
 
 #include <iostream>
 
-#include "SDLaudio.h"
 #include "SDL.h"
-#include "resources.h"
+#include "platform/SDL/SDLaudio.h"
+#include "resources/resources.h"
 
 void SDLAudio::Start()
 {

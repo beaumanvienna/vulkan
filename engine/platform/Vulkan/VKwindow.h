@@ -25,8 +25,8 @@
 #include <memory>
 
 #include "engine.h"
-#include "window.h"
-#include "entity.h"
+#include "platform/window.h"
+#include "scene/entity.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"

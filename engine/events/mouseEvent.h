@@ -28,7 +28,7 @@
 #pragma once
 
 #include "engine.h"
-#include "event.h"
+#include "events/event.h"
 
 class MouseMovedEvent : public Event
 {
