@@ -5,6 +5,7 @@ A Vulkan Render Engine<br/>
 Features: Vulkan support for 3D rendering, gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager<br/>
 <br/>
 Press "f" to toggle fullscreen and ESC to exit
+<br/> To blacklist a GPU, enter its name or a substring in engine.cfg.
 <br/>
 ## Build Instructions<br/>
 

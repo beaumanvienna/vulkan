@@ -43,7 +43,7 @@ public:
     static RendererAPI::API    m_RendererAPI;
     static bool                m_EnableFullscreen;
     static bool                m_EnableSystemSounds;
-    static int                 m_UITheme;
+    static std::string         m_BlacklistedDevice;
 
 private:
 

@@ -26,6 +26,7 @@
 #include <unordered_set>
 
 #include "engine.h"
+#include "coreSettings.h"
 #include "VKdevice.h"
 #include "VKwindow.h"
 
@@ -163,6 +164,7 @@ void VK_Device::PickPhysicalDevice()
             physicalDevice = device;
             vkGetPhysicalDeviceProperties(physicalDevice, &properties);
             std::cout << "physical device: " << properties.deviceName << std::endl;
+            break;
         }
     }
 
@@ -249,6 +251,22 @@ void VK_Device::CreateSurface()
 
 bool VK_Device::IsDeviceSuitable(VkPhysicalDevice device)
 {
+    // check if blacklisted
+    vkGetPhysicalDeviceProperties(device, &properties);
+    
+    std::string name = properties.deviceName;
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
+    
+    std::string blacklisted = CoreSettings::m_BlacklistedDevice;
+    std::transform(blacklisted.begin(), blacklisted.end(), blacklisted.begin(), [](unsigned char c){ return std::tolower(c); });
+    
+    if (name.find(blacklisted) != std::string::npos)
+    {
+        LOG_CORE_INFO("ignoring blacklisted device: {0}", name);
+        return false;
+    }
+
+    // check extensions
     QueueFamilyIndices indices = FindQueueFamilies(device);
 
     bool extensionsSupported = CheckDeviceExtensionSupport(device);

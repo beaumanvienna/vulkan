@@ -27,6 +27,7 @@ std::string         CoreSettings::m_EngineVersion;
 RendererAPI::API    CoreSettings::m_RendererAPI;
 bool                CoreSettings::m_EnableFullscreen;
 bool                CoreSettings::m_EnableSystemSounds;
+std::string         CoreSettings::m_BlacklistedDevice;
 
 void CoreSettings::InitDefaults()
 {
@@ -34,6 +35,7 @@ void CoreSettings::InitDefaults()
     m_RendererAPI         = RendererAPI::VULKAN;
     m_EnableFullscreen    = false;
     m_EnableSystemSounds  = true;
+    m_BlacklistedDevice   = "empty";
 }
 
 void CoreSettings::RegisterSettings()
@@ -42,6 +44,7 @@ void CoreSettings::RegisterSettings()
     m_SettingsManager->PushSetting<RendererAPI::API> ("RendererAPI",         &m_RendererAPI);
     m_SettingsManager->PushSetting<bool>             ("EnableFullscreen",    &m_EnableFullscreen);
     m_SettingsManager->PushSetting<bool>             ("EnableSystemSounds",  &m_EnableSystemSounds);
+    m_SettingsManager->PushSetting<std::string>      ("BlacklstedDevice",    &m_BlacklistedDevice);
 }
 
 void CoreSettings::PrintSettings() const
@@ -50,4 +53,5 @@ void CoreSettings::PrintSettings() const
     LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "RendererAPI",        m_RendererAPI);
     LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "EnableFullscreen",   m_EnableFullscreen);
     LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "EnableSystemSounds", m_EnableSystemSounds);
+    LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "BlacklistedDevice",  m_BlacklistedDevice);
 }
