@@ -23,7 +23,9 @@
 #include <memory>
 
 #include "VKwindow.h"
+#include "coreSettings.h"
 #include "applicationEvent.h"
+#include "mouseEvent.h"
 #include "keyEvent.h"
 
 bool VK_Window::m_GLFWIsInitialized = false;
@@ -36,8 +38,8 @@ VK_Window::VK_Window(const WindowProperties& props)
     m_WindowProperties.m_Width    = props.m_Width;
     m_WindowProperties.m_Height   = props.m_Height;
     //m_WindowProperties.m_VSync    = props.m_VSync;
-    //m_WindowProperties.m_MousePosX= 0.0f;
-    //m_WindowProperties.m_MousePosY= 0.0f;
+    m_WindowProperties.m_MousePosX= 0.0f;
+    m_WindowProperties.m_MousePosY= 0.0f;
     m_WindowProperties.m_FramebufferResized = false;
 
     if (!m_GLFWIsInitialized)
@@ -238,82 +240,77 @@ void VK_Window::SetEventCallback(const EventCallbackFunction& callback)
     //    }
     //);
 
-    //glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
-    //    {
-    //        GLCall(glViewport(0, 0, width, height));
-    //    }
-    //);
-    //
-    //glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
-    //    {
-    //        int width, height;
-    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    //        
-    //        if (iconified)
-    //        {
-    //            width = height = 0;
-    //        }
-    //        else
-    //        {
-    //            glfwGetWindowSize(window, &width, &height);
-    //        }
-    //        
-    //        windowProperties.m_Width = width;
-    //        windowProperties.m_Height = height;
-    //            
-    //        WindowResizeEvent event(width, height);
-    //        OnEvent(event);
-    //    }
-    //);
-
-    //glfwSetMouseButtonCallback(m_Window,[](GLFWwindow* window, int button, int action, int mods)
-    //    {
-    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    //        
-    //        switch (action)
-    //        {
-    //            case GLFW_PRESS:
-    //            {
-    //                MouseButtonPressedEvent event(button,windowProperties.m_MousePosX,windowProperties.m_MousePosY);
-    //                OnEvent(event);
-    //                break;
-    //            }
-    //            case GLFW_RELEASE:
-    //            {
-    //                MouseButtonReleasedEvent event(button);
-    //                OnEvent(event);
-    //                break;
-    //            }
-    //        }
-    //    }
-    //);
     
-    //glfwSetCursorPosCallback(m_Window,[](GLFWwindow* window, double xpos, double ypos)
-    //    {
-    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    //        
-    //        windowProperties.m_MousePosX = xpos;
-    //        windowProperties.m_MousePosY = ypos;
-    //                    
-    //        MouseMovedEvent event(xpos, ypos);
-    //        OnEvent(event);
-    //        
-    //    }
-    //);
-    //
-    //glfwSetScrollCallback(m_Window,[](GLFWwindow* window, double xoffset, double yoffset)
-    //    {
-    //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-    //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    //                    
-    //        MouseScrolledEvent event(xoffset, yoffset);
-    //        OnEvent(event);
-    //        
-    //    }
-    //);
+    glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
+        {
+            int width, height;
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+            
+            if (iconified)
+            {
+                width = height = 0;
+            }
+            else
+            {
+                glfwGetWindowSize(window, &width, &height);
+            }
+            
+            windowProperties.m_Width = width;
+            windowProperties.m_Height = height;
+                
+            WindowResizeEvent event(width, height);
+            OnEvent(event);
+        }
+    );
+
+    glfwSetMouseButtonCallback(m_Window,[](GLFWwindow* window, int button, int action, int mods)
+        {
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+            
+            switch (action)
+            {
+                case GLFW_PRESS:
+                {
+                    MouseButtonPressedEvent event(button,windowProperties.m_MousePosX,windowProperties.m_MousePosY);
+                    OnEvent(event);
+                    break;
+                }
+                case GLFW_RELEASE:
+                {
+                    MouseButtonReleasedEvent event(button);
+                    OnEvent(event);
+                    break;
+                }
+            }
+        }
+    );
+    
+    glfwSetCursorPosCallback(m_Window,[](GLFWwindow* window, double xpos, double ypos)
+        {
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+            
+            windowProperties.m_MousePosX = xpos;
+            windowProperties.m_MousePosY = ypos;
+                        
+            MouseMovedEvent event(xpos, ypos);
+            OnEvent(event);
+            
+        }
+    );
+    
+    glfwSetScrollCallback(m_Window,[](GLFWwindow* window, double xoffset, double yoffset)
+        {
+            WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+            EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
+                        
+            MouseScrolledEvent event(xoffset, yoffset);
+            OnEvent(event);
+            
+        }
+    );
 }
 
 bool VK_Window::InitGLFW()
@@ -580,16 +577,48 @@ void VK_Window::CreateWindow()
     m_WindowedHeight = m_WindowedWidth;// / 16 * 9;
     m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
     m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
-    
-    m_WindowProperties.m_Width  = m_WindowedWidth;
-    m_WindowProperties.m_Height = m_WindowedHeight;
 
-    m_Window = glfwCreateWindow(
-                m_WindowProperties.m_Width, 
-                m_WindowProperties.m_Height, 
+    if (CoreSettings::m_EnableFullscreen)
+    {
+        #ifdef _WIN32    
+            m_WindowProperties.m_Width = videoMode->width;
+            m_WindowProperties.m_Height = videoMode->height;
+            m_Window = glfwCreateWindow(
+                m_WindowProperties.m_Width,
+                m_WindowProperties.m_Height,
                 m_WindowProperties.m_Title.c_str(),
-                nullptr,
-                nullptr);
+                monitors[0], nullptr);
+            m_IsFullscreen = true;
+        #else
+            m_WindowProperties.m_Width  = m_WindowedWidth;
+            m_WindowProperties.m_Height = m_WindowedHeight;
+
+            m_Window = glfwCreateWindow(
+                m_WindowProperties.m_Width,
+                m_WindowProperties.m_Height,
+                m_WindowProperties.m_Title.c_str(),
+                nullptr, nullptr);
+            // center window
+            glfwSetWindowPos(m_Window,
+                monitorX + m_WindowPositionX,
+                monitorY + m_WindowPositionY);
+            m_IsFullscreen = false;
+            ToggleFullscreen();
+        #endif
+    }
+    else
+    {    
+        m_WindowProperties.m_Width  = m_WindowedWidth;
+        m_WindowProperties.m_Height = m_WindowedHeight;
+
+        m_Window = glfwCreateWindow(
+                    m_WindowProperties.m_Width, 
+                    m_WindowProperties.m_Height, 
+                    m_WindowProperties.m_Title.c_str(),
+                    nullptr,
+                    nullptr);
+        m_IsFullscreen = false;
+    }
 
     // center window
     glfwSetWindowPos(

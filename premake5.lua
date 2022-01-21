@@ -41,6 +41,7 @@ project "engine"
         "engine/renderer",
         "engine/events",
         "engine/scene",
+        "engine/settings",
         "engine/platform/",
         "engine/platform/SDL",
         "engine/platform/Vulkan",
@@ -54,16 +55,26 @@ project "engine"
         "vendor/spdlog/include",
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
+        "vendor/yaml-cpp/include",
     }
 
     libdirs
     {
-        "vendor/glfw/build/src",
     }
 
     flags
     {
         "MultiProcessorCompile"
+    }
+
+    links
+    {
+        "glfw3",
+        "sdl_mixer",
+        "sdl",
+        "libvorbis",
+        "libogg",
+        "yaml-cpp",
     }
 
     filter "system:linux"
@@ -93,22 +104,17 @@ project "engine"
         }
         links
         {
-            "sdl_mixer",
             "m",
             "dl", 
-            "pthread",
-            "glfw3",
             "vulkan",
+            "pthread",
             "X11",
             "Xrandr",
             "Xi",
             "libpamanager",
-            "sdl",
             "pulse",
             "glib-2.0",
             "gio-2.0",
-            "libvorbis",
-            "libogg",
         }
         libdirs
         {
@@ -127,7 +133,6 @@ project "engine"
         }
         links
         {
-            "glfw3",
             "imagehlp", 
             "dinput8", 
             "dxguid", 
@@ -171,6 +176,7 @@ project "engine"
         kind "WindowedApp"
 
     include "vendor/glfw.lua"
+    include "vendor/yaml.lua"
     include "vendor/SPIRV-Cross.lua"
     include "vendor/shaderc.lua"
     include "vendor/sdl_mixer.lua"

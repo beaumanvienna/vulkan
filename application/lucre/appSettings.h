@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -22,57 +22,31 @@
 
 #pragma once
 
-#include <memory>
+#include <iostream>
 
-#include "engine.h"
-#include "entity.h"
-#include "window.h"
-#include "core.h"
-#include "cursor.h"
-#include "inputHandler.h"
-#include "application.h"
-#include "appSettings.h"
+#include "settings.h"
 
 namespace LucreApp
 {
-    class Lucre : public Application
+
+    class AppSettings
     {
 
-    public:
+    public: 
 
-        Lucre();
-        ~Lucre() {}
+        AppSettings(SettingsManager* settingsManager)
+            : m_SettingsManager(settingsManager) {}
 
-        bool Start() override;
-        void Shutdown() override;
-        void OnUpdate() override;
+        void InitDefaults();
+        void RegisterSettings();
+        void PrintSettings() const;
 
-        static std::shared_ptr<Lucre> Create();
-
-    private:
-
-        void InitSettings();
-        void InitCursor();
-        void ShowCursor();
-        void HideCursor();
-
-        static void ConsoleInputHandler();
-        void LoadModel();
+        static std::string m_LastGamePath;
+        static std::string m_SearchDirGames;
 
     private:
 
-        static std::shared_ptr<Lucre> m_Instance;
-        static Engine* m_Engine;
-        AppSettings m_AppSettings{&Engine::m_SettingsManager};
-        std::vector<Entity> m_Entities;
-
-        std::shared_ptr<Window> m_Window;
-        std::shared_ptr<Cursor> m_Cursor;
-        std::shared_ptr<Cursor> m_EmptyCursor;
-        std::shared_ptr<Model> m_Model;
-
-        std::unique_ptr<InputHandler> m_InputHandler;
-        Transform2DComponent m_UserInput;
+        SettingsManager* m_SettingsManager;
 
     };
 }

@@ -26,6 +26,7 @@
 #include "lucre.h"
 #include "VKmodel.h"
 #include "resources.h"
+#include "coreSettings.h"
 
 namespace LucreApp
 {
@@ -40,6 +41,8 @@ namespace LucreApp
 
     bool Lucre::Start()
     {
+        InitSettings();
+
         std::thread consoleInputHandler(ConsoleInputHandler);
         consoleInputHandler.detach();
 
@@ -66,6 +69,12 @@ namespace LucreApp
     {
         m_InputHandler->OnUpdate(m_UserInput);
 
+        float scaleAspectRatio = 1.0f;
+        if (CoreSettings::m_EnableFullscreen)
+        {
+            scaleAspectRatio = 1.0f / m_Window->GetWindowAspectRatio();
+        }
+
         m_Entities.clear();
         static float rotation{};
         rotation = glm::mod(rotation + 0.025f, glm::two_pi<float>());
@@ -73,7 +82,7 @@ namespace LucreApp
             auto quad = Entity::CreateEnity();
             quad.m_Model = m_Model;
             quad.m_Color = glm::vec3{0.1f, 0.4f, 1.0f};
-            quad.m_Transform2D.m_Scale = glm::vec2{m_UserInput.m_Scale.x*0.5f, m_UserInput.m_Scale.y*0.5f};
+            quad.m_Transform2D.m_Scale = glm::vec2{m_UserInput.m_Scale.x*0.5f, m_UserInput.m_Scale.y*0.5f} * scaleAspectRatio;
             quad.m_Transform2D.m_Translation = glm::vec2{-0.55f + m_UserInput.m_Translation.x,-0.55f + m_UserInput.m_Translation.y};
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
@@ -82,7 +91,7 @@ namespace LucreApp
             auto quad = Entity::CreateEnity();
             quad.m_Model = m_Model;
             quad.m_Color = glm::vec3{0.1f, 0.9f, 0.1f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f};
+            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
             quad.m_Transform2D.m_Translation = glm::vec2{0.55f,-0.55f};
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
@@ -91,7 +100,7 @@ namespace LucreApp
             auto quad = Entity::CreateEnity();
             quad.m_Model = m_Model;
             quad.m_Color = glm::vec3{0.6f, 0.1f, 0.1f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f};
+            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
             quad.m_Transform2D.m_Translation = glm::vec2{-0.55f, 0.55f};
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
@@ -100,7 +109,7 @@ namespace LucreApp
             auto quad = Entity::CreateEnity();
             quad.m_Model = m_Model;
             quad.m_Color = glm::vec3{0.5f, 0.4f, 0.3f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f};
+            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
             quad.m_Transform2D.m_Translation = glm::vec2{0.55f, 0.55f};
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
@@ -194,5 +203,13 @@ namespace LucreApp
         m_EmptyCursor->RestoreCursor();
     }
 
-}
+    void Lucre::InitSettings()
+    {
+        m_AppSettings.InitDefaults();
+        m_AppSettings.RegisterSettings();
 
+        // apply external settings
+        m_Engine->ApplyAppSettings();
+    }
+
+}

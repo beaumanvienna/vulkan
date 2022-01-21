@@ -27,6 +27,7 @@
 #include "engine.h"
 #include "window.h"
 #include "entity.h"
+
 #include "VKdevice.h"
 #include "VKpipeline.h"
 #include "VKswapChain.h"
@@ -110,8 +111,8 @@ private:
         int m_Height;
         //int m_VSync;
         EventCallbackFunction m_EventCallback;
-        //double m_MousePosX;
-        //double m_MousePosY;
+        double m_MousePosX;
+        double m_MousePosY;
         bool m_FramebufferResized;
     };
 

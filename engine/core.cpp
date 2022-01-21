@@ -25,18 +25,45 @@
 #include <thread>
 
 #include "core.h"
+#include "file.h"
 #include "engine.h"
 #include "instrumentation.h"
 #include "applicationEvent.h"
+#include "mouseEvent.h"
 #include "keyEvent.h"
 
 Engine* Engine::m_Engine = nullptr;
+SettingsManager Engine::m_SettingsManager;
 
 Engine::Engine(const std::string& configFilePath) :
             m_ConfigFilePath(configFilePath),
-            m_Running(false)
+            m_DisableMousePointerTimer(Timer(2500)),
+            m_Running(false), m_Paused(false)
 {
+    #ifdef _MSC_VER
+        m_HomeDir = "";
+    #else
+        m_HomeDir = getenv("HOME");
+    #endif
+
+    if (m_HomeDir == "")
+    {
+        auto path = std::filesystem::current_path();
+        m_HomeDir = path.u8string();
+    }
+
+    EngineCore::AddSlash(m_HomeDir);
+
     m_Engine = this;
+
+    m_DisableMousePointerTimer.SetEventCallback([](uint interval, void* parameters)
+        {
+            uint returnValue = 0;
+            int timerID = *((int*)parameters);
+            Engine::m_Engine->DisableMousePointer();
+            return returnValue;
+        }
+    );
 }
 
 Engine::~Engine()
@@ -50,6 +77,7 @@ bool Engine::Start()
     {
         std::cout << "Could not initialize logger" << std::endl;
     }
+    InitSettings();
 
     //signal handling
     signal(SIGINT, SignalHandler);
@@ -98,6 +126,10 @@ void Engine::Shutdown()
 
 void Engine::Quit()
 {
+    // save settings
+    m_CoreSettings.m_EngineVersion    = ENGINE_VERSION;
+    m_CoreSettings.m_EnableFullscreen = IsFullscreen();
+    m_SettingsManager.SaveToFile();
 }
 
 void Engine::OnUpdate()
@@ -149,11 +181,11 @@ void Engine::OnEvent(Event& event)
             if ((event.GetWidth() == 0) || (event.GetHeight() == 0))
             {
                 LOG_CORE_INFO("application paused");
-                //m_Paused = true;
+                m_Paused = true;
             }
             else
             {
-                //m_Paused = false;
+                m_Paused = false;
             }
             return true;
         }
@@ -175,28 +207,15 @@ void Engine::OnEvent(Event& event)
         }
     );
 
-    //dispatcher.Dispatch<MouseMovedEvent>([this](MouseMovedEvent event)
-    //    {
-    //        m_Window->EnableMousePointer();
-    //        m_DisableMousePointerTimer.Stop();
-    //        m_DisableMousePointerTimer.Start();
-    //        return true;
-    //    }
-    //);
-    //
-    //// also dispatch to application
-    //// and its layers
-    //if (!event.IsHandled())
-    //{
-    //    for (auto layerIterator = m_LayerStack.end(); layerIterator != m_LayerStack.begin(); )
-    //    {
-    //        layerIterator--;
-    //        (*layerIterator)->OnEvent(event);
-    //
-    //        if (event.IsHandled()) break;
-    //    }
-    //}
-    //if (!event.IsHandled()) m_AppEventCallback(event);
+    dispatcher.Dispatch<MouseMovedEvent>([this](MouseMovedEvent event)
+        {
+            m_Window->EnableMousePointer();
+            m_DisableMousePointerTimer.Stop();
+            m_DisableMousePointerTimer.Start();
+            return true;
+        }
+    );
+
 }
 
 
@@ -234,4 +253,33 @@ void Engine::AudioCallback(int eventType)
             }
         }
     #endif
+}
+
+
+
+void Engine::InitSettings()
+{
+    m_CoreSettings.InitDefaults();
+    m_CoreSettings.RegisterSettings();
+
+    // load external configuration
+    m_ConfigFilePath = GetHomeDirectory() + m_ConfigFilePath;
+    std::string configFile = /*m_ConfigFilePath + */ "engine.cfg";
+
+    m_SettingsManager.SetFilepath(configFile);
+    m_SettingsManager.LoadFromFile();
+
+    if (m_CoreSettings.m_EngineVersion != ENGINE_VERSION)
+    {
+        LOG_CORE_INFO("Welcome to engine version {0} (gfxRenderEngine)!", ENGINE_VERSION);
+    }
+    else
+    {
+        LOG_CORE_INFO("Starting engine (gfxRenderEngine) v" ENGINE_VERSION);
+    }
+}
+
+void Engine::ApplyAppSettings()
+{
+    m_SettingsManager.ApplySettings();
 }
