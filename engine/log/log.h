@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -38,21 +38,21 @@ namespace GfxRenderEngine
     {
     public:
         static bool Init();
-        
+
         inline static std::shared_ptr<spdlog::logger>& GetLogger() 
         {
             return m_Logger;
         }
-        
+
         inline static std::shared_ptr<spdlog::logger>& GetAppLogger() 
         {
             return m_AppLogger;
         }
-    
+
     private: 
-    
+
         static std::shared_ptr<spdlog::logger> m_Logger;
         static std::shared_ptr<spdlog::logger> m_AppLogger;
-    
+
     };
 }

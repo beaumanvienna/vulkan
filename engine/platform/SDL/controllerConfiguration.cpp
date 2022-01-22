@@ -34,17 +34,17 @@ namespace GfxRenderEngine
         SetControllerConfText("press dpad up","(or use ENTER to skip this button)");
         m_MappingCreated = false;
     }
-    
+
     void ControllerConfiguration::Reset(void)
     {
         m_Running = false;
         m_ControllerID = NO_CONTROLLER;
-    
+
         for (int i = 0; i < STATE_CONF_MAX; i++)
         {
             m_ControllerButton[i]=STATE_CONF_SKIP_ITEM;
         }
-    
+
         for (int i = 0; i < 4;i++)
         {
             m_Hat[i] = -1;
@@ -57,14 +57,14 @@ namespace GfxRenderEngine
         m_SecondRun = -1;
         m_SecondRunHat = -1;
         m_SecondRunValue = -1;
-    
+
         m_ConfigurationState = STATE_CONF_BUTTON_DPAD_UP;
         m_ReportedState = REPORTED_STATE_UP;
-    
+
         m_UpdateControllerText = false;
         m_Text1 = m_Text2 = "";
     }
-    
+
     void ControllerConfiguration::StatemachineConf(int cmd)
     {
         if ((cmd==STATE_CONF_SKIP_ITEM) && (m_ConfigurationState > STATE_CONF_BUTTON_RIGHTSHOULDER))
@@ -72,7 +72,7 @@ namespace GfxRenderEngine
             StatemachineConfAxis(STATE_CONF_SKIP_ITEM,false);
             return;
         }
-    
+
         if ((Input::GetActiveController() == m_ControllerID) || (cmd==STATE_CONF_SKIP_ITEM))
         {
             switch (m_ConfigurationState)
@@ -196,7 +196,7 @@ namespace GfxRenderEngine
             }
         }
     }
-    
+
     void ControllerConfiguration::StatemachineConfAxis(int cmd, bool negative)
     {
         if ( (m_Running) && (m_ConfigurationState >= STATE_CONF_AXIS_LEFTSTICK_X) )
@@ -213,7 +213,7 @@ namespace GfxRenderEngine
                             m_CountY=0;
                             m_ValueX=-1;
                             m_ValueY=-1;
-    
+
                             m_ConfigurationState = STATE_CONF_AXIS_RIGHTSTICK_X;
                             m_ReportedState = REPORTED_STATE_RSTICK;
                             SetControllerConfText("twirl right stick");
@@ -227,7 +227,7 @@ namespace GfxRenderEngine
                             m_CountY=0;
                             m_ValueX=-1;
                             m_ValueY=-1;
-    
+
                             m_ConfigurationState = STATE_CONF_AXIS_LEFTTRIGGER;
                             m_ReportedState = REPORTED_STATE_LTRIGGER;
                             SetControllerConfText("press left rear shoulder");
@@ -241,7 +241,7 @@ namespace GfxRenderEngine
                                 m_CountY=0;
                                 m_ValueX=-1;
                                 m_ValueY=-1;
-    
+
                                 m_ConfigurationState = STATE_CONF_AXIS_LEFTTRIGGER;
                                 m_ReportedState = REPORTED_STATE_LTRIGGER;
                                 SetControllerConfText("press left rear shoulder");
@@ -253,7 +253,7 @@ namespace GfxRenderEngine
                         {
                             m_CountX=0;
                             m_ValueX=-1;
-    
+
                             m_ConfigurationState = STATE_CONF_AXIS_RIGHTTRIGGER;
                             m_ReportedState = REPORTED_STATE_RTRIGGER;
                             SetControllerConfText("press right rear shoulder");
@@ -265,13 +265,13 @@ namespace GfxRenderEngine
                             {
                                 m_CountX=0;
                                 m_ValueX=-1;
-    
+
                                 m_ConfigurationState = STATE_CONF_AXIS_RIGHTTRIGGER;
                                 m_ReportedState = REPORTED_STATE_RTRIGGER;
                                 SetControllerConfText("press right rear shoulder");
                             }
                         }
-    
+
                         break;
                     case STATE_CONF_AXIS_RIGHTTRIGGER:
                         if (cmd == STATE_CONF_SKIP_ITEM)
@@ -325,26 +325,26 @@ namespace GfxRenderEngine
             }
         }
     }
-    
+
     bool ControllerConfiguration::CheckAxis(int cmd)
     {
         if (cmd==STATE_CONF_SKIP_ITEM) return true;
-    
+
         bool ok = false;
-    
+
         if ( (m_CountX > 10) && (m_CountY>10) )
         {
             m_ControllerButton[m_ConfigurationState]=m_ValueX;
             m_ControllerButton[m_ConfigurationState+1]=m_ValueY;
             ok = true;
         }
-    
+
         if ( (m_ValueX!=-1) && (m_ValueY!=-1) )
         {
             if (m_ValueX == cmd) m_CountX++;
             if (m_ValueY == cmd) m_CountY++;
         }
-    
+
         if ( (m_ValueX!=-1) && (m_ValueY==-1) )
         {
             if (m_ValueX > cmd)
@@ -357,48 +357,48 @@ namespace GfxRenderEngine
                 m_ValueY = cmd;
             }
         }
-    
+
         if ( (m_ValueX==-1) && (m_ValueY==-1) )
         {
             m_ValueX=cmd;
         }
-    
+
         return ok;
     }
-    
+
     bool ControllerConfiguration::CheckTrigger(int cmd)
     {
         if (cmd==STATE_CONF_SKIP_ITEM) return true;
         bool ok = false;
-    
+
         if (m_CountX > 10)
         {
             m_ControllerButton[m_ConfigurationState]=m_ValueX;
             ok = true;
         }
-    
+
         if (m_ValueX!=-1)
         {
             if (m_ValueX == cmd) m_CountX++;
         }
-    
+
         if (m_ValueX==-1)
         {
             m_ValueX=cmd;
         }
-    
+
         return ok;
     }
-    
+
     void ControllerConfiguration::StatemachineConfHat(int hat, int value)
     {
         if (m_ConfigurationState > STATE_CONF_BUTTON_DPAD_RIGHT) return;
-    
+
         if (Input::GetActiveController() == m_ControllerID)
         {
             m_Hat[m_HatIterator] = hat;
             m_HatValue[m_HatIterator] = value;
-    
+
             switch (m_ConfigurationState)
             {
                 case STATE_CONF_BUTTON_DPAD_UP:
@@ -446,14 +446,14 @@ namespace GfxRenderEngine
     {
         m_Text1 = text1;
         if (text2 != "") m_Text2 = text2;
-    
+
         m_UpdateControllerText = true;
     }
-    
+
     void ControllerConfiguration::SetMapping(void)
     {
         std::string name;
-    
+
         name = Input::GetControlerName(m_ControllerID);
         int pos;
         while ((pos = name.find(",")) != std::string::npos)
@@ -461,10 +461,10 @@ namespace GfxRenderEngine
             name = name.erase(pos,1);
         }
         if (name.length() > 45) name = name.substr(0,45);
-    
+
         Input::GetControllerGUID(m_ControllerID, m_DatabaseEntry);
         m_DatabaseEntry = m_DatabaseEntry + "," + name;
-    
+
         if (m_ControllerButton[STATE_CONF_BUTTON_A] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry += ",a:b";
@@ -480,7 +480,7 @@ namespace GfxRenderEngine
             m_DatabaseEntry += ",back:b";
             m_DatabaseEntry += std::to_string(m_ControllerButton[STATE_CONF_BUTTON_BACK]);
         }
-    
+
         if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_DOWN] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry = m_DatabaseEntry + ",dpdown:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_DOWN]);
@@ -500,7 +500,7 @@ namespace GfxRenderEngine
                 m_DatabaseEntry = m_DatabaseEntry + ",dpdown:+a" + std::to_string(m_Axis[1]);
             }
         }
-    
+
         if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_LEFT] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry = m_DatabaseEntry + ",dpleft:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_LEFT]);
@@ -520,7 +520,7 @@ namespace GfxRenderEngine
                 m_DatabaseEntry = m_DatabaseEntry + ",dpleft:+a" + std::to_string(m_Axis[2]);
             }
         }
-    
+
         if ( m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry = m_DatabaseEntry + ",dpright:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT]);
@@ -540,7 +540,7 @@ namespace GfxRenderEngine
                 m_DatabaseEntry = m_DatabaseEntry + ",dpright:+a" + std::to_string(m_Axis[3]);
             }
         }
-    
+
         if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_UP] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry = m_DatabaseEntry + ",dpup:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_UP]);
@@ -560,7 +560,7 @@ namespace GfxRenderEngine
                 m_DatabaseEntry = m_DatabaseEntry + ",dpup:+a" + std::to_string(m_Axis[0]);
             }
         }
-    
+
         if (m_ControllerButton[STATE_CONF_BUTTON_GUIDE] != STATE_CONF_SKIP_ITEM)
         {
             m_DatabaseEntry += ",guide:b";
@@ -642,8 +642,8 @@ namespace GfxRenderEngine
             m_DatabaseEntry += std::to_string(m_ControllerButton[STATE_CONF_BUTTON_Y]);
         }
         m_DatabaseEntry +=  ",platform:Linux,";
-    
-    
+
+
         m_MappingCreated = true;
         SetControllerConfText("Start controller setup (" + std::to_string(m_ControllerID + 1) + ")");
         LOG_CORE_INFO("Mapping created!");

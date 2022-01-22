@@ -29,7 +29,7 @@ namespace GfxRenderEngine
     std::shared_ptr<Texture> Texture::Create()
     {
         std::shared_ptr<Texture> texture;
-    
+
         switch(RendererAPI::GetAPI())
         {
             case RendererAPI::OPENGL:
@@ -39,13 +39,13 @@ namespace GfxRenderEngine
                 texture = nullptr;
                 break;
         }
-    
+
         return texture;
     }
     std::shared_ptr<Texture> Texture::Create(uint ID, int internalFormat, int dataFormat, int type)
     {
         std::shared_ptr<Texture> texture;
-    
+
         switch(RendererAPI::GetAPI())
         {
             case RendererAPI::OPENGL:
@@ -55,7 +55,7 @@ namespace GfxRenderEngine
                 texture = nullptr;
                 break;
         }
-    
+
         return texture;
     }
 }

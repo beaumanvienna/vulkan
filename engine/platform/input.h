@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -39,19 +39,19 @@ namespace GfxRenderEngine
 {
     class Input
     {
-    
+
     public:
         static void Start(Controller* controller);
-    
+
         // keyboard
         static bool IsKeyPressed(const KeyCode key);
-    
+
         // mouse
         static bool IsMouseButtonPressed(const MouseCode button);
         static glm::vec2 GetMousePosition();
         static float GetMouseX();
         static float GetMouseY();
-        
+
         // controller
         static glm::vec2 GetControllerStick(const int indexID, Controller::ControllerSticks stick);
         static float GetControllerTrigger(const int indexID, Controller::Axis axis);
@@ -65,13 +65,13 @@ namespace GfxRenderEngine
         static int ControllerMappingCreated();
         static std::string GetControlerName(int controllerID);
         static void GetControllerGUID(int controllerID, std::string& guid);
-        
+
         static void* GetControllerJoy(const int indexID);
         static void* GetControllerGamecontroller(const int indexID);
-    
+
     private:
-    
+
         static Controller* m_Controller;
-    
+
     };
 }

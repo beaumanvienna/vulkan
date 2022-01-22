@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -43,9 +43,9 @@ namespace GfxRenderEngine
             OPENGL,
             VULKAN
         };
-        
+
     public:
-        
+
         //virtual ~RendererAPI() = default;
         //
         //virtual void SetClearColor(const glm::vec4& color) = 0;
@@ -64,10 +64,10 @@ namespace GfxRenderEngine
         //
         //static void SetAPI(API api) { s_API = api;}
         static API GetAPI() { return s_API;}
-        
+
     private:
-        
+
         static API s_API;
-        
+
     };
 }

@@ -31,9 +31,9 @@
 
 namespace GfxRenderEngine
 {
-    
+
     bool VK_Window::m_GLFWIsInitialized = false;
-    
+
     VK_Window::VK_Window(const WindowProperties& props)
         : m_OK(false), m_IsFullscreen(false),
         m_AllowCursor(false)
@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         m_WindowProperties.m_MousePosX= 0.0f;
         m_WindowProperties.m_MousePosY= 0.0f;
         m_WindowProperties.m_FramebufferResized = false;
-    
+
         if (!m_GLFWIsInitialized)
         {
             // init glfw
@@ -53,18 +53,18 @@ namespace GfxRenderEngine
         }
         if (m_GLFWIsInitialized)
         {
-    
+
             CreateWindow();
-    
+
             uint extensionCount = 0;
             vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    
+
             LOG_CORE_INFO("{0}  extensions supported", extensionCount);
-    
+
             // create a device
             m_Device = std::make_shared<VK_Device>(this);
             m_Renderer = std::make_shared<VK_Renderer>(this, m_Device);
-    
+
             CreatePipelineLayout();
             CreatePipeline();
 
@@ -77,7 +77,7 @@ namespace GfxRenderEngine
                 LOG_APP_WARN("Houston, we have problem: (m_Window && m_SwapChain && m_Pipeline) failed");
             }
         }
-    
+
         //    // set app icon
         //    GLFWimage icon;
         //    size_t fileSize;
@@ -93,22 +93,22 @@ namespace GfxRenderEngine
         //        LOG_CORE_WARN("Could not load app icon");
         //    }
         //
-    
+
     }
-    
+
     VK_Window::~VK_Window()
     {
         Shutdown();
     }
-    
+
     void VK_Window::Shutdown()
     {
         vkDestroyPipelineLayout(m_Device->Device(), m_PipelineLayout, nullptr);
-        
+
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
-    
+
     //void VK_Window::SetVSync(int interval)
     //{ 
     //    m_WindowProperties.m_VSync = interval;
@@ -124,7 +124,7 @@ namespace GfxRenderEngine
         {
             m_WindowProperties.m_Width  = m_WindowedWidth;
             m_WindowProperties.m_Height = m_WindowedHeight;
-    
+
             glfwSetWindowMonitor(m_Window, nullptr, m_WindowPositionX, m_WindowPositionY, m_WindowedWidth, m_WindowedHeight, videoMode->refreshRate);
             glfwSetWindowPos(m_Window, m_WindowPositionX, m_WindowPositionY);
         }
@@ -133,12 +133,12 @@ namespace GfxRenderEngine
             m_WindowedWidth = m_WindowProperties.m_Width; 
             m_WindowedHeight = m_WindowProperties.m_Height;
             glfwGetWindowPos(m_Window, &m_WindowPositionX, &m_WindowPositionY);
-    
+
             glfwSetWindowMonitor(m_Window, monitors[0], 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
         }
         m_IsFullscreen = !m_IsFullscreen;
     }
-    
+
     //void VK_Window::SetWindowAspectRatio()
     //{
     //    // set aspect ratio to current ratio
@@ -151,7 +151,7 @@ namespace GfxRenderEngine
     //{
     //    glfwSetWindowAspectRatio(m_Window, numer, denom);
     //}
-    
+
     void VK_Window::OnUpdate()
     {
         if (glfwWindowShouldClose(m_Window))
@@ -165,25 +165,25 @@ namespace GfxRenderEngine
 
         vkDeviceWaitIdle(m_Device->Device());
     }
-    
+
     void VK_Window::OnError(int errorCode, const char* description) 
     {
             LOG_CORE_CRITICAL("GLEW error, code: {0}, description: {1}", std::to_string(errorCode), description);
-    
+
     }
-    
+
     void VK_Window::SetEventCallback(const EventCallbackFunction& callback)
     {
         m_WindowProperties.m_EventCallback = callback;
         glfwSetWindowUserPointer(m_Window,&m_WindowProperties);
-        
+
         glfwSetErrorCallback([](int errorCode, const char* description) { VK_Window::OnError(errorCode, description);});
-        
+
         glfwSetKeyCallback(m_Window,[](GLFWwindow* window, int key, int scancode, int action, int modes)
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-                
+
                 switch (action)
                 {
                     case GLFW_PRESS:
@@ -203,31 +203,31 @@ namespace GfxRenderEngine
                 }
             }
         );
-        
+
         //glfwSetWindowCloseCallback(m_Window,[](GLFWwindow* window)
         //    {
         //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
         //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-        //            
+        //
         //        WindowCloseEvent event;
         //        OnEvent(event);
         //    }
         //);
-    
+
         glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    
+
                 windowProperties.m_Width = width;
                 windowProperties.m_Height = height;
                 windowProperties.m_FramebufferResized = true;
-    
+
                 WindowResizeEvent event(width, height);
                 OnEvent(event);
             }
         );
-    
+
         //glfwSetWindowSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
         //    {
         //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -241,14 +241,14 @@ namespace GfxRenderEngine
         //        OnEvent(event);
         //    }
         //);
-    
-        
+
+
         glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
             {
                 int width, height;
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-                
+
                 if (iconified)
                 {
                     width = height = 0;
@@ -257,20 +257,20 @@ namespace GfxRenderEngine
                 {
                     glfwGetWindowSize(window, &width, &height);
                 }
-                
+
                 windowProperties.m_Width = width;
                 windowProperties.m_Height = height;
-                    
+
                 WindowResizeEvent event(width, height);
                 OnEvent(event);
             }
         );
-    
+
         glfwSetMouseButtonCallback(m_Window,[](GLFWwindow* window, int button, int action, int mods)
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-                
+
                 switch (action)
                 {
                     case GLFW_PRESS:
@@ -288,46 +288,46 @@ namespace GfxRenderEngine
                 }
             }
         );
-        
+
         glfwSetCursorPosCallback(m_Window,[](GLFWwindow* window, double xpos, double ypos)
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-                
+
                 windowProperties.m_MousePosX = xpos;
                 windowProperties.m_MousePosY = ypos;
-                            
+    
                 MouseMovedEvent event(xpos, ypos);
                 OnEvent(event);
-                
+
             }
         );
-        
+
         glfwSetScrollCallback(m_Window,[](GLFWwindow* window, double xoffset, double yoffset)
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-                            
+    
                 MouseScrolledEvent event(xoffset, yoffset);
                 OnEvent(event);
-                
+
             }
         );
     }
-    
+
     bool VK_Window::InitGLFW()
     {
-        
+
         // init glfw
         if (!glfwInit())
         {
             LOG_CORE_CRITICAL("glfwInit() failed");
             return false;
         }
-    
+
         return true;
     }
-    
+
     void VK_Window::EnableMousePointer()
     {
         if (m_AllowCursor)
@@ -335,12 +335,12 @@ namespace GfxRenderEngine
             glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }
-    
+
     void VK_Window::DisableMousePointer()
     {
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
-    
+
     void VK_Window::AllowCursor()
     {
         m_AllowCursor = true;
@@ -350,7 +350,7 @@ namespace GfxRenderEngine
         m_AllowCursor = false;
         DisableMousePointer();
     }
-    
+
     void VK_Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
     {
         if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
@@ -358,14 +358,14 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("Could not create surface");
         }
     }
-    
+
     void VK_Window::CreatePipelineLayout()
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_SimplePushConstantData);
-    
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 0;
@@ -380,13 +380,13 @@ namespace GfxRenderEngine
     void VK_Window::CreatePipeline()
     {
         ASSERT(m_PipelineLayout != nullptr);
-    
+
         PipelineConfigInfo pipelineConfig{};
-    
+
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = m_Renderer->GetSwapChainRenderPass();
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-    
+
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
@@ -417,7 +417,7 @@ namespace GfxRenderEngine
             static_cast<VK_Model*>(entity.m_Model.get())->Draw(commandBuffer);
         }
     }
-    
+
     std::shared_ptr<Model> VK_Window::LoadModel(std::vector<Vertex>& vertices)
     {
         ASSERT(m_Device != nullptr);
@@ -431,24 +431,24 @@ namespace GfxRenderEngine
         GLFWmonitor** monitors = glfwGetMonitors(&count);
         const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
         m_RefreshRate = videoMode->refreshRate;
-        
+
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    
+
         // make window invisible before it gets created
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        
+
         int monitorX, monitorY;
         glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
-        
+
         m_WindowedWidth = videoMode->width / 2.5f;
         m_WindowedHeight = m_WindowedWidth;// / 16 * 9;
         m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
         m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
-    
+
         if (CoreSettings::m_EnableFullscreen)
         {
-            #ifdef _WIN32    
+            #ifdef _WIN32
                 m_WindowProperties.m_Width = videoMode->width;
                 m_WindowProperties.m_Height = videoMode->height;
                 m_Window = glfwCreateWindow(
@@ -460,7 +460,7 @@ namespace GfxRenderEngine
             #else
                 m_WindowProperties.m_Width  = m_WindowedWidth;
                 m_WindowProperties.m_Height = m_WindowedHeight;
-    
+
                 m_Window = glfwCreateWindow(
                     m_WindowProperties.m_Width,
                     m_WindowProperties.m_Height,
@@ -475,10 +475,10 @@ namespace GfxRenderEngine
             #endif
         }
         else
-        {    
+        {
             m_WindowProperties.m_Width  = m_WindowedWidth;
             m_WindowProperties.m_Height = m_WindowedHeight;
-    
+
             m_Window = glfwCreateWindow(
                         m_WindowProperties.m_Width, 
                         m_WindowProperties.m_Height, 
@@ -487,19 +487,19 @@ namespace GfxRenderEngine
                         nullptr);
             m_IsFullscreen = false;
         }
-    
+
         // center window
         glfwSetWindowPos(
                 m_Window,
                 monitorX + m_WindowPositionX,
                 monitorY + m_WindowPositionY);
-    
+
         // make the window visible
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         glfwShowWindow(m_Window);
-    
+
     }
-    
+
     void VK_Window::SetWindowAspectRatio()
     {
         // set aspect ratio to current ratio
@@ -507,7 +507,7 @@ namespace GfxRenderEngine
         int denom = m_WindowProperties.m_Height;
         glfwSetWindowAspectRatio(m_Window, numer, denom);
     }
-    
+
     void VK_Window::SetWindowAspectRatio(int numer, int denom)
     {
         glfwSetWindowAspectRatio(m_Window, numer, denom);

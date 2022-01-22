@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -35,35 +35,35 @@ namespace GfxRenderEngine
 
     class WindowCloseEvent : public Event
     {
-    
+
     public:
-    
+
         WindowCloseEvent() {}
-    
+
         EVENT_CLASS_CATEGORY(EventCategoryApplication);
         EVENT_CLASS_TYPE(WindowClose);
-        
+
         std::string ToString() const override
         {
             std::stringstream str;
             str << "WindowCloseEvent";
             return str.str();
         }
-    
+
     };
-    
+
     class WindowResizeEvent : public Event
     {
-    
+
     public:
-    
+
         WindowResizeEvent(int width, int height) : m_Width(width), m_Height(height) {}
-    
+
         EVENT_CLASS_CATEGORY(EventCategoryApplication);
         EVENT_CLASS_TYPE(WindowResize);
         int GetWidth() const { return m_Width; }
         int GetHeight() const { return m_Height; }
-        
+
         std::string ToString() const override
         {
             std::stringstream str;
@@ -72,6 +72,6 @@ namespace GfxRenderEngine
         }
     private:
         int m_Width, m_Height;
-    
+
     };
 }

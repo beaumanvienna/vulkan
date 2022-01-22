@@ -31,7 +31,7 @@ namespace GfxRenderEngine
     bool                CoreSettings::m_EnableFullscreen;
     bool                CoreSettings::m_EnableSystemSounds;
     std::string         CoreSettings::m_BlacklistedDevice;
-    
+
     void CoreSettings::InitDefaults()
     {
         m_EngineVersion       = ENGINE_VERSION;
@@ -40,7 +40,7 @@ namespace GfxRenderEngine
         m_EnableSystemSounds  = true;
         m_BlacklistedDevice   = "empty";
     }
-    
+
     void CoreSettings::RegisterSettings()
     {
         m_SettingsManager->PushSetting<std::string>      ("EngineVersion",       &m_EngineVersion);
@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         m_SettingsManager->PushSetting<bool>             ("EnableSystemSounds",  &m_EnableSystemSounds);
         m_SettingsManager->PushSetting<std::string>      ("BlacklstedDevice",    &m_BlacklistedDevice);
     }
-    
+
     void CoreSettings::PrintSettings() const
     {
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "EngineVersion",      m_EngineVersion);

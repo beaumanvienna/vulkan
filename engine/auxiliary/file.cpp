@@ -31,29 +31,29 @@ namespace GfxRenderEngine
             std::ifstream infile(filename);
             return infile.good();
         }
-    
+
         bool FileExists(const std::string& filename)
         {
             std::ifstream infile(filename.c_str());
             return infile.good();
         }
-    
+
         bool FileExists(const std::filesystem::directory_entry& filename)
         {
             return filename.exists();
         }
-    
+
         bool IsDirectory(const char *filename)
         {
             std::filesystem::path path(filename);
             return is_directory(path);
         }
-    
+
         bool IsDirectory(const std::string& filename)
         {
             bool isDirectory = false;
             std::filesystem::path path(filename);
-    
+
             try
             {
                 isDirectory = is_directory(path);
@@ -64,7 +64,7 @@ namespace GfxRenderEngine
             }
             return isDirectory;
         }
-    
+
         std::string GetFilenameWithoutPath(const std::filesystem::path& path)
         {
             #ifndef _WIN32
@@ -75,7 +75,7 @@ namespace GfxRenderEngine
             #endif
             return filenameWithoutPath;
         }
-    
+
         std::string GetFileExtension(const std::filesystem::path& path)
         {
             #ifndef _WIN32
@@ -86,7 +86,7 @@ namespace GfxRenderEngine
             #endif
             return ext;
         }
-    
+
         bool CreateDirectory(const std::string& filename)
         {
             #ifdef _MSC_VER
@@ -96,7 +96,7 @@ namespace GfxRenderEngine
             return std::filesystem::create_directories(filename);
             #endif
         }
-    
+
         bool CopyFile(const std::string& src, const std::string& dest)
         {
             std::ifstream source(src.c_str(), std::ios::binary);
@@ -104,13 +104,13 @@ namespace GfxRenderEngine
             destination << source.rdbuf();
             return source && destination;
         }
-    
+
         std::ifstream::pos_type FileSize(const std::string& filename)
         {
             std::ifstream in(filename.c_str(), std::ifstream::ate | std::ifstream::binary);
             return in.tellg(); 
         }
-        
+
         std::string& AddSlash(std::string& filename)
         {
             #ifdef _MSC_VER
@@ -118,12 +118,12 @@ namespace GfxRenderEngine
             #else
             const char* slash = "/";
             #endif
-    
+
             if (filename.substr(filename.size() - 1) != slash)
             {
                 filename += slash;
             }
-    
+
             return filename;
         }
     }

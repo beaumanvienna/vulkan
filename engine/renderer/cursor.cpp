@@ -31,7 +31,7 @@ namespace GfxRenderEngine
     std::shared_ptr<Cursor> Cursor::Create()
     {
         std::shared_ptr<Cursor> cursor;
-    
+
         switch(RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
@@ -41,7 +41,7 @@ namespace GfxRenderEngine
                 cursor = nullptr;
                 break;
         }
-    
+
         return cursor;
     }
 }

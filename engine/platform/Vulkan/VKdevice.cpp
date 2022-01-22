@@ -42,10 +42,10 @@ namespace GfxRenderEngine
         void *pUserData)
     {
         LOG_CORE_CRITICAL("validation layer: {0}", pCallbackData->pMessage);
-    
+
         return VK_FALSE;
     }
-    
+
     VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
@@ -64,7 +64,7 @@ namespace GfxRenderEngine
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
     }
-    
+
     void DestroyDebugUtilsMessengerEXT(
         VkInstance instance,
         VkDebugUtilsMessengerEXT debugMessenger,
@@ -78,7 +78,7 @@ namespace GfxRenderEngine
             func(instance, debugMessenger, pAllocator);
         }
     }
-    
+
     VK_Device::VK_Device(VK_Window* window) : m_Window{window}
     {
         CreateInstance();
@@ -88,28 +88,28 @@ namespace GfxRenderEngine
         CreateLogicalDevice();
         CreateCommandPool();
     }
-    
+
     VK_Device::~VK_Device()
     {
         vkDestroyCommandPool(m_Device, commandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
-    
+
         if (enableValidationLayers)
         {
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
-    
+
         vkDestroySurfaceKHR(instance, m_Surface, nullptr);
         vkDestroyInstance(instance, nullptr);
     }
-    
+
     void VK_Device::CreateInstance()
     {
         if (enableValidationLayers && !CheckValidationLayerSupport())
         {
             LOG_CORE_CRITICAL("validation layers requested, but not available!");
         }
-    
+
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "engine";
@@ -117,21 +117,21 @@ namespace GfxRenderEngine
         appInfo.pEngineName = "gfxRenderEngine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
-    
+
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-    
+
         auto extensions = GetRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
-    
+
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         if (enableValidationLayers)
         {
             createInfo.enabledLayerCount = static_cast<uint>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
-    
+
             PopulateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
         }
@@ -140,15 +140,15 @@ namespace GfxRenderEngine
             createInfo.enabledLayerCount = 0;
             createInfo.pNext = nullptr;
         }
-    
+
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create instance!");
         }
-    
+
         HasGflwRequiredInstanceExtensions();
     }
-    
+
     void VK_Device::PickPhysicalDevice()
     {
         uint deviceCount = 0;
@@ -160,7 +160,7 @@ namespace GfxRenderEngine
         std::cout << "Device count: " << deviceCount << std::endl;
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
-    
+
         for (const auto &device : devices)
         {
             if (IsDeviceSuitable(device))
@@ -171,22 +171,22 @@ namespace GfxRenderEngine
                 break;
             }
         }
-    
+
         if (physicalDevice == VK_NULL_HANDLE)
         {
             LOG_CORE_CRITICAL("failed to find a suitable GPU!");
         }
-    
-        
+
+
     }
-    
+
     void VK_Device::CreateLogicalDevice()
     {
         QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
-    
+
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
-    
+
         float queuePriority = 1.0f;
         for (uint queueFamily : uniqueQueueFamilies)
         {
@@ -197,20 +197,20 @@ namespace GfxRenderEngine
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
-    
+
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
-    
+
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    
+
         createInfo.queueCreateInfoCount = static_cast<uint>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-    
+
         createInfo.pEnabledFeatures = &deviceFeatures;
         createInfo.enabledExtensionCount = static_cast<uint>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    
+
         // might not really be necessary anymore because device specific validation layers
         // have been deprecated
         if (enableValidationLayers)
@@ -222,73 +222,73 @@ namespace GfxRenderEngine
         {
             createInfo.enabledLayerCount = 0;
         }
-    
+
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
-    
+
         vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
     }
-    
+
     void VK_Device::CreateCommandPool()
     {
         QueueFamilyIndices queueFamilyIndices = FindPhysicalQueueFamilies();
-    
+
         VkCommandPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
         poolInfo.flags =
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    
+
         if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create command pool!");
         }
     }
-    
+
     void VK_Device::CreateSurface()
     {
         m_Window->CreateWindowSurface(instance, &m_Surface);
     }
-    
+
     bool VK_Device::IsDeviceSuitable(VkPhysicalDevice device)
     {
         // check if blacklisted
         vkGetPhysicalDeviceProperties(device, &properties);
-        
+
         std::string name = properties.deviceName;
         std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
-        
+
         std::string blacklisted = CoreSettings::m_BlacklistedDevice;
         std::transform(blacklisted.begin(), blacklisted.end(), blacklisted.begin(), [](unsigned char c){ return std::tolower(c); });
-        
+
         if (name.find(blacklisted) != std::string::npos)
         {
             LOG_CORE_INFO("ignoring blacklisted device: {0}", name);
             return false;
         }
-    
+
         // check extensions
         QueueFamilyIndices indices = FindQueueFamilies(device);
-    
+
         bool extensionsSupported = CheckDeviceExtensionSupport(device);
-    
+
         bool swapChainAdequate = false;
         if (extensionsSupported)
         {
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
-    
+
         VkPhysicalDeviceFeatures supportedFeatures;
         vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-    
+
         return indices.isComplete() && extensionsSupported && swapChainAdequate &&
             supportedFeatures.samplerAnisotropy;
     }
-    
+
     void VK_Device::PopulateDebugMessengerCreateInfo(
         VkDebugUtilsMessengerCreateInfoEXT &createInfo)
     {
@@ -302,7 +302,7 @@ namespace GfxRenderEngine
         createInfo.pfnUserCallback = debugCallback;
         createInfo.pUserData = nullptr;  // Optional
     }
-    
+
     void VK_Device::SetupDebugMessenger()
     {
         if (!enableValidationLayers) return;
@@ -313,19 +313,19 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("failed to set up debug messenger!");
         }
     }
-    
+
     bool VK_Device::CheckValidationLayerSupport()
     {
         uint layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-        
+
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        
+
         for (const char *layerName : validationLayers)
         {
             bool layerFound = false;
-        
+
             for (const auto &layerProperties : availableLayers)
             {
                 if (strcmp(layerName, layerProperties.layerName) == 0)
@@ -334,46 +334,46 @@ namespace GfxRenderEngine
                     break;
                 }
             }
-        
+
             if (!layerFound)
             {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     std::vector<const char *> VK_Device::GetRequiredExtensions()
     {
         uint glfwExtensionCount = 0;
         const char **glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-    
+
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-    
+
         if (enableValidationLayers)
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
-    
+
         return extensions;
     }
-    
+
     void VK_Device::HasGflwRequiredInstanceExtensions()
     {
         uint extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-    
+
         std::cout << "available extensions:" << std::endl;
         std::unordered_set<std::string> available;
         for (const auto &extension : extensions) {
             std::cout << "\t" << extension.extensionName << std::endl;
             available.insert(extension.extensionName);
         }
-    
+
         std::cout << "required extensions:" << std::endl;
         auto requiredExtensions = GetRequiredExtensions();
         for (const auto &required : requiredExtensions)
@@ -385,39 +385,39 @@ namespace GfxRenderEngine
             }
         }
     }
-    
+
     bool VK_Device::CheckDeviceExtensionSupport(VkPhysicalDevice device)
     {
         uint extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-    
+
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(
         device,
         nullptr,
         &extensionCount,
         availableExtensions.data());
-    
+
         std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-    
+
         for (const auto &extension : availableExtensions)
         {
             requiredExtensions.erase(extension.extensionName);
         }
-    
+
         return requiredExtensions.empty();
     }
-    
+
     QueueFamilyIndices VK_Device::FindQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices;
-    
+
         uint queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-    
+
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-    
+
         int i = 0;
         for (const auto &queueFamily : queueFamilies)
         {
@@ -437,30 +437,30 @@ namespace GfxRenderEngine
             {
                 break;
             }
-    
+
             i++;
         }
-    
+
         return indices;
     }
-    
+
     SwapChainSupportDetails VK_Device::QuerySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
-    
+
         uint formatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
-    
+
         if (formatCount != 0)
         {
             details.formats.resize(formatCount);
             vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
         }
-    
+
         uint presentModeCount;
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
-    
+
         if (presentModeCount != 0)
         {
             details.presentModes.resize(presentModeCount);
@@ -472,7 +472,7 @@ namespace GfxRenderEngine
         }
         return details;
     }
-    
+
     VkFormat VK_Device::FindSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
     {
@@ -480,7 +480,7 @@ namespace GfxRenderEngine
         {
             VkFormatProperties props;
             vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
-        
+
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
             {
                 return format;
@@ -493,7 +493,7 @@ namespace GfxRenderEngine
         LOG_CORE_CRITICAL("failed to find supported format!");
         return VK_FORMAT_UNDEFINED;
     }
-    
+
     uint VK_Device::FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
@@ -506,11 +506,11 @@ namespace GfxRenderEngine
                 return i;
             }
         }
-    
+
         LOG_CORE_CRITICAL("failed to find suitable memory type!");
         return 0;
     }
-    
+
     void VK_Device::CreateBuffer(
         VkDeviceSize size,
         VkBufferUsageFlags usage,
@@ -523,28 +523,28 @@ namespace GfxRenderEngine
         bufferInfo.size = size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        
+
         if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create vertex buffer!");
         }
-        
+
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
-        
+
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-        
+
         if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to allocate vertex buffer memory!");
         }
-        
+
         vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
     }
-    
+
     VkCommandBuffer VK_Device::BeginSingleTimeCommands()
     {
         VkCommandBufferAllocateInfo allocInfo{};
@@ -552,64 +552,64 @@ namespace GfxRenderEngine
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandPool = commandPool;
         allocInfo.commandBufferCount = 1;
-    
+
         VkCommandBuffer commandBuffer;
         vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
-    
+
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    
+
         vkBeginCommandBuffer(commandBuffer, &beginInfo);
         return commandBuffer;
     }
-    
+
     void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
         vkEndCommandBuffer(commandBuffer);
-    
+
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-    
+
         vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(m_GraphicsQueue);
-    
+
         vkFreeCommandBuffers(m_Device, commandPool, 1, &commandBuffer);
     }
-    
+
     void VK_Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
         VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-        
+
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0;  // Optional
         copyRegion.dstOffset = 0;  // Optional
         copyRegion.size = size;
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-        
+
         EndSingleTimeCommands(commandBuffer);
     }
-    
+
     void VK_Device::CopyBufferToImage(
         VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount)
     {
         VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-        
+
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
-        
+
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = layerCount;
-        
+
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
-        
+
         vkCmdCopyBufferToImage(
             commandBuffer,
             buffer,
@@ -619,7 +619,7 @@ namespace GfxRenderEngine
             &region);
         EndSingleTimeCommands(commandBuffer);
     }
-    
+
     void VK_Device::CreateImageWithInfo(
         const VkImageCreateInfo &imageInfo,
         VkMemoryPropertyFlags properties,
@@ -630,20 +630,20 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("failed to create image!");
         }
-        
+
         VkMemoryRequirements memRequirements;
         vkGetImageMemoryRequirements(m_Device, image, &memRequirements);
-        
+
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-        
+
         if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to allocate image memory!");
         }
-        
+
         if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to bind image memory!");

@@ -44,51 +44,51 @@ namespace GfxRenderEngine
         const void* GetDataPointer(size_t& fileSize, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
         bool GetResourceString(std::string_view& destination, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
     }
-    
+
     #ifndef _MSC_VER
-    
+
         namespace ResourceSystem
         {
             const void* GetDataPointer(std::size_t& fileSize, const char* path);
         }
-    
+
     #else
-        
+
         class Resource 
         {
         public:
-        
+
             Resource(int resourceID, const std::string &resourceClass) 
             {
                 m_HResource = FindResourceA(nullptr, MAKEINTRESOURCEA(resourceID), resourceClass.c_str());
                 m_HMemory   = LoadResource(nullptr, m_HResource);
-    
+
                 m_Parameters.m_SizeBytes = SizeofResource(nullptr, m_HResource);
                 m_Parameters.m_DataPointer = LockResource(m_HMemory);
             }
-    
+
             std::size_t GetSize() const { return m_Parameters.m_SizeBytes; }
             const void* GetDataPointer() const { return m_Parameters.m_DataPointer; }
-    
+
         public:
-        
+
             struct Parameters 
             {
                 std::size_t m_SizeBytes = 0;
                 void* m_DataPointer = nullptr;
             };
-    
+
         private:
             HRSRC m_HResource = nullptr;
             HGLOBAL m_HMemory = nullptr;
-    
+
             Parameters m_Parameters;
         };
-    
+
         namespace ResourceSystem
         {
             const void* GetDataPointer(std::size_t& fileSize, int resourceID, const std::string& resourceClass);
         }
-    
+
     #endif
 }

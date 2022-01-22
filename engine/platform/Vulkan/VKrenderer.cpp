@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         }
 
         vkDeviceWaitIdle(m_Device->Device());
-    
+
         // create the swapchain and pipeline
         if (m_SwapChain == nullptr)
         {
@@ -79,13 +79,13 @@ namespace GfxRenderEngine
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocateInfo.commandPool = m_Device->GetCommandPool();
         allocateInfo.commandBufferCount = static_cast<uint>(m_CommandBuffers.size());
-    
+
         if (vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data()) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to allocate command buffers");
         }
     }
-    
+
     void VK_Renderer::FreeCommandBuffers()
     {
         vkFreeCommandBuffers
@@ -122,7 +122,7 @@ namespace GfxRenderEngine
         }
 
         m_FrameInProgress = true;
-        
+
         auto commandBuffer = GetCurrentCommandBuffer();
 
         VkCommandBufferBeginInfo beginInfo{};
@@ -153,10 +153,10 @@ namespace GfxRenderEngine
             m_Window->ResetWindowResizedFlag();
             RecreateSwapChain();
         }
-    
+
         if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to present swap chain image");
+            LOG_CORE_WARN("failed to present swap chain image");
         }
 
         m_FrameInProgress = false;
@@ -171,16 +171,16 @@ namespace GfxRenderEngine
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
         renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(m_CurrentImageIndex);
-        
+
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
-    
+
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
-    
+
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         VkViewport viewport{};

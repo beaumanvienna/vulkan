@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -36,14 +36,14 @@ namespace GfxRenderEngine
     class Renderer
     {
     public:
-    
+
         Renderer();
         virtual ~Renderer() {}
-        
+
         // a draw call requires a vertex array (with a vertex buffer bound to it), index buffer, and bound shaders
         //void Submit(const std::shared_ptr<VertexArray>& vertexArray);
         virtual void Submit() = 0;
-            
+
         //void BeginScene(std::shared_ptr<OrthographicCamera>& camera, 
         //                        std::shared_ptr<ShaderProgram>& shader, 
         //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
@@ -51,17 +51,17 @@ namespace GfxRenderEngine
         //void EndScene();
         virtual void BeginScene() = 0;
         virtual void EndScene() = 0;
-        
+
         //void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));
         //void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const float depth, const glm::vec4& color = glm::vec4(1.0f));
         //void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f));
 
     private:
-    
+
         //void FillVertexBuffer(const int textureSlot, const glm::mat4& position, const float depth, const glm::vec4& color, const glm::vec4& textureCoordinates);
-    
+
     private:
-    
+
         //std::shared_ptr<IndexBuffer> m_IndexBuffer;
         //std::shared_ptr<VertexBuffer> m_VertexBuffer;
         //std::shared_ptr<ShaderProgram> m_Shader;

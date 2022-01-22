@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -38,13 +38,13 @@ namespace GfxRenderEngine
         : m_Filepath("engine.cfg")
     {
     }
-    
+
     void SettingsManager::SaveToFile(const std::string& filepath)
     {
         YAML::Emitter out;
-        
+
         out << YAML::BeginMap;
-        
+
         for (const auto& [key, value] : m_Settings)
         {
             switch(value.m_Type)
@@ -62,39 +62,39 @@ namespace GfxRenderEngine
                     out << YAML::Key << key << YAML::Value << *((RendererAPI::API*)value.m_Pointer);
                     break;
             }
-            
+
         }
-        
+
         out << YAML::EndMap;
-    
+
         std::ofstream fout(filepath);
         fout << out.c_str();
     }
-    
+
     void SettingsManager::SaveToFile()
     {
         SaveToFile(m_Filepath);
     }
-    
+
     bool SettingsManager::LoadFromFile(const std::string& filepath)
     {
         m_SettingsLoadedFromFile = false;
-        
+
         if (std::filesystem::exists(filepath))
         {
             m_SettingsLoadedFromFile = true;
             m_YAMLData = YAML::LoadFile(filepath);
             ApplySettings();
         }
-    
+
         return m_SettingsLoadedFromFile;
     }
-    
+
     bool SettingsManager::LoadFromFile()
     {
         return LoadFromFile(m_Filepath);
     }
-    
+
     void SettingsManager::ApplySettings()
     {
         if (m_SettingsLoadedFromFile)
@@ -123,7 +123,7 @@ namespace GfxRenderEngine
             }
         }
     }
-    
+
     void SettingsManager::PrintSettings() const
     {
         for (const auto& [key, value] : m_Settings)
@@ -145,28 +145,28 @@ namespace GfxRenderEngine
             }
         }
     }
-    
+
     template<>
     void SettingsManager::PushSetting<int>(std::string key, int* value)
     {
         ListElement listElement{ ElementType::TYPE_INT, value };
         m_Settings.insert(std::make_pair(key, listElement));
     }
-    
+
     template<>
     void SettingsManager::PushSetting<bool>(std::string key, bool* value)
     {
         ListElement listElement{ ElementType::TYPE_BOOL, value };
         m_Settings.insert(std::make_pair(key, listElement));
     }
-    
+
     template<>
     void SettingsManager::PushSetting<std::string>(std::string key, std::string* value)
     {
         ListElement listElement{ ElementType::TYPE_STRING, value };
         m_Settings.insert(std::make_pair(key, listElement));
     }
-    
+
     template<>
     void SettingsManager::PushSetting<RendererAPI::API>(std::string key, RendererAPI::API* value)
     {

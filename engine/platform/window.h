@@ -35,29 +35,29 @@ namespace GfxRenderEngine
 {
 
     typedef std::function<void(Event&)> EventCallbackFunction;
-    
+
     struct WindowProperties
     {
         std::string m_Title;
         int m_Width;
         int m_Height;
         int m_VSync;
-    
+
         WindowProperties(const std::string& title = "", const bool vsync = 1 /*true*/,
                         const int width = -1, const int height = -1)
             : m_Title(title), m_VSync(vsync), m_Width(width), m_Height(height)
         {
         }
     };
-    
+
     class Window
     {
-        
+
     public:
-        
+
         Window() {}
         virtual ~Window() {}
-        
+
         virtual void* GetBackendWindow() const = 0;
         virtual bool  IsOK() const = 0;
         virtual float GetWindowAspectRatio() const = 0;
@@ -72,21 +72,21 @@ namespace GfxRenderEngine
         //virtual void SetVSync(int interval) = 0;
         virtual void ToggleFullscreen() = 0;
         virtual bool IsFullscreen() = 0;
-    
+
         virtual void EnableMousePointer() = 0;
         virtual void DisableMousePointer() = 0;
         virtual void AllowCursor() = 0;
         virtual void DisallowCursor() = 0;
-    
+
         virtual std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) = 0;
         virtual void SetEntities(std::vector<Entity>* entities) = 0;
         virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
-        
+
         static std::unique_ptr<Window> Create(const WindowProperties& props);
-    
+
     protected:
-        
+
     private:
-        
+
     };
 }

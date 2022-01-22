@@ -29,7 +29,7 @@ namespace LucreApp
         : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}
     {}
 
-    void InputHandler::OnUpdate(Transform2DComponent& transform)
+    void InputHandler::GetTransform2D(Transform2DComponent& transform)
     {
         // left
         glm::vec2 controllerAxisInputLeft = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);
@@ -39,7 +39,7 @@ namespace LucreApp
             transform.m_Translation.x += controllerAxisInputLeft.x * m_Sensitivity;
         }
         transform.m_Translation.x = std::clamp(transform.m_Translation.x, -0.6f, 1.7f);
-        
+
         if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
         {
             transform.m_Translation.y -= controllerAxisInputLeft.y * m_Sensitivity;
@@ -48,7 +48,7 @@ namespace LucreApp
 
         // right
         glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
-        
+
         if (std::abs(controllerAxisInputRight.x) > m_Deadzone)
         {
             transform.m_Scale.x += controllerAxisInputRight.x * m_Sensitivity;
@@ -60,5 +60,22 @@ namespace LucreApp
         }
         transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.01f, 2.0f);
         transform.m_Scale.y = transform.m_Scale.x;
+    }
+
+    void InputHandler::HandleSound(int id, std::function<void(int id)> callback)
+    {
+        static bool pressed = false;
+        if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_A))
+        {
+            if (!pressed)
+            {
+                callback(id);
+                pressed = true;
+            }
+        }
+        else
+        {
+            pressed = false;
+        }
     }
 }

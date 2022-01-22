@@ -27,23 +27,23 @@
 
 namespace GfxRenderEngine
 {
-    
+
     VK_Cursor::VK_Cursor()
         : m_Width(0), m_Height(0), m_BitsPerPixel(0),
         m_HotX(0), m_HotY(0), m_Pixels(nullptr),
         m_Cursor(nullptr), m_Window(nullptr)
     {
     }
-    
+
     VK_Cursor::~VK_Cursor()
     {
     }
-    
+
     // create cursor internal
     bool VK_Cursor::SetCursor()
     {
         bool ok = false;
-    
+
         if(m_Pixels)
         {
             ok = true;
@@ -51,47 +51,47 @@ namespace GfxRenderEngine
             image.width  = m_Width;
             image.height = m_Height;
             image.pixels = m_Pixels;
-            
+
             m_Cursor = glfwCreateCursor(&image, m_HotX, m_HotY);
             m_Window = (GLFWwindow*)Engine::m_Engine->GetBackendWindow();
             glfwSetCursor(m_Window, m_Cursor);
         }
-    
+
         return ok;
     }
-    
+
     void VK_Cursor::AllowCursor()
     {
         Engine::m_Engine->AllowCursor();
     }
-    
+
     void VK_Cursor::DisallowCursor()
     {
         Engine::m_Engine->DisallowCursor();
     }
-    
+
     // create cursor from file on disk
     bool VK_Cursor::SetCursor(const std::string& fileName, uint xHot, uint yHot)
     {
         m_HotX = xHot;
         m_HotY = yHot;
-    
+
         m_Pixels = stbi_load(fileName.c_str(), &m_Width, &m_Height, &m_BitsPerPixel, 4);
-    
+
         return SetCursor();
     }
-    
+
     // create cursor from file in memory
     bool VK_Cursor::SetCursor(const unsigned char* data, int length, uint xHot, uint yHot)
     {
         m_HotX = xHot;
         m_HotY = yHot;
-    
+
         m_Pixels = stbi_load_from_memory(data, length, &m_Width, &m_Height, &m_BitsPerPixel, 4);
-    
+
         return SetCursor();
     }
-    
+
     void VK_Cursor::RestoreCursor()
     {
         if(m_Cursor) glfwSetCursor(m_Window, m_Cursor);

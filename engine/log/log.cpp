@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -37,13 +37,13 @@ namespace GfxRenderEngine
 
     std::shared_ptr<spdlog::logger> Log::m_Logger;
     std::shared_ptr<spdlog::logger> Log::m_AppLogger;
-    
+
     bool Log::Init()
     {
         bool ok = false;
         std::vector<spdlog::sink_ptr> logSink;
         logSink.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-    
+
         spdlog::set_pattern("%^[%T] %n: %v%$");
         m_Logger = std::make_shared<spdlog::logger>("Engine", begin(logSink), end(logSink));
         if (m_Logger)
@@ -53,7 +53,7 @@ namespace GfxRenderEngine
             m_Logger->set_level(spdlog::level::trace);
             m_Logger->flush_on(spdlog::level::trace);
         }
-    
+
         m_AppLogger = std::make_shared<spdlog::logger>("Application", begin(logSink), end(logSink));
         if (m_AppLogger)
         {
@@ -62,7 +62,7 @@ namespace GfxRenderEngine
             m_Logger->set_level(spdlog::level::trace);
             m_Logger->flush_on(spdlog::level::trace);
         }
-    
+
         return ok;
     }
 }

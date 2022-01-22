@@ -31,16 +31,16 @@ namespace GfxRenderEngine
     class Cursor
     {
     public:
-    
+
         ~Cursor() {}
-    
+
         virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) = 0;
         virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) = 0;
         virtual void DisallowCursor() = 0;
         virtual void RestoreCursor() = 0;
         virtual void AllowCursor() = 0;
-    
+
         static std::shared_ptr<Cursor> Create();
-    
+
     };
 }

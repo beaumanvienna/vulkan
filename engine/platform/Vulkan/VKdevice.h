@@ -35,7 +35,7 @@ namespace GfxRenderEngine
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
     };
-    
+
     struct QueueFamilyIndices
     {
         uint graphicsFamily;
@@ -53,28 +53,28 @@ namespace GfxRenderEngine
         #else
         const bool enableValidationLayers = true;
         #endif
-    
+
         VK_Device(VK_Window* window);
         ~VK_Device();
-        
+
         // Not copyable or movable
         VK_Device(const VK_Device &) = delete;
         VK_Device& operator=(const VK_Device &) = delete;
         VK_Device(VK_Device &&) = delete;
         VK_Device& operator=(VK_Device &&) = delete;
-        
+
         VkCommandPool GetCommandPool() { return commandPool; }
         VkDevice Device() { return m_Device; }
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
         VkQueue PresentQueue() { return m_PresentQueue; }
-        
+
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(physicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
         QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(physicalDevice); }
         VkFormat FindSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    
+
         // Buffer Helper Functions
         void CreateBuffer(
             VkDeviceSize size,
@@ -91,15 +91,15 @@ namespace GfxRenderEngine
             uint width,
             uint height,
             uint layerCount);
-    
+
         void CreateImageWithInfo(
         const VkImageCreateInfo &imageInfo,
         VkMemoryPropertyFlags properties,
         VkImage &image,
         VkDeviceMemory &imageMemory);
-    
+
         VkPhysicalDeviceProperties properties;
-    
+
     private:
         void CreateInstance();
         void SetupDebugMessenger();
@@ -107,7 +107,7 @@ namespace GfxRenderEngine
         void PickPhysicalDevice();
         void CreateLogicalDevice();
         void CreateCommandPool();
-        
+
         // helper functions
         bool IsDeviceSuitable(VkPhysicalDevice device);
         std::vector<const char*> GetRequiredExtensions();
@@ -117,20 +117,20 @@ namespace GfxRenderEngine
         void HasGflwRequiredInstanceExtensions();
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-        
+
         VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VK_Window* m_Window;
         VkCommandPool commandPool;
-        
+
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;
         VkQueue m_GraphicsQueue;
         VkQueue m_PresentQueue;
-        
+
         const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
         const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-    
+
     };
 }

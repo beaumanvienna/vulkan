@@ -36,51 +36,51 @@ namespace GfxRenderEngine
     {
         CreateGraphicsPipeline(filePathVertexShader_SPV, filePathFragmentShader_SPV, spec);
     }
-    
+
     VK_Pipeline::~VK_Pipeline()
     {
         vkDestroyShaderModule(m_Device->Device(), m_VertShaderModule, nullptr);
         vkDestroyShaderModule(m_Device->Device(), m_FragShaderModule, nullptr);
         vkDestroyPipeline(m_Device->Device(), m_GraphicsPipeline, nullptr);
     }
-    
+
     std::vector<char> VK_Pipeline::readFile(const std::string& filepath)
     {
         std::ifstream file(filepath, std::ios::ate | std::ios::binary);
-    
+
         if (!file.is_open())
         {
             LOG_CORE_CRITICAL("failed to open file: {0}", filepath);
         }
-    
+
         size_t fileSize = static_cast<size_t>(file.tellg());
         std::vector<char> buffer(fileSize);
-    
+
         file.seekg(0);
         // populate the buffer
         file.read(buffer.data(), fileSize);
-    
+
         file.close();
         return buffer;
-    
+
     }
-    
+
     void VK_Pipeline::CreateGraphicsPipeline(const std::string& filePathVertexShader_SPV, 
                                             const std::string& filePathFragmentShader_SPV,
                                             const PipelineConfigInfo& configInfo)
     {
         ASSERT(configInfo.pipelineLayout != nullptr);
         ASSERT(configInfo.renderPass != nullptr);
-    
+
         auto vertCode = readFile(filePathVertexShader_SPV);
         auto fragCode = readFile(filePathFragmentShader_SPV);
-    
+
         LOG_APP_INFO("Vertex Shader Code Size: {0}", vertCode.size());
         LOG_APP_INFO("Fragment Shader Code Size: {0}", fragCode.size());
-    
+
         CreateShaderModule(vertCode, &m_VertShaderModule);
         CreateShaderModule(fragCode, &m_FragShaderModule);
-    
+
         VkPipelineShaderStageCreateInfo shaderStages[2];
         shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -96,7 +96,7 @@ namespace GfxRenderEngine
         shaderStages[1].flags = 0;
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
-    
+
         auto bindingDescription = VK_Model::VK_Vertex::GetBindingDescriptions();
         auto attributeDescription = VK_Model::VK_Vertex::GetAttributeDescriptions();
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -105,14 +105,14 @@ namespace GfxRenderEngine
         vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint>(bindingDescription.size());
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
         vertexInputInfo.pVertexBindingDescriptions = bindingDescription.data();
-    
+
         VkPipelineViewportStateCreateInfo viewportInfo{};
         viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportInfo.viewportCount = 1;
         viewportInfo.pViewports = nullptr;
         viewportInfo.scissorCount = 1;
         viewportInfo.pScissors = nullptr;
-    
+
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
@@ -125,14 +125,14 @@ namespace GfxRenderEngine
         pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
         pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
         pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
-    
+
         pipelineInfo.layout = configInfo.pipelineLayout;
         pipelineInfo.renderPass = configInfo.renderPass;
         pipelineInfo.subpass = configInfo.subpass;
-    
+
         pipelineInfo.basePipelineIndex = -1;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    
+
         if (vkCreateGraphicsPipelines(
             m_Device->Device(),
             VK_NULL_HANDLE,
@@ -146,31 +146,31 @@ namespace GfxRenderEngine
     }
     void VK_Pipeline::CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
     {
-    
+
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint*>(code.data());
-    
+
         if (vkCreateShaderModule(m_Device->Device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create shader module");
         }
     }
-    
+
     void VK_Pipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
     {
-    
+
         configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
-        
+
         configInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         configInfo.viewportInfo.viewportCount = 1;
         configInfo.viewportInfo.pViewports = nullptr;
         configInfo.viewportInfo.scissorCount = 1;
         configInfo.viewportInfo.pScissors = nullptr;
-    
+
         configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;
         configInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
@@ -182,7 +182,7 @@ namespace GfxRenderEngine
         configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
         configInfo.rasterizationInfo.depthBiasClamp = 0.0f;           // Optional
         configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;     // Optional
-    
+
         configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
         configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -190,7 +190,7 @@ namespace GfxRenderEngine
         configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
         configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
         configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
-    
+
         configInfo.colorBlendAttachment.colorWriteMask =
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT;
@@ -201,7 +201,7 @@ namespace GfxRenderEngine
         configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
         configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
         configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
-    
+
         configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
         configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
@@ -211,7 +211,7 @@ namespace GfxRenderEngine
         configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
         configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
         configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
-    
+
         configInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         configInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
         configInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -222,14 +222,14 @@ namespace GfxRenderEngine
         configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
         configInfo.depthStencilInfo.front = {};  // Optional
         configInfo.depthStencilInfo.back = {};   // Optional
-        
+
         configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
         configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint>(configInfo.dynamicStateEnables.size());
         configInfo.dynamicStateInfo.flags = 0;
     }
-    
+
     void VK_Pipeline::Bind(VkCommandBuffer commandBuffer)
     {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);

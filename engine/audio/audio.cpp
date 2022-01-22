@@ -29,7 +29,7 @@ namespace GfxRenderEngine
     std::shared_ptr<Audio> Audio::Create()
     {
         std::shared_ptr<Audio> audio;
-    
+
         switch(GetBackend())
         {
             case AudioBackend::SDL:

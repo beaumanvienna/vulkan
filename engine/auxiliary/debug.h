@@ -42,7 +42,7 @@ namespace GfxRenderEngine
                 std::cout << std::endl;
             }
         }
-    
+
         static void PrintVec3(const std::string& name, const glm::vec3& vector)
         {
             std::cout << name << std::endl;
@@ -51,7 +51,7 @@ namespace GfxRenderEngine
                 std::cout << vector[row] << std::endl;
             }
         }
-    
+
         static void PrintVec4(const std::string& name, const glm::vec4& vector)
         {
             std::cout << name << std::endl;

@@ -45,18 +45,18 @@ namespace GfxRenderEngine
         glm::vec2 m_Offset{0.0f};
         alignas(16) glm::vec3 m_Color{1.0f};
     };
-    
+
     class VK_Window : public Window
     {
-    
+
     public:
-    
+
         VK_Window(const WindowProperties& props);
         ~VK_Window() override;
-    
+
         VK_Window(const VK_Window&) = delete;
         VK_Window& operator=(const VK_Window&) = delete;
-    
+
         //
         bool InitGLFW();
         void Shutdown();
@@ -64,7 +64,7 @@ namespace GfxRenderEngine
         VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
         void* GetBackendWindow() const override { return (void*)m_Window; }
         //std::shared_ptr<GraphicsContext> GetGraphicsContent() const override { return m_GraphicsContext; }
-        void OnUpdate() override;    
+        void OnUpdate() override;
         uint GetWidth()  const override { return m_WindowProperties.m_Width; }
         uint GetHeight() const override { return m_WindowProperties.m_Height; }
         //
@@ -79,9 +79,9 @@ namespace GfxRenderEngine
         double GetTime() const override { return glfwGetTime(); }
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) override;
         void SetEntities(std::vector<Entity>* entities) override { m_Entities = entities; }
-    
+
         static void OnError(int errorCode, const char* description);
-    
+
         void EnableMousePointer() override;
         void DisableMousePointer() override;
         virtual void AllowCursor() override;
@@ -99,9 +99,9 @@ namespace GfxRenderEngine
         void CreatePipelineLayout();
 
     private:
-    
+
         GLFWwindow* m_Window;
-    
+
         struct WindowData
         {
             std::string m_Title;
@@ -113,24 +113,24 @@ namespace GfxRenderEngine
             double m_MousePosY;
             bool m_FramebufferResized;
         };
-    
+
         static bool m_GLFWIsInitialized;
         //
         bool m_OK;
-    
+
         WindowData m_WindowProperties;
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_Renderer> m_Renderer;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
         VkPipelineLayout m_PipelineLayout;
         std::vector<Entity>* m_Entities;
-        
+
         uint m_RefreshRate;
         bool m_IsFullscreen;
-    
+
         int m_WindowedWidth, m_WindowedHeight;
         int m_WindowPositionX, m_WindowPositionY;
         bool m_AllowCursor;
-    
+
     };
 }

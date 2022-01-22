@@ -27,21 +27,21 @@ namespace GfxRenderEngine
 {
     class Application
     {
-    
+
     public:
-    
+
         Application() {}
         virtual ~Application() {}
-    
+
         virtual bool Start() = 0;
         virtual void Shutdown() = 0;
         virtual void OnUpdate() = 0;
-    
+
         static std::shared_ptr<Application> Create();
-    
+
     private:
-    
+
         static std::shared_ptr<Application> m_Instance;
-    
+
     };
 }

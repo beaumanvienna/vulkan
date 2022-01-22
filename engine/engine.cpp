@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     {
         PROFILE_SCOPE("engine startup");
         engine = std::make_unique<GfxRenderEngine::Engine>("./");
-        
+
         if (!engine->Start())
         {
             return -1;
@@ -57,14 +57,16 @@ int main(int argc, char* argv[])
     while (engine->IsRunning())
     {
         {
-            PROFILE_SCOPE("OnUpdate()");
-            engine->OnUpdate();
+            {
+                PROFILE_SCOPE("engine->OnUpdate()");
+                engine->OnUpdate();
+            }
             if (!engine->IsPaused())
             {
+                PROFILE_SCOPE("application->OnUpdate()");
                 application->OnUpdate();
             }
         }
-        std::this_thread::sleep_for(16ms);
     }
 
     application->Shutdown();

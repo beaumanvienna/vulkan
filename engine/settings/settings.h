@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -39,26 +39,26 @@ namespace GfxRenderEngine
     class SettingsManager
     {
     public:
-    
+
         SettingsManager();
-    
+
         void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
-    
+
         void SaveToFile();
         void SaveToFile(const std::string& filepath);
-    
+
         bool LoadFromFile();
         bool LoadFromFile(const std::string& filepath);
         bool SettingsLoadedFromFile() const { return m_SettingsLoadedFromFile; }
-        
+
         void ApplySettings();
         void PrintSettings() const;
-        
+
         template <typename T>
         void PushSetting(std::string key, T* value); 
-    
+
     private:
-    
+
         enum class ElementType
         {
             TYPE_INT,
@@ -66,19 +66,19 @@ namespace GfxRenderEngine
             TYPE_STRING,
             TYPE_RENDERERAPI_API
         };
-    
+
         struct ListElement
         {
             ElementType m_Type;
             void* m_Pointer;
         };
-    
+
     private:
-    
+
         std::string m_Filepath;
         bool m_SettingsLoadedFromFile;
         YAML::Node m_YAMLData;
         std::map<std::string, ListElement> m_Settings;
-    
+
     };
 }

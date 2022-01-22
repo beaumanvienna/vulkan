@@ -28,15 +28,15 @@ namespace GfxRenderEngine
 {
     class ControllerConfiguration
     {
-    
+
     public:
-    
+
         enum TextID
         {
             TEXT1 = 0,
             TEXT2
         };
-    
+
         enum ConfigState
         {
             STATE_CONF_BUTTON_DPAD_UP = 0,          //0
@@ -65,9 +65,9 @@ namespace GfxRenderEngine
             STATE_CONF_SKIP_ITEM,                   //23
             STATE_CONF_MAX                          //24
         };
-        
+
         enum ButtonCodes
-        {    
+        {
             BUTTON_INVALID = -1,
             BUTTON_A,               // 0
             BUTTON_B,               //1
@@ -86,7 +86,7 @@ namespace GfxRenderEngine
             BUTTON_DPAD_RIGHT,      //14
             BUTTON_MAX              //15
         };
-        
+
         enum ControllerID
         {
             NO_CONTROLLER = -1,
@@ -95,7 +95,7 @@ namespace GfxRenderEngine
             THIRD_CONTROLLER,
             FOURTH_CONTROLLER
         };
-        
+
         enum ReportedConfigState
         {
             REPORTED_STATE_INACTIVE = -1,
@@ -115,12 +115,12 @@ namespace GfxRenderEngine
             REPORTED_STATE_START,
             REPORTED_STATE_GUIDE
         };
-    
+
     public:
-    
+
         ControllerConfiguration() {}
         ~ControllerConfiguration() {}
-    
+
         void Start(int controllerID);
         void Reset(void);
         bool IsRunning() const { return m_Running; }
@@ -129,48 +129,48 @@ namespace GfxRenderEngine
         int GetControllerID() const { return m_ControllerID; }
         std::string& GetText(int textNumber) { return textNumber ? m_Text2 : m_Text1; }
         bool MappingCreated() const { return m_MappingCreated; }
-    
+
         void StatemachineConf(int cmd);
         void StatemachineConfHat(int hat, int value);
         void StatemachineConfAxis(int cmd, bool negative);
         void SkipConfigStep() { StatemachineConf(STATE_CONF_SKIP_ITEM); }
         int GetConfigurationStep() { return m_ReportedState; }
         std::string GetDatabaseEntry() const { return m_DatabaseEntry; }
-        
+
     private: 
-    
+
         bool CheckAxis(int cmd);
         bool CheckTrigger(int cmd);
         void SetControllerConfText(std::string text1, std::string text2 = "");
         void SetMapping(void);
-    
+
     private:
-    
+
         std::string m_Text1, m_Text2;
         bool m_UpdateControllerText;
-    
+
         int m_ConfigurationState;
         int m_ControllerButton[STATE_CONF_MAX];
-    
+
         int m_SecondRun;
         int m_SecondRunHat;
         int m_SecondRunValue;
-    
+
         bool m_Running = false;
         int m_ControllerID = NO_CONTROLLER;
-    
+
         int m_Axis[4];
         bool m_AxisValue[4];
         int m_AxisIterator;
-    
+
         int m_Hat[4];
         int m_HatValue[4];
         int m_HatIterator;
-        
+
         int m_CountX, m_CountY, m_ValueX, m_ValueY;
         bool m_MappingCreated;
         int m_ReportedState;
         std::string m_DatabaseEntry;
-    
+
     };
 }

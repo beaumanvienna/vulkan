@@ -58,6 +58,8 @@ namespace LucreApp
         InputHandlerSpec inputSpec{};
         m_InputHandler = std::make_unique<InputHandler>(inputSpec);
 
+        PlaySound(IDR_WAVES);
+
         return true;
     }
 
@@ -69,8 +71,9 @@ namespace LucreApp
     {
         // draw new scene
         m_Renderer->BeginScene();
-        
-        m_InputHandler->OnUpdate(m_UserInput);
+
+        m_InputHandler->GetTransform2D(m_UserInput);
+        m_InputHandler->HandleSound(IDR_BUCKLE, [this](int resourceID){ PlaySound(resourceID); });
 
         float scaleAspectRatio = 1.0f;
         if (CoreSettings::m_EnableFullscreen)
@@ -117,7 +120,7 @@ namespace LucreApp
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
         }
-        
+
         m_Renderer->Submit();
         m_Renderer->EndScene();
     }
@@ -216,6 +219,23 @@ namespace LucreApp
 
         // apply external settings
         m_Engine->ApplyAppSettings();
+    }
+
+    void Lucre::PlaySound(int resourceID)
+    {
+        if (CoreSettings::m_EnableSystemSounds)
+        {
+            switch(resourceID)
+            {
+                case IDR_WAVES:
+                    m_Engine->PlaySound("/sounds/waves.ogg", IDR_WAVES, "OGG");
+                    break;
+                case IDR_BUCKLE:
+                    m_Engine->PlaySound("/sounds/buckle.ogg", IDR_BUCKLE, "OGG");
+                    break;
+            }
+
+        }
     }
 
 }

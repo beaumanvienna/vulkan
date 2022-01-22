@@ -21,4 +21,7 @@
     <gresource prefix="/sounds/">
         <file>waves.ogg</file>
     </gresource>
+    <gresource prefix="/sounds/">
+        <file>buckle.ogg</file>
+    </gresource>
 </gresources>

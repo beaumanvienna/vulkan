@@ -19,7 +19,7 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -38,7 +38,7 @@ namespace GfxRenderEngine
 
     class Event;
     typedef std::function<void(Event&)> EventCallbackFunction;
-    
+
     enum class EventType
     {
         None = 0,
@@ -61,7 +61,7 @@ namespace GfxRenderEngine
         TimerExpired,
         ApplicationEvent
     };
-    
+
     enum EventCategory
     {
         None = 0,
@@ -76,54 +76,54 @@ namespace GfxRenderEngine
         EventCategoryJoystickButton   = BIT(8),
         EventCategoryTimer            = BIT(9)
     };
-    
+
     #define EVENT_CLASS_CATEGORY(x) int GetCategoryFlags() const override { return x; }
     #define EVENT_CLASS_TYPE(x) static EventType GetStaticType() { return EventType::x; }\
                 EventType GetEventType() const override { return GetStaticType(); }\
                 const char* GetName() const override { return  #x "Event"; }
-    
+
     class Event
     {
-        
+
         friend class EventDispatcher;
-        
+
     public:
-    
+
         virtual EventType GetEventType() const = 0;
         virtual const char* GetName() const = 0;
         virtual int GetCategoryFlags() const = 0;
         virtual std::string ToString() const = 0;
-        
+
         inline bool IsInCategory(EventCategory category)
         {
             return GetCategoryFlags() & category;
         }
-        
+
         inline bool IsHandled() const
         {
             return m_Handled;
         }
-        
+
         inline void MarkAsHandled() 
         {
             m_Handled = true;
         }
-        
+
     protected:
-    
+
         bool m_Handled = false;
-    
+
     };
-                    
+
     class EventDispatcher
     {
         template <typename T>
         using EventFn = std::function<bool(T&)>;
-        
+
     public:
         EventDispatcher(Event& event)
             : m_Event(event) {}
-        
+
         template<typename T>
         bool Dispatch(EventFn<T> func)
         {
@@ -134,13 +134,13 @@ namespace GfxRenderEngine
             }
             return false;
         }
-        
+
     private:
-    
+
         Event& m_Event;
-        
+
     };
-    
+
     inline std::ostream& operator<<(std::ostream& os, const Event& e)
     {
         return os << e.ToString();

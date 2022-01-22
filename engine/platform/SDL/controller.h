@@ -36,18 +36,18 @@ namespace GfxRenderEngine
 {
     class Controller
     {
-        
+
     public:
-        
+
         static const int MAX_NUMBER_OF_CONTROLLERS = 4;
         static const int ANALOG_DEAD_ZONE = 15000;
-        
+
         enum ControllerSticks
         {
             LEFT_STICK,
             RIGHT_STICK
         };
-        
+
         enum ID
         {
             NO_CONTROLLER = -1,
@@ -56,7 +56,7 @@ namespace GfxRenderEngine
             THIRD_CONTROLLER,
             FOURTH_CONTROLLER
         };
-    
+
         enum Axis
         {
             LEFT_STICK_HORIZONTAL = 0,
@@ -66,9 +66,9 @@ namespace GfxRenderEngine
             LEFT_TRIGGER,
             RIGHT_TRIGGER
         };
-        
+
         enum ControllerCode
-        {    
+        {
             BUTTON_INVALID = -1,
             BUTTON_A,               // 0
             BUTTON_B,               //1
@@ -87,15 +87,15 @@ namespace GfxRenderEngine
             BUTTON_DPAD_RIGHT,      //14
             BUTTON_MAX              //15
         };
-    
+
         Controller();
         ~Controller();
-        
+
         bool Start();
         bool Restart();
         void OnUpdate();
         void Shutdown();
-        
+
         void AddController(int indexID);
         void PrintJoyInfo(int indexID);
         void RemoveController(int instanceID);
@@ -121,23 +121,23 @@ namespace GfxRenderEngine
         bool MappingCreated() const { return m_ControllerConfiguration.MappingCreated(); }
         void GetGUID(int controllerID, std::string& guid);
         std::string GetName(int controllerID);
-        
+
         void SetEventCallback(const EventCallbackFunction& callback);
-    
+
     public:
-    
+
         static ControllerConfiguration m_ControllerConfiguration;
-        
+
     private:
-    
+
         const double DEBOUNCE_TIME = 0.5;
-        
+
     private:
-    
+
         bool m_Initialzed;
         EventCallbackFunction m_EventCallback;
         std::string m_Gamecontrollerdb, m_InternalDB;
-    
+
         class ControllerData
         {
         public:
@@ -148,16 +148,16 @@ namespace GfxRenderEngine
             std::string m_Name;
             std::string m_NameDB;
             bool m_MappingOK;
-            
+
             ControllerData();
             ~ControllerData();
         };
-        
+
         std::list<ControllerData> m_Controllers;
         std::vector<int> m_InstanceToIndex;
         int m_ActiveController;
         std::function<void(SDL_Event& SDLevent)> m_EventLoop;
-        
+
         double m_TimeStamp;
     };
 }

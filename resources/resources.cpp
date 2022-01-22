@@ -25,7 +25,7 @@
 namespace GfxRenderEngine
 {
     #ifndef _MSC_VER
-    
+
         namespace ResourceSystem
         {
             const void* GetDataPointer(std::size_t& fileSize, const char* path)
@@ -33,18 +33,18 @@ namespace GfxRenderEngine
                 GBytes* mem_access = g_resource_lookup_data(gnuEmbeddedResources_get_resource(), path, G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
                 return g_bytes_get_data(mem_access, &fileSize);
             }
-    
+
             const void* GetDataPointer(size_t& fileSize, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 return GetDataPointer(fileSize, path);
             }
-            
+
             bool GetResourceString(std::string_view& destination, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 bool ok = false;
                 size_t fileSize;
                 uchar* data = (uchar*) GetDataPointer(fileSize, path);
-                
+
                 if (data != nullptr)
                 {
                     ok = true;
@@ -52,14 +52,14 @@ namespace GfxRenderEngine
                 }
                 return ok;
             }
-    
+
             std::shared_ptr<Texture> GetTextureFromMemory(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 std::shared_ptr<Texture> texture;
-    
+
                 size_t fileSize;
                 const void* dataPtr = ResourceSystem::GetDataPointer(fileSize, path);
-                
+
                 if (dataPtr != nullptr && fileSize)
                 {
                     texture = Texture::Create();
@@ -70,13 +70,13 @@ namespace GfxRenderEngine
                 {
                     texture = nullptr;
                 }
-    
+
                 return texture;
             }
         }
-    
+
     #else
-    
+
         namespace ResourceSystem
         {
             const void* GetDataPointer(size_t& fileSize, int resourceID, const std::string& resourceClass)
@@ -85,18 +85,18 @@ namespace GfxRenderEngine
                 fileSize = resource.GetSize();
                 return resource.GetDataPointer();
             }
-    
+
             const void* GetDataPointer(size_t& fileSize, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 return GetDataPointer(fileSize, resourceID, resourceClass);
             }
-    
+
             bool GetResourceString(std::string_view& destination, const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 bool ok = false;
                 size_t fileSize;
                 uchar* data = (uchar*) GetDataPointer(fileSize, resourceID, resourceClass);
-    
+
                 if (data != nullptr)
                 {
                     ok = true;
@@ -104,14 +104,14 @@ namespace GfxRenderEngine
                 }
                 return ok;
             }
-    
+
             std::shared_ptr<Texture> GetTextureFromMemory(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */)
             {
                 std::shared_ptr<Texture> texture;
-                
+
                 size_t fileSize;
                 const void* dataPtr = GetDataPointer(fileSize, resourceID, resourceClass);
-                
+
                 if (dataPtr != nullptr && fileSize)
                 {
                     texture = Texture::Create();
@@ -122,10 +122,10 @@ namespace GfxRenderEngine
                 {
                     texture = nullptr;
                 }
-                
+
                 return texture;
             }
         }
-    
+
     #endif
 }

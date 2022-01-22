@@ -31,27 +31,27 @@ namespace GfxRenderEngine
     class VK_Cursor: public Cursor
     {
     public:
-    
+
         VK_Cursor();
         ~VK_Cursor();
-    
+
         virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) override;
         virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) override;
         virtual void DisallowCursor() override;
         virtual void RestoreCursor() override;
         virtual void AllowCursor() override;
-        
+
     private:
-    
+
         bool SetCursor();
-    
+
     private:
-    
+
         int m_Width, m_Height, m_BitsPerPixel;
         uint m_HotX, m_HotY;
         uchar* m_Pixels;
         GLFWcursor* m_Cursor;
         GLFWwindow* m_Window;
-    
+
     };
 }

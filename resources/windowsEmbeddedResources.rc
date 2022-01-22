@@ -10,4 +10,5 @@ IDR_VERTEX_SHADER        TEXT                    "engine\\shader\\vertexShader.v
 IDR_FRAGMENT_SHADER      TEXT                    "engine\\shader\\fragmentShader.frag"
 IDR_SD_LCTRL_DB          TEXT                    "resources\\sdl\\gamecontrollerdb.txt"
 IDR_WAVES                OGG                     "resources\\waves.ogg"
+IDR_BUCKLE               OGG                     "resources\\buckle.ogg"
 

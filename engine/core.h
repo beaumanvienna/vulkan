@@ -41,20 +41,20 @@ namespace GfxRenderEngine
     class Engine
     {
     public:
-    
-    
+
+
     public:
-    
+
         Engine(const std::string& configFilePath);
         ~Engine();
-    
+
         bool Start();
         void OnUpdate();
         void OnEvent(Event& event);
         void OnRender();
         void Shutdown();
         void Quit();
-    
+
         void InitSettings();
         void ApplyAppSettings();
         bool IsPaused() const { return m_Paused; }
@@ -67,36 +67,39 @@ namespace GfxRenderEngine
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
         void SetEntities(std::vector<Entity>* entities) { m_Window->SetEntities(entities); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
-    
+
         void EnableMousePointer() { m_Window->EnableMousePointer(); }
         void DisableMousePointer() { m_Window->DisableMousePointer(); }
         void AllowCursor()    { m_Window->AllowCursor(); }
         void DisallowCursor() { m_Window->DisallowCursor(); }
 
+        void PlaySound(std::string filename) { m_Audio->PlaySound(filename); }
+        void PlaySound(const char* path, int resourceID, const std::string& resourceClass) { m_Audio->PlaySound(path, resourceID, resourceClass); }
+
         std::shared_ptr<Renderer> GetRenderer() const { return m_Window->GetRenderer(); }
-    
+
     public:
-    
+
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
-    
+
     private:
-    
+
         static void SignalHandler(int signal);
         void ToggleFullscreen();
         void AudioCallback(int eventType);
-    
+
     private:
-    
+
         std::string m_HomeDir;
         std::string m_ConfigFilePath;
         std::shared_ptr<Window> m_Window;
         std::shared_ptr<Audio> m_Audio;
         Controller m_Controller;
         Timer m_DisableMousePointerTimer;
-    
+
         bool m_Running, m_Paused;
-    
+
     };
 }

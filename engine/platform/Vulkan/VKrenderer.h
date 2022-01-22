@@ -54,19 +54,19 @@ namespace GfxRenderEngine
         void EndFrame();
         void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer);
         void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
-        
+
         virtual void BeginScene() override;
         virtual void Submit() override;
         virtual void EndScene() override;
 
     private:
-    
+
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void RecreateSwapChain();
 
     private:
-    
+
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
 

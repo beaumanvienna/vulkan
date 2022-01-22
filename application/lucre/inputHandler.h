@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include "engine.h"
 #include "scene/entity.h"
 
@@ -42,7 +44,8 @@ namespace LucreApp
         InputHandler(const InputHandlerSpec& spec);
         ~InputHandler() {}
 
-        void OnUpdate(Transform2DComponent& transform);
+        void GetTransform2D(Transform2DComponent& transform);
+        void HandleSound(int id, std::function<void(int id)> callback);
 
     private:
 
