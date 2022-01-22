@@ -2,10 +2,13 @@
 A Vulkan Render Engine<br/>
 <br/>
 <br/>
-Features: Vulkan support for 3D rendering, gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager<br/>
+Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager<br/>
 <br/>
-Press "f" to toggle fullscreen and ESC to exit
-<br/> To blacklist a GPU, enter its name or a substring in engine.cfg.
+* Press "f" to toggle fullscreen.<br/>
+* Use the left and right sticks on the controller to move the top left quad around and scale it. The A button plays a test sound.<br/>
+* Press ESC or the guide button on the controller to exit.<br/>
+<br/>
+To blacklist a GPU, enter its name or a substring in engine.cfg.
 <br/>
 ## Build Instructions<br/>
 

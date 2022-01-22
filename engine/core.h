@@ -77,6 +77,7 @@ namespace GfxRenderEngine
         void PlaySound(const char* path, int resourceID, const std::string& resourceClass) { m_Audio->PlaySound(path, resourceID, resourceClass); }
 
         std::shared_ptr<Renderer> GetRenderer() const { return m_Window->GetRenderer(); }
+        void SetAppEventCallback(EventCallbackFunction eventCallback);
 
     public:
 
@@ -98,6 +99,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Audio> m_Audio;
         Controller m_Controller;
         Timer m_DisableMousePointerTimer;
+        EventCallbackFunction m_AppEventCallback;
 
         bool m_Running, m_Paused;
 

@@ -48,6 +48,7 @@ namespace LucreApp
         bool Start() override;
         void Shutdown() override;
         void OnUpdate() override;
+        void OnEvent(Event& event) override;
 
         static std::shared_ptr<Lucre> Create();
 

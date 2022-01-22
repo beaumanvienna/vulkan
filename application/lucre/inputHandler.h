@@ -45,7 +45,6 @@ namespace LucreApp
         ~InputHandler() {}
 
         void GetTransform2D(Transform2DComponent& transform);
-        void HandleSound(int id, std::function<void(int id)> callback);
 
     private:
 

@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "coreSettings.h"
 #include "resources/resources.h"
+#include "events/controllerEvent.h"
 
 namespace LucreApp
 {
@@ -73,7 +74,6 @@ namespace LucreApp
         m_Renderer->BeginScene();
 
         m_InputHandler->GetTransform2D(m_UserInput);
-        m_InputHandler->HandleSound(IDR_BUCKLE, [this](int resourceID){ PlaySound(resourceID); });
 
         float scaleAspectRatio = 1.0f;
         if (CoreSettings::m_EnableFullscreen)
@@ -238,4 +238,23 @@ namespace LucreApp
         }
     }
 
+    void Lucre::OnEvent(Event& event)
+    {
+        EventDispatcher dispatcher(event);
+
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event)
+            {
+                switch (event.GetControllerButton())
+                {
+                    case Controller::BUTTON_GUIDE:
+                        m_Engine->Shutdown();
+                        break;
+                    case Controller::BUTTON_A:
+                        PlaySound(IDR_BUCKLE);
+                        break;
+                }
+                return false;
+            }
+        );
+    }
 }

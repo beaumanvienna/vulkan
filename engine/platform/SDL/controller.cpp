@@ -162,8 +162,6 @@ namespace GfxRenderEngine
                 int indexID = m_InstanceToIndex[SDLevent.caxis.which];
                 int axis = SDLevent.caxis.axis;
                 int value = SDLevent.caxis.value;
-                ControllerAxisMovedEvent event(indexID, axis, value);
-                m_EventCallback(event);
                 break;
             }
             case SDL_JOYBUTTONDOWN:
@@ -187,8 +185,6 @@ namespace GfxRenderEngine
                 int indexID = m_InstanceToIndex[SDLevent.jaxis.which];
                 int axis = SDLevent.jaxis.axis;
                 int value = SDLevent.jaxis.value;
-                JoystickAxisMovedEvent event(indexID, axis, value);
-                m_EventCallback(event);
                 break;
             }
             case SDL_JOYHATMOTION:
@@ -196,8 +192,6 @@ namespace GfxRenderEngine
                 int indexID = m_InstanceToIndex[SDLevent.jhat.which];
                 int hat = SDLevent.jhat.hat;
                 int value = SDLevent.jhat.value;
-                JoystickHatMovedEvent event(indexID, hat, value);
-                m_EventCallback(event);
                 break;
             }
             case SDL_JOYBALLMOTION:

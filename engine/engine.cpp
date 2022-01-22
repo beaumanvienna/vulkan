@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
         {
             return -1;
         }
+        engine->SetAppEventCallback([&](Event& event) { application->OnEvent(event); } );
     }
 
     LOG_CORE_INFO("entering main application");

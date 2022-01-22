@@ -23,6 +23,9 @@
 #pragma once
 
 #include <memory>
+
+#include "events/event.h"
+
 namespace GfxRenderEngine
 {
     class Application
@@ -36,6 +39,7 @@ namespace GfxRenderEngine
         virtual bool Start() = 0;
         virtual void Shutdown() = 0;
         virtual void OnUpdate() = 0;
+        virtual void OnEvent(Event& event) = 0;
 
         static std::shared_ptr<Application> Create();
 

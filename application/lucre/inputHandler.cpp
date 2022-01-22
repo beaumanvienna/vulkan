@@ -61,21 +61,4 @@ namespace LucreApp
         transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.01f, 2.0f);
         transform.m_Scale.y = transform.m_Scale.x;
     }
-
-    void InputHandler::HandleSound(int id, std::function<void(int id)> callback)
-    {
-        static bool pressed = false;
-        if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_A))
-        {
-            if (!pressed)
-            {
-                callback(id);
-                pressed = true;
-            }
-        }
-        else
-        {
-            pressed = false;
-        }
-    }
 }

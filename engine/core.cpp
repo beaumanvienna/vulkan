@@ -218,6 +218,11 @@ namespace GfxRenderEngine
             }
         );
 
+        // dispatch to application
+        if (!event.IsHandled())
+        {
+            m_AppEventCallback(event);
+        }
     }
 
 
@@ -284,5 +289,10 @@ namespace GfxRenderEngine
     void Engine::ApplyAppSettings()
     {
         m_SettingsManager.ApplySettings();
+    }
+
+    void Engine::SetAppEventCallback(EventCallbackFunction eventCallback)
+    {
+        m_AppEventCallback = eventCallback;
     }
 }
