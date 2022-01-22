@@ -47,6 +47,7 @@ namespace LucreApp
 
         m_Engine = Engine::m_Engine;
         m_Engine->SetEntities(&m_Entities);
+        m_Renderer = m_Engine->GetRenderer();
 
         m_Window = m_Engine->GetWindow();
         m_Window->SetWindowAspectRatio();
@@ -66,6 +67,9 @@ namespace LucreApp
 
     void Lucre::OnUpdate()
     {
+        // draw new scene
+        m_Renderer->BeginScene();
+        
         m_InputHandler->OnUpdate(m_UserInput);
 
         float scaleAspectRatio = 1.0f;
@@ -113,6 +117,9 @@ namespace LucreApp
             quad.m_Transform2D.m_Rotation = rotation;
             m_Entities.push_back(std::move(quad));
         }
+        
+        m_Renderer->Submit();
+        m_Renderer->EndScene();
     }
 
     std::shared_ptr<Lucre> Lucre::Create()

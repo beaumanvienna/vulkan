@@ -28,6 +28,7 @@
 #include "engine.h"
 #include "events/event.h"
 #include "renderer/model.h"
+#include "renderer/renderer.h"
 #include "scene/entity.h"
 
 namespace GfxRenderEngine
@@ -79,6 +80,7 @@ namespace GfxRenderEngine
     
         virtual std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) = 0;
         virtual void SetEntities(std::vector<Entity>* entities) = 0;
+        virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
         
         static std::unique_ptr<Window> Create(const WindowProperties& props);
     

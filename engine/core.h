@@ -32,8 +32,9 @@
 #include "platform/SDL/controller.h"
 #include "platform/SDL/timer.h"
 #include "platform/window.h"
-#include "audio/audio.h"
+#include "renderer/renderer.h"
 #include "renderer/model.h"
+#include "audio/audio.h"
 
 namespace GfxRenderEngine
 {
@@ -71,6 +72,8 @@ namespace GfxRenderEngine
         void DisableMousePointer() { m_Window->DisableMousePointer(); }
         void AllowCursor()    { m_Window->AllowCursor(); }
         void DisallowCursor() { m_Window->DisallowCursor(); }
+
+        std::shared_ptr<Renderer> GetRenderer() const { return m_Window->GetRenderer(); }
     
     public:
     

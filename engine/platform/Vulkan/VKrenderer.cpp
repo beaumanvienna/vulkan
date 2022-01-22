@@ -1,0 +1,232 @@
+/* Engine Copyright (c) 2022 Engine Development Team 
+   https://github.com/beaumanvienna/gfxRenderEngine
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to deal in the Software without restriction,
+   including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software,
+   and to permit persons to whom the Software is furnished to do so,
+   subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+
+#include "engine.h"
+#include "core.h"
+
+#include "VKrenderer.h"
+#include "VKwindow.h"
+
+namespace GfxRenderEngine
+{
+    VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
+        : m_Window{window}, m_Device{device},
+          m_CurrentImageIndex{0},
+          m_CurrentFrameIndex{0},
+          m_FrameInProgress{false}
+    {
+        RecreateSwapChain();
+        CreateCommandBuffers();
+    }
+
+    VK_Renderer::~VK_Renderer()
+    {
+        FreeCommandBuffers();
+    }
+
+    void VK_Renderer::RecreateSwapChain()
+    {
+        auto extent = m_Window->GetExtend();
+        while (extent.width == 0 || extent.height == 0)
+        {
+            extent = m_Window->GetExtend();
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(m_Device->Device());
+    
+        // create the swapchain and pipeline
+        if (m_SwapChain == nullptr)
+        {
+            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent);
+        }
+        else
+        {
+            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, std::move(m_SwapChain));
+            if (m_SwapChain->ImageCount() != m_CommandBuffers.size())
+            {
+                FreeCommandBuffers();
+                CreateCommandBuffers();
+            }
+        }
+
+    }
+
+    void VK_Renderer::CreateCommandBuffers()
+    {
+        m_CommandBuffers.resize(m_SwapChain->ImageCount());
+        VkCommandBufferAllocateInfo allocateInfo{};
+        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocateInfo.commandPool = m_Device->GetCommandPool();
+        allocateInfo.commandBufferCount = static_cast<uint>(m_CommandBuffers.size());
+    
+        if (vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data()) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to allocate command buffers");
+        }
+    }
+    
+    void VK_Renderer::FreeCommandBuffers()
+    {
+        vkFreeCommandBuffers
+        (
+            m_Device->Device(),
+            m_Device->GetCommandPool(),
+            static_cast<uint>(m_CommandBuffers.size()),
+            m_CommandBuffers.data()
+        );
+        m_CommandBuffers.clear();
+    }
+
+    VkCommandBuffer VK_Renderer::GetCurrentCommandBuffer() const
+    {
+        ASSERT(m_FrameInProgress);
+        return m_CommandBuffers[m_CurrentFrameIndex];
+    }
+
+    VkCommandBuffer VK_Renderer::BeginFrame()
+    {
+        ASSERT(!m_FrameInProgress);
+
+        auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            RecreateSwapChain();
+            return nullptr;
+        }
+
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+        }
+
+        m_FrameInProgress = true;
+        
+        auto commandBuffer = GetCurrentCommandBuffer();
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to begin recording command buffer!");
+        }
+
+        return commandBuffer;
+
+    }
+
+    void VK_Renderer::EndFrame()
+    {
+        ASSERT(m_FrameInProgress);
+
+        auto commandBuffer = GetCurrentCommandBuffer();
+
+        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("recording of command buffer failed");
+        }
+
+        auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, &m_CurrentImageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Window->WasResized())
+        {
+            m_Window->ResetWindowResizedFlag();
+            RecreateSwapChain();
+        }
+    
+        if (result != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to present swap chain image");
+        }
+
+        m_FrameInProgress = false;
+    }
+
+    void VK_Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
+        renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(m_CurrentImageIndex);
+        
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+    
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
+        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+    
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChain->GetSwapChainExtent().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetSwapChainExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    }
+
+    void VK_Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        vkCmdEndRenderPass(commandBuffer);
+    }
+
+    void VK_Renderer::BeginScene()
+    {
+        if (m_CurrentCommandBuffer = BeginFrame())
+        {
+            BeginSwapChainRenderPass(m_CurrentCommandBuffer);
+        }
+    }
+
+    void VK_Renderer::Submit()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_Window->RenderEntities(m_CurrentCommandBuffer);
+        }
+    }
+
+    void VK_Renderer::EndScene()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            EndSwapChainRenderPass(m_CurrentCommandBuffer);
+            EndFrame();
+        }
+    }
+
+}

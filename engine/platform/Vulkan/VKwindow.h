@@ -32,6 +32,7 @@
 #include "VKpipeline.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
+#include "VKrenderer.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
@@ -85,23 +86,18 @@ namespace GfxRenderEngine
         void DisableMousePointer() override;
         virtual void AllowCursor() override;
         virtual void DisallowCursor() override;
-    
+
+        bool WasResized() const { return m_WindowProperties.m_FramebufferResized; }
+        void ResetWindowResizedFlag() { m_WindowProperties.m_FramebufferResized = false; }
+        virtual std::shared_ptr<Renderer> GetRenderer() const override { return m_Renderer; }
+        void RenderEntities(VkCommandBuffer commandBuffer);
+
     private:
-    
-        void DrawFrame();
+
         void CreateWindow();
         void CreatePipeline();
         void CreatePipelineLayout();
-        void CreateCommandBuffers();
-        void FreeCommandBuffers();
-        void RenderEntities(VkCommandBuffer commandBuffer);
-    
-        void RecreateSwapChain();
-        void RecordCommandBuffer(int imageIndex);
-    
-        bool WasResized() const { return m_WindowProperties.m_FramebufferResized; }
-        void ResetWindowResizedFlag() { m_WindowProperties.m_FramebufferResized = false; }
-    
+
     private:
     
         GLFWwindow* m_Window;
@@ -124,10 +120,9 @@ namespace GfxRenderEngine
     
         WindowData m_WindowProperties;
         std::shared_ptr<VK_Device> m_Device;
+        std::shared_ptr<VK_Renderer> m_Renderer;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
-        std::unique_ptr<VK_SwapChain> m_SwapChain;
         VkPipelineLayout m_PipelineLayout;
-        std::vector<VkCommandBuffer> m_CommandBuffers;
         std::vector<Entity>* m_Entities;
         
         uint m_RefreshRate;

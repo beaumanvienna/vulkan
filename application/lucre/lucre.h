@@ -28,6 +28,7 @@
 #include "engine.h"
 #include "scene/entity.h"
 #include "platform/window.h"
+#include "renderer/renderer.h"
 #include "renderer/cursor.h"
 
 #include "inputHandler.h"
@@ -71,6 +72,7 @@ namespace LucreApp
         std::shared_ptr<Cursor> m_Cursor;
         std::shared_ptr<Cursor> m_EmptyCursor;
         std::shared_ptr<Model> m_Model;
+        std::shared_ptr<Renderer> m_Renderer;
 
         std::unique_ptr<InputHandler> m_InputHandler;
         Transform2DComponent m_UserInput;
