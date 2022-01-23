@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -22,37 +22,48 @@
 
 #pragma once
 
-#include "engine.h"
-#include "renderer/cursor.h"
+#include <memory>
+#include <vector>
+#include <vulkan/vulkan.h>
 
-#include "VKwindow.h"
+#include "engine.h"
+#include "scene/entity.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
 
 namespace GfxRenderEngine
 {
-    class VK_Cursor: public Cursor
+    struct VK_SimplePushConstantData
     {
+        glm::mat2 m_Transform{1.0f};
+        glm::vec2 m_Offset{0.0f};
+        alignas(16) glm::vec3 m_Color{1.0f};
+    };
+
+    class VK_RenderSystem
+    {
+
     public:
 
-        VK_Cursor();
-        ~VK_Cursor();
+        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
+        ~VK_RenderSystem();
 
-        virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) override;
-        virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) override;
-        virtual void DisallowCursor() override;
-        virtual void RestoreCursor() override;
-        virtual void AllowCursor() override;
+        VK_RenderSystem(const VK_RenderSystem&) = delete;
+        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
 
-    private:
-
-        bool SetCursor();
+        void RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities);
 
     private:
 
-        int m_Width, m_Height, m_BitsPerPixel;
-        uint m_HotX, m_HotY;
-        uchar* m_Pixels;
-        GLFWcursor* m_Cursor;
-        GLFWwindow* m_Window;
+        void CreatePipelineLayout();
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        std::shared_ptr<VK_Device> m_Device;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+        VkPipelineLayout m_PipelineLayout;
 
     };
 }

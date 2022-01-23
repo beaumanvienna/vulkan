@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	echo **************** make -j$(shell cat /proc/cpuinfo | grep -c vendor_id) ****************
+	export DEB_BUILD_MAINT_OPTIONS=
+	export DEB_CFLAGS_MAINT_STRIP="-g -fstack-protector-strong"
+	export DEB_CPPFLAGS_MAINT_STRIP="-g -fstack-protector-strong"
+	export DEB_CXXFLAGS_MAINT_STRIP="-g -fstack-protector-strong"
+
+override_dh_auto_build:
+	make -j$(shell cat /proc/cpuinfo | grep -c vendor_id) lucre verbose=1 config=release

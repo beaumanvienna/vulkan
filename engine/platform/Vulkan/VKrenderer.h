@@ -30,6 +30,7 @@
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
+#include "VKrenderSystem.h"
 
 namespace GfxRenderEngine
 {
@@ -54,9 +55,10 @@ namespace GfxRenderEngine
         void EndFrame();
         void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer);
         void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
+        int GetFrameIndex() const;
 
         virtual void BeginScene() override;
-        virtual void Submit() override;
+        virtual void Submit(std::vector<Entity>& entities) override;
         virtual void EndScene() override;
 
     private:
@@ -69,6 +71,7 @@ namespace GfxRenderEngine
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
+        std::unique_ptr<VK_RenderSystem> m_RenderSystem;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;
         std::vector<VkCommandBuffer> m_CommandBuffers;

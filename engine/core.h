@@ -65,7 +65,6 @@ namespace GfxRenderEngine
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
         double GetTime() const { return m_Window->GetTime(); }
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
-        void SetEntities(std::vector<Entity>* entities) { m_Window->SetEntities(entities); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }

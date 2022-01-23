@@ -47,7 +47,6 @@ namespace LucreApp
         consoleInputHandler.detach();
 
         m_Engine = Engine::m_Engine;
-        m_Engine->SetEntities(&m_Entities);
         m_Renderer = m_Engine->GetRenderer();
 
         m_Window = m_Engine->GetWindow();
@@ -121,7 +120,7 @@ namespace LucreApp
             m_Entities.push_back(std::move(quad));
         }
 
-        m_Renderer->Submit();
+        m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
     }
 

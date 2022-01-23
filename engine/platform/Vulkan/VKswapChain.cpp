@@ -341,6 +341,7 @@ namespace GfxRenderEngine
     void VK_SwapChain::CreateDepthResources()
     {
         VkFormat depthFormat = FindDepthFormat();
+        m_SwapChainDepthFormat = depthFormat;
         VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
 
         m_DepthImages.resize(ImageCount());
@@ -463,5 +464,12 @@ namespace GfxRenderEngine
             {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+
+    bool VK_SwapChain::CompareSwapFormats(const VK_SwapChain& swapChain) const
+    {
+        bool depthFormatEqual = (swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat);
+        bool imageFormatEqual = (swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat);
+        return (depthFormatEqual && imageFormatEqual);
     }
 }

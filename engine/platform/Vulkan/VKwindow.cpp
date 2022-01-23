@@ -26,6 +26,8 @@
 #include "events/applicationEvent.h"
 #include "events/mouseEvent.h"
 #include "events/keyEvent.h"
+#include "resources/resources.h"
+#include "stb_image.h"
 
 #include "VKwindow.h"
 
@@ -62,38 +64,33 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("{0}  extensions supported", extensionCount);
 
             // create a device
-            m_Device = std::make_shared<VK_Device>(this);
-            m_Renderer = std::make_shared<VK_Renderer>(this, m_Device);
+            m_Device       = std::make_shared<VK_Device>(this);
+            m_Renderer     = std::make_shared<VK_Renderer>(this, m_Device);
 
-            CreatePipelineLayout();
-            CreatePipeline();
-
-            if (m_Window && m_Pipeline)
+            if (m_Window)
             {
                 m_OK = true;
             }
             else
             {
-                LOG_APP_WARN("Houston, we have problem: (m_Window && m_SwapChain && m_Pipeline) failed");
+                LOG_APP_WARN("Houston, we have problem: (m_Window) failed");
             }
         }
 
-        //    // set app icon
-        //    GLFWimage icon;
-        //    size_t fileSize;
-        //    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_ENGINE.png", IDB_ENGINE_LOGO, "PNG");
-        //    icon.pixels = stbi_load_from_memory(data, fileSize, &icon.width, &icon.height, 0, 4); //rgba channels
-        //    if (icon.pixels) 
-        //    {
-        //        glfwSetWindowIcon(m_Window, 1, &icon); 
-        //        stbi_image_free(icon.pixels);
-        //    }
-        //    else
-        //    {
-        //        LOG_CORE_WARN("Could not load app icon");
-        //    }
-        //
-
+        // set app icon
+        GLFWimage icon;
+        size_t fileSize;
+        const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
+        icon.pixels = stbi_load_from_memory(data, fileSize, &icon.width, &icon.height, 0, 4); //rgba channels
+        if (icon.pixels) 
+        {
+            glfwSetWindowIcon(m_Window, 1, &icon); 
+            stbi_image_free(icon.pixels);
+        }
+        else
+        {
+            LOG_CORE_WARN("Could not load app icon");
+        }
     }
 
     VK_Window::~VK_Window()
@@ -103,18 +100,10 @@ namespace GfxRenderEngine
 
     void VK_Window::Shutdown()
     {
-        vkDestroyPipelineLayout(m_Device->Device(), m_PipelineLayout, nullptr);
-
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
 
-    //void VK_Window::SetVSync(int interval)
-    //{ 
-    //    m_WindowProperties.m_VSync = interval;
-    //    m_GraphicsContext->SetVSync(interval);
-    //}
-    //
     void VK_Window::ToggleFullscreen()
     { 
         int count;
@@ -356,65 +345,6 @@ namespace GfxRenderEngine
         if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("Could not create surface");
-        }
-    }
-
-    void VK_Window::CreatePipelineLayout()
-    {
-        VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_SimplePushConstantData);
-
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
-        pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create pipeline layout!");
-        }
-    }
-    void VK_Window::CreatePipeline()
-    {
-        ASSERT(m_PipelineLayout != nullptr);
-
-        PipelineConfigInfo pipelineConfig{};
-
-        VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
-        pipelineConfig.renderPass = m_Renderer->GetSwapChainRenderPass();
-        pipelineConfig.pipelineLayout = m_PipelineLayout;
-
-        // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
-        (
-            m_Device,
-            "bin/simpleShader.vert.spv",
-            "bin/simpleShader.frag.spv",
-            pipelineConfig
-        );
-    }
-
-    void VK_Window::RenderEntities(VkCommandBuffer commandBuffer)
-    {
-        m_Pipeline->Bind(commandBuffer);
-        for (auto& entity : m_Entities[0])
-        {
-            VK_SimplePushConstantData push{};
-            push.m_Offset = entity.m_Transform2D.m_Translation;
-            push.m_Color  = entity.m_Color;
-            push.m_Transform = entity.m_Transform2D.Mat2();
-            vkCmdPushConstants(
-                commandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_SimplePushConstantData),
-                &push);
-            static_cast<VK_Model*>(entity.m_Model.get())->Bind(commandBuffer);
-            static_cast<VK_Model*>(entity.m_Model.get())->Draw(commandBuffer);
         }
     }
 

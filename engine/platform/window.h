@@ -79,7 +79,6 @@ namespace GfxRenderEngine
         virtual void DisallowCursor() = 0;
 
         virtual std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) = 0;
-        virtual void SetEntities(std::vector<Entity>* entities) = 0;
         virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
 
         static std::unique_ptr<Window> Create(const WindowProperties& props);

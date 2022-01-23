@@ -36,6 +36,8 @@ namespace GfxRenderEngine
     {
         RecreateSwapChain();
         CreateCommandBuffers();
+
+        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass());
     }
 
     VK_Renderer::~VK_Renderer()
@@ -61,11 +63,12 @@ namespace GfxRenderEngine
         }
         else
         {
-            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, std::move(m_SwapChain));
-            if (m_SwapChain->ImageCount() != m_CommandBuffers.size())
+            std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
+            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, oldSwapChain);
+
+            if (!oldSwapChain->CompareSwapFormats(*m_SwapChain.get()))
             {
-                FreeCommandBuffers();
-                CreateCommandBuffers();
+                LOG_CORE_CRITICAL("swap chain image or depth format has changed");
             }
         }
 
@@ -73,7 +76,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateCommandBuffers()
     {
-        m_CommandBuffers.resize(m_SwapChain->ImageCount());
+        m_CommandBuffers.resize(VK_SwapChain::MAX_FRAMES_IN_FLIGHT);
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -160,6 +163,7 @@ namespace GfxRenderEngine
         }
 
         m_FrameInProgress = false;
+        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
     void VK_Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
@@ -212,11 +216,11 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Submit()
+    void VK_Renderer::Submit(std::vector<Entity>& entities)
     {
         if (m_CurrentCommandBuffer)
         {
-            m_Window->RenderEntities(m_CurrentCommandBuffer);
+            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities);
         }
     }
 
@@ -227,6 +231,12 @@ namespace GfxRenderEngine
             EndSwapChainRenderPass(m_CurrentCommandBuffer);
             EndFrame();
         }
+    }
+
+    int VK_Renderer::GetFrameIndex() const
+    {
+        ASSERT(m_FrameInProgress);
+        return m_CurrentFrameIndex;
     }
 
 }

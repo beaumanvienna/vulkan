@@ -1,0 +1,43 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: lucre
+Upstream-Contact: JC <beaumanvienna@gmail.com>
+Source: https://github.com/beaumanvienna/gfxRenderEngine
+
+Files: application/* debian/* engine/* resources/* LICENSE premake5.lua engine.lua README.md vendor/*.lua vendor/*.make scripts/* *.make Makefile .github/*
+Copyright: 2021 JC <beaumanvienna@gmail.com>
+License: GPL-2+
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later
+ version. 
+
+Files: vendor/yaml-cpp/*
+Copyright: 2008-2015 Jesse Beder
+License: MIT
+
+Files: vendor/glfw/*
+Copyright: 2006-2019 Camilla Löwy
+License: Zlib
+
+Files: vendor/pamanager/*
+Copyright: Engine Development Team
+License: GPL-2
+
+Files: vendor/stb/*
+Copyright: 2017 Sean Barrett
+License: MIT
+
+Files: vendor/sdl*/*
+Copyright: 2021 Sam Lantinga (slouken@libsdl.org)
+License: Zlib
+
+Files: vendor/glm/*
+Copyright: 2005 G-Truc
+License: MIT
+
+Files: vendor/spdlog/*
+Copyright: 2016 Gabi Melman
+License: MIT
+
+

@@ -29,7 +29,6 @@
 #include "scene/entity.h"
 
 #include "VKdevice.h"
-#include "VKpipeline.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
 #include "VKrenderer.h"
@@ -39,12 +38,6 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
-    {
-        glm::mat2 m_Transform{1.0f};
-        glm::vec2 m_Offset{0.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
-    };
 
     class VK_Window : public Window
     {
@@ -57,19 +50,17 @@ namespace GfxRenderEngine
         VK_Window(const VK_Window&) = delete;
         VK_Window& operator=(const VK_Window&) = delete;
 
-        //
         bool InitGLFW();
         void Shutdown();
         void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
         VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
         void* GetBackendWindow() const override { return (void*)m_Window; }
-        //std::shared_ptr<GraphicsContext> GetGraphicsContent() const override { return m_GraphicsContext; }
+
         void OnUpdate() override;
         uint GetWidth()  const override { return m_WindowProperties.m_Width; }
         uint GetHeight() const override { return m_WindowProperties.m_Height; }
-        //
+
         void SetEventCallback(const EventCallbackFunction& callback) override;
-        //void SetVSync(int interval) override;
         void ToggleFullscreen() override;
         bool IsFullscreen() override { return m_IsFullscreen; }
         bool IsOK() const override { return m_OK; }
@@ -78,7 +69,6 @@ namespace GfxRenderEngine
         float GetWindowAspectRatio() const override { return m_WindowProperties.m_Width / (1.0f * m_WindowProperties.m_Height); }
         double GetTime() const override { return glfwGetTime(); }
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) override;
-        void SetEntities(std::vector<Entity>* entities) override { m_Entities = entities; }
 
         static void OnError(int errorCode, const char* description);
 
@@ -90,13 +80,10 @@ namespace GfxRenderEngine
         bool WasResized() const { return m_WindowProperties.m_FramebufferResized; }
         void ResetWindowResizedFlag() { m_WindowProperties.m_FramebufferResized = false; }
         virtual std::shared_ptr<Renderer> GetRenderer() const override { return m_Renderer; }
-        void RenderEntities(VkCommandBuffer commandBuffer);
 
     private:
 
         void CreateWindow();
-        void CreatePipeline();
-        void CreatePipelineLayout();
 
     private:
 
@@ -121,9 +108,6 @@ namespace GfxRenderEngine
         WindowData m_WindowProperties;
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_Renderer> m_Renderer;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
-        std::vector<Entity>* m_Entities;
 
         uint m_RefreshRate;
         bool m_IsFullscreen;

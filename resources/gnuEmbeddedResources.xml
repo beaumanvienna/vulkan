@@ -15,6 +15,9 @@
     <gresource prefix="/images/">
         <file>images/I_BARREL.png</file>
     </gresource>
+    <gresource prefix="/images/">
+        <file>images/I_Vulkan.png</file>
+    </gresource>
     <gresource prefix="/text/">
         <file>sdl/gamecontrollerdb.txt</file>
     </gresource>

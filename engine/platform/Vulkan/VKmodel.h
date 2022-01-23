@@ -26,8 +26,10 @@
 #include <vector>
 
 #include "engine.h"
-#include "VKdevice.h"
 #include "renderer/model.h"
+
+#include "VKdevice.h"
+
 namespace GfxRenderEngine
 {
     class VK_Model : public Model

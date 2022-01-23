@@ -25,9 +25,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <vulkan/vulkan.h>
 
 #include "VKdevice.h"
-#include <vulkan/vulkan.h>
 
 namespace GfxRenderEngine
 {
@@ -62,6 +62,7 @@ namespace GfxRenderEngine
 
         VkResult AcquireNextImage(uint *imageIndex);
         VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint *imageIndex);
+        bool CompareSwapFormats(const VK_SwapChain& swapChain) const;
 
     private:
         void Init();
@@ -78,6 +79,7 @@ namespace GfxRenderEngine
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat m_SwapChainImageFormat;
+        VkFormat m_SwapChainDepthFormat;
         VkExtent2D m_SwapChainExtent;
 
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;

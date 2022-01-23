@@ -26,7 +26,9 @@
 #include <memory>
 
 #include "engine.h"
+
 #include "VKdevice.h"
+
 namespace GfxRenderEngine
 {
     struct PipelineConfigInfo

@@ -1,0 +1,3 @@
+./bin/Release/lucre /usr/games
+./resources/lucre.desktop /usr/share/applications
+./resources/lucre.ico /usr/share/icons/
