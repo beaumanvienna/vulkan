@@ -72,53 +72,14 @@ namespace LucreApp
         // draw new scene
         m_Renderer->BeginScene();
 
-        m_InputHandler->GetTransform2D(m_UserInput);
+        m_InputHandler->GetTransform(m_UserInput);
 
-        float scaleAspectRatio = 1.0f;
-        if (CoreSettings::m_EnableFullscreen)
-        {
-            scaleAspectRatio = 1.0f / m_Window->GetWindowAspectRatio();
-        }
-
-        m_Entities.clear();
-        static float rotation{};
-        rotation = glm::mod(rotation + 0.025f, glm::two_pi<float>());
-        {
-            auto quad = Entity::CreateEnity();
-            quad.m_Model = m_Model;
-            quad.m_Color = glm::vec3{0.1f, 0.4f, 1.0f};
-            quad.m_Transform2D.m_Scale = glm::vec2{m_UserInput.m_Scale.x*0.5f, m_UserInput.m_Scale.y*0.5f} * scaleAspectRatio;
-            quad.m_Transform2D.m_Translation = glm::vec2{-0.55f + m_UserInput.m_Translation.x,-0.55f + m_UserInput.m_Translation.y};
-            quad.m_Transform2D.m_Rotation = rotation;
-            m_Entities.push_back(std::move(quad));
-        }
-        {
-            auto quad = Entity::CreateEnity();
-            quad.m_Model = m_Model;
-            quad.m_Color = glm::vec3{0.1f, 0.9f, 0.1f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
-            quad.m_Transform2D.m_Translation = glm::vec2{0.55f,-0.55f};
-            quad.m_Transform2D.m_Rotation = rotation;
-            m_Entities.push_back(std::move(quad));
-        }
-        {
-            auto quad = Entity::CreateEnity();
-            quad.m_Model = m_Model;
-            quad.m_Color = glm::vec3{0.6f, 0.1f, 0.1f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
-            quad.m_Transform2D.m_Translation = glm::vec2{-0.55f, 0.55f};
-            quad.m_Transform2D.m_Rotation = rotation;
-            m_Entities.push_back(std::move(quad));
-        }
-        {
-            auto quad = Entity::CreateEnity();
-            quad.m_Model = m_Model;
-            quad.m_Color = glm::vec3{0.5f, 0.4f, 0.3f};
-            quad.m_Transform2D.m_Scale = glm::vec2{0.5f, 0.5f} * scaleAspectRatio;
-            quad.m_Transform2D.m_Translation = glm::vec2{0.55f, 0.55f};
-            quad.m_Transform2D.m_Rotation = rotation;
-            m_Entities.push_back(std::move(quad));
-        }
+        m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + 0.01f, glm::two_pi<float>());
+        m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + 0.01f, glm::two_pi<float>());
+        
+        m_Entities[0].m_Transform.m_Scale = m_UserInput.m_Scale;
+        m_Entities[0].m_Transform.m_Translation.x = m_UserInput.m_Translation.x;
+        m_Entities[0].m_Transform.m_Translation.y = m_UserInput.m_Translation.y;
 
         m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
@@ -149,39 +110,69 @@ namespace LucreApp
     {
         std::vector<Vertex> vertices =
         {
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // left face (white)
+            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+            {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+            {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
 
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f, -0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // right face (yellow)
+            {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+            {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+            {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+            {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+            {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+            {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
 
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // top face (orange, remember y axis points down)
+            {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+            {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+            {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+            {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+            {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+            {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
 
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f, -0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // bottom face (red)
+            {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+            {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+            {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+            {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+            {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+            {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
 
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // nose face (blue)
+            {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+            {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+            {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+            {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+            {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+            {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
 
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f, -0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
-
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2(-0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
-
-            {glm::vec2(-0.5f, -0.5f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec2( 0.5f, -0.5f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec2( 0.5f,  0.5f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            // tail face (green)
+            {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+            {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+            {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+            {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+            {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+            {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
         };
+
+        glm::vec3 offset{0.0f, 0.0f, 0.0f};
+        for (auto& vertex : vertices)
+        {
+            vertex.position += offset;
+        }
+
         m_Model = m_Engine->LoadModel(vertices);
+
+        m_Entities.clear();
+        auto cube = Entity::CreateEnity();
+        cube.m_Model = m_Model;
+        cube.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 0.5f};
+        cube.m_Transform.m_Scale = glm::vec3{0.5f, 0.5f, 0.5f};
+        m_Entities.push_back(std::move(cube));
 
     }
 

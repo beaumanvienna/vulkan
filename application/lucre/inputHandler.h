@@ -44,7 +44,7 @@ namespace LucreApp
         InputHandler(const InputHandlerSpec& spec);
         ~InputHandler() {}
 
-        void GetTransform2D(Transform2DComponent& transform);
+        void GetTransform(TransformComponent& transform);
 
     private:
 

@@ -36,8 +36,7 @@ namespace GfxRenderEngine
 {
     struct VK_SimplePushConstantData
     {
-        glm::mat2 m_Transform{1.0f};
-        glm::vec2 m_Offset{0.0f};
+        glm::mat4 m_Transform{1.0f};
         alignas(16) glm::vec3 m_Color{1.0f};
     };
 

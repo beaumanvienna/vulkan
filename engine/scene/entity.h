@@ -30,13 +30,13 @@
 namespace GfxRenderEngine
 {
 
-    struct Transform2DComponent
+    struct TransformComponent
     {
-        glm::vec2 m_Scale{1.0f, 1.0f};
-        float m_Rotation{0.0f};
-        glm::vec2 m_Translation{0.0f, 0.0f};
+        glm::vec3 m_Scale{1.0f};
+        glm::vec3 m_Rotation{};
+        glm::vec3 m_Translation{};
 
-        glm::mat2 Mat2();
+        glm::mat4 Mat4();
     };
 
     class Entity
@@ -63,7 +63,7 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Model> m_Model;
         glm::vec3 m_Color;
-        Transform2DComponent m_Transform2D{};
+        TransformComponent m_Transform{};
 
     private:
 

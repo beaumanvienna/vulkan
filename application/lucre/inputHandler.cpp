@@ -29,7 +29,7 @@ namespace LucreApp
         : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}
     {}
 
-    void InputHandler::GetTransform2D(Transform2DComponent& transform)
+    void InputHandler::GetTransform(TransformComponent& transform)
     {
         // left
         glm::vec2 controllerAxisInputLeft = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);
@@ -38,13 +38,13 @@ namespace LucreApp
         {
             transform.m_Translation.x += controllerAxisInputLeft.x * m_Sensitivity;
         }
-        transform.m_Translation.x = std::clamp(transform.m_Translation.x, -0.6f, 1.7f);
+        transform.m_Translation.x = std::clamp(transform.m_Translation.x, -1.0f, 1.0f);
 
         if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
         {
             transform.m_Translation.y -= controllerAxisInputLeft.y * m_Sensitivity;
         }
-        transform.m_Translation.y = std::clamp(transform.m_Translation.y, -0.6f, 1.7f);
+        transform.m_Translation.y = std::clamp(transform.m_Translation.y, -1.0f, 1.0f);
 
         // right
         glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
@@ -58,7 +58,8 @@ namespace LucreApp
         {
             transform.m_Scale.x -= controllerAxisInputRight.y * m_Sensitivity;
         }
-        transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.01f, 2.0f);
+        transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.01f, 0.5f);
         transform.m_Scale.y = transform.m_Scale.x;
+        transform.m_Scale.z = transform.m_Scale.x;
     }
 }

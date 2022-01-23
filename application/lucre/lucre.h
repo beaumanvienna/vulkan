@@ -77,7 +77,7 @@ namespace LucreApp
         std::shared_ptr<Renderer> m_Renderer;
 
         std::unique_ptr<InputHandler> m_InputHandler;
-        Transform2DComponent m_UserInput;
+        TransformComponent m_UserInput;
 
     };
 }

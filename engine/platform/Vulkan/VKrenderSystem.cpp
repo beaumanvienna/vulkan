@@ -82,9 +82,8 @@ namespace GfxRenderEngine
         for (auto& entity : entities)
         {
             VK_SimplePushConstantData push{};
-            push.m_Offset = entity.m_Transform2D.m_Translation;
             push.m_Color  = entity.m_Color;
-            push.m_Transform = entity.m_Transform2D.Mat2();
+            push.m_Transform = entity.m_Transform.Mat4();
             vkCmdPushConstants(
                 commandBuffer,
                 m_PipelineLayout,

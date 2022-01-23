@@ -30,6 +30,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm.hpp"
 #include "gtc/constants.hpp"
+#include "gtc/matrix_transform.hpp"
 
 #undef far
 #undef near
