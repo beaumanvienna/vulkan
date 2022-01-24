@@ -73,16 +73,18 @@ namespace LucreApp
     {
     }
 
-    void Lucre::OnUpdate()
+    void Lucre::OnUpdate(const Timestep& timestep)
     {
         m_CameraController->OnUpdate();
+
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera());
 
         m_InputHandler->GetTransform(m_UserInput);
 
-        m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + 0.01f, glm::two_pi<float>());
-        m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + 0.01f, glm::two_pi<float>());
+        auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
+        m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
+        m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
         m_Entities[0].m_Transform.m_Scale = m_UserInput.m_Scale;
         m_Entities[0].m_Transform.m_Translation.x = m_UserInput.m_Translation.x;

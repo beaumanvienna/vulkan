@@ -221,7 +221,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities, *m_Camera);
+            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities, m_Camera);
         }
     }
 

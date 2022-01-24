@@ -40,7 +40,8 @@ namespace GfxRenderEngine
     Engine::Engine(const std::string& configFilePath) :
                 m_ConfigFilePath(configFilePath),
                 m_DisableMousePointerTimer(Timer(2500)),
-                m_Running(false), m_Paused(false)
+                m_Running(false), m_Paused(false),
+                m_Timestep{0ms}
     {
         #ifdef _MSC_VER
             m_HomeDir = "";
@@ -137,6 +138,11 @@ namespace GfxRenderEngine
     void Engine::OnUpdate()
     {
         m_Window->OnUpdate();
+
+        auto time = GetTime();
+        m_Timestep = time - m_TimeLastFrame;
+        m_TimeLastFrame = time;
+
         if (!m_Window->IsOK())
         {
             Shutdown();
@@ -294,5 +300,10 @@ namespace GfxRenderEngine
     void Engine::SetAppEventCallback(EventCallbackFunction eventCallback)
     {
         m_AppEventCallback = eventCallback;
+    }
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> Engine::GetTime() const
+    {
+        return std::chrono::high_resolution_clock::now();
     }
 }

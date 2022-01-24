@@ -24,11 +24,13 @@
 
 #include <memory>
 #include <string>
+#include <chrono>
 
 #include "engine.h"
 #include "events/event.h"
 #include "settings/settings.h"
 #include "coreSettings.h"
+#include "auxiliary/timestep.h"
 #include "platform/SDL/controller.h"
 #include "platform/SDL/timer.h"
 #include "platform/window.h"
@@ -62,7 +64,7 @@ namespace GfxRenderEngine
 
         std::string& GetHomeDirectory() { return m_HomeDir; }
         std::string GetConfigFilePath() const { return m_ConfigFilePath; }
-        double GetTime() const { return m_Window->GetTime(); }
+        std::chrono::time_point<std::chrono::high_resolution_clock> GetTime() const;
 
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
@@ -80,6 +82,8 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Renderer> GetRenderer() const { return m_Window->GetRenderer(); }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
+
+        Timestep GetTimestep() const { return m_Timestep; }
 
     public:
 
@@ -102,6 +106,9 @@ namespace GfxRenderEngine
         Controller m_Controller;
         Timer m_DisableMousePointerTimer;
         EventCallbackFunction m_AppEventCallback;
+
+        Timestep m_Timestep;
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;
 
         bool m_Running, m_Paused;
 

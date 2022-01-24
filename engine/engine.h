@@ -31,6 +31,7 @@
 #include "glm.hpp"
 #include "gtc/constants.hpp"
 #include "gtc/matrix_transform.hpp"
+#include <gtx/transform.hpp>
 
 #undef far
 #undef near

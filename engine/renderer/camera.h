@@ -36,30 +36,35 @@ namespace GfxRenderEngine
     {
     public:
 
-        enum ProjectionTypes
+        enum ProjectionType
         {
+            PROJECTION_UNDEFINED,
             ORTHOGRAPHIC_PROJECTION,
             PERSPECTIVE_PROJECTION
         };
 
     public:
+
         Camera();
 
         void SetOrthographicProjection(float left, float right, float bottom, float top, float near, float far);
         void SetPerspectiveProjection(float fovy, float aspect, float near, float far);
-
-        //Camera(float left, float right, float bottom, float top, float near, float far);
-        //void SetProjection(float left, float right, float bottom, float top, float near, float far);
-        //
-        //const glm::vec3& GetPosition() const { return m_Position; }
-        //const float& GetRotation() const { return m_Rotation; }
-        //
+        void SetProjection(float left, float right, float bottom, float top, float near, float far);
+        ProjectionType GetProjectionType() const { return m_ProjectionType; }
+    
+        const glm::vec3& GetPosition() const { return m_Position; }
+        const glm::vec3& GetRotation() const { return m_Rotation; }
+    
         void SetPosition(const glm::vec3& position);
-        void SetRotation(const float& rotation);
-        //
+        void SetRotation(const glm::vec3& rotation);
+
         const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-        //const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-        //const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+        const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+
+        void SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
+        void SetViewTarget(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
+        void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
 
     private:
 
@@ -67,12 +72,13 @@ namespace GfxRenderEngine
 
     private: 
 
+        ProjectionType m_ProjectionType;
         glm::mat4 m_ProjectionMatrix;
-        //glm::mat4 m_ViewMatrix;
-        //glm::mat4 m_ViewProjectionMatrix;
+        glm::mat4 m_ViewMatrix;
+        glm::mat4 m_ViewProjectionMatrix;
 
         glm::vec3 m_Position;
-        float m_Rotation = 0.0f;
+        glm::vec3 m_Rotation;
 
     };
 }

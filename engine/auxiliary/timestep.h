@@ -22,48 +22,34 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <vulkan/vulkan.h>
+#include <chrono>
 
 #include "engine.h"
-#include "renderer/camera.h"
-#include "scene/entity.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
-    {
-        glm::mat4 m_Transform{1.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
-    };
-
-    class VK_RenderSystem
+    class Timestep
     {
 
     public:
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
-        ~VK_RenderSystem();
+        Timestep(std::chrono::duration<float, std::chrono::milliseconds::period> time);
+        Timestep& operator=(const std::chrono::duration<float, std::chrono::milliseconds::period>& timestep);
 
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
+        std::chrono::duration<float, std::chrono::seconds::period> GetSeconds() const;
+        std::chrono::duration<float, std::chrono::milliseconds::period> GetMilliseconds() const;
 
-        void RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera* camera);
+        void Print() const;
+        float Count() const;
+
+        operator float() const
+        {
+            return m_Timestep.count();
+        }
 
     private:
 
-        void CreatePipelineLayout();
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
+        std::chrono::duration<float, std::chrono::milliseconds::period> m_Timestep;
 
     };
 }

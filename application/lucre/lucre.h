@@ -48,7 +48,7 @@ namespace LucreApp
 
         bool Start() override;
         void Shutdown() override;
-        void OnUpdate() override;
+        void OnUpdate(const Timestep& timestep) override;
         void OnEvent(Event& event) override;
 
         void OnResize();

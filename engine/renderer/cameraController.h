@@ -39,18 +39,22 @@ namespace GfxRenderEngine
     {
     public:
 
-        CameraController(Camera::ProjectionTypes type = Camera::PERSPECTIVE_PROJECTION);
+        CameraController(Camera::ProjectionType type = Camera::PERSPECTIVE_PROJECTION);
         void OnUpdate();
 
         void SetTranslationSpeed(float translationSpeed) { m_TranslationSpeed = translationSpeed; }
         void SetRotationSpeed(float rotationSpeed) { m_RotationSpeed = rotationSpeed; }
 
         void SetProjection();
-        void SetProjection(Camera::ProjectionTypes type);
+        void SetProjection(Camera::ProjectionType type);
+
         void SetZoomFactor(float factor);
         float GetZoomFactor() const { return m_ZoomFactor; }
-        void SetRotation(float rotation);
-        void SetTranslation(glm::vec2 translation);
+
+        void SetRotation(const glm::vec3& rotation);
+        void SetTranslation(const glm::vec2& translation);
+        void SetTranslation(const glm::vec3& translation);
+
         std::shared_ptr<Camera>& GetCamera() { return m_Camera; }
 
     private:
@@ -60,9 +64,7 @@ namespace GfxRenderEngine
         glm::vec2 m_Translation;
         float m_TranslationSpeed;
 
-        Camera::ProjectionTypes m_ProjectionType;
         float m_ZoomFactor;
-        float m_Rotation;
         float m_RotationSpeed;
 
     };

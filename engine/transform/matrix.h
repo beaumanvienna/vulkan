@@ -22,48 +22,24 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <vulkan/vulkan.h>
-
 #include "engine.h"
-#include "renderer/camera.h"
-#include "scene/entity.h"
 
-#include "VKdevice.h"
-#include "VKpipeline.h"
-
-namespace GfxRenderEngine
+namespace Matrix
 {
-    struct VK_SimplePushConstantData
-    {
-        glm::mat4 m_Transform{1.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
-    };
+    constexpr float NINETY_DEGREES = 1.5707963f;
+}
 
-    class VK_RenderSystem
-    {
+inline glm::mat4 Scale(glm::vec3 scaleVec)
+{
+    return glm::scale(glm::mat4(1.0f), scaleVec);
+}
 
-    public:
+inline glm::mat4 Translate(glm::vec3 translationVec)
+{
+    return glm::translate(glm::mat4(1.0f), translationVec);
+}
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
-        ~VK_RenderSystem();
-
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
-
-        void RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera* camera);
-
-    private:
-
-        void CreatePipelineLayout();
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
-
-    };
+inline glm::mat4 Rotate(float angle, glm::vec3 rotationVec)
+{
+    return glm::rotate(glm::mat4(1.0f), angle, rotationVec);
 }

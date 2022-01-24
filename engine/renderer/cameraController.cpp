@@ -32,48 +32,45 @@
 namespace GfxRenderEngine
 {
 
-    CameraController::CameraController(Camera::ProjectionTypes type)
-        : m_ProjectionType{type},
-          m_ZoomFactor{1.0f}
+    CameraController::CameraController(Camera::ProjectionType type)
+        : m_ZoomFactor{1.0f}
     {
-        // camera
         m_Camera = std::make_shared<Camera>();
-        SetProjection();
-
-        m_Translation = glm::vec2{0.0f};
-        m_Rotation = 0.0f;
+        SetProjection(type);
     }
 
     void CameraController::SetZoomFactor(float factor)
     {
         m_ZoomFactor = factor;
-        SetProjection();
+        SetProjection(m_Camera->GetProjectionType());
     }
 
-    void CameraController::SetRotation(float rotation)
+    void CameraController::SetRotation(const glm::vec3& rotation)
     {
-        m_Rotation = rotation;
-        m_Camera->SetRotation( m_Rotation );
+        m_Camera->SetRotation( rotation );
     }
 
-    void CameraController::SetTranslation(glm::vec2 translation)
+    void CameraController::SetTranslation(const glm::vec2& translation)
     {
-        m_Translation = translation;
-        m_Camera->SetPosition( {m_Translation.x, m_Translation.y, 0.0f} );
+        m_Camera->SetPosition( {translation.x, translation.y, 0.0f} );
     }
 
-    void CameraController::SetProjection(Camera::ProjectionTypes type)
+    void CameraController::SetTranslation(const glm::vec3& translation)
     {
-        m_ProjectionType = type;
-        SetProjection();
+        m_Camera->SetPosition(translation);
     }
 
     void CameraController::SetProjection()
     {
+        SetProjection(m_Camera->GetProjectionType());
+    }
+
+    void CameraController::SetProjection(Camera::ProjectionType type)
+    {
         // aspect ratio of main window
         float aspectRatio = Engine::m_Engine->GetWindowAspectRatio();
 
-        switch(m_ProjectionType)
+        switch(type)
         {
             case Camera::ORTHOGRAPHIC_PROJECTION:
             {

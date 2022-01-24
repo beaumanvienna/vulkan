@@ -42,7 +42,7 @@ namespace LucreApp
 
         if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
         {
-            transform.m_Translation.y += controllerAxisInputLeft.y * m_Sensitivity;
+            transform.m_Translation.y -= controllerAxisInputLeft.y * m_Sensitivity;
         }
         transform.m_Translation.y = std::clamp(transform.m_Translation.y, -1.0f, 1.0f);
 

@@ -235,15 +235,14 @@ namespace GfxRenderEngine
         }
 
         // debounce buttons
-        double previousTimeStamp;
-        double timeSinceLastEvent;
+        std::chrono::time_point<std::chrono::high_resolution_clock> previousTimeStamp;
         bool discardEvent;
 
         if (SDLevent.type == SDL_JOYBUTTONDOWN)
         {
             previousTimeStamp = m_TimeStamp;
             m_TimeStamp = Engine::m_Engine->GetTime();
-            timeSinceLastEvent = m_TimeStamp - previousTimeStamp;
+            auto timeSinceLastEvent = m_TimeStamp - previousTimeStamp;
             discardEvent = timeSinceLastEvent < DEBOUNCE_TIME;
             if (discardEvent) return;
         }

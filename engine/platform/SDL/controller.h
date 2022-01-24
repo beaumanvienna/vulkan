@@ -130,7 +130,7 @@ namespace GfxRenderEngine
 
     private:
 
-        const double DEBOUNCE_TIME = 0.5;
+        static constexpr auto DEBOUNCE_TIME = 500ms;
 
     private:
 
@@ -158,6 +158,6 @@ namespace GfxRenderEngine
         int m_ActiveController;
         std::function<void(SDL_Event& SDLevent)> m_EventLoop;
 
-        double m_TimeStamp;
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeStamp;
     };
 }

@@ -20,50 +20,40 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-#include <memory>
-#include <vector>
-#include <vulkan/vulkan.h>
-
-#include "engine.h"
-#include "renderer/camera.h"
-#include "scene/entity.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
+#include "timestep.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
+    Timestep::Timestep(std::chrono::duration<float, std::chrono::milliseconds::period> time)
+        : m_Timestep(time)
     {
-        glm::mat4 m_Transform{1.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
-    };
+    }
 
-    class VK_RenderSystem
+    Timestep& Timestep::operator=(const std::chrono::duration<float, std::chrono::milliseconds::period>& timestep)
     {
+        m_Timestep = timestep;
+        return *this;
+    }
 
-    public:
+    std::chrono::duration<float, std::chrono::seconds::period> Timestep::GetSeconds() const
+    {
+        return (std::chrono::duration<float, std::chrono::seconds::period>)m_Timestep;
+    }
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
-        ~VK_RenderSystem();
+    std::chrono::duration<float, std::chrono::milliseconds::period> Timestep::GetMilliseconds() const
+    {
+        return m_Timestep;
+    }
 
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
+    void Timestep::Print() const
+    {
+        LOG_CORE_INFO("timestep in milli seconds: {0} ms", m_Timestep.count());
+        auto inSeconds = GetSeconds();
+        LOG_CORE_INFO("timestep in seconds: {0} s", inSeconds.count());
+    }
 
-        void RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera* camera);
-
-    private:
-
-        void CreatePipelineLayout();
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
-
-    };
+    float Timestep::Count() const
+    {
+        return m_Timestep.count();
+    }
 }

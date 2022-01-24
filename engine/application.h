@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "events/event.h"
+#include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
 {
@@ -38,7 +39,7 @@ namespace GfxRenderEngine
 
         virtual bool Start() = 0;
         virtual void Shutdown() = 0;
-        virtual void OnUpdate() = 0;
+        virtual void OnUpdate(const Timestep& timestep) = 0;
         virtual void OnEvent(Event& event) = 0;
 
         static std::shared_ptr<Application> Create();
