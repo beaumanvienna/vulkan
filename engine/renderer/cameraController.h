@@ -18,52 +18,52 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+
+   The code in this file is based on and inspired by the project
+   https://github.com/TheCherno/Hazel. The license of this prject can
+   be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
+   */
 
 #pragma once
 
 #include <memory>
-#include <vector>
-#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "renderer/camera.h"
-#include "scene/entity.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
+#include "camera.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
-    {
-        glm::mat4 m_Transform{1.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
-    };
 
-    class VK_RenderSystem
+    class CameraController
     {
-
     public:
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
-        ~VK_RenderSystem();
+        CameraController(Camera::ProjectionTypes type = Camera::PERSPECTIVE_PROJECTION);
+        void OnUpdate();
 
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
+        void SetTranslationSpeed(float translationSpeed) { m_TranslationSpeed = translationSpeed; }
+        void SetRotationSpeed(float rotationSpeed) { m_RotationSpeed = rotationSpeed; }
 
-        void RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera& camera);
+        void SetProjection();
+        void SetProjection(Camera::ProjectionTypes type);
+        void SetZoomFactor(float factor);
+        float GetZoomFactor() const { return m_ZoomFactor; }
+        void SetRotation(float rotation);
+        void SetTranslation(glm::vec2 translation);
+        std::shared_ptr<Camera>& GetCamera() { return m_Camera; }
 
     private:
 
-        void CreatePipelineLayout();
-        void CreatePipeline(VkRenderPass renderPass);
+        std::shared_ptr<Camera> m_Camera;
 
-    private:
+        glm::vec2 m_Translation;
+        float m_TranslationSpeed;
 
-        std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
+        Camera::ProjectionTypes m_ProjectionType;
+        float m_ZoomFactor;
+        float m_Rotation;
+        float m_RotationSpeed;
 
     };
 }

@@ -31,6 +31,7 @@
 
 #include "engine.h"
 #include "scene/entity.h"
+#include "renderer/camera.h"
 
 namespace GfxRenderEngine
 {
@@ -50,7 +51,7 @@ namespace GfxRenderEngine
         //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
         //                        std::shared_ptr<IndexBuffer>& indexBuffer);
         //void EndScene();
-        virtual void BeginScene() = 0;
+        virtual void BeginScene(std::shared_ptr<Camera>& camera) = 0;
         virtual void EndScene() = 0;
 
         //void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));

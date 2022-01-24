@@ -76,14 +76,14 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystem::RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities)
+    void VK_RenderSystem::RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera& camera)
     {
         m_Pipeline->Bind(commandBuffer);
         for (auto& entity : entities)
         {
             VK_SimplePushConstantData push{};
             push.m_Color  = entity.m_Color;
-            push.m_Transform = entity.m_Transform.Mat4();
+            push.m_Transform = camera.GetProjectionMatrix() * entity.m_Transform.Mat4();
             vkCmdPushConstants(
                 commandBuffer,
                 m_PipelineLayout,

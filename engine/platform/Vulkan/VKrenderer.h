@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         VK_Renderer& operator=(const VK_Renderer&) = delete;
 
         VkRenderPass GetSwapChainRenderPass() const { return m_SwapChain->GetRenderPass(); }
+        float GetAspectRatio() const { return m_SwapChain->ExtentAspectRatio(); }
         bool FrameInProgress() const { return m_FrameInProgress; }
 
         VkCommandBuffer GetCurrentCommandBuffer() const;
@@ -57,7 +58,7 @@ namespace GfxRenderEngine
         void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
 
-        virtual void BeginScene() override;
+        virtual void BeginScene(std::shared_ptr<Camera>& camera) override;
         virtual void Submit(std::vector<Entity>& entities) override;
         virtual void EndScene() override;
 
@@ -72,6 +73,7 @@ namespace GfxRenderEngine
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
+        Camera* m_Camera;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;
         std::vector<VkCommandBuffer> m_CommandBuffers;

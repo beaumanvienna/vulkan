@@ -66,7 +66,7 @@ namespace GfxRenderEngine
         bool IsOK() const override { return m_OK; }
         void SetWindowAspectRatio() override;
         void SetWindowAspectRatio(int numer, int denom) override;
-        float GetWindowAspectRatio() const override { return m_WindowProperties.m_Width / (1.0f * m_WindowProperties.m_Height); }
+        float GetWindowAspectRatio() const override { return m_WindowProperties.m_AspectRatio; }
         double GetTime() const override { return glfwGetTime(); }
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) override;
 
@@ -94,6 +94,7 @@ namespace GfxRenderEngine
             std::string m_Title;
             int m_Width;
             int m_Height;
+            float m_AspectRatio;
             //int m_VSync;
             EventCallbackFunction m_EventCallback;
             double m_MousePosX;

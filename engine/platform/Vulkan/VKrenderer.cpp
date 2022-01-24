@@ -208,8 +208,9 @@ namespace GfxRenderEngine
         vkCmdEndRenderPass(commandBuffer);
     }
 
-    void VK_Renderer::BeginScene()
+    void VK_Renderer::BeginScene(std::shared_ptr<Camera>& camera)
     {
+        m_Camera = camera.get();
         if (m_CurrentCommandBuffer = BeginFrame())
         {
             BeginSwapChainRenderPass(m_CurrentCommandBuffer);
@@ -220,7 +221,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities);
+            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities, *m_Camera);
         }
     }
 

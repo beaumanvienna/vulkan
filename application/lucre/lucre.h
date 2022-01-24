@@ -18,7 +18,7 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
 
@@ -30,6 +30,7 @@
 #include "platform/window.h"
 #include "renderer/renderer.h"
 #include "renderer/cursor.h"
+#include "renderer/cameraController.h"
 
 #include "inputHandler.h"
 #include "application.h"
@@ -49,6 +50,8 @@ namespace LucreApp
         void Shutdown() override;
         void OnUpdate() override;
         void OnEvent(Event& event) override;
+
+        void OnResize();
 
         static std::shared_ptr<Lucre> Create();
 
@@ -75,6 +78,7 @@ namespace LucreApp
         std::shared_ptr<Cursor> m_EmptyCursor;
         std::shared_ptr<Model> m_Model;
         std::shared_ptr<Renderer> m_Renderer;
+        std::shared_ptr<CameraController> m_CameraController;
 
         std::unique_ptr<InputHandler> m_InputHandler;
         TransformComponent m_UserInput;

@@ -189,7 +189,7 @@ namespace GfxRenderEngine
                 {
                     m_Paused = false;
                 }
-                return true;
+                return false;
             }
         );
 

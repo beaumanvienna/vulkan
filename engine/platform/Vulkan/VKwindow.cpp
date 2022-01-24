@@ -43,6 +43,7 @@ namespace GfxRenderEngine
         m_WindowProperties.m_Title    = props.m_Title;
         m_WindowProperties.m_Width    = props.m_Width;
         m_WindowProperties.m_Height   = props.m_Height;
+        m_WindowProperties.m_AspectRatio = static_cast<float>(props.m_Width) / static_cast<float>(props.m_Height);
         //m_WindowProperties.m_VSync    = props.m_VSync;
         m_WindowProperties.m_MousePosX= 0.0f;
         m_WindowProperties.m_MousePosY= 0.0f;
@@ -113,6 +114,7 @@ namespace GfxRenderEngine
         {
             m_WindowProperties.m_Width  = m_WindowedWidth;
             m_WindowProperties.m_Height = m_WindowedHeight;
+            m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
 
             glfwSetWindowMonitor(m_Window, nullptr, m_WindowPositionX, m_WindowPositionY, m_WindowedWidth, m_WindowedHeight, videoMode->refreshRate);
             glfwSetWindowPos(m_Window, m_WindowPositionX, m_WindowPositionY);
@@ -121,6 +123,7 @@ namespace GfxRenderEngine
         {
             m_WindowedWidth = m_WindowProperties.m_Width; 
             m_WindowedHeight = m_WindowProperties.m_Height;
+            m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowProperties.m_Width) / static_cast<float>(m_WindowProperties.m_Height);
             glfwGetWindowPos(m_Window, &m_WindowPositionX, &m_WindowPositionY);
 
             glfwSetWindowMonitor(m_Window, monitors[0], 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
@@ -210,6 +213,7 @@ namespace GfxRenderEngine
 
                 windowProperties.m_Width = width;
                 windowProperties.m_Height = height;
+                windowProperties.m_AspectRatio = static_cast<float>(width) / static_cast<float>(height);
                 windowProperties.m_FramebufferResized = true;
 
                 WindowResizeEvent event(width, height);
@@ -285,7 +289,7 @@ namespace GfxRenderEngine
 
                 windowProperties.m_MousePosX = xpos;
                 windowProperties.m_MousePosY = ypos;
-    
+
                 MouseMovedEvent event(xpos, ypos);
                 OnEvent(event);
 
@@ -296,7 +300,7 @@ namespace GfxRenderEngine
             {
                 WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
                 EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-    
+
                 MouseScrolledEvent event(xoffset, yoffset);
                 OnEvent(event);
 
@@ -381,6 +385,7 @@ namespace GfxRenderEngine
             #ifdef _WIN32
                 m_WindowProperties.m_Width = videoMode->width;
                 m_WindowProperties.m_Height = videoMode->height;
+                m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowProperties.m_Width) / static_cast<float>(m_WindowProperties.m_Height);
                 m_Window = glfwCreateWindow(
                     m_WindowProperties.m_Width,
                     m_WindowProperties.m_Height,
@@ -390,6 +395,7 @@ namespace GfxRenderEngine
             #else
                 m_WindowProperties.m_Width  = m_WindowedWidth;
                 m_WindowProperties.m_Height = m_WindowedHeight;
+                m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
 
                 m_Window = glfwCreateWindow(
                     m_WindowProperties.m_Width,
@@ -408,6 +414,7 @@ namespace GfxRenderEngine
         {
             m_WindowProperties.m_Width  = m_WindowedWidth;
             m_WindowProperties.m_Height = m_WindowedHeight;
+            m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
 
             m_Window = glfwCreateWindow(
                         m_WindowProperties.m_Width, 

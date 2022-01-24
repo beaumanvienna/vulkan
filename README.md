@@ -6,6 +6,7 @@ Features: Vulkan support for 3D rendering, hotplug gamepad support, sound suppor
 <br/>
 * Press "f" to toggle fullscreen.<br/>
 * Use the left and right sticks on the controller to move the top left quad around and scale it.<br/>
+* Use the mouse wheel to zoom.<br/>
 * The A button plays a test sound.<br/>
 * Press ESC or the guide button on the controller to exit.<br/>
 <br/>

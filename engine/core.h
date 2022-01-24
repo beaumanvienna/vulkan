@@ -59,11 +59,14 @@ namespace GfxRenderEngine
         void ApplyAppSettings();
         bool IsPaused() const { return m_Paused; }
         bool IsRunning() const { return m_Running; }
+
         std::string& GetHomeDirectory() { return m_HomeDir; }
         std::string GetConfigFilePath() const { return m_ConfigFilePath; }
+        double GetTime() const { return m_Window->GetTime(); }
+
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
-        double GetTime() const { return m_Window->GetTime(); }
+        float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
         std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 

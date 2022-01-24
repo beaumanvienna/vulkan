@@ -27,6 +27,8 @@
 #include "coreSettings.h"
 #include "resources/resources.h"
 #include "events/controllerEvent.h"
+#include "events/applicationEvent.h"
+#include "events/mouseEvent.h"
 
 namespace LucreApp
 {
@@ -53,6 +55,10 @@ namespace LucreApp
         m_Window->SetWindowAspectRatio();
         InitCursor();
 
+        m_CameraController = std::make_shared<CameraController>();
+        m_CameraController->SetTranslationSpeed(400.0f);
+        m_CameraController->SetRotationSpeed(0.5f);
+
         LoadModel();
 
         InputHandlerSpec inputSpec{};
@@ -69,20 +75,26 @@ namespace LucreApp
 
     void Lucre::OnUpdate()
     {
+        m_CameraController->OnUpdate();
         // draw new scene
-        m_Renderer->BeginScene();
+        m_Renderer->BeginScene(m_CameraController->GetCamera());
 
         m_InputHandler->GetTransform(m_UserInput);
 
         m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + 0.01f, glm::two_pi<float>());
         m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + 0.01f, glm::two_pi<float>());
-        
+
         m_Entities[0].m_Transform.m_Scale = m_UserInput.m_Scale;
         m_Entities[0].m_Transform.m_Translation.x = m_UserInput.m_Translation.x;
         m_Entities[0].m_Transform.m_Translation.y = m_UserInput.m_Translation.y;
 
         m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
+    }
+
+    void Lucre::OnResize()
+    {
+        m_CameraController->SetProjection();
     }
 
     std::shared_ptr<Lucre> Lucre::Create()
@@ -170,7 +182,7 @@ namespace LucreApp
         m_Entities.clear();
         auto cube = Entity::CreateEnity();
         cube.m_Model = m_Model;
-        cube.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 0.5f};
+        cube.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 2.5f};
         cube.m_Transform.m_Scale = glm::vec3{0.5f, 0.5f, 0.5f};
         m_Entities.push_back(std::move(cube));
 
@@ -244,6 +256,22 @@ namespace LucreApp
                         break;
                 }
                 return false;
+            }
+        );
+
+        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent event)
+            {
+                OnResize();
+                return true;
+            }
+        );
+
+        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent event)
+            {
+                auto zoomFactor = m_CameraController->GetZoomFactor();
+                zoomFactor -= event.GetY()*0.1f;
+                m_CameraController->SetZoomFactor(zoomFactor);
+                return true;
             }
         );
     }
