@@ -35,6 +35,7 @@ project "lucre"
         "vendor/sdl/include",
         "vendor/spdlog/include",
         "vendor/yaml-cpp/include",
+        "vendor/tinyObjLoader",
         "vendor/glm",
     }
 

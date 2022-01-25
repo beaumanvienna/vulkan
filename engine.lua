@@ -34,6 +34,7 @@ project "engine"
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
         "vendor/yaml-cpp/include",
+        "vendor/tinyObjLoader",
     }
 
     libdirs

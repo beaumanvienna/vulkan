@@ -22,45 +22,16 @@
 
 #pragma once
 
-#include <memory>
+#include <functional>
 
 #include "engine.h"
 
 namespace GfxRenderEngine
 {
-
-    struct Vertex
+    template <typename Type, typename... Rest>
+    void HashCombine(std::size_t& seed, const Type& v, const Rest&... rest)
     {
-        glm::vec3 m_Position;
-        glm::vec3 m_Color;
-        glm::vec3 m_Normal;
-        glm::vec2 m_UV;
-
-        bool operator==(const Vertex& other) const;
-
-    };
-
-    struct Builder
-    {
-        std::vector<Vertex> m_Vertices{};
-        std::vector<uint> m_Indices{};
-
-        void LoadModel(const std::string& filepath);
-    };
-
-    class Model
-    {
-
-    public:
-
-        Model() {}
-        virtual ~Model() {}
-
-        Model(const Model&) = delete;
-        Model& operator=(const Model&) = delete;
-
-        virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
-        virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
-
+        seed ^= std::hash<Type>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        (HashCombine(seed, rest), ...);
     };
 }

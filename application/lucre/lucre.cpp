@@ -91,15 +91,11 @@ namespace LucreApp
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera());
 
-        m_GamepadInputController->GetTransform(m_GamepadInput);
+        m_GamepadInputController->GetTransform(m_Entities[0].m_Transform);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
         m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
-
-        m_Entities[0].m_Transform.m_Scale = m_GamepadInput.m_Scale;
-        m_Entities[0].m_Transform.m_Translation.x = m_GamepadInput.m_Translation.x;
-        m_Entities[0].m_Transform.m_Translation.y = m_GamepadInput.m_Translation.y;
 
         m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
@@ -134,54 +130,16 @@ namespace LucreApp
     void Lucre::LoadModel()
     {
         Builder builder{};
-        builder.m_Vertices =
-        {
-            // left face (white)
-            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-        
-            // right face (yellow)
-            {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-            {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-            {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-            {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-        
-            // top face (orange, remember y axis points down)
-            {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-            {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-            {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-            {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-        
-            // bottom face (red)
-            {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-            {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-            {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-            {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-        
-            // nose face (blue)
-            {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-            {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-            {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-            {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-        
-            // tail face (green)
-            {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-            {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-            {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-            {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-        };
-        builder.m_Indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
-                             12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21};
+
+        builder.LoadModel("application/lucre/models/smooth_vase.obj");
 
         m_Model = m_Engine->LoadModel(builder);
 
-        auto cube = Entity::CreateEnity();
-        cube.m_Model = m_Model;
-        cube.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 2.5f};
-        cube.m_Transform.m_Scale = glm::vec3{0.5f, 0.5f, 0.5f};
-        m_Entities.push_back(std::move(cube));
+        auto object = Entity::CreateEnity();
+        object.m_Model = m_Model;
+        object.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 2.5f};
+        object.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
+        m_Entities.push_back(std::move(object));
 
     }
 

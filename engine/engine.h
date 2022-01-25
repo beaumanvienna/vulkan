@@ -31,7 +31,9 @@
 #include "glm.hpp"
 #include "gtc/constants.hpp"
 #include "gtc/matrix_transform.hpp"
-#include <gtx/transform.hpp>
+#include "gtx/transform.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "gtx/hash.hpp"
 
 #undef far
 #undef near
