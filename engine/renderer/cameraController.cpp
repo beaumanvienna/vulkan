@@ -107,7 +107,8 @@ namespace GfxRenderEngine
         }
     }
 
-    void CameraController::OnUpdate()
+    void CameraController::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
     {
+        m_Camera->SetViewYXZ(position, rotation);
     }
 }

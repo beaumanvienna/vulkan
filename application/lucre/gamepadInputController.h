@@ -30,19 +30,19 @@
 namespace LucreApp
 {
 
-    struct InputHandlerSpec
+    struct GamepadInputControllerSpec
     {
         float m_Deadzone{0.2f};
         float m_Sensitivity{0.05f};
     };
 
-    class InputHandler
+    class GamepadInputController
     {
 
     public:
 
-        InputHandler(const InputHandlerSpec& spec);
-        ~InputHandler() {}
+        GamepadInputController(const GamepadInputControllerSpec& spec);
+        ~GamepadInputController() {}
 
         void GetTransform(TransformComponent& transform);
 

@@ -25,47 +25,45 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
-#pragma once
-
-#include <memory>
-
+#include "core.h"
 #include "engine.h"
-#include "camera.h"
+#include "platform/input.h"
+
+#include "VKwindow.h"
 
 namespace GfxRenderEngine
 {
 
-    class CameraController
+    bool Input::IsKeyPressed(const KeyCode key)
     {
-    public:
+        auto* window = static_cast<GLFWwindow*>(Engine::m_Engine->GetBackendWindow());
+        auto state = glfwGetKey(window, static_cast<int32_t>(key));
+        return state == GLFW_PRESS || state == GLFW_REPEAT;
+    }
 
-        CameraController(Camera::ProjectionType type = Camera::PERSPECTIVE_PROJECTION);
+    bool Input::IsMouseButtonPressed(const MouseCode button)
+    {
+        auto* window = static_cast<GLFWwindow*>(Engine::m_Engine->GetBackendWindow());
+        auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
+        return state == GLFW_PRESS;
+    }
 
-        void SetTranslationSpeed(float translationSpeed) { m_TranslationSpeed = translationSpeed; }
-        void SetRotationSpeed(float rotationSpeed) { m_RotationSpeed = rotationSpeed; }
+    glm::vec2 Input::GetMousePosition()
+    {
+        auto* window = static_cast<GLFWwindow*>(Engine::m_Engine->GetBackendWindow());
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
 
-        void SetProjection();
-        void SetProjection(Camera::ProjectionType type);
+        return { (float)xpos, (float)ypos };
+    }
 
-        void SetZoomFactor(float factor);
-        float GetZoomFactor() const { return m_ZoomFactor; }
+    float Input::GetMouseX()
+    {
+        return GetMousePosition().x;
+    }
 
-        void SetRotation(const glm::vec3& rotation);
-        void SetTranslation(const glm::vec2& translation);
-        void SetTranslation(const glm::vec3& translation);
-        void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
-
-        std::shared_ptr<Camera>& GetCamera() { return m_Camera; }
-
-    private:
-
-        std::shared_ptr<Camera> m_Camera;
-
-        glm::vec2 m_Translation;
-        float m_TranslationSpeed;
-
-        float m_ZoomFactor;
-        float m_RotationSpeed;
-
-    };
+    float Input::GetMouseY()
+    {
+        return GetMousePosition().y;
+    }
 }

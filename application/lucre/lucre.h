@@ -32,7 +32,8 @@
 #include "renderer/cursor.h"
 #include "renderer/cameraController.h"
 
-#include "inputHandler.h"
+#include "gamepadInputController.h"
+#include "keyboardInputController.h"
 #include "application.h"
 #include "appSettings.h"
 
@@ -80,8 +81,11 @@ namespace LucreApp
         std::shared_ptr<Renderer> m_Renderer;
         std::shared_ptr<CameraController> m_CameraController;
 
-        std::unique_ptr<InputHandler> m_InputHandler;
-        TransformComponent m_UserInput;
+        std::vector<Entity> m_CameraObject;
+        std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
+
+        std::unique_ptr<GamepadInputController> m_GamepadInputController;
+        TransformComponent m_GamepadInput;
 
     };
 }

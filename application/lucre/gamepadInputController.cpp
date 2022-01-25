@@ -20,16 +20,16 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "inputHandler.h"
+#include "gamepadInputController.h"
 #include "platform/input.h"
 
 namespace LucreApp
 {
-    InputHandler::InputHandler(const InputHandlerSpec& spec)
+    GamepadInputController::GamepadInputController(const GamepadInputControllerSpec& spec)
         : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}
     {}
 
-    void InputHandler::GetTransform(TransformComponent& transform)
+    void GamepadInputController::GetTransform(TransformComponent& transform)
     {
         // left
         glm::vec2 controllerAxisInputLeft = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);

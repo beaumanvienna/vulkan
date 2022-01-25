@@ -22,13 +22,15 @@
    
 #include <thread>
 
-#include "lucre.h"
 #include "engine.h"
 #include "coreSettings.h"
 #include "resources/resources.h"
 #include "events/controllerEvent.h"
 #include "events/applicationEvent.h"
 #include "events/mouseEvent.h"
+
+#include "lucre.h"
+#include "keyboardInputController.h"
 
 namespace LucreApp
 {
@@ -37,7 +39,7 @@ namespace LucreApp
     Engine* Lucre::m_Engine = nullptr;
 
     Lucre::Lucre()
-        : m_UserInput{}
+        : m_GamepadInput{}
     {
     }
 
@@ -45,8 +47,8 @@ namespace LucreApp
     {
         InitSettings();
 
-        std::thread consoleInputHandler(ConsoleInputHandler);
-        consoleInputHandler.detach();
+        std::thread ConsoleInputHandler(ConsoleInputHandler);
+        ConsoleInputHandler.detach();
 
         m_Engine = Engine::m_Engine;
         m_Renderer = m_Engine->GetRenderer();
@@ -58,11 +60,15 @@ namespace LucreApp
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
         m_CameraController->SetRotationSpeed(0.5f);
+        m_CameraObject.push_back(std::move(Entity::CreateEnity()));
+
+        KeyboardInputControllerSpec keyboardInputControllerSpec{};
+        m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
 
         LoadModel();
 
-        InputHandlerSpec inputSpec{};
-        m_InputHandler = std::make_unique<InputHandler>(inputSpec);
+        GamepadInputControllerSpec gamepadInputControllerSpec{};
+        m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
 
         PlaySound(IDR_WAVES);
 
@@ -75,20 +81,25 @@ namespace LucreApp
 
     void Lucre::OnUpdate(const Timestep& timestep)
     {
-        m_CameraController->OnUpdate();
+        m_KeyboardInputController->MoveInPlaneXZ(timestep, m_CameraObject[0]);
+        m_CameraController->SetViewYXZ
+        (
+            m_CameraObject[0].m_Transform.m_Translation,
+            m_CameraObject[0].m_Transform.m_Rotation
+        );
 
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera());
 
-        m_InputHandler->GetTransform(m_UserInput);
+        m_GamepadInputController->GetTransform(m_GamepadInput);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
         m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
-        m_Entities[0].m_Transform.m_Scale = m_UserInput.m_Scale;
-        m_Entities[0].m_Transform.m_Translation.x = m_UserInput.m_Translation.x;
-        m_Entities[0].m_Transform.m_Translation.y = m_UserInput.m_Translation.y;
+        m_Entities[0].m_Transform.m_Scale = m_GamepadInput.m_Scale;
+        m_Entities[0].m_Transform.m_Translation.x = m_GamepadInput.m_Translation.x;
+        m_Entities[0].m_Transform.m_Translation.y = m_GamepadInput.m_Translation.y;
 
         m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
@@ -181,7 +192,6 @@ namespace LucreApp
 
         m_Model = m_Engine->LoadModel(vertices);
 
-        m_Entities.clear();
         auto cube = Entity::CreateEnity();
         cube.m_Model = m_Model;
         cube.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 2.5f};
