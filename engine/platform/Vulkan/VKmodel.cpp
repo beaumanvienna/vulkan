@@ -55,16 +55,23 @@ namespace GfxRenderEngine
     }
 
     // VK_Model
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices)
-        : m_Device(device)
+    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
+        : m_Device(device), m_HasIndexBuffer{false}
     {
-        CreateVertexBuffers(vertices);
+        CreateVertexBuffers(builder.m_Vertices);
+        CreateIndexBuffers(builder.m_Indices);
     }
 
     VK_Model::~VK_Model()
     {
         vkDestroyBuffer(m_Device->Device(), m_VertexBuffer, nullptr);
         vkFreeMemory(m_Device->Device(), m_VertexBufferMemory, nullptr);
+
+        if (m_HasIndexBuffer)
+        {
+            vkDestroyBuffer(m_Device->Device(), m_IndexBuffer, nullptr);
+            vkFreeMemory(m_Device->Device(), m_IndexBufferMemory, nullptr);
+        }
     }
 
     void VK_Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
@@ -95,22 +102,76 @@ namespace GfxRenderEngine
         vkUnmapMemory(m_Device->Device(), m_VertexBufferMemory);
     }
 
+    void VK_Model::CreateIndexBuffers(const std::vector<uint>& indices)
+    {
+        m_IndexCount = static_cast<uint>(indices.size());
+        VkDeviceSize bufferSize = sizeof(uint) * m_IndexCount;
+        m_HasIndexBuffer = ( m_IndexCount > 0);
+
+        if (!m_HasIndexBuffer)
+        {
+            return;
+        }
+
+        m_Device->CreateBuffer
+        (
+            bufferSize,
+            VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            m_IndexBuffer,
+            m_IndexBufferMemory
+        );
+
+        void* data;
+        vkMapMemory
+        (
+            m_Device->Device(),
+            m_IndexBufferMemory,
+            0,
+            bufferSize,
+            0,
+            &data
+        );
+        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+        vkUnmapMemory(m_Device->Device(),m_IndexBufferMemory);
+    }
+
     void VK_Model::Bind(VkCommandBuffer commandBuffer)
     {
         VkBuffer buffers[] = {m_VertexBuffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+
+        if (m_HasIndexBuffer)
+        {
+            vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        }
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
-        vkCmdDraw
-        (
-            commandBuffer,
-            m_VertexCount,
-            1,
-            0,
-            0
-        );
+        if (m_HasIndexBuffer)
+        {
+            vkCmdDrawIndexed
+            (
+                commandBuffer,      // VkCommandBuffer commandBuffer
+                m_IndexCount,       // uint32_t        indexCount
+                1,                  // uint32_t        instanceCount
+                0,                  // uint32_t        firstIndex
+                0,                  // int32_t         vertexOffset
+                0                   // uint32_t        firstInstance
+            );
+        }
+        else
+        {
+            vkCmdDraw
+            (
+                commandBuffer,      // VkCommandBuffer commandBuffer
+                m_VertexCount,      // uint32_t        vertexCount
+                1,                  // uint32_t        instanceCount
+                0,                  // uint32_t        firstVertex
+                0                   // uint32_t        firstInstance
+            );
+        }
     }
 }

@@ -67,7 +67,7 @@ namespace GfxRenderEngine
         void SetWindowAspectRatio() override;
         void SetWindowAspectRatio(int numer, int denom) override;
         float GetWindowAspectRatio() const override { return m_WindowProperties.m_AspectRatio; }
-        std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) override;
+        std::shared_ptr<Model> LoadModel(const Builder& builder) override;
 
         static void OnError(int errorCode, const char* description);
 

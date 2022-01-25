@@ -69,7 +69,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
-        std::shared_ptr<Model> LoadModel(std::vector<Vertex>& vertices) { return m_Window->LoadModel(vertices); }
+        std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_Window->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }

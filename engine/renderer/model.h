@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "engine.h"
 
 namespace GfxRenderEngine
@@ -31,6 +33,12 @@ namespace GfxRenderEngine
     {
         glm::vec3 position;
         glm::vec3 color;
+    };
+
+    struct Builder
+    {
+        std::vector<Vertex> m_Vertices{};
+        std::vector<uint> m_Indices{};
     };
 
     class Model
@@ -45,6 +53,7 @@ namespace GfxRenderEngine
         Model& operator=(const Model&) = delete;
 
         virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
+        virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
 
     };
 }

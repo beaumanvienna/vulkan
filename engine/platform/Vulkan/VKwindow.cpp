@@ -352,10 +352,10 @@ namespace GfxRenderEngine
         }
     }
 
-    std::shared_ptr<Model> VK_Window::LoadModel(std::vector<Vertex>& vertices)
+    std::shared_ptr<Model> VK_Window::LoadModel(const Builder& builder)
     {
         ASSERT(m_Device != nullptr);
-        auto model = std::make_shared<VK_Model>(m_Device, vertices);
+        auto model = std::make_shared<VK_Model>(m_Device, builder);
         return std::move(model);
     }
 

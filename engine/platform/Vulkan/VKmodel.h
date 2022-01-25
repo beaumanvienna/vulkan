@@ -45,13 +45,14 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_Model(std::shared_ptr<VK_Device> device, const std::vector<Vertex>& vertices);
+        VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
         ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;
         VK_Model& operator=(const VK_Model&) = delete;
 
         void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
+        void CreateIndexBuffers(const std::vector<uint>& indices) override;
 
         void Bind(VkCommandBuffer commandBuffer);
         void Draw(VkCommandBuffer commandBuffer);
@@ -59,9 +60,15 @@ namespace GfxRenderEngine
     private:
 
         std::shared_ptr<VK_Device> m_Device;
+
         VkBuffer m_VertexBuffer;
         VkDeviceMemory m_VertexBufferMemory;
         uint m_VertexCount;
+
+        bool m_HasIndexBuffer;
+        VkBuffer m_IndexBuffer;
+        VkDeviceMemory m_IndexBufferMemory;
+        uint m_IndexCount;
 
     };
 }
