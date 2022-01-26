@@ -101,6 +101,7 @@ namespace GfxRenderEngine
 
     void VK_Window::Shutdown()
     {
+        vkDeviceWaitIdle(m_Device->Device());
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
@@ -130,19 +131,6 @@ namespace GfxRenderEngine
         }
         m_IsFullscreen = !m_IsFullscreen;
     }
-
-    //void VK_Window::SetWindowAspectRatio()
-    //{
-    //    // set aspect ratio to current ratio
-    //    int numer = m_WindowProperties.m_Width;
-    //    int denom = m_WindowProperties.m_Height;
-    //    glfwSetWindowAspectRatio(m_Window, numer, denom);
-    //}
-    //
-    //void VK_Window::SetWindowAspectRatio(int numer, int denom)
-    //{
-    //    glfwSetWindowAspectRatio(m_Window, numer, denom);
-    //}
 
     void VK_Window::OnUpdate()
     {
@@ -356,7 +344,7 @@ namespace GfxRenderEngine
     {
         ASSERT(m_Device != nullptr);
         auto model = std::make_shared<VK_Model>(m_Device, builder);
-        return std::move(model);
+        return model;
     }
 
     void VK_Window::CreateWindow()
