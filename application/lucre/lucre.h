@@ -63,7 +63,7 @@ namespace LucreApp
         void ShowCursor();
         void HideCursor();
 
-        void LoadModel();
+        void LoadModels();
         static void ConsoleInputHandler();
         void PlaySound(int resourceID);
 
