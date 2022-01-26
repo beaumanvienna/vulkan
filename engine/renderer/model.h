@@ -40,6 +40,12 @@ namespace GfxRenderEngine
 
     };
 
+    struct GlobalUniformBuffer
+    {
+        glm::mat4 m_ProjectionView{1.0f};
+        glm::vec3 m_LightDirection = glm::normalize(glm::vec3(1.0f, -3.0f, -1.0f));
+    };
+
     struct Builder
     {
         std::vector<Vertex> m_Vertices{};

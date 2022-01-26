@@ -22,49 +22,16 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <vulkan/vulkan.h>
 
-#include "engine.h"
 #include "renderer/camera.h"
-#include "scene/entity.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
+    struct VK_FrameInfo
     {
-        glm::mat4 m_Transform{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-    };
-
-    class VK_RenderSystem
-    {
-
-    public:
-
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
-        ~VK_RenderSystem();
-
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, std::vector<Entity>& entities);
-
-    private:
-
-        void CreatePipelineLayout();
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VkPipelineLayout m_PipelineLayout;
-
+        int m_FrameIndex;
+        VkCommandBuffer m_CommandBuffer;
+        Camera& m_Camera;
     };
 }

@@ -38,6 +38,19 @@ namespace GfxRenderEngine
         CreateCommandBuffers();
 
         m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass());
+
+        for (uint i = 0; i < m_UniformBuffers.size(); i++)
+        {
+            m_UniformBuffers[i] = std::make_unique<VK_Buffer>
+            (
+                *m_Device, sizeof(GlobalUniformBuffer),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,// | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                m_Device->properties.limits.minUniformBufferOffsetAlignment
+            );
+            m_UniformBuffers[i]->Map();
+        }
     }
 
     VK_Renderer::~VK_Renderer()
@@ -149,19 +162,16 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("recording of command buffer failed");
         }
-
         auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, &m_CurrentImageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Window->WasResized())
         {
             m_Window->ResetWindowResizedFlag();
             RecreateSwapChain();
         }
-
-        if (result != VK_SUCCESS)
+        else if (result != VK_SUCCESS)
         {
             LOG_CORE_WARN("failed to present swap chain image");
         }
-
         m_FrameInProgress = false;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
@@ -213,6 +223,11 @@ namespace GfxRenderEngine
         m_Camera = camera.get();
         if (m_CurrentCommandBuffer = BeginFrame())
         {
+            GlobalUniformBuffer ubo{};
+            ubo.m_ProjectionView = m_Camera->GetViewProjectionMatrix();
+            m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+            m_UniformBuffers[m_CurrentFrameIndex]->Flush();
+
             BeginSwapChainRenderPass(m_CurrentCommandBuffer);
         }
     }
@@ -221,7 +236,9 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystem->RenderEntities(m_CurrentCommandBuffer, entities, m_Camera);
+            VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera};
+            
+            m_RenderSystem->RenderEntities(frameInfo, entities);
         }
     }
 

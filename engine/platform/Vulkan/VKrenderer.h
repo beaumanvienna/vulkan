@@ -31,6 +31,7 @@
 #include "VKdevice.h"
 #include "VKswapChain.h"
 #include "VKrenderSystem.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -82,6 +83,8 @@ namespace GfxRenderEngine
         uint m_CurrentImageIndex;
         int m_CurrentFrameIndex;
         bool m_FrameInProgress;
+
+        std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
     };
 }

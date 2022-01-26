@@ -76,24 +76,25 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystem::RenderEntities(VkCommandBuffer commandBuffer, std::vector<Entity>& entities, const Camera* camera)
+    void VK_RenderSystem::RenderEntities(const VK_FrameInfo& frameInfo, std::vector<Entity>& entities)
     {
-        m_Pipeline->Bind(commandBuffer);
-        auto viewProjectionMatrix = camera->GetViewProjectionMatrix();
+        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+
+        auto viewProjectionMatrix = frameInfo.m_Camera.GetViewProjectionMatrix();
         for (auto& entity : entities)
         {
             VK_SimplePushConstantData push{};
             push.m_Transform = viewProjectionMatrix * entity.m_Transform.Mat4();
             push.m_NormalMatrix  = entity.m_Transform.NormalMatrix();
             vkCmdPushConstants(
-                commandBuffer,
+                frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(VK_SimplePushConstantData),
                 &push);
-            static_cast<VK_Model*>(entity.m_Model.get())->Bind(commandBuffer);
-            static_cast<VK_Model*>(entity.m_Model.get())->Draw(commandBuffer);
+            static_cast<VK_Model*>(entity.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+            static_cast<VK_Model*>(entity.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
         }
     }
 }
