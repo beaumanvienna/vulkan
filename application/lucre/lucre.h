@@ -81,7 +81,7 @@ namespace LucreApp
         std::shared_ptr<Renderer> m_Renderer;
         std::shared_ptr<CameraController> m_CameraController;
 
-        std::vector<Entity> m_CameraObject;
+        std::unique_ptr<Entity> m_CameraObject;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         std::unique_ptr<GamepadInputController> m_GamepadInputController;

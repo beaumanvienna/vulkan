@@ -83,8 +83,8 @@ namespace GfxRenderEngine
         for (auto& entity : entities)
         {
             VK_SimplePushConstantData push{};
-            push.m_Color  = entity.m_Color;
             push.m_Transform = viewProjectionMatrix * entity.m_Transform.Mat4();
+            push.m_NormalMatrix  = entity.m_Transform.NormalMatrix();
             vkCmdPushConstants(
                 commandBuffer,
                 m_PipelineLayout,

@@ -37,6 +37,7 @@ namespace GfxRenderEngine
         glm::vec3 m_Translation{};
 
         glm::mat4 Mat4();
+        glm::mat3 NormalMatrix();
     };
 
     class Entity
@@ -57,7 +58,7 @@ namespace GfxRenderEngine
 
         id_t GetID() const { return m_ID; }
 
-        static Entity CreateEnity();
+        static Entity CreateEntity();
 
     public:
 

@@ -60,7 +60,8 @@ namespace LucreApp
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
         m_CameraController->SetRotationSpeed(0.5f);
-        m_CameraObject.push_back(std::move(Entity::CreateEnity()));
+
+        m_CameraObject.reset( new Entity(Entity::CreateEntity()));
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
         m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
@@ -81,21 +82,24 @@ namespace LucreApp
 
     void Lucre::OnUpdate(const Timestep& timestep)
     {
-        m_KeyboardInputController->MoveInPlaneXZ(timestep, m_CameraObject[0]);
+        m_KeyboardInputController->MoveInPlaneXZ(timestep, *m_CameraObject);
         m_CameraController->SetViewYXZ
         (
-            m_CameraObject[0].m_Transform.m_Translation,
-            m_CameraObject[0].m_Transform.m_Rotation
+            m_CameraObject->m_Transform.m_Translation,
+            m_CameraObject->m_Transform.m_Rotation
         );
 
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera());
 
         m_GamepadInputController->GetTransform(m_Entities[0].m_Transform);
+        m_GamepadInputController->GetTransform(m_Entities[1].m_Transform);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
         m_Entities[0].m_Transform.m_Rotation.y = glm::mod(m_Entities[0].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         m_Entities[0].m_Transform.m_Rotation.z = glm::mod(m_Entities[0].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+        m_Entities[1].m_Transform.m_Rotation.y = glm::mod(m_Entities[1].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
+        m_Entities[1].m_Transform.m_Rotation.z = glm::mod(m_Entities[1].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
         m_Renderer->Submit(m_Entities);
         m_Renderer->EndScene();
@@ -131,15 +135,25 @@ namespace LucreApp
     {
         Builder builder{};
 
+        builder.LoadModel("application/lucre/models/flat_vase.obj");
+
+        m_Model = m_Engine->LoadModel(builder);
+
+        auto object0 = Entity::CreateEntity();
+        object0.m_Model = m_Model;
+        object0.m_Transform.m_Translation = glm::vec3{-0.5f, 0.0f, 2.5f};
+        object0.m_Transform.m_Scale = glm::vec3{2.0f, 1.0f, 2.0f};
+        m_Entities.push_back(std::move(object0));
+        
         builder.LoadModel("application/lucre/models/smooth_vase.obj");
 
         m_Model = m_Engine->LoadModel(builder);
 
-        auto object = Entity::CreateEnity();
-        object.m_Model = m_Model;
-        object.m_Transform.m_Translation = glm::vec3{0.0f, 0.0f, 2.5f};
-        object.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-        m_Entities.push_back(std::move(object));
+        auto object1 = Entity::CreateEntity();
+        object1.m_Model = m_Model;
+        object1.m_Transform.m_Translation = glm::vec3{0.5f, 0.0f, 2.5f};
+        object1.m_Transform.m_Scale = glm::vec3{2.0f, 1.0f, 2.0f};
+        m_Entities.push_back(std::move(object1));
 
     }
 

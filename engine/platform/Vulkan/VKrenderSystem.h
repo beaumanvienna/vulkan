@@ -38,7 +38,7 @@ namespace GfxRenderEngine
     struct VK_SimplePushConstantData
     {
         glm::mat4 m_Transform{1.0f};
-        alignas(16) glm::vec3 m_Color{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
     class VK_RenderSystem
