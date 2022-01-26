@@ -29,6 +29,7 @@
 #include "renderer/model.h"
 
 #include "VKdevice.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -46,7 +47,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
-        ~VK_Model() override;
+        ~VK_Model() override {}
 
         VK_Model(const VK_Model&) = delete;
         VK_Model& operator=(const VK_Model&) = delete;
@@ -61,13 +62,11 @@ namespace GfxRenderEngine
 
         std::shared_ptr<VK_Device> m_Device;
 
-        VkBuffer m_VertexBuffer;
-        VkDeviceMemory m_VertexBufferMemory;
+        std::unique_ptr<VK_Buffer> m_VertexBuffer;
         uint m_VertexCount;
 
         bool m_HasIndexBuffer;
-        VkBuffer m_IndexBuffer;
-        VkDeviceMemory m_IndexBufferMemory;
+        std::unique_ptr<VK_Buffer> m_IndexBuffer;
         uint m_IndexCount;
 
     };
