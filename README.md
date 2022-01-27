@@ -5,7 +5,7 @@ A Vulkan Render Engine<br/>
 Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager<br/>
 <br/>
 * Press "f" to toggle fullscreen.<br/>
-* Use the left and right sticks on the controller to move the cube around and scale it.<br/>
+* Use the left and right sticks on the controller to move the vases around and scale them.<br/>
 * Use the AWSD keys to move the camera. Q and E are for up and down<br/>
 * Use the arrow keys to look around.<br/>
 * Use the mouse wheel to zoom.<br/>
