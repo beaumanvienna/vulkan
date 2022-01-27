@@ -36,6 +36,7 @@ project "lucre"
         "vendor/spdlog/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
+        "vendor/box2d/include",
         "vendor/glm",
     }
 
@@ -57,6 +58,7 @@ project "lucre"
         "libvorbis",
         "libogg",
         "yaml-cpp",
+        "box2d"
     }
 
     prebuildcommands

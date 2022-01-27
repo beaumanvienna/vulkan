@@ -35,6 +35,7 @@ project "engine"
         "vendor/sdl_mixer/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
+        "vendor/box2d/include",
     }
 
     libdirs
@@ -117,6 +118,7 @@ project "engine"
     include "vendor/shaderc.lua"
     include "vendor/sdl_mixer.lua"
     include "vendor/sdl.lua"
+    include "vendor/box2d"
 
     if os.host() == "linux" then
 

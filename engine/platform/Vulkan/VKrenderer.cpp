@@ -37,8 +37,6 @@ namespace GfxRenderEngine
         RecreateSwapChain();
         CreateCommandBuffers();
 
-        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass());
-
         for (uint i = 0; i < m_UniformBuffers.size(); i++)
         {
             m_UniformBuffers[i] = std::make_unique<VK_Buffer>
@@ -51,6 +49,9 @@ namespace GfxRenderEngine
             );
             m_UniformBuffers[i]->Map();
         }
+
+        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass());
+
     }
 
     VK_Renderer::~VK_Renderer()
