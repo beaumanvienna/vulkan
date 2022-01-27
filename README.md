@@ -12,11 +12,16 @@ Features: Vulkan support for 3D rendering, hotplug gamepad support, sound suppor
 * The A button plays a test sound.<br/>
 * Press ESC or the guide button on the controller to exit.<br/>
 <br/>
-To blacklist a GPU, enter its name or a substring in engine.cfg.
+To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 <br/>
+Contributions: Please use https://en.wikipedia.org/wiki/Indentation_style#Allman_style and four spaces to indent.<br/>
+<br/>
+
 ## Build Instructions<br/>
 
 Ubuntu:<br/>
+(Info: ppa:beauman/marley provides premake5)<br/>
+<br/>
 <br/>
 sudo add-apt-repository ppa:beauman/marley<br/>
 sudo add-apt-repository universe<br/>
