@@ -153,7 +153,7 @@ namespace LucreApp
         object1.m_Transform.m_Translation = glm::vec3{-0.5f, -0.2f, 2.5f};
         object1.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
         m_Entities.push_back(std::move(object1));
-        
+    
         builder.LoadModel("application/lucre/models/smooth_vase.obj");
         m_Model = m_Engine->LoadModel(builder);
         auto object2 = Entity::CreateEntity();
