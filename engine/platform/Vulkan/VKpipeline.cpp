@@ -97,8 +97,8 @@ namespace GfxRenderEngine
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
 
-        auto bindingDescription = VK_Model::VK_Vertex::GetBindingDescriptions();
-        auto attributeDescription = VK_Model::VK_Vertex::GetAttributeDescriptions();
+        auto& bindingDescription = configInfo.m_BindingDescriptions;
+        auto& attributeDescription = configInfo.m_AttributeDescriptions;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint>(attributeDescription.size());
@@ -228,6 +228,9 @@ namespace GfxRenderEngine
         configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
         configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint>(configInfo.dynamicStateEnables.size());
         configInfo.dynamicStateInfo.flags = 0;
+
+        configInfo.m_BindingDescriptions = VK_Model::VK_Vertex::GetBindingDescriptions();
+        configInfo.m_AttributeDescriptions = VK_Model::VK_Vertex::GetAttributeDescriptions();
     }
 
     void VK_Pipeline::Bind(VkCommandBuffer commandBuffer)

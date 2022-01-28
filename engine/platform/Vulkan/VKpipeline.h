@@ -50,6 +50,9 @@ namespace GfxRenderEngine
         VkPipelineLayout pipelineLayout = nullptr;
         VkRenderPass renderPass = nullptr;
         uint subpass = 0;
+
+        std::vector<VkVertexInputBindingDescription> m_BindingDescriptions{};
+        std::vector<VkVertexInputAttributeDescription> m_AttributeDescriptions{};
     };
 
     class VK_Pipeline
