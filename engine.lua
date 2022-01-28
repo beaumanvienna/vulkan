@@ -36,6 +36,7 @@ project "engine"
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
+        "vendor/entt/include",
     }
 
     libdirs
