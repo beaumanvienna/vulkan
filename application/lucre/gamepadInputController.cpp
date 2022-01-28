@@ -38,13 +38,11 @@ namespace LucreApp
         {
             transform.m_Translation.x += controllerAxisInputLeft.x * m_Sensitivity;
         }
-        transform.m_Translation.x = std::clamp(transform.m_Translation.x, -1.0f, 1.0f);
 
         if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
         {
             transform.m_Translation.y -= controllerAxisInputLeft.y * m_Sensitivity;
         }
-        transform.m_Translation.y = std::clamp(transform.m_Translation.y, -1.0f, 1.0f);
 
         // right
         glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
