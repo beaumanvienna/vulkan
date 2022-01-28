@@ -34,7 +34,6 @@
 #include "VKdevice.h"
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
-//#include "VKbuffer.h"
 #include "VKdescriptor.h"
 
 namespace GfxRenderEngine

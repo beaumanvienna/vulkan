@@ -44,12 +44,13 @@ namespace GfxRenderEngine
     // https://www.oreilly.com/library/view/opengl-programming-guide/9780132748445/app09lev1sec2.html
     struct GlobalUniformBuffer
     {
-        glm::mat4 m_ProjectionView{1.0f};
+        glm::mat4 m_Projection{1.0f};
+        glm::mat4 m_View{1.0f};
 
         // point light
         glm::vec4 m_AmbientLightColor{1.0f, 1.0f, 1.0f, 0.02f};
         glm::vec3 m_LightPosition{0.0f, -0.2f, 2.5f};
-        alignas(16) glm::vec4 m_LightColor{1.0f};
+        alignas(16) glm::vec4 m_LightColor{0.7f, 0.8f, 1.0f, 0.4f};
     };
 
     struct Builder

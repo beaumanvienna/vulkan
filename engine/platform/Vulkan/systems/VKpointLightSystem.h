@@ -22,34 +22,45 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/camera.h"
 #include "scene/entity.h"
 
-namespace LucreApp
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
+
+namespace GfxRenderEngine
 {
-
-    struct GamepadInputControllerSpec
-    {
-        float m_Deadzone{0.2f};
-        float m_Sensitivity{0.05f};
-    };
-
-    class GamepadInputController
+    class VK_PointLightSystem
     {
 
     public:
 
-        GamepadInputController(const GamepadInputControllerSpec& spec);
-        ~GamepadInputController() {}
+        VK_PointLightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_PointLightSystem();
 
-        void GetTransform(TransformComponent& transform, bool scale = false);
+        VK_PointLightSystem(const VK_PointLightSystem&) = delete;
+        VK_PointLightSystem& operator=(const VK_PointLightSystem&) = delete;
+
+        void Render(const VK_FrameInfo& frameInfo);
 
     private:
 
-        float m_Deadzone;
-        float m_Sensitivity;
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        std::shared_ptr<VK_Device> m_Device;
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }

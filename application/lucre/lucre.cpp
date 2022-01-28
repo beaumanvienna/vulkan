@@ -93,8 +93,8 @@ namespace LucreApp
         m_Renderer->BeginScene(m_CameraController->GetCamera());
 
         m_GamepadInputController->GetTransform(m_Entities[0].m_Transform);
-        m_GamepadInputController->GetTransform(m_Entities[1].m_Transform);
-        m_GamepadInputController->GetTransform(m_Entities[2].m_Transform);
+        m_GamepadInputController->GetTransform(m_Entities[1].m_Transform, true);
+        m_GamepadInputController->GetTransform(m_Entities[2].m_Transform, true);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
         m_Entities[1].m_Transform.m_Rotation.y = glm::mod(m_Entities[1].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
@@ -137,24 +137,24 @@ namespace LucreApp
         Builder builder{};
 
         // base cube
-        //builder.LoadModel("application/lucre/models/colored_cube.obj");
-        //m_Model = m_Engine->LoadModel(builder);
-        //auto object0 = Entity::CreateEntity();
-        //object0.m_Model = m_Model;
-        //object0.m_Transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
-        //object0.m_Transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
-        //object0.m_Transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
-        //m_Entities.push_back(std::move(object0));
-
-        // base cube
-        builder.LoadModel("application/lucre/models/sphere.obj");
+        builder.LoadModel("application/lucre/models/colored_cube.obj");
         m_Model = m_Engine->LoadModel(builder);
         auto object0 = Entity::CreateEntity();
         object0.m_Model = m_Model;
-        object0.m_Transform.m_Translation = glm::vec3{0.0f, 10.7f, 2.5f};
-        object0.m_Transform.m_Scale = glm::vec3{10.0f};
-        object0.m_Transform.m_Rotation = glm::vec3{0.0f};
+        object0.m_Transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
+        object0.m_Transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
+        object0.m_Transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
         m_Entities.push_back(std::move(object0));
+
+        // base sphere
+        //builder.LoadModel("application/lucre/models/sphere.obj");
+        //m_Model = m_Engine->LoadModel(builder);
+        //auto object0 = Entity::CreateEntity();
+        //object0.m_Model = m_Model;
+        //object0.m_Transform.m_Translation = glm::vec3{0.0f, 10.7f, 2.5f};
+        //object0.m_Transform.m_Scale = glm::vec3{10.0f};
+        //object0.m_Transform.m_Rotation = glm::vec3{0.0f};
+        //m_Entities.push_back(std::move(object0));
 
         // moving onjects
         builder.LoadModel("application/lucre/models/flat_vase.obj");
@@ -164,7 +164,7 @@ namespace LucreApp
         object1.m_Transform.m_Translation = glm::vec3{-0.8f, -0.2f, 2.5f};
         object1.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
         m_Entities.push_back(std::move(object1));
-    
+
         builder.LoadModel("application/lucre/models/smooth_vase.obj");
         m_Model = m_Engine->LoadModel(builder);
         auto object2 = Entity::CreateEntity();
@@ -172,7 +172,7 @@ namespace LucreApp
         object2.m_Transform.m_Translation = glm::vec3{0.8f, -0.2f, 2.5f};
         object2.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
         m_Entities.push_back(std::move(object2));
-    
+
         builder.LoadModel("application/lucre/models/sphere.obj");
         m_Model = m_Engine->LoadModel(builder);
         auto object3 = Entity::CreateEntity();

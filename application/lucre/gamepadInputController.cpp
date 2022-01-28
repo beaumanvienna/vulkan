@@ -29,7 +29,7 @@ namespace LucreApp
         : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}
     {}
 
-    void GamepadInputController::GetTransform(TransformComponent& transform)
+    void GamepadInputController::GetTransform(TransformComponent& transform, bool scale)
     {
         // left
         glm::vec2 controllerAxisInputLeft = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);
@@ -45,15 +45,17 @@ namespace LucreApp
         }
 
         // right
-        glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
-
-        if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
+        if (scale)
         {
-            transform.m_Scale.x -= controllerAxisInputRight.y * m_Sensitivity;
-            transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.1f, 10.0f);
-            transform.m_Scale.y = transform.m_Scale.x;
-            transform.m_Scale.z = transform.m_Scale.x;
+            glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
+    
+            if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
+            {
+                transform.m_Scale.x -= controllerAxisInputRight.y * m_Sensitivity;
+                transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.1f, 10.0f);
+                transform.m_Scale.y = transform.m_Scale.x;
+                transform.m_Scale.z = transform.m_Scale.x;
+            }
         }
-
     }
 }

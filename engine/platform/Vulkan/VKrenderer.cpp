@@ -61,7 +61,7 @@ namespace GfxRenderEngine
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder(*m_Device)
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         for (uint i = 0; i < m_GlobalDescriptorSets.size(); i++)
@@ -73,6 +73,7 @@ namespace GfxRenderEngine
         }
 
         m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
 
     }
 
@@ -247,7 +248,8 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer = BeginFrame())
         {
             GlobalUniformBuffer ubo{};
-            ubo.m_ProjectionView = m_Camera->GetViewProjectionMatrix();
+            ubo.m_Projection = m_Camera->GetProjectionMatrix();
+            ubo.m_View = m_Camera->GetViewMatrix();
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
@@ -260,8 +262,9 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
-            
+        
             m_RenderSystem->RenderEntities(frameInfo, entities);
+            m_PointLightSystem->Render(frameInfo);
         }
     }
 

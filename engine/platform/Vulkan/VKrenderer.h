@@ -31,7 +31,8 @@
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
-#include "VKrenderSystem.h"
+#include "systems/VKrenderSystem.h"
+#include "systems/VKpointLightSystem.h"
 #include "VKdescriptor.h"
 #include "VKbuffer.h"
 #include "VKdescriptor.h"
@@ -78,6 +79,7 @@ namespace GfxRenderEngine
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
+        std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         Camera* m_Camera;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;
