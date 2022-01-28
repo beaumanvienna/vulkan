@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
 #include "renderer/renderer.h"
@@ -31,7 +32,9 @@
 #include "VKdevice.h"
 #include "VKswapChain.h"
 #include "VKrenderSystem.h"
+#include "VKdescriptor.h"
 #include "VKbuffer.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -73,6 +76,7 @@ namespace GfxRenderEngine
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
+        std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
         Camera* m_Camera;
 
@@ -84,6 +88,7 @@ namespace GfxRenderEngine
         int m_CurrentFrameIndex;
         bool m_FrameInProgress;
 
+        std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
     };

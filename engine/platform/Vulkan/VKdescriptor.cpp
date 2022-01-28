@@ -89,7 +89,7 @@ namespace GfxRenderEngine
 
     // *************** Descriptor Pool Builder *********************
 
-    VK_DescriptorPool::Builder &VK_DescriptorPool::Builder::AddPoolSize
+    VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::AddPoolSize
         (
             VkDescriptorType descriptorType, 
             uint count
@@ -99,7 +99,7 @@ namespace GfxRenderEngine
         return *this;
     }
 
-    VK_DescriptorPool::Builder &VK_DescriptorPool::Builder::SetPoolFlags
+    VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::SetPoolFlags
         (
             VkDescriptorPoolCreateFlags flags
         )
@@ -108,7 +108,7 @@ namespace GfxRenderEngine
         return *this;
     }
 
-    VK_DescriptorPool::Builder &VK_DescriptorPool::Builder::SetMaxSets(uint count)
+    VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::SetMaxSets(uint count)
     {
         m_MaxSets = count;
         return *this;
@@ -193,7 +193,7 @@ namespace GfxRenderEngine
 
     // *************** Descriptor Writer *********************
 
-    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool &pool)
+    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& pool)
         : m_SetLayout{setLayout}, m_Pool{pool} {}
 
     VK_DescriptorWriter& VK_DescriptorWriter::WriteBuffer
@@ -204,7 +204,7 @@ namespace GfxRenderEngine
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1); // layout does not contain specified binding
     
-        auto &bindingDescription = m_SetLayout.m_Bindings[binding];
+        auto& bindingDescription = m_SetLayout.m_Bindings[binding];
     
         ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
     
@@ -227,7 +227,7 @@ namespace GfxRenderEngine
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1) // layout does not contain specified binding
     
-        auto &bindingDescription = m_SetLayout.m_Bindings[binding];
+        auto& bindingDescription = m_SetLayout.m_Bindings[binding];
     
         ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
     
@@ -255,7 +255,7 @@ namespace GfxRenderEngine
 
     void VK_DescriptorWriter::Overwrite(VkDescriptorSet& set)
     {
-        for (auto &write : m_Writes)
+        for (auto& write : m_Writes)
         {
             write.dstSet = set;
         }

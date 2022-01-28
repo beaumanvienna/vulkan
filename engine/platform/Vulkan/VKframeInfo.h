@@ -33,5 +33,6 @@ namespace GfxRenderEngine
         int m_FrameIndex;
         VkCommandBuffer m_CommandBuffer;
         Camera& m_Camera;
+        VkDescriptorSet m_GlobalDescriptorSet;
     };
 }

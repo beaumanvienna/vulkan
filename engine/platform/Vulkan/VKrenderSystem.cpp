@@ -21,14 +21,15 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "VKrenderSystem.h"
+#include "VKswapChain.h"
 #include "VKmodel.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystem::VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass)
+    VK_RenderSystem::VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
         : m_Device(device)
     {
-        CreatePipelineLayout();
+        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
         CreatePipeline(renderPass);
     }
 
@@ -37,17 +38,19 @@ namespace GfxRenderEngine
         vkDestroyPipelineLayout(m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystem::CreatePipelineLayout()
+    void VK_RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_SimplePushConstantData);
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
@@ -78,13 +81,24 @@ namespace GfxRenderEngine
 
     void VK_RenderSystem::RenderEntities(const VK_FrameInfo& frameInfo, std::vector<Entity>& entities)
     {
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_GlobalDescriptorSet,
+            0,
+            nullptr
+        );
+
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto viewProjectionMatrix = frameInfo.m_Camera.GetViewProjectionMatrix();
         for (auto& entity : entities)
         {
             VK_SimplePushConstantData push{};
-            push.m_Transform = viewProjectionMatrix * entity.m_Transform.Mat4();
+            push.m_ModelMatrix = entity.m_Transform.Mat4();
             push.m_NormalMatrix  = entity.m_Transform.NormalMatrix();
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,

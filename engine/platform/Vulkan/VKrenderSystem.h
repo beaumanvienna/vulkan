@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
@@ -33,12 +34,14 @@
 #include "VKdevice.h"
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
+//#include "VKbuffer.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
     struct VK_SimplePushConstantData
     {
-        glm::mat4 m_Transform{1.0f};
+        glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
@@ -47,7 +50,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass);
+        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
         ~VK_RenderSystem();
 
         VK_RenderSystem(const VK_RenderSystem&) = delete;
@@ -57,14 +60,14 @@ namespace GfxRenderEngine
 
     private:
 
-        void CreatePipelineLayout();
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:
 
         std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
         VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }

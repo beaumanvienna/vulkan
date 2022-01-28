@@ -28,6 +28,7 @@
 
 namespace GfxRenderEngine
 {
+
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
           m_CurrentImageIndex{0},
@@ -50,7 +51,28 @@ namespace GfxRenderEngine
             m_UniformBuffers[i]->Map();
         }
 
-        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass());
+        // create a global pool for desciptor sets
+        // for two descriptor sets
+        // with each two uniform buffer descriptors
+        m_DescriptorPool = 
+            VK_DescriptorPool::Builder(*m_Device)
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .Build();
+
+        std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder(*m_Device)
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                    .Build();
+
+        for (uint i = 0; i < m_GlobalDescriptorSets.size(); i++)
+        {
+            VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
+            VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
+                .WriteBuffer(0, &bufferInfo)
+                .Build(m_GlobalDescriptorSets[i]);
+        }
+
+        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
 
     }
 
@@ -237,7 +259,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera};
+            VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
             
             m_RenderSystem->RenderEntities(frameInfo, entities);
         }

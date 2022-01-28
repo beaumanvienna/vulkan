@@ -75,7 +75,21 @@ namespace GfxRenderEngine
     private:
 
         VK_Device& m_Device;
+
+        // VkDescriptorSetLayout: opaque handle to a descriptor set layout object;
+        // a descriptor set layout object is defined by an array of zero or more descriptor bindings
         VkDescriptorSetLayout m_DescriptorSetLayout;
+
+        // VkDescriptorSetLayoutBinding: structure specifying a descriptor set layout binding
+        // 
+        //typedef struct VkDescriptorSetLayoutBinding
+        //{
+        //    uint32_t              binding; // binding number
+        //    VkDescriptorType      descriptorType; // buffer or texture
+        //    uint32_t              descriptorCount;
+        //    VkShaderStageFlags    stageFlags;
+        //    const VkSampler*      pImmutableSamplers;
+        //} VkDescriptorSetLayoutBinding;
         std::unordered_map<uint, VkDescriptorSetLayoutBinding> m_Bindings;
 
         friend class VK_DescriptorWriter;
@@ -100,7 +114,14 @@ namespace GfxRenderEngine
         private:
 
             VK_Device& m_Device;
+
+            // VkDescriptorPoolSize: structure specifying descriptor pool size
+            //typedef struct VkDescriptorPoolSize {
+            //    VkDescriptorType    type;
+            //    uint32_t            descriptorCount;
+            //} VkDescriptorPoolSize;
             std::vector<VkDescriptorPoolSize> m_PoolSizes;
+
             uint m_MaxSets = 1000;
             VkDescriptorPoolCreateFlags m_PoolFlags = 0;
         };
