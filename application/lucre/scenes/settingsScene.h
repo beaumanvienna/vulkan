@@ -18,37 +18,31 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
 
+#include "lucre.h"
 #include "engine.h"
-#include "entt.hpp"
-#include "events/event.h"
-#include "auxiliary/timestep.h"
+#include "scene/scene.h"
 
-namespace GfxRenderEngine
+namespace LucreApp
 {
-
-    class Scene
+    class SettingsScene : public Scene
     {
 
     public:
 
-        Scene() : m_IsRunning{false} {}
-        virtual ~Scene() {}
+        SettingsScene() {}
+        ~SettingsScene() override {}
 
-        virtual void Start() = 0;
-        virtual void Stop() = 0;
-        virtual void OnUpdate(const Timestep& timestep) = 0;
-        virtual void OnEvent(Event& event) = 0;
-        virtual void OnResize() = 0;
+        void Start() override;
+        void Stop() override;
+        void OnUpdate(const Timestep& timestep) override;
+        void OnEvent(Event& event) override;
+        void OnResize() override;
 
-        bool IsFinished() const { return !m_IsRunning; }
-    protected:
-
-        entt::registry m_Registry;
-        bool m_IsRunning;
+    private:
 
     };
 }

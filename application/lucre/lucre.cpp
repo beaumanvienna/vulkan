@@ -39,7 +39,8 @@ namespace LucreApp
     Engine* Lucre::m_Engine = nullptr;
 
     Lucre::Lucre()
-        : m_GamepadInput{}
+        : m_GamepadInput{},
+          m_CurrentScene{nullptr}
     {
     }
 
@@ -56,6 +57,8 @@ namespace LucreApp
         m_Window = m_Engine->GetWindow();
         m_Window->SetWindowAspectRatio();
         InitCursor();
+
+        m_GameState.Start();
 
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
@@ -78,10 +81,14 @@ namespace LucreApp
 
     void Lucre::Shutdown()
     {
+        m_GameState.Stop();
     }
 
     void Lucre::OnUpdate(const Timestep& timestep)
     {
+        m_CurrentScene = m_GameState.OnUpdate();
+        m_CurrentScene->OnUpdate(timestep);
+
         m_KeyboardInputController->MoveInPlaneXZ(timestep, *m_CameraObject);
         m_CameraController->SetViewYXZ
         (

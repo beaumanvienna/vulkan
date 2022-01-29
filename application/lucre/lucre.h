@@ -36,6 +36,7 @@
 #include "keyboardInputController.h"
 #include "application.h"
 #include "appSettings.h"
+#include "gameState.h"
 
 namespace LucreApp
 {
@@ -51,7 +52,6 @@ namespace LucreApp
         void Shutdown() override;
         void OnUpdate(const Timestep& timestep) override;
         void OnEvent(Event& event) override;
-
         void OnResize();
 
         static std::shared_ptr<Lucre> Create();
@@ -72,6 +72,8 @@ namespace LucreApp
         static std::shared_ptr<Lucre> m_Instance;
         static Engine* m_Engine;
         AppSettings m_AppSettings{&Engine::m_SettingsManager};
+        GameState m_GameState;
+        Scene* m_CurrentScene;
         std::vector<Entity> m_Entities;
 
         std::shared_ptr<Window> m_Window;

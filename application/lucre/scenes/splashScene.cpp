@@ -18,37 +18,35 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
+#include "scenes/splashScene.h"
 
-#include "engine.h"
-#include "entt.hpp"
-#include "events/event.h"
-#include "auxiliary/timestep.h"
-
-namespace GfxRenderEngine
+namespace LucreApp
 {
 
-    class Scene
+    void SplashScene::Start()
     {
+        LOG_APP_INFO("SplashScene::Start()");
+        m_IsRunning = true;
+    }
 
-    public:
+    void SplashScene::Stop()
+    {
+        LOG_APP_INFO("SplashScene::Stop()");
+    }
 
-        Scene() : m_IsRunning{false} {}
-        virtual ~Scene() {}
+    void SplashScene::OnUpdate(const Timestep& timestep)
+    {
+        // exit right away
+        m_IsRunning = false;
+    }
 
-        virtual void Start() = 0;
-        virtual void Stop() = 0;
-        virtual void OnUpdate(const Timestep& timestep) = 0;
-        virtual void OnEvent(Event& event) = 0;
-        virtual void OnResize() = 0;
+    void SplashScene::OnEvent(Event& event)
+    {
+    }
 
-        bool IsFinished() const { return !m_IsRunning; }
-    protected:
-
-        entt::registry m_Registry;
-        bool m_IsRunning;
-
-    };
+    void SplashScene::OnResize()
+    {
+    }
 }

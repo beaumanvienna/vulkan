@@ -18,22 +18,14 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#include "scene/scene.h"
-#include "scene/entity.h"
+#include "scenes/settingsScene.h"
 
-namespace GfxRenderEngine
+namespace LucreApp
 {
-    Scene::Scene()
-    {
-    }
 
-    Scene::~Scene()
-    {
-    }
-
-    void Scene::Start()
+    void SettingsScene::Start()
     {
         // constructs a naked entity with no components and returns its identifier
         auto entity = m_Registry.create();
@@ -44,19 +36,19 @@ namespace GfxRenderEngine
         m_Registry.destroy(entity);
     }
 
-    void Scene::Stop()
+    void SettingsScene::Stop()
     {
     }
 
-    void Scene::OnUpdate(const Timestep& timestep)
+    void SettingsScene::OnUpdate(const Timestep& timestep)
     {
     }
 
-    void Scene::OnEvent(Event& event)
+    void SettingsScene::OnEvent(Event& event)
     {
     }
 
-    void Scene::OnResize()
+    void SettingsScene::OnResize()
     {
     }
 }

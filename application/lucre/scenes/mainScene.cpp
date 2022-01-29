@@ -18,37 +18,41 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
+#include "mainScene.h"
 
-#include "engine.h"
-#include "entt.hpp"
-#include "events/event.h"
-#include "auxiliary/timestep.h"
-
-namespace GfxRenderEngine
+namespace LucreApp
 {
-
-    class Scene
+        
+    void MainScene::Start()
     {
+        LOG_APP_INFO("MainScene::Start()");
+        m_IsRunning = true;
 
-    public:
+        // constructs a naked entity with no components and returns its identifier
+        auto entity = m_Registry.create();
 
-        Scene() : m_IsRunning{false} {}
-        virtual ~Scene() {}
+        m_Registry.emplace<TransformComponent>(entity);
 
-        virtual void Start() = 0;
-        virtual void Stop() = 0;
-        virtual void OnUpdate(const Timestep& timestep) = 0;
-        virtual void OnEvent(Event& event) = 0;
-        virtual void OnResize() = 0;
+        // destroys an entity and all its components
+        m_Registry.destroy(entity);
+    }
 
-        bool IsFinished() const { return !m_IsRunning; }
-    protected:
+    void MainScene::Stop()
+    {
+        LOG_APP_INFO("MainScene::Stop()");
+    }
 
-        entt::registry m_Registry;
-        bool m_IsRunning;
+    void MainScene::OnUpdate(const Timestep& timestep)
+    {
+    }
 
-    };
+    void MainScene::OnEvent(Event& event)
+    {
+    }
+
+    void MainScene::OnResize()
+    {
+    }
 }
