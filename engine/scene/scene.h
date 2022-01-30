@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         virtual void OnResize() = 0;
 
         Entity CreateEntity();
-        void DestroyEntity(Entity entity);
+        void DestroyEntity(entt::entity entity);
 
         bool IsFinished() const { return !m_IsRunning; }
     protected:

@@ -29,7 +29,7 @@ namespace GfxRenderEngine
         return Entity::CreateEntity(m_Registry);
     }
 
-    void Scene::DestroyEntity(Entity entity)
+    void Scene::DestroyEntity(entt::entity entity)
     {
         // destroys an entity and all its components
         m_Registry.destroy(entity);

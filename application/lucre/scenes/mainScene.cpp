@@ -35,7 +35,6 @@ namespace LucreApp
 
     void MainScene::Start()
     {
-        LOG_APP_INFO("MainScene::Start()");
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
@@ -58,7 +57,6 @@ namespace LucreApp
 
     void MainScene::Stop()
     {
-        LOG_APP_INFO("MainScene::Stop()");
     }
 
     void MainScene::OnUpdate(const Timestep& timestep)
