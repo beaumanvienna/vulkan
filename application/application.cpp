@@ -23,13 +23,12 @@
 #include "application.h"
 #include "lucre.h"
 
-std::shared_ptr<Application> Application::m_Instance;
-
 std::shared_ptr<Application> Application::Create()
 {
-    if (!m_Instance)
+
+    if (!LucreApp::Lucre::m_Application)
     {
-        m_Instance = std::make_shared<LucreApp::Lucre>();
+        LucreApp::Lucre::m_Application = std::make_shared<LucreApp::Lucre>();
     }
-    return m_Instance;
+    return LucreApp::Lucre::m_Application;
 }

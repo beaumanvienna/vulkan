@@ -29,11 +29,9 @@ namespace GfxRenderEngine
     {
     }
 
-    Entity Entity::CreateEntity()
+    Entity Entity::CreateEntity(entt::registry& registry)
     {
-        static id_t currentID = 0;
-
-        return Entity{currentID++};
+        return Entity{registry.create(), registry};
     }
 
     glm::mat4 TransformComponent::Mat4()

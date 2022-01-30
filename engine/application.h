@@ -44,9 +44,5 @@ namespace GfxRenderEngine
 
         static std::shared_ptr<Application> Create();
 
-    private:
-
-        static std::shared_ptr<Application> m_Instance;
-
     };
 }

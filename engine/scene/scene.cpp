@@ -18,53 +18,20 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-
-#include "engine.h"
 #include "scene/scene.h"
-#include "scene/entity.h"
-#include "renderer/renderer.h"
-#include "renderer/cameraController.h"
 
-#include "lucre.h"
-#include "gamepadInputController.h"
-#include "keyboardInputController.h"
-
-namespace LucreApp
+namespace GfxRenderEngine
 {
-    class MainScene : public Scene
+    Entity Scene::CreateEntity()
     {
+        return Entity::CreateEntity(m_Registry);
+    }
 
-    public:
-
-        MainScene();
-        ~MainScene() override {}
-
-        void Start() override;
-        void Stop() override;
-        void OnUpdate(const Timestep& timestep) override;
-        void OnEvent(Event& event) override;
-        void OnResize() override;
-
-    private:
-
-        void LoadModels();
-
-    private:
-
-        std::shared_ptr<Renderer> m_Renderer;
-
-        // camera
-        std::shared_ptr<CameraController> m_CameraController;
-        std::unique_ptr<Entity> m_CameraObject;
-        std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
-
-        // game objects
-        std::vector<Entity> m_Entities;
-        std::unique_ptr<GamepadInputController> m_GamepadInputController;
-        TransformComponent m_GamepadInput;
-    };
+    void Scene::DestroyEntity(Entity entity)
+    {
+        // destroys an entity and all its components
+        m_Registry.destroy(entity);
+    }
 }

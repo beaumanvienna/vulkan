@@ -27,7 +27,7 @@
 #include "resources/resources.h"
 #include "events/controllerEvent.h"
 #include "events/applicationEvent.h"
-#include "events/mouseEvent.h"
+#include "events/applicationEvent.h"
 
 #include "lucre.h"
 #include "keyboardInputController.h"
@@ -35,12 +35,10 @@
 namespace LucreApp
 {
 
-    std::shared_ptr<Lucre> Lucre::m_Instance;
-    Engine* Lucre::m_Engine = nullptr;
+    std::shared_ptr<Lucre> Lucre::m_Application;
 
     Lucre::Lucre()
-        : m_GamepadInput{},
-          m_CurrentScene{nullptr}
+        : m_CurrentScene{nullptr}
     {
     }
 
@@ -48,33 +46,11 @@ namespace LucreApp
     {
         InitSettings();
 
-        std::thread consoleInputHandler(ConsoleInputHandler);
-        consoleInputHandler.detach();
-
-        m_Engine = Engine::m_Engine;
-        m_Renderer = m_Engine->GetRenderer();
-
-        m_Window = m_Engine->GetWindow();
+        m_Window = Engine::m_Engine->GetWindow();
         m_Window->SetWindowAspectRatio();
         InitCursor();
 
         m_GameState.Start();
-
-        m_CameraController = std::make_shared<CameraController>();
-        m_CameraController->SetTranslationSpeed(400.0f);
-        m_CameraController->SetRotationSpeed(0.5f);
-
-        m_CameraObject.reset( new Entity(Entity::CreateEntity()));
-
-        KeyboardInputControllerSpec keyboardInputControllerSpec{};
-        m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
-
-        LoadModels();
-
-        GamepadInputControllerSpec gamepadInputControllerSpec{};
-        m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
-
-        PlaySound(IDR_WAVES);
 
         return true;
     }
@@ -88,106 +64,11 @@ namespace LucreApp
     {
         m_CurrentScene = m_GameState.OnUpdate();
         m_CurrentScene->OnUpdate(timestep);
-
-        m_KeyboardInputController->MoveInPlaneXZ(timestep, *m_CameraObject);
-        m_CameraController->SetViewYXZ
-        (
-            m_CameraObject->m_Transform.m_Translation,
-            m_CameraObject->m_Transform.m_Rotation
-        );
-
-        // draw new scene
-        m_Renderer->BeginScene(m_CameraController->GetCamera());
-
-        m_GamepadInputController->GetTransform(m_Entities[0].m_Transform);
-        m_GamepadInputController->GetTransform(m_Entities[1].m_Transform, true);
-        m_GamepadInputController->GetTransform(m_Entities[2].m_Transform, true);
-
-        auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
-        m_Entities[1].m_Transform.m_Rotation.y = glm::mod(m_Entities[1].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        m_Entities[1].m_Transform.m_Rotation.z = glm::mod(m_Entities[1].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
-        m_Entities[2].m_Transform.m_Rotation.y = glm::mod(m_Entities[2].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        m_Entities[2].m_Transform.m_Rotation.z = glm::mod(m_Entities[2].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
-
-        m_Renderer->Submit(m_Entities);
-        m_Renderer->EndScene();
     }
 
     void Lucre::OnResize()
     {
-        m_CameraController->SetProjection();
-    }
-
-    std::shared_ptr<Lucre> Lucre::Create()
-    {
-        if (!m_Instance)
-        {
-            m_Instance = std::make_shared<Lucre>();
-        }
-        return m_Instance;
-    }
-
-    void Lucre::ConsoleInputHandler()
-    {
-        while (true)
-        {
-            LOG_APP_INFO("press enter to exit");
-            getchar(); // block until enter is pressed
-            m_Engine->Shutdown();
-            break;
-        }
-
-    }
-
-    void Lucre::LoadModels()
-    {
-        Builder builder{};
-
-        // base cube
-        builder.LoadModel("application/lucre/models/colored_cube.obj");
-        m_Model = m_Engine->LoadModel(builder);
-        auto object0 = Entity::CreateEntity();
-        object0.m_Model = m_Model;
-        object0.m_Transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
-        object0.m_Transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
-        object0.m_Transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
-        m_Entities.push_back(std::move(object0));
-
-        // base sphere
-        //builder.LoadModel("application/lucre/models/sphere.obj");
-        //m_Model = m_Engine->LoadModel(builder);
-        //auto object0 = Entity::CreateEntity();
-        //object0.m_Model = m_Model;
-        //object0.m_Transform.m_Translation = glm::vec3{0.0f, 10.7f, 2.5f};
-        //object0.m_Transform.m_Scale = glm::vec3{10.0f};
-        //object0.m_Transform.m_Rotation = glm::vec3{0.0f};
-        //m_Entities.push_back(std::move(object0));
-
-        // moving onjects
-        builder.LoadModel("application/lucre/models/flat_vase.obj");
-        m_Model = m_Engine->LoadModel(builder);
-        auto object1 = Entity::CreateEntity();
-        object1.m_Model = m_Model;
-        object1.m_Transform.m_Translation = glm::vec3{-0.8f, -0.2f, 2.5f};
-        object1.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-        m_Entities.push_back(std::move(object1));
-
-        builder.LoadModel("application/lucre/models/smooth_vase.obj");
-        m_Model = m_Engine->LoadModel(builder);
-        auto object2 = Entity::CreateEntity();
-        object2.m_Model = m_Model;
-        object2.m_Transform.m_Translation = glm::vec3{0.8f, -0.2f, 2.5f};
-        object2.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-        m_Entities.push_back(std::move(object2));
-
-        builder.LoadModel("application/lucre/models/sphere.obj");
-        m_Model = m_Engine->LoadModel(builder);
-        auto object3 = Entity::CreateEntity();
-        object3.m_Model = m_Model;
-        object3.m_Transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.5f};
-        object3.m_Transform.m_Scale = glm::vec3{0.05f};
-        m_Entities.push_back(std::move(object3));
-
+        m_CurrentScene->OnResize();
     }
 
     void Lucre::InitCursor()
@@ -203,7 +84,7 @@ namespace LucreApp
         data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/cursor.png", IDB_CURSOR_RETRO, "PNG");
         m_Cursor->SetCursor(data, fileSize, 32, 32);
 
-        m_Engine->AllowCursor();
+        Engine::m_Engine->AllowCursor();
     }
 
     void Lucre::ShowCursor()
@@ -222,7 +103,7 @@ namespace LucreApp
         m_AppSettings.RegisterSettings();
 
         // apply external settings
-        m_Engine->ApplyAppSettings();
+        Engine::m_Engine->ApplyAppSettings();
     }
 
     void Lucre::PlaySound(int resourceID)
@@ -232,10 +113,10 @@ namespace LucreApp
             switch(resourceID)
             {
                 case IDR_WAVES:
-                    m_Engine->PlaySound("/sounds/waves.ogg", IDR_WAVES, "OGG");
+                    Engine::m_Engine->PlaySound("/sounds/waves.ogg", IDR_WAVES, "OGG");
                     break;
                 case IDR_BUCKLE:
-                    m_Engine->PlaySound("/sounds/buckle.ogg", IDR_BUCKLE, "OGG");
+                    Engine::m_Engine->PlaySound("/sounds/buckle.ogg", IDR_BUCKLE, "OGG");
                     break;
             }
 
@@ -251,7 +132,7 @@ namespace LucreApp
                 switch (event.GetControllerButton())
                 {
                     case Controller::BUTTON_GUIDE:
-                        m_Engine->Shutdown();
+                        Engine::m_Engine->Shutdown();
                         break;
                     case Controller::BUTTON_A:
                         PlaySound(IDR_BUCKLE);
@@ -268,13 +149,10 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent event)
-            {
-                auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= event.GetY()*0.1f;
-                m_CameraController->SetZoomFactor(zoomFactor);
-                return true;
-            }
-        );
+                // dispatch to application
+        if (!event.IsHandled())
+        {
+            m_CurrentScene->OnEvent(event);
+        }
     }
 }

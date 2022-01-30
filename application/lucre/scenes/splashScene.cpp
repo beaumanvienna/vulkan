@@ -21,19 +21,21 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "scenes/splashScene.h"
+#include "resources/resources.h"
+
+#include "lucre.h"
 
 namespace LucreApp
 {
 
     void SplashScene::Start()
     {
-        LOG_APP_INFO("SplashScene::Start()");
         m_IsRunning = true;
+        Lucre::m_Application->PlaySound(IDR_WAVES);
     }
 
     void SplashScene::Stop()
     {
-        LOG_APP_INFO("SplashScene::Stop()");
     }
 
     void SplashScene::OnUpdate(const Timestep& timestep)

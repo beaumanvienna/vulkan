@@ -24,6 +24,7 @@
 
 #include "engine.h"
 #include "entt.hpp"
+#include "scene/entity.h"
 #include "events/event.h"
 #include "auxiliary/timestep.h"
 
@@ -43,6 +44,9 @@ namespace GfxRenderEngine
         virtual void OnUpdate(const Timestep& timestep) = 0;
         virtual void OnEvent(Event& event) = 0;
         virtual void OnResize() = 0;
+
+        Entity CreateEntity();
+        void DestroyEntity(Entity entity);
 
         bool IsFinished() const { return !m_IsRunning; }
     protected:

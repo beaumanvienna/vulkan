@@ -27,13 +27,7 @@ namespace LucreApp
 
     void SettingsScene::Start()
     {
-        // constructs a naked entity with no components and returns its identifier
-        auto entity = m_Registry.create();
-
-        m_Registry.emplace<TransformComponent>(entity);
-
-        // destroys an entity and all its components
-        m_Registry.destroy(entity);
+        m_IsRunning = true;
     }
 
     void SettingsScene::Stop()
@@ -42,6 +36,8 @@ namespace LucreApp
 
     void SettingsScene::OnUpdate(const Timestep& timestep)
     {
+        // exit right away
+        m_IsRunning = false;
     }
 
     void SettingsScene::OnEvent(Event& event)

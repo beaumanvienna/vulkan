@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "engine.h"
+#include "entt.hpp"
 #include "renderer/model.h"
 
 namespace GfxRenderEngine
@@ -45,7 +46,7 @@ namespace GfxRenderEngine
 
     public:
 
-        using id_t = uint;
+        using id_t = entt::entity;
 
     public:
 
@@ -58,7 +59,7 @@ namespace GfxRenderEngine
 
         id_t GetID() const { return m_ID; }
 
-        static Entity CreateEntity();
+        static Entity CreateEntity(entt::registry& registry);
 
     public:
 
@@ -68,11 +69,12 @@ namespace GfxRenderEngine
 
     private:
 
-        Entity(id_t id): m_ID(id) {}
+        Entity(id_t id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}
 
     private:
 
         id_t m_ID;
+        entt::registry& m_Registry;
 
     };
 }
