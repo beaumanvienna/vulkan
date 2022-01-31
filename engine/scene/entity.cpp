@@ -24,6 +24,7 @@
 
 namespace GfxRenderEngine
 {
+    uint MeshComponent::m_DefaultNameTag = 0;
 
     Entity::~Entity()
     {

@@ -24,9 +24,10 @@
 
 namespace GfxRenderEngine
 {
-    Entity Scene::CreateEntity()
+    entt::entity Scene::CreateEntity()
     {
-        return Entity::CreateEntity(m_Registry);
+        Entity entity = Entity::CreateEntity(m_Registry);
+        return entity.GetID();
     }
 
     void Scene::DestroyEntity(entt::entity entity)

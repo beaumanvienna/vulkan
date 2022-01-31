@@ -59,7 +59,7 @@ namespace LucreApp
 
         KeyboardInputController(const KeyboardInputControllerSpec& spec);
 
-        void MoveInPlaneXZ(const Timestep& timestep, Entity& gameObject);
+        void MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform);
 
     private:
 

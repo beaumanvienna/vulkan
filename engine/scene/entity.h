@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <string>
 #include <memory>
 
 #include "engine.h"
@@ -41,9 +42,23 @@ namespace GfxRenderEngine
         glm::mat3 NormalMatrix();
     };
 
-    struct MeshComponent
+    class MeshComponent
     {
+    public:
+        std::string m_Name;
         std::shared_ptr<Model> m_Model;
+        MeshComponent(std::string name, std::shared_ptr<Model> model)
+            : m_Name{name}, m_Model{model} {}
+        MeshComponent(std::shared_ptr<Model> model) 
+            : m_Name{"mesh component " + std::to_string(m_DefaultNameTag++)},
+              m_Model{model} {}
+    private:
+        static uint m_DefaultNameTag;
+    };
+
+    struct PointLightComponent
+    {
+        float m_LightIntensity{1.0f};
     };
 
     class Entity
@@ -65,11 +80,6 @@ namespace GfxRenderEngine
         id_t GetID() const { return m_ID; }
 
         static Entity CreateEntity(entt::registry& registry);
-
-    public:
-
-        std::shared_ptr<Model> m_Model;
-        TransformComponent m_Transform{};
 
     private:
         Entity(id_t id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}

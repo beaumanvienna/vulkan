@@ -45,7 +45,6 @@ namespace GfxRenderEngine
         //                        std::shared_ptr<ShaderProgram>& shader, 
         //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
         //                        std::shared_ptr<IndexBuffer>& indexBuffer);
-        //void EndScene();
         virtual void BeginScene(std::shared_ptr<Camera>& camera) = 0;
         virtual void EndScene() = 0;
 

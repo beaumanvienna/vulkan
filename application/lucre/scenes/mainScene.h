@@ -57,13 +57,14 @@ namespace LucreApp
 
         std::shared_ptr<Renderer> m_Renderer;
 
-        // camera
+        // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;
-        std::unique_ptr<Entity> m_CameraObject;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Vase0, m_Vase1, m_Ground, m_Sphere;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Sphere;
+
+        // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
     };

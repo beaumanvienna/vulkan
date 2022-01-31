@@ -250,6 +250,8 @@ namespace GfxRenderEngine
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
+            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.02f};
+            ubo.m_LightColor = {0.9f, 0.9f, 0.8f, 0.5f};
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 

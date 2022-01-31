@@ -32,7 +32,7 @@ namespace LucreApp
         : m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
     {}
 
-    void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, Entity& gameObject)
+    void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
     {
 
         glm::vec3 rotate{0};
@@ -43,14 +43,14 @@ namespace LucreApp
 
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
         {
-            gameObject.m_Transform.m_Rotation += m_LookSpeed * (float)timestep * glm::normalize(rotate);
+            transform.m_Rotation += m_LookSpeed * (float)timestep * glm::normalize(rotate);
         }
 
         // limit pitch values between about +/- 85ish degrees
-        gameObject.m_Transform.m_Rotation.x = glm::clamp(gameObject.m_Transform.m_Rotation.x, -1.5f, 1.5f);
-        gameObject.m_Transform.m_Rotation.y = glm::mod(gameObject.m_Transform.m_Rotation.y, glm::two_pi<float>());
+        transform.m_Rotation.x = glm::clamp(transform.m_Rotation.x, -1.5f, 1.5f);
+        transform.m_Rotation.y = glm::mod(transform.m_Rotation.y, glm::two_pi<float>());
 
-        float yaw = gameObject.m_Transform.m_Rotation.y;
+        float yaw = transform.m_Rotation.y;
         const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
         const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
         const glm::vec3 upDir{0.f, -1.f, 0.f};
@@ -65,7 +65,7 @@ namespace LucreApp
 
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
-            gameObject.m_Transform.m_Translation += m_MoveSpeed * (float)timestep * glm::normalize(moveDir);
+            transform.m_Translation += m_MoveSpeed * (float)timestep * glm::normalize(moveDir);
         }
     }
 }
