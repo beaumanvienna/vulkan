@@ -1,6 +1,6 @@
 *.spv
 bin
-obj
+bin-int
 Makefile
 Makefile.in
 build
@@ -26,7 +26,6 @@ resources/nsis/marleyInstaller.exe
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch

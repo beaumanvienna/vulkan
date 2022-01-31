@@ -257,13 +257,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Submit(std::vector<Entity>& entities)
+    void VK_Renderer::Submit(entt::registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
             VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
         
-            m_RenderSystem->RenderEntities(frameInfo, entities);
+            m_RenderSystem->RenderEntities(frameInfo, registry);
             m_PointLightSystem->Render(frameInfo);
         }
     }

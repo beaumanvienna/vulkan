@@ -70,18 +70,22 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera());
+        auto view = m_Registry.view<TransformComponent>();
+        auto& groundTransform = view.get<TransformComponent>(m_Ground);
+        auto& vase0Transform  = view.get<TransformComponent>(m_Vase0);
+        auto& vase1Transform  = view.get<TransformComponent>(m_Vase1);
 
-        m_GamepadInputController->GetTransform(m_Entities[0].m_Transform);
-        m_GamepadInputController->GetTransform(m_Entities[1].m_Transform, true);
-        m_GamepadInputController->GetTransform(m_Entities[2].m_Transform, true);
+        m_GamepadInputController->GetTransform(groundTransform);
+        m_GamepadInputController->GetTransform(vase0Transform, true);
+        m_GamepadInputController->GetTransform(vase1Transform, true);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
-        m_Entities[1].m_Transform.m_Rotation.y = glm::mod(m_Entities[1].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        m_Entities[1].m_Transform.m_Rotation.z = glm::mod(m_Entities[1].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
-        m_Entities[2].m_Transform.m_Rotation.y = glm::mod(m_Entities[2].m_Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        m_Entities[2].m_Transform.m_Rotation.z = glm::mod(m_Entities[2].m_Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+        vase0Transform.m_Rotation.y = glm::mod(vase0Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
+        vase0Transform.m_Rotation.z = glm::mod(vase0Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+        vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
+        vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
-        m_Renderer->Submit(m_Entities);
+        m_Renderer->Submit(m_Registry);
         m_Renderer->EndScene();
     }
 
@@ -106,52 +110,73 @@ namespace LucreApp
 
     void MainScene::LoadModels()
     {
-        Builder builder{};
-
         // base cube
-        builder.LoadModel("application/lucre/models/colored_cube.obj");
-        auto model = Engine::m_Engine->LoadModel(builder);
-        auto object0 = Entity::CreateEntity(m_Registry);
-        object0.m_Model = model;
-        object0.m_Transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
-        object0.m_Transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
-        object0.m_Transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
-        m_Entities.push_back(std::move(object0));
+        {
+            Builder builder{};
+            auto gameObject = CreateEntity();
+            m_Ground = gameObject.GetID();
 
-        // base sphere
-        //builder.LoadModel("application/lucre/models/sphere.obj");
-        //model = Engine::m_Engine->LoadModel(builder);
-        //auto object0 = Entity::CreateEntity(m_Registry);
-        //object0.m_Model = model;
-        //object0.m_Transform.m_Translation = glm::vec3{0.0f, 10.7f, 2.5f};
-        //object0.m_Transform.m_Scale = glm::vec3{10.0f};
-        //object0.m_Transform.m_Rotation = glm::vec3{0.0f};
-        //m_Entities.push_back(std::move(object0));
+            builder.LoadModel("application/lucre/models/colored_cube.obj");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            gameObject.m_Model = model;
+            MeshComponent mesh{model};
+            m_Registry.emplace<MeshComponent>(gameObject.GetID(), mesh);
 
-        // moving onjects
-        builder.LoadModel("application/lucre/models/flat_vase.obj");
-        model = Engine::m_Engine->LoadModel(builder);
-        auto object1 = Entity::CreateEntity(m_Registry);
-        object1.m_Model = model;
-        object1.m_Transform.m_Translation = glm::vec3{-0.8f, -0.2f, 2.5f};
-        object1.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-        m_Entities.push_back(std::move(object1));
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
+            transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
+            transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
+            m_Registry.emplace<TransformComponent>(gameObject.GetID(), transform);
+        }
 
-        builder.LoadModel("application/lucre/models/smooth_vase.obj");
-        model = Engine::m_Engine->LoadModel(builder);
-        auto object2 = Entity::CreateEntity(m_Registry);
-        object2.m_Model = model;
-        object2.m_Transform.m_Translation = glm::vec3{0.8f, -0.2f, 2.5f};
-        object2.m_Transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-        m_Entities.push_back(std::move(object2));
+        {
+            Builder builder{};
+            auto gameObject = CreateEntity();
+            m_Vase0 = gameObject.GetID();
 
-        builder.LoadModel("application/lucre/models/sphere.obj");
-        model = Engine::m_Engine->LoadModel(builder);
-        auto object3 = Entity::CreateEntity(m_Registry);
-        object3.m_Model = model;
-        object3.m_Transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.5f};
-        object3.m_Transform.m_Scale = glm::vec3{0.05f};
-        m_Entities.push_back(std::move(object3));
+            builder.LoadModel("application/lucre/models/flat_vase.obj");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            gameObject.m_Model = model;
+            MeshComponent mesh{model};
+            m_Registry.emplace<MeshComponent>(gameObject.GetID(), mesh);
 
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{-0.8f, -0.2f, 2.5f};
+            transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
+            m_Registry.emplace<TransformComponent>(gameObject.GetID(), transform);
+        }
+        {
+            Builder builder{};
+            auto gameObject = CreateEntity();
+            m_Vase1 = gameObject.GetID();
+
+            builder.LoadModel("application/lucre/models/smooth_vase.obj");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            gameObject.m_Model = model;
+            MeshComponent mesh{model};
+            m_Registry.emplace<MeshComponent>(gameObject.GetID(), mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.8f, -0.2f, 2.5f};
+            transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
+            m_Registry.emplace<TransformComponent>(gameObject.GetID(), transform);
+        }
+        
+        {
+            Builder builder{};
+            auto gameObject = CreateEntity();
+            m_Sphere = gameObject.GetID();
+
+            builder.LoadModel("application/lucre/models/sphere.obj");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            gameObject.m_Model = model;
+            MeshComponent mesh{model};
+            m_Registry.emplace<MeshComponent>(gameObject.GetID(), mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.5f};
+            transform.m_Scale = glm::vec3{0.05f};
+            m_Registry.emplace<TransformComponent>(gameObject.GetID(), transform);
+        }
     }
 }

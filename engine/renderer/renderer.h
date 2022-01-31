@@ -39,7 +39,7 @@ namespace GfxRenderEngine
 
         // a draw call requires a vertex array (with a vertex buffer bound to it), index buffer, and bound shaders
         //void Submit(const std::shared_ptr<VertexArray>& vertexArray);
-        virtual void Submit(std::vector<Entity>& entities) = 0;
+        virtual void Submit(entt::registry& registry) = 0;
 
         //void BeginScene(std::shared_ptr<OrthographicCamera>& camera, 
         //                        std::shared_ptr<ShaderProgram>& shader, 

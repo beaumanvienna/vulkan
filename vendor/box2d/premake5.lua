@@ -4,8 +4,8 @@ project "box2d"
     cppdialect "C++11"
     staticruntime "off"
 
-    targetdir ("build/%{cfg.buildcfg}")
-    objdir ("build/obj/%{cfg.buildcfg}")
+    targetdir ("bin/%{cfg.buildcfg}")
+    objdir ("bin-int/%{cfg.buildcfg}")
 
     files
     {

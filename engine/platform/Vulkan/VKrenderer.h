@@ -64,7 +64,7 @@ namespace GfxRenderEngine
         int GetFrameIndex() const;
 
         virtual void BeginScene(std::shared_ptr<Camera>& camera) override;
-        virtual void Submit(std::vector<Entity>& entities) override;
+        virtual void Submit(entt::registry& registry) override;
         virtual void EndScene() override;
 
     private:

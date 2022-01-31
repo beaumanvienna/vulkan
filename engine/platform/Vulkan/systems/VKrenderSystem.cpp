@@ -79,7 +79,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystem::RenderEntities(const VK_FrameInfo& frameInfo, std::vector<Entity>& entities)
+    void VK_RenderSystem::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         vkCmdBindDescriptorSets
         (
@@ -95,11 +95,13 @@ namespace GfxRenderEngine
 
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        for (auto& entity : entities)
+        auto view = registry.view<MeshComponent, TransformComponent>();
+        for (auto entity : view)
         {
+            auto& transform = view.get<TransformComponent>(entity);
             VK_SimplePushConstantData push{};
-            push.m_ModelMatrix = entity.m_Transform.Mat4();
-            push.m_NormalMatrix  = entity.m_Transform.NormalMatrix();
+            push.m_ModelMatrix  = transform.Mat4();
+            push.m_NormalMatrix = transform.NormalMatrix();
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
@@ -107,8 +109,11 @@ namespace GfxRenderEngine
                 0,
                 sizeof(VK_SimplePushConstantData),
                 &push);
-            static_cast<VK_Model*>(entity.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-            static_cast<VK_Model*>(entity.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+
+            auto& mesh = view.get<MeshComponent>(entity);
+            static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+            static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
         }
+
     }
 }

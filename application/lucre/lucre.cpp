@@ -51,6 +51,7 @@ namespace LucreApp
         InitCursor();
 
         m_GameState.Start();
+        m_CurrentScene = &m_GameState.GetScene();
 
         return true;
     }
@@ -68,6 +69,7 @@ namespace LucreApp
 
     void Lucre::OnResize()
     {
+        ASSERT(m_CurrentScene);
         m_CurrentScene->OnResize();
     }
 

@@ -13,6 +13,7 @@ project "lucre"
     language "C++"
     cppdialect "C++17"
     targetdir "bin/%{cfg.buildcfg}"
+    objdir ("bin-int/%{cfg.buildcfg}")
 
     defines
     {

@@ -55,7 +55,7 @@ namespace GfxRenderEngine
         VK_RenderSystem(const VK_RenderSystem&) = delete;
         VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, std::vector<Entity>& entities);
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 

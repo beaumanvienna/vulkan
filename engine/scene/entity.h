@@ -41,6 +41,11 @@ namespace GfxRenderEngine
         glm::mat3 NormalMatrix();
     };
 
+    struct MeshComponent
+    {
+        std::shared_ptr<Model> m_Model;
+    };
+
     class Entity
     {
 
@@ -64,11 +69,9 @@ namespace GfxRenderEngine
     public:
 
         std::shared_ptr<Model> m_Model;
-        glm::vec3 m_Color;
         TransformComponent m_Transform{};
 
     private:
-
         Entity(id_t id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}
 
     private:

@@ -63,7 +63,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        std::vector<Entity> m_Entities;
+        entt::entity m_Vase0, m_Vase1, m_Ground, m_Sphere;
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
     };
