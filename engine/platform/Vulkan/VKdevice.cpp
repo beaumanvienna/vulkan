@@ -163,11 +163,22 @@ namespace GfxRenderEngine
 
         for (const auto &device : devices)
         {
-            if (IsDeviceSuitable(device))
+            if (IsPreferredDevice(device))
             {
                 physicalDevice = device;
                 vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-                std::cout << "physical device: " << properties.deviceName << std::endl;
+                LOG_CORE_INFO("found a dedicated graphics card: {0}", properties.deviceName);
+                return;
+            }
+        }
+
+        for (const auto &device : devices)
+        {
+            if (IsSuitableDevice(device))
+            {
+                physicalDevice = device;
+                vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+                LOG_CORE_INFO("found an onboard graphics card: {0}", properties.deviceName);
                 break;
             }
         }
@@ -253,7 +264,20 @@ namespace GfxRenderEngine
         m_Window->CreateWindowSurface(instance, &m_Surface);
     }
 
-    bool VK_Device::IsDeviceSuitable(VkPhysicalDevice device)
+    bool VK_Device::IsPreferredDevice(VkPhysicalDevice device)
+    {
+        if (!IsSuitableDevice(device))
+        {
+            return false;
+        }
+
+        auto props = VkPhysicalDeviceProperties{};
+        vkGetPhysicalDeviceProperties(device, &props);
+
+        return props.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+    }
+
+    bool VK_Device::IsSuitableDevice(VkPhysicalDevice device)
     {
         // check if blacklisted
         vkGetPhysicalDeviceProperties(device, &properties);

@@ -108,7 +108,8 @@ namespace GfxRenderEngine
         void CreateCommandPool();
 
         // helper functions
-        bool IsDeviceSuitable(VkPhysicalDevice device);
+        bool IsSuitableDevice(VkPhysicalDevice device);
+        bool IsPreferredDevice(VkPhysicalDevice device);
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
