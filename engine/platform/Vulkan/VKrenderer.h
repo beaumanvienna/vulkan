@@ -63,7 +63,7 @@ namespace GfxRenderEngine
         void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
 
-        virtual void BeginScene(std::shared_ptr<Camera>& camera) override;
+        virtual void BeginScene(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry) override;
         virtual void EndScene() override;
 
@@ -89,6 +89,7 @@ namespace GfxRenderEngine
         uint m_CurrentImageIndex;
         int m_CurrentFrameIndex;
         bool m_FrameInProgress;
+        VK_FrameInfo m_FrameInfo;
 
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};

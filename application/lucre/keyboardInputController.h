@@ -26,7 +26,7 @@
 
 #include "engine.h"
 #include "platform/keyCodes.h"
-#include "scene/entity.h"
+#include "scene/scene.h"
 #include "auxiliary/timestep.h"
 
 namespace LucreApp

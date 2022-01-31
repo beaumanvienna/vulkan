@@ -24,6 +24,8 @@
 
 namespace GfxRenderEngine
 {
+    uint MeshComponent::m_DefaultNameTagCounter = 0;
+
     entt::entity Scene::CreateEntity()
     {
         Entity entity = Entity::CreateEntity(m_Registry);
@@ -35,4 +37,89 @@ namespace GfxRenderEngine
         // destroys an entity and all its components
         m_Registry.destroy(entity);
     }
+
+    entt::entity Scene::CreatePointLight(const float intensity, const float radius,
+                                         const glm::vec3& color)
+    {
+        entt::entity pointLight = CreateEntity();
+
+        PointLightComponent pointLightComponent{intensity, radius, color};
+        m_Registry.emplace<PointLightComponent>(pointLight, pointLightComponent);
+        return pointLight;
+    }
+
+    MeshComponent::MeshComponent(std::string name, std::shared_ptr<Model> model)
+        : m_Name{name}, m_Model{model}
+    {
+    }
+
+    MeshComponent::MeshComponent(std::shared_ptr<Model> model) 
+        : m_Model{model}
+    {
+        m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
+    }
+
+    glm::mat4 TransformComponent::Mat4()
+    {
+        const float c3 = glm::cos(m_Rotation.z);
+        const float s3 = glm::sin(m_Rotation.z);
+        const float c2 = glm::cos(m_Rotation.x);
+        const float s2 = glm::sin(m_Rotation.x);
+        const float c1 = glm::cos(m_Rotation.y);
+        const float s1 = glm::sin(m_Rotation.y);
+        return glm::mat4
+        {
+            {
+                m_Scale.x * (c1 * c3 + s1 * s2 * s3),
+                m_Scale.x * (c2 * s3),
+                m_Scale.x * (c1 * s2 * s3 - c3 * s1),
+                0.0f,
+            },
+            {
+                m_Scale.y * (c3 * s1 * s2 - c1 * s3),
+                m_Scale.y * (c2 * c3),
+                m_Scale.y * (c1 * c3 * s2 + s1 * s3),
+                0.0f,
+            },
+            {
+                m_Scale.z * (c2 * s1),
+                m_Scale.z * (-s2),
+                m_Scale.z * (c1 * c2),
+                0.0f,
+            },
+            {m_Translation.x, m_Translation.y, m_Translation.z, 1.0f}
+        };
+    }
+
+    glm::mat3 TransformComponent::NormalMatrix()
+    {
+        const float c3 = glm::cos(m_Rotation.z);
+        const float s3 = glm::sin(m_Rotation.z);
+        const float c2 = glm::cos(m_Rotation.x);
+        const float s2 = glm::sin(m_Rotation.x);
+        const float c1 = glm::cos(m_Rotation.y);
+        const float s1 = glm::sin(m_Rotation.y);
+
+        const glm::vec3 inverseScale = 1.0f / m_Scale;
+
+        return glm::mat3
+        {
+            {
+                inverseScale.x * (c1 * c3 + s1 * s2 * s3),
+                inverseScale.x * (c2 * s3),
+                inverseScale.x * (c1 * s2 * s3 - c3 * s1),
+            },
+            {
+                inverseScale.y * (c3 * s1 * s2 - c1 * s3),
+                inverseScale.y * (c2 * c3),
+                inverseScale.y * (c1 * c3 * s2 + s1 * s3),
+            },
+            {
+                inverseScale.z * (c2 * s1),
+                inverseScale.z * (-s2),
+                inverseScale.z * (c1 * c2),
+            }
+        };
+    }
+
 }

@@ -25,14 +25,37 @@
 #include <vulkan/vulkan.h>
 
 #include "renderer/camera.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
+
+    struct PointLight
+    {
+        glm::vec4 m_Position{};  // ignore w
+        glm::vec4 m_Color{};     // w is intensity
+    };
+
+    // remember alignment requirements!
+    // http s://www.oreilly.com/library/view/opengl-programming-guide/9780132748445/app09lev1sec2.html
+    struct GlobalUniformBuffer
+    {
+        glm::mat4 m_Projection{1.0f};
+        glm::mat4 m_View{1.0f};
+
+        // point light
+        glm::vec4 m_AmbientLightColor{1.0f, 1.0f, 1.0f, 0.02f};
+        PointLight m_PointLights[MAX_LIGHTS];
+        int m_NumberOfActiveLights;
+    };
+
     struct VK_FrameInfo
     {
         int m_FrameIndex;
+        float m_FrameTime;
         VkCommandBuffer m_CommandBuffer;
-        Camera& m_Camera;
+        Camera* m_Camera;
         VkDescriptorSet m_GlobalDescriptorSet;
     };
+
 }

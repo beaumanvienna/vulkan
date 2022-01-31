@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         //                        std::shared_ptr<ShaderProgram>& shader, 
         //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
         //                        std::shared_ptr<IndexBuffer>& indexBuffer);
-        virtual void BeginScene(std::shared_ptr<Camera>& camera) = 0;
+        virtual void BeginScene(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
         //void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));

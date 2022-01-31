@@ -32,35 +32,6 @@
 namespace GfxRenderEngine
 {
 
-    struct TransformComponent
-    {
-        glm::vec3 m_Scale{1.0f};
-        glm::vec3 m_Rotation{};
-        glm::vec3 m_Translation{};
-
-        glm::mat4 Mat4();
-        glm::mat3 NormalMatrix();
-    };
-
-    class MeshComponent
-    {
-    public:
-        std::string m_Name;
-        std::shared_ptr<Model> m_Model;
-        MeshComponent(std::string name, std::shared_ptr<Model> model)
-            : m_Name{name}, m_Model{model} {}
-        MeshComponent(std::shared_ptr<Model> model) 
-            : m_Name{"mesh component " + std::to_string(m_DefaultNameTag++)},
-              m_Model{model} {}
-    private:
-        static uint m_DefaultNameTag;
-    };
-
-    struct PointLightComponent
-    {
-        float m_LightIntensity{1.0f};
-    };
-
     class Entity
     {
 
@@ -82,6 +53,7 @@ namespace GfxRenderEngine
         static Entity CreateEntity(entt::registry& registry);
 
     private:
+
         Entity(id_t id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}
 
     private:

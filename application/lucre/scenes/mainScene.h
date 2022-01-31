@@ -52,6 +52,7 @@ namespace LucreApp
     private:
 
         void LoadModels();
+        void RotateLights(const Timestep& timestep);
 
     private:
 
@@ -62,7 +63,8 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Sphere;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1;
+        entt::entity m_PointLight[MAX_LIGHTS];
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;

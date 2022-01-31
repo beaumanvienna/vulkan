@@ -25,7 +25,7 @@
 #include <functional>
 
 #include "engine.h"
-#include "scene/entity.h"
+#include "scene/scene.h"
 
 namespace LucreApp
 {

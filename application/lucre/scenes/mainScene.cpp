@@ -44,7 +44,9 @@ namespace LucreApp
         m_CameraController->SetRotationSpeed(0.5f);
         
         m_Camera = CreateEntity();
-        m_Registry.emplace<TransformComponent>(m_Camera);
+        TransformComponent transform{};
+        transform.m_Translation = {0.0f, -1.0f, -6.0f};
+        m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
         m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
@@ -72,7 +74,7 @@ namespace LucreApp
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
 
         // draw new scene
-        m_Renderer->BeginScene(m_CameraController->GetCamera());
+        m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
         m_GamepadInputController->GetTransform(groundTransform);
         m_GamepadInputController->GetTransform(vase0Transform, true);
@@ -83,6 +85,8 @@ namespace LucreApp
         vase0Transform.m_Rotation.z = glm::mod(vase0Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
         vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+
+        RotateLights(timestep);
 
         m_Renderer->Submit(m_Registry);
         m_Renderer->EndScene();
@@ -107,6 +111,25 @@ namespace LucreApp
         m_CameraController->SetProjection();
     }
 
+    void MainScene::RotateLights(const Timestep& timestep)
+    {
+        //LOG_APP_CRITICAL("timestep: {0}", (float) timestep);
+        float time = 0.1f * glm::pi<float>() * timestep / 1000;
+        auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
+        
+        int lightIndex = 0;
+        auto view = m_Registry.view<PointLightComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            auto& transform  = view.get<TransformComponent>(entity);
+
+            // update light position
+            transform.m_Translation = glm::vec3(rotateLight * glm::vec4(transform.m_Translation, 1.f));
+
+            lightIndex++;
+        }
+    }
+
     void MainScene::LoadModels()
     {
         {
@@ -119,7 +142,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Ground, mesh);
 
             TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, 0.7f, 2.5f};
+            transform.m_Translation = glm::vec3{0.0f, 0.7f, 0.0f};
             transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
             transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
@@ -134,7 +157,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Vase0, mesh);
 
             TransformComponent transform{};
-            transform.m_Translation = glm::vec3{-0.8f, -0.2f, 2.5f};
+            transform.m_Translation = glm::vec3{-0.8f, -0.2f, 0.0f};
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
         }
@@ -148,23 +171,35 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Vase1, mesh);
 
             TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.8f, -0.2f, 2.5f};
+            transform.m_Translation = glm::vec3{0.8f, -0.2f, 0.0f};
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
         }
         {
-            Builder builder{};
-            m_Sphere = CreateEntity();
 
-            builder.LoadModel("application/lucre/models/sphere.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"point light 0", model};
-            m_Registry.emplace<MeshComponent>(m_Sphere, mesh);
+            std::vector<glm::vec3> lightColors
+            {
+                {1.f, .1f, .1f},
+                {.1f, .1f, 1.f},
+                {.1f, 1.f, .1f},
+                {1.f, 1.f, .1f},
+                {.1f, 1.f, 1.f},
+                {1.f, 1.f, 1.f}
+            };
 
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.5f};
-            transform.m_Scale = glm::vec3{0.05f};
-            m_Registry.emplace<TransformComponent>(m_Sphere, transform);
+            for (int i = 0; i < lightColors.size(); i++)
+            {
+                m_PointLight[i] = CreatePointLight(0.2f, 0.1f, lightColors[i]);
+                auto rotateLight = glm::rotate
+                (
+                    glm::mat4(1.0f),
+                    (i * glm::two_pi<float>()) / lightColors.size(),
+                    {0.f, -1.f, 0.f}
+                );
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -0.25f, -1.0f, 0.0f));
+                m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
+            }
         }
     }
 }

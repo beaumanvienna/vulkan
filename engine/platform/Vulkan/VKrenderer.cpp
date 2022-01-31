@@ -242,16 +242,18 @@ namespace GfxRenderEngine
         vkCmdEndRenderPass(commandBuffer);
     }
 
-    void VK_Renderer::BeginScene(std::shared_ptr<Camera>& camera)
+    void VK_Renderer::BeginScene(Camera* camera, entt::registry& registry)
     {
-        m_Camera = camera.get();
+        m_Camera = camera;
         if (m_CurrentCommandBuffer = BeginFrame())
         {
+            m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
+            
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.02f};
-            ubo.m_LightColor = {0.9f, 0.9f, 0.8f, 0.5f};
+            m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
@@ -263,10 +265,8 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            VK_FrameInfo frameInfo{m_CurrentFrameIndex, m_CurrentCommandBuffer, *m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
-        
-            m_RenderSystem->RenderEntities(frameInfo, registry);
-            m_PointLightSystem->Render(frameInfo);
+            m_RenderSystem->RenderEntities(m_FrameInfo, registry);
+            m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
 

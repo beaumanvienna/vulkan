@@ -30,6 +30,41 @@
 
 namespace GfxRenderEngine
 {
+    constexpr int MAX_LIGHTS = 10;
+
+    struct TransformComponent
+    {
+        glm::vec3 m_Scale{1.0f};
+        glm::vec3 m_Rotation{};
+        glm::vec3 m_Translation{};
+
+        glm::mat4 Mat4();
+        glm::mat3 NormalMatrix();
+    };
+
+    class MeshComponent
+    {
+
+    public:
+
+        MeshComponent(std::string name, std::shared_ptr<Model> model);
+        MeshComponent(std::shared_ptr<Model> model);
+
+        std::string m_Name;
+        std::shared_ptr<Model> m_Model;
+
+    private:
+
+        static uint m_DefaultNameTagCounter;
+
+    };
+
+    struct PointLightComponent
+    {
+        float m_LightIntensity{1.0f};
+        float m_Radius{1.0f};
+        glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
+    };
 
     class Scene
     {
@@ -48,7 +83,11 @@ namespace GfxRenderEngine
         entt::entity CreateEntity();
         void DestroyEntity(entt::entity entity);
 
+        entt::entity CreatePointLight(const float intensity = 1.0f, const float radius = 0.1f,
+                                      const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
+
         bool IsFinished() const { return !m_IsRunning; }
+
     protected:
 
         entt::registry m_Registry;

@@ -49,7 +49,8 @@ namespace GfxRenderEngine
         VK_PointLightSystem(const VK_PointLightSystem&) = delete;
         VK_PointLightSystem& operator=(const VK_PointLightSystem&) = delete;
 
-        void Render(const VK_FrameInfo& frameInfo);
+        void Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry);
+        void Render(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 

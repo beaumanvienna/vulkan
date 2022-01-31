@@ -2,7 +2,13 @@
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPositionWorld;
-layout(location = 2) in vec3 fragMormalWorld;
+layout(location = 2) in vec3 fragNormalWorld;
+
+struct PointLight
+{
+    vec4 m_Position;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
@@ -11,8 +17,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    vec3 m_LightPosition;
-    vec4 m_LightColor;
+    PointLight m_PointLights[10];
+    int m_NumberOfActiveLights;
 } ubo;
 
 layout (location = 0) out vec4 outColor;
@@ -26,16 +32,22 @@ layout(push_constant) uniform Push
 void main()
 {
 
-    vec3 directionToLight = ubo.m_LightPosition - fragPositionWorld;
-    float attenuation = 1.0 / dot(directionToLight, directionToLight);
-    vec3 lightColor = ubo.m_LightColor.xyz * ubo.m_LightColor.w * attenuation;
-    vec3 ambientLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
-    vec3 diffusedLightColor = lightColor * max(dot(normalize(fragMormalWorld), normalize(directionToLight)), 0);
-    vec3 lightColorResult = (ambientLightColor + diffusedLightColor);
+    vec3 diffusedLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
+    vec3 surfaceNormal = normalize(fragNormalWorld);
 
-    outColor.x = lightColorResult.x * fragColor.x;
-    outColor.y = lightColorResult.y * fragColor.y;
-    outColor.z = lightColorResult.z * fragColor.z;
+    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
+    {
+        PointLight light = ubo.m_PointLights[i];
+        vec3 directionToLight = light.m_Position.xyz - fragPositionWorld;
+        float attenuation = 1.0 / dot(directionToLight, directionToLight);
+        float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0);
+        vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
+        diffusedLightColor += intensity * cosAngleOfIncidence;
+    }
+
+    outColor.x = diffusedLightColor.x * fragColor.x;
+    outColor.y = diffusedLightColor.y * fragColor.y;
+    outColor.z = diffusedLightColor.z * fragColor.z;
     outColor.w = 1.0;
 
 }

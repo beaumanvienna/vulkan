@@ -29,7 +29,7 @@
 
 #include "engine.h"
 #include "renderer/camera.h"
-#include "scene/entity.h"
+#include "scene/scene.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"

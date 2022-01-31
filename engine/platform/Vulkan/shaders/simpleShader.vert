@@ -5,6 +5,12 @@ layout(location = 1) in vec3 color;
 layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
 
+struct PointLight
+{
+    vec4 m_Position;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
+
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     mat4 m_Projection;
@@ -12,8 +18,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    vec3 m_LightPosition;
-    vec4 m_LightColor;
+    PointLight m_PointLights[10];
+    int m_NumberOfActiveLights;
 } ubo;
 
 layout(push_constant) uniform Push
