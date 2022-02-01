@@ -70,7 +70,13 @@ namespace GfxRenderEngine
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
                           VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
-        static void SetDevice(std::shared_ptr<VK_Device> device);
+        uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
+        void CreateImage(uint width, uint height, VkFormat format, VkImageTiling tiling,
+                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
+                         VkImage& image, VkDeviceMemory& imageMemory);
+        void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        VkCommandBuffer BeginSingleTimeCommands();
+        void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     private:
 
@@ -83,7 +89,8 @@ namespace GfxRenderEngine
         int m_InternalFormat, m_DataFormat;
         int m_Type;
 
-        static std::shared_ptr<VK_Device> m_Device;
+        VkImage textureImage;
+        VkDeviceMemory textureImageMemory;
 
     };
 }

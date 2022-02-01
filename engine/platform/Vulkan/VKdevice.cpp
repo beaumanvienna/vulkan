@@ -41,7 +41,7 @@ namespace GfxRenderEngine
         const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
         void *pUserData)
     {
-        LOG_CORE_CRITICAL("validation layer: {0}", pCallbackData->pMessage);
+        std::cout << "validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
     }

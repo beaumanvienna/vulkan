@@ -64,6 +64,7 @@ namespace GfxRenderEngine
 
         VkCommandPool GetCommandPool() { return commandPool; }
         VkDevice Device() { return m_Device; }
+        VkPhysicalDevice PhysicalDevice() { return physicalDevice; }
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
         VkQueue PresentQueue() { return m_PresentQueue; }
@@ -84,18 +85,22 @@ namespace GfxRenderEngine
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        void CopyBufferToImage(
+        void CopyBufferToImage
+        (
             VkBuffer buffer,
             VkImage image,
             uint width,
             uint height,
-            uint layerCount);
+            uint layerCount
+        );
 
-        void CreateImageWithInfo(
-        const VkImageCreateInfo &imageInfo,
-        VkMemoryPropertyFlags properties,
-        VkImage &image,
-        VkDeviceMemory &imageMemory);
+        void CreateImageWithInfo
+        (
+            const VkImageCreateInfo &imageInfo,
+            VkMemoryPropertyFlags properties,
+            VkImage &image,
+            VkDeviceMemory &imageMemory
+        );
 
         VkPhysicalDeviceProperties properties;
 
