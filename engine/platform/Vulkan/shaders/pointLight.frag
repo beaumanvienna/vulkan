@@ -35,5 +35,8 @@ void main()
     {
         discard;
     }
-    outColor = vec4(push.m_Color.xyz, 1.0);
+    float oneMinusDisSqr = (1 - dis) * (1 - dis);
+    vec3 bloom = vec3(oneMinusDisSqr, oneMinusDisSqr, oneMinusDisSqr);
+    float alpha = smoothstep(0.1, 1.0, 1-dis);
+    outColor = vec4(push.m_Color.xyz + bloom, alpha);
 }
