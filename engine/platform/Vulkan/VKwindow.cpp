@@ -65,8 +65,7 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("{0}  extensions supported", extensionCount);
 
             // create a device
-            m_Device       = std::make_shared<VK_Device>(this);
-            m_Renderer     = std::make_shared<VK_Renderer>(this, m_Device);
+            VK_Core::m_Device = std::make_shared<VK_Device>(this);
 
             if (m_Window)
             {
@@ -101,7 +100,7 @@ namespace GfxRenderEngine
 
     void VK_Window::Shutdown()
     {
-        vkDeviceWaitIdle(m_Device->Device());
+        vkDeviceWaitIdle(VK_Core::m_Device->Device());
         glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
@@ -143,7 +142,7 @@ namespace GfxRenderEngine
             glfwPollEvents();
         }
 
-        vkDeviceWaitIdle(m_Device->Device());
+        vkDeviceWaitIdle(VK_Core::m_Device->Device());
     }
 
     void VK_Window::OnError(int errorCode, const char* description) 
@@ -338,13 +337,6 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("Could not create surface");
         }
-    }
-
-    std::shared_ptr<Model> VK_Window::LoadModel(const Builder& builder)
-    {
-        ASSERT(m_Device != nullptr);
-        auto model = std::make_shared<VK_Model>(m_Device, builder);
-        return model;
     }
 
     void VK_Window::CreateWindow()

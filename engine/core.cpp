@@ -95,6 +95,7 @@ namespace GfxRenderEngine
             return false;
         }
         m_Window->SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+        m_GraphicsContext = GraphicsContext::Create(m_Window.get());
 
         // init audio
         m_Audio = Audio::Create();

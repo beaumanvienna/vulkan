@@ -34,6 +34,7 @@
 #include "platform/SDL/controller.h"
 #include "platform/SDL/timer.h"
 #include "platform/window.h"
+#include "renderer/graphicsContext.h"
 #include "renderer/renderer.h"
 #include "renderer/model.h"
 #include "audio/audio.h"
@@ -69,7 +70,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
-        std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_Window->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }
@@ -80,7 +81,7 @@ namespace GfxRenderEngine
         void PlaySound(std::string filename) { m_Audio->PlaySound(filename); }
         void PlaySound(const char* path, int resourceID, const std::string& resourceClass) { m_Audio->PlaySound(path, resourceID, resourceClass); }
 
-        std::shared_ptr<Renderer> GetRenderer() const { return m_Window->GetRenderer(); }
+        std::shared_ptr<Renderer> GetRenderer() const { return m_GraphicsContext->GetRenderer(); }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
 
         Timestep GetTimestep() const { return m_Timestep; }
@@ -102,6 +103,7 @@ namespace GfxRenderEngine
         std::string m_HomeDir;
         std::string m_ConfigFilePath;
         std::shared_ptr<Window> m_Window;
+        std::shared_ptr<GraphicsContext> m_GraphicsContext;
         std::shared_ptr<Audio> m_Audio;
         Controller m_Controller;
         Timer m_DisableMousePointerTimer;

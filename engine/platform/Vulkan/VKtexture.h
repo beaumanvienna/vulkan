@@ -22,13 +22,30 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #include "engine.h"
 #include "renderer/texture.h"
+
+#include "VKdevice.h"
 
 namespace GfxRenderEngine
 {
     class VK_Texture: public Texture
     {
+    public:
+
+        struct VK_TextureObject
+        {
+            VkSampler sampler;
+            VkImage image;
+            VkImageLayout imageLayout;
+            VkDeviceMemory deviceMemory;
+            VkImageView view;
+            uint width, height;
+            uint mipLevels;
+        };
+
     public:
         VK_Texture();
         VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
@@ -48,7 +65,12 @@ namespace GfxRenderEngine
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
 
     private:
+
         bool Create();
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
+                          VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                          VkDeviceMemory& bufferMemory);
+        static void SetDevice(std::shared_ptr<VK_Device> device);
 
     private:
 
@@ -60,6 +82,8 @@ namespace GfxRenderEngine
 
         int m_InternalFormat, m_DataFormat;
         int m_Type;
+
+        static std::shared_ptr<VK_Device> m_Device;
 
     };
 }

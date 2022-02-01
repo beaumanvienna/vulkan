@@ -25,10 +25,18 @@
 #include "stb_image.h"
 #include "core.h"
 
+#include "VKcore.h"
 #include "VKtexture.h"
 
 namespace GfxRenderEngine
 {
+    std::shared_ptr<VK_Device> VK_Texture::m_Device;
+
+    void VK_Texture::SetDevice(std::shared_ptr<VK_Device> device)
+    {
+        m_Device = device;
+    }
+
     VK_Texture::VK_Texture()
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
         m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0), m_DataFormat(0)
@@ -117,6 +125,34 @@ namespace GfxRenderEngine
         LOG_CORE_CRITICAL("not implemented");
         return true;
     }
+    
+    void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(m_Device->Device(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+//        vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+//
+//        VkMemoryAllocateInfo allocInfo{};
+//        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+//        allocInfo.allocationSize = memRequirements.size;
+//        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+//
+//        if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+//            throw std::runtime_error("failed to allocate buffer memory!");
+//        }
+//
+//        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+    }
 
     bool VK_Texture::Create()
     {
@@ -127,9 +163,43 @@ namespace GfxRenderEngine
         LOG_CORE_CRITICAL("m_TextureSlot: {0}", m_TextureSlot);
         LOG_CORE_CRITICAL("m_InternalFormat: {0}, m_DataFormat: {1}",  m_InternalFormat, m_DataFormat);
         LOG_CORE_CRITICAL("m_Type: {0}", m_Type);
-        
-        //free local buffer
+
+        VkDeviceSize imageSize = m_Width * m_Height * 4;
+
+        if (!m_LocalBuffer)
+        {
+            LOG_CORE_CRITICAL("failed to load texture image!");
+            return false;
+        }
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        CreateBuffer
+        (
+            imageSize, 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory
+        );
+
+        void* data;
+        auto device = VK_Core::m_Device->Device();
+        vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+            memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
+        vkUnmapMemory(device, stagingBufferMemory);
+
         stbi_image_free(m_LocalBuffer);
+
+        //createImage(m_Width, m_Height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+        //
+        //transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        //    copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
+        //transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        //
+        //vkDestroyBuffer(device, stagingBuffer, nullptr);
+        //vkFreeMemory(device, stagingBufferMemory, nullptr);
+
         return true;
     }
 

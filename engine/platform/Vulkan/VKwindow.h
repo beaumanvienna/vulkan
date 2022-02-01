@@ -28,7 +28,7 @@
 #include "platform/window.h"
 #include "scene/entity.h"
 
-#include "VKdevice.h"
+#include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
 #include "VKrenderer.h"
@@ -67,7 +67,6 @@ namespace GfxRenderEngine
         void SetWindowAspectRatio() override;
         void SetWindowAspectRatio(int numer, int denom) override;
         float GetWindowAspectRatio() const override { return m_WindowProperties.m_AspectRatio; }
-        std::shared_ptr<Model> LoadModel(const Builder& builder) override;
 
         static void OnError(int errorCode, const char* description);
 
@@ -78,7 +77,6 @@ namespace GfxRenderEngine
 
         bool WasResized() const { return m_WindowProperties.m_FramebufferResized; }
         void ResetWindowResizedFlag() { m_WindowProperties.m_FramebufferResized = false; }
-        virtual std::shared_ptr<Renderer> GetRenderer() const override { return m_Renderer; }
 
     private:
 
@@ -106,8 +104,6 @@ namespace GfxRenderEngine
         bool m_OK;
 
         WindowData m_WindowProperties;
-        std::shared_ptr<VK_Device> m_Device;
-        std::shared_ptr<VK_Renderer> m_Renderer;
 
         uint m_RefreshRate;
         bool m_IsFullscreen;
