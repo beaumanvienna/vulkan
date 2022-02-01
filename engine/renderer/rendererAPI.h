@@ -30,7 +30,6 @@
 #include <memory>
 
 #include "engine.h"
-//#include "vertexArray.h"
 
 namespace GfxRenderEngine
 {

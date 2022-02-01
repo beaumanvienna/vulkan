@@ -23,6 +23,8 @@
 #include "renderer/rendererAPI.h"
 #include "renderer/texture.h"
 
+#include "VKtexture.h"
+
 namespace GfxRenderEngine
 {
 
@@ -32,8 +34,8 @@ namespace GfxRenderEngine
 
         switch(RendererAPI::GetAPI())
         {
-            case RendererAPI::OPENGL:
-                texture = nullptr;
+            case RendererAPI::VULKAN:
+                texture = std::make_shared<VK_Texture>();
                 break;
             default:
                 texture = nullptr;
@@ -42,14 +44,15 @@ namespace GfxRenderEngine
 
         return texture;
     }
+
     std::shared_ptr<Texture> Texture::Create(uint ID, int internalFormat, int dataFormat, int type)
     {
         std::shared_ptr<Texture> texture;
 
         switch(RendererAPI::GetAPI())
         {
-            case RendererAPI::OPENGL:
-                texture = nullptr;
+            case RendererAPI::VULKAN:
+                LOG_CORE_CRITICAL("not implemented");
                 break;
             default:
                 texture = nullptr;

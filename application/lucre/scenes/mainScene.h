@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/entity.h"
+#include "renderer/texture.h"
 #include "renderer/renderer.h"
 #include "renderer/cameraController.h"
 
@@ -69,5 +70,7 @@ namespace LucreApp
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
+
+        std::shared_ptr<Texture> m_Texture;
     };
 }

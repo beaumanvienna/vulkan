@@ -23,6 +23,7 @@
 #include "core.h"
 #include "events/event.h"
 #include "events/mouseEvent.h"
+#include "resources/resources.h"
 
 #include "mainScene.h"
 
@@ -42,7 +43,7 @@ namespace LucreApp
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
         m_CameraController->SetRotationSpeed(0.5f);
-        
+
         m_Camera = CreateEntity();
         TransformComponent transform{};
         transform.m_Translation = {0.0f, -1.0f, -6.0f};
@@ -55,6 +56,12 @@ namespace LucreApp
 
         GamepadInputControllerSpec gamepadInputControllerSpec{};
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
+
+        // create texture
+        size_t fileSize;
+        const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
+        m_Texture = Texture::Create();
+        m_Texture->Init(data, fileSize);
 
     }
 
@@ -116,7 +123,7 @@ namespace LucreApp
         //LOG_APP_CRITICAL("timestep: {0}", (float) timestep);
         float time = 0.1f * glm::pi<float>() * timestep / 1000;
         auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
-        
+
         int lightIndex = 0;
         auto view = m_Registry.view<PointLightComponent, TransformComponent>();
         for (auto entity : view)
