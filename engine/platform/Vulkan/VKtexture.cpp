@@ -122,48 +122,9 @@ namespace GfxRenderEngine
         return true;
     }
 
-    VkCommandBuffer VK_Texture::BeginSingleTimeCommands()
-    {
-        auto device = VK_Core::m_Device->Device();
-
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = VK_Core::m_Device->GetCommandPool();
-        allocInfo.commandBufferCount = 1;
-
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-        return commandBuffer;
-    }
-
-    void VK_Texture::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
-    {
-        auto device = VK_Core::m_Device->Device();
-
-        vkEndCommandBuffer(commandBuffer);
-
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        vkQueueSubmit(VK_Core::m_Device->GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(VK_Core::m_Device->GraphicsQueue());
-
-        vkFreeCommandBuffers(device, VK_Core::m_Device->GetCommandPool(), 1, &commandBuffer);
-    }
-
     void VK_Texture::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
     {
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -212,7 +173,7 @@ namespace GfxRenderEngine
             1, &barrier
         );
 
-        EndSingleTimeCommands(commandBuffer);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }
     
     void VK_Texture::CreateImage

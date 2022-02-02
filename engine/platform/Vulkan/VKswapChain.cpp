@@ -207,7 +207,8 @@ namespace GfxRenderEngine
 
         createInfo.oldSwapchain = (m_OldSwapChain == nullptr ? VK_NULL_HANDLE : m_OldSwapChain->m_SwapChain);
 
-        if (vkCreateSwapchainKHR(m_Device->Device(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
+        auto result = vkCreateSwapchainKHR(m_Device->Device(), &createInfo, nullptr, &m_SwapChain);
+        if (result != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create swap chain!");
         }
@@ -240,7 +241,8 @@ namespace GfxRenderEngine
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS)
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_SwapChainImageViews[i]);
+            if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }

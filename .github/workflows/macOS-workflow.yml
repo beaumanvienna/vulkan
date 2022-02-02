@@ -71,7 +71,7 @@ jobs:
 
       - name: Build MoltenVK
         run: |
-          cd vendor/MoltenVK && pwd &&  make && cd ../..
+          cd vendor/MoltenVK && pwd &&  ls -lah && cd ../..
 
       - name: Output MoltenVK Build Logs on Failure
         if: failure()

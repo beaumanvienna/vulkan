@@ -74,8 +74,6 @@ namespace GfxRenderEngine
                          VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
                          VkImage& image, VkDeviceMemory& imageMemory);
         void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-        VkCommandBuffer BeginSingleTimeCommands();
-        void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     private:
 
