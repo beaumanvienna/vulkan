@@ -71,7 +71,7 @@ jobs:
 
       - name: Build MoltenVK
         run: |
-          pwd && cd vendor/MoltenVK && make ${{ matrix.platform }} && cd ../..
+          cd vendor/MoltenVK && pwd &&  make && cd ../..
 
       - name: Output MoltenVK Build Logs on Failure
         if: failure()
