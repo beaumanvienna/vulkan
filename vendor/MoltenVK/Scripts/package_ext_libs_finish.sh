@@ -9,6 +9,6 @@ ln -sfn "${CONFIGURATION}" "${MVK_EXT_LIB_DST_PATH}/Latest"
 
 echo "Clean MoltenVK to ensure the next MoltenVK build will use the latest external library versions."
 pwd
-make --quiet clean
+# make --quiet clean
 echo "./Scripts/package_ext_libs_finish.sh done"
 
