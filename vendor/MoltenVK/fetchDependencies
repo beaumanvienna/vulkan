@@ -246,7 +246,7 @@ function build_repo() {
 
 EXT_DIR=External
 EXT_REV_DIR=../ExternalRevisions
-
+cd vendor/MoltenVK
 echo
 echo ========== Retrieving MoltenVK dependencies into ${EXT_DIR} ==========
 
