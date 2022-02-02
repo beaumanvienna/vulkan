@@ -71,23 +71,23 @@ jobs:
 
       - name: Build MoltenVK
         run: |
-          make ${{ matrix.platform }}
+          pwd && cd vendor/MoltenVK && make ${{ matrix.platform }} && cd ../..
 
       - name: Output MoltenVK Build Logs on Failure
         if: failure()
         run: |
-          if [ -f "xcodebuild.log" ]; then
-            cat "xcodebuild.log"
+          if [ -f "./vendor/MoltenVK/xcodebuild.log" ]; then
+            cat "./vendor/MoltenVK/xcodebuild.log"
           fi
 
       - name: Tar Artifacts
         if: success() && matrix.upload_artifacts == true
         # See: https://github.com/actions/upload-artifact#maintaining-file-permissions-and-case-sensitive-files
-        run: tar -cvf "${{ matrix.platform }}.tar" Package/Release/
+        run: pwd && cd vendor/MoltenVK && tar -cvf "${{ matrix.platform }}.tar" Package/Release/
 
       - name: Upload Artifacts
         if: success() && matrix.upload_artifacts == true
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.platform }}
-          path: "${{ matrix.platform }}.tar"
+          path: "vendor/MoltenVK/${{ matrix.platform }}.tar"
