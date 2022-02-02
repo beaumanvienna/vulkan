@@ -70,7 +70,6 @@ namespace GfxRenderEngine
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
                           VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
-        uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
         void CreateImage(uint width, uint height, VkFormat format, VkImageTiling tiling,
                          VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
                          VkImage& image, VkDeviceMemory& imageMemory);

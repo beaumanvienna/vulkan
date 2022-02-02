@@ -214,24 +214,6 @@ namespace GfxRenderEngine
 
         EndSingleTimeCommands(commandBuffer);
     }
-
-    uint VK_Texture::FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
-    {
-        auto physicalDevice = VK_Core::m_Device->PhysicalDevice();
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-        for (uint i = 0; i < memProperties.memoryTypeCount; i++)
-        {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-            {
-                return i;
-            }
-        }
-
-        LOG_CORE_CRITICAL("failed to find suitable memory type!");
-        return 0;
-    }
     
     void VK_Texture::CreateImage
     (
@@ -271,7 +253,7 @@ namespace GfxRenderEngine
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+        allocInfo.memoryTypeIndex = VK_Core::m_Device->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
         {
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory);
@@ -305,7 +287,7 @@ namespace GfxRenderEngine
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+        allocInfo.memoryTypeIndex = VK_Core::m_Device->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
         auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
         if (result != VK_SUCCESS)
@@ -319,14 +301,6 @@ namespace GfxRenderEngine
     bool VK_Texture::Create()
     {
         auto device = VK_Core::m_Device->Device();
-
-        LOG_CORE_CRITICAL("m_RendererID: {0}", m_RendererID);
-        LOG_CORE_CRITICAL("m_FileName: {0}", m_FileName);
-        LOG_CORE_CRITICAL("m_LocalBuffer: {0}", (unsigned long long) m_LocalBuffer);
-        LOG_CORE_CRITICAL("m_Width: {0}, m_Height: {1}, m_BytesPerPixel: {2}", m_Width, m_Height, m_BytesPerPixel);
-        LOG_CORE_CRITICAL("m_TextureSlot: {0}", m_TextureSlot);
-        LOG_CORE_CRITICAL("m_InternalFormat: {0}, m_DataFormat: {1}",  m_InternalFormat, m_DataFormat);
-        LOG_CORE_CRITICAL("m_Type: {0}", m_Type);
 
         VkDeviceSize imageSize = m_Width * m_Height * 4;
 

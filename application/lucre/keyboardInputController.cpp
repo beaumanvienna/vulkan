@@ -22,8 +22,9 @@
 
 #include <limits>
 
-#include "keyboardInputController.h"
 #include "platform/input.h"
+
+#include "keyboardInputController.h"
 
 namespace LucreApp
 {

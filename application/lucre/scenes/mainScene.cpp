@@ -46,22 +46,30 @@ namespace LucreApp
 
         m_Camera = CreateEntity();
         TransformComponent transform{};
-        transform.m_Translation = {0.0f, -1.0f, -6.0f};
+        transform.m_Translation = {0.0f, -1.0f, -3.8f};
+        transform.m_Rotation = {-0.25, 0.0f, 0.0f};
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
         m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
 
-        LoadModels();
-
         GamepadInputControllerSpec gamepadInputControllerSpec{};
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
 
-        // create texture
+        // --- vulcano sprite ---
         size_t fileSize;
         const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
         m_Texture = Texture::Create();
         m_Texture->Init(data, fileSize);
+        
+        m_VulcanoSprite = std::make_shared<Sprite>
+        (
+            0.0f, 0.0f, 1.0f, 1.0f,
+            m_Texture->GetWidth(), m_Texture->GetHeight(),
+            m_Texture, "logo"
+        );
+        
+        LoadModels();
 
     }
 
@@ -76,6 +84,7 @@ namespace LucreApp
         auto& groundTransform = view.get<TransformComponent>(m_Ground);
         auto& vase0Transform  = view.get<TransformComponent>(m_Vase0);
         auto& vase1Transform  = view.get<TransformComponent>(m_Vase1);
+        auto& spriteTransform = view.get<TransformComponent>(m_Sprite);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
@@ -84,6 +93,7 @@ namespace LucreApp
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
         m_GamepadInputController->GetTransform(groundTransform);
+        m_GamepadInputController->GetTransform(spriteTransform);
         m_GamepadInputController->GetTransform(vase0Transform, true);
         m_GamepadInputController->GetTransform(vase1Transform, true);
 
@@ -139,6 +149,22 @@ namespace LucreApp
 
     void MainScene::LoadModels()
     {
+        {
+
+            Builder builder{};
+            m_Sprite = CreateEntity();
+
+            glm::mat4 position = m_VulcanoSprite->GetScaleMatrix();
+            builder.LoadSprite(m_VulcanoSprite.get(), position);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"sprite", model};
+            m_Registry.emplace<MeshComponent>(m_Sprite, mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, 1.0f, 2.5f};
+            transform.m_Scale = glm::vec3{0.1f, 0.05f, 0.1f};
+            m_Registry.emplace<TransformComponent>(m_Sprite, transform);
+        }
         {
             Builder builder{};
             m_Ground = CreateEntity();

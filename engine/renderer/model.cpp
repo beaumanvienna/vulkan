@@ -123,4 +123,34 @@ namespace GfxRenderEngine
         }
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1}", m_Vertices.size(), m_Indices.size());
     }
+
+    void Builder::LoadSprite(Sprite* s, const glm::mat4& position, const glm::vec4& color)
+    {
+        m_Vertices.clear();
+        m_Indices.clear();
+
+        // 0 - 1
+        // | / |
+        // 3 - 2
+
+        Vertex vertex[4]
+        {
+            //0
+            {/*pos*/ glm::vec3{position[0]}, /*col*/ glm::vec3{0.0f, 0.1f, 0.9f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, s->m_Pos2Y}}, //    0.0f,  1.0f
+            //1                                                
+            {/*pos*/ glm::vec3{position[1]}, /*col*/ glm::vec3{0.0f, 0.1f, 0.9f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, s->m_Pos2Y}}, //    1.0f,  1.0f
+            //2                                                
+            {/*pos*/ glm::vec3{position[2]}, /*col*/ glm::vec3{0.0f, 0.9f, 0.1f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, s->m_Pos1Y}}, //    1.0f,  0.0f
+            //3                                                
+            {/*pos*/ glm::vec3{position[3]}, /*col*/ glm::vec3{0.0f, 0.9f, 0.1f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, s->m_Pos1Y}}  //    0.0f,  0.0f
+        };
+        for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
+
+        m_Indices.push_back(0);
+        m_Indices.push_back(1);
+        m_Indices.push_back(3);
+        m_Indices.push_back(1);
+        m_Indices.push_back(2);
+        m_Indices.push_back(3);
+    }
 }

@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "engine.h"
+#include "sprite/sprite.h"
 
 namespace GfxRenderEngine
 {
@@ -46,6 +47,7 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
 
         void LoadModel(const std::string& filepath);
+        void LoadSprite(Sprite* sprite, const glm::mat4& position, const glm::vec4& color = glm::vec4(1.0f));
     };
 
     class Model

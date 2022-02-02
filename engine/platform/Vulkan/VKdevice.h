@@ -62,16 +62,16 @@ namespace GfxRenderEngine
         VK_Device(VK_Device &&) = delete;
         VK_Device& operator=(VK_Device &&) = delete;
 
-        VkCommandPool GetCommandPool() { return commandPool; }
+        VkCommandPool GetCommandPool() { return m_CommandPool; }
         VkDevice Device() { return m_Device; }
-        VkPhysicalDevice PhysicalDevice() { return physicalDevice; }
+        VkPhysicalDevice PhysicalDevice() { return m_PhysicalDevice; }
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
         VkQueue PresentQueue() { return m_PresentQueue; }
 
-        SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(physicalDevice); }
+        SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
-        QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(physicalDevice); }
+        QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(m_PhysicalDevice); }
         VkFormat FindSupportedFormat(
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
@@ -105,6 +105,7 @@ namespace GfxRenderEngine
         VkPhysicalDeviceProperties properties;
 
     private:
+
         void CreateInstance();
         void SetupDebugMessenger();
         void CreateSurface();
@@ -123,11 +124,11 @@ namespace GfxRenderEngine
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
-        VkInstance instance;
-        VkDebugUtilsMessengerEXT debugMessenger;
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        VkInstance m_Instance;
+        VkDebugUtilsMessengerEXT m_DebugMessenger;
+        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VK_Window* m_Window;
-        VkCommandPool commandPool;
+        VkCommandPool m_CommandPool;
 
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;

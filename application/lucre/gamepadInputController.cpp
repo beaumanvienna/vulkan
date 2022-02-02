@@ -57,5 +57,14 @@ namespace LucreApp
                 transform.m_Scale.z = transform.m_Scale.x;
             }
         }
+
+        if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_DPAD_UP))
+        {
+            transform.m_Translation.z += m_Sensitivity;
+        }
+        else if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_DPAD_DOWN))
+        {
+            transform.m_Translation.z -= m_Sensitivity;
+        }
     }
 }

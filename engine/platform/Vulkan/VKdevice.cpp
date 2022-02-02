@@ -91,16 +91,16 @@ namespace GfxRenderEngine
 
     VK_Device::~VK_Device()
     {
-        vkDestroyCommandPool(m_Device, commandPool, nullptr);
+        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
 
         if (enableValidationLayers)
         {
-            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+            DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
         }
 
-        vkDestroySurfaceKHR(instance, m_Surface, nullptr);
-        vkDestroyInstance(instance, nullptr);
+        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+        vkDestroyInstance(m_Instance, nullptr);
     }
 
     void VK_Device::CreateInstance()
@@ -141,7 +141,7 @@ namespace GfxRenderEngine
             createInfo.pNext = nullptr;
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+        if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create instance!");
         }
@@ -152,21 +152,21 @@ namespace GfxRenderEngine
     void VK_Device::PickPhysicalDevice()
     {
         uint deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
         if (deviceCount == 0)
         {
             LOG_CORE_CRITICAL("failed to find GPUs with Vulkan support!");
         }
         std::cout << "Device count: " << deviceCount << std::endl;
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
         for (const auto &device : devices)
         {
             if (IsPreferredDevice(device))
             {
-                physicalDevice = device;
-                vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+                m_PhysicalDevice = device;
+                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
                 LOG_CORE_INFO("found a dedicated graphics card: {0}", properties.deviceName);
                 return;
             }
@@ -176,14 +176,14 @@ namespace GfxRenderEngine
         {
             if (IsSuitableDevice(device))
             {
-                physicalDevice = device;
-                vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+                m_PhysicalDevice = device;
+                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
                 LOG_CORE_INFO("found an onboard graphics card: {0}", properties.deviceName);
                 break;
             }
         }
 
-        if (physicalDevice == VK_NULL_HANDLE)
+        if (m_PhysicalDevice == VK_NULL_HANDLE)
         {
             LOG_CORE_CRITICAL("failed to find a suitable GPU!");
         }
@@ -193,7 +193,7 @@ namespace GfxRenderEngine
 
     void VK_Device::CreateLogicalDevice()
     {
-        QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
@@ -234,7 +234,7 @@ namespace GfxRenderEngine
             createInfo.enabledLayerCount = 0;
         }
 
-        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
+        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
@@ -253,7 +253,7 @@ namespace GfxRenderEngine
         poolInfo.flags =
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create command pool!");
         }
@@ -261,7 +261,7 @@ namespace GfxRenderEngine
 
     void VK_Device::CreateSurface()
     {
-        m_Window->CreateWindowSurface(instance, &m_Surface);
+        m_Window->CreateWindowSurface(m_Instance, &m_Surface);
     }
 
     bool VK_Device::IsPreferredDevice(VkPhysicalDevice device)
@@ -332,7 +332,8 @@ namespace GfxRenderEngine
         if (!enableValidationLayers) return;
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         PopulateDebugMessengerCreateInfo(createInfo);
-        if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+        auto result = CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger);
+        if (result != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to set up debug messenger!");
         }
@@ -503,7 +504,7 @@ namespace GfxRenderEngine
         for (VkFormat format : candidates)
         {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
             {
@@ -521,7 +522,7 @@ namespace GfxRenderEngine
     uint VK_Device::FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
         for (uint i = 0; i < memProperties.memoryTypeCount; i++)
         {
             if ((typeFilter & (1 << i)) &&
@@ -574,7 +575,7 @@ namespace GfxRenderEngine
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool;
+        allocInfo.commandPool = m_CommandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -600,7 +601,7 @@ namespace GfxRenderEngine
         vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(m_GraphicsQueue);
 
-        vkFreeCommandBuffers(m_Device, commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
     }
 
     void VK_Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)

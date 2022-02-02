@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/entity.h"
+#include "sprite/sprite.h"
 #include "renderer/texture.h"
 #include "renderer/renderer.h"
 #include "renderer/cameraController.h"
@@ -64,7 +65,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Sprite;
         entt::entity m_PointLight[MAX_LIGHTS];
 
         // some game objects can be controlled with a gamepad
@@ -72,5 +73,6 @@ namespace LucreApp
         TransformComponent m_GamepadInput;
 
         std::shared_ptr<Texture> m_Texture;
+        std::shared_ptr<Sprite> m_VulcanoSprite;
     };
 }

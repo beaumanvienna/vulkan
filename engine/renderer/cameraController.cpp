@@ -95,7 +95,7 @@ namespace GfxRenderEngine
                     glm::radians(50.0f) * m_ZoomFactor,
                     aspectRatio,
                     0.1f, // near
-                    10.0f // far
+                    50.0f // far
                 );
                 break;
             }
