@@ -7,7 +7,7 @@ A Vulkan Render Engine<br/>
 </p>
 <br/>
 <br/>
-Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager, point lights, enity component system based on EnTT, physics simulator based on Box2D<br/>
+Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager, point lights, enity component system based on EnTT, physics simulator based on Box2D, debug imgui window (key m)<br/>
 <br/>
 * Press "f" to toggle fullscreen.<br/>
 * Use the left and right sticks on the controller to move the vases around and scale them.<br/>
