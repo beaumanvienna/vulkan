@@ -33,6 +33,7 @@
 #include "VKswapChain.h"
 #include "systems/VKrenderSystem.h"
 #include "systems/VKpointLightSystem.h"
+#include "imgui/VKimgui.h"
 #include "VKdescriptor.h"
 #include "VKbuffer.h"
 #include "VKdescriptor.h"
@@ -80,6 +81,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
+        std::unique_ptr<VK_Imgui> m_Imgui;
         Camera* m_Camera;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;

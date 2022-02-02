@@ -74,7 +74,7 @@ namespace GfxRenderEngine
 
         m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-
+        m_Imgui = std::make_unique<VK_Imgui>(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
     VK_Renderer::~VK_Renderer()
@@ -257,6 +257,8 @@ namespace GfxRenderEngine
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
+            m_Imgui->NewFrame();
+
             BeginSwapChainRenderPass(m_CurrentCommandBuffer);
         }
     }
@@ -267,6 +269,9 @@ namespace GfxRenderEngine
         {
             m_RenderSystem->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
+
+            m_Imgui->RunExample();
+            m_Imgui->Render(m_CurrentCommandBuffer);
         }
     }
 

@@ -269,8 +269,6 @@ namespace GfxRenderEngine
         #endif
     }
 
-
-
     void Engine::InitSettings()
     {
         m_CoreSettings.InitDefaults();

@@ -31,6 +31,7 @@ layout(push_constant) uniform Push
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragPositionWorld;
 layout(location = 2) out vec3 fragMormalWorld;
+layout(location = 3) out vec2 fragUV;
 
 void main()
 {
@@ -42,4 +43,5 @@ void main()
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
+    fragUV = uv;
 }

@@ -103,7 +103,7 @@ namespace GfxRenderEngine
         stbi_set_flip_vertically_on_load(true);
         m_FileName = "file in memory";
         m_LocalBuffer = stbi_load_from_memory(data, length, &m_Width, &m_Height, &m_BytesPerPixel, 4);
-        
+
         if(m_LocalBuffer)
         {
             ok = Create();
@@ -175,7 +175,7 @@ namespace GfxRenderEngine
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }
-    
+
     void VK_Texture::CreateImage
     (
         uint width, uint height, VkFormat format, VkImageTiling tiling,
@@ -226,7 +226,7 @@ namespace GfxRenderEngine
 
         vkBindImageMemory(device, image, imageMemory, 0);
     }
-    
+
     void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
         auto device = VK_Core::m_Device->Device();
@@ -283,7 +283,7 @@ namespace GfxRenderEngine
         );
 
         void* data;
-        
+
         vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
             memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
         vkUnmapMemory(device, stagingBufferMemory);
@@ -326,7 +326,7 @@ namespace GfxRenderEngine
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         );
-        
+
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
 

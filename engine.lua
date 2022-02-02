@@ -20,6 +20,9 @@ project "engine"
         "vendor/glfw/**.h", 
         "vendor/glfw/**.cpp",
         "vendor/stb/**.cpp",
+        "vendor/imgui/backends/imgui_impl_glfw.cpp",
+        "vendor/imgui/backends/imgui_impl_vulkan.cpp",
+        "vendor/imgui/*.cpp",
     }
 
     includedirs 
@@ -31,6 +34,7 @@ project "engine"
         "vendor/glfw/include",
         "vendor/stb",
         "vendor/glm",
+        "vendor/imgui",
         "vendor/spdlog/include",
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",

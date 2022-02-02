@@ -147,8 +147,7 @@ namespace GfxRenderEngine
 
     void VK_Window::OnError(int errorCode, const char* description) 
     {
-            LOG_CORE_CRITICAL("GLEW error, code: {0}, description: {1}", std::to_string(errorCode), description);
-
+        std::cout << "GLEW error, code: :" << std::to_string(errorCode) << ", description: " << description << std::endl;
     }
 
     void VK_Window::SetEventCallback(const EventCallbackFunction& callback)

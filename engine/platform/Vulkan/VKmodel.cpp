@@ -72,7 +72,7 @@ namespace GfxRenderEngine
         };
         stagingBuffer.Map();
         stagingBuffer.WriteToBuffer((void*) vertices.data());
-        
+
         m_VertexBuffer = std::make_unique<VK_Buffer>
         (
             *m_Device, vertexSize, m_VertexCount,

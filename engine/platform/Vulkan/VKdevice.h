@@ -43,10 +43,14 @@ namespace GfxRenderEngine
         bool presentFamilyHasValue = false;
         bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
     };
+
     class VK_Window;
+
     class VK_Device
     {
+
     public:
+
         #ifdef NDEBUG
         const bool enableValidationLayers = false;
         #else
@@ -62,8 +66,8 @@ namespace GfxRenderEngine
         VK_Device(VK_Device &&) = delete;
         VK_Device& operator=(VK_Device &&) = delete;
 
-        VkCommandPool GetCommandPool() { return m_CommandPool; }
         VkDevice Device() { return m_Device; }
+        VkCommandPool GetCommandPool() { return m_CommandPool; }
         VkPhysicalDevice PhysicalDevice() { return m_PhysicalDevice; }
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
@@ -76,12 +80,15 @@ namespace GfxRenderEngine
         const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
         // Buffer Helper Functions
-        void CreateBuffer(
+        void CreateBuffer
+        (
             VkDeviceSize size,
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties,
             VkBuffer &buffer,
-            VkDeviceMemory &bufferMemory);
+            VkDeviceMemory &bufferMemory
+        );
+
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -103,6 +110,9 @@ namespace GfxRenderEngine
         );
 
         VkPhysicalDeviceProperties properties;
+        
+        VkInstance GetInstance() const { return m_Instance; }
+        uint32_t GetGraphicsQueueFamily() { return FindPhysicalQueueFamilies().graphicsFamily; }
 
     private:
 
