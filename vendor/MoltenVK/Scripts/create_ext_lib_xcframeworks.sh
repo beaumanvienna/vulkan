@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo "this is ./Scripts/create_ext_lib_xcframeworks.sh"
 . "${PROJECT_DIR}/Scripts/create_xcframework_func.sh"
 
 export MVK_EXT_DIR="${PROJECT_DIR}/External"
@@ -18,3 +18,5 @@ ln -sfn "${abs_ext_dir}/glslang" "${hdr_dir}/glslang"
 create_xcframework "SPIRVCross"
 create_xcframework "SPIRVTools"
 create_xcframework "glslang"
+
+echo "./Scripts/create_ext_lib_xcframeworks.sh done"

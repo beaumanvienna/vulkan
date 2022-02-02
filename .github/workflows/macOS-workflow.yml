@@ -67,7 +67,7 @@ jobs:
 
       - name: Output Dependency Build Logs on Failure
         if: failure()
-        run: cat "dependenciesbuild.log"
+        run: cat "./vendor/MoltenVK/dependenciesbuild.log"
 
       - name: Build MoltenVK
         run: |
