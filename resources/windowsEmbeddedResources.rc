@@ -7,6 +7,7 @@ IDB_CURSOR_EMPTY         PNG                     "resources\\images\\cursorEmpty
 IDB_ENGINE_LOGO          PNG                     "resources\\atlas\\images\\I_ENGINE.png"
 IDB_BARREL               PNG                     "resources\\images\\I_BARREL.png"
 IDB_VULKAN               PNG                     "resources\\images\\I_Vulkan.png"
+IDB_BLOOD_ISLAND         PNG                     "resources\\images\\Blood_Island.png"
 IDR_VERTEX_SHADER        TEXT                    "engine\\shader\\vertexShader.vert"
 IDR_FRAGMENT_SHADER      TEXT                    "engine\\shader\\fragmentShader.frag"
 IDR_SD_LCTRL_DB          TEXT                    "resources\\sdl\\gamecontrollerdb.txt"

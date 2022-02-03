@@ -53,7 +53,7 @@ namespace GfxRenderEngine
 
             void NewFrame();
             void Render(VkCommandBuffer commandBuffer);
-            void RunExample();
+            void Run();
 
         public:
 

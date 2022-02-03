@@ -47,9 +47,9 @@ namespace GfxRenderEngine
             //Engine::m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
         }
         #warning "fix me"
-        //vkDestroySampler(device, m_Sampler, nullptr);
-        //vkDestroyImageView(device, m_TextureView, nullptr);
         vkDestroyImage(device, m_TextureImage, nullptr);
+        vkDestroyImageView(device, m_TextureView, nullptr);
+        vkDestroySampler(device, m_Sampler, nullptr);
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
     }
 

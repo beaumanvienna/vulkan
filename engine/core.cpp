@@ -41,7 +41,7 @@ namespace GfxRenderEngine
                 m_ConfigFilePath(configFilePath),
                 m_DisableMousePointerTimer(Timer(2500)),
                 m_Running(false), m_Paused(false),
-                m_Timestep{0ms}
+                m_EnableImgui{false}, m_Timestep{0ms}
     {
         #ifdef _MSC_VER
             m_HomeDir = "";

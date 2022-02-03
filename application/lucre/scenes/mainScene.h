@@ -72,7 +72,6 @@ namespace LucreApp
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
 
-        std::shared_ptr<Texture> m_Texture;
         std::shared_ptr<Sprite> m_VulcanoSprite;
     };
 }

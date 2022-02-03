@@ -26,10 +26,10 @@
 
 #include "VKrenderer.h"
 #include "VKwindow.h"
-#include "VKtexture.h"
 
 namespace GfxRenderEngine
 {
+    std::shared_ptr<Texture> gTexture;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -77,8 +77,11 @@ namespace GfxRenderEngine
 
     #warning "fix me"
     size_t fileSize;
-    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
-    std::shared_ptr<VK_Texture> texture = std::make_shared<VK_Texture>();
+    //const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
+    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/Blood_Island.png", IDB_VULKAN, "PNG");
+
+    auto texture = std::make_shared<VK_Texture>();
+    gTexture = texture;
     texture->Init(data, fileSize);
     VkDescriptorImageInfo imageInfo {};
     imageInfo.sampler = texture->m_Sampler;
@@ -292,7 +295,7 @@ namespace GfxRenderEngine
             m_RenderSystem->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
 
-            m_Imgui->RunExample();
+            m_Imgui->Run();
             m_Imgui->Render(m_CurrentCommandBuffer);
         }
     }

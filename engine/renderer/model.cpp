@@ -138,13 +138,13 @@ namespace GfxRenderEngine
         {
             // index 0, 0.0f,  1.0f
             {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos2Y}, /*slot*/1},
-            
+
             // index 1, 1.0f,  1.0f
             {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos2Y}, /*slot*/1},
-            
+
             // index 2, 1.0f,  0.0f
             {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos1Y}, /*slot*/1},
-            
+
             // index 3, 0.0f,  0.0f
             {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos1Y}, /*slot*/1}
         };

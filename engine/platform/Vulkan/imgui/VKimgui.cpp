@@ -117,6 +117,7 @@ namespace GfxRenderEngine
 
     void VK_Imgui::NewFrame()
     {
+        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -127,13 +128,15 @@ namespace GfxRenderEngine
     // command buffer the necessary draw commands
     void VK_Imgui::Render(VkCommandBuffer commandBuffer)
     {
+        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         ImGui::Render();
         ImDrawData *drawdata = ImGui::GetDrawData();
         ImGui_ImplVulkan_RenderDrawData(drawdata, commandBuffer);
     }
 
-    void VK_Imgui::RunExample()
+    void VK_Imgui::Run()
     {
+        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can
         // browse its code to learn more about Dear ImGui!).
         if (m_ShowDemoWindow) ImGui::ShowDemoWindow(&m_ShowDemoWindow);

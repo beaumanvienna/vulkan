@@ -27,8 +27,14 @@
 
 #include "mainScene.h"
 
+namespace GfxRenderEngine
+{
+    extern std::shared_ptr<Texture> gTexture;
+}
+
 namespace LucreApp
 {
+
     MainScene::MainScene()
         : m_GamepadInput{}
     {
@@ -46,8 +52,8 @@ namespace LucreApp
 
         m_Camera = CreateEntity();
         TransformComponent transform{};
-        transform.m_Translation = {0.0f, -1.0f, -3.8f};
-        transform.m_Rotation = {-0.25, 0.0f, 0.0f};
+        transform.m_Translation = {0.0f, -1.0f, -4.6f};
+        transform.m_Rotation = {-0.15, 0.0f, 0.0f};
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -57,16 +63,17 @@ namespace LucreApp
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
 
         // --- vulcano sprite ---
-        size_t fileSize;
-        const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
-        m_Texture = Texture::Create();
-        m_Texture->Init(data, fileSize);
+        #warning "this code should be a single line"
+        //size_t fileSize;
+        //const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
+        //m_Texture = Texture::Create();
+        //m_Texture->Init(data, fileSize);
 
         m_VulcanoSprite = std::make_shared<Sprite>
         (
             0.0f, 0.0f, 1.0f, 1.0f,
-            m_Texture->GetWidth(), m_Texture->GetHeight(),
-            m_Texture, "vulcano"
+            gTexture->GetWidth(), gTexture->GetHeight(),
+            gTexture, "vulcano"
         );
 
         LoadModels();
@@ -150,7 +157,6 @@ namespace LucreApp
     void MainScene::LoadModels()
     {
         {
-
             Builder builder{};
             m_Sprite = CreateEntity();
 
@@ -161,8 +167,8 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Sprite, mesh);
 
             TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, 1.0f, 2.5f};
-            transform.m_Scale = glm::vec3{0.1f, 0.05f, 0.1f};
+            transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.0f};
+            transform.m_Scale = glm::vec3{0.017f, 0.014f, 0.017f};
             m_Registry.emplace<TransformComponent>(m_Sprite, transform);
         }
         {
@@ -176,7 +182,7 @@ namespace LucreApp
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{0.0f, 0.7f, 0.0f};
-            transform.m_Scale = glm::vec3{0.01f, 2.0f, 2.0f};
+            transform.m_Scale = glm::vec3{0.01f, 6.0f, 2.0f};
             transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
         }
@@ -230,7 +236,7 @@ namespace LucreApp
                     {0.f, -1.f, 0.f}
                 );
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -0.25f, -1.0f, 0.0f));
+                transform.m_Translation = glm::vec3(rotateLight * glm::vec4(-1.0f, +0.3f, -1.0f, 0.0f));
                 m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
             }
         }

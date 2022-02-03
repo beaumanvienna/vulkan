@@ -32,6 +32,8 @@ project "lucre"
         "application",
         "application/lucre",
         "engine",
+        "vendor",
+        "vendor/imgui",
         "resources",
         "vendor/sdl/include",
         "vendor/spdlog/include",

@@ -84,6 +84,9 @@ namespace GfxRenderEngine
         std::shared_ptr<Renderer> GetRenderer() const { return m_GraphicsContext->GetRenderer(); }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
 
+        void ToggleDebugWindow() { m_EnableImgui = !m_EnableImgui; }
+        bool DebugWindowEnabled() const { return m_EnableImgui; }
+
         Timestep GetTimestep() const { return m_Timestep; }
 
     public:
@@ -113,6 +116,7 @@ namespace GfxRenderEngine
         std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;
 
         bool m_Running, m_Paused;
+        bool m_EnableImgui;
 
     };
 }

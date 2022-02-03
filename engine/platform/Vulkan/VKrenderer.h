@@ -35,8 +35,8 @@
 #include "systems/VKpointLightSystem.h"
 #include "imgui/VKimgui.h"
 #include "VKdescriptor.h"
+#include "VKtexture.h"
 #include "VKbuffer.h"
-#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {

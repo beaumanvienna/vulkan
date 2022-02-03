@@ -27,7 +27,7 @@
 #include "resources/resources.h"
 #include "events/controllerEvent.h"
 #include "events/applicationEvent.h"
-#include "events/applicationEvent.h"
+#include "events/keyEvent.h"
 
 #include "lucre.h"
 #include "keyboardInputController.h"
@@ -138,6 +138,18 @@ namespace LucreApp
                         break;
                     case Controller::BUTTON_A:
                         PlaySound(IDR_BUCKLE);
+                        break;
+                }
+                return false;
+            }
+        );
+
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+            {
+                switch(event.GetKeyCode())
+                {
+                    case ENGINE_KEY_M:
+                        Engine::m_Engine->ToggleDebugWindow();
                         break;
                 }
                 return false;

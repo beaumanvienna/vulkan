@@ -49,22 +49,23 @@ void main()
         diffusedLightColor += intensity * cosAngleOfIncidence;
     }
 
+    vec3 pixelColor;
     if (fragTextureSlot > 0)
     {
         // {0.0, 1.0} - {1.0, 1.0}
         // |        /            |
         // {0.0, 0.0} - {1.0, 0.0}
 
-        vec3 color = texture(tex1,fragUV).xyz;
-        outColor = vec4(color,1.0f);
+        pixelColor = texture(tex1,fragUV).xyz * 15.0;
     }
     else
     {
-        outColor.x = diffusedLightColor.x * fragColor.x;
-        outColor.y = diffusedLightColor.y * fragColor.y;
-        outColor.z = diffusedLightColor.z * fragColor.z;
+        pixelColor = fragColor.xyz;
     }
 
+    outColor.x = diffusedLightColor.x * pixelColor.x;
+    outColor.y = diffusedLightColor.y * pixelColor.y;
+    outColor.z = diffusedLightColor.z * pixelColor.z;
     outColor.w = 1.0;
 
 }
