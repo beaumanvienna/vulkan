@@ -48,10 +48,11 @@ namespace GfxRenderEngine
 {
     bool Vertex::operator==(const Vertex& other) const
     {
-        return (m_Position == other.m_Position) &&
-               (m_Color    == other.m_Color) &&
-               (m_Normal   == other.m_Normal) &&
-               (m_UV       == other.m_UV);
+        return (m_Position    == other.m_Position) &&
+               (m_Color       == other.m_Color) &&
+               (m_Normal      == other.m_Normal) &&
+               (m_UV          == other.m_UV) &&
+               (m_TextureSlot == other.m_TextureSlot);
     }
 
     void Builder::LoadModel(const std::string &filepath)
@@ -135,14 +136,17 @@ namespace GfxRenderEngine
 
         Vertex vertex[4]
         {
-            //0
-            {/*pos*/ glm::vec3{position[0]}, /*col*/ glm::vec3{0.0f, 0.1f, 0.9f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, s->m_Pos2Y}}, //    0.0f,  1.0f
-            //1                                                
-            {/*pos*/ glm::vec3{position[1]}, /*col*/ glm::vec3{0.0f, 0.1f, 0.9f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, s->m_Pos2Y}}, //    1.0f,  1.0f
-            //2                                                
-            {/*pos*/ glm::vec3{position[2]}, /*col*/ glm::vec3{0.0f, 0.9f, 0.1f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, s->m_Pos1Y}}, //    1.0f,  0.0f
-            //3                                                
-            {/*pos*/ glm::vec3{position[3]}, /*col*/ glm::vec3{0.0f, 0.9f, 0.1f}, /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, s->m_Pos1Y}}  //    0.0f,  0.0f
+            // index 0, 0.0f,  1.0f
+            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos2Y}, /*slot*/1},
+            
+            // index 1, 1.0f,  1.0f
+            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos2Y}, /*slot*/1},
+            
+            // index 2, 1.0f,  0.0f
+            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos1Y}, /*slot*/1},
+            
+            // index 3, 0.0f,  0.0f
+            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos1Y}, /*slot*/1}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 

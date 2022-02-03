@@ -61,14 +61,14 @@ namespace LucreApp
         const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
         m_Texture = Texture::Create();
         m_Texture->Init(data, fileSize);
-        
+
         m_VulcanoSprite = std::make_shared<Sprite>
         (
             0.0f, 0.0f, 1.0f, 1.0f,
             m_Texture->GetWidth(), m_Texture->GetHeight(),
-            m_Texture, "logo"
+            m_Texture, "vulcano"
         );
-        
+
         LoadModels();
 
     }

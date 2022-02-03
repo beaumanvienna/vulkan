@@ -33,7 +33,8 @@ namespace GfxRenderEngine
 
     VK_Texture::VK_Texture()
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
-        m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0), m_DataFormat(0)
+          m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
+          m_DataFormat(0), m_MipLevels(1)
     {
         m_TextureSlot = -1;
     }
@@ -45,8 +46,11 @@ namespace GfxRenderEngine
         {
             //Engine::m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
         }
-        vkDestroyImage(device, textureImage, nullptr);
-        vkFreeMemory(device, textureImageMemory, nullptr);
+        #warning "fix me"
+        //vkDestroySampler(device, m_Sampler, nullptr);
+        //vkDestroyImageView(device, m_TextureView, nullptr);
+        vkDestroyImage(device, m_TextureImage, nullptr);
+        vkFreeMemory(device, m_TextureImageMemory, nullptr);
     }
 
     VK_Texture::VK_Texture(uint ID, int internalFormat, int dataFormat, int type)
@@ -191,7 +195,7 @@ namespace GfxRenderEngine
         imageInfo.extent.width = width;
         imageInfo.extent.height = height;
         imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
+        imageInfo.mipLevels = m_MipLevels;
         imageInfo.arrayLayers = 1;
         imageInfo.format = format;
         imageInfo.tiling = tiling;
@@ -250,10 +254,12 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = VK_Core::m_Device->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
-        if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to allocate buffer memory!");
+            auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to allocate buffer memory!");
+            }
         }
 
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
@@ -298,13 +304,13 @@ namespace GfxRenderEngine
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            textureImage,
-            textureImageMemory
+            m_TextureImage,
+            m_TextureImageMemory
         );
 
         TransitionImageLayout
         (
-            textureImage,
+            m_TextureImage,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
@@ -313,7 +319,7 @@ namespace GfxRenderEngine
         VK_Core::m_Device->CopyBufferToImage
         (
             stagingBuffer,
-            textureImage, 
+            m_TextureImage, 
             static_cast<uint>(m_Width), 
             static_cast<uint>(m_Height),
             1
@@ -321,14 +327,74 @@ namespace GfxRenderEngine
 
         TransitionImageLayout
         (
-            textureImage,
+            m_TextureImage,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         );
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+                // Create a texture sampler
+        // In Vulkan, textures are accessed by samplers
+        // This separates sampling information from texture data.
+        // This means you could have multiple sampler objects for the same texture with different settings
+        // Note: Similar to the samplers available with OpenGL 3.3
+        VkSamplerCreateInfo sampler{};
+        sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        sampler.magFilter = VK_FILTER_LINEAR;
+        sampler.minFilter = VK_FILTER_LINEAR;
+        sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler.mipLodBias = 0.0f;
+        sampler.compareOp = VK_COMPARE_OP_NEVER;
+        sampler.minLod = 0.0f;
+        sampler.maxLod = 0.0f;
+        sampler.maxAnisotropy = 1.0;
+        sampler.anisotropyEnable = VK_FALSE;
+        sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+        {
+            auto result = vkCreateSampler(device, &sampler, nullptr, &m_Sampler);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create sampler!");
+            }
+        }
+
+        // Create image view
+        // Textures are not directly accessed by shaders and
+        // are abstracted by image views. 
+        // Image views contain additional
+        // information and sub resource ranges
+        VkImageViewCreateInfo view {};
+        view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        view.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        view.format = VK_FORMAT_R8G8B8A8_SRGB;
+        view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+        // A subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
+        // It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
+        view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        view.subresourceRange.baseMipLevel = 0;
+        view.subresourceRange.baseArrayLayer = 0;
+        view.subresourceRange.layerCount = 1;
+        // Linear tiling usually won't support mip maps
+        // Only set mip map count if optimal tiling is used
+        view.subresourceRange.levelCount = 1;
+        // The view will be based on the texture's image
+        view.image = m_TextureImage;
+
+        {
+            auto result = vkCreateImageView(device, &view, nullptr, &m_TextureView);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create image view!");
+            }
+        }
 
         return true;
     }

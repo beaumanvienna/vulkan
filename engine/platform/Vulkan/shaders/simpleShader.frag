@@ -4,6 +4,7 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPositionWorld;
 layout(location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 fragUV;
+layout(location = 4) flat in int  fragTextureSlot;
 
 struct PointLight
 {
@@ -21,6 +22,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     PointLight m_PointLights[10];
     int m_NumberOfActiveLights;
 } ubo;
+
+layout(set = 0, binding = 1) uniform sampler2D tex1;
 
 layout (location = 0) out vec4 outColor;
 
@@ -46,9 +49,22 @@ void main()
         diffusedLightColor += intensity * cosAngleOfIncidence;
     }
 
-    outColor.x = diffusedLightColor.x * fragColor.x;
-    outColor.y = diffusedLightColor.y * fragColor.y;
-    outColor.z = diffusedLightColor.z * fragColor.z;
+    if (fragTextureSlot > 0)
+    {
+        // {0.0, 1.0} - {1.0, 1.0}
+        // |        /            |
+        // {0.0, 0.0} - {1.0, 0.0}
+
+        vec3 color = texture(tex1,fragUV).xyz;
+        outColor = vec4(color,1.0f);
+    }
+    else
+    {
+        outColor.x = diffusedLightColor.x * fragColor.x;
+        outColor.y = diffusedLightColor.y * fragColor.y;
+        outColor.z = diffusedLightColor.z * fragColor.z;
+    }
+
     outColor.w = 1.0;
 
 }

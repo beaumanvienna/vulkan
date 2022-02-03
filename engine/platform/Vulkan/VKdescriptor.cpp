@@ -25,6 +25,7 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
+#include "VKcore.h"
 #include "VKdescriptor.h"
 
 namespace GfxRenderEngine
@@ -40,7 +41,6 @@ namespace GfxRenderEngine
     )
     {
         ASSERT(m_Bindings.count(binding) == 0); // binding already in use
-
         VkDescriptorSetLayoutBinding layoutBinding{};
         layoutBinding.binding = binding;
         layoutBinding.descriptorType = descriptorType;
@@ -52,16 +52,16 @@ namespace GfxRenderEngine
 
     std::unique_ptr<VK_DescriptorSetLayout> VK_DescriptorSetLayout::Builder::Build() const
     {
-        return std::make_unique<VK_DescriptorSetLayout>(m_Device, m_Bindings);
+        return std::make_unique<VK_DescriptorSetLayout>(m_Bindings);
     }
 
     // *************** Descriptor Set Layout *********************
 
     VK_DescriptorSetLayout::VK_DescriptorSetLayout
     (
-        VK_Device& device, std::unordered_map<uint,
+        std::unordered_map<uint,
         VkDescriptorSetLayoutBinding> bindings)
-    : m_Device{device}, m_Bindings{bindings}
+    : m_Bindings{bindings}
     {
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
         for (auto kv : bindings)
@@ -73,8 +73,8 @@ namespace GfxRenderEngine
         descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptorSetLayoutInfo.bindingCount = static_cast<uint>(setLayoutBindings.size());
         descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
-    
-        auto result =vkCreateDescriptorSetLayout(m_Device.Device(), &descriptorSetLayoutInfo,
+
+        auto result = vkCreateDescriptorSetLayout(VK_Core::m_Device->Device(), &descriptorSetLayoutInfo,
                         nullptr, &m_DescriptorSetLayout);
         if (result != VK_SUCCESS)
         {
@@ -84,7 +84,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorSetLayout::~VK_DescriptorSetLayout()
     {
-        vkDestroyDescriptorSetLayout(m_Device.Device(), m_DescriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(VK_Core::m_Device->Device(), m_DescriptorSetLayout, nullptr);
     }
 
     // *************** Descriptor Pool Builder *********************
@@ -116,19 +116,17 @@ namespace GfxRenderEngine
 
     std::unique_ptr<VK_DescriptorPool> VK_DescriptorPool::Builder::Build() const
     {
-        return std::make_unique<VK_DescriptorPool>(m_Device, m_MaxSets, m_PoolFlags, m_PoolSizes);
+        return std::make_unique<VK_DescriptorPool>(m_MaxSets, m_PoolFlags, m_PoolSizes);
     }
 
     // *************** Descriptor Pool *********************
 
     VK_DescriptorPool::VK_DescriptorPool
     (
-        VK_Device& device,
         uint maxSets,
         VkDescriptorPoolCreateFlags poolFlags,
         const std::vector<VkDescriptorPoolSize>& poolSizes
     )
-    : m_Device{device}
     {
         VkDescriptorPoolCreateInfo descriptorPoolInfo{};
         descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -139,7 +137,7 @@ namespace GfxRenderEngine
 
         auto result = vkCreateDescriptorPool
                       (
-                        m_Device.Device(),
+                        VK_Core::m_Device->Device(),
                         &descriptorPoolInfo,
                         nullptr,
                         &m_DescriptorPool
@@ -152,7 +150,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::~VK_DescriptorPool()
     {
-        vkDestroyDescriptorPool(m_Device.Device(), m_DescriptorPool, nullptr);
+        vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, nullptr);
     }
 
     bool VK_DescriptorPool::AllocateDescriptorSet
@@ -167,7 +165,7 @@ namespace GfxRenderEngine
         allocInfo.pSetLayouts = &descriptorSetLayout;
         allocInfo.descriptorSetCount = 1;
 
-        auto result = vkAllocateDescriptorSets(m_Device.Device(), &allocInfo, &descriptor);
+        auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &descriptor);
         if (result != VK_SUCCESS)
         {
             return false;
@@ -179,7 +177,7 @@ namespace GfxRenderEngine
     {
         vkFreeDescriptorSets
         (
-            m_Device.Device(),
+            VK_Core::m_Device->Device(),
             m_DescriptorPool,
             static_cast<uint>(descriptors.size()),
             descriptors.data()
@@ -188,7 +186,7 @@ namespace GfxRenderEngine
 
     void VK_DescriptorPool::ResetPool()
     {
-        vkResetDescriptorPool(m_Device.Device(), m_DescriptorPool, 0);
+        vkResetDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, 0);
     }
 
     // *************** Descriptor Writer *********************
@@ -203,18 +201,18 @@ namespace GfxRenderEngine
         )
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1); // layout does not contain specified binding
-    
+
         auto& bindingDescription = m_SetLayout.m_Bindings[binding];
-    
+
         ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
-    
+
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
         write.pBufferInfo = bufferInfo;
         write.descriptorCount = 1;
-    
+
         m_Writes.push_back(write);
         return *this;
     }
@@ -226,18 +224,18 @@ namespace GfxRenderEngine
         )
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1) // layout does not contain specified binding
-    
+
         auto& bindingDescription = m_SetLayout.m_Bindings[binding];
-    
+
         ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
-    
+
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
         write.pImageInfo = imageInfo;
         write.descriptorCount = 1;
-    
+
         m_Writes.push_back(write);
         return *this;
     }
@@ -259,6 +257,6 @@ namespace GfxRenderEngine
         {
             write.dstSet = set;
         }
-        vkUpdateDescriptorSets(m_Pool.m_Device.Device(), m_Writes.size(), m_Writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(VK_Core::m_Device->Device(), m_Writes.size(), m_Writes.data(), 0, nullptr);
     }
 }

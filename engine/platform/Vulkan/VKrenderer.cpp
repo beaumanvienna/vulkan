@@ -22,9 +22,11 @@
 
 #include "engine.h"
 #include "core.h"
+#include "resources/resources.h"
 
 #include "VKrenderer.h"
 #include "VKwindow.h"
+#include "VKtexture.h"
 
 namespace GfxRenderEngine
 {
@@ -54,25 +56,45 @@ namespace GfxRenderEngine
         // create a global pool for desciptor sets
         // for two descriptor sets
         // with each two uniform buffer descriptors
+        // and for two descriptor sets
+        // with each two combined image sampler descriptors
         m_DescriptorPool = 
-            VK_DescriptorPool::Builder(*m_Device)
-            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            VK_DescriptorPool::Builder()
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder(*m_Device)
+        std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        for (uint i = 0; i < m_GlobalDescriptorSets.size(); i++)
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+    #warning "fix me"
+    size_t fileSize;
+    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
+    std::shared_ptr<VK_Texture> texture = std::make_shared<VK_Texture>();
+    texture->Init(data, fileSize);
+    VkDescriptorImageInfo imageInfo {};
+    imageInfo.sampler = texture->m_Sampler;
+    imageInfo.imageView = texture->m_TextureView;
+    imageInfo.imageLayout = texture->m_ImageLayout;
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
+                .WriteImage(1, &imageInfo)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
         m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_Imgui = std::make_unique<VK_Imgui>(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
@@ -248,7 +270,7 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer = BeginFrame())
         {
             m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
-            
+
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();

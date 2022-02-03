@@ -33,18 +33,6 @@ namespace GfxRenderEngine
 {
     class VK_Texture: public Texture
     {
-    public:
-
-        struct VK_TextureObject
-        {
-            VkSampler sampler;
-            VkImage image;
-            VkImageLayout imageLayout;
-            VkDeviceMemory deviceMemory;
-            VkImageView view;
-            uint width, height;
-            uint mipLevels;
-        };
 
     public:
         VK_Texture();
@@ -82,12 +70,19 @@ namespace GfxRenderEngine
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
         int m_TextureSlot;
+        uint m_MipLevels;
 
         int m_InternalFormat, m_DataFormat;
         int m_Type;
 
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
+        VkImage m_TextureImage;
+        VkDeviceMemory m_TextureImageMemory;
+
+        public:
+
+        VkSampler m_Sampler;
+        VkImageView m_TextureView;
+        VkImageLayout m_ImageLayout;
 
     };
 }

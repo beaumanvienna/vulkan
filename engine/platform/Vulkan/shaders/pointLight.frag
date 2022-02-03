@@ -19,6 +19,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
+layout(set = 0, binding = 1) uniform sampler2D tex1;
+
 layout (location = 0) out vec4 outColor;
 
 layout(push_constant) uniform Push

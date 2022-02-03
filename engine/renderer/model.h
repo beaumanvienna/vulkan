@@ -36,6 +36,7 @@ namespace GfxRenderEngine
         glm::vec3 m_Color;
         glm::vec3 m_Normal;
         glm::vec2 m_UV;
+        int m_TextureSlot;
 
         bool operator==(const Vertex& other) const;
 

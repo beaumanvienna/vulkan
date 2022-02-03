@@ -20,32 +20,31 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "systems/VKrenderSystem.h"
+#include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
+#include "systems/VKrenderSystem.h"
+
 namespace GfxRenderEngine
 {
-    VK_RenderSystem::VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
-        : m_Device(device)
+    VK_RenderSystem::VK_RenderSystem(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
+        CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
     VK_RenderSystem::~VK_RenderSystem()
     {
-        vkDestroyPipelineLayout(m_Device->Device(), m_PipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_RenderSystem::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_SimplePushConstantData);
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -53,7 +52,7 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
@@ -72,7 +71,7 @@ namespace GfxRenderEngine
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
-            m_Device,
+            VK_Core::m_Device,
             "bin/simpleShader.vert.spv",
             "bin/simpleShader.frag.spv",
             pipelineConfig

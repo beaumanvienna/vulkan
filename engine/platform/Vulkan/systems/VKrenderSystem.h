@@ -49,7 +49,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        VK_RenderSystem(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         ~VK_RenderSystem();
 
         VK_RenderSystem(const VK_RenderSystem&) = delete;
@@ -59,12 +59,11 @@ namespace GfxRenderEngine
 
     private:
 
-        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:
 
-        std::shared_ptr<VK_Device> m_Device;
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
 

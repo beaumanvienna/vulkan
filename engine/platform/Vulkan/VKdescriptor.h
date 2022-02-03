@@ -43,7 +43,7 @@ namespace GfxRenderEngine
 
         public:
 
-            Builder(VK_Device& device) : m_Device{device} {}
+            Builder() {}
 
             Builder& AddBinding
                 (
@@ -57,14 +57,13 @@ namespace GfxRenderEngine
 
         private:
 
-            VK_Device& m_Device;
             std::unordered_map<uint, VkDescriptorSetLayoutBinding> m_Bindings;
 
         };
 
     public:
 
-        VK_DescriptorSetLayout(VK_Device& device, std::unordered_map<uint, VkDescriptorSetLayoutBinding> bindings);
+        VK_DescriptorSetLayout(std::unordered_map<uint, VkDescriptorSetLayoutBinding> bindings);
         ~VK_DescriptorSetLayout();
 
         VK_DescriptorSetLayout(const VK_DescriptorSetLayout&) = delete;
@@ -73,8 +72,6 @@ namespace GfxRenderEngine
         VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_DescriptorSetLayout; }
 
     private:
-
-        VK_Device& m_Device;
 
         // VkDescriptorSetLayout: opaque handle to a descriptor set layout object;
         // a descriptor set layout object is defined by an array of zero or more descriptor bindings
@@ -104,7 +101,7 @@ namespace GfxRenderEngine
         {
 
         public:
-            Builder(VK_Device& m_Device) : m_Device{m_Device} {}
+            Builder() {}
 
             Builder& AddPoolSize(VkDescriptorType descriptorType, uint count);
             Builder& SetPoolFlags(VkDescriptorPoolCreateFlags flags);
@@ -113,13 +110,6 @@ namespace GfxRenderEngine
 
         private:
 
-            VK_Device& m_Device;
-
-            // VkDescriptorPoolSize: structure specifying descriptor pool size
-            //typedef struct VkDescriptorPoolSize {
-            //    VkDescriptorType    type;
-            //    uint32_t            descriptorCount;
-            //} VkDescriptorPoolSize;
             std::vector<VkDescriptorPoolSize> m_PoolSizes;
 
             uint m_MaxSets = 1000;
@@ -128,7 +118,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_DescriptorPool(VK_Device& m_Device, uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
+        VK_DescriptorPool(uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
                         const std::vector<VkDescriptorPoolSize>& poolSizes);
         ~VK_DescriptorPool();
     
@@ -142,7 +132,6 @@ namespace GfxRenderEngine
 
     private:
 
-        VK_Device& m_Device;
         VkDescriptorPool m_DescriptorPool;
 
         friend class VK_DescriptorWriter;
