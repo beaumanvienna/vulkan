@@ -53,7 +53,7 @@ namespace LucreApp
         m_Camera = CreateEntity();
         TransformComponent transform{};
         transform.m_Translation = {0.0f, -1.0f, -4.6f};
-        transform.m_Rotation = {-0.15, 0.0f, 0.0f};
+        transform.m_Rotation = {-0.11, 0.0f, 0.0f};
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
