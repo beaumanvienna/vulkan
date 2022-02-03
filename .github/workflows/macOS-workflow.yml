@@ -1,4 +1,4 @@
-name: macOS
+name: CI
 
 # Controls when the action will run. 
 on:
