@@ -35,6 +35,8 @@
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
 
+#include "box2d/box2d.h"
+
 namespace LucreApp
 {
     class MainScene : public Scene
@@ -66,14 +68,9 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Vulcano, m_Walkway;
-        entt::entity m_PointLight[MAX_LIGHTS];
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano;
+        entt::entity m_PointLight[MAX_LIGHTS], m_Vulcano[3], m_Walkway[3];
 
-        // bananas
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
         static constexpr uint MAX_B = 24;
         entt::entity m_Banana[MAX_B];
 
@@ -83,5 +80,22 @@ namespace LucreApp
 
         std::shared_ptr<Sprite> m_VulcanoSprite;
         std::shared_ptr<Sprite> m_WalkwaySprite;
+
+        std::unique_ptr<b2World> m_World;
+
+    private:
+
+        struct BananaComponent
+        {
+            bool m_IsOnTheGround;
+        };
+        struct Group1
+        {
+            bool m_Rotated;
+        };
+        struct Group2
+        {
+            bool m_Rotated;
+        };
     };
 }
