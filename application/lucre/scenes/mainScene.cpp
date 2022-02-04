@@ -81,11 +81,9 @@ namespace LucreApp
             gTextureWalkway, "walkway"
         );
 
-        m_World = std::make_unique<b2World>(b2Vec2{0.0f, -9.8f});
-
+        InitPhysics();
         LoadModels();
 
-        srand (time(NULL));
     }
 
     void MainScene::Stop()
@@ -115,6 +113,9 @@ namespace LucreApp
         vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
         RotateLights(timestep);
+        AnimateVulcan(timestep);
+
+        SimulatePhysics(timestep);
         RotateBananas(timestep);
 
         m_Renderer->Submit(m_Registry);
@@ -140,193 +141,19 @@ namespace LucreApp
         m_CameraController->SetProjection();
     }
 
-    void MainScene::RotateLights(const Timestep& timestep)
+    void MainScene::InitPhysics()
     {
-        float time = 0.3f * timestep / 1000;
-        auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
 
-        {
-            auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
-            for (auto entity : view)
-            {
-                auto& transform  = view.get<TransformComponent>(entity);
-                transform.m_Translation = glm::vec3(rotateLight * glm::vec4(transform.m_Translation, 1.f));
-            }
-        }
+        srand(time(nullptr));
+        m_World = std::make_unique<b2World>(GRAVITY);
 
-        {
-            auto view = m_Registry.view<PointLightComponent, TransformComponent, Group2>();
-            for (auto entity : view)
-            {
-                auto& pointLight  = view.get<PointLightComponent>(entity);
-                pointLight.m_LightIntensity += 0.05f * (2*(static_cast<float>(rand()) / RAND_MAX) - 1.0f);
-                pointLight.m_LightIntensity = std::clamp(pointLight.m_LightIntensity, 0.5f, 1.5f);
-            }
-        }
-    }
+        b2BodyDef groundBodyDef;
+        groundBodyDef.position.Set(0.0f, -1.0f);
 
-    void MainScene::RotateBananas(const Timestep& timestep)
-    {
-        auto view = m_Registry.view<BananaComponent, TransformComponent>();
+        b2Body* groundBody = m_World->CreateBody(&groundBodyDef);
+        b2PolygonShape groundBox;
+        groundBox.SetAsBox(50.0f, 0.4f);
+        groundBody->CreateFixture(&groundBox, 0.0f);
 
-        static constexpr float ROTATIONAL_SPEED = 0.003f;
-        auto rotationDelta = ROTATIONAL_SPEED * timestep;
-        for (auto banana : view)
-        {
-            auto& transform = view.get<TransformComponent>(banana);
-            transform.m_Rotation.y += rotationDelta;
-        }
-    }
-
-    void MainScene::LoadModels()
-    {
-        {
-            Builder builder{};
-
-            glm::mat4 position = m_VulcanoSprite->GetScaleMatrix();
-            builder.LoadSprite(m_VulcanoSprite.get(), position);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"vulcano", model};
-
-            bool flip = false;
-            for (uint i =0; i < 3; i++)
-            {
-                flip = !flip;
-                m_Vulcano[i] = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Vulcano[i], mesh);
-
-                TransformComponent transform{};
-                transform.m_Translation = glm::vec3{-77.0f + 77.0f*i, 3.0f, 40.0f};
-                transform.m_Scale = glm::vec3{0.17f, 0.14f, 0.17f} * 0.7f;
-                if (flip) transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), 0.0f};
-                m_Registry.emplace<TransformComponent>(m_Vulcano[i], transform);
-            }
-        }
-        {
-            Builder builder{};
-
-            glm::mat4 position = m_WalkwaySprite->GetScaleMatrix();
-            builder.LoadSprite(m_WalkwaySprite.get(), position);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"walkway", model};
-
-            for (uint i =0; i < 3; i++)
-            {
-                m_Walkway[i] = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
-
-                TransformComponent transform{};
-                transform.m_Translation = glm::vec3{-11.0f + 11.0f*i, 0.67f, -0.1f};
-                transform.m_Scale = glm::vec3{0.017f, 0.014f, 0.017f};
-                transform.m_Rotation = glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f};
-                m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
-            }
-        }
-        {
-            Builder builder{};
-            m_Ground = CreateEntity();
-
-            builder.LoadModel("application/lucre/models/colored_cube.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"base cube", model};
-            m_Registry.emplace<MeshComponent>(m_Ground, mesh);
-
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, 0.7f, 0.0f};
-            transform.m_Scale = glm::vec3{0.01f, 100.0f, 2.0f};
-            transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
-            m_Registry.emplace<TransformComponent>(m_Ground, transform);
-        }
-        {
-            Builder builder{};
-            m_Vase0 = CreateEntity();
-
-            builder.LoadModel("application/lucre/models/flat_vase.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"polygon vase", model};
-            m_Registry.emplace<MeshComponent>(m_Vase0, mesh);
-
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{-0.8f, -0.2f, 0.0f};
-            transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-            m_Registry.emplace<TransformComponent>(m_Vase0, transform);
-        }
-        {
-            Builder builder{};
-            m_Vase1 = CreateEntity();
-
-            builder.LoadModel("application/lucre/models/smooth_vase.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"smooth vase", model};
-            m_Registry.emplace<MeshComponent>(m_Vase1, mesh);
-
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.8f, -0.2f, 0.0f};
-            transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
-            m_Registry.emplace<TransformComponent>(m_Vase1, transform);
-        }
-        {
-            Builder builder{};
-            builder.LoadModel("application/lucre/models/banana.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"banana", model};
-
-            for (uint i = 0; i < MAX_B; i++)
-            {
-                m_Banana[i] = CreateEntity();
-
-                m_Registry.emplace<MeshComponent>(m_Banana[i], mesh);
-
-                TransformComponent transform{};
-                if (i < 12)
-                {
-                    transform.m_Translation = glm::vec3{-3.0f + 0.5 * i, 0.5f, -0.6f};
-                }
-                else
-                {
-                    transform.m_Translation = glm::vec3{-3.0f + 0.5 * (i-12), 0.5f, 0.3f};
-                }
-                transform.m_Scale = glm::vec3{0.02f};
-                transform.m_Rotation = glm::vec3{0.0f, 0.0f, 0.0f};
-                m_Registry.emplace<TransformComponent>(m_Banana[i], transform);
-
-                m_Registry.emplace<BananaComponent>(m_Banana[i], true);
-            }
-        }
-        {
-
-            std::vector<glm::vec3> lightColors
-            {
-                {1.f, .1f, .1f},
-                {.1f, .1f, 1.f},
-                {.1f, 1.f, .1f},
-                {1.f, 1.f, .1f},
-                {.1f, 1.f, 1.f},
-                {1.f, 1.f, 1.f}
-            };
-
-            for (int i = 0; i < lightColors.size(); i++)
-            {
-                m_PointLight[i] = CreatePointLight(0.2f, 0.1f, lightColors[i]);
-                auto rotateLight = glm::rotate
-                (
-                    glm::mat4(1.0f),
-                    (i * glm::two_pi<float>()) / lightColors.size(),
-                    {0.f, -1.f, 0.f}
-                );
-                TransformComponent transform{};
-                transform.m_Translation = glm::vec3(rotateLight * glm::vec4(-1.0f, +0.3f, -1.0f, 0.0f));
-                m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
-                m_Registry.emplace<Group1>(m_PointLight[i], true);
-            }
-        }
-        {
-            // light the vulcano
-            m_PointLightVulcano = CreatePointLight(1.0f, 0.0f, {1.0f, 0.0f, 0.0f});
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3(0.0f, -10.0f, 39.0f);
-            m_Registry.emplace<TransformComponent>(m_PointLightVulcano, transform);
-            m_Registry.emplace<Group2>(m_PointLightVulcano, true);
-        }
     }
 }

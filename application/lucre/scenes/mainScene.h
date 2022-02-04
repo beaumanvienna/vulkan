@@ -55,9 +55,12 @@ namespace LucreApp
 
     private:
 
+        void InitPhysics();
         void LoadModels();
         void RotateLights(const Timestep& timestep);
         void RotateBananas(const Timestep& timestep);
+        void AnimateVulcan(const Timestep& timestep);
+        void SimulatePhysics(const Timestep& timestep);
 
     private:
 
@@ -84,6 +87,8 @@ namespace LucreApp
         std::unique_ptr<b2World> m_World;
 
     private:
+
+        const b2Vec2 GRAVITY{0.0f, -9.81f};
 
         struct BananaComponent
         {

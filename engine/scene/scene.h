@@ -66,6 +66,19 @@ namespace GfxRenderEngine
         glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
     };
 
+    struct RigidbodyComponent
+    {
+        enum Type
+        { 
+            STATIC,
+            DYNAMIC
+        };
+
+        Type m_Type = Type::STATIC;
+        void* m_Body = nullptr;
+
+    };
+
     class Scene
     {
 
