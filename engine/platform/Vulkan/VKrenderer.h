@@ -33,7 +33,7 @@
 #include "VKswapChain.h"
 #include "systems/VKrenderSystem.h"
 #include "systems/VKpointLightSystem.h"
-#include "imgui/VKimgui.h"
+#include "platform/Vulkan/imgui/imgui.h"
 #include "VKdescriptor.h"
 #include "VKtexture.h"
 #include "VKbuffer.h"
@@ -67,6 +67,8 @@ namespace GfxRenderEngine
         virtual void BeginScene(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry) override;
         virtual void EndScene() override;
+        
+        void ToggleDebugWindow() { m_Imgui = Imgui::ToggleDebugWindow(); }
 
     private:
 
@@ -81,7 +83,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
-        std::unique_ptr<VK_Imgui> m_Imgui;
+        std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;

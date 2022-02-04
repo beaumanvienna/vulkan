@@ -109,7 +109,7 @@ namespace GfxRenderEngine
 
         m_RenderSystem = std::make_unique<VK_RenderSystem>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
         m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_Imgui = std::make_unique<VK_Imgui>(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
     VK_Renderer::~VK_Renderer()

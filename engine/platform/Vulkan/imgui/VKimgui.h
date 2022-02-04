@@ -27,6 +27,7 @@
 #pragma once
 
 #include "VKcore.h"
+#include "platform/Vulkan/imgui/imgui.h"
 
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
@@ -45,15 +46,16 @@ namespace GfxRenderEngine
         if (err < 0) abort();
     }
 
-    class VK_Imgui
+    class VK_Imgui : public Imgui
     {
         public:
-            VK_Imgui(VkRenderPass renderPass, uint32_t imageCount);
-            ~VK_Imgui();
 
-            void NewFrame();
-            void Render(VkCommandBuffer commandBuffer);
-            void Run();
+            VK_Imgui(VkRenderPass renderPass, uint imageCount);
+            virtual ~VK_Imgui() override;
+
+            virtual void NewFrame() override;
+            virtual void Render(VkCommandBuffer commandBuffer)  override;
+            virtual void Run()  override;
 
         public:
 

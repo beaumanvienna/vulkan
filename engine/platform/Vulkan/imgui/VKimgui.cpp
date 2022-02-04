@@ -31,10 +31,7 @@
 namespace GfxRenderEngine
 {
 
-    // ok this just initializes imgui using the provided integration files. So in our case we need to
-    // initialize the vulkan and glfw imgui implementations, since that's what our engine is built
-    // using.
-    VK_Imgui::VK_Imgui(VkRenderPass renderPass, uint32_t imageCount)
+    VK_Imgui::VK_Imgui(VkRenderPass renderPass, uint imageCount)
     {
         // set up a descriptor pool stored on this instance, see header for more comments on this.
         VkDescriptorPoolSize pool_sizes[] = 
@@ -56,7 +53,7 @@ namespace GfxRenderEngine
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-        pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+        pool_info.poolSizeCount = (uint)IM_ARRAYSIZE(pool_sizes);
         pool_info.pPoolSizes = pool_sizes;
 
         auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &pool_info, nullptr, &descriptorPool);
@@ -117,7 +114,6 @@ namespace GfxRenderEngine
 
     void VK_Imgui::NewFrame()
     {
-        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -128,7 +124,6 @@ namespace GfxRenderEngine
     // command buffer the necessary draw commands
     void VK_Imgui::Render(VkCommandBuffer commandBuffer)
     {
-        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         ImGui::Render();
         ImDrawData *drawdata = ImGui::GetDrawData();
         ImGui_ImplVulkan_RenderDrawData(drawdata, commandBuffer);
@@ -136,7 +131,6 @@ namespace GfxRenderEngine
 
     void VK_Imgui::Run()
     {
-        if (!Engine::m_Engine->DebugWindowEnabled()) return;
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can
         // browse its code to learn more about Dear ImGui!).
         if (m_ShowDemoWindow) ImGui::ShowDemoWindow(&m_ShowDemoWindow);

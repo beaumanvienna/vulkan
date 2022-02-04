@@ -46,6 +46,7 @@ namespace GfxRenderEngine
 
         virtual std::shared_ptr<Renderer> GetRenderer() const override { return m_Renderer; }
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) override;
+        virtual void ToggleDebugWindow() override { m_Renderer->ToggleDebugWindow();}
 
     private:
 

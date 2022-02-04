@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -18,39 +18,27 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
-   The code in this file is based on and inspired by the project
-   https://github.com/TheCherno/Hazel. The license of this prject can
-   be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
-   */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
 #include "engine.h"
-#include "renderer/renderer.h"
+
+#include "platform/Vulkan/imgui/imgui.h"
 
 namespace GfxRenderEngine
 {
-    class GraphicsContext
+
+    class ImguiNull : public Imgui
     {
+        public:
 
-    public:
+            ImguiNull() {}
+            virtual ~ImguiNull() override {}
 
-        virtual ~GraphicsContext() {}
+            virtual void NewFrame() override {}
+            virtual void Render(VkCommandBuffer commandBuffer)  override {}
+            virtual void Run()  override {}
 
-        virtual bool Init() = 0;
-        virtual void SetVSync(int interval) = 0;
-        virtual void SwapBuffers() = 0;
-        virtual bool IsInitialized() const = 0;
-
-        virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
-        virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
-        virtual void ToggleDebugWindow() = 0;
-        
-        static std::shared_ptr<GraphicsContext> Create(void* window, uint refreshRate = 60);
-
-    private: 
-    
     };
 }
