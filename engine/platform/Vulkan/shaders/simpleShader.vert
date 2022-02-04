@@ -24,6 +24,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
+layout(set = 0, binding = 2) uniform sampler2D tex2;
 
 layout(push_constant) uniform Push
 {

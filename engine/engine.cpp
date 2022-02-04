@@ -67,6 +67,10 @@ int main(int argc, char* argv[])
                 PROFILE_SCOPE("application->OnUpdate()");
                 application->OnUpdate(engine->GetTimestep());
             }
+            else
+            {
+                std::this_thread::sleep_for(16ms);
+            }
         }
     }
 

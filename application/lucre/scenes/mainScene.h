@@ -55,6 +55,7 @@ namespace LucreApp
 
         void LoadModels();
         void RotateLights(const Timestep& timestep);
+        void RotateBananas(const Timestep& timestep);
 
     private:
 
@@ -65,13 +66,22 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Sprite;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_Vulcano, m_Walkway;
         entt::entity m_PointLight[MAX_LIGHTS];
+
+        // bananas
+        struct BananaComponent
+        {
+            bool m_IsOnTheGround;
+        };
+        static constexpr uint MAX_B = 24;
+        entt::entity m_Banana[MAX_B];
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
 
         std::shared_ptr<Sprite> m_VulcanoSprite;
+        std::shared_ptr<Sprite> m_WalkwaySprite;
     };
 }

@@ -24,6 +24,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
+layout(set = 0, binding = 2) uniform sampler2D tex2;
 
 layout (location = 0) out vec4 outColor;
 
@@ -55,8 +56,14 @@ void main()
         // {0.0, 1.0} - {1.0, 1.0}
         // |        /            |
         // {0.0, 0.0} - {1.0, 0.0}
-
-        pixelColor = texture(tex1,fragUV).xyz * 15.0;
+        if (fragTextureSlot == 1)
+        {
+            pixelColor = texture(tex1,fragUV).xyz * 20.0;
+        }
+        else
+        {
+            pixelColor = texture(tex2,fragUV).xyz;
+        }
     }
     else
     {

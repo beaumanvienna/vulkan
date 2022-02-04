@@ -29,7 +29,8 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Texture> gTexture;
+    extern std::shared_ptr<Texture> gTextureBloodIsland;
+    extern std::shared_ptr<Texture> gTextureWalkway;
 }
 
 namespace LucreApp
@@ -72,8 +73,15 @@ namespace LucreApp
         m_VulcanoSprite = std::make_shared<Sprite>
         (
             0.0f, 0.0f, 1.0f, 1.0f,
-            gTexture->GetWidth(), gTexture->GetHeight(),
-            gTexture, "vulcano"
+            gTextureBloodIsland->GetWidth(), gTextureBloodIsland->GetHeight(),
+            gTextureBloodIsland, "vulcano"
+        );
+
+        m_WalkwaySprite = std::make_shared<Sprite>
+        (
+            0.0f, 0.0f, 1.0f, 1.0f,
+            gTextureWalkway->GetWidth(), gTextureWalkway->GetHeight(),
+            gTextureWalkway, "walkway"
         );
 
         LoadModels();
@@ -87,11 +95,12 @@ namespace LucreApp
     void MainScene::OnUpdate(const Timestep& timestep)
     {
         auto view = m_Registry.view<TransformComponent>();
-        auto& cameraTransform = view.get<TransformComponent>(m_Camera);
-        auto& groundTransform = view.get<TransformComponent>(m_Ground);
-        auto& vase0Transform  = view.get<TransformComponent>(m_Vase0);
-        auto& vase1Transform  = view.get<TransformComponent>(m_Vase1);
-        auto& spriteTransform = view.get<TransformComponent>(m_Sprite);
+        auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
+        auto& groundTransform  = view.get<TransformComponent>(m_Ground);
+        auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
+        auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
+        auto& vulcanoTransform = view.get<TransformComponent>(m_Vulcano);
+        auto& walkwayTransform = view.get<TransformComponent>(m_Walkway);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
@@ -100,7 +109,8 @@ namespace LucreApp
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
         m_GamepadInputController->GetTransform(groundTransform);
-        m_GamepadInputController->GetTransform(spriteTransform);
+        m_GamepadInputController->GetTransform(vulcanoTransform);
+        m_GamepadInputController->GetTransform(walkwayTransform);
         m_GamepadInputController->GetTransform(vase0Transform, true);
         m_GamepadInputController->GetTransform(vase1Transform, true);
 
@@ -111,6 +121,7 @@ namespace LucreApp
         vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
         RotateLights(timestep);
+        RotateBananas(timestep);
 
         m_Renderer->Submit(m_Registry);
         m_Renderer->EndScene();
@@ -137,8 +148,7 @@ namespace LucreApp
 
     void MainScene::RotateLights(const Timestep& timestep)
     {
-        //LOG_APP_CRITICAL("timestep: {0}", (float) timestep);
-        float time = 0.1f * glm::pi<float>() * timestep / 1000;
+        float time = 0.3f * timestep / 1000;
         auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
 
         int lightIndex = 0;
@@ -154,22 +164,52 @@ namespace LucreApp
         }
     }
 
+    void MainScene::RotateBananas(const Timestep& timestep)
+    {
+        auto view = m_Registry.view<BananaComponent, TransformComponent>();
+        
+
+        static constexpr float ROTATIONAL_SPEED = 0.003f;
+        auto rotationDelta = ROTATIONAL_SPEED * timestep;
+        for (auto banana : view)
+        {
+            auto& transform = view.get<TransformComponent>(banana);
+            transform.m_Rotation.y += rotationDelta;
+        }
+    }
+
     void MainScene::LoadModels()
     {
         {
             Builder builder{};
-            m_Sprite = CreateEntity();
+            m_Vulcano = CreateEntity();
 
             glm::mat4 position = m_VulcanoSprite->GetScaleMatrix();
             builder.LoadSprite(m_VulcanoSprite.get(), position);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"sprite", model};
-            m_Registry.emplace<MeshComponent>(m_Sprite, mesh);
+            MeshComponent mesh{"vulcano", model};
+            m_Registry.emplace<MeshComponent>(m_Vulcano, mesh);
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{0.0f, -0.2f, 2.0f};
             transform.m_Scale = glm::vec3{0.017f, 0.014f, 0.017f};
-            m_Registry.emplace<TransformComponent>(m_Sprite, transform);
+            m_Registry.emplace<TransformComponent>(m_Vulcano, transform);
+        }
+        {
+            Builder builder{};
+            m_Walkway = CreateEntity();
+
+            glm::mat4 position = m_WalkwaySprite->GetScaleMatrix();
+            builder.LoadSprite(m_WalkwaySprite.get(), position);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"walkway", model};
+            m_Registry.emplace<MeshComponent>(m_Walkway, mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, 0.67f, -0.1f};
+            transform.m_Scale = glm::vec3{0.017f, 0.014f, 0.017f};
+            transform.m_Rotation = glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f};
+            m_Registry.emplace<TransformComponent>(m_Walkway, transform);
         }
         {
             Builder builder{};
@@ -213,6 +253,31 @@ namespace LucreApp
             transform.m_Translation = glm::vec3{0.8f, -0.2f, 0.0f};
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
+        }
+        for (uint i = 0; i < MAX_B; i++)
+        {
+            Builder builder{};
+            m_Banana[i] = CreateEntity();
+
+            builder.LoadModel("application/lucre/models/banana.obj");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"banana", model};
+            m_Registry.emplace<MeshComponent>(m_Banana[i], mesh);
+
+            TransformComponent transform{};
+            if (i < 12)
+            {
+                transform.m_Translation = glm::vec3{-3.0f + 0.5 * i, 0.5f, -0.6f};
+            }
+            else
+            {
+                transform.m_Translation = glm::vec3{-3.0f + 0.5 * (i-12), 0.5f, 0.3f};
+            }
+            transform.m_Scale = glm::vec3{0.02f};
+            transform.m_Rotation = glm::vec3{0.0f, 0.0f, 0.0f};
+            m_Registry.emplace<TransformComponent>(m_Banana[i], transform);
+
+            m_Registry.emplace<BananaComponent>(m_Banana[i], true);
         }
         {
 

@@ -29,7 +29,8 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> gTexture;
+    std::shared_ptr<Texture> gTextureBloodIsland;
+    std::shared_ptr<Texture> gTextureWalkway;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -54,20 +55,18 @@ namespace GfxRenderEngine
         }
 
         // create a global pool for desciptor sets
-        // for two descriptor sets
-        // with each two uniform buffer descriptors
-        // and for two descriptor sets
-        // with each two combined image sampler descriptors
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
-            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
@@ -76,24 +75,35 @@ namespace GfxRenderEngine
         };
 
     #warning "fix me"
+    
     size_t fileSize;
-    //const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/I_Vulkan.png", IDB_VULKAN, "PNG");
-    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/Blood_Island.png", IDB_VULKAN, "PNG");
+    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/Blood_Island.png", IDB_BLOOD_ISLAND, "PNG");
+    auto textureBloodIsland = std::make_shared<VK_Texture>();
+    textureBloodIsland->Init(data, fileSize);
+    
+    gTextureBloodIsland = textureBloodIsland; // copy from VK_Texture to Texture
+    VkDescriptorImageInfo imageInfo0 {};
+    imageInfo0.sampler     = textureBloodIsland->m_Sampler;
+    imageInfo0.imageView   = textureBloodIsland->m_TextureView;
+    imageInfo0.imageLayout = textureBloodIsland->m_ImageLayout;
 
-    auto texture = std::make_shared<VK_Texture>();
-    gTexture = texture;
-    texture->Init(data, fileSize);
-    VkDescriptorImageInfo imageInfo {};
-    imageInfo.sampler = texture->m_Sampler;
-    imageInfo.imageView = texture->m_TextureView;
-    imageInfo.imageLayout = texture->m_ImageLayout;
+    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/walkway.png", IDB_WALKWAY, "PNG");
+    auto textureWalkway = std::make_shared<VK_Texture>();
+    textureWalkway->Init(data, fileSize);
+
+    gTextureWalkway = textureWalkway; // copy from VK_Texture to Texture
+    VkDescriptorImageInfo imageInfo1 {};
+    imageInfo1.sampler     = textureWalkway->m_Sampler;
+    imageInfo1.imageView   = textureWalkway->m_TextureView;
+    imageInfo1.imageLayout = textureWalkway->m_ImageLayout;
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
-                .WriteImage(1, &imageInfo)
+                .WriteImage(1, &imageInfo0)
+                .WriteImage(2, &imageInfo1)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 

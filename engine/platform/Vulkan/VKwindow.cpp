@@ -141,7 +141,6 @@ namespace GfxRenderEngine
         {
             glfwPollEvents();
         }
-
         vkDeviceWaitIdle(VK_Core::m_Device->Device());
     }
 
@@ -206,21 +205,6 @@ namespace GfxRenderEngine
                 OnEvent(event);
             }
         );
-
-        //glfwSetWindowSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
-        //    {
-        //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-        //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-        //
-        //        windowProperties.m_Width = width;
-        //        windowProperties.m_Height = height;
-        //        windowProperties.m_FramebufferResized = true;
-        //
-        //        WindowResizeEvent event(width, height);
-        //        OnEvent(event);
-        //    }
-        //);
-
 
         glfwSetWindowIconifyCallback(m_Window,[](GLFWwindow* window, int iconified)
             {

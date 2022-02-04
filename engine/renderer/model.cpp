@@ -133,22 +133,23 @@ namespace GfxRenderEngine
         // 0 - 1
         // | / |
         // 3 - 2
-
+        static int slot = 1;
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos2Y}, /*slot*/1},
+            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos2Y}, slot},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos2Y}, /*slot*/1},
+            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos2Y}, slot},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos1Y}, /*slot*/1},
+            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos1Y}, slot},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos1Y}, /*slot*/1}
+            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos1Y}, slot}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
+        slot++;
 
         m_Indices.push_back(0);
         m_Indices.push_back(1);

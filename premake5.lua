@@ -18,6 +18,7 @@ project "lucre"
     defines
     {
         "LUCRE_VERSION=\"0.1.1\"",
+        "PROFILING"
     }
 
     files 
