@@ -90,8 +90,8 @@ namespace LucreApp
         (
             [](uint in, void* data)
             {
-                KeyPressedEvent event{ENGINE_KEY_G};
-                Engine::m_Engine->OnEvent(event);
+                std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+                Engine::m_Engine->QueueEvent(event);
                 return 0u;
             }
         );

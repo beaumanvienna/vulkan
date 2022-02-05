@@ -149,10 +149,15 @@ namespace GfxRenderEngine
             Shutdown();
         }
         m_Controller.OnUpdate();
-    }
 
-    void Engine::OnRender()
-    {
+        if (m_EventQueue.size())
+        {
+            for (auto& event: m_EventQueue)
+            {
+                OnEvent(*event.get());
+            }
+            m_EventQueue.clear();
+        }
     }
 
     void Engine::SignalHandler(int signal)
@@ -162,6 +167,11 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("Received signal SIGINT, exiting");
             exit(0);
         }
+    }
+    
+    void Engine::QueueEvent(std::unique_ptr<Event>& event)
+    {
+        m_EventQueue.push_back(std::move(event));
     }
 
     void Engine::OnEvent(Event& event)

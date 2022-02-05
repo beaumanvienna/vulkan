@@ -54,7 +54,7 @@ namespace GfxRenderEngine
         bool Start();
         void OnUpdate();
         void OnEvent(Event& event);
-        void OnRender();
+        void QueueEvent(std::unique_ptr<Event>& event);
         void Shutdown();
         void Quit();
 
@@ -115,6 +115,7 @@ namespace GfxRenderEngine
         std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;
 
         bool m_Running, m_Paused;
+        std::vector<std::unique_ptr<Event>> m_EventQueue;
 
     };
 }
