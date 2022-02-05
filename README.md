@@ -10,12 +10,13 @@ A Vulkan Render Engine<br/>
 Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager, point lights, enity component system based on EnTT, physics simulator based on Box2D, debug imgui window<br/>
 <br/>
 * Press "f" to toggle fullscreen and "m" to toggle the debug imgui window.<br/>
-* Use the left and right sticks on the controller to move the vases around and scale them.<br/>
+* Use the left and right sticks on the controller to move some objects around and scale them.<br/>
 * Use the AWSD keys to move the camera. Q and E are for up and down<br/>
 * Use the arrow keys to look around.<br/>
 * Use the mouse wheel to zoom.<br/>
 * The A button plays a test sound.<br/>
 * Press ESC or the guide button on the controller to exit.<br/>
+* Press "g" to fire the vulcano and "r" to reset the scene.<br/>
 <br/>
 To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 <br/>

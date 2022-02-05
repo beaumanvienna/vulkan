@@ -32,57 +32,6 @@
 
 namespace LucreApp
 {
-    void MainScene::RotateLights(const Timestep& timestep)
-    {
-        float time = 0.3f * timestep / 1000;
-        auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
-
-        auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
-        for (auto entity : view)
-        {
-            auto& transform  = view.get<TransformComponent>(entity);
-            transform.m_Translation = glm::vec3(rotateLight * glm::vec4(transform.m_Translation, 1.f));
-        }
-    }
-
-    void MainScene::RotateBananas(const Timestep& timestep)
-    {
-        auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
-
-        static constexpr float ROTATIONAL_SPEED = 0.003f;
-        auto rotationDelta = ROTATIONAL_SPEED * timestep;
-        for (auto banana : view)
-        {
-            auto& transform = view.get<TransformComponent>(banana);
-            auto& rigidbody = view.get<RigidbodyComponent>(banana);
-            auto body = static_cast<b2Body*>(rigidbody.m_Body);
-            b2Vec2 position = body->GetPosition();
-            transform.m_Translation.y = -position.y;
-            transform.m_Rotation.y += rotationDelta;
-        }
-    }
-
-    void MainScene::AnimateVulcan(const Timestep& timestep)
-    {
-        auto view = m_Registry.view<PointLightComponent, TransformComponent, Group2>();
-        for (auto entity : view)
-        {
-            auto& pointLight  = view.get<PointLightComponent>(entity);
-            pointLight.m_LightIntensity += 0.05f * (2*(static_cast<float>(rand()) / RAND_MAX) - 1.0f);
-            pointLight.m_LightIntensity = std::clamp(pointLight.m_LightIntensity, 0.5f, 1.5f);
-        }
-    }
-
-    void MainScene::SimulatePhysics(const Timestep& timestep)
-    {
-        float step = timestep / 1000.0f;
-
-        int velocityIterations = 6;
-        int positionIterations = 2;        
-        m_World->Step(step, velocityIterations, positionIterations);
-
-    }
-
     void MainScene::LoadModels()
     {
         {
@@ -198,12 +147,9 @@ namespace LucreApp
 
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
                 
-                float random0 = 0.05f * (2*(static_cast<float>(rand()) / RAND_MAX) - 1.0f);
-                float random1 = 0.03f * (2*(static_cast<float>(rand()) / RAND_MAX) - 1.0f);
-
                 b2BodyDef bodyDef;
                 bodyDef.type = b2_dynamicBody;
-                bodyDef.position.Set(0.0f, 2.0f + i * 1.0f);
+                bodyDef.position.Set(0.0f, -1.0f);
                 auto body = m_World->CreateBody(&bodyDef);
 
                 b2CircleShape circle;

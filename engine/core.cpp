@@ -39,7 +39,7 @@ namespace GfxRenderEngine
 
     Engine::Engine(const std::string& configFilePath) :
                 m_ConfigFilePath(configFilePath),
-                m_DisableMousePointerTimer(Timer(2500)),
+                m_DisableMousePointerTimer(2500),
                 m_Running(false), m_Paused(false),
                 m_Timestep{0ms}
     {

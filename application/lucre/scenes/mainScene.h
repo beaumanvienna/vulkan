@@ -30,6 +30,7 @@
 #include "renderer/texture.h"
 #include "renderer/renderer.h"
 #include "renderer/cameraController.h"
+#include "platform/SDL/timer.h"
 
 #include "lucre.h"
 #include "gamepadInputController.h"
@@ -55,10 +56,13 @@ namespace LucreApp
 
     private:
 
-        void InitPhysics();
         void LoadModels();
+        void ResetScene();
+        void InitPhysics();
+        void FireVulcano();
+        void ResetBananas();
         void RotateLights(const Timestep& timestep);
-        void RotateBananas(const Timestep& timestep);
+        void UpdateBananas(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
         void SimulatePhysics(const Timestep& timestep);
 
@@ -84,11 +88,14 @@ namespace LucreApp
         std::shared_ptr<Sprite> m_VulcanoSprite;
         std::shared_ptr<Sprite> m_WalkwaySprite;
 
+        const b2Vec2 GRAVITY{0.0f, -9.81f};
         std::unique_ptr<b2World> m_World;
+        b2Body* m_GroundBody;
+        bool m_Fire;
+        Timer m_LaunchVulcanoTimer;
 
     private:
 
-        const b2Vec2 GRAVITY{0.0f, -9.81f};
 
         struct BananaComponent
         {

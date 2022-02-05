@@ -25,6 +25,7 @@
 
 #include "core.h"
 #include "events/event.h"
+#include "events/keyEvent.h"
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
 
@@ -40,7 +41,8 @@ namespace LucreApp
 {
 
     MainScene::MainScene()
-        : m_GamepadInput{}
+        : m_GamepadInput{}, m_Fire{false},
+          m_LaunchVulcanoTimer(1500)
     {
     }
 
@@ -84,6 +86,16 @@ namespace LucreApp
         InitPhysics();
         LoadModels();
 
+        m_LaunchVulcanoTimer.SetEventCallback
+        (
+            [](uint in, void* data)
+            {
+                KeyPressedEvent event{ENGINE_KEY_G};
+                Engine::m_Engine->OnEvent(event);
+                return 0u;
+            }
+        );
+        m_LaunchVulcanoTimer.Start();
     }
 
     void MainScene::Stop()
@@ -116,7 +128,7 @@ namespace LucreApp
         AnimateVulcan(timestep);
 
         SimulatePhysics(timestep);
-        RotateBananas(timestep);
+        UpdateBananas(timestep);
 
         m_Renderer->Submit(m_Registry);
         m_Renderer->EndScene();
@@ -134,6 +146,22 @@ namespace LucreApp
                 return true;
             }
         );
+
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+            {
+                switch(event.GetKeyCode())
+                {
+                    case ENGINE_KEY_R:
+                        ResetScene();
+                        ResetBananas();
+                        break;
+                    case ENGINE_KEY_G:
+                        FireVulcano();
+                        break;
+                }
+                return false;
+            }
+        );
     }
 
     void MainScene::OnResize()
@@ -141,19 +169,51 @@ namespace LucreApp
         m_CameraController->SetProjection();
     }
 
+    void MainScene::ResetScene()
+    {
+        m_CameraController->SetZoomFactor(1.0f);
+        auto& transform = m_Registry.get<TransformComponent>(m_Camera);
+        transform.m_Translation = {0.0f, -1.0f, -4.6f};
+        transform.m_Rotation = {-0.11, 0.0f, 0.0f};
+    }
+
     void MainScene::InitPhysics()
     {
-
         srand(time(nullptr));
         m_World = std::make_unique<b2World>(GRAVITY);
 
-        b2BodyDef groundBodyDef;
-        groundBodyDef.position.Set(0.0f, -1.0f);
+        {
+            b2BodyDef groundBodyDef;
+            groundBodyDef.position.Set(0.0f, -1.0f);
 
-        b2Body* groundBody = m_World->CreateBody(&groundBodyDef);
-        b2PolygonShape groundBox;
-        groundBox.SetAsBox(50.0f, 0.4f);
-        groundBody->CreateFixture(&groundBox, 0.0f);
+            m_GroundBody = m_World->CreateBody(&groundBodyDef);
+            b2PolygonShape groundBox;
+            groundBox.SetAsBox(50.0f, 0.4f);
+            m_GroundBody->CreateFixture(&groundBox, 0.0f);
+        }
 
+        {
+            b2BodyDef localGroundBodyDef;
+            localGroundBodyDef.position.Set(0.0f, -10.0f);
+
+            b2Body* localGroundBody = m_World->CreateBody(&localGroundBodyDef);
+            b2PolygonShape localGroundBox;
+            localGroundBox.SetAsBox(50.0f, 0.1f);
+            localGroundBody->CreateFixture(&localGroundBox, 0.0f);
+        }
+    }
+    
+    void MainScene::FireVulcano()
+    {
+        m_Fire = true;
+        m_GroundBody->SetTransform(b2Vec2(0.0f, -10.0f), 0.0f);
+
+        auto view = m_Registry.view<BananaComponent, RigidbodyComponent>();
+        for (auto banana : view)
+        {
+            auto& rigidbody = view.get<RigidbodyComponent>(banana);
+            auto body = static_cast<b2Body*>(rigidbody.m_Body);
+            body->SetTransform(b2Vec2(0.0f, -8.f), 0.0f);
+        }
     }
 }
