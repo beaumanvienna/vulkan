@@ -96,6 +96,10 @@ namespace LucreApp
             }
         );
         m_LaunchVulcanoTimer.Start();
+
+        int poolSize = 50;
+        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize);
+
     }
 
     void MainScene::Stop()
@@ -118,7 +122,7 @@ namespace LucreApp
         m_GamepadInputController->GetTransform(vase0Transform, true);
         m_GamepadInputController->GetTransform(vase1Transform, true);
 
-        auto frameRotation = static_cast<const float>(timestep) * 0.0006f;
+        auto frameRotation = static_cast<const float>(timestep) * 0.6f;
         vase0Transform.m_Rotation.y = glm::mod(vase0Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         vase0Transform.m_Rotation.z = glm::mod(vase0Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
         vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
@@ -130,8 +134,40 @@ namespace LucreApp
         SimulatePhysics(timestep);
         UpdateBananas(timestep);
 
+        VulcanoSmoke();
+        m_VulcanoSmoke->OnUpdate(timestep, *m_Renderer);
+
         m_Renderer->Submit(m_Registry);
         m_Renderer->EndScene();
+    }
+
+    void MainScene::VulcanoSmoke()
+    {
+        static auto start = Engine::m_Engine->GetTime();
+        if ((Engine::m_Engine->GetTime() - start) > 250ms)
+        {
+            start = Engine::m_Engine->GetTime();
+
+            ParticleSystem::Specification spec =
+            {
+                { 0.0f, 3.0f}, //glm::vec2 m_Position
+                { 0.1f, 1.0f}, //glm::vec2 m_Velocity
+                { 0.0f, 0.0f}, //glm::vec2 m_Acceleration
+                
+                {0.0f}, //float m_Rotation
+                {0.0f}, //float m_RotationSpeed
+    
+                { 1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_StartColor
+                { 0.5f, 0.5f, 0.5f, 1.0f}, //glm::vec4 m_FinalColor
+    
+                {1.0f}, //float m_StartSize
+                {2.0f}, //float m_FinalSize
+    
+                {2s}, //Timestep m_LifeTime
+            };
+            ParticleSystem::Specification variation{};
+            m_VulcanoSmoke->Emit(spec, variation);
+        }
     }
 
     void MainScene::OnEvent(Event& event)

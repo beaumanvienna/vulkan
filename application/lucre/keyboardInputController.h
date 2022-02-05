@@ -33,15 +33,14 @@ namespace LucreApp
 {
     struct KeyboardInputControllerSpec
     {
-        float m_MoveSpeed{0.0015f};
-        float m_LookSpeed{0.0005f};
+        float m_MoveSpeed{1.5f};
+        float m_LookSpeed{0.5f};
     };
 
     class KeyboardInputController
     {
 
     public:
-
 
         static constexpr GfxRenderEngine::KeyCode MOVE_LEFT        = ENGINE_KEY_A;
         static constexpr GfxRenderEngine::KeyCode MOVE_RIGHT       = ENGINE_KEY_D;
@@ -53,7 +52,6 @@ namespace LucreApp
         static constexpr GfxRenderEngine::KeyCode LOOK_RIGHT       = ENGINE_KEY_RIGHT;
         static constexpr GfxRenderEngine::KeyCode LOOK_UP          = ENGINE_KEY_UP;
         static constexpr GfxRenderEngine::KeyCode LOOK_DOWN        = ENGINE_KEY_DOWN;
-
 
     public:
 

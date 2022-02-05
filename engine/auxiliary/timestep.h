@@ -33,14 +33,18 @@ namespace GfxRenderEngine
 
     public:
 
-        Timestep(std::chrono::duration<float, std::chrono::milliseconds::period> time);
-        Timestep& operator=(const std::chrono::duration<float, std::chrono::milliseconds::period>& timestep);
+        Timestep(std::chrono::duration<float, std::chrono::seconds::period> time);
 
         std::chrono::duration<float, std::chrono::seconds::period> GetSeconds() const;
         std::chrono::duration<float, std::chrono::milliseconds::period> GetMilliseconds() const;
 
         void Print() const;
         float Count() const;
+
+        Timestep& operator =(const std::chrono::duration<float, std::chrono::seconds::period>& timestep);
+        Timestep& operator-=(const Timestep& other);
+        Timestep  operator -(const Timestep& other) const;
+        bool      operator<=(const std::chrono::duration<float, std::chrono::seconds::period>& other) const;
 
         operator float() const
         {
@@ -49,7 +53,7 @@ namespace GfxRenderEngine
 
     private:
 
-        std::chrono::duration<float, std::chrono::milliseconds::period> m_Timestep;
+        std::chrono::duration<float, std::chrono::seconds::period> m_Timestep;
 
     };
 }

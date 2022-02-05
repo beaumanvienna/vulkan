@@ -24,30 +24,46 @@
 
 namespace GfxRenderEngine
 {
-    Timestep::Timestep(std::chrono::duration<float, std::chrono::milliseconds::period> time)
+    Timestep::Timestep(std::chrono::duration<float, std::chrono::seconds::period> time)
         : m_Timestep(time)
     {
     }
 
-    Timestep& Timestep::operator=(const std::chrono::duration<float, std::chrono::milliseconds::period>& timestep)
+    Timestep& Timestep::operator=(const std::chrono::duration<float, std::chrono::seconds::period>& timestep)
     {
         m_Timestep = timestep;
         return *this;
     }
 
-    std::chrono::duration<float, std::chrono::seconds::period> Timestep::GetSeconds() const
+    Timestep& Timestep::operator-=(const Timestep& other)
     {
-        return (std::chrono::duration<float, std::chrono::seconds::period>)m_Timestep;
+        m_Timestep = m_Timestep - other.m_Timestep;
+        return *this;
+    }
+    Timestep Timestep::operator -(const Timestep& other) const
+    {
+        return m_Timestep - other.m_Timestep;
     }
 
-    std::chrono::duration<float, std::chrono::milliseconds::period> Timestep::GetMilliseconds() const
+    bool Timestep::operator <=(const std::chrono::duration<float, std::chrono::seconds::period>& other) const
+    {
+        return (m_Timestep - other) <= 0ms;
+    }
+
+    std::chrono::duration<float, std::chrono::seconds::period> Timestep::GetSeconds() const
     {
         return m_Timestep;
     }
 
+    std::chrono::duration<float, std::chrono::milliseconds::period> Timestep::GetMilliseconds() const
+    {
+        return (std::chrono::duration<float, std::chrono::milliseconds::period>)m_Timestep;
+    }
+
     void Timestep::Print() const
     {
-        LOG_CORE_INFO("timestep in milli seconds: {0} ms", m_Timestep.count());
+        auto inMilliSeconds = GetMilliseconds();
+        LOG_CORE_INFO("timestep in milli seconds: {0} ms", inMilliSeconds.count());
         auto inSeconds = GetSeconds();
         LOG_CORE_INFO("timestep in seconds: {0} s", inSeconds.count());
     }

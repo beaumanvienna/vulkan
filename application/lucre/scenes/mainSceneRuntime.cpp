@@ -34,7 +34,7 @@ namespace LucreApp
 {
     void MainScene::RotateLights(const Timestep& timestep)
     {
-        float time = 0.3f * timestep / 1000;
+        float time = 0.3f * timestep;
         auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
 
         auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
@@ -49,7 +49,7 @@ namespace LucreApp
     {
         auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
 
-        static constexpr float ROTATIONAL_SPEED = 0.003f;
+        static constexpr float ROTATIONAL_SPEED = 3.0f;
         auto rotationDelta = ROTATIONAL_SPEED * timestep;
         for (auto banana : view)
         {
@@ -139,8 +139,7 @@ namespace LucreApp
 
     void MainScene::SimulatePhysics(const Timestep& timestep)
     {
-        float step = timestep / 1000.0f; // in seconds
-        //float step = timestep/20000.0f;
+        float step = timestep;
 
         int velocityIterations = 6;
         int positionIterations = 2;        

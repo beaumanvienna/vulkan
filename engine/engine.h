@@ -32,6 +32,7 @@
 #include "gtc/constants.hpp"
 #include "gtc/matrix_transform.hpp"
 #include "gtx/transform.hpp"
+#include "gtx/compatibility.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
 

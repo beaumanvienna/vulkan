@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/entity.h"
+#include "scene/particleSystem.h"
 #include "sprite/sprite.h"
 #include "renderer/texture.h"
 #include "renderer/renderer.h"
@@ -61,6 +62,7 @@ namespace LucreApp
         void InitPhysics();
         void FireVulcano();
         void ResetBananas();
+        void VulcanoSmoke();
         void RotateLights(const Timestep& timestep);
         void UpdateBananas(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
@@ -93,6 +95,8 @@ namespace LucreApp
         b2Body* m_GroundBody;
         bool m_Fire;
         Timer m_LaunchVulcanoTimer;
+
+        std::shared_ptr<ParticleSystem> m_VulcanoSmoke;
 
     private:
 
