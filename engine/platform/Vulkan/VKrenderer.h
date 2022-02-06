@@ -66,8 +66,9 @@ namespace GfxRenderEngine
 
         virtual void BeginScene(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry) override;
+        virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void EndScene() override;
-        
+
         void ToggleDebugWindow() { m_Imgui = Imgui::ToggleDebugWindow(); }
 
     private:

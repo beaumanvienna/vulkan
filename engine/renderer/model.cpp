@@ -158,4 +158,37 @@ namespace GfxRenderEngine
         m_Indices.push_back(2);
         m_Indices.push_back(3);
     }
+
+    void Builder::LoadParticle(const glm::vec4& color)
+    {
+        m_Vertices.clear();
+        m_Indices.clear();
+
+        // 0 - 1
+        // | / |
+        // 3 - 2
+
+        Vertex vertex[4]
+        {
+            // index 0, 0.0f,  1.0f
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-1.0f}, /*slot*/0},
+
+            // index 1, 1.0f,  1.0f
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-1.0f}, /*slot*/0},
+
+            // index 2, 1.0f,  0.0f
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-0.0f}, /*slot*/0},
+
+            // index 3, 0.0f,  0.0f
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-0.0f}, /*slot*/0}
+        };
+        for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
+
+        m_Indices.push_back(0);
+        m_Indices.push_back(1);
+        m_Indices.push_back(3);
+        m_Indices.push_back(1);
+        m_Indices.push_back(2);
+        m_Indices.push_back(3);
+    }
 }

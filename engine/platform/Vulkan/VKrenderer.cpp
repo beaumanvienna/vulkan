@@ -310,6 +310,14 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::Submit(std::shared_ptr<ParticleSystem>& particleSystem)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystem->DrawParticles(m_FrameInfo, particleSystem);
+        }
+    }
+
     void VK_Renderer::EndScene()
     {
         if (m_CurrentCommandBuffer)
@@ -324,5 +332,4 @@ namespace GfxRenderEngine
         ASSERT(m_FrameInProgress);
         return m_CurrentFrameIndex;
     }
-
 }

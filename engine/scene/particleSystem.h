@@ -23,7 +23,7 @@
 #pragma once
 
 #include "engine.h"
-#include "renderer/renderer.h"
+#include "scene/scene.h"
 #include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
@@ -50,7 +50,7 @@ namespace GfxRenderEngine
 
             float m_StartSize{0.0f};
             float m_FinalSize{0.0f};
-\
+
             Timestep m_LifeTime{0ms};
         };
 
@@ -59,17 +59,15 @@ namespace GfxRenderEngine
         ParticleSystem(uint poolSize); // poolSize = f(emitter rate, lifetime)
 
         void Emit(const ParticleSystem::Specification& spec, const ParticleSystem::Specification& variation);
-        void OnUpdate(Timestep timestep, Renderer& renderer);
+        void OnUpdate(Timestep timestep);
 
-    private:
+    public:
 
         struct Particle
         {
-            glm::vec2 m_Position;
             glm::vec2 m_Velocity;
             glm::vec2 m_Acceleration;
 
-            float m_Rotation;
             float m_RotationSpeed;
 
             glm::vec4 m_StartColor;
@@ -82,9 +80,14 @@ namespace GfxRenderEngine
             Timestep m_RemainingLifeTime{0ms};
 
             bool m_Enabled;
+            entt::entity m_Entity;
         };
 
         std::vector<Particle> m_ParticlePool;
+        entt::registry m_Registry;
+
+    private:
+
         uint m_PoolIndex;
 
     };

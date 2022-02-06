@@ -113,6 +113,46 @@ namespace GfxRenderEngine
             static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
             static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
         }
+    }
 
+    void VK_RenderSystem::DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem)
+    {
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_GlobalDescriptorSet,
+            0,
+            nullptr
+        );
+
+        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+
+        for (auto& particle : particleSystem->m_ParticlePool)
+        {
+            if (!particle.m_Enabled)
+            {
+                continue;
+            }
+            auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
+            VK_SimplePushConstantData push{};
+            push.m_ModelMatrix  = transform.Mat4();
+            push.m_NormalMatrix = transform.NormalMatrix();
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                m_PipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_SimplePushConstantData),
+                &push);
+
+            auto& mesh = particleSystem->m_Registry.get<MeshComponent>(particle.m_Entity);
+            static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+            static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+        }
+        
     }
 }

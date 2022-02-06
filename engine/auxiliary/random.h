@@ -22,52 +22,14 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
-
-#include "engine.h"
-#include "renderer/camera.h"
-#include "scene/scene.h"
-#include "scene/particleSystem.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
+#include <stdlib.h>
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
+    namespace EngineCore
     {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-    };
-
-    class VK_RenderSystem
-    {
-
-    public:
-
-        VK_RenderSystem(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystem();
-
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
-        void DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem);
-
-    private:
-
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-
-    };
+        float RandomPlusMinusOne();
+    }
 }
+
+

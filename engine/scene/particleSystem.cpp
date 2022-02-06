@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
+#include "auxiliary/random.h"
 #include "scene/particleSystem.h"
 
 namespace GfxRenderEngine
@@ -34,11 +36,9 @@ namespace GfxRenderEngine
     {
         Particle& particle = m_ParticlePool[m_PoolIndex];
 
-        particle.m_Position          = spec.m_Position;
-        particle.m_Velocity          = spec.m_Velocity;
+        particle.m_Velocity          = spec.m_Velocity + variation.m_Velocity.x * EngineCore::RandomPlusMinusOne();
         particle.m_Acceleration      = spec.m_Acceleration;
 
-        particle.m_Rotation          = spec.m_Rotation;
         particle.m_RotationSpeed     = spec.m_RotationSpeed;
 
         particle.m_StartColor        = spec.m_StartColor;
@@ -53,9 +53,23 @@ namespace GfxRenderEngine
         particle.m_Enabled = true;
 
         m_PoolIndex = (m_PoolIndex + 1) % m_ParticlePool.size();
+
+        Builder builder{};
+        particle.m_Entity = m_Registry.create();
+
+        builder.LoadParticle(spec.m_StartColor);
+        auto model = Engine::m_Engine->LoadModel(builder);
+        MeshComponent mesh{"particle", model};
+        m_Registry.emplace<MeshComponent>(particle.m_Entity, mesh);
+
+        TransformComponent transform{};
+        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, 3.0f};
+        transform.m_Scale = glm::vec3{1.0f} * particle.m_StartSize;
+        transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation};
+        m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
     }
 
-    void ParticleSystem::OnUpdate(Timestep timestep, Renderer& renderer)
+    void ParticleSystem::OnUpdate(Timestep timestep)
     {
         for (auto& particle : m_ParticlePool)
         {
@@ -70,24 +84,25 @@ namespace GfxRenderEngine
                 continue;
             }
 
+            auto& transform = m_Registry.get<TransformComponent>(particle.m_Entity);
             particle.m_Velocity += particle.m_Acceleration * static_cast<float>(timestep);
-            particle.m_Position += particle.m_Velocity * static_cast<float>(timestep);
-            particle.m_Rotation += particle.m_RotationSpeed * static_cast<float>(timestep);
+            transform.m_Translation.x += particle.m_Velocity.x * static_cast<float>(timestep);
+            transform.m_Translation.y += particle.m_Velocity.y * static_cast<float>(timestep);
 
+            transform.m_Rotation.z += particle.m_RotationSpeed * static_cast<float>(timestep);
             particle.m_RemainingLifeTime -= timestep;
-            
+
             auto remainingLifeTime = static_cast<float>(particle.m_RemainingLifeTime);
             auto lifeTime = static_cast<float>(particle.m_LifeTime);
             auto normalizedRemainingLifeTime = remainingLifeTime / lifeTime;
 
             glm::vec4 color = glm::lerp(particle.m_FinalColor, particle.m_StartColor, normalizedRemainingLifeTime);
+
             float size = glm::lerp(particle.m_FinalSize, particle.m_StartSize, normalizedRemainingLifeTime);
+            transform.m_Scale.x = size;
+            transform.m_Scale.y = size;
 
-            glm::mat4 transform = glm::translate(glm::mat4{1.0f}, { particle.m_Position.x, particle.m_Position.y, 0.0f })
-                * glm::scale(glm::mat4{1.0f}, {size, size, 1.0f});
-
-            //Sprite* sprite = m_Sprites[spriteIndex];
-            //renderer->Draw(sprite, transform);
+            auto& mesh = m_Registry.get<MeshComponent>(particle.m_Entity);
         }
     }
 }

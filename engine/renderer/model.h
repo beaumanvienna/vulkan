@@ -49,6 +49,7 @@ namespace GfxRenderEngine
 
         void LoadModel(const std::string& filepath);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, const glm::vec4& color = glm::vec4(1.0f));
+        void LoadParticle(const glm::vec4& color);
     };
 
     class Model
