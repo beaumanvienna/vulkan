@@ -77,7 +77,7 @@ namespace GfxRenderEngine
     #warning "fix me"
     
     size_t fileSize;
-    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/Blood_Island.png", IDB_BLOOD_ISLAND, "PNG");
+    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_BLOOD_ISLAND.png", IDB_BLOOD_ISLAND, "PNG");
     auto textureBloodIsland = std::make_shared<VK_Texture>();
     textureBloodIsland->Init(data, fileSize);
     
@@ -87,7 +87,7 @@ namespace GfxRenderEngine
     imageInfo0.imageView   = textureBloodIsland->m_TextureView;
     imageInfo0.imageLayout = textureBloodIsland->m_ImageLayout;
 
-    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/walkway.png", IDB_WALKWAY, "PNG");
+    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_WALKWAY.png", IDB_WALKWAY, "PNG");
     auto textureWalkway = std::make_shared<VK_Texture>();
     textureWalkway->Init(data, fileSize);
 

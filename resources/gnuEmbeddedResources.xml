@@ -19,10 +19,10 @@
         <file>images/I_Vulkan.png</file>
     </gresource>
     <gresource prefix="/images/">
-        <file>images/Blood_Island.png</file>
+        <file>atlas/images/I_BLOOD_ISLAND.png</file>
     </gresource>
     <gresource prefix="/images/">
-        <file>images/walkway.png</file>
+        <file>atlas/images/I_WALKWAY.png</file>
     </gresource>
     <gresource prefix="/text/">
         <file>sdl/gamecontrollerdb.txt</file>

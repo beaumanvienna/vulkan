@@ -120,6 +120,7 @@ project "engine"
 
     include "vendor/glfw.lua"
     include "vendor/yaml.lua"
+    include "vendor/atlas"
     include "vendor/SPIRV-Cross.lua"
     include "vendor/shaderc.lua"
     include "vendor/sdl_mixer.lua"
@@ -138,4 +139,8 @@ project "engine"
             kind "StaticLib"
             os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.cpp --sourcedir=resources/ --generate-source")
             os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.h   --sourcedir=resources/ --generate-header")
+    end
+
+    if os.host() == "windows" then
+        include "vendor/sfml.lua"
     end
