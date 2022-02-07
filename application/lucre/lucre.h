@@ -29,6 +29,7 @@
 #include "scene/entity.h"
 #include "platform/window.h"
 #include "renderer/cursor.h"
+#include "sprite/spritesheet.h"
 
 #include "application.h"
 #include "appSettings.h"
@@ -52,8 +53,8 @@ namespace LucreApp
 
         void PlaySound(int resourceID);
 
-        static std::shared_ptr<Lucre> Create();
         static std::shared_ptr<Lucre> m_Application;
+        static SpriteSheet* m_Spritesheet;
 
     private:
 
@@ -71,6 +72,8 @@ namespace LucreApp
         std::shared_ptr<Window> m_Window;
         std::shared_ptr<Cursor> m_Cursor;
         std::shared_ptr<Cursor> m_EmptyCursor;
+
+        SpriteSheet m_Atlas;
 
     };
 }

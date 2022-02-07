@@ -210,7 +210,7 @@ namespace LucreApp
             localGroundBody->CreateFixture(&localGroundBox, 0.0f);
         }
     }
-    
+
     void MainScene::FireVulcano()
     {
         m_Fire = true;

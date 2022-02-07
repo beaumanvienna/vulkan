@@ -28,6 +28,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
 layout(set = 0, binding = 2) uniform sampler2D tex2;
+layout(set = 0, binding = 3) uniform sampler2D tex3;
 
 layout(location = 0) out vec2 fragOffset;
 

@@ -34,6 +34,7 @@ namespace LucreApp
 {
     void MainScene::LoadModels()
     {
+
         {
             Builder builder{};
 
@@ -78,6 +79,23 @@ namespace LucreApp
         }
         {
             Builder builder{};
+        
+            auto sprite = Lucre::m_Spritesheet->GetSprite(I_HORN);
+            glm::mat4 position = sprite->GetScaleMatrix();
+            builder.LoadSprite(sprite, position);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"spritesheet", model};
+        
+            auto entity = CreateEntity();
+            m_Registry.emplace<MeshComponent>(entity, mesh);
+        
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, -1.0f, 0.0f};
+            transform.m_Scale = glm::vec3{0.005f};
+            m_Registry.emplace<TransformComponent>(entity, transform);
+        }
+        {
+            Builder builder{};
             m_Ground = CreateEntity();
 
             builder.LoadModel("application/lucre/models/colored_cube.obj");
@@ -119,7 +137,7 @@ namespace LucreApp
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
         }
-        
+
         {
             Builder builder{};
             builder.LoadModel("application/lucre/models/banana.obj");
@@ -146,7 +164,7 @@ namespace LucreApp
                 m_Registry.emplace<TransformComponent>(m_Banana[i], transform);
 
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
-                
+
                 b2BodyDef bodyDef;
                 bodyDef.type = b2_dynamicBody;
                 bodyDef.position.Set(0.0f, -1.0f);

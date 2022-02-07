@@ -36,6 +36,7 @@ namespace LucreApp
 {
 
     std::shared_ptr<Lucre> Lucre::m_Application;
+    SpriteSheet* Lucre::m_Spritesheet;
 
     Lucre::Lucre()
         : m_CurrentScene{nullptr}
@@ -52,6 +53,9 @@ namespace LucreApp
 
         m_GameState.Start();
         m_CurrentScene = &m_GameState.GetScene();
+
+        m_Atlas.AddSpritesheet();
+        m_Spritesheet = &m_Atlas;
 
         return true;
     }
