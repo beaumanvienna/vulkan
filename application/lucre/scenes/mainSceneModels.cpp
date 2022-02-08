@@ -80,19 +80,19 @@ namespace LucreApp
         {
             Builder builder{};
         
-            auto sprite = Lucre::m_Spritesheet->GetSprite(I_HORN);
+            auto sprite = m_HornAnimation.GetSprite();
             glm::mat4 position = sprite->GetScaleMatrix();
             builder.LoadSprite(sprite, position);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"spritesheet", model};
+            MeshComponent mesh{"horn animation", model};
         
-            auto entity = CreateEntity();
-            m_Registry.emplace<MeshComponent>(entity, mesh);
+            m_Guybrush = CreateEntity();
+            m_Registry.emplace<MeshComponent>(m_Guybrush, mesh);
         
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{0.0f, -1.0f, 0.0f};
             transform.m_Scale = glm::vec3{0.005f};
-            m_Registry.emplace<TransformComponent>(entity, transform);
+            m_Registry.emplace<TransformComponent>(m_Guybrush, transform);
         }
         {
             Builder builder{};

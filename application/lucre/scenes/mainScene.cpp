@@ -68,6 +68,8 @@ namespace LucreApp
         GamepadInputControllerSpec gamepadInputControllerSpec{};
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
 
+        InitPhysics();
+
         // --- sprites ---
         m_VulcanoSprite = std::make_shared<Sprite>
         (
@@ -83,7 +85,17 @@ namespace LucreApp
             gTextureWalkway, "walkway"
         );
 
-        InitPhysics();
+        float scaleHero = 1.0f;
+        // horn
+        m_SpritesheetHorn.AddSpritesheetRow
+        (
+            Lucre::m_Spritesheet->GetSprite(I_HORN),
+            25 /* frames */, 
+            scaleHero /* scale) */
+        );
+        m_HornAnimation.Create(2500ms /* per frame */, &m_SpritesheetHorn);
+        m_HornAnimation.Start();
+
         LoadModels();
 
         m_LaunchVulcanoTimer.SetEventCallback
@@ -108,6 +120,31 @@ namespace LucreApp
 
     void MainScene::OnUpdate(const Timestep& timestep)
     {
+        {
+            if (!m_HornAnimation.IsRunning()) m_HornAnimation.Start();
+            if (m_HornAnimation.IsNewFrame())
+            {
+                m_Registry.destroy(m_Guybrush);
+
+                auto sprite = m_HornAnimation.GetSprite();
+                glm::mat4 position = sprite->GetScaleMatrix();
+
+                Builder builder{};
+                builder.LoadSprite(sprite, position);
+
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"horn animation", model};
+            
+                m_Guybrush = CreateEntity();
+                m_Registry.emplace<MeshComponent>(m_Guybrush, mesh);
+            
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{0.0f, -1.0f, 0.0f};
+                transform.m_Scale = glm::vec3{0.005f};
+                m_Registry.emplace<TransformComponent>(m_Guybrush, transform);
+            }
+        }
+
         auto view = m_Registry.view<TransformComponent>();
         auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
         auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);

@@ -27,7 +27,7 @@
 #include "scene/scene.h"
 #include "scene/entity.h"
 #include "scene/particleSystem.h"
-#include "sprite/sprite.h"
+#include "sprite/spriteAnimation.h"
 #include "renderer/texture.h"
 #include "renderer/renderer.h"
 #include "renderer/cameraController.h"
@@ -77,7 +77,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano, m_Guybrush;
         entt::entity m_PointLight[MAX_LIGHTS], m_Vulcano[3], m_Walkway[3];
 
         static constexpr uint MAX_B = 24;
@@ -97,6 +97,9 @@ namespace LucreApp
         Timer m_LaunchVulcanoTimer;
 
         std::shared_ptr<ParticleSystem> m_VulcanoSmoke;
+
+        SpriteSheet m_SpritesheetHorn;
+        SpriteAnimation m_HornAnimation;
 
     private:
 
