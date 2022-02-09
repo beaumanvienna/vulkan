@@ -85,15 +85,15 @@ namespace LucreApp
             gTextureWalkway, "walkway"
         );
 
-        float scaleHero = 1.0f;
+        float scaleHero = 1.5f;
         // horn
         m_SpritesheetHorn.AddSpritesheetRow
         (
             Lucre::m_Spritesheet->GetSprite(I_HORN),
-            25 /* frames */, 
+            HORN_ANIMATION_SPRITES /* frames */, 
             scaleHero /* scale) */
         );
-        m_HornAnimation.Create(2500ms /* per frame */, &m_SpritesheetHorn);
+        m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
         LoadModels();
@@ -121,27 +121,19 @@ namespace LucreApp
     void MainScene::OnUpdate(const Timestep& timestep)
     {
         {
+            static uint previousFrame = 0;
             if (!m_HornAnimation.IsRunning()) m_HornAnimation.Start();
             if (m_HornAnimation.IsNewFrame())
             {
-                m_Registry.destroy(m_Guybrush);
-
-                auto sprite = m_HornAnimation.GetSprite();
-                glm::mat4 position = sprite->GetScaleMatrix();
-
-                Builder builder{};
-                builder.LoadSprite(sprite, position);
-
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"horn animation", model};
-            
-                m_Guybrush = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Guybrush, mesh);
-            
-                TransformComponent transform{};
-                transform.m_Translation = glm::vec3{0.0f, -1.0f, 0.0f};
-                transform.m_Scale = glm::vec3{0.005f};
-                m_Registry.emplace<TransformComponent>(m_Guybrush, transform);
+                auto& previousMesh = m_Registry.get<MeshComponent>(m_Guybrush[previousFrame]);
+                previousMesh.m_Enabled = false;
+                uint currentFrame = m_HornAnimation.GetCurrentFrame();
+                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
+                currentMesh.m_Enabled = true;
+            }
+            else
+            {
+                previousFrame = m_HornAnimation.GetCurrentFrame();
             }
         }
 

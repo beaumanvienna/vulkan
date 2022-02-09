@@ -125,7 +125,7 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1}", m_Vertices.size(), m_Indices.size());
     }
 
-    void Builder::LoadSprite(Sprite* s, const glm::mat4& position, const glm::vec4& color)
+    void Builder::LoadSprite(Sprite* s, const glm::mat4& position, int textureSlot, const glm::vec4& color)
     {
         m_Vertices.clear();
         m_Indices.clear();
@@ -134,6 +134,7 @@ namespace GfxRenderEngine
         // | / |
         // 3 - 2
         static int slot = 1;
+        if (textureSlot) slot = textureSlot;
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f

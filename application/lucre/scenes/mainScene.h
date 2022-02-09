@@ -77,7 +77,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano, m_Guybrush;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano;
         entt::entity m_PointLight[MAX_LIGHTS], m_Vulcano[3], m_Walkway[3];
 
         static constexpr uint MAX_B = 24;
@@ -98,6 +98,8 @@ namespace LucreApp
 
         std::shared_ptr<ParticleSystem> m_VulcanoSmoke;
 
+        static constexpr uint HORN_ANIMATION_SPRITES = 25;
+        entt::entity m_Guybrush[HORN_ANIMATION_SPRITES];
         SpriteSheet m_SpritesheetHorn;
         SpriteAnimation m_HornAnimation;
 

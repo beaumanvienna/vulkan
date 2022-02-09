@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
 
         void LoadModel(const std::string& filepath);
-        void LoadSprite(Sprite* sprite, const glm::mat4& position, const glm::vec4& color = glm::vec4(1.0f));
+        void LoadSprite(Sprite* sprite, const glm::mat4& position, int textureSlot = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
     };
 

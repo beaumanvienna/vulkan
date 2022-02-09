@@ -47,11 +47,12 @@ namespace GfxRenderEngine
 
     public:
 
-        MeshComponent(std::string name, std::shared_ptr<Model> model);
-        MeshComponent(std::shared_ptr<Model> model);
+        MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled = true);
+        MeshComponent(std::shared_ptr<Model> model, bool enabled = true);
 
         std::string m_Name;
         std::shared_ptr<Model> m_Model;
+        bool m_Enabled;
 
     private:
 

@@ -160,6 +160,11 @@ namespace GfxRenderEngine
         }
     }
 
+    void Engine::OnRender()
+    {
+        m_GraphicsContext->SwapBuffers();
+    }
+
     void Engine::SignalHandler(int signal)
     {
         if (signal == SIGINT)

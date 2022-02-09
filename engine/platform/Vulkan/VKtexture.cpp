@@ -345,8 +345,8 @@ namespace GfxRenderEngine
         // Note: Similar to the samplers available with OpenGL 3.3
         VkSamplerCreateInfo sampler{};
         sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        sampler.magFilter = VK_FILTER_LINEAR;
-        sampler.minFilter = VK_FILTER_LINEAR;
+        sampler.magFilter = VK_FILTER_NEAREST;
+        sampler.minFilter = VK_FILTER_NEAREST;
         sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;

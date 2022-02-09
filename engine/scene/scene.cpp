@@ -48,13 +48,13 @@ namespace GfxRenderEngine
         return pointLight;
     }
 
-    MeshComponent::MeshComponent(std::string name, std::shared_ptr<Model> model)
-        : m_Name{name}, m_Model{model}
+    MeshComponent::MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled)
+        : m_Name{name}, m_Model{model}, m_Enabled{enabled}
     {
     }
 
-    MeshComponent::MeshComponent(std::shared_ptr<Model> model) 
-        : m_Model{model}
+    MeshComponent::MeshComponent(std::shared_ptr<Model> model, bool enabled)
+        : m_Model{model}, m_Enabled{enabled}
     {
         m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
     }

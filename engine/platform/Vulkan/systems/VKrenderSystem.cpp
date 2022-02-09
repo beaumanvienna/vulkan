@@ -110,8 +110,11 @@ namespace GfxRenderEngine
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
-            static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-            static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+            if (mesh.m_Enabled)
+            {
+                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+            }
         }
     }
 

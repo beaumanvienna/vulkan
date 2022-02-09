@@ -78,21 +78,25 @@ namespace LucreApp
             }
         }
         {
-            Builder builder{};
-        
-            auto sprite = m_HornAnimation.GetSprite();
-            glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"horn animation", model};
-        
-            m_Guybrush = CreateEntity();
-            m_Registry.emplace<MeshComponent>(m_Guybrush, mesh);
-        
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, -1.0f, 0.0f};
-            transform.m_Scale = glm::vec3{0.005f};
-            m_Registry.emplace<TransformComponent>(m_Guybrush, transform);
+            for (uint i = 0; i < HORN_ANIMATION_SPRITES; i++)
+            {
+                Builder builder{};
+
+                auto sprite = m_SpritesheetHorn.GetSprite(i);
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position,3);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"horn animation", model};
+                mesh.m_Enabled = false;
+
+                m_Guybrush[i] = CreateEntity();
+                m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
+
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{0.0f, 0.32f, 0.0f};
+                transform.m_Scale = glm::vec3{0.005f};
+                m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
+            }
         }
         {
             Builder builder{};

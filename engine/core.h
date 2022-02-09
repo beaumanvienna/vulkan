@@ -53,6 +53,7 @@ namespace GfxRenderEngine
 
         bool Start();
         void OnUpdate();
+        void OnRender();
         void OnEvent(Event& event);
         void QueueEvent(std::unique_ptr<Event>& event);
         void Shutdown();

@@ -66,7 +66,7 @@ namespace GfxRenderEngine
 
     void SpriteAnimation::Start()
     { 
-        m_PreviousFrame = 0;
+        m_PreviousFrame = -1;
         m_StartTime = Engine::m_Engine->GetTime();
     }
 

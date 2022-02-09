@@ -67,7 +67,7 @@ void main()
         }
         else if (fragTextureSlot == 3)
         {
-            pixelColor = texture(tex3,fragUV).xyz;
+            pixelColor = texture(tex3,fragUV).xyz * 20.0;
         }
     }
     else

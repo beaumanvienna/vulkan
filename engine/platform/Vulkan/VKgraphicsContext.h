@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <chrono>
+
 #include "engine.h"
 #include "renderer/graphicsContext.h"
 
@@ -54,6 +56,10 @@ namespace GfxRenderEngine
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Renderer> m_Renderer;
+
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
+        std::chrono::duration<float, std::chrono::seconds::period> m_FrameDuration;
+        int m_VSyncIsWorking;
 
     };
 }

@@ -64,8 +64,11 @@ int main(int argc, char* argv[])
             }
             if (!engine->IsPaused())
             {
-                PROFILE_SCOPE("application->OnUpdate()");
-                application->OnUpdate(engine->GetTimestep());
+                {
+                    PROFILE_SCOPE("application->OnUpdate()");
+                    application->OnUpdate(engine->GetTimestep());
+                }
+                engine->OnRender();
             }
             else
             {

@@ -25,13 +25,16 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
+#include "core.h"
+
 #include "VKcore.h"
 #include "VKgraphicsContext.h"
 
 namespace GfxRenderEngine
 {
     VK_Context::VK_Context(VK_Window* window)
-        : m_Window{window}
+        : m_Window{window}, m_FrameDuration{16.667ms},
+          m_VSyncIsWorking{10}
     {
         Init();
     }
@@ -49,6 +52,25 @@ namespace GfxRenderEngine
 
     void VK_Context::SwapBuffers()
     {
+        auto diffTime = Engine::m_Engine->GetTime() - m_StartTime;
+        auto sleepTime = m_FrameDuration - diffTime - 150us;
+        if (sleepTime < 0s) sleepTime = 0s;
+        
+        // here ends the frame
+        if (m_VSyncIsWorking)
+        {
+            if (diffTime < (m_FrameDuration/2)) 
+            {
+                // time difference too short
+                m_VSyncIsWorking--;
+            }
+        }
+        else
+        {
+            std::this_thread::sleep_for(sleepTime);
+        }
+        //here starts the new frame
+        m_StartTime = Engine::m_Engine->GetTime();
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const Builder& builder)
