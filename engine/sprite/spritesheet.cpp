@@ -77,6 +77,55 @@ namespace GfxRenderEngine
         return ok;
     }
 
+    // from existing sprite
+    bool SpriteSheet::AddSpritesheetTile(Sprite* originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale)
+    {
+        m_Texture = originalSprite->m_Texture;
+        m_Rows = rows;
+        m_Columns = columns;
+
+        int tileWidth = (originalSprite->GetWidth()  - spacing * (columns - 1))/columns;
+        int tileHeight = (originalSprite->GetHeight() - spacing * (rows - 1))/rows;
+
+        float tileWidthNormalized = static_cast<float>(tileWidth)  / originalSprite->m_Texture->GetWidth();
+        float tileHeightNormalized = static_cast<float>(tileHeight) / originalSprite->m_Texture->GetHeight();
+
+        float advanceX = static_cast<float>(tileWidth  + spacing)  / originalSprite->m_Texture->GetWidth();
+        float advanceY = static_cast<float>(tileHeight + spacing) / originalSprite->m_Texture->GetHeight();
+
+        float currentY = originalSprite->m_Pos1Y;
+        for (uint row = 0; row < rows; row++)
+        {
+            float currentX = originalSprite->m_Pos1X;
+            for (uint column = 0; column < columns; column++)
+            {
+                std::string name = mapName + "_" + std::to_string(row) + "_" + std::to_string(column);
+                bool rotated = false;
+                float u1 = currentX;
+                float v1 = currentY;
+                float u2 = currentX + tileWidthNormalized;
+                float v2 = currentY + tileHeightNormalized;
+                Sprite sprite = Sprite
+                (
+                    u1,
+                    v1,
+                    u2,
+                    v2,
+                    tileWidth,
+                    tileHeight,
+                    m_Texture,
+                    name,
+                    scale,
+                    rotated
+                );
+                m_SpriteTable.push_back(sprite);
+                currentX += advanceX;
+            }
+            currentY += advanceY;
+        }
+        return true;
+    }
+
     // from file on disk
     bool SpriteSheet::AddSpritesheetTile(const std::string& fileName, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale)
     {
@@ -86,7 +135,7 @@ namespace GfxRenderEngine
         bool ok = m_Texture->Init(fileName);
         if (ok)
         {
-            AddSpritesheetTile(mapName, columns, rows, spacing, scale);
+            AddSpritesheetTile(mapName, rows, columns, spacing, scale);
         }
         else
         {
@@ -107,7 +156,7 @@ namespace GfxRenderEngine
         bool ok = m_Texture->Init(data, fileSize);
         if (ok)
         {
-            AddSpritesheetTile(mapName, columns, rows, spacing, scale);
+            AddSpritesheetTile(mapName, rows, columns, spacing, scale);
         }
         else
         {

@@ -96,6 +96,15 @@ namespace LucreApp
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
+        // smoke
+        m_SpritesheetSmoke.AddSpritesheetTile
+        (
+            Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "I_VOLCANO_SMOKE",
+            8, 8, 0, scaleHero /* scale) */
+        );
+        m_SmokeAnimation.Create(100ms /* per frame */, &m_SpritesheetSmoke);
+        m_SmokeAnimation.Start();
+
         LoadModels();
 
         m_LaunchVulcanoTimer.SetEventCallback
@@ -134,6 +143,23 @@ namespace LucreApp
             else
             {
                 previousFrame = m_HornAnimation.GetCurrentFrame();
+            }
+        }
+
+        {
+            static uint previousFrame = 0;
+            if (!m_SmokeAnimation.IsRunning()) m_SmokeAnimation.Start();
+            if (m_SmokeAnimation.IsNewFrame())
+            {
+                auto& previousMesh = m_Registry.get<MeshComponent>(m_SmokeAnimationSprites[previousFrame]);
+                previousMesh.m_Enabled = false;
+                uint currentFrame = m_SmokeAnimation.GetCurrentFrame();
+                auto& currentMesh = m_Registry.get<MeshComponent>(m_SmokeAnimationSprites[currentFrame]);
+                currentMesh.m_Enabled = true;
+            }
+            else
+            {
+                previousFrame = m_SmokeAnimation.GetCurrentFrame();
             }
         }
 

@@ -57,6 +57,7 @@ namespace GfxRenderEngine
         void AddSpritesheet();
         bool AddSpritesheet(const std::string& fileName);
         bool AddSpritesheet(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
+        bool AddSpritesheetTile(Sprite* originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
         bool AddSpritesheetTile(const std::string& fileName, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
         bool AddSpritesheetTile(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
                                 const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);

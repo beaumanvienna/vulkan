@@ -93,9 +93,30 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3{0.0f, 0.32f, 0.0f};
+                transform.m_Translation = glm::vec3{-1.0f, 0.32f, 0.0f};
                 transform.m_Scale = glm::vec3{0.005f};
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
+            }
+        }
+        {
+            for (uint i = 0; i < SMOKE_ANIMATION_SPRITES; i++)
+            {
+                Builder builder{};
+            
+                auto sprite = m_SpritesheetSmoke.GetSprite(i);
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 3);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"Smoke animation", model};
+                mesh.m_Enabled = false;
+            
+                m_SmokeAnimationSprites[i] = CreateEntity();
+                m_Registry.emplace<MeshComponent>(m_SmokeAnimationSprites[i], mesh);
+            
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{0.0f, 0.32f, 0.0f};
+                transform.m_Scale = glm::vec3{0.005f};
+                m_Registry.emplace<TransformComponent>(m_SmokeAnimationSprites[i], transform);
             }
         }
         {

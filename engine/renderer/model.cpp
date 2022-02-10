@@ -134,6 +134,7 @@ namespace GfxRenderEngine
         // | / |
         // 3 - 2
         static int slot = 1;
+        #warning "fix texture slot management"
         if (textureSlot) slot = textureSlot;
         Vertex vertex[4]
         {

@@ -52,6 +52,7 @@ void main()
     }
 
     vec3 pixelColor;
+    float alpha = 1.0;
     if (fragTextureSlot > 0)
     {
         // {0.0, 1.0} - {1.0, 1.0}
@@ -60,14 +61,18 @@ void main()
         if (fragTextureSlot == 1)
         {
             pixelColor = texture(tex1,fragUV).xyz * 20.0;
+            alpha = texture(tex1,fragUV).w;
         }
         else if (fragTextureSlot == 2)
         {
             pixelColor = texture(tex2,fragUV).xyz;
+            alpha = texture(tex2,fragUV).w;
         }
         else if (fragTextureSlot == 3)
         {
-            pixelColor = texture(tex3,fragUV).xyz * 20.0;
+            alpha = texture(tex3,fragUV).w;
+            if (alpha == 0) discard;
+            pixelColor = texture(tex3,fragUV).xyz * 10.0;
         }
     }
     else
@@ -78,6 +83,6 @@ void main()
     outColor.x = diffusedLightColor.x * pixelColor.x;
     outColor.y = diffusedLightColor.y * pixelColor.y;
     outColor.z = diffusedLightColor.z * pixelColor.z;
-    outColor.w = 1.0;
+    outColor.w = alpha;
 
 }
