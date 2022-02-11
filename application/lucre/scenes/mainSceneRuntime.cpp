@@ -137,7 +137,7 @@ namespace LucreApp
         }
     }
 
-    void MainScene::VulcanoSmoke()
+    void MainScene::EmitVulcanoSmoke()
     {
         static auto start = Engine::m_Engine->GetTime();
         if ((Engine::m_Engine->GetTime() - start) > 250ms)
@@ -146,19 +146,19 @@ namespace LucreApp
 
             ParticleSystem::Specification spec =
             {
-                { 0.0f,-2.4f}, //glm::vec2 m_Position
-                { 0.0f,-1.0f}, //glm::vec2 m_Velocity
-                { 0.0f, 0.0f}, //glm::vec2 m_Acceleration
-                
+                { 0.0f,-2.5f}, //glm::vec2 m_Position
+                { 0.0f,-0.40f}, //glm::vec2 m_Velocity
+                { 0.0f, 0.00f}, //glm::vec2 m_Acceleration
+
                 {0.0f}, //float m_Rotation
                 {0.0f}, //float m_RotationSpeed
-    
+
                 { 1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_StartColor
                 { 0.5f, 0.5f, 0.5f, 1.0f}, //glm::vec4 m_FinalColor
-    
+
                 {0.05f}, //float m_StartSize
-                {0.5f}, //float m_FinalSize
-    
+                {0.7f}, //float m_FinalSize
+
                 {4s}, //Timestep m_LifeTime
             };
 

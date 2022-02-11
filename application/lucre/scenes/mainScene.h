@@ -62,7 +62,7 @@ namespace LucreApp
         void InitPhysics();
         void FireVulcano();
         void ResetBananas();
-        void VulcanoSmoke();
+        void EmitVulcanoSmoke();
         void RotateLights(const Timestep& timestep);
         void UpdateBananas(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
@@ -103,10 +103,7 @@ namespace LucreApp
         SpriteSheet m_SpritesheetHorn;
         SpriteAnimation m_HornAnimation;
 
-        static constexpr uint SMOKE_ANIMATION_SPRITES = 64;
-        entt::entity m_SmokeAnimationSprites[SMOKE_ANIMATION_SPRITES];
         SpriteSheet m_SpritesheetSmoke;
-        SpriteAnimation m_SmokeAnimation;
 
     private:
 

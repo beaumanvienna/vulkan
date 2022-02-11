@@ -54,7 +54,6 @@ namespace GfxRenderEngine
                 1.0f,
                 rotated
             );
-            #warning "use resize()"
             m_SpriteTable.push_back(sprite);
         }
     }

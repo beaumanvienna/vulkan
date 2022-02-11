@@ -26,10 +26,27 @@
 
 namespace GfxRenderEngine
 {
-    ParticleSystem::ParticleSystem(uint poolSize)
-        : m_ParticlePool{poolSize}, m_PoolIndex{0}
+    ParticleSystem::ParticleSystem(uint poolSize, float zaxis, SpriteSheet* spritesheet)
+        : m_ParticlePool{poolSize}, m_PoolIndex{0},
+          m_Spritesheet{spritesheet}, m_Zaxis{zaxis}
     {
         ASSERT(poolSize);
+        auto numberOfSprites = m_Spritesheet->GetNumberOfSprites();
+        m_AnimationSprites.resize(numberOfSprites);
+        for (uint i = 0; i < numberOfSprites; i++)
+        {
+            Builder builder{};
+
+            auto sprite = m_Spritesheet->GetSprite(i);
+            glm::mat4 position = sprite->GetScaleMatrix();
+            builder.LoadSprite(sprite, position, 3);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"particle animation", model};
+            mesh.m_Enabled = false;
+
+            m_AnimationSprites[i] = m_Registry.create();
+            m_Registry.emplace<MeshComponent>(m_AnimationSprites[i], mesh);
+        }
     }
 
     void ParticleSystem::Emit(const ParticleSystem::Specification& spec, const ParticleSystem::Specification& variation)
@@ -63,10 +80,13 @@ namespace GfxRenderEngine
         m_Registry.emplace<MeshComponent>(particle.m_Entity, mesh);
 
         TransformComponent transform{};
-        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, 3.0f};
+        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis};
         transform.m_Scale = glm::vec3{1.0f} * particle.m_StartSize;
         transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation};
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
+
+        particle.m_SmokeAnimation.Create(100ms /* per frame */, m_Spritesheet);
+        particle.m_SmokeAnimation.Start();
     }
 
     void ParticleSystem::OnUpdate(Timestep timestep)
@@ -102,7 +122,18 @@ namespace GfxRenderEngine
             transform.m_Scale.x = size;
             transform.m_Scale.y = size;
 
-            auto& mesh = m_Registry.get<MeshComponent>(particle.m_Entity);
+            {
+                if (!particle.m_SmokeAnimation.IsRunning())
+                {
+                    particle.m_SmokeAnimation.Start();
+                }
+
+                if (particle.m_SmokeAnimation.IsNewFrame())
+                {
+                    uint currentFrame = particle.m_SmokeAnimation.GetCurrentFrame();
+                    particle.m_SpriteEntity = m_AnimationSprites[currentFrame];
+                }
+            }
         }
     }
 }

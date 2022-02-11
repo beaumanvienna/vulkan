@@ -96,15 +96,6 @@ namespace LucreApp
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
-        // smoke
-        m_SpritesheetSmoke.AddSpritesheetTile
-        (
-            Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "I_VOLCANO_SMOKE",
-            8, 8, 0, scaleHero /* scale) */
-        );
-        m_SmokeAnimation.Create(100ms /* per frame */, &m_SpritesheetSmoke);
-        m_SmokeAnimation.Start();
-
         LoadModels();
 
         m_LaunchVulcanoTimer.SetEventCallback
@@ -118,8 +109,17 @@ namespace LucreApp
         );
         m_LaunchVulcanoTimer.Start();
 
+        // volcano smoke animation
         int poolSize = 50;
-        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize);
+        float zaxis = 3.0f;
+        m_SpritesheetSmoke.AddSpritesheetTile
+        (
+            Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
+            8, 8, /* rows, columns */
+            0, /* margin */
+            0.02f /* scale) */
+        );
+        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke);
 
     }
 
@@ -143,23 +143,6 @@ namespace LucreApp
             else
             {
                 previousFrame = m_HornAnimation.GetCurrentFrame();
-            }
-        }
-
-        {
-            static uint previousFrame = 0;
-            if (!m_SmokeAnimation.IsRunning()) m_SmokeAnimation.Start();
-            if (m_SmokeAnimation.IsNewFrame())
-            {
-                auto& previousMesh = m_Registry.get<MeshComponent>(m_SmokeAnimationSprites[previousFrame]);
-                previousMesh.m_Enabled = false;
-                uint currentFrame = m_SmokeAnimation.GetCurrentFrame();
-                auto& currentMesh = m_Registry.get<MeshComponent>(m_SmokeAnimationSprites[currentFrame]);
-                currentMesh.m_Enabled = true;
-            }
-            else
-            {
-                previousFrame = m_SmokeAnimation.GetCurrentFrame();
             }
         }
 
@@ -189,11 +172,11 @@ namespace LucreApp
         SimulatePhysics(timestep);
         UpdateBananas(timestep);
 
-        VulcanoSmoke();
+        EmitVulcanoSmoke();
         m_VulcanoSmoke->OnUpdate(timestep);
-        m_Renderer->Submit(m_VulcanoSmoke);
 
         m_Renderer->Submit(m_Registry);
+        m_Renderer->Submit(m_VulcanoSmoke);
         m_Renderer->EndScene();
     }
 

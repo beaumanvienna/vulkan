@@ -45,8 +45,6 @@ namespace GfxRenderEngine
         const int num_images = 0;
     };
 
-    typedef std::vector<Sprite> SpriteTable;
-
     class SpriteSheet
     {
 
@@ -85,7 +83,7 @@ namespace GfxRenderEngine
     private:
 
         std::shared_ptr<Texture> m_Texture;
-        SpriteTable m_SpriteTable;
+        std::vector<Sprite> m_SpriteTable;
         uint m_Rows, m_Columns;
 
     };

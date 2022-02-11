@@ -25,6 +25,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "auxiliary/timestep.h"
+#include "sprite/spriteAnimation.h"
 
 namespace GfxRenderEngine
 {
@@ -56,7 +57,7 @@ namespace GfxRenderEngine
 
     public:
 
-        ParticleSystem(uint poolSize); // poolSize = f(emitter rate, lifetime)
+        ParticleSystem(uint poolSize /* = f(emitter rate, lifetime)*/, float zaxis, SpriteSheet* spritesheet);
 
         void Emit(const ParticleSystem::Specification& spec, const ParticleSystem::Specification& variation);
         void OnUpdate(Timestep timestep);
@@ -79,8 +80,11 @@ namespace GfxRenderEngine
             Timestep m_LifeTime{0ms};
             Timestep m_RemainingLifeTime{0ms};
 
+            SpriteAnimation m_SmokeAnimation;
+
             bool m_Enabled;
             entt::entity m_Entity;
+            entt::entity m_SpriteEntity;
         };
 
         std::vector<Particle> m_ParticlePool;
@@ -89,6 +93,10 @@ namespace GfxRenderEngine
     private:
 
         uint m_PoolIndex;
+        float m_Zaxis;
+
+        std::vector<entt::entity> m_AnimationSprites;
+        SpriteSheet* m_Spritesheet;
 
     };
 }
