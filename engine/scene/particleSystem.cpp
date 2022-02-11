@@ -39,7 +39,7 @@ namespace GfxRenderEngine
 
             auto sprite = m_Spritesheet->GetSprite(i);
             glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 3);
+            builder.LoadSprite(sprite, position, 4);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"particle animation", model};
             mesh.m_Enabled = false;
@@ -59,7 +59,6 @@ namespace GfxRenderEngine
         particle.m_RotationSpeed     = spec.m_RotationSpeed;
 
         particle.m_StartColor        = spec.m_StartColor;
-        particle.m_FinalColor        = spec.m_FinalColor;
 
         particle.m_StartSize         = spec.m_StartSize;
         particle.m_FinalSize         = spec.m_FinalSize;
@@ -80,7 +79,9 @@ namespace GfxRenderEngine
         m_Registry.emplace<MeshComponent>(particle.m_Entity, mesh);
 
         TransformComponent transform{};
-        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis};
+        static uint cnt = 0;
+        cnt = (cnt + 1) % 100;
+        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis - 0.01f * cnt};
         transform.m_Scale = glm::vec3{1.0f} * particle.m_StartSize;
         transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation};
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
@@ -115,8 +116,6 @@ namespace GfxRenderEngine
             auto remainingLifeTime = static_cast<float>(particle.m_RemainingLifeTime);
             auto lifeTime = static_cast<float>(particle.m_LifeTime);
             auto normalizedRemainingLifeTime = remainingLifeTime / lifeTime;
-
-            glm::vec4 color = glm::lerp(particle.m_FinalColor, particle.m_StartColor, normalizedRemainingLifeTime);
 
             float size = glm::lerp(particle.m_FinalSize, particle.m_StartSize, normalizedRemainingLifeTime);
             transform.m_Scale.x = size;

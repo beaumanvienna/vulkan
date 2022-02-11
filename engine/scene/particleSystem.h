@@ -47,7 +47,6 @@ namespace GfxRenderEngine
             float m_RotationSpeed{0.0f};
 
             glm::vec4 m_StartColor{0.0f};
-            glm::vec4 m_FinalColor{0.0f};
 
             float m_StartSize{0.0f};
             float m_FinalSize{0.0f};
@@ -72,7 +71,6 @@ namespace GfxRenderEngine
             float m_RotationSpeed;
 
             glm::vec4 m_StartColor;
-            glm::vec4 m_FinalColor;
 
             float m_StartSize;
             float m_FinalSize;

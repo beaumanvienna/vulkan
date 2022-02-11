@@ -59,7 +59,7 @@ namespace LucreApp
         m_Camera = CreateEntity();
         TransformComponent transform{};
         transform.m_Translation = {0.0f, -1.0f, -4.6f};
-        transform.m_Rotation = {-0.11, 0.0f, 0.0f};
+        transform.m_Rotation = {-0.0257f, 0.0f, 0.0f};
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -111,7 +111,7 @@ namespace LucreApp
 
         // volcano smoke animation
         int poolSize = 50;
-        float zaxis = 3.0f;
+        float zaxis = 39.0f;
         m_SpritesheetSmoke.AddSpritesheetTile
         (
             Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
@@ -220,7 +220,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& transform = m_Registry.get<TransformComponent>(m_Camera);
         transform.m_Translation = {0.0f, -1.0f, -4.6f};
-        transform.m_Rotation = {-0.11, 0.0f, 0.0f};
+        transform.m_Rotation = {-0.0257f, 0.0f, 0.0f};
     }
 
     void MainScene::InitPhysics()

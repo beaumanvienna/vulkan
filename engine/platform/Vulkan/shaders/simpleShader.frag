@@ -74,15 +74,20 @@ void main()
             if (alpha == 0) discard;
             pixelColor = texture(tex3,fragUV).xyz * 10.0;
         }
+        else if (fragTextureSlot == 4)
+        {
+            alpha = texture(tex3,fragUV).w;
+            if (alpha == 0) discard;
+            pixelColor = texture(tex3,fragUV).xyz * 4.0;
+            diffusedLightColor.xyz = vec3(1.0, 1.0, 1.0);
+        }
     }
     else
     {
         pixelColor = fragColor.xyz;
     }
 
-    outColor.x = diffusedLightColor.x * pixelColor.x;
-    outColor.y = diffusedLightColor.y * pixelColor.y;
-    outColor.z = diffusedLightColor.z * pixelColor.z;
+    outColor.xyz = diffusedLightColor.xyz * pixelColor.xyz;
     outColor.w = alpha;
 
 }
