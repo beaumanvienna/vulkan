@@ -87,9 +87,6 @@ namespace LucreApp
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         TransformComponent m_GamepadInput;
 
-        std::shared_ptr<Sprite> m_VulcanoSprite;
-        std::shared_ptr<Sprite> m_WalkwaySprite;
-
         const b2Vec2 GRAVITY{0.0f, -9.81f};
         std::unique_ptr<b2World> m_World;
         b2Body* m_GroundBody;

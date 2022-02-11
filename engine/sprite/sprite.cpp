@@ -119,7 +119,7 @@ namespace GfxRenderEngine
         glm::vec3 scaleVec(m_ScaleX/2.0f, m_ScaleY/2.0f, 1.0f);
         if (m_Rotated)
         {
-            m_ScaleMatrix = Rotate(Matrix::NINETY_DEGREES, {0.0f,0.0f,1.0f}) * Scale(scaleVec) * spriteMatrix;
+            m_ScaleMatrix = Rotate(-Matrix::NINETY_DEGREES, {0.0f,0.0f,1.0f}) * Scale(scaleVec) * spriteMatrix;
         }
         else
         {

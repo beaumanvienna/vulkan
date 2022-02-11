@@ -56,7 +56,7 @@ namespace GfxRenderEngine
 
     public:
 
-        ParticleSystem(uint poolSize /* = f(emitter rate, lifetime)*/, float zaxis, SpriteSheet* spritesheet);
+        ParticleSystem(uint poolSize /* = f(emitter rate, lifetime)*/, float zaxis, SpriteSheet* spritesheet, float amplification);
 
         void Emit(const ParticleSystem::Specification& spec, const ParticleSystem::Specification& variation);
         void OnUpdate(Timestep timestep);

@@ -31,12 +31,6 @@
 
 #include "mainScene.h"
 
-namespace GfxRenderEngine
-{
-    extern std::shared_ptr<Texture> gTextureBloodIsland;
-    extern std::shared_ptr<Texture> gTextureWalkway;
-}
-
 namespace LucreApp
 {
 
@@ -71,19 +65,6 @@ namespace LucreApp
         InitPhysics();
 
         // --- sprites ---
-        m_VulcanoSprite = std::make_shared<Sprite>
-        (
-            0.0f, 0.0f, 1.0f, 1.0f,
-            gTextureBloodIsland->GetWidth(), gTextureBloodIsland->GetHeight(),
-            gTextureBloodIsland, "vulcano"
-        );
-
-        m_WalkwaySprite = std::make_shared<Sprite>
-        (
-            0.0f, 0.0f, 1.0f, 1.0f,
-            gTextureWalkway->GetWidth(), gTextureWalkway->GetHeight(),
-            gTextureWalkway, "walkway"
-        );
 
         float scaleHero = 1.5f;
         // horn
@@ -119,7 +100,7 @@ namespace LucreApp
             0, /* margin */
             0.02f /* scale) */
         );
-        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke);
+        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/);
 
     }
 

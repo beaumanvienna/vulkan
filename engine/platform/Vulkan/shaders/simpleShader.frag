@@ -4,7 +4,8 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPositionWorld;
 layout(location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 fragUV;
-layout(location = 4) flat in int  fragTextureSlot;
+layout(location = 4) flat in int fragTextureSlot;
+layout(location = 5) in float fragAmplification;
 
 struct PointLight
 {
@@ -60,7 +61,7 @@ void main()
         // {0.0, 0.0} - {1.0, 0.0}
         if (fragTextureSlot == 1)
         {
-            pixelColor = texture(tex1,fragUV).xyz * 20.0;
+            pixelColor = texture(tex1,fragUV).xyz;
             alpha = texture(tex1,fragUV).w;
         }
         else if (fragTextureSlot == 2)
@@ -72,15 +73,16 @@ void main()
         {
             alpha = texture(tex3,fragUV).w;
             if (alpha == 0) discard;
-            pixelColor = texture(tex3,fragUV).xyz * 10.0;
+            pixelColor = texture(tex3,fragUV).xyz;
         }
         else if (fragTextureSlot == 4)
         {
             alpha = texture(tex3,fragUV).w;
             if (alpha == 0) discard;
-            pixelColor = texture(tex3,fragUV).xyz * 4.0;
+            pixelColor = texture(tex3,fragUV).xyz;
             diffusedLightColor.xyz = vec3(1.0, 1.0, 1.0);
         }
+        pixelColor *= fragAmplification;
     }
     else
     {
