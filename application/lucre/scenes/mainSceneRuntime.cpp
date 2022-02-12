@@ -163,6 +163,7 @@ namespace LucreApp
 
             ParticleSystem::Specification variation{};
             variation.m_Velocity = { 0.1f, 0.0f };
+            variation.m_Rotation = { 0.5f };
             m_VulcanoSmoke->Emit(spec, variation);
         }
     }
@@ -172,7 +173,7 @@ namespace LucreApp
         float step = timestep;
 
         int velocityIterations = 6;
-        int positionIterations = 2;        
+        int positionIterations = 2;
         m_World->Step(step, velocityIterations, positionIterations);
 
     }

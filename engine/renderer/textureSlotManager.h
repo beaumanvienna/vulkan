@@ -22,42 +22,24 @@
 
 #pragma once
 
-#include <vector>
+#include <memory>
 
 #include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+
+    class TextureSlotManager
     {
-
+    
     public:
-
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period> ;
-
-    public:
-
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite* GetSprite();
-
-    private:
-
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
-
+    
+        virtual ~TextureSlotManager() {}
+    
+        virtual uint GetTextureSlot() = 0;
+        virtual void RemoveTextureSlot(uint slot) = 0;
+    
+        static std::unique_ptr<TextureSlotManager> Create();
+    
     };
 }

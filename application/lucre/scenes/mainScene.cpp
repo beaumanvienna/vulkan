@@ -100,7 +100,7 @@ namespace LucreApp
             0, /* margin */
             0.02f /* scale) */
         );
-        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/);
+        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
     }
 

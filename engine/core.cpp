@@ -36,6 +36,7 @@ namespace GfxRenderEngine
 {
     Engine* Engine::m_Engine = nullptr;
     SettingsManager Engine::m_SettingsManager;
+    std::unique_ptr<TextureSlotManager> Engine::m_TextureSlotManager;
 
     Engine::Engine(const std::string& configFilePath) :
                 m_ConfigFilePath(configFilePath),
@@ -95,6 +96,7 @@ namespace GfxRenderEngine
             return false;
         }
         m_Window->SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+        m_TextureSlotManager = TextureSlotManager::Create();
         m_GraphicsContext = GraphicsContext::Create(m_Window.get());
 
         // init audio

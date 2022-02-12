@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -68,7 +68,6 @@ std::string m_FileName;
     private:
 
         uint m_RendererID;
-        //std::string m_FileName;
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
         int m_TextureSlot;

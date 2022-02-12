@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, m_UV)});
         attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_TextureSlot)});
         attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
+        attributeDescriptions.push_back({6, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
 
         return attributeDescriptions;
     }

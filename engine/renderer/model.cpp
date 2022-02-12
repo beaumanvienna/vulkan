@@ -53,7 +53,8 @@ namespace GfxRenderEngine
                (m_Normal      == other.m_Normal) &&
                (m_UV          == other.m_UV) &&
                (m_TextureSlot == other.m_TextureSlot) &&
-               (m_Amplification == other.m_Amplification);
+               (m_Amplification == other.m_Amplification) &&
+               (m_Unlit       == other.m_Unlit);
     }
 
     void Builder::LoadModel(const std::string &filepath)
@@ -126,7 +127,7 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1}", m_Vertices.size(), m_Indices.size());
     }
 
-    void Builder::LoadSprite(Sprite* s, const glm::mat4& position, int textureSlot, float amplification, const glm::vec4& color)
+    void Builder::LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit, const glm::vec4& color)
     {
         m_Vertices.clear();
         m_Indices.clear();
@@ -134,22 +135,21 @@ namespace GfxRenderEngine
         // 0 - 1
         // | / |
         // 3 - 2
-        static int slot = 1;
-        #warning "fix texture slot management"
-        if (textureSlot) slot = textureSlot;
+        int slot = sprite->GetTextureSlot();
+
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos2Y}, slot, amplification},
+            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {sprite->m_Pos1X, 1.0f-sprite->m_Pos2Y}, slot, amplification, unlit},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos2Y}, slot, amplification},
+            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {sprite->m_Pos2X, 1.0f-sprite->m_Pos2Y}, slot, amplification, unlit},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos2X, 1.0f-s->m_Pos1Y}, slot, amplification},
+            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {sprite->m_Pos2X, 1.0f-sprite->m_Pos1Y}, slot, amplification, unlit},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {s->m_Pos1X, 1.0f-s->m_Pos1Y}, slot, amplification}
+            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {sprite->m_Pos1X, 1.0f-sprite->m_Pos1Y}, slot, amplification, unlit}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
         slot++;
@@ -174,16 +174,16 @@ namespace GfxRenderEngine
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-1.0f}, /*slot*/0, 1.0f},
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-1.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-1.0f}, /*slot*/0, 1.0f},
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-1.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-0.0f}, /*slot*/0, 1.0f},
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f-0.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-0.0f}, /*slot*/0, 1.0f}
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f-0.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 

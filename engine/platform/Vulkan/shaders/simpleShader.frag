@@ -6,6 +6,7 @@ layout(location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 fragUV;
 layout(location = 4) flat in int fragTextureSlot;
 layout(location = 5) in float fragAmplification;
+layout(location = 6) flat in int fragUnlit;
 
 struct PointLight
 {
@@ -25,8 +26,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
-layout(set = 0, binding = 2) uniform sampler2D tex2;
-layout(set = 0, binding = 3) uniform sampler2D tex3;
 
 layout (location = 0) out vec4 outColor;
 
@@ -59,27 +58,15 @@ void main()
         // {0.0, 1.0} - {1.0, 1.0}
         // |        /            |
         // {0.0, 0.0} - {1.0, 0.0}
+
         if (fragTextureSlot == 1)
         {
-            pixelColor = texture(tex1,fragUV).xyz;
             alpha = texture(tex1,fragUV).w;
+            pixelColor = texture(tex1,fragUV).xyz;
         }
-        else if (fragTextureSlot == 2)
+        if (alpha == 0) discard;
+        if (fragUnlit != 0)
         {
-            pixelColor = texture(tex2,fragUV).xyz;
-            alpha = texture(tex2,fragUV).w;
-        }
-        else if (fragTextureSlot == 3)
-        {
-            alpha = texture(tex3,fragUV).w;
-            if (alpha == 0) discard;
-            pixelColor = texture(tex3,fragUV).xyz;
-        }
-        else if (fragTextureSlot == 4)
-        {
-            alpha = texture(tex3,fragUV).w;
-            if (alpha == 0) discard;
-            pixelColor = texture(tex3,fragUV).xyz;
             diffusedLightColor.xyz = vec3(1.0, 1.0, 1.0);
         }
         pixelColor *= fragAmplification;

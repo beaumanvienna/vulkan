@@ -26,7 +26,7 @@
 
 namespace GfxRenderEngine
 {
-    ParticleSystem::ParticleSystem(uint poolSize, float zaxis, SpriteSheet* spritesheet, float amplification)
+    ParticleSystem::ParticleSystem(uint poolSize, float zaxis, SpriteSheet* spritesheet, float amplification, int unlit)
         : m_ParticlePool{poolSize}, m_PoolIndex{0},
           m_Spritesheet{spritesheet}, m_Zaxis{zaxis}
     {
@@ -39,7 +39,7 @@ namespace GfxRenderEngine
 
             auto sprite = m_Spritesheet->GetSprite(i);
             glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 4, amplification);
+            builder.LoadSprite(sprite, position, amplification, unlit);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"particle animation", model};
             mesh.m_Enabled = false;
@@ -83,7 +83,7 @@ namespace GfxRenderEngine
         cnt = (cnt + 1) % 100;
         transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis - 0.01f * cnt};
         transform.m_Scale = glm::vec3{1.0f} * particle.m_StartSize;
-        transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation};
+        transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation + variation.m_Rotation * EngineCore::RandomPlusMinusOne()};
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
 
         particle.m_SmokeAnimation.Create(100ms /* per frame */, m_Spritesheet);

@@ -29,8 +29,6 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> gTextureBloodIsland;
-    std::shared_ptr<Texture> gTextureWalkway;
     std::shared_ptr<Texture> gTextureSpritesheet;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
@@ -68,8 +66,6 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
@@ -78,40 +74,17 @@ namespace GfxRenderEngine
         };
 
     #warning "fix me"
-    
     size_t fileSize;
-    const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_BLOOD_ISLAND.png", IDB_BLOOD_ISLAND, "PNG");
-    auto textureBloodIsland = std::make_shared<VK_Texture>();
-    textureBloodIsland->Init(data, fileSize);
-    textureBloodIsland->m_FileName == "blood island";
-    
-    gTextureBloodIsland = textureBloodIsland; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo0 {};
-    imageInfo0.sampler     = textureBloodIsland->m_Sampler;
-    imageInfo0.imageView   = textureBloodIsland->m_TextureView;
-    imageInfo0.imageLayout = textureBloodIsland->m_ImageLayout;
-
-    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/images/I_WALKWAY.png", IDB_WALKWAY, "PNG");
-    auto textureWalkway = std::make_shared<VK_Texture>();
-    textureWalkway->Init(data, fileSize);
-    textureWalkway->m_FileName == "walkway";
-
-    gTextureWalkway = textureWalkway; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo1 {};
-    imageInfo1.sampler     = textureWalkway->m_Sampler;
-    imageInfo1.imageView   = textureWalkway->m_TextureView;
-    imageInfo1.imageLayout = textureWalkway->m_ImageLayout;
-
-    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
+    auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
     auto textureSpritesheet = std::make_shared<VK_Texture>();
     textureSpritesheet->Init(data, fileSize);
     textureSpritesheet->m_FileName = "spritesheet";
 
     gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo2 {};
-    imageInfo2.sampler     = textureSpritesheet->m_Sampler;
-    imageInfo2.imageView   = textureSpritesheet->m_TextureView;
-    imageInfo2.imageLayout = textureSpritesheet->m_ImageLayout;
+    VkDescriptorImageInfo imageInfo0 {};
+    imageInfo0.sampler     = textureSpritesheet->m_Sampler;
+    imageInfo0.imageView   = textureSpritesheet->m_TextureView;
+    imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -119,8 +92,6 @@ namespace GfxRenderEngine
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
-                .WriteImage(2, &imageInfo1)
-                .WriteImage(3, &imageInfo2)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 

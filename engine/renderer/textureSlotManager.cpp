@@ -20,44 +20,27 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "rendererAPI.h"
+#include "renderer/textureSlotManager.h"
 
-#include <vector>
-
-#include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
+#include "VKtextureSlotManager.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+    std::unique_ptr<TextureSlotManager> TextureSlotManager::Create()
     {
-
-    public:
-
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period> ;
-
-    public:
-
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite* GetSprite();
-
-    private:
-
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
-
-    };
+        std::unique_ptr<TextureSlotManager> textureSlotManager;
+    
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                textureSlotManager = std::make_unique<VKTextureSlotManager>();
+                break;
+            default:
+                textureSlotManager = nullptr;
+                break;
+        }
+    
+        return textureSlotManager;
+    }
 }

@@ -25,39 +25,24 @@
 #include <vector>
 
 #include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
+#include "renderer/textureSlotManager.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+
+    class VKTextureSlotManager : public TextureSlotManager
     {
 
     public:
 
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period> ;
+        VKTextureSlotManager();
 
-    public:
-
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite* GetSprite();
+        virtual uint GetTextureSlot() override;
+        virtual void RemoveTextureSlot(uint slot) override;
 
     private:
 
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
+        std::vector<bool> m_TextureSlots; 
 
     };
 }

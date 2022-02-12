@@ -6,6 +6,7 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
 layout(location = 4) in int textureSlot;
 layout(location = 5) in float amplification;
+layout(location = 6) in int unlit;
 
 struct PointLight
 {
@@ -25,8 +26,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
-layout(set = 0, binding = 2) uniform sampler2D tex2;
-layout(set = 0, binding = 3) uniform sampler2D tex3;
 
 layout(push_constant) uniform Push
 {
@@ -40,6 +39,7 @@ layout(location = 2) out vec3  fragMormalWorld;
 layout(location = 3) out vec2  fragUV;
 layout(location = 4) out int   fragTextureSlot;
 layout(location = 5) out float fragAmplification;
+layout(location = 6) out int   fragUnlit;
 
 void main()
 {
@@ -50,6 +50,7 @@ void main()
     fragColor = color;
     fragTextureSlot = textureSlot;
     fragAmplification = amplification;
+    fragUnlit = unlit;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);

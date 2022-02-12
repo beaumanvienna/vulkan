@@ -35,6 +35,7 @@
 #include "platform/SDL/timer.h"
 #include "platform/window.h"
 #include "renderer/graphicsContext.h"
+#include "renderer/textureSlotManager.h"
 #include "renderer/renderer.h"
 #include "renderer/model.h"
 #include "audio/audio.h"
@@ -94,6 +95,7 @@ namespace GfxRenderEngine
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
+        static std::unique_ptr<TextureSlotManager> m_TextureSlotManager;
 
     private:
 

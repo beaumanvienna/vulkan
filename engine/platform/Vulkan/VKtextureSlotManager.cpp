@@ -20,44 +20,43 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-#include <vector>
-
-#include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
+#include "VKtextureSlotManager.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+    static constexpr int INITIAL_SLOT = 1;
+
+    VKTextureSlotManager::VKTextureSlotManager()
     {
+        uint maxTextureSlots = 16;
+        m_TextureSlots.resize(maxTextureSlots);
+        for(auto slot : m_TextureSlots)
+        {
+            slot = false;
+        }
+    }
 
-    public:
+    uint VKTextureSlotManager::GetTextureSlot()
+    {
+        uint textureSlot = INITIAL_SLOT;
+        for(auto slot : m_TextureSlots)
+        {
+            if(!slot)
+            {
+                slot = true;
+                return textureSlot;
+            }
+            textureSlot++;
+        }
+        LOG_APP_CRITICAL("no free texture slot found");
+        return INITIAL_SLOT - 1;
+    }
 
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period> ;
-
-    public:
-
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite* GetSprite();
-
-    private:
-
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
-
-    };
+    void VKTextureSlotManager::RemoveTextureSlot(uint slot)
+    {
+        if ((slot >= INITIAL_SLOT) && (slot < m_TextureSlots.size()))
+        {
+            m_TextureSlots[slot-1] = false;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -36,17 +36,17 @@ namespace GfxRenderEngine
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
           m_DataFormat(0), m_MipLevels(1)
     {
-        m_TextureSlot = -1;
+        m_TextureSlot = Engine::m_TextureSlotManager->GetTextureSlot();
     }
 
     VK_Texture::~VK_Texture()
     {
         auto device = VK_Core::m_Device->Device();
-        if (m_TextureSlot > -1)
+        if (Engine::m_TextureSlotManager)
         {
-            //Engine::m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
+            Engine::m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
         }
-        #warning "fix me"
+
         vkDeviceWaitIdle(device);
         vkDestroyImage(device, m_TextureImage, nullptr);
         vkDestroyImageView(device, m_TextureView, nullptr);
@@ -56,7 +56,7 @@ namespace GfxRenderEngine
 
     VK_Texture::VK_Texture(uint ID, int internalFormat, int dataFormat, int type)
     {
-        //m_TextureSlot = Engine::m_TextureSlotManager->GetTextureSlot();
+        m_TextureSlot = Engine::m_TextureSlotManager->GetTextureSlot();
         m_RendererID = ID;
         m_InternalFormat = internalFormat;
         m_DataFormat = dataFormat;
