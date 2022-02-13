@@ -34,6 +34,7 @@
 #include "platform/SDL/controller.h"
 #include "platform/SDL/timer.h"
 #include "platform/window.h"
+#include "layer/layerStack.h"
 #include "renderer/graphicsContext.h"
 #include "renderer/textureSlotManager.h"
 #include "renderer/renderer.h"
@@ -86,6 +87,11 @@ namespace GfxRenderEngine
         std::shared_ptr<Renderer> GetRenderer() const { return m_GraphicsContext->GetRenderer(); }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
 
+        void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
+        void PopLayer(Layer* layer) { m_LayerStack.PopLayer(layer); }
+        void PushOverlay(Layer* overlay) { m_LayerStack.PushOverlay(overlay); }
+        void PopOverlay(Layer* overlay) { m_LayerStack.PopOverlay(overlay); }
+
         void ToggleDebugWindow() { m_GraphicsContext->ToggleDebugWindow(); }
 
         Timestep GetTimestep() const { return m_Timestep; }
@@ -113,6 +119,7 @@ namespace GfxRenderEngine
         Controller m_Controller;
         Timer m_DisableMousePointerTimer;
         EventCallbackFunction m_AppEventCallback;
+        LayerStack m_LayerStack;
 
         Timestep m_Timestep;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;

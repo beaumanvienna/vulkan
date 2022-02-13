@@ -18,26 +18,46 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-   The code in this file is based on and inspired by the project
-   https://github.com/TheCherno/Hazel. The license of this prject can
-   be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
-   */
-   
+#pragma once
+
+#include "engine.h"
+#include "core.h"
+#include "layer/layer.h"
 #include "renderer/renderer.h"
-#include "renderer/rendererAPI.h"
+#include "sprite/spritesheet.h"
+#include "transform/transformation.h"
 
-#include "VKrenderer.h"
-
-namespace GfxRenderEngine
+namespace LucreApp
 {
-    Renderer::Renderer()
+
+    class UIControllerIcon : public Layer
     {
-        //RendererAPI::Create();
-    }
-    
-    void Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
-    {
-    }
+
+    public:
+
+        UIControllerIcon(const std::string& name = "layer")
+            : Layer(name) {}
+
+        void OnAttach() override;
+        void OnDetach() override;
+        void OnEvent(Event& event) override;
+        void OnUpdate() override;
+        bool IsMovingIn();
+
+    private:
+
+        std::shared_ptr<Renderer> m_Renderer;
+        Sprite* m_ControllerSprite;
+
+        Animation m_Controller1MoveIn;
+        Animation m_Controller1MoveOut;
+        bool m_Controller1Detected;
+
+        Animation m_Controller2MoveIn;
+        Animation m_Controller2MoveOut;
+        bool m_Controller2Detected;
+
+    };
 }

@@ -34,6 +34,7 @@
 #include "application.h"
 #include "appSettings.h"
 #include "gameState.h"
+#include "UI/UIControllerIcon.h"
 
 namespace LucreApp
 {
@@ -64,6 +65,8 @@ namespace LucreApp
         void HideCursor();
 
     private:
+
+        UIControllerIcon* m_UIControllerIcon = nullptr;
 
         AppSettings m_AppSettings{&Engine::m_SettingsManager};
         GameState m_GameState;

@@ -132,6 +132,8 @@ namespace GfxRenderEngine
 
     void Engine::Quit()
     {
+        m_LayerStack.Shutdown();
+
         // save settings
         m_CoreSettings.m_EngineVersion    = ENGINE_VERSION;
         m_CoreSettings.m_EnableFullscreen = IsFullscreen();
@@ -242,6 +244,17 @@ namespace GfxRenderEngine
             }
         );
 
+        // dispatch to application layers
+        if (!event.IsHandled())
+        {
+            for (auto layerIterator = m_LayerStack.end(); layerIterator != m_LayerStack.begin(); )
+            {
+                layerIterator--;
+                (*layerIterator)->OnEvent(event);
+
+                if (event.IsHandled()) break;
+            }
+        }
         // dispatch to application
         if (!event.IsHandled())
         {

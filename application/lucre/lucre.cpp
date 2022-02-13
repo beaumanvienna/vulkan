@@ -57,6 +57,9 @@ namespace LucreApp
         m_Atlas.AddSpritesheet();
         m_Spritesheet = &m_Atlas;
 
+        m_UIControllerIcon = new UIControllerIcon("UI controller");
+        Engine::m_Engine->PushOverlay(m_UIControllerIcon);
+
         return true;
     }
 
@@ -69,6 +72,9 @@ namespace LucreApp
     {
         m_CurrentScene = m_GameState.OnUpdate();
         m_CurrentScene->OnUpdate(timestep);
+
+        // update/render layer stack
+        m_UIControllerIcon->OnUpdate();
     }
 
     void Lucre::OnResize()

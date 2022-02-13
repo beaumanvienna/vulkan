@@ -18,26 +18,24 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
-   
-#include "renderer/renderer.h"
-#include "renderer/rendererAPI.h"
 
-#include "VKrenderer.h"
+#include "layer/layer.h"
 
 namespace GfxRenderEngine
 {
-    Renderer::Renderer()
+    Layer::Layer(const std::string& name)
+        : m_DebugName(name), m_Enabled(true)
     {
-        //RendererAPI::Create();
     }
-    
-    void Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
+
+    Layer::~Layer()
     {
     }
 }
+
