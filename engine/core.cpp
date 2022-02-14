@@ -36,7 +36,7 @@ namespace GfxRenderEngine
 {
     Engine* Engine::m_Engine = nullptr;
     SettingsManager Engine::m_SettingsManager;
-    std::unique_ptr<TextureSlotManager> Engine::m_TextureSlotManager;
+    std::shared_ptr<TextureSlotManager> Engine::m_TextureSlotManager;
 
     Engine::Engine(const std::string& configFilePath) :
                 m_ConfigFilePath(configFilePath),
@@ -127,13 +127,12 @@ namespace GfxRenderEngine
 
     void Engine::Shutdown()
     {
+        m_Window->Shutdown();
         m_Running = false;
     }
 
     void Engine::Quit()
     {
-        m_LayerStack.Shutdown();
-
         // save settings
         m_CoreSettings.m_EngineVersion    = ENGINE_VERSION;
         m_CoreSettings.m_EnableFullscreen = IsFullscreen();

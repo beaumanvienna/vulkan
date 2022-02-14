@@ -101,7 +101,7 @@ namespace GfxRenderEngine
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
-        static std::unique_ptr<TextureSlotManager> m_TextureSlotManager;
+        static std::shared_ptr<TextureSlotManager> m_TextureSlotManager;
 
     private:
 

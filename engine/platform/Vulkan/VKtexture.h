@@ -28,6 +28,7 @@
 #include "renderer/texture.h"
 
 #include "VKdevice.h"
+#include "VKtextureSlotManager.h"
 
 namespace GfxRenderEngine
 {
@@ -35,8 +36,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_Texture();
-        VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
+        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager);
+        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type);
         ~VK_Texture();
 
         virtual bool Init(const uint width, const uint height, const void* data) override;
@@ -72,6 +73,7 @@ std::string m_FileName;
         int m_Width, m_Height, m_BytesPerPixel;
         int m_TextureSlot;
         uint m_MipLevels;
+        std::shared_ptr<TextureSlotManager> m_TextureSlotManager;
 
         int m_InternalFormat, m_DataFormat;
         int m_Type;

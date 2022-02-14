@@ -53,6 +53,7 @@ namespace LucreApp
         void OnResize();
 
         void PlaySound(int resourceID);
+        UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
 
         static std::shared_ptr<Lucre> m_Application;
         static SpriteSheet* m_Spritesheet;

@@ -25,6 +25,7 @@
 #include "engine.h"
 #include "core.h"
 #include "layer/layer.h"
+#include "scene/entity.h"
 #include "renderer/renderer.h"
 #include "sprite/spritesheet.h"
 #include "transform/transformation.h"
@@ -45,11 +46,17 @@ namespace LucreApp
         void OnEvent(Event& event) override;
         void OnUpdate() override;
         bool IsMovingIn();
+        entt::registry m_Registry;
+
+    private:
+
+        void LoadModels();
 
     private:
 
         std::shared_ptr<Renderer> m_Renderer;
         Sprite* m_ControllerSprite;
+        entt::entity m_ID;
 
         Animation m_Controller1MoveIn;
         Animation m_Controller1MoveOut;

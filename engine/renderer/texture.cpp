@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
 #include "renderer/rendererAPI.h"
 #include "renderer/texture.h"
 
@@ -35,7 +36,7 @@ namespace GfxRenderEngine
         switch(RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
-                texture = std::make_shared<VK_Texture>();
+                texture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
                 break;
             default:
                 texture = nullptr;

@@ -24,7 +24,7 @@
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
-   
+
 #include "renderer/renderer.h"
 #include "renderer/rendererAPI.h"
 
@@ -35,9 +35,5 @@ namespace GfxRenderEngine
     Renderer::Renderer()
     {
         //RendererAPI::Create();
-    }
-    
-    void Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
-    {
     }
 }

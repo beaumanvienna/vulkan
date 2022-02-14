@@ -76,7 +76,7 @@ namespace GfxRenderEngine
     #warning "fix me"
     size_t fileSize;
     auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
-    auto textureSpritesheet = std::make_shared<VK_Texture>();
+    auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
     textureSpritesheet->Init(data, fileSize);
     textureSpritesheet->m_FileName = "spritesheet";
 
@@ -280,8 +280,6 @@ namespace GfxRenderEngine
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
-            m_Imgui->NewFrame();
-
             BeginSwapChainRenderPass(m_CurrentCommandBuffer);
         }
     }
@@ -292,9 +290,6 @@ namespace GfxRenderEngine
         {
             m_RenderSystem->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
-
-            m_Imgui->Run();
-            m_Imgui->Render(m_CurrentCommandBuffer);
         }
     }
 
@@ -310,6 +305,10 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
+            m_Imgui->NewFrame();
+            m_Imgui->Run();
+            m_Imgui->Render(m_CurrentCommandBuffer);
+
             EndSwapChainRenderPass(m_CurrentCommandBuffer);
             EndFrame();
         }

@@ -66,6 +66,8 @@ namespace GfxRenderEngine
         VK_Device(VK_Device &&) = delete;
         VK_Device& operator=(VK_Device &&) = delete;
 
+        void Shutdown();
+
         VkDevice Device() { return m_Device; }
         VkCommandPool GetCommandPool() { return m_CommandPool; }
         VkPhysicalDevice PhysicalDevice() { return m_PhysicalDevice; }

@@ -51,7 +51,7 @@ namespace GfxRenderEngine
         VK_Window& operator=(const VK_Window&) = delete;
 
         bool InitGLFW();
-        void Shutdown();
+        virtual void Shutdown() override;
         void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
         VkExtent2D GetExtend() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
         void* GetBackendWindow() const override { return (void*)m_Window; }

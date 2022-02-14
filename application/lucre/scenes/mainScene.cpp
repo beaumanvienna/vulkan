@@ -158,6 +158,7 @@ namespace LucreApp
 
         m_Renderer->Submit(m_Registry);
         m_Renderer->Submit(m_VulcanoSmoke);
+        m_Renderer->Submit(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->EndScene();
     }
 

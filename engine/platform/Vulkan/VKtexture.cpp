@@ -31,21 +31,19 @@
 namespace GfxRenderEngine
 {
 
-    VK_Texture::VK_Texture()
+    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager)
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_MipLevels(1)
+          m_DataFormat(0), m_MipLevels(1),
+          m_TextureSlotManager(textureSlotManager)
     {
-        m_TextureSlot = Engine::m_TextureSlotManager->GetTextureSlot();
+        m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
 
     VK_Texture::~VK_Texture()
     {
         auto device = VK_Core::m_Device->Device();
-        if (Engine::m_TextureSlotManager)
-        {
-            Engine::m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
-        }
+        m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
 
         vkDeviceWaitIdle(device);
         vkDestroyImage(device, m_TextureImage, nullptr);
@@ -54,13 +52,11 @@ namespace GfxRenderEngine
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
     }
 
-    VK_Texture::VK_Texture(uint ID, int internalFormat, int dataFormat, int type)
+    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type)
+        : m_TextureSlotManager{textureSlotManager}, m_RendererID{ID}, m_InternalFormat{internalFormat},
+          m_DataFormat{dataFormat}, m_Type{type}
     {
-        m_TextureSlot = Engine::m_TextureSlotManager->GetTextureSlot();
-        m_RendererID = ID;
-        m_InternalFormat = internalFormat;
-        m_DataFormat = dataFormat;
-        m_Type = type;
+        m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
 
     // create texture from raw memory

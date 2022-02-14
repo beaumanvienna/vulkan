@@ -20,19 +20,21 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "UI/UIControllerIcon.h"
-#include "transform/matrix.h"
+#include "scene/scene.h"
 #include "platform/input.h"
+#include "renderer/model.h"
+#include "transform/matrix.h"
 
 #include "lucre.h"
+#include "UI/UIControllerIcon.h"
 
 namespace LucreApp
 {
 
-    extern float duration;
-
     void UIControllerIcon::OnAttach()
     {
+        LoadModels();
+
         // controller 1
         m_Controller1Detected = false;
         // controller icon
@@ -109,6 +111,10 @@ namespace LucreApp
 
     void UIControllerIcon::OnUpdate()
     {
+
+        auto& mesh = m_Registry.get<MeshComponent>(m_ID);
+        mesh.m_Enabled = true;
+
         uint controllerCount = Input::GetControllerCount();
         // controller 1
 
@@ -124,7 +130,7 @@ namespace LucreApp
 
             // transformed position
             glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            m_Renderer->Draw(m_ControllerSprite, position, -0.07f);
+            //m_Renderer->Draw(m_ControllerSprite, position);
         }
 
         // controller disconnected
@@ -139,7 +145,7 @@ namespace LucreApp
 
             // transformed position
             glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            m_Renderer->Draw(m_ControllerSprite, position, -0.07f);
+            //m_Renderer->Draw(m_ControllerSprite, position);
         }
 
         // controller 2
@@ -156,7 +162,7 @@ namespace LucreApp
 
             // transformed position
             glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            m_Renderer->Draw(m_ControllerSprite, position, -0.07f);
+            //m_Renderer->Draw(m_ControllerSprite, position);
         }
 
         // controller disconnected
@@ -171,7 +177,7 @@ namespace LucreApp
 
             // transformed position
             glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            m_Renderer->Draw(m_ControllerSprite, position, -0.07f);
+            //m_Renderer->Draw(m_ControllerSprite, position);
         }
     }
 
@@ -183,4 +189,22 @@ namespace LucreApp
     }
 
     void UIControllerIcon::OnEvent(Event& event)  {}
+
+    void UIControllerIcon::LoadModels()
+    {
+            Builder builder{};
+
+            auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
+            sprite->SetScale(0.004f);
+            glm::mat4 position = sprite->GetScaleMatrix();
+            builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"controller icon", model};
+
+            m_ID = m_Registry.create();
+            m_Registry.emplace<MeshComponent>(m_ID, mesh);
+
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(m_ID, transform);
+        }
 }

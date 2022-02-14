@@ -102,6 +102,11 @@ namespace GfxRenderEngine
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
     }
+    
+    void VK_Device::Shutdown()
+    {
+        vkQueueWaitIdle(m_GraphicsQueue);
+    }
 
     void VK_Device::CreateInstance()
     {

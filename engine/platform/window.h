@@ -58,6 +58,7 @@ namespace GfxRenderEngine
         Window() {}
         virtual ~Window() {}
 
+        virtual void Shutdown() = 0;
         virtual void* GetBackendWindow() const = 0;
         virtual bool  IsOK() const = 0;
         virtual float GetWindowAspectRatio() const = 0;
