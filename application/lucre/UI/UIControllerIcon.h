@@ -46,6 +46,9 @@ namespace LucreApp
         void OnEvent(Event& event) override;
         void OnUpdate() override;
         bool IsMovingIn();
+
+    public:
+
         entt::registry m_Registry;
 
     private:

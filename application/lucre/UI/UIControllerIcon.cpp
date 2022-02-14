@@ -41,8 +41,8 @@ namespace LucreApp
         m_ControllerSprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
         m_Renderer = Engine::m_Engine->GetRenderer();
 
-        glm::vec2 finalOutOfScreenPosition(-1150.0f, -445.0f);
-        glm::vec2 finalScreenPosition(-687.0f, -445.0f);
+        glm::vec2 finalOutOfScreenPosition(-5.0f, -2.25f);
+        glm::vec2 finalScreenPosition(-1.25f, -2.25f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -112,8 +112,8 @@ namespace LucreApp
     void UIControllerIcon::OnUpdate()
     {
 
+        auto& transform = m_Registry.get<TransformComponent>(m_ID);
         auto& mesh = m_Registry.get<MeshComponent>(m_ID);
-        mesh.m_Enabled = true;
 
         uint controllerCount = Input::GetControllerCount();
         // controller 1
@@ -123,14 +123,11 @@ namespace LucreApp
         {
             m_Controller1Detected = true;
             m_Controller1MoveIn.Start();
+            mesh.m_Enabled = true;
         }
         if (m_Controller1Detected)
         {
-            auto animationMatrix = m_Controller1MoveIn.GetTransformation();
-
-            // transformed position
-            glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            //m_Renderer->Draw(m_ControllerSprite, position);
+            m_Controller1MoveIn.GetTransformation(transform);
         }
 
         // controller disconnected
@@ -139,13 +136,16 @@ namespace LucreApp
             m_Controller1Detected = false;
             m_Controller1MoveOut.Start();
         }
-        if (!m_Controller1Detected && m_Controller1MoveOut.IsRunning())
+        if (!m_Controller1Detected)
         {
-            auto animationMatrix = m_Controller1MoveOut.GetTransformation();
-
-            // transformed position
-            glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            //m_Renderer->Draw(m_ControllerSprite, position);
+            if (m_Controller1MoveOut.IsRunning())
+            {
+                m_Controller1MoveOut.GetTransformation(transform);
+            }
+            else
+            {
+                mesh.m_Enabled = false;
+            }
         }
 
         // controller 2
@@ -158,11 +158,7 @@ namespace LucreApp
         }
         if (m_Controller2Detected)
         {
-            auto animationMatrix = m_Controller2MoveIn.GetTransformation();
-
-            // transformed position
-            glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            //m_Renderer->Draw(m_ControllerSprite, position);
+            m_Controller2MoveIn.GetTransformation(transform);
         }
 
         // controller disconnected
@@ -173,11 +169,7 @@ namespace LucreApp
         }
         if (!m_Controller2Detected && m_Controller2MoveOut.IsRunning())
         {
-            auto animationMatrix = m_Controller2MoveOut.GetTransformation();
-
-            // transformed position
-            glm::mat4 position = animationMatrix * m_ControllerSprite->GetScaleMatrix();
-            //m_Renderer->Draw(m_ControllerSprite, position);
+            m_Controller2MoveOut.GetTransformation(transform);
         }
     }
 
@@ -195,7 +187,7 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-            sprite->SetScale(0.004f);
+            sprite->SetScale(0.003f);
             glm::mat4 position = sprite->GetScaleMatrix();
             builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);

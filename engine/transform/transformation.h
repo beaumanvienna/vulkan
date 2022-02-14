@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "engine.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
@@ -56,10 +57,12 @@ namespace GfxRenderEngine
 
         Translation(float duration /* in seconds */, glm::vec2& pos1, glm::vec2& pos2);
         glm::mat4& GetTransformation();
+        glm::vec3 GetTranslation();
 
     private:
 
         glm::vec2 m_Pos1, m_Pos2;
+        glm::vec3 m_Translation;
 
     };
 
@@ -70,10 +73,12 @@ namespace GfxRenderEngine
 
         Rotation(float duration /* in seconds */, float rotation1, float rotation2);
         glm::mat4& GetTransformation();
+        glm::vec3 GetRotation();
 
     private:
 
         float m_Rotation1, m_Rotation2;
+        glm::vec3 m_Rotation;
 
     };
 
@@ -85,11 +90,13 @@ namespace GfxRenderEngine
         Scaling(float duration /* in seconds */, float scale1, float scale2);
         Scaling(float duration /* in seconds */, float scaleX1, float scaleY1, float scaleX2, float scaleY2);
         glm::mat4& GetTransformation();
+        glm::vec3 GetScale();
 
     private:
 
         float m_ScaleX1, m_ScaleX2;
         float m_ScaleY1, m_ScaleY2;
+        glm::vec3 m_Scale;
 
     };
 
@@ -107,6 +114,7 @@ namespace GfxRenderEngine
         void AddRotation(const Rotation rotation);
         void AddScaling(const Scaling scale);
         glm::mat4& GetTransformation();
+        void GetTransformation(TransformComponent& transform);
 
     private:
 

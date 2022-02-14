@@ -53,7 +53,7 @@ namespace GfxRenderEngine
     }
 
     Translation::Translation(float duration /* in seconds */, glm::vec2& pos1, glm::vec2& pos2)
-        : Transformation(duration), m_Pos1(pos1), m_Pos2(pos2)
+        : Transformation(duration), m_Pos1(pos1), m_Pos2(pos2), m_Translation(glm::vec3(0.0f))
     {
     }
 
@@ -65,7 +65,7 @@ namespace GfxRenderEngine
             delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
             float deltaX = m_Pos1.x * (1 - delta) + m_Pos2.x * delta;
             float deltaY = m_Pos1.y * (1 - delta) + m_Pos2.y * delta;
-            glm::vec3 translation = glm::vec3(deltaX, deltaY, 0);
+            glm::vec3 translation = glm::vec3(deltaX, deltaY, 0.0f);
 
             m_Transformation = Translate(translation);
         }
@@ -73,8 +73,22 @@ namespace GfxRenderEngine
         return m_Transformation;
     };
 
+    glm::vec3 Translation::GetTranslation()
+    {
+        float delta;
+        if (IsRunning())
+        {
+            delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
+            float deltaX = m_Pos1.x * (1 - delta) + m_Pos2.x * delta;
+            float deltaY = m_Pos1.y * (1 - delta) + m_Pos2.y * delta;
+            m_Translation = glm::vec3(deltaX, deltaY, -2.1f);
+        }
+        return m_Translation;
+    }
+
     Rotation::Rotation(float duration, float rotation1, float rotation2)
-        : Transformation(duration), m_Rotation1(rotation1), m_Rotation2(rotation2)
+        : Transformation(duration), m_Rotation(glm::vec3(0.0f)),
+          m_Rotation1(rotation1), m_Rotation2(rotation2)
     {
     }
 
@@ -90,6 +104,18 @@ namespace GfxRenderEngine
 
         return m_Transformation;
     };
+    
+    glm::vec3 Rotation::GetRotation()
+    {
+        float delta;
+        if (IsRunning())
+        {
+            delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
+            float deltaRotation = m_Rotation1 * (1 - delta) + m_Rotation2 * delta;
+            m_Rotation = glm::vec3(0, 0, deltaRotation);
+        }
+        return m_Rotation;
+    }
 
     Scaling::Scaling(float duration, float scale1, float scale2)
         : Transformation(duration), m_ScaleX1(1.0f), m_ScaleY1(scale1), m_ScaleX2(1.0f), m_ScaleY2(scale2)
@@ -97,7 +123,8 @@ namespace GfxRenderEngine
     }
 
     Scaling::Scaling(float duration /* in seconds */, float scaleX1, float scaleY1, float scaleX2, float scaleY2)
-        : Transformation(duration), m_ScaleX1(scaleX1), m_ScaleY1(scaleY1), m_ScaleX2(scaleX2), m_ScaleY2(scaleY2)
+        : Transformation(duration), m_ScaleX1(scaleX1), m_ScaleY1(scaleY1), 
+          m_ScaleX2(scaleX2), m_ScaleY2(scaleY2), m_Scale(glm::vec3(0.0f))
     {
     }
 
@@ -114,6 +141,19 @@ namespace GfxRenderEngine
 
         return m_Transformation;
     };
+
+    glm::vec3 Scaling::GetScale()
+    {
+        float delta;
+        if (IsRunning())
+        {
+            delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
+            float deltaScaleX = m_ScaleX1 * (1 - delta) + m_ScaleX2 * delta;
+            float deltaScaleY = m_ScaleY1 * (1 - delta) + m_ScaleY2 * delta;
+            m_Scale = glm::vec3(deltaScaleX, deltaScaleY, 1.0f);
+        }
+        return m_Scale;
+    }
 
     Animation::Animation()
         : m_CurrentSequenceTranslation(0), m_CurrentSequenceRotation(0), m_CurrentSequenceScale(0), m_Running(false)
@@ -249,5 +289,24 @@ namespace GfxRenderEngine
             }
         }
         return m_Transformation;
+    }
+
+    void Animation::GetTransformation(TransformComponent& transform)
+    {
+        if (IsRunning()) 
+        {
+            if (m_NumberOfScaleSequences)
+            {
+                transform.m_Scale = m_Scalings[m_CurrentSequenceScale].GetScale();
+            }
+            if (m_NumberOfRotationSequences)
+            {
+                transform.m_Rotation = m_Rotations[m_CurrentSequenceRotation].GetRotation();
+            }
+            if (m_NumberOfTranslationSequences) 
+            {
+                transform.m_Translation = m_Translations[m_CurrentSequenceTranslation].GetTranslation();
+            }
+        }
     }
 }
