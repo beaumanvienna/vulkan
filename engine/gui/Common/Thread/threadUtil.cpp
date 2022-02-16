@@ -1,4 +1,7 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Copyright (c) 2013-2020 PPSSPP project
+   https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
+   
+   Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -19,39 +22,39 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+#include <cstring>
+#include <cstdint>
 
-#pragma once
+#include "engine.h"
+#include "gui/Common/Thread/threadUtil.h"
 
-#include <iostream>
-
-#include "settings/settings.h"
-#include "renderer/rendererAPI.h"
+#if defined(__ANDROID__) || defined(__APPLE__) || (defined(__GLIBC__) && defined(_GNU_SOURCE))
+    #include <pthread.h>
+#endif
 
 namespace GfxRenderEngine
 {
+    #ifdef TLS_SUPPORTED
+        static thread_local const char *curThreadName;
+    #endif
 
-    class CoreSettings
+
+
+    void setCurrentThreadName(const char* threadName)
     {
+        // Set the locally known threadname using a thread local variable.
+    #ifdef TLS_SUPPORTED
+        curThreadName = threadName;
+    #endif
+    }
 
-    public: 
-
-        CoreSettings(SettingsManager* settingsManager)
-            : m_SettingsManager(settingsManager) {}
-
-        void InitDefaults();
-        void RegisterSettings();
-        void PrintSettings() const;
-
-        static std::string         m_EngineVersion;
-        static RendererAPI::API    m_RendererAPI;
-        static bool                m_EnableFullscreen;
-        static bool                m_EnableSystemSounds;
-        static std::string         m_BlacklistedDevice;
-        static int                 m_UITheme;
-
-    private:
-
-        SettingsManager* m_SettingsManager;
-
-    };
+    void AssertCurrentThreadName(const char *threadName)
+    {
+    #ifdef TLS_SUPPORTED
+        if (strcmp(curThreadName, threadName) != 0)
+        {
+            LOG_CORE_ERROR("Thread name assert failed: Expected {0}, was {1}", threadName, curThreadName);
+        }
+    #endif
+    }
 }

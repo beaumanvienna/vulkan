@@ -19,31 +19,81 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
-
+    
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
-#include "renderer/renderer.h"
+#pragma once
+
+#include <memory>
+
+#include "engine.h"
 #include "renderer/rendererAPI.h"
 
-#include "VKrenderer.h"
-
-namespace GfxRenderEngine
+class RenderCommand
 {
-    Renderer::Renderer()
+public:
+
+    static void SetClearColor(const glm::vec4& color)
     {
-        //RendererAPI::Create();
+        s_RendererAPI->SetClearColor(color);
     }
 
-    void Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
+    static void Clear()
     {
-        LOG_CORE_CRITICAL("not implemented Renderer::Draw(Sprite* sprite, ...)");
+        s_RendererAPI->Clear();
     }
 
-    void Renderer::Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color)
+    static void EnableBlending()
     {
-        LOG_CORE_CRITICAL("not implemented Renderer::Draw(std::shared_ptr<Texture> texture, ...)");
+        s_RendererAPI->EnableBlending();
     }
-}
+
+    static void DisableBlending()
+    {
+        s_RendererAPI->DisableBlending();
+    }
+
+    static void EnableDethTesting()
+    {
+        s_RendererAPI->EnableDethTesting();
+    }
+
+    static void DisableDethTesting()
+    {
+        s_RendererAPI->DisableDethTesting();
+    }
+
+    static void EnableScissor()
+    {
+        s_RendererAPI->EnableScissor();
+    }
+
+    static void DisableScissorg()
+    {
+        s_RendererAPI->DisableScissor();
+    }
+
+    static void SetScissor(int left, int bottom, int width, int height)
+    {
+        s_RendererAPI->SetScissor(left, bottom, width, height);
+    }
+
+    static void Flush()
+    {
+        s_RendererAPI->Flush();
+    }
+
+//    static inline void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray)
+//    {
+//        s_RendererAPI->DrawIndexed(vertexArray);
+//    }
+
+    static std::unique_ptr<RendererAPI> s_RendererAPI;
+    
+private:
+
+    
+};

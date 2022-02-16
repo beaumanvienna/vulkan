@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "coreSettings.h"
+#include "gui/common.h"
 
 namespace GfxRenderEngine
 {
@@ -31,6 +32,7 @@ namespace GfxRenderEngine
     bool                CoreSettings::m_EnableFullscreen;
     bool                CoreSettings::m_EnableSystemSounds;
     std::string         CoreSettings::m_BlacklistedDevice;
+    int                 CoreSettings::m_UITheme;
 
     void CoreSettings::InitDefaults()
     {
@@ -39,6 +41,7 @@ namespace GfxRenderEngine
         m_EnableFullscreen    = false;
         m_EnableSystemSounds  = true;
         m_BlacklistedDevice   = "empty";
+        m_UITheme             = THEME_RETRO;
     }
 
     void CoreSettings::RegisterSettings()
@@ -48,6 +51,7 @@ namespace GfxRenderEngine
         m_SettingsManager->PushSetting<bool>             ("EnableFullscreen",    &m_EnableFullscreen);
         m_SettingsManager->PushSetting<bool>             ("EnableSystemSounds",  &m_EnableSystemSounds);
         m_SettingsManager->PushSetting<std::string>      ("BlacklstedDevice",    &m_BlacklistedDevice);
+        m_SettingsManager->PushSetting<int>              ("UITheme",             &m_UITheme);
     }
 
     void CoreSettings::PrintSettings() const
@@ -57,5 +61,6 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "EnableFullscreen",   m_EnableFullscreen);
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "EnableSystemSounds", m_EnableSystemSounds);
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "BlacklistedDevice",  m_BlacklistedDevice);
+        LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "UITheme",            m_UITheme);
     }
 }

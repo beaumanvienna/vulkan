@@ -67,7 +67,7 @@ namespace GfxRenderEngine
         virtual void  OnUpdate() = 0;
         virtual uint  GetWidth() const = 0;
         virtual uint  GetHeight() const = 0;
-        //
+        virtual double GetTime() const = 0;
         virtual void SetEventCallback(const EventCallbackFunction& callback) = 0;
         //virtual void SetVSync(int interval) = 0;
         virtual void ToggleFullscreen() = 0;

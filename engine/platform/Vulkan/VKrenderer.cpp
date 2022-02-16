@@ -30,6 +30,7 @@
 namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
+    std::shared_ptr<Texture> gTextureFontAtlas;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -60,12 +61,12 @@ namespace GfxRenderEngine
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
@@ -86,12 +87,24 @@ namespace GfxRenderEngine
     imageInfo0.imageView   = textureSpritesheet->m_TextureView;
     imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
 
+    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
+    auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+    textureFontAtlas->Init(data, fileSize);
+    textureFontAtlas->m_FileName = "font atlas";
+
+    gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture
+    VkDescriptorImageInfo imageInfo1 {};
+    imageInfo1.sampler     = textureFontAtlas->m_Sampler;
+    imageInfo1.imageView   = textureFontAtlas->m_TextureView;
+    imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
+
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
+                .WriteImage(2, &imageInfo1)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 

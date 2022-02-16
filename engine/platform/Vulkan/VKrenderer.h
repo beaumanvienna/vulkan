@@ -54,6 +54,8 @@ namespace GfxRenderEngine
 
         VkRenderPass GetSwapChainRenderPass() const { return m_SwapChain->GetRenderPass(); }
         float GetAspectRatio() const { return m_SwapChain->ExtentAspectRatio(); }
+        float GetContextWidth() const { return m_SwapChain->Width(); }
+        float GetContextHeight() const { return m_SwapChain->Height(); }
         bool FrameInProgress() const { return m_FrameInProgress; }
 
         VkCommandBuffer GetCurrentCommandBuffer() const;

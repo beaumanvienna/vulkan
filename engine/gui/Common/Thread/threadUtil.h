@@ -1,4 +1,7 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Copyright (c) 2013-2020 PPSSPP project
+   https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
+   
+   Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -22,36 +25,8 @@
 
 #pragma once
 
-#include <iostream>
-
-#include "settings/settings.h"
-#include "renderer/rendererAPI.h"
-
 namespace GfxRenderEngine
 {
-
-    class CoreSettings
-    {
-
-    public: 
-
-        CoreSettings(SettingsManager* settingsManager)
-            : m_SettingsManager(settingsManager) {}
-
-        void InitDefaults();
-        void RegisterSettings();
-        void PrintSettings() const;
-
-        static std::string         m_EngineVersion;
-        static RendererAPI::API    m_RendererAPI;
-        static bool                m_EnableFullscreen;
-        static bool                m_EnableSystemSounds;
-        static std::string         m_BlacklistedDevice;
-        static int                 m_UITheme;
-
-    private:
-
-        SettingsManager* m_SettingsManager;
-
-    };
+    void setCurrentThreadName(const char *threadName);
+    void AssertCurrentThreadName(const char *threadName);
 }

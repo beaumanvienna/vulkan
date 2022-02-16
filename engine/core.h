@@ -69,10 +69,15 @@ namespace GfxRenderEngine
         std::string& GetHomeDirectory() { return m_HomeDir; }
         std::string GetConfigFilePath() const { return m_ConfigFilePath; }
         std::chrono::time_point<std::chrono::high_resolution_clock> GetTime() const;
+        double GetTimeDouble() const { return m_Window->GetTime(); }
 
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
+        float GetContextWidth() const { return m_GraphicsContext->GetContextWidth(); }
+        float GetContextHeight() const { return m_GraphicsContext->GetContextHeight(); }
+        float GetWindowWidth() const { return m_Window->GetWidth(); }
+        float GetWindowHeight() const { return m_Window->GetHeight(); }
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 

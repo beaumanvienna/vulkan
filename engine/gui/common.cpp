@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,38 +20,36 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-#include <iostream>
-
-#include "settings/settings.h"
-#include "renderer/rendererAPI.h"
+#include "gui/common.h"
 
 namespace GfxRenderEngine
 {
 
-    class CoreSettings
+    void SCREEN_System_SendMessage(const char *command, const char *parameter)
     {
+        LOG_CORE_WARN("fix me: void SCREEN_System_SendMessage(const char *command, const char *parameter)");
+    }
 
-    public: 
+    uint whiteAlpha(float alpha)
+    {
+        if (alpha < 0.0f) alpha = 0.0f;
+        if (alpha > 1.0f) alpha = 1.0f;
+        uint color = (int)(alpha*255) << 24;
+        color |= 0xFFFFFF;
+        return color;
+    }
 
-        CoreSettings(SettingsManager* settingsManager)
-            : m_SettingsManager(settingsManager) {}
+    uint blackAlpha(float alpha)
+    {
+        if (alpha < 0.0f) alpha = 0.0f;
+        if (alpha > 1.0f) alpha = 1.0f;
+        return (int)(alpha*255)<<24;
+    }
 
-        void InitDefaults();
-        void RegisterSettings();
-        void PrintSettings() const;
-
-        static std::string         m_EngineVersion;
-        static RendererAPI::API    m_RendererAPI;
-        static bool                m_EnableFullscreen;
-        static bool                m_EnableSystemSounds;
-        static std::string         m_BlacklistedDevice;
-        static int                 m_UITheme;
-
-    private:
-
-        SettingsManager* m_SettingsManager;
-
-    };
+    uint colorAlpha(uint rgb, float alpha)
+    {
+        if (alpha < 0.0f) alpha = 0.0f;
+        if (alpha > 1.0f) alpha = 1.0f;
+        return ((int)(alpha*255)<<24) | (rgb & 0xFFFFFF);
+    }
 }

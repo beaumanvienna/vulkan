@@ -10,6 +10,7 @@ IDB_VULKAN               PNG                     "resources\\images\\I_Vulkan.pn
 IDB_BLOOD_ISLAND         PNG                     "resources\\atlas\\images\\I_BLOOD_ISLAND.png"
 IDB_WALKWAY              PNG                     "resources\\atlas\\images\\I_WALKWAY.png"
 IDB_ATLAS                PNG                     "resources\\atlas\\atlas\\atlas.png"
+IDB_FONTS_RETRO          PNG                     "resources\\atlas\\atlas\\fontAtlas.png"
 IDR_VERTEX_SHADER        TEXT                    "engine\\shader\\vertexShader.vert"
 IDR_FRAGMENT_SHADER      TEXT                    "engine\\shader\\fragmentShader.frag"
 IDR_SD_LCTRL_DB          TEXT                    "resources\\sdl\\gamecontrollerdb.txt"
