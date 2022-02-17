@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -22,52 +22,29 @@
 
 #pragma once
 
+#include <iostream>
+
 #include "engine.h"
-#include "core.h"
-#include "layer/layer.h"
-#include "scene/entity.h"
-#include "renderer/renderer.h"
-#include "sprite/spritesheet.h"
-#include "transform/transformation.h"
+#include "gui/Common/UI/UIscreen.h"
 
 namespace LucreApp
 {
 
-    class UIControllerIcon : public Layer
+    enum OffDiagEvent
     {
+        OFFDIAG_QUIT,
+        OFFDIAG_SHUTDOWN,
+    };
 
+    class OffDialog : public SCREEN_PopupScreen
+    {
     public:
-
-        UIControllerIcon(const std::string& name = "UIControllerIcon")
-            : Layer(name) {}
-
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnEvent(Event& event) override;
-        void OnUpdate() override;
-        bool IsMovingIn();
-
-    public:
-
-        entt::registry m_Registry;
+        OffDialog(std::string label, OffDiagEvent offDiagEvent) : SCREEN_PopupScreen(label), m_offDiagEvent(offDiagEvent) {}
+        void CreatePopupContents(SCREEN_UI::ViewGroup *parent) override;
 
     private:
-
-        void LoadModels();
-
-    private:
-
-        std::shared_ptr<Renderer> m_Renderer;
-        Sprite* m_ControllerSprite;
-        entt::entity m_ID;
-
-        Animation m_Controller1MoveIn;
-        Animation m_Controller1MoveOut;
-        bool m_Controller1Detected;
-
-        Animation m_Controller2MoveIn;
-        Animation m_Controller2MoveOut;
-        bool m_Controller2Detected;
-
+        OffDiagEvent m_offDiagEvent;
+        SCREEN_UI::EventReturn SwitchOff(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn QuitMarley(SCREEN_UI::EventParams &e);
     };
 }

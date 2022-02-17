@@ -125,7 +125,7 @@ namespace GfxRenderEngine
         return true;
     }
 
-    void Engine::Shutdown()
+    void Engine::Shutdown(bool switchOffComputer)
     {
         m_Window->Shutdown();
         m_Running = false;

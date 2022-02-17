@@ -57,6 +57,9 @@ namespace LucreApp
         m_Atlas.AddSpritesheet();
         m_Spritesheet = &m_Atlas;
 
+        m_UI = new UI("UI");
+        Engine::m_Engine->PushLayer(m_UI);
+
         m_UIControllerIcon = new UIControllerIcon("UI controller");
         Engine::m_Engine->PushOverlay(m_UIControllerIcon);
 

@@ -18,68 +18,50 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
 #include <memory>
 
-#include "core.h"
 #include "engine.h"
-#include "scene/entity.h"
-#include "platform/window.h"
-#include "renderer/cursor.h"
+#include "layer/layer.h"
+#include "renderer/renderer.h"
 #include "sprite/spritesheet.h"
-
-#include "application.h"
-#include "appSettings.h"
-#include "gameState.h"
-#include "UI/UIControllerIcon.h"
-#include "UI/UI.h"
+#include "gui/Common/UI/screen.h"
+#include "UI/mainScreen.h"
 
 namespace LucreApp
 {
-    class Lucre : public Application
+
+    class UI : public Layer
     {
 
     public:
 
-        Lucre();
-        ~Lucre() {}
+        UI(const std::string& name = "U")
+            : Layer(name) {}
 
-        bool Start() override;
-        void Shutdown() override;
-        void OnUpdate(const Timestep& timestep) override;
+        void OnAttach() override;
+        void OnDetach() override;
         void OnEvent(Event& event) override;
-        void OnResize();
+        void OnUpdate() override;
 
-        void PlaySound(int resourceID);
-        UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
-
-        static std::shared_ptr<Lucre> m_Application;
-        static SpriteSheet* m_Spritesheet;
+        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
+        static std::shared_ptr<Texture> m_FontAtlas;
+        static std::shared_ptr<Texture> m_SpritesheetTexture;
 
     private:
 
-        void InitSettings();
-        void InitCursor();
-        void ShowCursor();
-        void HideCursor();
+        bool Touch(int flags, float x, float y, int deviceID);
+        void Key(int keyFlag, int keyCode, int deviceID);
+        void Axis();
 
     private:
 
-        UIControllerIcon* m_UIControllerIcon = nullptr;
-        UI*               m_UI = nullptr;
+        MainScreen* m_MainScreen{nullptr};
 
-        AppSettings m_AppSettings{&Engine::m_SettingsManager};
-        GameState m_GameState;
-        Scene* m_CurrentScene;
-
-        std::shared_ptr<Window> m_Window;
-        std::shared_ptr<Cursor> m_Cursor;
-        std::shared_ptr<Cursor> m_EmptyCursor;
-
-        SpriteSheet m_Atlas;
+        SpriteSheet* m_Spritesheet;
 
     };
 }

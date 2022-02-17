@@ -22,52 +22,53 @@
 
 #pragma once
 
+#include <iostream>
+
 #include "engine.h"
-#include "core.h"
-#include "layer/layer.h"
-#include "scene/entity.h"
-#include "renderer/renderer.h"
-#include "sprite/spritesheet.h"
-#include "transform/transformation.h"
+#include "UI/infoMessage.h"
+#include "gui/Common/UI/UIscreen.h"
+#include "gui/Common/UI/viewGroup.h"
 
 namespace LucreApp
 {
 
-    class UIControllerIcon : public Layer
+    class MainScreen : public SCREEN_UIDialogScreen
     {
-
     public:
+        MainScreen(SpriteSheet* spritesheet) { m_Spritesheet = spritesheet; }
+        virtual ~MainScreen() {}
+        bool key(const SCREEN_KeyInput &key) override;
+        void OnAttach();
+        void OnDetach();
+        void update() override;
+        void onFinish(DialogResult result) override;
+        std::string tag() const override { return "main screen"; }
 
-        UIControllerIcon(const std::string& name = "UIControllerIcon")
-            : Layer(name) {}
+    protected:
+        void CreateViews() override;
 
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnEvent(Event& event) override;
-        void OnUpdate() override;
-        bool IsMovingIn();
-
-    public:
-
-        entt::registry m_Registry;
+        SCREEN_UI::EventReturn settingsClick(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn offClick(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn offHold(SCREEN_UI::EventParams &e);
 
     private:
 
-        void LoadModels();
+        enum toolTipID
+        {
+            MAIN_SETTINGS,
+            MAIN_OFF,
+            MAX_TOOLTIP_IDs
+        };
 
     private:
 
-        std::shared_ptr<Renderer> m_Renderer;
-        Sprite* m_ControllerSprite;
-        entt::entity m_ID;
+        SCREEN_UI::Choice* m_OffButton;
+        InfoMessage *m_MainInfo;
+        bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 
-        Animation m_Controller1MoveIn;
-        Animation m_Controller1MoveOut;
-        bool m_Controller1Detected;
-
-        Animation m_Controller2MoveIn;
-        Animation m_Controller2MoveOut;
-        bool m_Controller2Detected;
+        SpriteSheet* m_Spritesheet;
+        SpriteSheet m_SpritesheetSettings;
+        SpriteSheet m_SpritesheetOff;
 
     };
 }

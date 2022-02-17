@@ -47,6 +47,7 @@ namespace GfxRenderEngine
     {
     public:
 
+        static constexpr bool SWITCH_OFF_COMPUTER = true;
 
     public:
 
@@ -58,7 +59,7 @@ namespace GfxRenderEngine
         void OnRender();
         void OnEvent(Event& event);
         void QueueEvent(std::unique_ptr<Event>& event);
-        void Shutdown();
+        void Shutdown(bool switchOffComputer = false);
         void Quit();
 
         void InitSettings();
@@ -73,6 +74,7 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Window> GetWindow() const { return m_Window; }
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
+        float GetWindowScale() const { return m_Window->GetWindowAspectRatio(); }
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
         float GetContextWidth() const { return m_GraphicsContext->GetContextWidth(); }
         float GetContextHeight() const { return m_GraphicsContext->GetContextHeight(); }
