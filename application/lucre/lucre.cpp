@@ -78,6 +78,7 @@ namespace LucreApp
 
         // update/render layer stack
         m_UIControllerIcon->OnUpdate();
+        m_UI->OnUpdate();
     }
 
     void Lucre::OnResize()

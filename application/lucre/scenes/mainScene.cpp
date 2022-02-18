@@ -28,6 +28,7 @@
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
+#include "gui/Common/UI/screen.h"
 
 #include "mainScene.h"
 
@@ -159,6 +160,7 @@ namespace LucreApp
         m_Renderer->Submit(m_Registry);
         m_Renderer->Submit(m_VulcanoSmoke);
         m_Renderer->Submit(Lucre::m_Application->GetUI()->m_Registry);
+        m_Renderer->Submit(SCREEN_ScreenManager::m_Registry);
         m_Renderer->EndScene();
     }
 

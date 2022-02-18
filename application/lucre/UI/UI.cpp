@@ -35,10 +35,8 @@
 
 namespace LucreApp
 {
-
-    Sprite* whiteImage;
     std::unique_ptr<SCREEN_ScreenManager> UI::m_ScreenManager = nullptr;
-    std::shared_ptr<Texture> UI::m_FontAtlas;
+    std::shared_ptr<Texture> UI::m_FontAtlasTexture;
     std::shared_ptr<Texture> UI::m_SpritesheetTexture;
 
     void UI::OnAttach()
@@ -47,7 +45,7 @@ namespace LucreApp
         auto spritesheet = Lucre::m_Spritesheet;
         m_ScreenManager = std::make_unique<SCREEN_ScreenManager>(renderer, spritesheet);
 
-        m_FontAtlas = ResourceSystem::GetTextureFromMemory("/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
+        m_FontAtlasTexture = ResourceSystem::GetTextureFromMemory("/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         m_SpritesheetTexture = spritesheet->GetTexture();
 
         m_MainScreen = new MainScreen(spritesheet);
@@ -60,7 +58,7 @@ namespace LucreApp
     {
         m_MainScreen->OnDetach();
         m_ScreenManager.reset();
-        m_FontAtlas.reset();
+        m_FontAtlasTexture.reset();
         m_SpritesheetTexture.reset();
     }
 

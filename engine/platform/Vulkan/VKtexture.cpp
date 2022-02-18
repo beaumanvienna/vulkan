@@ -71,7 +71,7 @@ namespace GfxRenderEngine
             ok = true;
             m_Width = width;
             m_Height = height;
-            LOG_CORE_CRITICAL("not implemented");
+            LOG_CORE_CRITICAL("not implemented bool VK_Texture::Init(const uint width, const uint height, const void* data)");
         }
         return ok;
     }
@@ -119,7 +119,7 @@ namespace GfxRenderEngine
     // create texture from framebuffer attachment
     bool VK_Texture::Init(const uint width, const uint height, const uint rendererID)
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented bool VK_Texture::Init(const uint width, const uint height, const uint rendererID)");
         return true;
     }
 
@@ -398,26 +398,26 @@ namespace GfxRenderEngine
 
     void VK_Texture::Bind() const
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Bind() const");
     }
 
     void VK_Texture::Unbind() const
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Unbind() const");
     }
 
     void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data)
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data)");
     }
 
     void VK_Texture::Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data)
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data)");
     }
 
     void VK_Texture::Resize(uint width, uint height)
     {
-        LOG_CORE_CRITICAL("not implemented");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Resize(uint width, uint height)");
     }
 }

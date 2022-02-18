@@ -79,7 +79,9 @@ namespace GfxRenderEngine
 
     class SCREEN_DrawBuffer 
     {
+
     public:
+
         SCREEN_DrawBuffer()
         { 
             m_Renderer = Engine::m_Engine->GetRenderer(); 
@@ -92,143 +94,23 @@ namespace GfxRenderEngine
         }
         ~SCREEN_DrawBuffer();
 
-    //    void Begin(SCREEN_Draw::SCREEN_Pipeline *pipeline);
-    //    void Flush(bool set_blend_state = true);
-    //
-    //    void Init(SCREEN_Draw::SCREEN_DrawContext *t3d, SCREEN_Draw::SCREEN_Pipeline *pipeline);
-    //    void Shutdown();
-    //
-    //    SCREEN_Draw::SCREEN_InputLayout *CreateInputLayout(SCREEN_Draw::SCREEN_DrawContext *t3d);
-    //
-    //    int Count() const { return count_; }
-    //
-    //    void Rect(float x, float y, float w, float h, uint32_t color, int align = ALIGN_TOPLEFT);
-    //    void hLine(float x1, float y, float x2, uint32_t color);
-    //    void vLine(float x, float y1, float y2, uint32_t color);
-    //    void vLineAlpha50(float x, float y1, float y2, uint32_t color);
-    //
-    //    void Line(SCREEN_ImageID atlas_image, float x1, float y1, float x2, float y2, float thickness, uint32_t color);
-    //
-    //    void RectOutline(float x, float y, float w, float h, uint32_t color, int align = ALIGN_TOPLEFT);
-    //
-    //    void RectVGradient(float x, float y, float w, float h, uint32_t colorTop, uint32_t colorBottom);
-    //    void RectVDarkFaded(float x, float y, float w, float h, uint32_t colorTop) 
-    //    {
-    //        RectVGradient(x, y, w, h, colorTop, darkenColor(colorTop));
-    //    }
-    //
-    //    void MultiVGradient(float x, float y, float w, float h, GradientStop *stops, int numStops);
-    //
-    //    void RectCenter(float x, float y, float w, float h, uint32_t color) 
-    //    {
-    //        Rect(x - w/2, y - h/2, w, h, color);
-    //    }
-    //    void Rect(float x, float y, float w, float h, float u, float v, float uw, float uh, uint32_t color);
-    //
-    //    void V(float x, float y, float z, uint32_t color, float u, float v);
-    //    void V(float x, float y, uint32_t color, float u, float v) 
-    //    {
-    //        V(x, y, curZ_, color, u, v);
-    //    }
-    //
-    //    void Circle(float x, float y, float radius, float thickness, int segments, float startAngle, uint32_t color, float u_mul);
-    //
-    //    void SetAtlas(const SCREEN_Atlas *_atlas) 
-    //    {
-    //        atlas = _atlas;
-    //    }
-    //    const SCREEN_Atlas *GetAtlas() const { return atlas; }
-        bool MeasureImage(Sprite* atlas_image, float *w, float *h);
-        void DrawImage(Sprite* atlas_image, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
-        void DrawImageStretch(Sprite* atlas_image, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
-        void DrawImageStretch(Sprite* atlas_image, const Bounds &bounds, Color color = COLOR(0xFFFFFF)) 
-        {
-            DrawImageStretch(atlas_image, bounds.x, bounds.y, bounds.x2(), bounds.y2(), color);
-        }
-    //    void DrawImageRotated(SCREEN_ImageID atlas_image, float x, float y, float scale, float angle, Color color = COLOR(0xFFFFFF), bool mirror_h = false);
+        bool MeasureImage(Sprite* sprite, float *w, float *h);
+        void DrawImage(Sprite* sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
+        void DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
+        void DrawImageStretch(Sprite* sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
         void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color);
-    //    void DrawTexRect(const Bounds &bounds, float u1, float v1, float u2, float v2, Color color) 
-    //    {
-    //        DrawTexRect(bounds.x, bounds.y, bounds.x2(), bounds.y2(), u1, v1, u2, v2, color);
-    //    }
-    //
-        void DrawImage4Grid(Sprite* atlas_image, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
-    //    void DrawImage2GridH(SCREEN_ImageID atlas_image, float x1, float y1, float x2, Color color = COLOR(0xFFFFFF), float scale = 1.0);
-    //
+        void DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
         void MeasureText(FontID font, const char *text, float *w, float *h);
-    //
         void MeasureTextCount(FontID font, const char *text, int count, float *w, float *h);
         void MeasureTextRect(FontID font, const char *text, int count, const Bounds &bounds, float *w, float *h, int align = 0);
-    //
         void DrawTextRect(FontID font, const char *text, float x, float y, float w, float h, Color color = 0xFFFFFFFF, int align = 0);
         void DrawText(FontID font, const char *text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
-    //    void DrawTextShadow(FontID font, const char *text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
-
-        void SetFontScale(float xs, float ys) 
-        {
-            fontscalex = xs;
-            fontscaley = ys;
-        }
+        void SetFontScale(float xs, float ys);
 
         static void DoAlign(int flags, float *x, float *y, float *w, float *h);
-    //
-    //    void PushDrawMatrix(const SCREEN_Lin::SCREEN_Matrix4x4 &m) 
-    //    {
-    //        drawMatrixStack_.push_back(drawMatrix_);
-    //        drawMatrix_ = m;
-    //    }
-    //
-    //    void PopDrawMatrix() 
-    //    {
-    //        drawMatrix_ = drawMatrixStack_.back();
-    //        drawMatrixStack_.pop_back();
-    //    }
-    //
-    //    SCREEN_Lin::SCREEN_Matrix4x4 GetDrawMatrix() 
-    //    {
-    //        return drawMatrix_;
-    //    }
-    //
-    //    void PushAlpha(float a) 
-    //    {
-    //        alphaStack_.push_back(alpha_);
-    //        alpha_ *= a;
-    //    }
-    //
-    //    void PopAlpha() 
-    //    {
-    //        alpha_ = alphaStack_.back();
-    //        alphaStack_.pop_back();
-    //    }
-    //
-    //    void SetCurZ(float curZ) 
-    //    {
-    //        curZ_ = curZ;
-    //    }
-    //
-    //private:
-    //    struct Vertex 
-    //    {
-    //        float x, y, z;
-    //        float u, v;
-    //        uint32_t rgba;
-    //    };
-    //
-    //    glm::mat4 drawMatrix_;
-    //    std::vector<glm::mat4> drawMatrixStack_;
-    //
-    //    float alpha_ = 1.0f;
-    //    std::vector<float> alphaStack_;
-    //
-    //    SCREEN_Draw::SCREEN_DrawContext *draw_;
-    //    SCREEN_Draw::SCREEN_Buffer *vbuf_;
-    //    SCREEN_Draw::SCREEN_Pipeline *pipeline_;
-    //
-    //    Vertex *verts_;
-    //    int count_;
-    //    const SCREEN_Atlas *atlas;
-    //
-    //    bool inited_;
+
+    public:
+
         float fontscalex;
         float fontscaley;
         std::shared_ptr<Renderer> m_Renderer;
@@ -237,9 +119,9 @@ namespace GfxRenderEngine
         float m_HalfContextWidth;
         float m_HalfContextHeight;
 
-    //
-    //    float curZ_ = 0.0f;
     private:
+
         glm::vec4 ConvertColor(Color color);
+
     };
 }

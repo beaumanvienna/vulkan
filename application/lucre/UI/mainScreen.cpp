@@ -37,7 +37,7 @@ namespace LucreApp
 {
     void MainScreen::OnAttach()
     {
-        m_SpritesheetSettings.AddSpritesheetRow(m_Spritesheet->GetSprite(I_GEAR_R), 4 /* frames */);
+        m_SpritesheetSettings.AddSpritesheetRow(m_Spritesheet->GetSprite(/*I_GEAR_R*/I_DISK_LOAD_R), 4 /* frames */);
         m_SpritesheetOff.AddSpritesheetRow(m_Spritesheet->GetSprite(I_OFF_R), 4 /* frames */);
     }
 
@@ -47,32 +47,32 @@ namespace LucreApp
 
     bool MainScreen::key(const SCREEN_KeyInput &key)
     {
-        //if (!m_OffButton->HasFocus())
-        //{
-        //    if (key.flags & KEY_DOWN)
-        //    {
-        //        if ( (key.deviceId == DEVICE_ID_KEYBOARD && key.keyCode == KeyCode::ENGINE_KEY_ESCAPE) ||
-        //             (key.deviceId == DEVICE_ID_PAD_0    && key.keyCode == Controller::BUTTON_GUIDE) )
-        //        {
-        //            GfxRenderEngine::SCREEN_UI::SetFocusedView(m_OffButton);
-        //            return true;
-        //        }
-        //    }
-        //}
-        //if (m_OffButton->HasFocus())
-        //{
-        //    if (key.flags & KEY_DOWN)
-        //    {
-        //        if ( (key.deviceId == DEVICE_ID_KEYBOARD && key.keyCode == ENGINE_KEY_ESCAPE) ||
-        //             (key.deviceId == DEVICE_ID_PAD_0    && key.keyCode == Controller::BUTTON_GUIDE) )
-        //        {
-        //            {
-        //                Engine::m_Engine->Shutdown();
-        //                return true;
-        //            }
-        //        }
-        //    }
-        //}
+        if (!m_OffButton->HasFocus())
+        {
+            if (key.flags & KEY_DOWN)
+            {
+                if ( (key.deviceId == DEVICE_ID_KEYBOARD && key.keyCode == KeyCode::ENGINE_KEY_ESCAPE) ||
+                     (key.deviceId == DEVICE_ID_PAD_0    && key.keyCode == Controller::BUTTON_GUIDE) )
+                {
+                    //GfxRenderEngine::SCREEN_UI::SetFocusedView(m_OffButton);
+                    return true;
+                }
+            }
+        }
+        if (m_OffButton->HasFocus())
+        {
+            if (key.flags & KEY_DOWN)
+            {
+                if ( (key.deviceId == DEVICE_ID_KEYBOARD && key.keyCode == ENGINE_KEY_ESCAPE) ||
+                     (key.deviceId == DEVICE_ID_PAD_0    && key.keyCode == Controller::BUTTON_GUIDE) )
+                {
+                    {
+                        Engine::m_Engine->Shutdown();
+                        return true;
+                    }
+                }
+            }
+        }
         return SCREEN_UIDialogScreen::key(key);
     }
 
@@ -117,23 +117,22 @@ namespace LucreApp
         Sprite* icon_depressed;
 
         // settings button
-        SCREEN_UI::Choice* settingsButton;
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
             icon_active = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED);
             icon_depressed = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
 
-            settingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconWidth));
+            m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconWidth));
         }
         else
         {
             icon = m_Spritesheet->GetSprite(I_GEAR);
-            settingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight));
+            m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight));
         }
 
-        settingsButton->OnClick.Handle(this, &MainScreen::settingsClick);
-        settingsButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
+        m_SettingsButton->OnClick.Handle(this, &MainScreen::settingsClick);
+        m_SettingsButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
         {
             if (!m_ToolTipsShown[MAIN_SETTINGS])
             {
@@ -142,9 +141,9 @@ namespace LucreApp
             }
             return SCREEN_UI::EVENT_CONTINUE;
         });
-        topline->Add(settingsButton);
+        topline->Add(m_SettingsButton);
         topline->Add(new SCREEN_UI::Spacer(iconSpacer,0.0f));
-
+        root_->SetDefaultFocusView(m_SettingsButton);
         // off button
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
@@ -171,14 +170,11 @@ namespace LucreApp
         });
         topline->Add(m_OffButton);
 
-        root_->SetDefaultFocusView(settingsButton);
-
         LOG_APP_INFO("UI: views for main screen created");
     }
 
     void MainScreen::onFinish(DialogResult result)
     {
-        SCREEN_System_SendMessage("finish", "");
     }
 
     void MainScreen::update()

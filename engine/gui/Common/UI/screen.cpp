@@ -36,6 +36,7 @@ namespace GfxRenderEngine
 {
     SCREEN_ScreenManager* SCREEN_ScreenManager::m_ScreenManager = nullptr;
     SpriteSheet* SCREEN_ScreenManager::m_SpritesheetUI = nullptr;
+    entt::registry SCREEN_ScreenManager::m_Registry;
 
     SCREEN_ScreenManager::SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI)
         : m_Renderer(renderer)
@@ -50,31 +51,6 @@ namespace GfxRenderEngine
     {
         shutdown();
     }
-
-    //void SCREEN_ScreenManager::switchScreen(SCREEN_Screen *screen)
-    //{
-    //    if (!nextStack_.empty() && screen == nextStack_.front().screen)
-    //    {
-    //        LOG_CORE_WARN("Already switching to this screen");
-    //        return;
-    //    }
-    //
-    //    if (!nextStack_.empty())
-    //    {
-    //        LOG_CORE_WARN("Already had a nextStack_! Asynchronous open while doing something? Deleting the new screen.");
-    //        delete screen;
-    //        return;
-    //    }
-    //    if (screen == nullptr)
-    //    {
-    //        LOG_CORE_WARN("Switching to a zero screen, this can't be good");
-    //    }
-    //    if (stack_.empty() || screen != stack_.back().screen) {
-    //        screen->setSCREEN_ScreenManager(this);
-    //        nextStack_.push_back({ screen, 0 });
-    //    }
-    //}
-    //
 
     void SCREEN_ScreenManager::update()
     {
@@ -189,16 +165,6 @@ namespace GfxRenderEngine
             iter.screen->deviceRestored();
     }
 
-    //void SCREEN_ScreenManager::resized()
-    //{
-    //    LOG_CORE_WARN("SCREEN_ScreenManager::resized(dp: %dx%d)", dp_xres, dp_yres);
-    //    std::lock_guard<std::recursive_mutex> guard(inputLock_);
-    //
-    //    for (auto iter = stack_.begin(); iter != stack_.end(); ++iter) {
-    //        iter->screen->resized();
-    //    }
-    //}
-    //
     void SCREEN_ScreenManager::render()
     {
         if (!stack_.empty())
@@ -385,7 +351,6 @@ namespace GfxRenderEngine
 
                 if (!caller)
                 {
-                    LOG_CORE_WARN("Settings dialog finished");
                 }
                 else if (caller != topScreen())
                 {

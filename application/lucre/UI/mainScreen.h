@@ -34,7 +34,9 @@ namespace LucreApp
 
     class MainScreen : public SCREEN_UIDialogScreen
     {
+
     public:
+
         MainScreen(SpriteSheet* spritesheet) { m_Spritesheet = spritesheet; }
         virtual ~MainScreen() {}
         bool key(const SCREEN_KeyInput &key) override;
@@ -45,6 +47,7 @@ namespace LucreApp
         std::string tag() const override { return "main screen"; }
 
     protected:
+
         void CreateViews() override;
 
         SCREEN_UI::EventReturn settingsClick(SCREEN_UI::EventParams &e);
@@ -63,6 +66,7 @@ namespace LucreApp
     private:
 
         SCREEN_UI::Choice* m_OffButton;
+        SCREEN_UI::Choice* m_SettingsButton;
         InfoMessage *m_MainInfo;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 

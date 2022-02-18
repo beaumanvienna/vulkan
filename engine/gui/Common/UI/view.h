@@ -34,6 +34,7 @@
 #include "gui/Render/textureAtlas.h"
 #include "gui/Common/Math/geom2d.h"
 #include "gui/Common/Input/inputState.h"
+#include "scene/entity.h"
 
 namespace GfxRenderEngine
 {
@@ -695,29 +696,14 @@ namespace GfxRenderEngine
         class Choice : public ClickableItem
         {
         public:
-            Choice(const std::string &text, LayoutParams *layoutParams = nullptr)
-                : Choice(text, std::string(), false, layoutParams) { numIcons_= 0; }
-            Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams)
-                : Choice(text, transparentBackground, std::string(), false, layoutParams) { numIcons_= 0; }
-            Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-                : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image(nullptr),
-                                centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
-            Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-                : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image(nullptr),
-                                centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
-            Choice(Sprite* image, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
-                : ClickableItem(layoutParams), m_Image(image), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false) { numIcons_ = 1; }
-            Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
-                : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image),
-                                m_ImageActive(image_active), m_ImageDepressed(image_depressed) { numIcons_ = 3;}
+            Choice(const std::string &text, LayoutParams *layoutParams = nullptr);
+            Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams);
+            Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams);
+            Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams);
+            Choice(Sprite* image, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false);
+            Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false);
             Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, Sprite* image_depressed_inactive,
-                const std::string &text, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
-                : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
-                                m_ImageActive(image_active), m_ImageDepressed(image_depressed),
-                                m_ImageDepressedInactive(image_depressed_inactive) { numIcons_ = 4;}
+                const std::string &text, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false);
     
             Event OnHold;
             Event OnHighlight;
@@ -746,6 +732,8 @@ namespace GfxRenderEngine
             Sprite* m_ImageActive = nullptr;
             Sprite* m_ImageDepressed = nullptr;
             Sprite* m_ImageDepressedInactive = nullptr;
+            entt::entity m_ImageID, m_ImageActiveID, m_ImageDepressedID, m_ImageDepressedInactiveID;
+
             int numIcons_;
             Padding textPadding_;
             bool centered_;

@@ -25,9 +25,10 @@
 
 #include "core.h"
 #include "gui/common.h"
+#include "gui/Common/UI/root.h"
 #include "gui/Common/UI/view.h"
 #include "gui/Common/UI/tween.h"
-#include "gui/Common/UI/root.h"
+#include "gui/Common/UI/screen.h"
 #include "gui/Common/stringUtils.h"
 #include "gui/Common/UI/context.h"
 #include "gui/Common/Render/drawBuffer.h"
@@ -559,6 +560,175 @@ namespace GfxRenderEngine
     
             DrawBG(dc, style);
         }
+
+        Choice::Choice(const std::string &text, LayoutParams *layoutParams /*= nullptr*/)
+            : Choice(text, std::string(), false, layoutParams)
+        {
+            numIcons_= 0;
+        }
+        Choice::Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams)
+            : Choice(text, transparentBackground, std::string(), false, layoutParams)
+        {
+            numIcons_= 0;
+        }
+        Choice::Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams)
+            : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image(nullptr),
+                            centered_(false), highlighted_(false), selected_(selected)
+        {
+            numIcons_= 0;
+        }
+        Choice::Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams)
+            : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image(nullptr),
+                            centered_(false), highlighted_(false), selected_(selected)
+        {
+            numIcons_= 0;
+        }
+        Choice::Choice(Sprite* image, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
+            : ClickableItem(layoutParams), m_Image(image), centered_(false), highlighted_(false), selected_(false),
+                            hasHoldFeature_(hasHoldFeature), heldDown_(false)
+        {
+            numIcons_ = 1;
+        }
+        Choice::Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
+            : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
+                            hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image),
+                            m_ImageActive(image_active), m_ImageDepressed(image_depressed)
+        {
+            numIcons_ = 3;
+static float m = -3.0f;
+            {
+                Builder builder{};
+
+                auto sprite = m_Image;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+m+=2.0f;
+                transform.m_Scale = glm::vec3{0.003f};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageID = entity;
+            }
+            {
+                Builder builder{};
+            
+                auto sprite = m_ImageActive;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+            
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+            
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+m+=2.0f;
+                transform.m_Scale = glm::vec3{0.003f};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageActiveID = entity;
+            }
+            {
+                Builder builder{};
+            
+                auto sprite = m_ImageDepressed;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+            
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+            
+                TransformComponent transform{};
+                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+m+=2.0f;
+                transform.m_Scale = glm::vec3{0.003f};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageDepressedID = entity;
+            }
+        }
+
+        Choice::Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, Sprite* image_depressed_inactive,
+            const std::string &text, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
+            : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
+                            hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
+                            m_ImageActive(image_active), m_ImageDepressed(image_depressed),
+                            m_ImageDepressedInactive(image_depressed_inactive)
+        {
+            numIcons_ = 4;
+            {
+                Builder builder{};
+
+                auto sprite = m_Image;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+
+                TransformComponent transform{};
+                transform.m_Scale = glm::vec3{0.02f};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageID = entity;
+            }
+            {
+                Builder builder{};
+
+                auto sprite = m_ImageActive;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+
+                TransformComponent transform{};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageActiveID = entity;
+            }
+            {
+                Builder builder{};
+
+                auto sprite = m_ImageDepressed;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+
+                TransformComponent transform{};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageDepressedID = entity;
+            }
+            {
+                Builder builder{};
+
+                auto sprite = m_ImageDepressedInactive;
+                glm::mat4 position = sprite->GetScaleMatrix();
+                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+                auto model = Engine::m_Engine->LoadModel(builder);
+                MeshComponent mesh{"choice", model, false};
+
+                auto entity = SCREEN_ScreenManager::m_Registry.create();
+                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
+
+                TransformComponent transform{};
+                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
+                m_ImageDepressedInactiveID = entity;
+            }
+        }
+
         #define HOLD_TIME 1.5f
         bool Choice::Key(const SCREEN_KeyInput &key)
         {
@@ -723,39 +893,58 @@ namespace GfxRenderEngine
                 s.background = SCREEN_UI::Drawable(0x00000000); // black, 0% transparency (invinsible in other words)
                 DrawBG(dc, s);
             }
-    
+
             style = dc.theme->itemStyle;
-    
+
             if (numIcons_==3)
             {
+                {
+                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageID);
+                    mesh.m_Enabled = false;
+                }
+                {
+                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageActiveID);
+                    mesh.m_Enabled = false;
+                }
+                {
+                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageDepressedID);
+                    mesh.m_Enabled = false;
+                }
+
                 if (HasFocus())
                 {
                     if (down_)
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
-                        glm::mat4 transformationMatrix = Translate(translation);
-    
-                        // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageDepressed->GetScaleMatrix();
-                        renderer->Draw(m_ImageDepressed, position, -0.5f);
+                        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageDepressedID);
+                        transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
+                        transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
+                        transform.m_Translation.x /= 350.0f;
+                        transform.m_Translation.y /= -150.0f;
+
+                        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageDepressedID);
+                        mesh.m_Enabled = true;
                     } else
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
-                        glm::mat4 transformationMatrix = Translate(translation);
-    
-                        // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageActive->GetScaleMatrix();
-                        renderer->Draw(m_ImageActive, position, -0.5f);
+                        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageActiveID);
+                        transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
+                        transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
+                        transform.m_Translation.x /= 350.0f;
+                        transform.m_Translation.y /= -150.0f;
+
+                        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageActiveID);
+                        mesh.m_Enabled = true;
                     }
                 }
                 else
                 {
-                    glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
-                    glm::mat4 transformationMatrix = Translate(translation);
-    
-                    // transformed position
-                    glm::mat4 position = transformationMatrix * m_Image->GetScaleMatrix();
-                    renderer->Draw(m_Image, position, -0.5f);
+                    auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageID);
+                    transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
+                    transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
+                    transform.m_Translation.x /= 350.0f;
+                    transform.m_Translation.y /= -150.0f;
+
+                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageID);
+                    mesh.m_Enabled = true;
                 }
             }
             else if (numIcons_==4)

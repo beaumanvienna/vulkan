@@ -48,8 +48,9 @@ namespace LucreApp
         void OnUpdate() override;
 
         static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlas;
+        static std::shared_ptr<Texture> m_FontAtlasTexture;
         static std::shared_ptr<Texture> m_SpritesheetTexture;
+
 
     private:
 

@@ -28,9 +28,10 @@
 #include <stack>
 #include <mutex>
 
-#include "gui/Common/Input/inputState.h"
-#include "sprite/spritesheet.h"
+#include "scene/entity.h"
 #include "renderer/renderer.h"
+#include "sprite/spritesheet.h"
+#include "gui/Common/Input/inputState.h"
 
 namespace GfxRenderEngine
 {
@@ -170,9 +171,12 @@ namespace GfxRenderEngine
 
         SCREEN_Screen *topScreen() const;
 
+    public:
+
         std::recursive_mutex inputLock_;
         static SpriteSheet* m_SpritesheetUI;
         static SCREEN_ScreenManager* m_ScreenManager;
+        static entt::registry m_Registry;
 
     private:
 

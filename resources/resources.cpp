@@ -64,7 +64,6 @@ namespace GfxRenderEngine
                 {
                     texture = Texture::Create();
                     texture->Init((const unsigned char*)dataPtr, fileSize);
-                    texture->Bind();
                 }
                 else
                 {
