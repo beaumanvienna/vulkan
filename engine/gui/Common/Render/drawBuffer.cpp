@@ -92,6 +92,7 @@ namespace GfxRenderEngine
 
     void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)
     {
+        LOG_CORE_CRITICAL("not implemented void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)");
         glm::mat4 position;
         if (sprite->m_Rotated)
         {
@@ -114,6 +115,15 @@ namespace GfxRenderEngine
             );
         }
         m_Renderer->Draw(sprite, position, -0.5f, ConvertColor(color));
+    }
+
+    void SCREEN_DrawBuffer::DrawImageStretch(entt::entity entity, float x1, float y1, float x2, float y2, Color color)
+    {
+        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(entity);
+        transform.m_Translation = glm::vec3(x1/350.0f, y1/-150.0f, -2.1f);
+        transform.m_Translation = glm::vec3(x1/350.0f, y1/-150.0f, -2.1f);
+        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(entity);
+        mesh.m_Enabled = true;
     }
 
     void SCREEN_DrawBuffer::DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color)

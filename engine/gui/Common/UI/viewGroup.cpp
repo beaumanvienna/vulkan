@@ -1681,11 +1681,11 @@ namespace GfxRenderEngine
             {
                 if (orientation_ == ORIENT_HORIZONTAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2() - 4, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2() - 4, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
                 }
                 else if (orientation_ == ORIENT_VERTICAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x2() - 4, bounds_.y, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x2() - 4, bounds_.y, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
                 }
             }
         }

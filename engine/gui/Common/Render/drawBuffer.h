@@ -97,6 +97,7 @@ namespace GfxRenderEngine
         bool MeasureImage(Sprite* sprite, float *w, float *h);
         void DrawImage(Sprite* sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
         void DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
+        void DrawImageStretch(entt::entity entity, float x1, float y1, float x2, float y2, Color color);
         void DrawImageStretch(Sprite* sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
         void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color);
         void DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);

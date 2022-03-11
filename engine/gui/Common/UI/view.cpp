@@ -1090,7 +1090,7 @@ m+=2.0f;
         {
             dc.SetFontStyle(dc.theme->uiFont);
             dc.DrawText(text_.c_str(), bounds_.x + 4.0f, bounds_.centerY(), dc.theme->headerStyle.fgColor, ALIGN_LEFT | ALIGN_VCENTER);
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->headerStyle.fgColor);
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->headerStyle.fgColor);
         }
     
         void ItemHeader::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
@@ -1131,7 +1131,7 @@ m+=2.0f;
             }
     
             dc.DrawText(text_.c_str(), bounds_.x + tx, bounds_.centerY(), dc.theme->popupTitle.fgColor, ALIGN_LEFT | ALIGN_VCENTER);
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
     
             if (availableWidth < tw)
             {
@@ -1141,7 +1141,7 @@ m+=2.0f;
     
         void Separator::Draw(SCREEN_UIContext &dc)
         {
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
         }
     
         void CheckBox::Toggle()

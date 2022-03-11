@@ -57,9 +57,24 @@ namespace GfxRenderEngine
 
         ui_theme.checkOn         = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CHECKEDBOX);
         ui_theme.checkOff        = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_SQUARE);
-        ui_theme.whiteImage      = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_WHITE);
         ui_theme.sliderKnob      = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CIRCLE);
         ui_theme.dropShadow4Grid = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_DROP_SHADOW);
+
+        {
+            Builder builder{};
+
+            auto sprite = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_WHITE);
+            glm::mat4 position = sprite->GetScaleMatrix();
+            builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"white", model, false};
+
+            ui_theme.whiteImageID = SCREEN_ScreenManager::m_Registry.create();
+            SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(ui_theme.whiteImageID, mesh);
+            TransformComponent transform{};
+            SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(ui_theme.whiteImageID, transform);
+        }
+        
 
         theme = &ui_theme;
     }
@@ -309,7 +324,7 @@ namespace GfxRenderEngine
         switch (drawable.type)
         {
             case SCREEN_UI::DRAW_SOLID_COLOR:
-                uidrawbuffer_->DrawImageStretch(theme->whiteImage, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);
+                uidrawbuffer_->DrawImageStretch(theme->whiteImageID, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);
                 break;
             case SCREEN_UI::DRAW_4GRID:
                 // uidrawbuffer_->DrawImage4Grid(drawable.image, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);

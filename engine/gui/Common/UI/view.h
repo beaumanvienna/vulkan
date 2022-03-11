@@ -134,9 +134,14 @@ namespace GfxRenderEngine
             Sprite* checkOn;
             Sprite* checkOff;
             Sprite* sliderKnob;
-            Sprite* whiteImage;
             Sprite* dropShadow4Grid;
-    
+
+            entt::entity checkOnID;
+            entt::entity checkOffID;
+            entt::entity sliderKnobID;
+            entt::entity whiteImageID;
+            entt::entity dropShadow4GridID;
+
             Style buttonStyle;
             Style buttonFocusedStyle;
             Style buttonDownStyle;

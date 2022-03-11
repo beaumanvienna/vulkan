@@ -167,6 +167,14 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::render()
     {
+        {
+            auto view = m_Registry.view<MeshComponent>();
+            for (auto entity : view)
+            {
+                auto& mesh = view.get<MeshComponent>(entity);
+                mesh.m_Enabled = false;
+            }
+        }
         if (!stack_.empty())
         {
             switch (stack_.back().flags)
