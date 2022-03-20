@@ -39,11 +39,11 @@ namespace GfxRenderEngine
 
     void Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
     {
-        LOG_CORE_CRITICAL("not implemented Renderer::Draw(Sprite* sprite, ...)");
+        //LOG_CORE_CRITICAL("not implemented Renderer::Draw(Sprite* sprite, ...)");
     }
 
     void Renderer::Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color)
     {
-        LOG_CORE_CRITICAL("not implemented Renderer::Draw(std::shared_ptr<Texture> texture, ...)");
+        //LOG_CORE_CRITICAL("not implemented Renderer::Draw(std::shared_ptr<Texture> texture, ...)");
     }
 }
