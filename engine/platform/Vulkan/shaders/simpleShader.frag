@@ -39,8 +39,10 @@ layout(push_constant) uniform Push
 void main()
 {
 
+    vec3 ambientLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
+
     // ---------- diffused ----------
-    vec3 diffusedLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
+    vec3 diffusedLightColor = vec3(0.0);
     vec3 surfaceNormal = normalize(fragNormalWorld);
 
     for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
@@ -57,8 +59,7 @@ void main()
     // blinn phong: theta between N and H
     vec3 specularLightColor = vec3(0.0, 0.0, 0.0);
 
-    //for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
-    for (int i = 5; i < 6; i++)
+    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
     {
         PointLight light = ubo.m_PointLights[i];
         vec3 directionToLight     = light.m_Position.xyz - fragPositionWorld;
@@ -66,17 +67,22 @@ void main()
         vec3 incidenceVector      = - normalize(directionToLight);
         vec3 directionToCamera    = normalize(toCameraDirection);
         vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
-        float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
+
+        // phong
+        //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
+        // blinn phong
+        vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
+        float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
+
         float specularReflection  = pow(specularFactor, 8);
-        float attenuation = 1.0 / (distanceToLight);
+        float attenuation = 1.0 / (distanceToLight * distanceToLight);
         vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
-        specularLightColor = intensity * specularReflection;
+        specularLightColor += intensity * specularReflection;
     }
     // ------------------------------
 
     vec3 pixelColor;
     float alpha = 1.0;
-    vec3 lightColor = diffusedLightColor + specularLightColor;
     if (fragTextureSlot > 0)
     {
         // {0.0, 1.0} - {1.0, 1.0}
@@ -91,7 +97,8 @@ void main()
         if (alpha == 0) discard;
         if (fragUnlit != 0)
         {
-            lightColor.xyz = vec3(1.0, 1.0, 1.0);
+            diffusedLightColor = vec3(1.0, 1.0, 1.0);
+            specularLightColor = vec3(0.0, 0.0, 0.0);
         }
         pixelColor *= fragAmplification;
     }
@@ -100,7 +107,8 @@ void main()
         pixelColor = fragColor.xyz;
     }
 
-    outColor.xyz = lightColor.xyz  * pixelColor.xyz;
+    outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
+
     outColor.w = alpha;
 
 }
