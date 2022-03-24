@@ -40,6 +40,7 @@ layout(location = 3) out vec2  fragUV;
 layout(location = 4) out int   fragTextureSlot;
 layout(location = 5) out float fragAmplification;
 layout(location = 6) out int   fragUnlit;
+layout(location = 7) out vec3  toCameraDirection;
 
 void main()
 {
@@ -55,4 +56,6 @@ void main()
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
     fragUV = uv;
+
+    toCameraDirection = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz - positionWorld.xyz;
 }

@@ -100,7 +100,7 @@ namespace LucreApp
 
         m_MainInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new SCREEN_UI::AnchorLayoutParams(availableWidth - marginLeftRight * 3 - 2 * iconWidth - iconSpacer,
                                         SCREEN_UI::WRAP_CONTENT, marginLeftRight, 0.0f, SCREEN_UI::NONE, SCREEN_UI::NONE));
-        root_->Add(m_MainInfo);
+        //root_->Add(m_MainInfo);
 
         verticalLayout->Add(new SCREEN_UI::Spacer(marginUpDown));
 
@@ -137,7 +137,7 @@ namespace LucreApp
             if (!m_ToolTipsShown[MAIN_SETTINGS])
             {
                 m_ToolTipsShown[MAIN_SETTINGS] = true;
-                m_MainInfo->Show(ma->T("Settings", "Settings"), e.v);
+                //m_MainInfo->Show(ma->T("Settings", "Settings"), e.v);
             }
             return SCREEN_UI::EVENT_CONTINUE;
         });
@@ -164,7 +164,7 @@ namespace LucreApp
             if (!m_ToolTipsShown[MAIN_OFF])
             {
                 m_ToolTipsShown[MAIN_OFF] = true;
-                m_MainInfo->Show(ma->T("Off", "Off: exit Lucre; keep this button pressed to switch the computer off"), e.v);
+                //m_MainInfo->Show(ma->T("Off", "Off: exit Lucre; keep this button pressed to switch the computer off"), e.v);
             }
             return SCREEN_UI::EVENT_CONTINUE;
         });
