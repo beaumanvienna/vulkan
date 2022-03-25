@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         std::vector<Vertex> m_Vertices{};
         std::vector<uint> m_Indices{};
 
-        void LoadModel(const std::string& filepath);
+        void LoadModel(const std::string& filepath, int textureSlot = 0, int fragAmplification = 1.0);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
     };

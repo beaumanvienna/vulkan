@@ -57,7 +57,7 @@ namespace GfxRenderEngine
                (m_Unlit       == other.m_Unlit);
     }
 
-    void Builder::LoadModel(const std::string &filepath)
+    void Builder::LoadModel(const std::string &filepath, int textureSlot, int fragAmplification)
     {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
@@ -79,6 +79,8 @@ namespace GfxRenderEngine
             for (const auto& index : shape.mesh.indices)
             {
                 Vertex vertex{};
+                vertex.m_TextureSlot   = textureSlot;
+                vertex.m_Amplification = fragAmplification;
 
                 if (index.vertex_index >= 0)
                 {

@@ -27,9 +27,14 @@
 #include "events/event.h"
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
+#include "renderer/texture.h"
 
 #include "mainScene.h"
 
+namespace GfxRenderEngine
+{
+    extern std::shared_ptr<Texture> gBarrelDiffuseTexture;
+}
 namespace LucreApp
 {
     void MainScene::LoadModels()
@@ -128,6 +133,21 @@ namespace LucreApp
             transform.m_Translation = glm::vec3{-0.8f, -0.2f, 0.0f};
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
+        }
+        {
+            Builder builder{};
+            m_Barrel = CreateEntity();
+
+            auto textureSlot = GfxRenderEngine::gBarrelDiffuseTexture->GetTextureSlot();
+            builder.LoadModel("application/lucre/models/barrel/barrel.obj", textureSlot, 3.0);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"barrel", model};
+            m_Registry.emplace<MeshComponent>(m_Barrel, mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, -0.2f, 0.0f};
+            transform.m_Scale = glm::vec3{0.1f, 0.1f, 0.1f};
+            m_Registry.emplace<TransformComponent>(m_Barrel, transform);
         }
         {
             Builder builder{};

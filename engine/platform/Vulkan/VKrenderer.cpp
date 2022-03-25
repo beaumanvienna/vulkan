@@ -31,6 +31,7 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
+    std::shared_ptr<Texture> gBarrelDiffuseTexture;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -57,8 +58,9 @@ namespace GfxRenderEngine
         // create a global pool for desciptor sets
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
-            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 6)
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .Build();
@@ -67,6 +69,7 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
@@ -98,6 +101,15 @@ namespace GfxRenderEngine
     imageInfo1.imageView   = textureFontAtlas->m_TextureView;
     imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
 
+    auto diffuseTexture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+    diffuseTexture->Init("application/lucre/models/barrel/barrel.png");
+
+    gBarrelDiffuseTexture = diffuseTexture; // copy from VK_Texture to Texture
+    VkDescriptorImageInfo imageInfo2 {};
+    imageInfo2.sampler     = diffuseTexture->m_Sampler;
+    imageInfo2.imageView   = diffuseTexture->m_TextureView;
+    imageInfo2.imageLayout = diffuseTexture->m_ImageLayout;
+
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
@@ -105,6 +117,7 @@ namespace GfxRenderEngine
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
                 .WriteImage(2, &imageInfo1)
+                .WriteImage(3, &imageInfo2)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
