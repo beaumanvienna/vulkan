@@ -40,6 +40,8 @@ namespace GfxRenderEngine
         float m_Amplification;
         int m_Unlit;
         int m_NormalTextureSlot;
+        glm::vec3 m_Tangent;
+        glm::vec3 m_Bitangent;
 
         bool operator==(const Vertex& other) const;
 

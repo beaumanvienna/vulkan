@@ -148,7 +148,7 @@ namespace LucreApp
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{0.0f, -0.2f, 0.0f};
-            transform.m_Scale = glm::vec3{0.1f, 0.1f, 0.1f};
+            transform.m_Scale = glm::vec3{0.05f, 0.05f, 0.05f};
             m_Registry.emplace<TransformComponent>(m_Barrel, transform);
         }
         {

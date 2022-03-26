@@ -49,6 +49,8 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
         attributeDescriptions.push_back({6, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
         attributeDescriptions.push_back({7, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_NormalTextureSlot)});
+        attributeDescriptions.push_back({8, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Tangent)});
+        attributeDescriptions.push_back({9, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Bitangent)});
 
         return attributeDescriptions;
     }
@@ -107,7 +109,6 @@ namespace GfxRenderEngine
         };
         stagingBuffer.Map();
         stagingBuffer.WriteToBuffer((void*) indices.data());
-
 
         m_IndexBuffer = std::make_unique<VK_Buffer>
         (

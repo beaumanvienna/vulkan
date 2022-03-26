@@ -10,6 +10,10 @@ layout(location = 6) flat in int fragUnlit;
 layout(location = 7) in vec3  toCameraDirection;
 layout(location = 8) flat in int fragNormalTextureSlot;
 
+layout(location = 9) in vec3  fragTangentViewPos;
+layout(location = 10) in vec3 fragTangentFragPos;
+layout(location = 11) in vec3 fragTangentLightPos[10];
+
 struct PointLight
 {
     vec4 m_Position;  // ignore w
@@ -48,47 +52,76 @@ void main()
     vec3 diffusedLightColor = vec3(0.0);
     vec3 surfaceNormal;
 
-    if (fragNormalTextureSlot == 4)
-    {
-        surfaceNormal = normalize(texture(tex4,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
-    }
-    else
-    {
-        surfaceNormal = normalize(fragNormalWorld);
-    }
-
-    
     // blinn phong: theta between N and H
     vec3 specularLightColor = vec3(0.0, 0.0, 0.0);
 
     for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
     {
-        PointLight light = ubo.m_PointLights[i];
-        vec3 directionToLight     = light.m_Position.xyz - fragPositionWorld;
-        float distanceToLight     = length(directionToLight);
-        float attenuation = 1.0 / (distanceToLight * distanceToLight);
-
-        // ---------- diffused ----------
-        float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
-        vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
-        diffusedLightColor += intensity * cosAngleOfIncidence;
-
-        // ---------- specular ----------
-        if (cosAngleOfIncidence != 0.0)
+        if (fragNormalTextureSlot == 4)
         {
-            vec3 incidenceVector      = - normalize(directionToLight);
-            vec3 directionToCamera    = normalize(toCameraDirection);
-            vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
+            PointLight light = ubo.m_PointLights[i];
 
-            // phong
-            //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
-            // blinn phong
-            vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
-            float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
+            // normal in tangent space
+            surfaceNormal = normalize(texture(tex4,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
+            vec3 directionToLight     = fragTangentLightPos[i] - fragTangentFragPos;
+            float distanceToLight     = length(directionToLight);
+            float attenuation = 1.0 / (distanceToLight * distanceToLight);
+            
+            // ---------- diffused ----------
+            float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
+            vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
+            diffusedLightColor += intensity * cosAngleOfIncidence;
+            
+            // ---------- specular ----------
+            if (cosAngleOfIncidence != 0.0)
+            {
+                vec3 incidenceVector      = - normalize(directionToLight);
+                vec3 directionToCamera    = normalize(toCameraDirection);
+                vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
+            
+                // phong
+                //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
+                // blinn phong
+                vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
+                float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
+            
+                float specularReflection  = pow(specularFactor, 128);
+                vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
+                specularLightColor += intensity * specularReflection;
+            }
+        }
+        else
+        {
+            PointLight light = ubo.m_PointLights[i];
 
-            float specularReflection  = pow(specularFactor, 128);
-            vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
-            specularLightColor += intensity * specularReflection;
+            // normal in world space
+            surfaceNormal = normalize(fragNormalWorld);
+            vec3 directionToLight     = light.m_Position.xyz - fragPositionWorld;
+            float distanceToLight     = length(directionToLight);
+            float attenuation = 1.0 / (distanceToLight * distanceToLight);
+
+            // ---------- diffused ----------
+            float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
+            vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
+            diffusedLightColor += intensity * cosAngleOfIncidence;
+
+            // ---------- specular ----------
+            if (cosAngleOfIncidence != 0.0)
+            {
+                vec3 incidenceVector      = - normalize(directionToLight);
+                vec3 directionToCamera    = normalize(toCameraDirection);
+                vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
+
+                // phong
+                //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
+                // blinn phong
+                vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
+                float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
+
+                float specularReflection  = pow(specularFactor, 128);
+                vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
+                specularLightColor += intensity * specularReflection;
+            }
         }
     }
     // ------------------------------
@@ -125,6 +158,9 @@ void main()
     }
 
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
+    
+    // reinhard tone mapping
+    outColor.xyz = outColor.xyz / (outColor.xyz + vec3(1.0));
 
     outColor.w = alpha;
 

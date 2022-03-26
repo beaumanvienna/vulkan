@@ -126,6 +126,68 @@ namespace GfxRenderEngine
                     m_Vertices.push_back(vertex);
                 }
                 m_Indices.push_back(uniqueVertices[vertex]);
+
+            }
+            // calculate tangents and bitangents
+            uint index = 0;
+            for (const auto& shapeMeshIndex : shape.mesh.indices)
+            {
+
+                static uint cnt = 0;
+                static glm::vec3 position1;
+                static glm::vec3 position2;
+                static glm::vec3 position3;
+                static glm::vec2 uv1;
+                static glm::vec2 uv2;
+                static glm::vec2 uv3;
+
+                auto& vertex = m_Vertices[m_Indices[index]];
+
+                switch (cnt)
+                {
+                    case 0:
+                        position1 = vertex.m_Position;
+                        uv1  = vertex.m_UV;
+                        break;
+                    case 1:
+                        position2 = vertex.m_Position;
+                        uv2  = vertex.m_UV;
+                        break;
+                    case 2:
+                        position3 = vertex.m_Position;
+                        uv3  = vertex.m_UV;
+
+                        glm::vec3 edge1 = position2 - position1;
+                        glm::vec3 edge2 = position3 - position1;
+                        glm::vec2 deltaUV1 = uv2 - uv1;
+                        glm::vec2 deltaUV2 = uv3 - uv1;
+
+                        float factor = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+                        glm::vec3 tangent, bitangent;
+
+                        tangent.x = factor * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                        tangent.y = factor * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                        tangent.z = factor * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+                        bitangent.x = factor * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                        bitangent.y = factor * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                        bitangent.z = factor * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+                        uint vertexIndex1 = m_Indices[index];
+                        uint vertexIndex2 = m_Indices[index-1];
+                        uint vertexIndex3 = m_Indices[index-2];
+                        m_Vertices[vertexIndex1].m_Tangent = tangent;
+                        m_Vertices[vertexIndex2].m_Tangent = tangent;
+                        m_Vertices[vertexIndex3].m_Tangent = tangent;
+                        m_Vertices[vertexIndex1].m_Bitangent = bitangent;
+                        m_Vertices[vertexIndex2].m_Bitangent = bitangent;
+                        m_Vertices[vertexIndex3].m_Bitangent = bitangent;
+
+                        break;
+                }
+                cnt = (cnt + 1) % 3;
+                index++;
             }
         }
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1}", m_Vertices.size(), m_Indices.size());

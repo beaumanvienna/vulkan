@@ -132,6 +132,7 @@ namespace LucreApp
         auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
         auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
         auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
+        auto& barrelTransform  = view.get<TransformComponent>(m_Barrel);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
@@ -139,14 +140,17 @@ namespace LucreApp
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
-        m_GamepadInputController->GetTransform(vase0Transform, true);
-        m_GamepadInputController->GetTransform(vase1Transform, true);
+        //m_GamepadInputController->GetTransform(vase0Transform, true);
+        //m_GamepadInputController->GetTransform(vase1Transform, true);
+        m_GamepadInputController->GetTransform(barrelTransform, true);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
         //vase0Transform.m_Rotation.y = glm::mod(vase0Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         //vase0Transform.m_Rotation.z = glm::mod(vase0Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
         //vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         //vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+        barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
+        barrelTransform.m_Rotation.z = glm::mod(barrelTransform.m_Rotation.z + frameRotation, glm::two_pi<float>());
 
         RotateLights(timestep);
         AnimateVulcan(timestep);

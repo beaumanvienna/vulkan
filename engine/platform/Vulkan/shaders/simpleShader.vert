@@ -8,6 +8,8 @@ layout(location = 4) in int diffuseTextureSlot;
 layout(location = 5) in float amplification;
 layout(location = 6) in int unlit;
 layout(location = 7) in int normalTextureSlot;
+layout(location = 8) in vec3 tangent;
+layout(location = 9) in vec3 bitangent;
 
 struct PointLight
 {
@@ -44,6 +46,10 @@ layout(location = 6) out int   fragUnlit;
 layout(location = 7) out vec3  toCameraDirection;
 layout(location = 8) out int   fragNormalTextureSlot;
 
+layout(location = 9) out vec3  fragTangentViewPos;
+layout(location = 10) out vec3 fragTangentFragPos;
+layout(location = 11) out vec3 fragTangentLightPos[10];
+
 void main()
 {
     // lighting
@@ -60,5 +66,24 @@ void main()
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
     fragUV = uv;
 
-    toCameraDirection = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz - positionWorld.xyz;
+    vec3 cameraPosWorld = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
+    toCameraDirection = cameraPosWorld - positionWorld.xyz;
+
+    // lights and camera in tangent space
+    mat3 normalMatrix = transpose(inverse(mat3(push.m_ModelMatrix)));
+    vec3 T = normalize(normalMatrix * tangent);
+    vec3 N = normalize(normalMatrix * normal);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+    
+    mat3 TBN = transpose(mat3(T, B, N));    
+
+    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
+    {
+        PointLight light = ubo.m_PointLights[i];
+        fragTangentLightPos[i] = TBN * light.m_Position.xyz;
+    }
+    fragTangentViewPos  = TBN * cameraPosWorld;
+    fragTangentFragPos  = TBN * fragPositionWorld;
+
 }

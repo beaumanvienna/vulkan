@@ -52,7 +52,7 @@ namespace LucreApp
             if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
             {
                 transform.m_Scale.x -= controllerAxisInputRight.y * m_Sensitivity;
-                transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.1f, 10.0f);
+                transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.025f, 0.1f);
                 transform.m_Scale.y = transform.m_Scale.x;
                 transform.m_Scale.z = transform.m_Scale.x;
             }

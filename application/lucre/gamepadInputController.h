@@ -33,7 +33,7 @@ namespace LucreApp
     struct GamepadInputControllerSpec
     {
         float m_Deadzone{0.2f};
-        float m_Sensitivity{0.05f};
+        float m_Sensitivity{0.01f};
     };
 
     class GamepadInputController
