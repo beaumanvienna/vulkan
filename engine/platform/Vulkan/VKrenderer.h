@@ -32,6 +32,7 @@
 #include "VKdevice.h"
 #include "VKswapChain.h"
 #include "systems/VKrenderSystem.h"
+#include "systems/VKrenderSystemNormalMapping.h"
 #include "systems/VKpointLightSystem.h"
 #include "platform/Vulkan/imgui/imgui.h"
 #include "VKdescriptor.h"
@@ -85,6 +86,7 @@ namespace GfxRenderEngine
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
         std::unique_ptr<VK_RenderSystem> m_RenderSystem;
+        std::unique_ptr<VK_RenderSystemNormalMapping> m_RenderSystemNormalMapping;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;

@@ -73,6 +73,8 @@ void main()
     mat3 normalMatrix = transpose(inverse(mat3(push.m_ModelMatrix)));
     vec3 T = normalize(normalMatrix * tangent);
     vec3 N = normalize(normalMatrix * normal);
+
+    // Gram Schmidt
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
     

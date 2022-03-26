@@ -80,6 +80,19 @@ namespace GfxRenderEngine
 
     };
 
+    // models without a normal map
+    struct DiffuseMapComponent
+    {
+        uint m_TextureSlot; // diffuse (=albedo) map
+    };
+
+    // models with a normal map
+    struct NormalMappingComponent
+    {
+        uint m_TextureSlot; // diffuse (=albedo) map
+        uint m_NormalMapTextureSlot; // normal (bump) map
+    };
+
     class Scene
     {
 

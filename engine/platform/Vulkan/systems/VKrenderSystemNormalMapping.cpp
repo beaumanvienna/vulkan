@@ -24,27 +24,27 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKrenderSystem.h"
+#include "systems/VKrenderSystemNormalMapping.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystem::VK_RenderSystem(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemNormalMapping::VK_RenderSystemNormalMapping(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystem::~VK_RenderSystem()
+    VK_RenderSystemNormalMapping::~VK_RenderSystemNormalMapping()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystem::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemNormalMapping::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_SimplePushConstantData);
+        pushConstantRange.size = sizeof(VK_PushConstantDataNormalMapping);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystem::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemNormalMapping::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -72,13 +72,13 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/litShader.vert.spv",
-            "bin/litShader.frag.spv",
+            "bin/normalMapping.vert.spv",
+            "bin/normalMapping.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystem::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemNormalMapping::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         vkCmdBindDescriptorSets
         (
@@ -94,11 +94,11 @@ namespace GfxRenderEngine
 
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, DiffuseMapComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, NormalMappingComponent>();
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);
-            VK_SimplePushConstantData push{};
+            VK_PushConstantDataNormalMapping push{};
             push.m_ModelMatrix  = transform.Mat4();
             push.m_NormalMatrix = transform.NormalMatrix();
             vkCmdPushConstants(
@@ -106,7 +106,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_SimplePushConstantData),
+                sizeof(VK_PushConstantDataNormalMapping),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
@@ -116,46 +116,5 @@ namespace GfxRenderEngine
                 static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
             }
         }
-    }
-
-    void VK_RenderSystem::DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem)
-    {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
-        
-        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
-
-        for (auto& particle : particleSystem->m_ParticlePool)
-        {
-            if (!particle.m_Enabled)
-            {
-                continue;
-            }
-            auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
-            VK_SimplePushConstantData push{};
-            push.m_ModelMatrix  = transform.Mat4();
-            push.m_NormalMatrix = transform.NormalMatrix();
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_SimplePushConstantData),
-                &push);
-
-            auto& mesh = particleSystem->m_Registry.get<MeshComponent>(particle.m_SpriteEntity);
-            static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-            static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
-        }
-        
     }
 }

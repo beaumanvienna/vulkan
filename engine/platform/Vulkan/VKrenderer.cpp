@@ -135,6 +135,7 @@ namespace GfxRenderEngine
         }
 
         m_RenderSystem = std::make_unique<VK_RenderSystem>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
+        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
         m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
@@ -328,6 +329,7 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             m_RenderSystem->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemNormalMapping->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
