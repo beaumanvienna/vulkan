@@ -45,9 +45,10 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Color)});
         attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Normal)});
         attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, m_UV)});
-        attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_TextureSlot)});
+        attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_DiffuseTextureSlot)});
         attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
         attributeDescriptions.push_back({6, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
+        attributeDescriptions.push_back({7, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_NormalTextureSlot)});
 
         return attributeDescriptions;
     }

@@ -52,12 +52,13 @@ namespace GfxRenderEngine
                (m_Color       == other.m_Color) &&
                (m_Normal      == other.m_Normal) &&
                (m_UV          == other.m_UV) &&
-               (m_TextureSlot == other.m_TextureSlot) &&
+               (m_DiffuseTextureSlot == other.m_DiffuseTextureSlot) &&
                (m_Amplification == other.m_Amplification) &&
-               (m_Unlit       == other.m_Unlit);
+               (m_Unlit       == other.m_Unlit) &&
+               (m_NormalTextureSlot == other.m_NormalTextureSlot);
     }
 
-    void Builder::LoadModel(const std::string &filepath, int textureSlot, int fragAmplification)
+    void Builder::LoadModel(const std::string &filepath, int diffuseTextureSlot, int fragAmplification, int normalTextureSlot)
     {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
@@ -79,8 +80,9 @@ namespace GfxRenderEngine
             for (const auto& index : shape.mesh.indices)
             {
                 Vertex vertex{};
-                vertex.m_TextureSlot   = textureSlot;
-                vertex.m_Amplification = fragAmplification;
+                vertex.m_DiffuseTextureSlot = diffuseTextureSlot;
+                vertex.m_Amplification      = fragAmplification;
+                vertex.m_NormalTextureSlot  = normalTextureSlot;
 
                 if (index.vertex_index >= 0)
                 {
