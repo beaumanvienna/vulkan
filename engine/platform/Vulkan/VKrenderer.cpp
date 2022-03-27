@@ -31,7 +31,7 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
-    std::shared_ptr<Texture> gBarrelDiffuseTexture;
+    std::shared_ptr<Texture> gBarrelDiffuseMap;
     std::shared_ptr<Texture> gBarrelNormalMap;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
@@ -104,14 +104,14 @@ namespace GfxRenderEngine
     imageInfo1.imageView   = textureFontAtlas->m_TextureView;
     imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
 
-    auto barrelDiffuseTexture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    barrelDiffuseTexture->Init("application/lucre/models/barrel/barrel.png");
+    auto barrelDiffuseMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+    barrelDiffuseMap->Init("application/lucre/models/barrel/barrel.png");
 
-    gBarrelDiffuseTexture = barrelDiffuseTexture; // copy from VK_Texture to Texture
+    gBarrelDiffuseMap = barrelDiffuseMap; // copy from VK_Texture to Texture
     VkDescriptorImageInfo imageInfo2 {};
-    imageInfo2.sampler     = barrelDiffuseTexture->m_Sampler;
-    imageInfo2.imageView   = barrelDiffuseTexture->m_TextureView;
-    imageInfo2.imageLayout = barrelDiffuseTexture->m_ImageLayout;
+    imageInfo2.sampler     = barrelDiffuseMap->m_Sampler;
+    imageInfo2.imageView   = barrelDiffuseMap->m_TextureView;
+    imageInfo2.imageLayout = barrelDiffuseMap->m_ImageLayout;
 
     auto barrelNormalMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
     barrelNormalMap->Init("application/lucre/models/barrel/barrelNormal.png");

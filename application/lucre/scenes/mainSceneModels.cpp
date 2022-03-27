@@ -33,7 +33,7 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Texture> gBarrelDiffuseTexture;
+    extern std::shared_ptr<Texture> gBarrelDiffuseMap;
     extern std::shared_ptr<Texture> gBarrelNormalMap;
 }
 namespace LucreApp
@@ -154,7 +154,7 @@ namespace LucreApp
             Builder builder{};
             m_Barrel = CreateEntity();
 
-            auto textureSlotDiffuse = GfxRenderEngine::gBarrelDiffuseTexture->GetTextureSlot();
+            auto textureSlotDiffuse = GfxRenderEngine::gBarrelDiffuseMap->GetTextureSlot();
             auto textureSlotNormal  = GfxRenderEngine::gBarrelNormalMap->GetTextureSlot();
             builder.LoadModel("application/lucre/models/barrel/barrel.obj", textureSlotDiffuse, 3.0, textureSlotNormal);
             auto model = Engine::m_Engine->LoadModel(builder);

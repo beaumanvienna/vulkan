@@ -198,5 +198,8 @@ namespace LucreApp
 
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_ID, transform);
+
+            DiffuseMapComponent diffuse{};
+            m_Registry.emplace<DiffuseMapComponent>(m_ID, diffuse);
         }
 }

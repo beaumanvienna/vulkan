@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/simpleShader.vert</file>
+        <file>../engine/platform/Vulkan/shaders/litShader.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/simpleShader.frag</file>
+        <file>../engine/platform/Vulkan/shaders/litShader.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/normalMapping.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/normalMapping.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pointLight.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pointLight.frag</file>
     </gresource>
     <gresource prefix="/images/">
         <file>images/cursor.png</file>
