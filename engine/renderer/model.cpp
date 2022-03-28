@@ -161,14 +161,25 @@ namespace GfxRenderEngine
                         glm::vec3 edge2 = position3 - position1;
                         glm::vec2 deltaUV1 = uv2 - uv1;
                         glm::vec2 deltaUV2 = uv3 - uv1;
-                        
-                        float factor = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+                        float dU1 = deltaUV1.x;
+                        float dU2 = deltaUV2.x;
+                        float dV1 = deltaUV1.y;
+                        float dV2 = deltaUV2.y;
+                        float E1x = edge1.x;
+                        float E2x = edge2.x;
+                        float E1y = edge1.y;
+                        float E2y = edge2.y;
+                        float E1z = edge1.z;
+                        float E2z = edge2.z;
+
+                        float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
                         
                         glm::vec3 tangent;
                         
-                        tangent.x = factor * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-                        tangent.y = factor * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-                        tangent.z = factor * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                        tangent.x = factor * (dV2 * E1x - dV1 * E2x);
+                        tangent.y = factor * (dV2 * E1y - dV1 * E2y);
+                        tangent.z = factor * (dV2 * E1z - dV1 * E2z);
 
                         uint vertexIndex1 = m_Indices[index];
                         uint vertexIndex2 = m_Indices[index-1];
