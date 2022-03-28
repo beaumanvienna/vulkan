@@ -161,18 +161,14 @@ namespace GfxRenderEngine
                         glm::vec3 edge2 = position3 - position1;
                         glm::vec2 deltaUV1 = uv2 - uv1;
                         glm::vec2 deltaUV2 = uv3 - uv1;
-
+                        
                         float factor = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-                        glm::vec3 tangent, bitangent;
-
+                        
+                        glm::vec3 tangent;
+                        
                         tangent.x = factor * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
                         tangent.y = factor * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
                         tangent.z = factor * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-
-                        bitangent.x = factor * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-                        bitangent.y = factor * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-                        bitangent.z = factor * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 
                         uint vertexIndex1 = m_Indices[index];
                         uint vertexIndex2 = m_Indices[index-1];
@@ -180,9 +176,6 @@ namespace GfxRenderEngine
                         m_Vertices[vertexIndex1].m_Tangent = tangent;
                         m_Vertices[vertexIndex2].m_Tangent = tangent;
                         m_Vertices[vertexIndex3].m_Tangent = tangent;
-                        m_Vertices[vertexIndex1].m_Bitangent = bitangent;
-                        m_Vertices[vertexIndex2].m_Bitangent = bitangent;
-                        m_Vertices[vertexIndex3].m_Bitangent = bitangent;
 
                         break;
                 }
