@@ -41,6 +41,26 @@ namespace LucreApp
     void MainScene::LoadModels()
     {
 
+
+        {
+            Builder builder{};
+            m_Duck = CreateEntity();
+
+            builder.LoadGLTF("application/lucre/models/duck/duck.gltf");
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"duck", model};
+            m_Registry.emplace<MeshComponent>(m_Duck, mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{-1.6f, 0.5f, 0.0f};
+            transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
+            transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
+            m_Registry.emplace<TransformComponent>(m_Duck, transform);
+
+            DiffuseMapComponent diffuse{};
+            m_Registry.emplace<DiffuseMapComponent>(m_Duck, diffuse);
+        }
+
         {
             Builder builder{};
 

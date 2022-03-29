@@ -42,6 +42,8 @@ project "engine"
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
         "vendor/entt/include",
+        "vendor/tinygltf",
+        "vendor/json",
     }
 
     libdirs

@@ -24,8 +24,13 @@
 #include <iostream>
 #include <unordered_map>
 
+#define TINYGLTF_IMPLEMENTATION
+#include "tiny_gltf.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
+#include "gtc/type_ptr.hpp"
 
 #include "renderer/model.h"
 #include "auxiliary/hash.h"
@@ -56,6 +61,106 @@ namespace GfxRenderEngine
                (m_Amplification == other.m_Amplification) &&
                (m_Unlit       == other.m_Unlit) &&
                (m_NormalTextureSlot == other.m_NormalTextureSlot);
+    }
+
+    void Builder::LoadGLTF(const std::string &filepath)
+    {
+        tinygltf::Model gltfModel;
+        tinygltf::TinyGLTF gltfLoader;
+        std::string warn, err;
+
+        if (!gltfLoader.LoadASCIIFromFile(&gltfModel, &err, &warn, filepath))
+        {
+            LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
+        }
+
+        m_Vertices.clear();
+        m_Indices.clear();
+
+        for (const auto& mesh : gltfModel.meshes)
+        {
+            for (const auto& glTFPrimitive : mesh.primitives)
+            {
+                
+                uint32_t firstIndex  = 0;
+                uint32_t vertexStart = 0;
+                uint32_t indexCount  = 0;
+                // Vertices
+                {
+                    const float* positionBuffer = nullptr;
+                    const float* normalsBuffer = nullptr;
+                    const float* texCoordsBuffer = nullptr;
+                    size_t vertexCount = 0;
+
+                    // Get buffer data for vertex normals
+                    if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
+                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
+                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
+                        positionBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        vertexCount = accessor.count;
+                    }
+                    // Get buffer data for vertex normals
+                    if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
+                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
+                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
+                        normalsBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    }
+                    // Get buffer data for vertex texture coordinates
+                    // glTF supports multiple sets, we only load the first one
+                    if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end()) {
+                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
+                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
+                        texCoordsBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    }
+
+                    // Append data to model's vertex buffer
+                    for (size_t v = 0; v < vertexCount; v++) {
+                        Vertex vert{};
+                        vert.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
+                        vert.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                        vert.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                        vert.m_Color = glm::vec3(1.0f);
+                        m_Vertices.push_back(vert);
+                    }
+                }
+                // Indices
+                {
+                    const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.indices];
+                    const tinygltf::BufferView& bufferView = gltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer& buffer = gltfModel.buffers[bufferView.buffer];
+
+                    indexCount += static_cast<uint32_t>(accessor.count);
+
+                    // glTF supports different component types of indices
+                    switch (accessor.componentType) {
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
+                        const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++) {
+                            m_Indices.push_back(buf[index] + vertexStart);
+                        }
+                        break;
+                    }
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
+                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++) {
+                            m_Indices.push_back(buf[index] + vertexStart);
+                        }
+                        break;
+                    }
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
+                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++) {
+                            m_Indices.push_back(buf[index] + vertexStart);
+                        }
+                        break;
+                    }
+                    default:
+                        std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)
