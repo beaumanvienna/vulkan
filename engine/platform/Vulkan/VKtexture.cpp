@@ -71,7 +71,7 @@ namespace GfxRenderEngine
             ok = true;
             m_Width = width;
             m_Height = height;
-            LOG_CORE_CRITICAL("not implemented bool VK_Texture::Init(const uint width, const uint height, const void* data)");
+            m_BytesPerPixel = 4;
         }
         return ok;
     }

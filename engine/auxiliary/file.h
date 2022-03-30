@@ -38,6 +38,7 @@ namespace GfxRenderEngine
         bool IsDirectory(const std::string& filename);
 
         std::string GetFilenameWithoutPath(const std::filesystem::path& path);
+        std::string GetPathWithoutFilename(const std::filesystem::path& path);
         std::string GetFileExtension(const std::filesystem::path& path);
 
         bool CreateDirectory(const std::string& filename);

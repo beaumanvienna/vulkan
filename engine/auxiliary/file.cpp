@@ -76,6 +76,24 @@ namespace GfxRenderEngine
             return filenameWithoutPath;
         }
 
+        std::string GetPathWithoutFilename(const std::filesystem::path& path)
+        {
+            #ifndef _WIN32
+                std::string pathWithoutFilename = path.parent_path();
+            #else
+                std::filesystem::path withoutFilename{std::filesystem::path(path.parent_path())};
+                std::string pathWithoutFilename = withoutFilename.string();
+            #endif
+            if (!pathWithoutFilename.empty())
+            {
+                if (pathWithoutFilename.back() != '/')
+                {
+                    pathWithoutFilename += '/';
+                }
+            }
+            return pathWithoutFilename;
+        }
+
         std::string GetFileExtension(const std::filesystem::path& path)
         {
             #ifndef _WIN32

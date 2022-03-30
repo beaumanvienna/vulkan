@@ -33,7 +33,9 @@
 #include "gtc/type_ptr.hpp"
 
 #include "renderer/model.h"
+#include "renderer/texture.h"
 #include "auxiliary/hash.h"
+#include "auxiliary/file.h"
 
 namespace std
 {
@@ -63,17 +65,55 @@ namespace GfxRenderEngine
                (m_NormalTextureSlot == other.m_NormalTextureSlot);
     }
 
-    void Builder::LoadGLTF(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification)
+    void Builder::LoadGLTF(const std::string& filepath, int diffuseMapTextureSlot, int fragAmplification)
     {
         tinygltf::Model gltfModel;
         tinygltf::TinyGLTF gltfLoader;
         std::string warn, err;
+        std::vector<std::shared_ptr<Texture>> images;
 
         if (!gltfLoader.LoadASCIIFromFile(&gltfModel, &err, &warn, filepath))
         {
             LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
         }
 
+        std::string basepath = EngineCore::GetPathWithoutFilename(filepath);
+        // handle images
+        for (uint i = 0; i < gltfModel.images.size(); i++)
+        {
+            std::string imageFilepath = basepath + gltfModel.images[0].uri;
+            tinygltf::Image& glTFImage = gltfModel.images[i];
+
+            // glTFImage.component - the number of channels in each pixel
+            // three channels per pixel need to be converted to four channels per pixel
+            uchar* buffer = nullptr;
+            uint64 bufferSize = 0;
+            if (glTFImage.component == 3)
+            {
+                bufferSize = glTFImage.width * glTFImage.height * 4;
+                std::vector<uchar> imageData(bufferSize, 0x00);
+
+                buffer = (uchar*)imageData.data();
+                uchar* rgba = buffer;
+                uchar* rgb = &glTFImage.image[0];
+                for (uint i = 0; i < glTFImage.width * glTFImage.height; ++i)
+                {
+                    memcpy(rgba, rgb, sizeof(uchar) * 3);
+                    rgba += 4;
+                    rgb += 3;
+                }
+            }
+            else
+            {
+                buffer = &glTFImage.image[0];
+                bufferSize = glTFImage.image.size();
+            }
+            //auto texture = Texture::Create();
+            //texture->Init(glTFImage.width, glTFImage.height, buffer);
+            //images.push_back(texture);
+        }
+
+        // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
 
@@ -81,7 +121,6 @@ namespace GfxRenderEngine
         {
             for (const auto& glTFPrimitive : mesh.primitives)
             {
-                
                 uint32_t firstIndex  = 0;
                 uint32_t vertexStart = 0;
                 uint32_t indexCount  = 0;
