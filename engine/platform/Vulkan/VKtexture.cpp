@@ -68,10 +68,10 @@ namespace GfxRenderEngine
 
         if(m_LocalBuffer)
         {
-            ok = true;
             m_Width = width;
             m_Height = height;
             m_BytesPerPixel = 4;
+            ok = Create();
         }
         return ok;
     }
@@ -88,6 +88,7 @@ namespace GfxRenderEngine
         if(m_LocalBuffer)
         {
             ok = Create();
+            stbi_image_free(m_LocalBuffer);
         }
         else
         {
@@ -108,6 +109,7 @@ namespace GfxRenderEngine
         if(m_LocalBuffer)
         {
             ok = Create();
+            stbi_image_free(m_LocalBuffer);
         }
         else
         {
@@ -290,8 +292,6 @@ namespace GfxRenderEngine
         vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
             memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
         vkUnmapMemory(device, stagingBufferMemory);
-
-        stbi_image_free(m_LocalBuffer);
 
         CreateImage
         (

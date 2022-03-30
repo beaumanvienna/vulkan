@@ -108,9 +108,9 @@ namespace GfxRenderEngine
                 buffer = &glTFImage.image[0];
                 bufferSize = glTFImage.image.size();
             }
-            //auto texture = Texture::Create();
-            //texture->Init(glTFImage.width, glTFImage.height, buffer);
-            //images.push_back(texture);
+            auto texture = Texture::Create();
+            texture->Init(glTFImage.width, glTFImage.height, buffer);
+            images.push_back(texture);
         }
 
         // handle vertex data
@@ -203,6 +203,7 @@ namespace GfxRenderEngine
                 }
             }
         }
+        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)
@@ -341,7 +342,7 @@ namespace GfxRenderEngine
                 index++;
             }
         }
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1}", m_Vertices.size(), m_Indices.size());
+        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
     }
 
     void Builder::LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit, const glm::vec4& color)
