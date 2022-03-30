@@ -36,7 +36,7 @@ namespace GfxRenderEngine
         ~Texture() {}
 
         virtual bool Init(const uint width, const uint height, const void* data) = 0;
-        virtual bool Init(const std::string& fileName) = 0;
+        virtual bool Init(const std::string& fileName, bool flip = true) = 0;
         virtual bool Init(const unsigned char* data, int length) = 0;
         virtual bool Init(const uint width, const uint height, const uint rendererID) = 0;
         virtual void Bind() const = 0;

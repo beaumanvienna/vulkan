@@ -77,11 +77,11 @@ namespace GfxRenderEngine
     }
 
     // create texture from file on disk
-    bool VK_Texture::Init(const std::string& fileName)
+    bool VK_Texture::Init(const std::string& fileName, bool flip)
     {
         bool ok = false;
         int channels_in_file;
-        stbi_set_flip_vertically_on_load(true);
+        stbi_set_flip_vertically_on_load(flip);
         m_FileName = fileName;
         m_LocalBuffer = stbi_load(m_FileName.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
 

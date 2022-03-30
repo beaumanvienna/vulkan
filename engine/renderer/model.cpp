@@ -63,7 +63,7 @@ namespace GfxRenderEngine
                (m_NormalTextureSlot == other.m_NormalTextureSlot);
     }
 
-    void Builder::LoadGLTF(const std::string &filepath)
+    void Builder::LoadGLTF(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification)
     {
         tinygltf::Model gltfModel;
         tinygltf::TinyGLTF gltfLoader;
@@ -115,12 +115,15 @@ namespace GfxRenderEngine
 
                     // Append data to model's vertex buffer
                     for (size_t v = 0; v < vertexCount; v++) {
-                        Vertex vert{};
-                        vert.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
-                        vert.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                        vert.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                        vert.m_Color = glm::vec3(1.0f);
-                        m_Vertices.push_back(vert);
+                        Vertex vertex{};
+                        vertex.m_DiffuseMapTextureSlot = diffuseMapTextureSlot;
+                        vertex.m_Amplification      = fragAmplification;
+
+                        vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
+                        vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                        vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                        vertex.m_Color = glm::vec3(1.0f);
+                        m_Vertices.push_back(vertex);
                     }
                 }
                 // Indices

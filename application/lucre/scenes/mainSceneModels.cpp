@@ -35,18 +35,18 @@ namespace GfxRenderEngine
 {
     extern std::shared_ptr<Texture> gBarrelDiffuseMap;
     extern std::shared_ptr<Texture> gBarrelNormalMap;
+    extern std::shared_ptr<Texture> gDuckDiffuseMap;
 }
 namespace LucreApp
 {
     void MainScene::LoadModels()
     {
-
-
         {
             Builder builder{};
             m_Duck = CreateEntity();
 
-            builder.LoadGLTF("application/lucre/models/duck/duck.gltf");
+            auto textureSlotDiffuse = GfxRenderEngine::gDuckDiffuseMap->GetTextureSlot();
+            builder.LoadGLTF("application/lucre/models/duck/duck.gltf", textureSlotDiffuse);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"duck", model};
             m_Registry.emplace<MeshComponent>(m_Duck, mesh);
@@ -127,7 +127,7 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3{-1.0f, 0.32f, 0.0f};
+                transform.m_Translation = glm::vec3{-0.5f, 0.32f, 0.0f};
                 transform.m_Scale = glm::vec3{0.005f};
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 

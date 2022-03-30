@@ -33,6 +33,7 @@ namespace GfxRenderEngine
     std::shared_ptr<Texture> gTextureFontAtlas;
     std::shared_ptr<Texture> gBarrelDiffuseMap;
     std::shared_ptr<Texture> gBarrelNormalMap;
+    std::shared_ptr<Texture> gDuckDiffuseMap;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -65,6 +66,7 @@ namespace GfxRenderEngine
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -73,6 +75,7 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
@@ -122,6 +125,15 @@ namespace GfxRenderEngine
     imageInfo3.imageView   = barrelNormalMap->m_TextureView;
     imageInfo3.imageLayout = barrelNormalMap->m_ImageLayout;
 
+    auto duckDiffuseMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+    duckDiffuseMap->Init("application/lucre/models/duck/duckCM.png", false);
+
+    gDuckDiffuseMap = duckDiffuseMap; // copy from VK_Texture to Texture
+    VkDescriptorImageInfo imageInfo4 {};
+    imageInfo4.sampler     = duckDiffuseMap->m_Sampler;
+    imageInfo4.imageView   = duckDiffuseMap->m_TextureView;
+    imageInfo4.imageLayout = duckDiffuseMap->m_ImageLayout;
+
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
@@ -131,6 +143,7 @@ namespace GfxRenderEngine
                 .WriteImage(2, &imageInfo1)
                 .WriteImage(3, &imageInfo2)
                 .WriteImage(4, &imageInfo3)
+                .WriteImage(5, &imageInfo4)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 

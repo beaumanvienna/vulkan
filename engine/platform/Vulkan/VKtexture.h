@@ -41,7 +41,7 @@ namespace GfxRenderEngine
         ~VK_Texture();
 
         virtual bool Init(const uint width, const uint height, const void* data) override;
-        virtual bool Init(const std::string& fileName) override;
+        virtual bool Init(const std::string& fileName, bool flip = true) override;
         virtual bool Init(const unsigned char* data, int length) override;
         virtual bool Init(const uint width, const uint height, const uint rendererID) override;
         virtual void Bind() const override;
