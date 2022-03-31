@@ -24,16 +24,12 @@
 #include <iostream>
 #include <unordered_map>
 
-#define TINYGLTF_IMPLEMENTATION
-#include "tiny_gltf.h"
-
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include "gtc/type_ptr.hpp"
 
 #include "renderer/model.h"
-#include "renderer/texture.h"
 #include "auxiliary/hash.h"
 #include "auxiliary/file.h"
 
@@ -65,29 +61,19 @@ namespace GfxRenderEngine
                (m_NormalTextureSlot == other.m_NormalTextureSlot);
     }
 
-    void Builder::LoadGLTF(const std::string& filepath, int diffuseMapTextureSlot, int fragAmplification)
+    void Builder::LoadImagesGLTF()
     {
-        tinygltf::Model gltfModel;
-        tinygltf::TinyGLTF gltfLoader;
-        std::string warn, err;
-        std::vector<std::shared_ptr<Texture>> images;
-
-        if (!gltfLoader.LoadASCIIFromFile(&gltfModel, &err, &warn, filepath))
+        m_Images.resize(m_GltfModel.images.size());
+        // retrieve all images from the glTF file
+        for (uint i = 0; i < m_GltfModel.images.size(); i++)
         {
-            LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
-        }
-
-        std::string basepath = EngineCore::GetPathWithoutFilename(filepath);
-        // handle images
-        for (uint i = 0; i < gltfModel.images.size(); i++)
-        {
-            std::string imageFilepath = basepath + gltfModel.images[0].uri;
-            tinygltf::Image& glTFImage = gltfModel.images[i];
+            std::string imageFilepath = m_Basepath + m_GltfModel.images[0].uri;
+            tinygltf::Image& glTFImage = m_GltfModel.images[i];
 
             // glTFImage.component - the number of channels in each pixel
             // three channels per pixel need to be converted to four channels per pixel
-            uchar* buffer = nullptr;
-            uint64 bufferSize = 0;
+            uchar* buffer;
+            uint64 bufferSize;
             if (glTFImage.component == 3)
             {
                 bufferSize = glTFImage.width * glTFImage.height * 4;
@@ -110,17 +96,43 @@ namespace GfxRenderEngine
             }
             auto texture = Texture::Create();
             texture->Init(glTFImage.width, glTFImage.height, buffer);
-            images.push_back(texture);
+            m_Images.push_back(texture);
         }
+    }
 
+    void Builder::LoadMaterialsGLTF()
+    {
+        m_Materials.resize(m_GltfModel.materials.size());
+        for (uint i = 0; i < m_GltfModel.materials.size(); i++)
+        {
+            tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
+            Material material{};
+            if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
+            {
+                material.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
+            }
+            if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
+            {
+                material.m_DiffuseMapIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+            }
+            m_Materials.push_back(material);
+        }
+    }
+
+    void Builder::LoadVertexDataGLTF(int diffuseMapTextureSlot, int fragAmplification)
+    {
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
 
-        for (const auto& mesh : gltfModel.meshes)
+        for (const auto& mesh : m_GltfModel.meshes)
         {
             for (const auto& glTFPrimitive : mesh.primitives)
             {
+                ASSERT(glTFPrimitive.material < m_Materials.size());
+                uint diffuseMapIndex = m_Materials[glTFPrimitive.material].m_DiffuseMapIndex;
+                ASSERT(diffuseMapIndex < m_Images.size());
+                //int diffuseMapTextureSlot = m_Images[diffuseMapIndex]->GetTextureSlot();
                 uint32_t firstIndex  = 0;
                 uint32_t vertexStart = 0;
                 uint32_t indexCount  = 0;
@@ -133,23 +145,23 @@ namespace GfxRenderEngine
 
                     // Get buffer data for vertex normals
                     if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
-                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                        positionBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
+                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                        positionBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                         vertexCount = accessor.count;
                     }
                     // Get buffer data for vertex normals
                     if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
-                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                        normalsBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
+                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                        normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     }
                     // Get buffer data for vertex texture coordinates
                     // glTF supports multiple sets, we only load the first one
                     if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
-                        const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                        texCoordsBuffer = reinterpret_cast<const float*>(&(gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
+                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                        texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     }
 
                     // Append data to model's vertex buffer
@@ -167,9 +179,9 @@ namespace GfxRenderEngine
                 }
                 // Indices
                 {
-                    const tinygltf::Accessor& accessor = gltfModel.accessors[glTFPrimitive.indices];
-                    const tinygltf::BufferView& bufferView = gltfModel.bufferViews[accessor.bufferView];
-                    const tinygltf::Buffer& buffer = gltfModel.buffers[bufferView.buffer];
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.indices];
+                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer& buffer = m_GltfModel.buffers[bufferView.buffer];
 
                     indexCount += static_cast<uint32_t>(accessor.count);
 
@@ -203,6 +215,22 @@ namespace GfxRenderEngine
                 }
             }
         }
+    }
+
+    void Builder::LoadGLTF(const std::string& filepath, int diffuseMapTextureSlot, int fragAmplification)
+    {
+        std::string warn, err;
+
+        m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
+
+        if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, filepath))
+        {
+            LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
+        }
+
+        LoadImagesGLTF();
+        LoadMaterialsGLTF();
+        LoadVertexDataGLTF(diffuseMapTextureSlot, fragAmplification);
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
     }
 

@@ -25,6 +25,7 @@ project "lucre"
     {
         "application/**.h", 
         "application/**.cpp",
+        "vendor/tinygltf/tiny_gltf.cpp",
     }
 
     includedirs 
@@ -42,7 +43,9 @@ project "lucre"
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
         "vendor/entt/include",
+        "vendor/json",
         "vendor/glm",
+        "vendor/stb",
     }
 
     libdirs
