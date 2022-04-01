@@ -71,6 +71,7 @@ namespace GfxRenderEngine
 
     private:
 
+        std::vector<std::shared_ptr<VK_Texture>> m_ImagesInternal;
         std::shared_ptr<VK_Device> m_Device;
 
         std::unique_ptr<VK_Buffer> m_VertexBuffer;

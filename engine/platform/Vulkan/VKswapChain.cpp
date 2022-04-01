@@ -436,7 +436,7 @@ namespace GfxRenderEngine
 
     VkPresentModeKHR VK_SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
     {
-        std::cout << "Present mode: V-Sync" << std::endl;
+        //std::cout << "Present mode: V-Sync" << std::endl;
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

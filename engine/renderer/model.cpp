@@ -28,6 +28,7 @@
 #include "tiny_obj_loader.h"
 
 #include "gtc/type_ptr.hpp"
+#include "stb_image.h"
 
 #include "core.h"
 #include "VKmodel.h"
@@ -223,6 +224,7 @@ namespace GfxRenderEngine
         std::string warn, err;
 
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
+        stbi_set_flip_vertically_on_load(false);
 
         if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, filepath))
         {

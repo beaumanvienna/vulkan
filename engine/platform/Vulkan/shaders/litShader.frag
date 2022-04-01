@@ -52,7 +52,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
-layout(set = 0, binding = 3) uniform sampler2D tex3;
 
 layout (location = 0) out vec4 outColor;
 
@@ -121,11 +120,6 @@ void main()
         {
             alpha = texture(tex1,fragUV).w;
             pixelColor = texture(tex1,fragUV).xyz;
-        }
-        else if (fragDiffuseMapTextureSlot == 3)
-        {
-            alpha = texture(tex3,fragUV).w;
-            pixelColor = texture(tex3,fragUV).xyz;
         }
         if (alpha == 0) discard;
         if (fragUnlit != 0)

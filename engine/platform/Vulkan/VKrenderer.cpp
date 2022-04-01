@@ -31,8 +31,6 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
-    std::shared_ptr<Texture> gBarrelDiffuseMap;
-    std::shared_ptr<Texture> gBarrelNormalMap;
 
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
 
@@ -65,8 +63,8 @@ namespace GfxRenderEngine
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // spritesheet
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // font atlas
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // barrel diffuse map
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // barrel normal map
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
@@ -77,8 +75,6 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // spritesheet
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
-                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // barrel diffuse map
-                    .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // barrel normal map
                     .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -96,47 +92,28 @@ namespace GfxRenderEngine
             localDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
-    #warning "fix me"
-    size_t fileSize;
-    auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
-    auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    textureSpritesheet->Init(data, fileSize);
-    textureSpritesheet->m_FileName = "spritesheet";
+        size_t fileSize;
+        auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
+        auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+        textureSpritesheet->Init(data, fileSize);
+        textureSpritesheet->m_FileName = "spritesheet";
 
-    gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo0 {};
-    imageInfo0.sampler     = textureSpritesheet->m_Sampler;
-    imageInfo0.imageView   = textureSpritesheet->m_TextureView;
-    imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
+        gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
+        VkDescriptorImageInfo imageInfo0 {};
+        imageInfo0.sampler     = textureSpritesheet->m_Sampler;
+        imageInfo0.imageView   = textureSpritesheet->m_TextureView;
+        imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
 
-    data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
-    auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    textureFontAtlas->Init(data, fileSize);
-    textureFontAtlas->m_FileName = "font atlas";
+        data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
+        auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+        textureFontAtlas->Init(data, fileSize);
+        textureFontAtlas->m_FileName = "font atlas";
 
-    gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo1 {};
-    imageInfo1.sampler     = textureFontAtlas->m_Sampler;
-    imageInfo1.imageView   = textureFontAtlas->m_TextureView;
-    imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
-
-    auto barrelDiffuseMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    barrelDiffuseMap->Init("application/lucre/models/barrel/barrel.png");
-
-    gBarrelDiffuseMap = barrelDiffuseMap; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo2 {};
-    imageInfo2.sampler     = barrelDiffuseMap->m_Sampler;
-    imageInfo2.imageView   = barrelDiffuseMap->m_TextureView;
-    imageInfo2.imageLayout = barrelDiffuseMap->m_ImageLayout;
-
-    auto barrelNormalMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    barrelNormalMap->Init("application/lucre/models/barrel/barrelNormal.png");
-
-    gBarrelNormalMap = barrelNormalMap; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo3 {};
-    imageInfo3.sampler     = barrelNormalMap->m_Sampler;
-    imageInfo3.imageView   = barrelNormalMap->m_TextureView;
-    imageInfo3.imageLayout = barrelNormalMap->m_ImageLayout;
+        gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture
+        VkDescriptorImageInfo imageInfo1 {};
+        imageInfo1.sampler     = textureFontAtlas->m_Sampler;
+        imageInfo1.imageView   = textureFontAtlas->m_TextureView;
+        imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -145,8 +122,6 @@ namespace GfxRenderEngine
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
                 .WriteImage(2, &imageInfo1)
-                .WriteImage(3, &imageInfo2)
-                .WriteImage(4, &imageInfo3)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 

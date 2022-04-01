@@ -150,7 +150,7 @@ namespace LucreApp
         //vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         //vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        barrelTransform.m_Rotation.z = glm::mod(barrelTransform.m_Rotation.z + frameRotation, glm::two_pi<float>());
+        barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
 
         RotateLights(timestep);
         AnimateVulcan(timestep);

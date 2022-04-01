@@ -62,6 +62,7 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
+        m_ImagesInternal = m_Images;
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
     }

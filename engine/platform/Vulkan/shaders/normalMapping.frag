@@ -56,8 +56,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
-layout(set = 0, binding = 3) uniform sampler2D tex3; // diffuse map
-layout(set = 0, binding = 4) uniform sampler2D tex4; // normal map
+layout(set = 1, binding = 0) uniform sampler2D tex3; // diffuse map
+layout(set = 1, binding = 1) uniform sampler2D tex4; // normal map
 
 layout (location = 0) out vec4 outColor;
 

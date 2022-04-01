@@ -150,6 +150,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::~VK_DescriptorPool()
     {
+        vkDeviceWaitIdle(VK_Core::m_Device->Device());
         vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, nullptr);
     }
 
