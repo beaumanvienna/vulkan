@@ -31,7 +31,8 @@
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
-#include "systems/VKrenderSystem.h"
+#include "systems/VKrenderSystemDiffuse.h"
+#include "systems/VKrenderSystemGLTF.h"
 #include "systems/VKrenderSystemNormalMapping.h"
 #include "systems/VKpointLightSystem.h"
 #include "platform/Vulkan/imgui/imgui.h"
@@ -74,6 +75,10 @@ namespace GfxRenderEngine
 
         void ToggleDebugWindow() { m_Imgui = Imgui::ToggleDebugWindow(); }
 
+    public:
+
+        static std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
+
     private:
 
         void CreateCommandBuffers();
@@ -84,8 +89,8 @@ namespace GfxRenderEngine
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
-        std::unique_ptr<VK_RenderSystem> m_RenderSystem;
+        std::unique_ptr<VK_RenderSystemDiffuse> m_RenderSystemDiffuse;
+        std::unique_ptr<VK_RenderSystemGLTF> m_RenderSystemGLTF;
         std::unique_ptr<VK_RenderSystemNormalMapping> m_RenderSystemNormalMapping;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
@@ -101,6 +106,7 @@ namespace GfxRenderEngine
         VK_FrameInfo m_FrameInfo;
 
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
     };

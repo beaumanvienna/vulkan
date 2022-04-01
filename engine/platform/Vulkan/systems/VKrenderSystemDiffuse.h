@@ -45,16 +45,16 @@ namespace GfxRenderEngine
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystem
+    class VK_RenderSystemDiffuse
     {
 
     public:
 
-        VK_RenderSystem(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystem();
+        VK_RenderSystemDiffuse(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemDiffuse();
 
-        VK_RenderSystem(const VK_RenderSystem&) = delete;
-        VK_RenderSystem& operator=(const VK_RenderSystem&) = delete;
+        VK_RenderSystemDiffuse(const VK_RenderSystemDiffuse&) = delete;
+        VK_RenderSystemDiffuse& operator=(const VK_RenderSystemDiffuse&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
         void DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem);

@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         virtual void Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data) override;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
 
-std::string m_FileName;
+        std::string m_FileName;
 
     private:
 

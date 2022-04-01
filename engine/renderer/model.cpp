@@ -29,9 +29,12 @@
 
 #include "gtc/type_ptr.hpp"
 
+#include "core.h"
+#include "VKmodel.h"
 #include "renderer/model.h"
 #include "auxiliary/hash.h"
 #include "auxiliary/file.h"
+#include "scene/scene.h"
 
 namespace std
 {
@@ -63,7 +66,7 @@ namespace GfxRenderEngine
 
     void Builder::LoadImagesGLTF()
     {
-        m_Images.resize(m_GltfModel.images.size());
+        VK_Model::m_Images.clear();
         // retrieve all images from the glTF file
         for (uint i = 0; i < m_GltfModel.images.size(); i++)
         {
@@ -94,15 +97,15 @@ namespace GfxRenderEngine
                 buffer = &glTFImage.image[0];
                 bufferSize = glTFImage.image.size();
             }
-            auto texture = Texture::Create();
+            auto texture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
             texture->Init(glTFImage.width, glTFImage.height, buffer);
-            m_Images.push_back(texture);
+            VK_Model::m_Images.push_back(texture);
         }
     }
 
     void Builder::LoadMaterialsGLTF()
     {
-        m_Materials.resize(m_GltfModel.materials.size());
+        m_Materials.clear();
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
@@ -119,7 +122,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadVertexDataGLTF(int diffuseMapTextureSlot, int fragAmplification)
+    void Builder::LoadVertexDataGLTF(int fragAmplification)
     {
         // handle vertex data
         m_Vertices.clear();
@@ -131,8 +134,7 @@ namespace GfxRenderEngine
             {
                 ASSERT(glTFPrimitive.material < m_Materials.size());
                 uint diffuseMapIndex = m_Materials[glTFPrimitive.material].m_DiffuseMapIndex;
-                ASSERT(diffuseMapIndex < m_Images.size());
-                //int diffuseMapTextureSlot = m_Images[diffuseMapIndex]->GetTextureSlot();
+                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
                 uint32_t firstIndex  = 0;
                 uint32_t vertexStart = 0;
                 uint32_t indexCount  = 0;
@@ -167,7 +169,6 @@ namespace GfxRenderEngine
                     // Append data to model's vertex buffer
                     for (size_t v = 0; v < vertexCount; v++) {
                         Vertex vertex{};
-                        vertex.m_DiffuseMapTextureSlot = diffuseMapTextureSlot;
                         vertex.m_Amplification      = fragAmplification;
 
                         vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
@@ -217,7 +218,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadGLTF(const std::string& filepath, int diffuseMapTextureSlot, int fragAmplification)
+    entt::entity Builder::LoadGLTF(const std::string& filepath, entt::registry& registry, int fragAmplification)
     {
         std::string warn, err;
 
@@ -230,8 +231,18 @@ namespace GfxRenderEngine
 
         LoadImagesGLTF();
         LoadMaterialsGLTF();
-        LoadVertexDataGLTF(diffuseMapTextureSlot, fragAmplification);
+        LoadVertexDataGLTF(fragAmplification);
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
+
+        auto entity = registry.create();
+
+        if (VK_Model::m_Images.size())
+        {
+            auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[0]);
+            registry.emplace<GLTFComponent>(entity, gltf);
+        }
+
+        return entity;
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)

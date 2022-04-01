@@ -24,61 +24,49 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "renderer/model.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+#include "scene/particleSystem.h"
 
 #include "VKdevice.h"
-#include "VKbuffer.h"
-#include "VKswapChain.h"
-#include "VKtexture.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-
-    struct GLTFComponent
+    struct VK_PushConstantDataGLTF
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_Model : public Model
+    class VK_RenderSystemGLTF
     {
 
     public:
 
-        struct VK_Vertex : public Vertex
-        {
-            static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
-            static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
-        };
+        VK_RenderSystemGLTF(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemGLTF();
 
-    public:
+        VK_RenderSystemGLTF(const VK_RenderSystemGLTF&) = delete;
+        VK_RenderSystemGLTF& operator=(const VK_RenderSystemGLTF&) = delete;
 
-        VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
-        ~VK_Model() override {}
-
-        VK_Model(const VK_Model&) = delete;
-        VK_Model& operator=(const VK_Model&) = delete;
-
-        void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
-        void CreateIndexBuffers(const std::vector<uint>& indices) override;
-
-        void Bind(VkCommandBuffer commandBuffer);
-        void Draw(VkCommandBuffer commandBuffer);
-
-        static GLTFComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap);
-        static std::vector<std::shared_ptr<VK_Texture>> m_Images;
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 
-        std::shared_ptr<VK_Device> m_Device;
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
 
-        std::unique_ptr<VK_Buffer> m_VertexBuffer;
-        uint m_VertexCount;
+    private:
 
-        bool m_HasIndexBuffer;
-        std::unique_ptr<VK_Buffer> m_IndexBuffer;
-        uint m_IndexCount;
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }

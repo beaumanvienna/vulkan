@@ -8,3 +8,6 @@ glslc engine/platform/Vulkan/shaders/pointLight.frag -o bin/pointLight.frag.spv
 
 glslc engine/platform/Vulkan/shaders/normalMapping.vert -o bin/normalMapping.vert.spv
 glslc engine/platform/Vulkan/shaders/normalMapping.frag -o bin/normalMapping.frag.spv
+
+glslc engine/platform/Vulkan/shaders/glTFShader.vert -o bin/glTFShader.vert.spv
+glslc engine/platform/Vulkan/shaders/glTFShader.frag -o bin/glTFShader.frag.spv

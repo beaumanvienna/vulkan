@@ -33,7 +33,8 @@ namespace GfxRenderEngine
     std::shared_ptr<Texture> gTextureFontAtlas;
     std::shared_ptr<Texture> gBarrelDiffuseMap;
     std::shared_ptr<Texture> gBarrelNormalMap;
-    std::shared_ptr<Texture> gDuckDiffuseMap;
+
+    std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device},
@@ -60,27 +61,39 @@ namespace GfxRenderEngine
         // create a global pool for desciptor sets
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
-            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 10)
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 20)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // spritesheet
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // font atlas
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // barrel diffuse map
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // barrel normal map
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // spritesheet
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // barrel diffuse map
+                    .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // barrel normal map
                     .Build();
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .Build();
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGLTF =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            localDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
     #warning "fix me"
@@ -125,15 +138,6 @@ namespace GfxRenderEngine
     imageInfo3.imageView   = barrelNormalMap->m_TextureView;
     imageInfo3.imageLayout = barrelNormalMap->m_ImageLayout;
 
-    auto duckDiffuseMap = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-    duckDiffuseMap->Init("application/lucre/models/duck/duckCM.png", false);
-
-    gDuckDiffuseMap = duckDiffuseMap; // copy from VK_Texture to Texture
-    VkDescriptorImageInfo imageInfo4 {};
-    imageInfo4.sampler     = duckDiffuseMap->m_Sampler;
-    imageInfo4.imageView   = duckDiffuseMap->m_TextureView;
-    imageInfo4.imageLayout = duckDiffuseMap->m_ImageLayout;
-
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
@@ -143,13 +147,13 @@ namespace GfxRenderEngine
                 .WriteImage(2, &imageInfo1)
                 .WriteImage(3, &imageInfo2)
                 .WriteImage(4, &imageInfo3)
-                .WriteImage(5, &imageInfo4)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        m_RenderSystem = std::make_unique<VK_RenderSystem>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
-        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayouts);
-        m_PointLightSystem = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemDiffuse       = std::make_unique<VK_RenderSystemDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemGLTF          = std::make_unique<VK_RenderSystemGLTF>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsGLTF);
+        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_PointLightSystem          = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
@@ -341,7 +345,8 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystem->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemDiffuse->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemGLTF->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemNormalMapping->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
         }
@@ -351,7 +356,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystem->DrawParticles(m_FrameInfo, particleSystem);
+            m_RenderSystemDiffuse->DrawParticles(m_FrameInfo, particleSystem);
         }
     }
 

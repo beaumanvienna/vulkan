@@ -51,8 +51,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
-layout(set = 0, binding = 1) uniform sampler2D tex1;
-layout(set = 0, binding = 3) uniform sampler2D tex3;
+layout(set = 1, binding = 0) uniform sampler2D diffuseMapSampler;
 
 layout (location = 0) out vec4 outColor;
 
@@ -109,36 +108,8 @@ void main()
     }
     // ------------------------------
 
-    vec3 pixelColor;
-    float alpha = 1.0;
-    if (fragDiffuseMapTextureSlot > 0)
-    {
-        // {0.0, 1.0} - {1.0, 1.0}
-        // |        /            |
-        // {0.0, 0.0} - {1.0, 0.0}
-
-        if (fragDiffuseMapTextureSlot == 1)
-        {
-            alpha = texture(tex1,fragUV).w;
-            pixelColor = texture(tex1,fragUV).xyz;
-        }
-        else if (fragDiffuseMapTextureSlot == 3)
-        {
-            alpha = texture(tex3,fragUV).w;
-            pixelColor = texture(tex3,fragUV).xyz;
-        }
-        if (alpha == 0) discard;
-        if (fragUnlit != 0)
-        {
-            diffusedLightColor = vec3(1.0, 1.0, 1.0);
-            specularLightColor = vec3(0.0, 0.0, 0.0);
-        }
-        pixelColor *= fragAmplification;
-    }
-    else
-    {
-        pixelColor = fragColor.xyz;
-    }
+    vec3 pixelColor = texture(diffuseMapSampler, fragUV).xyz;
+    float alpha = texture(diffuseMapSampler, fragUV).w;
 
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
     

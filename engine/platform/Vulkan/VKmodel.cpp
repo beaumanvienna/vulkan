@@ -21,9 +21,13 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "VKmodel.h"
+#include "VKdescriptor.h"
+#include "VKrenderer.h"
 
 namespace GfxRenderEngine
 {
+
+    std::vector<std::shared_ptr<VK_Texture>> VK_Model::m_Images;
 
     // Vertex
     std::vector<VkVertexInputBindingDescription> VK_Model::VK_Vertex::GetBindingDescriptions()
@@ -156,5 +160,27 @@ namespace GfxRenderEngine
                 0                   // uint32_t        firstInstance
             );
         }
+    }
+
+    GLTFComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap)
+    {
+        GLTFComponent gltf{};
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        auto texture = colorMap.get();
+        VkDescriptorImageInfo imageInfo {};
+        imageInfo.sampler     = texture->m_Sampler;
+        imageInfo.imageView   = texture->m_TextureView;
+        imageInfo.imageLayout = texture->m_ImageLayout;
+        
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, &imageInfo)
+                .Build(gltf.m_DescriptorSet[i]);
+        }
+        return gltf;
     }
 }
