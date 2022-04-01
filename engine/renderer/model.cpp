@@ -71,7 +71,7 @@ namespace GfxRenderEngine
         // retrieve all images from the glTF file
         for (uint i = 0; i < m_GltfModel.images.size(); i++)
         {
-            std::string imageFilepath = m_Basepath + m_GltfModel.images[0].uri;
+            std::string imageFilepath = m_Basepath + m_GltfModel.images[i].uri;
             tinygltf::Image& glTFImage = m_GltfModel.images[i];
 
             // glTFImage.component - the number of channels in each pixel
@@ -115,9 +115,21 @@ namespace GfxRenderEngine
             {
                 material.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
             }
-            if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
+            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
             {
+                material.m_DiffuseMapIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
+                material.m_Features |= Material::HAS_DIFFUSE_MAP;
+            }
+            else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
+            {
+                LOG_CORE_WARN("using legacy field values/baseColorTexture");
                 material.m_DiffuseMapIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+                material.m_Features |= Material::HAS_DIFFUSE_MAP;
+            }
+            if (glTFMaterial.normalTexture.index != -1)
+            {
+                material.m_NormalMapIndex = glTFMaterial.normalTexture.index;
+                material.m_Features |= Material::HAS_NORMAL_MAP;
             }
             m_Materials.push_back(material);
         }
@@ -238,10 +250,25 @@ namespace GfxRenderEngine
 
         auto entity = registry.create();
 
-        if (VK_Model::m_Images.size())
+        for (auto& material : m_Materials)
         {
-            auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[0]);
-            registry.emplace<GLTFComponent>(entity, gltf);
+            // diffuse map only
+            if (material.m_Features == Material::HAS_DIFFUSE_MAP)
+            {
+                uint diffuseMapIndex = material.m_DiffuseMapIndex;
+                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+                registry.emplace<GLTFComponent>(entity, gltf);
+            }
+            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
+            {
+                uint diffuseMapIndex = material.m_DiffuseMapIndex;
+                uint normalMapIndex = material.m_NormalMapIndex;
+                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+                ASSERT(normalMapIndex < VK_Model::m_Images.size());
+                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
+                registry.emplace<NormalMappingComponent>(entity, gltf);
+            }
         }
 
         return entity;

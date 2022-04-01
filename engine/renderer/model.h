@@ -52,8 +52,15 @@ namespace GfxRenderEngine
 
     struct Material
     {
+        enum Bitfield
+        {
+            HAS_DIFFUSE_MAP = 0x01 << 0,
+            HAS_NORMAL_MAP  = 0x01 << 1
+        };
         glm::vec3 m_DiffuseColor;
         uint m_DiffuseMapIndex;
+        uint m_NormalMapIndex;
+        uint m_Features;
     };
 
     class Builder

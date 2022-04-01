@@ -80,23 +80,26 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemNormalMapping::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
 
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.view<MeshComponent, TransformComponent, NormalMappingComponent>();
         for (auto entity : view)
         {
+            auto& gltf = view.get<NormalMappingComponent>(entity);
+            VkDescriptorSet localDescriptorSet = gltf.m_DescriptorSet[frameInfo.m_FrameIndex];
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_PipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataNormalMapping push{};
             push.m_ModelMatrix  = transform.Mat4();

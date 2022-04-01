@@ -41,6 +41,11 @@ namespace GfxRenderEngine
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
     };
 
+    struct NormalMappingComponent
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+    };
+
     class VK_Model : public Model
     {
 
@@ -67,6 +72,7 @@ namespace GfxRenderEngine
         void Draw(VkCommandBuffer commandBuffer);
 
         static GLTFComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap);
+        static NormalMappingComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap);
         static std::vector<std::shared_ptr<VK_Texture>> m_Images;
 
     private:

@@ -77,8 +77,13 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> glTFDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .Build();
+
+        std::unique_ptr<VK_DescriptorSetLayout> normalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
@@ -89,7 +94,13 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGLTF =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            localDescriptorSetLayout->GetDescriptorSetLayout()
+            glTFDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsNormal =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            normalDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -127,7 +138,7 @@ namespace GfxRenderEngine
 
         m_RenderSystemDiffuse       = std::make_unique<VK_RenderSystemDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemGLTF          = std::make_unique<VK_RenderSystemGLTF>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsGLTF);
-        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsNormal);
         m_PointLightSystem          = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }

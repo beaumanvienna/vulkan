@@ -53,7 +53,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
-layout(set = 0, binding = 1) uniform sampler2D tex1;
+layout(set = 1, binding = 0) uniform sampler2D diffuseMap; // diffuse map
+layout(set = 1, binding = 1) uniform sampler2D normalMap;  // normal map
 
 layout(push_constant) uniform Push
 {
@@ -109,5 +110,4 @@ void main()
     }
     fragTangentViewPos  = TBN * cameraPosWorld;
     fragTangentFragPos  = TBN * fragPositionWorld;
-
 }

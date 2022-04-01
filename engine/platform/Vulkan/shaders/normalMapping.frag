@@ -56,8 +56,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
-layout(set = 1, binding = 0) uniform sampler2D tex3; // diffuse map
-layout(set = 1, binding = 1) uniform sampler2D tex4; // normal map
+layout(set = 1, binding = 0) uniform sampler2D diffuseMap; // diffuse map
+layout(set = 1, binding = 1) uniform sampler2D normalMap;  // normal map
 
 layout (location = 0) out vec4 outColor;
 
@@ -86,7 +86,7 @@ void main()
         PointLight light = ubo.m_PointLights[i];
 
         // normal in tangent space
-        surfaceNormal = normalize(texture(tex4,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
+        surfaceNormal = normalize(texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
         vec3 directionToLight     = fragTangentLightPos[i] - fragTangentFragPos;
         float distanceToLight     = length(directionToLight);
         float attenuation = 1.0 / (distanceToLight * distanceToLight);
@@ -119,8 +119,8 @@ void main()
     vec3 pixelColor;
     float alpha = 1.0;
 
-    alpha = texture(tex3,fragUV).w;
-    pixelColor = texture(tex3,fragUV).xyz;
+    alpha = texture(diffuseMap,fragUV).w;
+    pixelColor = texture(diffuseMap,fragUV).xyz;
     if (alpha == 0) discard;
     pixelColor *= fragAmplification;
 
