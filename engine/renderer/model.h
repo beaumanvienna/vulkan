@@ -83,6 +83,7 @@ namespace GfxRenderEngine
         void LoadImagesGLTF();
         void LoadMaterialsGLTF();
         void LoadVertexDataGLTF(int fragAmplification);
+        void CalculateTangents();
         
     private:
 

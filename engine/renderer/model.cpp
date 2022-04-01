@@ -229,6 +229,8 @@ namespace GfxRenderEngine
                 }
             }
         }
+        // calculate tangents
+        CalculateTangents();
     }
 
     entt::entity Builder::LoadGLTF(const std::string& filepath, entt::registry& registry, int fragAmplification)
@@ -344,73 +346,78 @@ namespace GfxRenderEngine
                 m_Indices.push_back(uniqueVertices[vertex]);
 
             }
-            // calculate tangents and bitangents
-            uint index = 0;
-            for (const auto& shapeMeshIndex : shape.mesh.indices)
-            {
-
-                static uint cnt = 0;
-                static glm::vec3 position1;
-                static glm::vec3 position2;
-                static glm::vec3 position3;
-                static glm::vec2 uv1;
-                static glm::vec2 uv2;
-                static glm::vec2 uv3;
-
-                auto& vertex = m_Vertices[m_Indices[index]];
-
-                switch (cnt)
-                {
-                    case 0:
-                        position1 = vertex.m_Position;
-                        uv1  = vertex.m_UV;
-                        break;
-                    case 1:
-                        position2 = vertex.m_Position;
-                        uv2  = vertex.m_UV;
-                        break;
-                    case 2:
-                        position3 = vertex.m_Position;
-                        uv3  = vertex.m_UV;
-
-                        glm::vec3 edge1 = position2 - position1;
-                        glm::vec3 edge2 = position3 - position1;
-                        glm::vec2 deltaUV1 = uv2 - uv1;
-                        glm::vec2 deltaUV2 = uv3 - uv1;
-
-                        float dU1 = deltaUV1.x;
-                        float dU2 = deltaUV2.x;
-                        float dV1 = deltaUV1.y;
-                        float dV2 = deltaUV2.y;
-                        float E1x = edge1.x;
-                        float E2x = edge2.x;
-                        float E1y = edge1.y;
-                        float E2y = edge2.y;
-                        float E1z = edge1.z;
-                        float E2z = edge2.z;
-
-                        float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
-                        
-                        glm::vec3 tangent;
-                        
-                        tangent.x = factor * (dV2 * E1x - dV1 * E2x);
-                        tangent.y = factor * (dV2 * E1y - dV1 * E2y);
-                        tangent.z = factor * (dV2 * E1z - dV1 * E2z);
-
-                        uint vertexIndex1 = m_Indices[index];
-                        uint vertexIndex2 = m_Indices[index-1];
-                        uint vertexIndex3 = m_Indices[index-2];
-                        m_Vertices[vertexIndex1].m_Tangent = tangent;
-                        m_Vertices[vertexIndex2].m_Tangent = tangent;
-                        m_Vertices[vertexIndex3].m_Tangent = tangent;
-
-                        break;
-                }
-                cnt = (cnt + 1) % 3;
-                index++;
-            }
         }
+        // calculate tangents
+        CalculateTangents();
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
+    }
+
+    void Builder::CalculateTangents()
+    {
+        uint cnt = 0;
+        uint vertexIndex1;
+        uint vertexIndex2;
+        uint vertexIndex3;
+        glm::vec3 position1;
+        glm::vec3 position2;
+        glm::vec3 position3;
+        glm::vec2 uv1;
+        glm::vec2 uv2;
+        glm::vec2 uv3;
+
+        for (uint index : m_Indices)
+        {
+            auto& vertex = m_Vertices[index];
+
+            switch (cnt)
+            {
+                case 0:
+                    position1 = vertex.m_Position;
+                    uv1  = vertex.m_UV;
+                    vertexIndex1 = index;
+                    break;
+                case 1:
+                    position2 = vertex.m_Position;
+                    uv2  = vertex.m_UV;
+                    vertexIndex2 = index;
+                    break;
+                case 2:
+                    position3 = vertex.m_Position;
+                    uv3  = vertex.m_UV;
+                    vertexIndex3 = index;
+
+                    glm::vec3 edge1 = position2 - position1;
+                    glm::vec3 edge2 = position3 - position1;
+                    glm::vec2 deltaUV1 = uv2 - uv1;
+                    glm::vec2 deltaUV2 = uv3 - uv1;
+
+                    float dU1 = deltaUV1.x;
+                    float dU2 = deltaUV2.x;
+                    float dV1 = deltaUV1.y;
+                    float dV2 = deltaUV2.y;
+                    float E1x = edge1.x;
+                    float E2x = edge2.x;
+                    float E1y = edge1.y;
+                    float E2y = edge2.y;
+                    float E1z = edge1.z;
+                    float E2z = edge2.z;
+
+                    float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
+                    
+                    glm::vec3 tangent;
+                    
+                    tangent.x = factor * (dV2 * E1x - dV1 * E2x);
+                    tangent.y = factor * (dV2 * E1y - dV1 * E2y);
+                    tangent.z = factor * (dV2 * E1z - dV1 * E2z);
+
+                    m_Vertices[vertexIndex1].m_Tangent = tangent;
+                    m_Vertices[vertexIndex2].m_Tangent = tangent;
+                    m_Vertices[vertexIndex3].m_Tangent = tangent;
+
+                    break;
+            }
+            cnt = (cnt + 1) % 3;
+        }
     }
 
     void Builder::LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit, const glm::vec4& color)
