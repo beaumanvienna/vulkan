@@ -29,7 +29,6 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
-layout(location = 4) in int diffuseMapTextureSlot;
 layout(location = 5) in float amplification;
 layout(location = 6) in int unlit;
 
@@ -62,10 +61,9 @@ layout(location = 0) out vec3  fragColor;
 layout(location = 1) out vec3  fragPositionWorld;
 layout(location = 2) out vec3  fragMormalWorld;
 layout(location = 3) out vec2  fragUV;
-layout(location = 4) out int   fragDiffuseMapTextureSlot;
-layout(location = 5) out float fragAmplification;
-layout(location = 6) out int   fragUnlit;
-layout(location = 7) out vec3  toCameraDirection;
+layout(location = 4) out float fragAmplification;
+layout(location = 5) out int   fragUnlit;
+layout(location = 6) out vec3  toCameraDirection;
 
 void main()
 {
@@ -74,7 +72,6 @@ void main()
     fragPositionWorld = positionWorld.xyz;
     fragMormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
     fragColor = color;
-    fragDiffuseMapTextureSlot = diffuseMapTextureSlot;
     fragAmplification = amplification;
     fragUnlit = unlit;
 
@@ -84,5 +81,4 @@ void main()
 
     vec3 cameraPosWorld = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
     toCameraDirection = cameraPosWorld - positionWorld.xyz;
-
 }

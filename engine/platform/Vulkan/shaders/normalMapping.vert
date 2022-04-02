@@ -30,10 +30,8 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
-layout(location = 4) in int diffuseMapTextureSlot;
 layout(location = 5) in float amplification;
 layout(location = 6) in int unlit;
-layout(location = 7) in int normalTextureSlot;
 layout(location = 8) in vec3 tangent;
 
 struct PointLight
@@ -64,27 +62,23 @@ layout(push_constant) uniform Push
 
 layout(location = 0)  out  vec3  fragColor;
 layout(location = 1)  out  vec3  fragPositionWorld;
-layout(location = 2)  out  vec3  fragMormalWorld;
+layout(location = 2)  out  vec3  fragNormalWorld;
 layout(location = 3)  out  vec2  fragUV;
-layout(location = 4)  out  int   fragDiffuseMapTextureSlot;
-layout(location = 5)  out  float fragAmplification;
-layout(location = 6)  out  int   fragUnlit;
-layout(location = 7)  out  int   fragNormalTextureSlot;
-layout(location = 8)  out  vec3  fragTangentViewPos;
-layout(location = 9)  out  vec3  fragTangentFragPos;
-layout(location = 10) out  vec3  fragTangentLightPos[10];
+layout(location = 4)  out  float fragAmplification;
+layout(location = 5)  out  int   fragUnlit;
+layout(location = 6)  out  vec3  fragTangentViewPos;
+layout(location = 7)  out  vec3  fragTangentFragPos;
+layout(location = 8)  out  vec3  fragTangentLightPos[10];
 
 void main()
 {
     // lighting
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
-    fragMormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
+    fragNormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
     fragColor = color;
-    fragDiffuseMapTextureSlot = diffuseMapTextureSlot;
     fragAmplification = amplification;
     fragUnlit = unlit;
-    fragNormalTextureSlot = normalTextureSlot;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);

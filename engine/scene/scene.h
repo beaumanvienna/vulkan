@@ -92,7 +92,7 @@ namespace GfxRenderEngine
     public:
 
         Scene() : m_IsRunning{false} {}
-        virtual ~Scene() {}
+        virtual ~Scene();
 
         virtual void Start() = 0;
         virtual void Stop() = 0;

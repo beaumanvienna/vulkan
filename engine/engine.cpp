@@ -77,8 +77,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    application->Shutdown();
     engine->Quit();
+    application->Shutdown();
 
     PROFILE_END_SESSION();
+    #ifdef DEBUG
+        LOG_CORE_INFO("leaving main");
+    #endif
 };

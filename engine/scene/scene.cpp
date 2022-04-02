@@ -20,10 +20,18 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include <iostream>
+
 #include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
+    Scene::~Scene()
+    {
+        #ifdef DEBUG
+            std::cout << "Scene::~Scene()" << std::endl;
+        #endif
+    }
     uint MeshComponent::m_DefaultNameTagCounter = 0;
 
     entt::entity Scene::CreateEntity()

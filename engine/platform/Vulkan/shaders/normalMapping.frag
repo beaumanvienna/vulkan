@@ -30,14 +30,11 @@ layout(location = 0)       in vec3  fragColor;
 layout(location = 1)       in vec3  fragPositionWorld;
 layout(location = 2)       in vec3  fragNormalWorld;
 layout(location = 3)       in vec2  fragUV;
-layout(location = 4)  flat in int   fragDiffuseMapTextureSlot;
-layout(location = 5)       in float fragAmplification;
-layout(location = 6)  flat in int   fragUnlit;
-layout(location = 7)  flat in int   fragNormalTextureSlot;
-
-layout(location = 8)       in vec3  fragTangentViewPos;
-layout(location = 9)       in vec3  fragTangentFragPos;
-layout(location = 10)      in vec3  fragTangentLightPos[10];
+layout(location = 4)       in float fragAmplification;
+layout(location = 5)  flat in int   fragUnlit;
+layout(location = 6)       in vec3  fragTangentViewPos;
+layout(location = 7)       in vec3  fragTangentFragPos;
+layout(location = 8)       in vec3  fragTangentLightPos[10];
 
 struct PointLight
 {
