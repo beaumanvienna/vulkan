@@ -57,18 +57,8 @@ namespace GfxRenderEngine
             virtual void Render(VkCommandBuffer commandBuffer)  override;
             virtual void Run()  override;
 
-        public:
-
-            bool m_ShowDemoWindow = false;
-            bool m_ShowAnotherWindow = false;
-            ImVec4 m_ClearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
         private:
 
-            // We haven't yet covered descriptor pools in the tutorial series
-            // so I'm just going to create one for just imgui and store it here for now.
-            // maybe its preferred to have a separate descriptor pool for imgui anyway,
-            // I haven't looked into imgui best practices at all.
-            VkDescriptorPool descriptorPool;
+            VkDescriptorPool m_DescriptorPool;
     };
 }

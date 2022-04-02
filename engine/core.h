@@ -99,7 +99,7 @@ namespace GfxRenderEngine
         void PushOverlay(Layer* overlay) { m_LayerStack.PushOverlay(overlay); }
         void PopOverlay(Layer* overlay) { m_LayerStack.PopOverlay(overlay); }
 
-        void ToggleDebugWindow() { m_GraphicsContext->ToggleDebugWindow(); }
+        void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_GraphicsContext->ToggleDebugWindow(callback); }
 
         Timestep GetTimestep() const { return m_Timestep; }
 

@@ -73,7 +73,7 @@ namespace GfxRenderEngine
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void EndScene() override;
 
-        void ToggleDebugWindow() { m_Imgui = Imgui::ToggleDebugWindow(); }
+        void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
     public:
 

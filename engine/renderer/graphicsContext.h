@@ -46,7 +46,7 @@ namespace GfxRenderEngine
 
         virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
-        virtual void ToggleDebugWindow() = 0;
+        virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
 
         virtual float GetContextWidth() const = 0;
         virtual float GetContextHeight() const = 0;

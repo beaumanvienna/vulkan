@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,34 +20,34 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "vendor/imgui/imgui.h"
 
-#include <memory>
-#include <vulkan/vulkan.h>
+#include "application/lucre/UI/imgui.h"
 
-namespace GfxRenderEngine
+namespace LucreApp
 {
+    float ImGUI::m_Roughness = 0.5f;
+    bool  ImGUI::m_UseRoughness = false;
+    float ImGUI::m_Metallic = 0.5f;
+    bool  ImGUI::m_UseMetallic = false;
+    float ImGUI::m_NormalMapIntensity = 0.5f;
+    bool  ImGUI::m_UseNormalMapIntensity = false;
 
-    class Imgui
+    void ImGUI::DebugWindow()
     {
-        public:
+        // roughness
+        ImGui::Checkbox("use", &m_UseRoughness);
+        ImGui::SameLine();
+        ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
 
-            Imgui() {}
-            virtual ~Imgui() {}
+        // metallic
+        ImGui::Checkbox("use", &m_UseMetallic);
+        ImGui::SameLine();
+        ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
 
-            virtual void NewFrame() = 0;
-            virtual void Render(VkCommandBuffer commandBuffer) = 0;
-            virtual void Run() = 0;
-
-            static std::shared_ptr<Imgui> Create(VkRenderPass renderPass, uint imageCount);
-            static std::shared_ptr<Imgui> ToggleDebugWindow(const GenericCallback& callback = nullptr);
-
-        public:
-
-            static GenericCallback m_Callback;
-
-        private:
-
-            static bool m_ImguiDebugWindowEnabled;
-    };
+        // normal map intensity
+        ImGui::Checkbox("use", &m_UseNormalMapIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
+    }
 }

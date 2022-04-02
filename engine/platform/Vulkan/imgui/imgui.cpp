@@ -35,6 +35,7 @@ namespace GfxRenderEngine
     static std::shared_ptr<VK_Imgui> m_Imgui;
     static std::shared_ptr<ImguiNull> m_ImguiNull;
     bool Imgui::m_ImguiDebugWindowEnabled = false;
+    GenericCallback Imgui::m_Callback;
 
     std::shared_ptr<Imgui> Imgui::Create(VkRenderPass renderPass, uint imageCount)
     {
@@ -44,8 +45,9 @@ namespace GfxRenderEngine
         return m_ImguiNull;
     }
 
-    std::shared_ptr<Imgui> Imgui::ToggleDebugWindow()
+    std::shared_ptr<Imgui> Imgui::ToggleDebugWindow(const GenericCallback& callback)
     {
+        m_Callback = callback;
         m_ImguiDebugWindowEnabled = !m_ImguiDebugWindowEnabled;
         if (m_ImguiDebugWindowEnabled)
         {

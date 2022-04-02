@@ -62,6 +62,7 @@ typedef uint8_t  uchar;
 typedef uint32_t uint;
 typedef int64_t  int64;
 typedef uint64_t uint64;
+typedef void (*GenericCallback) ();
 
 using namespace std::chrono_literals;
 using namespace GfxRenderEngine;

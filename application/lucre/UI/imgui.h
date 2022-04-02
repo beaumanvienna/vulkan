@@ -22,32 +22,26 @@
 
 #pragma once
 
-#include <memory>
-#include <vulkan/vulkan.h>
+#include "engine.h"
 
-namespace GfxRenderEngine
+namespace LucreApp
 {
 
-    class Imgui
+    class ImGUI
     {
-        public:
 
-            Imgui() {}
-            virtual ~Imgui() {}
+    public:
 
-            virtual void NewFrame() = 0;
-            virtual void Render(VkCommandBuffer commandBuffer) = 0;
-            virtual void Run() = 0;
+        static void DebugWindow();
 
-            static std::shared_ptr<Imgui> Create(VkRenderPass renderPass, uint imageCount);
-            static std::shared_ptr<Imgui> ToggleDebugWindow(const GenericCallback& callback = nullptr);
+    public:
 
-        public:
+        static float m_Roughness;
+        static bool  m_UseRoughness;
+        static float m_Metallic;
+        static bool  m_UseMetallic;
+        static float m_NormalMapIntensity;
+        static bool  m_UseNormalMapIntensity;
 
-            static GenericCallback m_Callback;
-
-        private:
-
-            static bool m_ImguiDebugWindowEnabled;
     };
 }

@@ -21,6 +21,8 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "scene/scene.h"
 
@@ -30,6 +32,7 @@ namespace GfxRenderEngine
     {
         #ifdef DEBUG
             std::cout << "Scene::~Scene()" << std::endl;
+            std::this_thread::sleep_for(50ms);
         #endif
     }
     uint MeshComponent::m_DefaultNameTagCounter = 0;

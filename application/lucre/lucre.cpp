@@ -30,6 +30,7 @@
 #include "events/keyEvent.h"
 
 #include "lucre.h"
+#include "UI/imgui.h"
 #include "keyboardInputController.h"
 
 namespace LucreApp
@@ -163,7 +164,7 @@ namespace LucreApp
                 switch(event.GetKeyCode())
                 {
                     case ENGINE_KEY_M:
-                        Engine::m_Engine->ToggleDebugWindow();
+                        Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
                         break;
                 }
                 return false;
