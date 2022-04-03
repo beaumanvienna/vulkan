@@ -126,6 +126,10 @@ project "lucre"
         files 
         {
         }
+        includedirs 
+        {
+            "vendor/VulkanSDK/1.3.204.1/Include",
+        }
         links
         {
             "imagehlp", 

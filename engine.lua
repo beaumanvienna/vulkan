@@ -25,7 +25,7 @@ project "engine"
         "vendor/imgui/*.cpp",
     }
 
-    includedirs 
+    includedirs
     {
         "./",
         "engine",
@@ -97,6 +97,10 @@ project "engine"
         }
         files 
         {
+        }
+        includedirs 
+        {
+            "vendor/VulkanSDK/1.3.204.1/Include",
         }
         links
         {

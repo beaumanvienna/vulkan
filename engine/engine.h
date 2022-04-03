@@ -40,6 +40,7 @@
 #undef near
 #undef CopyFile
 #undef CreateDirectory
+#undef CreateWindow
 
 #define ASSERT(x) if (!(x)) std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
 #define member_size(type, member) sizeof(((type *)0)->member)
