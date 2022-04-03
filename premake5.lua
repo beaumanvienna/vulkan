@@ -121,6 +121,7 @@ project "lucre"
         }
         files 
         {
+            "resources/windowsEmbeddedResources.rc",
         }
         includedirs 
         {
@@ -140,9 +141,11 @@ project "lucre"
             "version",
             "uuid",
             "Setupapi",
+            "vulkan-1",
         }
         libdirs 
         {
+            "vendor/VulkanSDK/Lib",
         }
 
     filter { "configurations:Debug" }

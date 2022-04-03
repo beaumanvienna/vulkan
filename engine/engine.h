@@ -36,6 +36,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
 
+int engine(int argc, char* argv[]);
+
 #undef far
 #undef near
 #undef CopyFile

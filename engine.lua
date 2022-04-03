@@ -97,6 +97,7 @@ project "engine"
         }
         files 
         {
+            "vendor/glfw/src/win32_module.c",
         }
         includedirs 
         {
