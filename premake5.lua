@@ -128,7 +128,7 @@ project "lucre"
         }
         includedirs 
         {
-            "vendor/VulkanSDK/1.3.204.1/Include",
+            "vendor/VulkanSDK/Include",
         }
         links
         {
