@@ -69,17 +69,13 @@ project "lucre"
         "box2d"
     }
 
-    prebuildcommands
-    {
-        "scripts/compileShaders.sh"
-    }
-
     filter "system:linux"
 
         linkoptions { "-fno-pie -no-pie" }
 
         prebuildcommands
         {
+            "scripts/compileShaders.sh"
         }
 
         files 

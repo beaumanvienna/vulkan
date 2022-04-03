@@ -26,9 +26,9 @@
 
 #include "core.h"
 
-#include "platform/Vulkan/imgui/imgui.h"
-#include "platform/Vulkan/imgui/VKimgui.h"
-#include "platform/Vulkan/imgui/imguiNull.h"
+#include "platform/Vulkan/imguiEngine/imgui.h"
+#include "platform/Vulkan/imguiEngine/VKimgui.h"
+#include "platform/Vulkan/imguiEngine/imguiNull.h"
 
 namespace GfxRenderEngine
 {
