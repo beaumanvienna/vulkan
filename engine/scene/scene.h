@@ -22,11 +22,15 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #include "engine.h"
 #include "entt.hpp"
 #include "scene/entity.h"
 #include "events/event.h"
 #include "auxiliary/timestep.h"
+
+#include "engine/platform/Vulkan/VKswapChain.h"
 
 namespace GfxRenderEngine
 {
@@ -84,6 +88,19 @@ namespace GfxRenderEngine
     struct DiffuseMapComponent
     {
         uint m_TextureSlot; // diffuse (=albedo) map
+    };
+
+    struct GLTFComponent
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+    };
+
+    struct NormalMappingComponent
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        float m_Roughness;
+        float m_Metallic;
+        float m_NormalMapIntensity;
     };
 
     class Scene

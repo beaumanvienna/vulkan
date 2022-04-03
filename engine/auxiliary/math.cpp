@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -20,34 +20,33 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "vendor/imgui/imgui.h"
+#include <math.h>
 
-#include "application/lucre/UI/imgui.h"
+#include "auxiliary/math.h"
 
-namespace LucreApp
+namespace GfxRenderEngine
 {
-    float ImGUI::m_Roughness = 0.1f;
-    bool  ImGUI::m_UseRoughness = false;
-    float ImGUI::m_Metallic = 0.5f;
-    bool  ImGUI::m_UseMetallic = false;
-    float ImGUI::m_NormalMapIntensity = 0.9f;
-    bool  ImGUI::m_UseNormalMapIntensity = false;
-
-    void ImGUI::DebugWindow()
+    namespace Math
     {
-        // roughness
-        ImGui::Checkbox("use00", &m_UseRoughness);
-        ImGui::SameLine();
-        ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
+        float Linear0_1ToExponential0_256(float input)
+        {
+            float value, x;
 
-        // metallic
-        ImGui::Checkbox("use01", &m_UseMetallic);
-        ImGui::SameLine();
-        ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
+            // clamp to [0.0f, 1.0f]
+            x = std::max(0.0f, input);
+            x = std::min(1.0f, x);
 
-        // normal map intensity
-        ImGui::Checkbox("use02", &m_UseNormalMapIntensity);
-        ImGui::SameLine();
-        ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
+            value = exp(5.6 * x) - 1;
+
+            // clamp to [0.0f, 256.0f]
+            value = std::max(0.0f, value);
+            value = std::min(256.0f, value);
+            return value;
+        }
+
+        float Linear0_1ToExponential256_0(float input)
+        {
+            return Linear0_1ToExponential0_256(1.0f - input);
+        }
     }
 }

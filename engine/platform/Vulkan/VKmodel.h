@@ -27,6 +27,7 @@
 
 #include "engine.h"
 #include "renderer/model.h"
+#include "scene/scene.h"
 
 #include "VKdevice.h"
 #include "VKbuffer.h"
@@ -35,16 +36,6 @@
 
 namespace GfxRenderEngine
 {
-
-    struct GLTFComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-    };
-
-    struct NormalMappingComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-    };
 
     class VK_Model : public Model
     {

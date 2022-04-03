@@ -29,8 +29,10 @@
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
+#include "auxiliary/math.h"
 
 #include "mainScene.h"
+#include "application/lucre/UI/imgui.h"
 
 namespace LucreApp
 {
@@ -140,17 +142,34 @@ namespace LucreApp
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
-        //m_GamepadInputController->GetTransform(vase0Transform, true);
-        //m_GamepadInputController->GetTransform(vase1Transform, true);
         m_GamepadInputController->GetTransform(barrelTransform, true);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
-        //vase0Transform.m_Rotation.y = glm::mod(vase0Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        //vase0Transform.m_Rotation.z = glm::mod(vase0Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
-        //vase1Transform.m_Rotation.y = glm::mod(vase1Transform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        //vase1Transform.m_Rotation.z = glm::mod(vase1Transform.m_Rotation.z + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
+
+        #ifdef DEBUG  // apply debug values from imgui window
+            if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity)
+            {
+                auto view = m_Registry.view<MeshComponent, TransformComponent, NormalMappingComponent>();
+                for (auto entity : view)
+                {
+                    auto& gltf = view.get<NormalMappingComponent>(entity);
+                    if (ImGUI::m_UseRoughness)
+                    {
+                        gltf.m_Roughness = Math::Linear0_1ToExponential256_0(ImGUI::m_Roughness);
+                    }
+                    if (ImGUI::m_UseMetallic)
+                    {
+                        gltf.m_Metallic = ImGUI::m_Metallic;
+                    }
+                    if (ImGUI::m_UseNormalMapIntensity)
+                    {
+                        gltf.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+                    }
+                }
+            }
+        #endif
 
         RotateLights(timestep);
         AnimateVulcan(timestep);

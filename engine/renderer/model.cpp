@@ -35,6 +35,7 @@
 #include "renderer/model.h"
 #include "auxiliary/hash.h"
 #include "auxiliary/file.h"
+#include "auxiliary/math.h"
 #include "scene/scene.h"
 
 namespace std
@@ -110,7 +111,12 @@ namespace GfxRenderEngine
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
+
             Material material{};
+            material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
+            material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
+            material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
+
             if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
             {
                 material.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
@@ -268,7 +274,12 @@ namespace GfxRenderEngine
                 uint normalMapIndex = material.m_NormalMapIndex;
                 ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
                 ASSERT(normalMapIndex < VK_Model::m_Images.size());
+
                 auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
+                gltf.m_Roughness                = Math::Linear0_1ToExponential256_0(material.m_Roughness);
+                gltf.m_Metallic                 = material.m_Metallic;
+                gltf.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
                 registry.emplace<NormalMappingComponent>(entity, gltf);
             }
         }

@@ -61,6 +61,9 @@ namespace GfxRenderEngine
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
         uint m_Features;
+        float m_Roughness;
+        float m_Metallic;
+        float m_NormalMapIntensity;
     };
 
     class Builder

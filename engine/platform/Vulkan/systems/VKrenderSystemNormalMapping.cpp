@@ -104,6 +104,9 @@ namespace GfxRenderEngine
             VK_PushConstantDataNormalMapping push{};
             push.m_ModelMatrix  = transform.Mat4();
             push.m_NormalMatrix = transform.NormalMatrix();
+            push.m_NormalMatrix[3].x = gltf.m_Roughness;
+            push.m_NormalMatrix[3].y = gltf.m_Metallic;
+            push.m_NormalMatrix[3].z = gltf.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,

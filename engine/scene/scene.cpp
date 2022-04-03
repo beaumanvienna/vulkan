@@ -32,7 +32,6 @@ namespace GfxRenderEngine
     {
         #ifdef DEBUG
             std::cout << "Scene::~Scene()" << std::endl;
-            std::this_thread::sleep_for(50ms);
         #endif
     }
     uint MeshComponent::m_DefaultNameTagCounter = 0;

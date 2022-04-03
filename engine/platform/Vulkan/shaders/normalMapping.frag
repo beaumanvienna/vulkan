@@ -66,6 +66,9 @@ layout(push_constant) uniform Push
 
 void main()
 {
+    float roughness           = push.m_NormalMatrix[3].x;
+    float metallic            = push.m_NormalMatrix[3].y;
+    float normalMapIntensity  = push.m_NormalMatrix[3].z;
 
     vec3 ambientLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
@@ -83,7 +86,8 @@ void main()
         PointLight light = ubo.m_PointLights[i];
 
         // normal in tangent space
-        surfaceNormal = normalize(texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
+        vec3 surfaceNormalfromMap = normalize(texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
+        surfaceNormal             = mix(vec3(0.0, 0.0, 1.0), surfaceNormalfromMap, normalMapIntensity);
         vec3 directionToLight     = fragTangentLightPos[i] - fragTangentFragPos;
         float distanceToLight     = length(directionToLight);
         float attenuation = 1.0 / (distanceToLight * distanceToLight);
@@ -106,7 +110,7 @@ void main()
             vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
             float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
         
-            float specularReflection  = pow(specularFactor, 128);
+            float specularReflection  = pow(specularFactor, roughness);
             vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
             specularLightColor += intensity * specularReflection;
         }
@@ -118,7 +122,7 @@ void main()
 
     alpha = texture(diffuseMap,fragUV).w;
     pixelColor = texture(diffuseMap,fragUV).xyz;
-    if (alpha == 0) discard;
+    if (alpha < 0.0001) discard;
     pixelColor *= fragAmplification;
 
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
