@@ -84,6 +84,7 @@ namespace GfxRenderEngine
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void RecreateSwapChain();
+        void CompileShaders();
 
     private:
 

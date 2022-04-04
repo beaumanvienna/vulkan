@@ -9,4 +9,4 @@
         "shaderc_util"
     }
 
-include "vendor/shaderc"
+include "vendor/shaderc/premake5.lua"

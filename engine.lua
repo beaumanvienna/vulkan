@@ -38,6 +38,7 @@ project "engine"
         "vendor/spdlog/include",
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
+        "vendor/shaderc/libshaderc/include/shaderc/",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",

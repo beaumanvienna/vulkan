@@ -66,12 +66,20 @@ project "lucre"
         "libvorbis",
         "libogg",
         "yaml-cpp",
-        "box2d"
+        "box2d",
+        "shaderc",
+        "shaderc_util",
+        "SPIRV-Tools-opt",
+        "SPIRV-Tools",
+        "MachineIndependent",
+        "OSDependent",
+        "GenericCodeGen",
+        "OGLCompiler",
+        "SPIRV",
     }
 
     prebuildcommands
     {
-        "scripts/compileShaders.sh"
     }
 
     filter "system:linux"

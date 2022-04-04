@@ -23,9 +23,11 @@
 #include "engine.h"
 #include "core.h"
 #include "resources/resources.h"
+#include "auxiliary/file.h"
 
 #include "VKrenderer.h"
 #include "VKwindow.h"
+#include "VKshader.h"
 
 namespace GfxRenderEngine
 {
@@ -40,6 +42,7 @@ namespace GfxRenderEngine
           m_CurrentFrameIndex{0},
           m_FrameInProgress{false}
     {
+        CompileShaders();
         RecreateSwapChain();
         CreateCommandBuffers();
 
@@ -57,18 +60,12 @@ namespace GfxRenderEngine
         }
 
         // create a global pool for desciptor sets
+        static constexpr uint POOL_SIZE = 1000;
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
-            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 20)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // spritesheet
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // font atlas
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT) // glTF
+            .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 10)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * (POOL_SIZE - 10))
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -364,4 +361,29 @@ namespace GfxRenderEngine
         ASSERT(m_FrameInProgress);
         return m_CurrentFrameIndex;
     }
+
+    void VK_Renderer::CompileShaders()
+    {
+        std::vector<std::string> shaderFilenames = 
+        {
+            "litShader.vert",
+            "litShader.frag",
+            "pointLight.vert",
+            "pointLight.frag",
+            "normalMapping.vert",
+            "normalMapping.frag",
+            "glTFShader.vert",
+            "glTFShader.frag"
+        };
+        for (auto& filename : shaderFilenames)
+        {
+            std::string spirvFilename = std::string("bin/") + filename + std::string(".spv");
+            if (!EngineCore::FileExists(spirvFilename))
+            {
+                std::string name = std::string("engine/platform/Vulkan/shaders/") + filename;
+                VK_Shader shader{name, spirvFilename};
+            }
+        }
+    }
+
 }
