@@ -28,7 +28,7 @@
 #include "auxiliary/instrumentation.h"
 #include "application.h"
 
-int main(int argc, char* argv[])
+int engine(int argc, char* argv[])
 {
     PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
 
@@ -84,4 +84,5 @@ int main(int argc, char* argv[])
     #ifdef DEBUG
         LOG_CORE_INFO("leaving main");
     #endif
+    return 0;
 };

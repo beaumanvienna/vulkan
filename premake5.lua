@@ -88,6 +88,7 @@ project "lucre"
 
         prebuildcommands
         {
+            "scripts/compileShaders.sh"
         }
 
         files 
@@ -133,10 +134,11 @@ project "lucre"
         }
         files 
         {
+            "resources/windowsEmbeddedResources.rc",
         }
         includedirs 
         {
-            "vendor/VulkanSDK/1.3.204.1/Include",
+            "vendor/VulkanSDK/Include",
         }
         links
         {
@@ -152,9 +154,11 @@ project "lucre"
             "version",
             "uuid",
             "Setupapi",
+            "vulkan-1",
         }
         libdirs 
         {
+            "vendor/VulkanSDK/Lib",
         }
 
     filter { "configurations:Debug" }

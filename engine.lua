@@ -98,10 +98,11 @@ project "engine"
         }
         files 
         {
+            "vendor/glfw/src/win32_module.c",
         }
         includedirs 
         {
-            "vendor/VulkanSDK/1.3.204.1/Include",
+            "vendor/VulkanSDK/Include",
         }
         links
         {

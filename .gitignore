@@ -1,3 +1,4 @@
+vendor/VulkanSDK
 *.spv
 bin
 bin-int
