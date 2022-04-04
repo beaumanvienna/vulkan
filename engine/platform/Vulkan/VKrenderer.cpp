@@ -86,7 +86,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> roughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
-                    //.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
@@ -109,8 +109,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsRoughnessMetallic =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            normalDescriptorSetLayout->GetDescriptorSetLayout() /*,
-            roughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()*/
+            roughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
