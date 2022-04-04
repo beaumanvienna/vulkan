@@ -43,7 +43,6 @@ namespace GfxRenderEngine
         int m_DiffuseMapTextureSlot;
         float m_Amplification;
         int m_Unlit;
-        int m_NormalTextureSlot;
         glm::vec3 m_Tangent;
 
         bool operator==(const Vertex& other) const;

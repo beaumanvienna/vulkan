@@ -62,8 +62,7 @@ namespace GfxRenderEngine
                (m_UV          == other.m_UV) &&
                (m_DiffuseMapTextureSlot == other.m_DiffuseMapTextureSlot) &&
                (m_Amplification == other.m_Amplification) &&
-               (m_Unlit       == other.m_Unlit) &&
-               (m_NormalTextureSlot == other.m_NormalTextureSlot);
+               (m_Unlit       == other.m_Unlit);
     }
 
     void Builder::LoadImagesGLTF()
@@ -311,7 +310,6 @@ namespace GfxRenderEngine
                 Vertex vertex{};
                 vertex.m_DiffuseMapTextureSlot = diffuseMapTextureSlot;
                 vertex.m_Amplification      = fragAmplification;
-                vertex.m_NormalTextureSlot  = normalTextureSlot;
 
                 if (index.vertex_index >= 0)
                 {

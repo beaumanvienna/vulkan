@@ -87,7 +87,7 @@ namespace GfxRenderEngine
     // models without a normal map
     struct DiffuseMapComponent
     {
-        uint m_TextureSlot; // diffuse (=albedo) map
+        uint m_TextureSlot; // diffuse map aka albedo map aka color map
     };
 
     struct GLTFComponent
