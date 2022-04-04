@@ -136,6 +136,11 @@ namespace GfxRenderEngine
                 material.m_NormalMapIndex = glTFMaterial.normalTexture.index;
                 material.m_Features |= Material::HAS_NORMAL_MAP;
             }
+            if (glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
+            {
+                material.m_RoughnessMettalicMapIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
+                material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
+            }
             m_Materials.push_back(material);
         }
     }
@@ -280,6 +285,22 @@ namespace GfxRenderEngine
                 gltf.m_NormalMapIntensity       = material.m_NormalMapIntensity;
 
                 registry.emplace<NormalMappingComponent>(entity, gltf);
+            }
+            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+            {
+                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+                uint normalMapIndex            = material.m_NormalMapIndex;
+                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+                ASSERT(normalMapIndex             < VK_Model::m_Images.size());
+                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex], VK_Model::m_Images[roughnessMettalicMapIndex]);
+                gltf.m_Roughness                = 0.7;
+                gltf.m_Metallic                 = 0.1f;
+                gltf.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
+                registry.emplace<PBRComponent>(entity, gltf);
             }
         }
 

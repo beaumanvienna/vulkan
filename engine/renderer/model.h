@@ -53,12 +53,14 @@ namespace GfxRenderEngine
     {
         enum Bitfield
         {
-            HAS_DIFFUSE_MAP = 0x01 << 0,
-            HAS_NORMAL_MAP  = 0x01 << 1
+            HAS_DIFFUSE_MAP             = 0x01 << 0,
+            HAS_NORMAL_MAP              = 0x01 << 1,
+            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2
         };
         glm::vec3 m_DiffuseColor;
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
+        uint m_RoughnessMettalicMapIndex;
         uint m_Features;
         float m_Roughness;
         float m_Metallic;

@@ -83,6 +83,12 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> roughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
+                    //.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
+                    .Build();
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
@@ -98,6 +104,13 @@ namespace GfxRenderEngine
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
             normalDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsRoughnessMetallic =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            normalDescriptorSetLayout->GetDescriptorSetLayout() /*,
+            roughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()*/
         };
 
         size_t fileSize;
@@ -136,6 +149,7 @@ namespace GfxRenderEngine
         m_RenderSystemDiffuse       = std::make_unique<VK_RenderSystemDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemGLTF          = std::make_unique<VK_RenderSystemGLTF>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsGLTF);
         m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsNormal);
+        m_RenderSystemPBR           = std::make_unique<VK_RenderSystemPBR>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsRoughnessMetallic);
         m_PointLightSystem          = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
@@ -331,6 +345,7 @@ namespace GfxRenderEngine
             m_RenderSystemDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGLTF->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemNormalMapping->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPBR->RenderEntities(m_FrameInfo, registry);
             m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
@@ -373,7 +388,9 @@ namespace GfxRenderEngine
             "normalMapping.vert",
             "normalMapping.frag",
             "glTFShader.vert",
-            "glTFShader.frag"
+            "glTFShader.frag",
+            "pbr.vert",
+            "pbr.frag"
         };
         for (auto& filename : shaderFilenames)
         {

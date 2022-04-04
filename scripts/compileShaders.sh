@@ -11,3 +11,6 @@ glslc engine/platform/Vulkan/shaders/normalMapping.frag -o bin/normalMapping.fra
 
 glslc engine/platform/Vulkan/shaders/glTFShader.vert -o bin/glTFShader.vert.spv
 glslc engine/platform/Vulkan/shaders/glTFShader.frag -o bin/glTFShader.frag.spv
+
+glslc engine/platform/Vulkan/shaders/pbr.vert -o bin/pbr.vert.spv
+glslc engine/platform/Vulkan/shaders/pbr.frag -o bin/pbr.frag.spv

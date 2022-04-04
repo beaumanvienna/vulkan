@@ -64,6 +64,8 @@ namespace GfxRenderEngine
 
         static GLTFComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap);
         static NormalMappingComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap);
+        static PBRComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap, 
+                                                const std::shared_ptr<VK_Texture>& roughnessMetallicMap);
         static std::vector<std::shared_ptr<VK_Texture>> m_Images;
 
     private:

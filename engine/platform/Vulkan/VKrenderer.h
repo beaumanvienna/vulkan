@@ -34,6 +34,7 @@
 #include "systems/VKrenderSystemDiffuse.h"
 #include "systems/VKrenderSystemGLTF.h"
 #include "systems/VKrenderSystemNormalMapping.h"
+#include "systems/VKrenderSystemPBR.h"
 #include "systems/VKpointLightSystem.h"
 #include "platform/Vulkan/imguiEngine/imgui.h"
 #include "VKdescriptor.h"
@@ -93,6 +94,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemDiffuse> m_RenderSystemDiffuse;
         std::unique_ptr<VK_RenderSystemGLTF> m_RenderSystemGLTF;
         std::unique_ptr<VK_RenderSystemNormalMapping> m_RenderSystemNormalMapping;
+        std::unique_ptr<VK_RenderSystemPBR> m_RenderSystemPBR;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;

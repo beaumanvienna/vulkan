@@ -217,4 +217,49 @@ namespace GfxRenderEngine
         }
         return normalMapping;
     }
+
+    PBRComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap, 
+                                               const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
+    {
+        PBRComponent pbr{};
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        VkDescriptorImageInfo imageInfo0 {};
+        {
+            auto texture = colorMap.get();
+            imageInfo0.sampler     = texture->m_Sampler;
+            imageInfo0.imageView   = texture->m_TextureView;
+            imageInfo0.imageLayout = texture->m_ImageLayout;
+        }
+
+        VkDescriptorImageInfo imageInfo1 {};
+        {
+            auto texture = normalMap.get();
+            imageInfo1.sampler     = texture->m_Sampler;
+            imageInfo1.imageView   = texture->m_TextureView;
+            imageInfo1.imageLayout = texture->m_ImageLayout;
+        }
+
+        VkDescriptorImageInfo imageInfo2 {};
+        {
+            auto texture = roughnessMetallicMap.get();
+            imageInfo2.sampler     = texture->m_Sampler;
+            imageInfo2.imageView   = texture->m_TextureView;
+            imageInfo2.imageLayout = texture->m_ImageLayout;
+        }
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, &imageInfo0)
+                .WriteImage(1, &imageInfo1)
+                .WriteImage(2, &imageInfo2)
+                .Build(pbr.m_DescriptorSet[i]);
+        }
+        return pbr;
+    }
 }
