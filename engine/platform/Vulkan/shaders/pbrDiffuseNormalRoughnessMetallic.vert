@@ -73,7 +73,6 @@ layout(location = 8)  out  vec3  fragTangentLightPos[10];
 
 void main()
 {
-    // lighting
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
     fragNormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);

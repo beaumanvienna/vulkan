@@ -71,6 +71,7 @@ void main()
 
     // blinn phong: theta between N and H
     vec3 specularLightColor = vec3(0.0, 0.0, 0.0);
+    vec3 directionToCamera  = normalize(toCameraDirection);
 
     for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
     {
@@ -91,7 +92,6 @@ void main()
         if (cosAngleOfIncidence != 0.0)
         {
             vec3 incidenceVector      = - normalize(directionToLight);
-            vec3 directionToCamera    = normalize(toCameraDirection);
             vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
 
             // phong

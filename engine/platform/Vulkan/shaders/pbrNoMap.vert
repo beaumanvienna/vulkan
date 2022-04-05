@@ -1,8 +1,9 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   * 
-   * litShader: Blinn Phong lighting (ambient, diffuse, and specular with a texture map)
-   * 
+   *
+   * normalMapping: Blinn Phong lighting (ambient, diffuse, and specular with a texture map 
+   *                and with a normal map
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -55,20 +56,19 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0) out vec3  fragColor;
-layout(location = 1) out vec3  fragPositionWorld;
-layout(location = 2) out vec3  fragMormalWorld;
-layout(location = 3) out vec2  fragUV;
-layout(location = 4) out float fragAmplification;
-layout(location = 5) out int   fragUnlit;
-layout(location = 6) out vec3  toCameraDirection;
+layout(location = 0)  out  vec3  fragColor;
+layout(location = 1)  out  vec3  fragPositionWorld;
+layout(location = 2)  out  vec3  fragNormalWorld;
+layout(location = 3)  out  vec2  fragUV;
+layout(location = 4)  out  float fragAmplification;
+layout(location = 5)  out  int   fragUnlit;
+layout(location = 6)  out  vec3  toCameraDirection;
 
 void main()
 {
-    // lighting
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
-    fragMormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
+    fragNormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
     fragColor = color;
     fragAmplification = amplification;
     fragUnlit = unlit;
@@ -79,5 +79,4 @@ void main()
 
     vec3 cameraPosWorld = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
     toCameraDirection = cameraPosWorld - positionWorld.xyz;
-
 }
