@@ -59,3 +59,4 @@ emulators/mednafen/configure
 emulators/mednafen/depcomp
 emulators/mednafen/install-sh
 emulators/mednafen/missing
+application/lucre/models/dont_upload

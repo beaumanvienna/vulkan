@@ -94,7 +94,7 @@ void main()
     // Gram Schmidt
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
-    
+
     mat3 TBN = transpose(mat3(T, B, N));
 
     for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)

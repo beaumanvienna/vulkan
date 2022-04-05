@@ -280,7 +280,7 @@ namespace GfxRenderEngine
                 ASSERT(normalMapIndex < VK_Model::m_Images.size());
 
                 auto pbrDiffuseNormalComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
-                pbrDiffuseNormalComponent.m_Roughness                = Math::Linear0_1ToExponential256_0(material.m_Roughness);
+                pbrDiffuseNormalComponent.m_Roughness                = material.m_Roughness;
                 pbrDiffuseNormalComponent.m_Metallic                 = material.m_Metallic;
                 pbrDiffuseNormalComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
 

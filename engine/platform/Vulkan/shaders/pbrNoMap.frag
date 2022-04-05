@@ -107,9 +107,9 @@ void main()
 
     vec3 pixelColor = fragColor.xyz;
     float alpha = 1.0;
-    
+
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
-    
+
     // reinhard tone mapping
     outColor.xyz = outColor.xyz / (outColor.xyz + vec3(1.0));
 

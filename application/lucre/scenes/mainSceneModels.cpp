@@ -30,15 +30,17 @@
 #include "renderer/texture.h"
 
 #include "mainScene.h"
+#include "auxiliary/file.h"
 
 namespace LucreApp
 {
     void MainScene::LoadModels()
     {
+        if (EngineCore::FileExists("application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf"))
         {
             Builder builder{};
 
-            m_BarramundiFish = builder.LoadGLTF("application/lucre/models/BarramundiFish/BarramundiFish.gltf", m_Registry);
+            m_BarramundiFish = builder.LoadGLTF("application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf", m_Registry);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"metal plate", model};
             m_Registry.emplace<MeshComponent>(m_BarramundiFish, mesh);
@@ -47,7 +49,6 @@ namespace LucreApp
             transform.m_Translation = glm::vec3{1.0f, 0.0f, 0.0f};
             transform.m_Rotation = glm::vec3{glm::pi<float>(), 0.0f, 0.0f};
             m_Registry.emplace<TransformComponent>(m_BarramundiFish, transform);
-
         }
         {
             Builder builder{};
@@ -62,9 +63,7 @@ namespace LucreApp
             transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
             transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
             m_Registry.emplace<TransformComponent>(m_Duck, transform);
-
         }
-
         {
             Builder builder{};
 

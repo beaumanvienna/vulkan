@@ -96,20 +96,20 @@ void main()
         float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
         vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
         diffusedLightColor += intensity * cosAngleOfIncidence;
-        
+
         // ---------- specular ----------
         if (cosAngleOfIncidence != 0.0)
         {
             vec3 incidenceVector      = - normalize(directionToLight);
             vec3 directionToCamera    = normalize(toCameraDirection);
             vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
-        
+
             // phong
             //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
             // blinn phong
             vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
             float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
-        
+
             float specularReflection  = pow(specularFactor, roughness);
             vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
             specularLightColor += intensity * specularReflection;

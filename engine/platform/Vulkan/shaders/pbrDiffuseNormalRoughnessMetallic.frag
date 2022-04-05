@@ -150,13 +150,13 @@ void main()
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);      
+        float G   = GeometrySmith(N, V, L, roughness);  
         vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-           
+   
         vec3 numerator    = NDF * G * F; 
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
         vec3 specular = numerator / denominator;
-        
+
         // kS is equal to Fresnel
         vec3 kS = F;
         // for energy conservation, the diffuse and specular light can't
@@ -169,7 +169,7 @@ void main()
         kD *= 1.0 - metallic;	  
 
         // scale light by NdotL
-        float NdotL = max(dot(N, L), 0.0);        
+        float NdotL = max(dot(N, L), 0.0);
 
         // add to outgoing radiance Lo
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again

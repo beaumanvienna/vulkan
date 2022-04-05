@@ -156,7 +156,7 @@ namespace LucreApp
                 auto& gltf = view.get<PbrDiffuseNormalComponent>(entity);
                 if (ImGUI::m_UseRoughness)
                 {
-                    gltf.m_Roughness = Math::Linear0_1ToExponential256_0(ImGUI::m_Roughness);
+                    gltf.m_Roughness = ImGUI::m_Roughness;
                 }
                 if (ImGUI::m_UseMetallic)
                 {
