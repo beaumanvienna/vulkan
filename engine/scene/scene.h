@@ -85,17 +85,27 @@ namespace GfxRenderEngine
     };
 
     // models without a normal map
-    struct DiffuseMapComponent
+    struct DefaultDiffuseComponent // diffuse map aka albedo map aka color map
     {
-        uint m_TextureSlot; // diffuse map aka albedo map aka color map
+        float m_Roughness;
+        float m_Metallic;
     };
 
-    struct GLTFComponent
+    struct PbrNoMapComponent
+    {
+        float m_Roughness;
+        float m_Metallic;
+        glm::vec3 m_Color;
+    };
+
+    struct PbrDiffuseComponent
     {
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        float m_Roughness;
+        float m_Metallic;
     };
 
-    struct NormalMappingComponent
+    struct PbrDiffuseNormalComponent
     {
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         float m_Roughness;
@@ -103,11 +113,9 @@ namespace GfxRenderEngine
         float m_NormalMapIntensity;
     };
 
-    struct PBRComponent
+    struct PbrDiffuseNormalRoughnessMetallicComponent
     {
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_Roughness;
-        float m_Metallic;
         float m_NormalMapIntensity;
     };
 

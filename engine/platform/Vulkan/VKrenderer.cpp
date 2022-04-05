@@ -74,42 +74,42 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> glTFDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> normalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> roughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalRoughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
                     .Build();
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGLTF =
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            glTFDescriptorSetLayout->GetDescriptorSetLayout()
+            diffuseDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsNormal =
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormal =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            normalDescriptorSetLayout->GetDescriptorSetLayout()
+            diffuseNormalDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsRoughnessMetallic =
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalRoughnessMetallic =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            roughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
+            diffuseNormalRoughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -145,11 +145,14 @@ namespace GfxRenderEngine
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        m_RenderSystemDiffuse       = std::make_unique<VK_RenderSystemDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
-        m_RenderSystemGLTF          = std::make_unique<VK_RenderSystemGLTF>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsGLTF);
-        m_RenderSystemNormalMapping = std::make_unique<VK_RenderSystemNormalMapping>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsNormal);
-        m_RenderSystemPBR           = std::make_unique<VK_RenderSystemPBR>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsRoughnessMetallic);
-        m_PointLightSystem          = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+
+        m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
@@ -341,10 +344,13 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDiffuse->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemGLTF->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemNormalMapping->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPBR->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
+
+            m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
+
             m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
@@ -353,7 +359,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDiffuse->DrawParticles(m_FrameInfo, particleSystem);
+            m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
         }
     }
 
@@ -378,19 +384,27 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CompileShaders()
     {
+        if (!EngineCore::FileExists("bin"))
+        {
+            LOG_CORE_WARN("creating bin directory for spirv files");
+            EngineCore::CreateDirectory("bin");
+        }
         std::vector<std::string> shaderFilenames = 
         {
-            "litShader.vert",
-            "litShader.frag",
             "pointLight.vert",
             "pointLight.frag",
-            "normalMapping.vert",
-            "normalMapping.frag",
-            "glTFShader.vert",
-            "glTFShader.frag",
-            "pbr.vert",
-            "pbr.frag"
+            "defaultDiffuseMap.vert",
+            "defaultDiffuseMap.frag",
+            "pbrNoMap.vert",
+            "pbrNoMap.frag",
+            "pbrDiffuse.vert",
+            "pbrDiffuse.frag",
+            "pbrDiffuseNormal.vert",
+            "pbrDiffuseNormal.frag",
+            "pbrDiffuseNormalRoughnessMetallic.vert",
+            "pbrDiffuseNormalRoughnessMetallic.frag"
         };
+
         for (auto& filename : shaderFilenames)
         {
             std::string spirvFilename = std::string("bin/") + filename + std::string(".spv");

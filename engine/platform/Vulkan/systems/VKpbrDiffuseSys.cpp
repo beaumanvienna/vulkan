@@ -24,27 +24,27 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKrenderSystemNormalMapping.h"
+#include "systems/VKpbrDiffuseSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemNormalMapping::VK_RenderSystemNormalMapping(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrDiffuse::VK_RenderSystemPbrDiffuse(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemNormalMapping::~VK_RenderSystemNormalMapping()
+    VK_RenderSystemPbrDiffuse::~VK_RenderSystemPbrDiffuse()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemNormalMapping::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrDiffuse::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataNormalMapping);
+        pushConstantRange.size = sizeof(VK_PushConstantDataPbrDiffuse);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemNormalMapping::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrDiffuse::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -72,22 +72,21 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/normalMapping.vert.spv",
-            "bin/normalMapping.frag.spv",
+            "bin/pbrDiffuse.vert.spv",
+            "bin/pbrDiffuse.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemNormalMapping::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrDiffuse::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, NormalMappingComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseComponent>();
         for (auto entity : view)
         {
-            auto& gltf = view.get<NormalMappingComponent>(entity);
-            VkDescriptorSet localDescriptorSet = gltf.m_DescriptorSet[frameInfo.m_FrameIndex];
+            auto& pbrDiffuseComponent = view.get<PbrDiffuseComponent>(entity);
+            VkDescriptorSet localDescriptorSet = pbrDiffuseComponent.m_DescriptorSet[frameInfo.m_FrameIndex];
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -101,18 +100,17 @@ namespace GfxRenderEngine
                 nullptr
             );
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataNormalMapping push{};
+            VK_PushConstantDataPbrDiffuse push{};
             push.m_ModelMatrix  = transform.Mat4();
             push.m_NormalMatrix = transform.NormalMatrix();
-            push.m_NormalMatrix[3].x = gltf.m_Roughness;
-            push.m_NormalMatrix[3].y = gltf.m_Metallic;
-            push.m_NormalMatrix[3].z = gltf.m_NormalMapIntensity;
+            push.m_NormalMatrix[3].x = pbrDiffuseComponent.m_Roughness;
+            push.m_NormalMatrix[3].y = pbrDiffuseComponent.m_Metallic;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataNormalMapping),
+                sizeof(VK_PushConstantDataPbrDiffuse),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);

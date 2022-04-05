@@ -30,7 +30,6 @@
 #include "engine.h"
 #include "renderer/camera.h"
 #include "scene/scene.h"
-#include "scene/particleSystem.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"
@@ -39,25 +38,24 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_SimplePushConstantData
+    struct VK_PushConstantDataPbrDiffuseNormal
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemDiffuse
+    class VK_RenderSystemPbrDiffuseNormal
     {
 
     public:
 
-        VK_RenderSystemDiffuse(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemDiffuse();
+        VK_RenderSystemPbrDiffuseNormal(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrDiffuseNormal();
 
-        VK_RenderSystemDiffuse(const VK_RenderSystemDiffuse&) = delete;
-        VK_RenderSystemDiffuse& operator=(const VK_RenderSystemDiffuse&) = delete;
+        VK_RenderSystemPbrDiffuseNormal(const VK_RenderSystemPbrDiffuseNormal&) = delete;
+        VK_RenderSystemPbrDiffuseNormal& operator=(const VK_RenderSystemPbrDiffuseNormal&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
-        void DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem);
 
     private:
 

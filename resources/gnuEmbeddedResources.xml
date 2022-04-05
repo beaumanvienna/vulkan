@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/litShader.vert</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/litShader.frag</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/normalMapping.vert</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/normalMapping.frag</file>
-    </gresource>
-    <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/pointLight.vert</file>
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/pointLight.frag</file>
+    </gresource>    
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/defaultDiffuseMap.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/defaultDiffuseMap.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrNoMap.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrNoMap.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuse.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuse.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormal.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormal.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag</file>
     </gresource>
     <gresource prefix="/images/">
         <file>images/cursor.png</file>

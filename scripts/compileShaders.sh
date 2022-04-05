@@ -1,16 +1,20 @@
 #/bin/bash
 mkdir -p bin
-glslc engine/platform/Vulkan/shaders/litShader.vert -o bin/litShader.vert.spv
-glslc engine/platform/Vulkan/shaders/litShader.frag -o bin/litShader.frag.spv
 
-glslc engine/platform/Vulkan/shaders/pointLight.vert -o bin/pointLight.vert.spv
-glslc engine/platform/Vulkan/shaders/pointLight.frag -o bin/pointLight.frag.spv
+glslc engine/platform/Vulkan/shaders/pointLight.vert                        -o bin/pointLight.vert.spv
+glslc engine/platform/Vulkan/shaders/pointLight.frag                        -o bin/pointLight.frag.spv
+                                                                            
+glslc engine/platform/Vulkan/shaders/defaultDiffuseMap.vert                 -o bin/defaultDiffuseMap.vert.spv
+glslc engine/platform/Vulkan/shaders/defaultDiffuseMap.frag                 -o bin/defaultDiffuseMap.frag.spv
+                                                                            
+glslc engine/platform/Vulkan/shaders/pbrNoMap.vert                          -o bin/pbrNoMap.vert.spv
+glslc engine/platform/Vulkan/shaders/pbrNoMap.frag                          -o bin/pbrNoMap.frag.spv
+                                                                            
+glslc engine/platform/Vulkan/shaders/pbrDiffuse.vert                        -o bin/pbrDiffuse.vert.spv
+glslc engine/platform/Vulkan/shaders/pbrDiffuse.frag                        -o bin/pbrDiffuse.frag.spv
+                                                                            
+glslc engine/platform/Vulkan/shaders/pbrDiffuseNormal.vert                  -o bin/pbrDiffuseNormal.vert.spv
+glslc engine/platform/Vulkan/shaders/pbrDiffuseNormal.frag                  -o bin/pbrDiffuseNormal.frag.spv
 
-glslc engine/platform/Vulkan/shaders/normalMapping.vert -o bin/normalMapping.vert.spv
-glslc engine/platform/Vulkan/shaders/normalMapping.frag -o bin/normalMapping.frag.spv
-
-glslc engine/platform/Vulkan/shaders/glTFShader.vert -o bin/glTFShader.vert.spv
-glslc engine/platform/Vulkan/shaders/glTFShader.frag -o bin/glTFShader.frag.spv
-
-glslc engine/platform/Vulkan/shaders/pbr.vert -o bin/pbr.vert.spv
-glslc engine/platform/Vulkan/shaders/pbr.frag -o bin/pbr.frag.spv
+glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.vert -o bin/pbrDiffuseNormalRoughnessMetallic.vert.spv
+glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag -o bin/pbrDiffuseNormalRoughnessMetallic.frag.spv

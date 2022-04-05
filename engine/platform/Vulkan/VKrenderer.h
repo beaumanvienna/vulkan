@@ -28,15 +28,18 @@
 
 #include "engine.h"
 #include "renderer/renderer.h"
+#include "platform/Vulkan/imguiEngine/imgui.h"
+
+#include "systems/VKdefaultDiffuseMapSys.h"
+#include "systems/VKpointLightSys.h"
+
+#include "systems/VKpbrNoMapSys.h"
+#include "systems/VKpbrDiffuseSys.h"
+#include "systems/VKpbrDiffuseNormalSys.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
-#include "systems/VKrenderSystemDiffuse.h"
-#include "systems/VKrenderSystemGLTF.h"
-#include "systems/VKrenderSystemNormalMapping.h"
-#include "systems/VKrenderSystemPBR.h"
-#include "systems/VKpointLightSystem.h"
-#include "platform/Vulkan/imguiEngine/imgui.h"
 #include "VKdescriptor.h"
 #include "VKtexture.h"
 #include "VKbuffer.h"
@@ -91,10 +94,13 @@ namespace GfxRenderEngine
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
-        std::unique_ptr<VK_RenderSystemDiffuse> m_RenderSystemDiffuse;
-        std::unique_ptr<VK_RenderSystemGLTF> m_RenderSystemGLTF;
-        std::unique_ptr<VK_RenderSystemNormalMapping> m_RenderSystemNormalMapping;
-        std::unique_ptr<VK_RenderSystemPBR> m_RenderSystemPBR;
+
+        std::unique_ptr<VK_RenderSystemPbrNoMap>                          m_RenderSystemPbrNoMap;
+        std::unique_ptr<VK_RenderSystemPbrDiffuse>                        m_RenderSystemPbrDiffuse;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                  m_RenderSystemPbrDiffuseNormal;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
+
+        std::unique_ptr<VK_RenderSystemDefaultDiffuseMap> m_RenderSystemDefaultDiffuseMap;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;

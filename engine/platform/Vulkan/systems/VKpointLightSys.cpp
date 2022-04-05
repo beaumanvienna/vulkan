@@ -23,7 +23,8 @@
 #include "core.h"
 #include "scene/scene.h"
 
-#include "systems/VKpointLightSystem.h"
+#include "systems/VKpointLightSys.h"
+
 #include "VKswapChain.h"
 #include "VKmodel.h"
 

@@ -150,10 +150,10 @@ namespace LucreApp
 
         if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity)
         {
-            auto view = m_Registry.view<MeshComponent, TransformComponent, PBRComponent>();
+            auto view = m_Registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalComponent>();
             for (auto entity : view)
             {
-                auto& gltf = view.get<PBRComponent>(entity);
+                auto& gltf = view.get<PbrDiffuseNormalComponent>(entity);
                 if (ImGUI::m_UseRoughness)
                 {
                     gltf.m_Roughness = Math::Linear0_1ToExponential256_0(ImGUI::m_Roughness);

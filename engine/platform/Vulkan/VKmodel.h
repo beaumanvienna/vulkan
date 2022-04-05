@@ -62,10 +62,26 @@ namespace GfxRenderEngine
         void Bind(VkCommandBuffer commandBuffer);
         void Draw(VkCommandBuffer commandBuffer);
 
-        static GLTFComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap);
-        static NormalMappingComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap);
-        static PBRComponent CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap, 
-                                                const std::shared_ptr<VK_Texture>& roughnessMetallicMap);
+    public:
+
+        static PbrDiffuseComponent CreateDescriptorSet
+        (
+            const std::shared_ptr<VK_Texture>& colorMap
+        );
+        static PbrDiffuseNormalComponent CreateDescriptorSet
+        (
+            const std::shared_ptr<VK_Texture>& colorMap,
+            const std::shared_ptr<VK_Texture>& normalMap
+        );
+        static PbrDiffuseNormalRoughnessMetallicComponent CreateDescriptorSet
+        (
+            const std::shared_ptr<VK_Texture>& colorMap,
+            const std::shared_ptr<VK_Texture>& normalMap, 
+            const std::shared_ptr<VK_Texture>& roughnessMetallicMap
+        );
+
+    public:
+
         static std::vector<std::shared_ptr<VK_Texture>> m_Images;
 
     private:

@@ -87,8 +87,8 @@ namespace LucreApp
                 if (flip) transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), 0.0f};
                 m_Registry.emplace<TransformComponent>(m_Vulcano[i], transform);
 
-                DiffuseMapComponent diffuse{};
-                m_Registry.emplace<DiffuseMapComponent>(m_Vulcano[i], diffuse);
+                DefaultDiffuseComponent defaultDiffuseComponent{0.1f, 0.1f};
+                m_Registry.emplace<DefaultDiffuseComponent>(m_Vulcano[i], defaultDiffuseComponent);
             }
         }
         {
@@ -111,8 +111,8 @@ namespace LucreApp
                 transform.m_Rotation = glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f};
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
 
-                DiffuseMapComponent diffuse{};
-                m_Registry.emplace<DiffuseMapComponent>(m_Walkway[i], diffuse);
+                DefaultDiffuseComponent defaultDiffuseComponent{};
+                m_Registry.emplace<DefaultDiffuseComponent>(m_Walkway[i], defaultDiffuseComponent);
             }
         }
         {
@@ -135,8 +135,8 @@ namespace LucreApp
                 transform.m_Scale = glm::vec3{0.005f};
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
-                DiffuseMapComponent diffuse{};
-                m_Registry.emplace<DiffuseMapComponent>(m_Guybrush[i], diffuse);
+                DefaultDiffuseComponent defaultDiffuseComponent{};
+                m_Registry.emplace<DefaultDiffuseComponent>(m_Guybrush[i], defaultDiffuseComponent);
             }
         }
         {
@@ -154,8 +154,8 @@ namespace LucreApp
             transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::half_pi<float>()};
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
 
-            DiffuseMapComponent diffuse{};
-            m_Registry.emplace<DiffuseMapComponent>(m_Ground, diffuse);
+            PbrNoMapComponent pbrNoMapComponent{};
+            m_Registry.emplace<PbrNoMapComponent>(m_Ground, pbrNoMapComponent);
         }
         {
             Builder builder{};
@@ -171,8 +171,8 @@ namespace LucreApp
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
 
-            DiffuseMapComponent diffuse{};
-            m_Registry.emplace<DiffuseMapComponent>(m_Vase0, diffuse);
+            PbrNoMapComponent pbrNoMapComponent{};
+            m_Registry.emplace<PbrNoMapComponent>(m_Vase0, pbrNoMapComponent);
         }
         {
             Builder builder{};
@@ -202,8 +202,8 @@ namespace LucreApp
             transform.m_Scale = glm::vec3{2.0f, 2.0f, 2.0f};
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
 
-            DiffuseMapComponent diffuse{};
-            m_Registry.emplace<DiffuseMapComponent>(m_Vase1, diffuse);
+            PbrNoMapComponent pbrNoMapComponent{};
+            m_Registry.emplace<PbrNoMapComponent>(m_Vase1, pbrNoMapComponent);
         }
 
         {
@@ -233,8 +233,8 @@ namespace LucreApp
 
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
 
-                DiffuseMapComponent diffuse{};
-                m_Registry.emplace<DiffuseMapComponent>(m_Banana[i], diffuse);
+                PbrNoMapComponent pbrNoMapComponent{};
+                m_Registry.emplace<PbrNoMapComponent>(m_Banana[i], pbrNoMapComponent);
 
                 b2BodyDef bodyDef;
                 bodyDef.type = b2_dynamicBody;

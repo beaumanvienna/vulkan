@@ -30,7 +30,6 @@
 #include "engine.h"
 #include "renderer/camera.h"
 #include "scene/scene.h"
-#include "scene/particleSystem.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"
@@ -39,28 +38,28 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataPBR
+    struct VK_PushConstantDataPbrNoMap
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemPBR
+    class VK_RenderSystemPbrNoMap
     {
 
     public:
 
-        VK_RenderSystemPBR(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPBR();
+        VK_RenderSystemPbrNoMap(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_RenderSystemPbrNoMap();
 
-        VK_RenderSystemPBR(const VK_RenderSystemPBR&) = delete;
-        VK_RenderSystemPBR& operator=(const VK_RenderSystemPBR&) = delete;
+        VK_RenderSystemPbrNoMap(const VK_RenderSystemPbrNoMap&) = delete;
+        VK_RenderSystemPbrNoMap& operator=(const VK_RenderSystemPbrNoMap&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:

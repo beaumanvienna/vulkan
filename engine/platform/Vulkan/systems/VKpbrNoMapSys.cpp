@@ -24,27 +24,29 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKrenderSystemPBR.h"
+#include "systems/VKpbrNoMapSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPBR::VK_RenderSystemPBR(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrNoMap::VK_RenderSystemPbrNoMap(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
     {
-        CreatePipelineLayout(descriptorSetLayouts);
+        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPBR::~VK_RenderSystemPBR()
+    VK_RenderSystemPbrNoMap::~VK_RenderSystemPbrNoMap()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPBR::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrNoMap::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataPBR);
+        pushConstantRange.size = sizeof(VK_PushConstantDataPbrNoMap);
+        
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -58,7 +60,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPBR::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrNoMap::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -72,47 +74,45 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/pbr.vert.spv",
-            "bin/pbr.frag.spv",
+            "bin/pbrNoMap.vert.spv",
+            "bin/pbrNoMap.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPBR::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrNoMap::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_GlobalDescriptorSet,
+            0,
+            nullptr
+        );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PBRComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapComponent>();
         for (auto entity : view)
         {
-            auto& gltf = view.get<PBRComponent>(entity);
-            VkDescriptorSet localDescriptorSet = gltf.m_DescriptorSet[frameInfo.m_FrameIndex];
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_PipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
+            auto& pbrNoMapComponent = view.get<PbrNoMapComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataPBR push{};
+            VK_PushConstantDataPbrNoMap push{};
+
             push.m_ModelMatrix  = transform.Mat4();
             push.m_NormalMatrix = transform.NormalMatrix();
-            push.m_NormalMatrix[3].x = gltf.m_Roughness;
-            push.m_NormalMatrix[3].y = gltf.m_Metallic;
-            push.m_NormalMatrix[3].z = gltf.m_NormalMapIntensity;
+            push.m_NormalMatrix[3].x = pbrNoMapComponent.m_Roughness;
+            push.m_NormalMatrix[3].y = pbrNoMapComponent.m_Metallic;
+
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPBR),
+                sizeof(VK_PushConstantDataPbrNoMap),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
@@ -123,4 +123,5 @@ namespace GfxRenderEngine
             }
         }
     }
+
 }

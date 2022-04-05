@@ -24,27 +24,27 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKrenderSystemGLTF.h"
+#include "systems/VKpbrDiffuseNormalSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemGLTF::VK_RenderSystemGLTF(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrDiffuseNormal::VK_RenderSystemPbrDiffuseNormal(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemGLTF::~VK_RenderSystemGLTF()
+    VK_RenderSystemPbrDiffuseNormal::~VK_RenderSystemPbrDiffuseNormal()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemGLTF::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrDiffuseNormal::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGLTF);
+        pushConstantRange.size = sizeof(VK_PushConstantDataPbrDiffuseNormal);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemGLTF::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrDiffuseNormal::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -72,22 +72,21 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/glTFShader.vert.spv",
-            "bin/glTFShader.frag.spv",
+            "bin/pbrDiffuseNormal.vert.spv",
+            "bin/pbrDiffuseNormal.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemGLTF::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrDiffuseNormal::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, GLTFComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalComponent>();
         for (auto entity : view)
         {
-            auto& gltf = view.get<GLTFComponent>(entity);
-            VkDescriptorSet localDescriptorSet = gltf.m_DescriptorSet[frameInfo.m_FrameIndex];
+            auto& pbrDiffuseNormalComponent = view.get<PbrDiffuseNormalComponent>(entity);
+            VkDescriptorSet localDescriptorSet = pbrDiffuseNormalComponent.m_DescriptorSet[frameInfo.m_FrameIndex];
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -101,15 +100,18 @@ namespace GfxRenderEngine
                 nullptr
             );
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataGLTF push{};
+            VK_PushConstantDataPbrDiffuseNormal push{};
             push.m_ModelMatrix  = transform.Mat4();
             push.m_NormalMatrix = transform.NormalMatrix();
+            push.m_NormalMatrix[3].x = pbrDiffuseNormalComponent.m_Roughness;
+            push.m_NormalMatrix[3].y = pbrDiffuseNormalComponent.m_Metallic;
+            push.m_NormalMatrix[3].z = pbrDiffuseNormalComponent.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataGLTF),
+                sizeof(VK_PushConstantDataPbrDiffuseNormal),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
@@ -120,5 +122,4 @@ namespace GfxRenderEngine
             }
         }
     }
-
 }

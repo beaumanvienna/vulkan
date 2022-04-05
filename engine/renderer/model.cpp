@@ -269,8 +269,8 @@ namespace GfxRenderEngine
             {
                 uint diffuseMapIndex = material.m_DiffuseMapIndex;
                 ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
-                registry.emplace<GLTFComponent>(entity, gltf);
+                auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+                registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
             }
             else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
             {
@@ -279,12 +279,12 @@ namespace GfxRenderEngine
                 ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
                 ASSERT(normalMapIndex < VK_Model::m_Images.size());
 
-                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
-                gltf.m_Roughness                = Math::Linear0_1ToExponential256_0(material.m_Roughness);
-                gltf.m_Metallic                 = material.m_Metallic;
-                gltf.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+                auto pbrDiffuseNormalComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
+                pbrDiffuseNormalComponent.m_Roughness                = Math::Linear0_1ToExponential256_0(material.m_Roughness);
+                pbrDiffuseNormalComponent.m_Metallic                 = material.m_Metallic;
+                pbrDiffuseNormalComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
 
-                registry.emplace<NormalMappingComponent>(entity, gltf);
+                registry.emplace<PbrDiffuseNormalComponent>(entity, pbrDiffuseNormalComponent);
             }
             else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
             {
@@ -295,12 +295,16 @@ namespace GfxRenderEngine
                 ASSERT(normalMapIndex             < VK_Model::m_Images.size());
                 ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
 
-                auto gltf = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex], VK_Model::m_Images[roughnessMettalicMapIndex]);
-                gltf.m_Roughness                = 0.7;
-                gltf.m_Metallic                 = 0.1f;
-                gltf.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+                auto pbrDiffuseNormalRoughnessMetallicComponent = 
+                    VK_Model::CreateDescriptorSet
+                    (
+                        VK_Model::m_Images[diffuseMapIndex], 
+                        VK_Model::m_Images[normalMapIndex], 
+                        VK_Model::m_Images[roughnessMettalicMapIndex]
+                    );
+                pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
 
-                registry.emplace<PBRComponent>(entity, gltf);
+                registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
             }
         }
 

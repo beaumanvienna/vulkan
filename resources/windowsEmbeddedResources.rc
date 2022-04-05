@@ -1,7 +1,7 @@
 
 #include "windowsEmbeddedResources.h"
 
-// PNG
+
 IDB_CURSOR_RETRO         PNG                     "resources\\images\\cursor.png"
 IDB_CURSOR_EMPTY         PNG                     "resources\\images\\cursorEmpty.png"
 IDB_ENGINE_LOGO          PNG                     "resources\\atlas\\images\\I_ENGINE.png"
@@ -15,3 +15,16 @@ IDR_SD_LCTRL_DB          TEXT                    "resources\\sdl\\gamecontroller
 IDR_WAVES                OGG                     "resources\\waves.ogg"
 IDR_BUCKLE               OGG                     "resources\\buckle.ogg"
 
+
+IDR_SHADER_PL_VERT       TEXT                    "engine\\platform\\Vulkan\\shaders\\pointLight.vert"
+IDR_SHADER_PL_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\pointLight.frag"
+IDR_SHADER_DDM_VERT      TEXT                    "engine\\platform\\Vulkan\\shaders\\defaultDiffuseMap.vert"
+IDR_SHADER_DDM_FRAG      TEXT                    "engine\\platform\\Vulkan\\shaders\\defaultDiffuseMap.frag"
+IDR_SHADER_NM_VERT       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrNoMap.vert"
+IDR_SHADER_NM_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrNoMap.frag"
+IDR_SHADER_D_VERT        TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuse.vert"
+IDR_SHADER_D_FRAG        TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuse.frag"
+IDR_SHADER_DN_VERT       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuseNormal.vert"
+IDR_SHADER_DN_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuseNormal.frag"
+IDR_SHADER_DNRM_VERT     TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuseNormalRoughnessMetallic.vert"
+IDR_SHADER_DNRM_FRAG     TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrDiffuseNormalRoughnessMetallic.frag"

@@ -1,9 +1,8 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * normalMapping: Blinn Phong lighting (ambient, diffuse, and specular with a texture map 
-   *                and with a normal map
-   *
+   * 
+   * litShader: Blinn Phong lighting (ambient, diffuse, and specular with a texture map)
+   * 
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -26,15 +25,13 @@
 
 #version 450
 
-layout(location = 0)       in vec3  fragColor;
-layout(location = 1)       in vec3  fragPositionWorld;
-layout(location = 2)       in vec3  fragNormalWorld;
-layout(location = 3)       in vec2  fragUV;
-layout(location = 4)       in float fragAmplification;
-layout(location = 5)  flat in int   fragUnlit;
-layout(location = 6)       in vec3  fragTangentViewPos;
-layout(location = 7)       in vec3  fragTangentFragPos;
-layout(location = 8)       in vec3  fragTangentLightPos[10];
+layout(location = 0)      in vec3  fragColor;
+layout(location = 1)      in vec3  fragPositionWorld;
+layout(location = 2)      in vec3  fragNormalWorld;
+layout(location = 3)      in vec2  fragUV;
+layout(location = 4)      in float fragAmplification;
+layout(location = 5) flat in int   fragUnlit;
+layout(location = 6)      in vec3  toCameraDirection;
 
 struct PointLight
 {
@@ -53,9 +50,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
-layout(set = 1, binding = 0) uniform sampler2D diffuseMap; // diffuse map
-layout(set = 1, binding = 1) uniform sampler2D normalMap;  // normal map
-
 layout (location = 0) out vec4 outColor;
 
 layout(push_constant) uniform Push
@@ -66,17 +60,12 @@ layout(push_constant) uniform Push
 
 void main()
 {
-    float roughness           = push.m_NormalMatrix[3].x;
-    float metallic            = push.m_NormalMatrix[3].y;
-    float normalMapIntensity  = push.m_NormalMatrix[3].z;
 
     vec3 ambientLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
     // ---------- lighting ----------
     vec3 diffusedLightColor = vec3(0.0);
     vec3 surfaceNormal;
-
-    vec3 toCameraDirection = fragTangentViewPos - fragTangentFragPos;
 
     // blinn phong: theta between N and H
     vec3 specularLightColor = vec3(0.0, 0.0, 0.0);
@@ -85,48 +74,42 @@ void main()
     {
         PointLight light = ubo.m_PointLights[i];
 
-        // normal in tangent space
-        vec3 surfaceNormalfromMap = normalize(texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0));
-        surfaceNormal             = mix(vec3(0.0, 0.0, 1.0), surfaceNormalfromMap, normalMapIntensity);
-        vec3 directionToLight     = fragTangentLightPos[i] - fragTangentFragPos;
+        // normal in world space
+        surfaceNormal = normalize(fragNormalWorld);
+        vec3 directionToLight     = light.m_Position.xyz - fragPositionWorld;
         float distanceToLight     = length(directionToLight);
         float attenuation = 1.0 / (distanceToLight * distanceToLight);
-        
+
         // ---------- diffused ----------
         float cosAngleOfIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
         vec3 intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
         diffusedLightColor += intensity * cosAngleOfIncidence;
-        
+
         // ---------- specular ----------
         if (cosAngleOfIncidence != 0.0)
         {
             vec3 incidenceVector      = - normalize(directionToLight);
             vec3 directionToCamera    = normalize(toCameraDirection);
             vec3 reflectedLightDir    = reflect(incidenceVector, surfaceNormal);
-        
+
             // phong
             //float specularFactor      = max(dot(reflectedLightDir, directionToCamera),0.0);
             // blinn phong
             vec3 halfwayDirection     = normalize(-incidenceVector + directionToCamera);
             float specularFactor      = max(dot(surfaceNormal, halfwayDirection),0.0);
-        
-            float specularReflection  = pow(specularFactor, roughness);
+
+            float specularReflection  = pow(specularFactor, 128);
             vec3  intensity = light.m_Color.xyz * light.m_Color.w * attenuation;
             specularLightColor += intensity * specularReflection;
         }
     }
     // ------------------------------
 
-    vec3 pixelColor;
+    vec3 pixelColor = fragColor.xyz;
     float alpha = 1.0;
-
-    alpha = texture(diffuseMap,fragUV).w;
-    pixelColor = texture(diffuseMap,fragUV).xyz;
-    if (alpha < 0.0001) discard;
-    pixelColor *= fragAmplification;
-
+    
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
-
+    
     // reinhard tone mapping
     outColor.xyz = outColor.xyz / (outColor.xyz + vec3(1.0));
 

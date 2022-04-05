@@ -162,9 +162,9 @@ namespace GfxRenderEngine
         }
     }
 
-    GLTFComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap)
+    PbrDiffuseComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap)
     {
-        GLTFComponent gltf{};
+        PbrDiffuseComponent pbrDiffuseComponent{};
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
@@ -179,14 +179,14 @@ namespace GfxRenderEngine
         {
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                 .WriteImage(0, &imageInfo)
-                .Build(gltf.m_DescriptorSet[i]);
+                .Build(pbrDiffuseComponent.m_DescriptorSet[i]);
         }
-        return gltf;
+        return pbrDiffuseComponent;
     }
 
-    NormalMappingComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap)
+    PbrDiffuseNormalComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap)
     {
-        NormalMappingComponent normalMapping{};
+        PbrDiffuseNormalComponent pbrDiffuseNormalComponent{};
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -213,15 +213,18 @@ namespace GfxRenderEngine
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                 .WriteImage(0, &imageInfo0)
                 .WriteImage(1, &imageInfo1)
-                .Build(normalMapping.m_DescriptorSet[i]);
+                .Build(pbrDiffuseNormalComponent.m_DescriptorSet[i]);
         }
-        return normalMapping;
+        return pbrDiffuseNormalComponent;
     }
 
-    PBRComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap, 
-                                               const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
+    PbrDiffuseNormalRoughnessMetallicComponent VK_Model::CreateDescriptorSet
+    (
+        const std::shared_ptr<VK_Texture>& colorMap,
+        const std::shared_ptr<VK_Texture>& normalMap, 
+        const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
     {
-        PBRComponent pbr{};
+        PbrDiffuseNormalRoughnessMetallicComponent pbrDiffuseNormalRoughnessMetallicComponent{};
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -258,8 +261,8 @@ namespace GfxRenderEngine
                 .WriteImage(0, &imageInfo0)
                 .WriteImage(1, &imageInfo1)
                 .WriteImage(2, &imageInfo2)
-                .Build(pbr.m_DescriptorSet[i]);
+                .Build(pbrDiffuseNormalRoughnessMetallicComponent.m_DescriptorSet[i]);
         }
-        return pbr;
+        return pbrDiffuseNormalRoughnessMetallicComponent;
     }
 }
