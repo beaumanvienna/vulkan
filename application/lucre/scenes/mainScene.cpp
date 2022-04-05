@@ -148,28 +148,26 @@ namespace LucreApp
         barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
 
-        #ifdef DEBUG  // apply debug values from imgui window
-            if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity)
+        if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity)
+        {
+            auto view = m_Registry.view<MeshComponent, TransformComponent, PBRComponent>();
+            for (auto entity : view)
             {
-                auto view = m_Registry.view<MeshComponent, TransformComponent, NormalMappingComponent>();
-                for (auto entity : view)
+                auto& gltf = view.get<PBRComponent>(entity);
+                if (ImGUI::m_UseRoughness)
                 {
-                    auto& gltf = view.get<NormalMappingComponent>(entity);
-                    if (ImGUI::m_UseRoughness)
-                    {
-                        gltf.m_Roughness = Math::Linear0_1ToExponential256_0(ImGUI::m_Roughness);
-                    }
-                    if (ImGUI::m_UseMetallic)
-                    {
-                        gltf.m_Metallic = ImGUI::m_Metallic;
-                    }
-                    if (ImGUI::m_UseNormalMapIntensity)
-                    {
-                        gltf.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
-                    }
+                    gltf.m_Roughness = Math::Linear0_1ToExponential256_0(ImGUI::m_Roughness);
+                }
+                if (ImGUI::m_UseMetallic)
+                {
+                    gltf.m_Metallic = ImGUI::m_Metallic;
+                }
+                if (ImGUI::m_UseNormalMapIntensity)
+                {
+                    gltf.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
                 }
             }
-        #endif
+        }
 
         RotateLights(timestep);
         AnimateVulcan(timestep);
