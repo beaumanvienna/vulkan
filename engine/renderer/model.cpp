@@ -270,6 +270,9 @@ namespace GfxRenderEngine
                 uint diffuseMapIndex = material.m_DiffuseMapIndex;
                 ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
                 auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+                pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
+                pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
+
                 registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
             }
             else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))

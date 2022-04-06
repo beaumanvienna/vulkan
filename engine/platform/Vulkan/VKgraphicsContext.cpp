@@ -55,7 +55,7 @@ namespace GfxRenderEngine
         auto diffTime = Engine::m_Engine->GetTime() - m_StartTime;
         auto sleepTime = m_FrameDuration - diffTime - 150us;
         if (sleepTime < 0s) sleepTime = 0s;
-        
+
         // here ends the frame
         if (m_VSyncIsWorking)
         {

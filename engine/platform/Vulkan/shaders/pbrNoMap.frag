@@ -108,7 +108,6 @@ void main()
     float roughness           = push.m_NormalMatrix[3].x;
     float metallic            = push.m_NormalMatrix[3].y;
 
-    float bias                = 1000.0f;
     vec3  ambientLightColor   = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
     // calculate reflectance at normal incidence; if di-electric (like plastic) use F0
@@ -121,7 +120,7 @@ void main()
 
     // normal
     vec3 N = normalize(fragNormalWorld);
-    
+
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -136,7 +135,7 @@ void main()
         vec3 H = normalize(V + L);
         float distance = length(directionToLight);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = light.m_Color.xyz * light.m_Color.w * bias * attenuation;
+        vec3 radiance = light.m_Color.xyz * light.m_Color.w * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
@@ -156,7 +155,7 @@ void main()
         // multiply kD by the inverse metalness such that only non-metals 
         // have diffuse lighting, or a linear blend if partly metal (pure metals
         // have no diffuse light).
-        kD *= 1.0 - metallic;	  
+        kD *= 1.0 - metallic;
 
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
@@ -165,14 +164,14 @@ void main()
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
 
-    vec3 ambient = vec3(0.03) * fragColor;
+    vec3 ambient = ambientLightColor * fragColor;
 
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    //color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2)); 
 
     outColor = albedo * vec4(color, 1.0);
 }

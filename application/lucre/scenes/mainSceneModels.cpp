@@ -46,13 +46,12 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_BarramundiFish, mesh);
 
             TransformComponent transform{};
-            transform.m_Translation = glm::vec3{1.0f, 0.0f, 0.0f};
+            transform.m_Translation = glm::vec3{1.0f, 0.5f, 0.0f};
             transform.m_Rotation = glm::vec3{glm::pi<float>(), 0.0f, 0.0f};
             m_Registry.emplace<TransformComponent>(m_BarramundiFish, transform);
         }
         {
             Builder builder{};
-
             m_Duck = builder.LoadGLTF("application/lucre/models/duck/duck.gltf", m_Registry);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"duck", model};
@@ -154,6 +153,8 @@ namespace LucreApp
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
 
             PbrNoMapComponent pbrNoMapComponent{};
+            pbrNoMapComponent.m_Roughness = 0.2;
+            pbrNoMapComponent.m_Metallic  = 0.0;
             m_Registry.emplace<PbrNoMapComponent>(m_Ground, pbrNoMapComponent);
         }
         {
@@ -171,6 +172,8 @@ namespace LucreApp
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
 
             PbrNoMapComponent pbrNoMapComponent{};
+            pbrNoMapComponent.m_Roughness = 0.3;
+            pbrNoMapComponent.m_Metallic  = 0.0;
             m_Registry.emplace<PbrNoMapComponent>(m_Vase0, pbrNoMapComponent);
         }
         {
@@ -202,6 +205,8 @@ namespace LucreApp
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
 
             PbrNoMapComponent pbrNoMapComponent{};
+            pbrNoMapComponent.m_Roughness = 0.08;
+            pbrNoMapComponent.m_Metallic  = 0.5;
             m_Registry.emplace<PbrNoMapComponent>(m_Vase1, pbrNoMapComponent);
         }
 
@@ -233,6 +238,8 @@ namespace LucreApp
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
 
                 PbrNoMapComponent pbrNoMapComponent{};
+                pbrNoMapComponent.m_Roughness = 0.1;
+                pbrNoMapComponent.m_Metallic  = 0.2;
                 m_Registry.emplace<PbrNoMapComponent>(m_Banana[i], pbrNoMapComponent);
 
                 b2BodyDef bodyDef;

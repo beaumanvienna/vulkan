@@ -67,6 +67,7 @@ namespace LucreApp
         void UpdateBananas(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
         void SimulatePhysics(const Timestep& timestep);
+        void ApplyDebugSettings();
 
     private:
 

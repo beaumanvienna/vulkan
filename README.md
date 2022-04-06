@@ -7,7 +7,7 @@ A Vulkan Render Engine<br/>
 </p>
 <br/>
 <br/>
-Features: Vulkan support for 3D rendering, hotplug gamepad support, sound support, profiling, resource system, render API abstraction, engine/application separation, event system, settings manager, point lights, enity component system based on EnTT, physics simulator based on Box2D, debug imgui window, sprite sheets, sprite sheet generator, 3D file formats: Obj Wavefront and glTF<br/>
+Features: Vulkan support for 3D rendering, physically-based lighting, Blinn-Phong lighting, materials base on roughness-metallic workflow, hotplug gamepad support, sound support, profiling, cross-platform resource system (Windows/Linux), render API abstraction, engine/application separation, event system, settings manager, point lights, enity component system based on EnTT, physics simulator based on Box2D, debug imgui window, sprite sheets, sprite sheet generator, 3D file formats: Obj Wavefront and glTF<br/>
 <br/>
 * Press "f" to toggle fullscreen and "m" to toggle the debug imgui window.<br/>
 * Use the left and right sticks on the controller to move some objects around and scale them.<br/>

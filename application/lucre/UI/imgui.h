@@ -42,6 +42,7 @@ namespace LucreApp
         static bool  m_UseMetallic;
         static float m_NormalMapIntensity;
         static bool  m_UseNormalMapIntensity;
-
+        static float m_PointLightIntensity;
+        static bool  m_UsePointLightIntensity;
     };
 }

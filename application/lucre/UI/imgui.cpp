@@ -32,6 +32,8 @@ namespace LucreApp
     bool  ImGUI::m_UseMetallic = false;
     float ImGUI::m_NormalMapIntensity = 0.9f;
     bool  ImGUI::m_UseNormalMapIntensity = false;
+    float ImGUI::m_PointLightIntensity = 1.0f;
+    bool  ImGUI::m_UsePointLightIntensity = false;
 
     void ImGUI::DebugWindow()
     {
@@ -49,5 +51,10 @@ namespace LucreApp
         ImGui::Checkbox("use02", &m_UseNormalMapIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
+
+        // point light intensity
+        ImGui::Checkbox("use03", &m_UsePointLightIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("pt lghts", &m_PointLightIntensity, 0.0f, 10.0f);
     }
 }

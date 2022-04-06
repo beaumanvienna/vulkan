@@ -135,6 +135,7 @@ namespace LucreApp
         auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
         auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
         auto& barrelTransform  = view.get<TransformComponent>(m_Barrel);
+        auto& fishTransform    = view.get<TransformComponent>(m_BarramundiFish);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
@@ -147,27 +148,9 @@ namespace LucreApp
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
         barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
+        //fishTransform.m_Rotation.y   = glm::mod(fishTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
 
-        if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity)
-        {
-            auto view = m_Registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalComponent>();
-            for (auto entity : view)
-            {
-                auto& gltf = view.get<PbrDiffuseNormalComponent>(entity);
-                if (ImGUI::m_UseRoughness)
-                {
-                    gltf.m_Roughness = ImGUI::m_Roughness;
-                }
-                if (ImGUI::m_UseMetallic)
-                {
-                    gltf.m_Metallic = ImGUI::m_Metallic;
-                }
-                if (ImGUI::m_UseNormalMapIntensity)
-                {
-                    gltf.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
-                }
-            }
-        }
+        ApplyDebugSettings();
 
         RotateLights(timestep);
         AnimateVulcan(timestep);
@@ -265,6 +248,87 @@ namespace LucreApp
             auto& rigidbody = view.get<RigidbodyComponent>(banana);
             auto body = static_cast<b2Body*>(rigidbody.m_Body);
             body->SetTransform(b2Vec2(0.0f, -8.f), 0.0f);
+        }
+    }
+
+    void MainScene::ApplyDebugSettings()
+    {
+                if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity || ImGUI::m_UsePointLightIntensity)
+        {
+            { // PbrNoMapComponent
+                auto view = m_Registry.view<PbrNoMapComponent>();
+                for (auto entity : view)
+                {
+                    auto& pbrNoMapComponent = view.get<PbrNoMapComponent>(entity);
+                    if (ImGUI::m_UseRoughness)
+                    {
+                        pbrNoMapComponent.m_Roughness = ImGUI::m_Roughness;
+                    }
+        
+                    if (ImGUI::m_UseMetallic)
+                    {
+                        pbrNoMapComponent.m_Metallic = ImGUI::m_Metallic;
+                    }
+                }
+            }
+            { // PbrDiffuseComponent
+                auto view = m_Registry.view<PbrDiffuseComponent>();
+                for (auto entity : view)
+                {
+                    auto& pbrDiffuseComponent = view.get<PbrDiffuseComponent>(entity);
+                    if (ImGUI::m_UseRoughness)
+                    {
+                        pbrDiffuseComponent.m_Roughness = ImGUI::m_Roughness;
+                    }
+        
+                    if (ImGUI::m_UseMetallic)
+                    {
+                        pbrDiffuseComponent.m_Metallic = ImGUI::m_Metallic;
+                    }
+                }
+            }
+            { // PbrDiffuseNormalComponent
+                auto view = m_Registry.view<PbrDiffuseNormalComponent>();
+                for (auto entity : view)
+                {
+                    auto& pbrDiffuseNormalComponent = view.get<PbrDiffuseNormalComponent>(entity);
+                    if (ImGUI::m_UseRoughness)
+                    {
+                        pbrDiffuseNormalComponent.m_Roughness = ImGUI::m_Roughness;
+                    }
+        
+                    if (ImGUI::m_UseMetallic)
+                    {
+                        pbrDiffuseNormalComponent.m_Metallic = ImGUI::m_Metallic;
+                    }
+                    if (ImGUI::m_UseNormalMapIntensity)
+                    {
+                        pbrDiffuseNormalComponent.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+                    }
+                }
+            }
+            { // PbrDiffuseNormalRoughnessMetallicComponent
+                auto view = m_Registry.view<PbrDiffuseNormalRoughnessMetallicComponent>();
+                for (auto entity : view)
+                {
+                    auto& pbrDiffuseNormalRoughnessMetallicComponent = view.get<PbrDiffuseNormalRoughnessMetallicComponent>(entity);
+
+                    if (ImGUI::m_UseNormalMapIntensity)
+                    {
+                        pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+                    }
+                }
+            }
+
+            if (ImGUI::m_UsePointLightIntensity)
+            {
+                auto view = m_Registry.view<PointLightComponent>();
+                for (auto entity : view)
+                {
+                    auto& pointLight = view.get<PointLightComponent>(entity);
+                    pointLight.m_LightIntensity = ImGUI::m_PointLightIntensity;
+                }
+            }
         }
     }
 }

@@ -159,7 +159,8 @@
                 "baseColorTexture": {
                     "index": 0
                 },
-                "metallicFactor": 0.0
+                "metallicFactor": 0.1,
+                "roughnessFactor" : 0.1
             },
             "emissiveFactor": [
                 0.0,
