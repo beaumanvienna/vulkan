@@ -163,7 +163,7 @@
                     1
                 ],
                 "metallicFactor": 1,
-                "roughnessFactor" : 0.05
+                "roughnessFactor" : 0.3
             },
             "emissiveFactor": [
                 0.0,

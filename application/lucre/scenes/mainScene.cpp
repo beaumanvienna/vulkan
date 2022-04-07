@@ -135,7 +135,6 @@ namespace LucreApp
         auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
         auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
         auto& barrelTransform  = view.get<TransformComponent>(m_Barrel);
-        auto& fishTransform    = view.get<TransformComponent>(m_BarramundiFish);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
@@ -148,7 +147,6 @@ namespace LucreApp
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
         barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
         barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
-        //fishTransform.m_Rotation.y   = glm::mod(fishTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
 
         ApplyDebugSettings();
 

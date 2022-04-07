@@ -108,8 +108,6 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        vkCmdDraw(frameInfo.m_CommandBuffer, 6, 1, 0, 0);
-
         auto view = registry.view<PointLightComponent, TransformComponent>();
         for (auto entity : view)
         {

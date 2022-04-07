@@ -47,7 +47,7 @@ namespace LucreApp
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{1.0f, 0.5f, 0.0f};
-            transform.m_Rotation = glm::vec3{glm::pi<float>(), 0.0f, 0.0f};
+            transform.m_Rotation = glm::vec3{glm::pi<float>(), glm::half_pi<float>(), 0.0f};
             m_Registry.emplace<TransformComponent>(m_BarramundiFish, transform);
         }
         {
