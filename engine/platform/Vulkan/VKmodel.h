@@ -79,6 +79,12 @@ namespace GfxRenderEngine
             const std::shared_ptr<VK_Texture>& normalMap, 
             const std::shared_ptr<VK_Texture>& roughnessMetallicMap
         );
+        static void CreateDescriptorSet
+        (
+            const std::shared_ptr<VK_Texture>& colorMap,
+            const std::shared_ptr<VK_Texture>& roughnessMetallicMap,
+            PbrDiffuseRoughnessMetallicComponent& pbrDiffuseRoughnessMetallicComponent
+        );
 
     public:
 

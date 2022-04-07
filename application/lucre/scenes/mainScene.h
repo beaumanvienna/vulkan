@@ -80,6 +80,7 @@ namespace LucreApp
         // game objects
         entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano, m_Barrel;
         entt::entity m_PointLight[MAX_LIGHTS], m_Vulcano[3], m_Walkway[3], m_Duck, m_BarramundiFish;
+        entt::entity m_GoldenDuck;
 
         static constexpr uint MAX_B = 24;
         entt::entity m_Banana[MAX_B];

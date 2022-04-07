@@ -119,6 +119,11 @@ namespace GfxRenderEngine
         float m_NormalMapIntensity;
     };
 
+    struct PbrDiffuseRoughnessMetallicComponent
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+    };
+
     class Scene
     {
 

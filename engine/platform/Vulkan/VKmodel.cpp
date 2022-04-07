@@ -174,7 +174,7 @@ namespace GfxRenderEngine
         imageInfo.sampler     = texture->m_Sampler;
         imageInfo.imageView   = texture->m_TextureView;
         imageInfo.imageLayout = texture->m_ImageLayout;
-        
+
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
@@ -264,5 +264,42 @@ namespace GfxRenderEngine
                 .Build(pbrDiffuseNormalRoughnessMetallicComponent.m_DescriptorSet[i]);
         }
         return pbrDiffuseNormalRoughnessMetallicComponent;
+    }
+
+
+    void VK_Model::CreateDescriptorSet
+    (
+        const std::shared_ptr<VK_Texture>& colorMap,
+        const std::shared_ptr<VK_Texture>& roughnessMetallicMap,
+        PbrDiffuseRoughnessMetallicComponent& pbrDiffuseRoughnessMetallicComponent)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        VkDescriptorImageInfo imageInfo0 {};
+        {
+            auto texture = colorMap.get();
+            imageInfo0.sampler     = texture->m_Sampler;
+            imageInfo0.imageView   = texture->m_TextureView;
+            imageInfo0.imageLayout = texture->m_ImageLayout;
+        }
+
+        VkDescriptorImageInfo imageInfo1 {};
+        {
+            auto texture = roughnessMetallicMap.get();
+            imageInfo1.sampler     = texture->m_Sampler;
+            imageInfo1.imageView   = texture->m_TextureView;
+            imageInfo1.imageLayout = texture->m_ImageLayout;
+        }
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, &imageInfo0)
+                .WriteImage(1, &imageInfo1)
+                .Build(pbrDiffuseRoughnessMetallicComponent.m_DescriptorSet[i]);
+        }
     }
 }

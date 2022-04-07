@@ -112,13 +112,14 @@ namespace GfxRenderEngine
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
 
             Material material{};
+            material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
 
             if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
             {
-                material.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
+                material.m_DiffuseColor = glm::make_vec3(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
             }
             if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
             {
@@ -141,6 +142,7 @@ namespace GfxRenderEngine
                 material.m_RoughnessMettalicMapIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
+
             m_Materials.push_back(material);
         }
     }
@@ -157,7 +159,8 @@ namespace GfxRenderEngine
             {
                 ASSERT(glTFPrimitive.material < m_Materials.size());
                 uint diffuseMapIndex = m_Materials[glTFPrimitive.material].m_DiffuseMapIndex;
-                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+                if (VK_Model::m_Images.size()) ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+                glm::vec3 diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
                 uint32_t firstIndex  = 0;
                 uint32_t vertexStart = 0;
                 uint32_t indexCount  = 0;
@@ -197,7 +200,7 @@ namespace GfxRenderEngine
                         vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
                         vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                         vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                        vertex.m_Color = glm::vec3(1.0f);
+                        vertex.m_Color = diffuseColor;
                         m_Vertices.push_back(vertex);
                     }
                 }
@@ -264,7 +267,7 @@ namespace GfxRenderEngine
 
         for (auto& material : m_Materials)
         {
-            // diffuse map only
+
             if (material.m_Features == Material::HAS_DIFFUSE_MAP)
             {
                 uint diffuseMapIndex = material.m_DiffuseMapIndex;
@@ -308,6 +311,62 @@ namespace GfxRenderEngine
                 pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
 
                 registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+            }
+            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+            {
+                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+                PbrDiffuseRoughnessMetallicComponent pbrDiffuseRoughnessMetallicComponent{};
+                VK_Model::CreateDescriptorSet
+                (
+                    VK_Model::m_Images[diffuseMapIndex],
+                    VK_Model::m_Images[roughnessMettalicMapIndex],
+                    pbrDiffuseRoughnessMetallicComponent
+                );
+
+                registry.emplace<PbrDiffuseRoughnessMetallicComponent>(entity, pbrDiffuseRoughnessMetallicComponent);
+            }
+            else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+            {
+                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+                uint normalMapIndex            = material.m_NormalMapIndex;
+                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+                ASSERT(normalMapIndex             < VK_Model::m_Images.size());
+                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+                auto pbrDiffuseNormalRoughnessMetallicComponent = 
+                    VK_Model::CreateDescriptorSet
+                    (
+                        VK_Model::m_Images[diffuseMapIndex], 
+                        VK_Model::m_Images[normalMapIndex], 
+                        VK_Model::m_Images[roughnessMettalicMapIndex]
+                    );
+                pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
+                registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+            }
+            else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
+            {
+                uint diffuseMapIndex = material.m_DiffuseMapIndex;
+                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+                auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+                pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
+                pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
+
+                registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+            }
+            else
+            {
+                PbrNoMapComponent pbrNoMapComponent{};
+                pbrNoMapComponent.m_Roughness = material.m_Roughness;
+                pbrNoMapComponent.m_Metallic  = material.m_Metallic;
+                pbrNoMapComponent.m_Color     = material.m_DiffuseColor;
+
+                registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
             }
         }
 
@@ -440,9 +499,9 @@ namespace GfxRenderEngine
                     float E2z = edge2.z;
 
                     float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
-                    
+
                     glm::vec3 tangent;
-                    
+
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);

@@ -28,9 +28,9 @@
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
 #include "renderer/texture.h"
+#include "auxiliary/file.h"
 
 #include "mainScene.h"
-#include "auxiliary/file.h"
 
 namespace LucreApp
 {
@@ -62,6 +62,19 @@ namespace LucreApp
             transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
             transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
             m_Registry.emplace<TransformComponent>(m_Duck, transform);
+        }
+        {
+            Builder builder{};
+            m_GoldenDuck = builder.LoadGLTF("application/lucre/models/duck/goldenDuck.gltf", m_Registry);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"golden duck", model};
+            m_Registry.emplace<MeshComponent>(m_GoldenDuck, mesh);
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{-1.2f, 0.5f, 0.0f};
+            transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
+            transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::pi<float>()};
+            m_Registry.emplace<TransformComponent>(m_GoldenDuck, transform);
         }
         {
             Builder builder{};

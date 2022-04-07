@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_PushConstantDataPbrNoMap);
-        
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

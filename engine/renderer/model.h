@@ -88,7 +88,7 @@ namespace GfxRenderEngine
         void LoadMaterialsGLTF();
         void LoadVertexDataGLTF(int fragAmplification);
         void CalculateTangents();
-        
+
     private:
 
         std::string m_Basepath;

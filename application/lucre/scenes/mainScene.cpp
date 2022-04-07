@@ -264,7 +264,7 @@ namespace LucreApp
                     {
                         pbrNoMapComponent.m_Roughness = ImGUI::m_Roughness;
                     }
-        
+
                     if (ImGUI::m_UseMetallic)
                     {
                         pbrNoMapComponent.m_Metallic = ImGUI::m_Metallic;
@@ -280,7 +280,7 @@ namespace LucreApp
                     {
                         pbrDiffuseComponent.m_Roughness = ImGUI::m_Roughness;
                     }
-        
+
                     if (ImGUI::m_UseMetallic)
                     {
                         pbrDiffuseComponent.m_Metallic = ImGUI::m_Metallic;
@@ -296,7 +296,7 @@ namespace LucreApp
                     {
                         pbrDiffuseNormalComponent.m_Roughness = ImGUI::m_Roughness;
                     }
-        
+
                     if (ImGUI::m_UseMetallic)
                     {
                         pbrDiffuseNormalComponent.m_Metallic = ImGUI::m_Metallic;
