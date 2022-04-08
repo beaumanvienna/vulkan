@@ -36,46 +36,52 @@ namespace LucreApp
 {
     void MainScene::LoadModels()
     {
+        // --- glTF assets (preferred asset file format ---
         if (EngineCore::FileExists("application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf"))
         {
             Builder builder{};
-
-            m_BarramundiFish = builder.LoadGLTF("application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf", m_Registry);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"metal plate", model};
-            m_Registry.emplace<MeshComponent>(m_BarramundiFish, mesh);
+            std::string filename = "application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf";
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{1.0f, 0.5f, 0.0f};
             transform.m_Rotation = glm::vec3{glm::pi<float>(), glm::half_pi<float>(), 0.0f};
-            m_Registry.emplace<TransformComponent>(m_BarramundiFish, transform);
-        }
-        {
-            Builder builder{};
-            m_Duck = builder.LoadGLTF("application/lucre/models/duck/duck.gltf", m_Registry);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"duck", model};
-            m_Registry.emplace<MeshComponent>(m_Duck, mesh);
 
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{-1.6f, 0.5f, 0.0f};
-            transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
-            transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
-            m_Registry.emplace<TransformComponent>(m_Duck, transform);
+            m_BarramundiFish = builder.LoadGLTF(filename, m_Registry, &transform);
         }
         {
             Builder builder{};
-            m_GoldenDuck = builder.LoadGLTF("application/lucre/models/duck/goldenDuck.gltf", m_Registry);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"golden duck", model};
-            m_Registry.emplace<MeshComponent>(m_GoldenDuck, mesh);
+            std::string filename = "application/lucre/models/duck/duck.gltf";
+
+            m_Duck = builder.LoadGLTF(filename, m_Registry);
+
+            // place in world space
+            auto& transform = m_Registry.get<TransformComponent>(m_Duck);
+            transform.m_Translation = glm::vec3{-1.6f, 0.5f, 0.0f};
+            transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
+        }
+        {
+            Builder builder{};
+            std::string filename = "application/lucre/models/duck/goldenDuck.gltf";
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{-1.2f, 0.5f, 0.0f};
             transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
             transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::pi<float>()};
-            m_Registry.emplace<TransformComponent>(m_GoldenDuck, transform);
+
+            m_GoldenDuck = builder.LoadGLTF(filename, m_Registry, &transform);
         }
+        {
+            Builder builder{};
+            std::string filename = "application/lucre/models/barrel/barrel.gltf";
+
+            TransformComponent transform{};
+            transform.m_Translation = glm::vec3{0.0f, -0.2f, 0.0f};
+            transform.m_Scale = glm::vec3{0.05f, 0.05f, 0.05f};
+
+            m_Barrel = builder.LoadGLTF(filename, m_Registry, &transform);
+        }
+
+        // --- sprites from the built-in texture atlas ---
         {
             Builder builder{};
 
@@ -150,6 +156,8 @@ namespace LucreApp
                 m_Registry.emplace<DefaultDiffuseComponent>(m_Guybrush[i], defaultDiffuseComponent);
             }
         }
+        // --- Obj files ---
+        // --- Note: It is recommended to use the glTF file format for assets rather than Obj Wavefront ---
         {
             Builder builder{};
             m_Ground = CreateEntity();
@@ -188,20 +196,6 @@ namespace LucreApp
             pbrNoMapComponent.m_Roughness = 0.3;
             pbrNoMapComponent.m_Metallic  = 0.0;
             m_Registry.emplace<PbrNoMapComponent>(m_Vase0, pbrNoMapComponent);
-        }
-        {
-            Builder builder{};
-
-            m_Barrel = builder.LoadGLTF("application/lucre/models/barrel/barrel.gltf", m_Registry);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"barrel", model};
-            m_Registry.emplace<MeshComponent>(m_Barrel, mesh);
-
-            TransformComponent transform{};
-            transform.m_Translation = glm::vec3{0.0f, -0.2f, 0.0f};
-            transform.m_Scale = glm::vec3{0.05f, 0.05f, 0.05f};
-            m_Registry.emplace<TransformComponent>(m_Barrel, transform);
-
         }
         {
             Builder builder{};

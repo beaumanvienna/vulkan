@@ -147,7 +147,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadVertexDataGLTF(int fragAmplification)
+    void Builder::LoadVertexDataGLTF()
     {
         // handle vertex data
         m_Vertices.clear();
@@ -195,7 +195,7 @@ namespace GfxRenderEngine
                     // Append data to model's vertex buffer
                     for (size_t v = 0; v < vertexCount; v++) {
                         Vertex vertex{};
-                        vertex.m_Amplification      = fragAmplification;
+                        vertex.m_Amplification      = 1.0f;
 
                         vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
                         vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
@@ -246,7 +246,18 @@ namespace GfxRenderEngine
         CalculateTangents();
     }
 
-    entt::entity Builder::LoadGLTF(const std::string& filepath, entt::registry& registry, int fragAmplification)
+    void Builder::LoadTransformationMatrix(int meshIndex)
+    {
+        auto& node = m_GltfModel.nodes[meshIndex];
+
+        if (node.matrix.size() == 16)
+        {
+            m_Transform->m_Scale       = glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]);
+            m_Transform->m_Translation = glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]);
+        }
+    }
+
+    entt::entity Builder::LoadGLTF(const std::string& filepath, entt::registry& registry, TransformComponent* transform)
     {
         std::string warn, err;
 
@@ -260,10 +271,12 @@ namespace GfxRenderEngine
 
         LoadImagesGLTF();
         LoadMaterialsGLTF();
-        LoadVertexDataGLTF(fragAmplification);
+        LoadVertexDataGLTF();
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
 
         auto entity = registry.create();
+        TransformComponent transformGLTF{};
+        m_Transform = &transformGLTF;
 
         for (auto& material : m_Materials)
         {
@@ -369,6 +382,20 @@ namespace GfxRenderEngine
                 registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
             }
         }
+        auto model = Engine::m_Engine->LoadModel(*this);
+        MeshComponent mesh{filepath, model};
+        registry.emplace<MeshComponent>(entity, mesh);
+
+        if (transform)
+        {
+            registry.emplace<TransformComponent>(entity, *transform);
+        }
+        else
+        {
+            LoadTransformationMatrix(0);
+            registry.emplace<TransformComponent>(entity, *m_Transform);
+        }
+        
 
         return entity;
     }

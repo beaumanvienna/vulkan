@@ -67,13 +67,15 @@ namespace GfxRenderEngine
         float m_NormalMapIntensity;
     };
 
+    struct TransformComponent;
+
     class Builder
     {
 
     public:
 
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
-        entt::entity LoadGLTF(const std::string& filepath, entt::registry& registry, int fragAmplification = 1.0);
+        entt::entity LoadGLTF(const std::string& filepath, entt::registry& registry, TransformComponent* transform = nullptr);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 
@@ -86,7 +88,8 @@ namespace GfxRenderEngine
 
         void LoadImagesGLTF();
         void LoadMaterialsGLTF();
-        void LoadVertexDataGLTF(int fragAmplification);
+        void LoadVertexDataGLTF();
+        void LoadTransformationMatrix(int meshIndex);
         void CalculateTangents();
 
     private:
@@ -95,6 +98,7 @@ namespace GfxRenderEngine
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;
         std::vector<Material> m_Materials;
+        TransformComponent* m_Transform;
 
     };
 
