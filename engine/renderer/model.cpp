@@ -65,6 +65,12 @@ namespace GfxRenderEngine
                (m_Unlit       == other.m_Unlit);
     }
 
+    Builder::Builder(const std::string& filepath)
+        : m_Filepath(filepath), m_Transform(nullptr)
+    {
+        m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
+    }
+
     void Builder::LoadImagesGLTF()
     {
         VK_Model::m_Images.clear();
@@ -257,14 +263,13 @@ namespace GfxRenderEngine
         }
     }
 
-    entt::entity Builder::LoadGLTF(const std::string& filepath, entt::registry& registry, TransformComponent* transform)
+    entt::entity Builder::LoadGLTF(entt::registry& registry, TransformComponent* transform)
     {
         std::string warn, err;
 
-        m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
         stbi_set_flip_vertically_on_load(false);
 
-        if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, filepath))
+        if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
         {
             LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
         }
@@ -272,7 +277,7 @@ namespace GfxRenderEngine
         LoadImagesGLTF();
         LoadMaterialsGLTF();
         LoadVertexDataGLTF();
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
+        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), m_Filepath);
 
         auto entity = registry.create();
         TransformComponent transformGLTF{};
@@ -383,7 +388,7 @@ namespace GfxRenderEngine
             }
         }
         auto model = Engine::m_Engine->LoadModel(*this);
-        MeshComponent mesh{filepath, model};
+        MeshComponent mesh{m_Filepath, model};
         registry.emplace<MeshComponent>(entity, mesh);
 
         if (transform)
@@ -398,6 +403,10 @@ namespace GfxRenderEngine
         
 
         return entity;
+    }
+
+    void Builder::LoadGLTF(entt::registry& registry, TreeNode& root)
+    {
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)

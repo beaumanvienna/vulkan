@@ -27,6 +27,7 @@
 #include "tinygltf/tiny_gltf.h"
 
 #include "engine.h"
+#include "scene/treeNode.h"
 #include "renderer/texture.h"
 #include "sprite/sprite.h"
 #include "entt.hpp"
@@ -74,8 +75,12 @@ namespace GfxRenderEngine
 
     public:
 
+        Builder() {}
+        Builder(const std::string& filepath);
+
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
-        entt::entity LoadGLTF(const std::string& filepath, entt::registry& registry, TransformComponent* transform = nullptr);
+        entt::entity LoadGLTF(entt::registry& registry, TransformComponent* transform = nullptr);
+        void LoadGLTF(entt::registry& registry, TreeNode& root);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 
@@ -94,6 +99,7 @@ namespace GfxRenderEngine
 
     private:
 
+        std::string m_Filepath;
         std::string m_Basepath;
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;

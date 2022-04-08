@@ -37,22 +37,26 @@ namespace LucreApp
     void MainScene::LoadModels()
     {
         // --- glTF assets (preferred asset file format ---
+        if (EngineCore::FileExists("application/lucre/models/dont_upload/multipleObjects/multipleObjects.gltf"))
+        {
+            Builder builder{"application/lucre/models/dont_upload/multipleObjects/multipleObjects.gltf"};
+
+            builder.LoadGLTF(m_Registry, m_Tree);
+        }
         if (EngineCore::FileExists("application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf"))
         {
-            Builder builder{};
-            std::string filename = "application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf";
+            Builder builder{"application/lucre/models/dont_upload/BarramundiFish/BarramundiFish.gltf"};
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{1.0f, 0.5f, 0.0f};
             transform.m_Rotation = glm::vec3{glm::pi<float>(), glm::half_pi<float>(), 0.0f};
 
-            m_BarramundiFish = builder.LoadGLTF(filename, m_Registry, &transform);
+            m_BarramundiFish = builder.LoadGLTF(m_Registry, &transform);
         }
         {
-            Builder builder{};
-            std::string filename = "application/lucre/models/duck/duck.gltf";
+            Builder builder{"application/lucre/models/duck/duck.gltf"};
 
-            m_Duck = builder.LoadGLTF(filename, m_Registry);
+            m_Duck = builder.LoadGLTF(m_Registry);
 
             // place in world space
             auto& transform = m_Registry.get<TransformComponent>(m_Duck);
@@ -60,25 +64,23 @@ namespace LucreApp
             transform.m_Rotation = glm::vec3{0.0f, glm::pi<float>(), glm::pi<float>()};
         }
         {
-            Builder builder{};
-            std::string filename = "application/lucre/models/duck/goldenDuck.gltf";
+            Builder builder{"application/lucre/models/duck/goldenDuck.gltf"};
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{-1.2f, 0.5f, 0.0f};
             transform.m_Scale = glm::vec3{0.001f, 0.001f, 0.001f};
             transform.m_Rotation = glm::vec3{0.0f, 0.0f, glm::pi<float>()};
 
-            m_GoldenDuck = builder.LoadGLTF(filename, m_Registry, &transform);
+            m_GoldenDuck = builder.LoadGLTF(m_Registry, &transform);
         }
         {
-            Builder builder{};
-            std::string filename = "application/lucre/models/barrel/barrel.gltf";
+            Builder builder{"application/lucre/models/barrel/barrel.gltf"};
 
             TransformComponent transform{};
             transform.m_Translation = glm::vec3{0.0f, -0.2f, 0.0f};
             transform.m_Scale = glm::vec3{0.05f, 0.05f, 0.05f};
 
-            m_Barrel = builder.LoadGLTF(filename, m_Registry, &transform);
+            m_Barrel = builder.LoadGLTF(m_Registry, &transform);
         }
 
         // --- sprites from the built-in texture atlas ---

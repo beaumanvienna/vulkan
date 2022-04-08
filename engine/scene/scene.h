@@ -26,8 +26,9 @@
 
 #include "engine.h"
 #include "entt.hpp"
-#include "scene/entity.h"
 #include "events/event.h"
+#include "scene/entity.h"
+#include "scene/treeNode.h"
 #include "auxiliary/timestep.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
@@ -149,6 +150,7 @@ namespace GfxRenderEngine
     protected:
 
         entt::registry m_Registry;
+        TreeNode m_Tree;
         bool m_IsRunning;
 
     };
