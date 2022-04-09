@@ -38,22 +38,22 @@ namespace LucreApp
     void ImGUI::DebugWindow()
     {
         // roughness
-        ImGui::Checkbox("use00", &m_UseRoughness);
+        ImGui::Checkbox("use###001", &m_UseRoughness);
         ImGui::SameLine();
         ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
 
         // metallic
-        ImGui::Checkbox("use01", &m_UseMetallic);
+        ImGui::Checkbox("use###002", &m_UseMetallic);
         ImGui::SameLine();
         ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
 
         // normal map intensity
-        ImGui::Checkbox("use02", &m_UseNormalMapIntensity);
+        ImGui::Checkbox("use###003", &m_UseNormalMapIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
 
         // point light intensity
-        ImGui::Checkbox("use03", &m_UsePointLightIntensity);
+        ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("pt lghts", &m_PointLightIntensity, 0.0f, 10.0f);
     }
