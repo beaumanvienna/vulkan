@@ -37,14 +37,44 @@ namespace GfxRenderEngine
 {
     constexpr int MAX_LIGHTS = 10;
 
-    struct TransformComponent
+    class TransformComponent
     {
+    public:
+
+        void SetScale(const glm::vec3& scale);
+        void SetScaleX(const float scaleX);
+        void SetScaleY(const float scaleY);
+        void SetScaleZ(const float scaleZ);
+        void SetRotation(const glm::vec3& rotation);
+        void SetRotationX(const float rotationX);
+        void SetRotationY(const float rotationY);
+        void SetRotationZ(const float rotationZ);
+        void SetTranslation(const glm::vec3& translation);
+        void SetTranslationX(const float translationX);
+        void SetTranslationY(const float translationY);
+        void SetTranslationZ(const float translationZ);
+
+        // the getters must be const; only the setters have write access
+        const glm::vec3& GetScale() { return m_Scale; }
+        const glm::vec3& GetRotation() { return m_Rotation; }
+        const glm::vec3& GetTranslation() { return m_Translation; }
+
+        const glm::mat4& GetMat4();
+        const glm::mat3& GetNormalMatrix();
+
+    private:
+
+        void RecalculateMatrices();
+
+    private:
+
+        bool m_Dirty{true};
         glm::vec3 m_Scale{1.0f};
         glm::vec3 m_Rotation{};
         glm::vec3 m_Translation{};
+        glm::mat4 m_Mat4{};
+        glm::mat3 m_NormalMatrix{};
 
-        glm::mat4 Mat4();
-        glm::mat3 NormalMatrix();
     };
 
     class MeshComponent

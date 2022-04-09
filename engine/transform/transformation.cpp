@@ -297,15 +297,15 @@ namespace GfxRenderEngine
         {
             if (m_NumberOfScaleSequences)
             {
-                transform.m_Scale = m_Scalings[m_CurrentSequenceScale].GetScale();
+                transform.SetScale(m_Scalings[m_CurrentSequenceScale].GetScale());
             }
             if (m_NumberOfRotationSequences)
             {
-                transform.m_Rotation = m_Rotations[m_CurrentSequenceRotation].GetRotation();
+                transform.SetRotation(m_Rotations[m_CurrentSequenceRotation].GetRotation());
             }
             if (m_NumberOfTranslationSequences) 
             {
-                transform.m_Translation = m_Translations[m_CurrentSequenceTranslation].GetTranslation();
+                transform.SetTranslation(m_Translations[m_CurrentSequenceTranslation].GetTranslation());
             }
         }
     }

@@ -99,8 +99,8 @@ namespace GfxRenderEngine
             auto& defaultDiffuseComponent = view.get<DefaultDiffuseComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataDefaultDiffuseMap push{};
-            push.m_ModelMatrix  = transform.Mat4();
-            push.m_NormalMatrix = transform.NormalMatrix();
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = defaultDiffuseComponent.m_Roughness;
             push.m_NormalMatrix[3].y = defaultDiffuseComponent.m_Metallic;
             vkCmdPushConstants(
@@ -144,8 +144,8 @@ namespace GfxRenderEngine
             }
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
             VK_PushConstantDataDefaultDiffuseMap push{};
-            push.m_ModelMatrix  = transform.Mat4();
-            push.m_NormalMatrix = transform.NormalMatrix();
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,

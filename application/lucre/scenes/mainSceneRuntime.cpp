@@ -41,7 +41,7 @@ namespace LucreApp
         for (auto entity : view)
         {
             auto& transform  = view.get<TransformComponent>(entity);
-            transform.m_Translation = glm::vec3(rotateLight * glm::vec4(transform.m_Translation, 1.f));
+            transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(transform.GetTranslation(), 1.f)));
         }
     }
 
@@ -57,9 +57,9 @@ namespace LucreApp
             auto& rigidbody = view.get<RigidbodyComponent>(banana);
             auto body = static_cast<b2Body*>(rigidbody.m_Body);
             b2Vec2 position = body->GetPosition();
-            transform.m_Translation.x = position.x;
-            transform.m_Translation.y = -position.y;
-            transform.m_Rotation.y += rotationDelta;
+            transform.SetTranslationX(position.x);
+            transform.SetTranslationY(-position.y);
+            transform.SetRotationY(transform.GetRotation().y + rotationDelta);
         }
 
         static uint index = 0;
@@ -77,7 +77,7 @@ namespace LucreApp
 
                     // move to backgound on z-axis
                     auto& transform = m_Registry.get<TransformComponent>(m_Banana[index]);
-                    transform.m_Translation.z = 5.0f;
+                    transform.SetTranslationZ(5.0f);
 
                     auto& rigidbody = m_Registry.get<RigidbodyComponent>(m_Banana[index]);
                     auto body = static_cast<b2Body*>(rigidbody.m_Body);
@@ -115,12 +115,12 @@ namespace LucreApp
             if (i < 12)
             {
                 body->SetTransform(b2Vec2(-3.0f + 0.5 * i, 2.0f + i * 1.0f), 0.0f);
-                transform.m_Translation.z = -0.6f;
+                transform.SetTranslationZ(-0.6f);
             }
             else
             {
                 body->SetTransform(b2Vec2(-3.0f + 0.5 * (i-12), 2.0f + i * 1.0f), 0.0f);
-                transform.m_Translation.z = 0.3f;
+                transform.SetTranslationZ(0.3f);
             }
             i++;
         }

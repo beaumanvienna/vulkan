@@ -608,9 +608,9 @@ static float m = -3.0f;
                 auto entity = SCREEN_ScreenManager::m_Registry.create();
                 SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
 m+=2.0f;
-                transform.m_Scale = glm::vec3{0.003f};
+                transform.SetScale(glm::vec3{0.003f});
                 SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
                 m_ImageID = entity;
             }
@@ -627,9 +627,9 @@ m+=2.0f;
                 SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
             
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
 m+=2.0f;
-                transform.m_Scale = glm::vec3{0.003f};
+                transform.SetScale(glm::vec3{0.003f});
                 SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
                 m_ImageActiveID = entity;
             }
@@ -646,9 +646,9 @@ m+=2.0f;
                 SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
             
                 TransformComponent transform{};
-                transform.m_Translation = glm::vec3{m, -1.0f, -2.1f};
+                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
 m+=2.0f;
-                transform.m_Scale = glm::vec3{0.003f};
+                transform.SetScale(glm::vec3{0.003f});
                 SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
                 m_ImageDepressedID = entity;
             }
@@ -675,7 +675,7 @@ m+=2.0f;
                 SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
 
                 TransformComponent transform{};
-                transform.m_Scale = glm::vec3{0.02f};
+                transform.SetScale(glm::vec3{0.02f});
                 SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
                 m_ImageID = entity;
             }
@@ -916,20 +916,20 @@ m+=2.0f;
                     if (down_)
                     {
                         auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageDepressedID);
-                        transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
-                        transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
-                        transform.m_Translation.x /= 350.0f;
-                        transform.m_Translation.y /= -150.0f;
+                        transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
+                        transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
+                        transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
+                        transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
 
                         auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageDepressedID);
                         mesh.m_Enabled = true;
                     } else
                     {
                         auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageActiveID);
-                        transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
-                        transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
-                        transform.m_Translation.x /= 350.0f;
-                        transform.m_Translation.y /= -150.0f;
+                        transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
+                        transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
+                        transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
+                        transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
 
                         auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageActiveID);
                         mesh.m_Enabled = true;
@@ -938,10 +938,10 @@ m+=2.0f;
                 else
                 {
                     auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageID);
-                    transform.m_Translation.x = bounds_.centerX()-m_HalfContextWidth;
-                    transform.m_Translation.y = m_HalfContextHeight - bounds_.centerY();
-                    transform.m_Translation.x /= 350.0f;
-                    transform.m_Translation.y /= -150.0f;
+                    transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
+                    transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
+                    transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
+                    transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
 
                     auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageID);
                     mesh.m_Enabled = true;

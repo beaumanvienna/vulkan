@@ -55,8 +55,8 @@ namespace LucreApp
 
         m_Camera = CreateEntity();
         TransformComponent transform{};
-        transform.m_Translation = {0.0f, -1.0f, -4.6f};
-        transform.m_Rotation = {-0.0257f, 0.0f, 0.0f};
+        transform.SetTranslation({0.0f, -1.0f, -4.6f});
+        transform.SetRotation({-0.0257f, 0.0f, 0.0f});
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -137,7 +137,7 @@ namespace LucreApp
         auto& barrelTransform  = view.get<TransformComponent>(m_Barrel);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-        m_CameraController->SetViewYXZ(cameraTransform.m_Translation, cameraTransform.m_Rotation);
+        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
 
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
@@ -145,8 +145,8 @@ namespace LucreApp
         m_GamepadInputController->GetTransform(barrelTransform, true);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
-        barrelTransform.m_Rotation.y = glm::mod(barrelTransform.m_Rotation.y + frameRotation, glm::two_pi<float>());
-        barrelTransform.m_Rotation.x = glm::mod(barrelTransform.m_Rotation.x + frameRotation, glm::two_pi<float>());
+        barrelTransform.SetRotationY(glm::mod(barrelTransform.GetRotation().y + frameRotation, glm::two_pi<float>()));
+        barrelTransform.SetRotationX(glm::mod(barrelTransform.GetRotation().x + frameRotation, glm::two_pi<float>()));
 
         ApplyDebugSettings();
 
@@ -205,8 +205,8 @@ namespace LucreApp
     {
         m_CameraController->SetZoomFactor(1.0f);
         auto& transform = m_Registry.get<TransformComponent>(m_Camera);
-        transform.m_Translation = {0.0f, -1.0f, -4.6f};
-        transform.m_Rotation = {-0.0257f, 0.0f, 0.0f};
+        transform.SetTranslation({0.0f, -1.0f, -4.6f});
+        transform.SetRotation({-0.0257f, 0.0f, 0.0f});
     }
 
     void MainScene::InitPhysics()

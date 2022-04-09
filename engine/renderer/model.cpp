@@ -258,8 +258,8 @@ namespace GfxRenderEngine
 
         if (node.matrix.size() == 16)
         {
-            m_Transform->m_Scale       = glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]);
-            m_Transform->m_Translation = glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]);
+            m_Transform->SetScale(glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]));
+            m_Transform->SetTranslation(glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]));
         }
     }
 

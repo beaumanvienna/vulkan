@@ -36,12 +36,12 @@ namespace LucreApp
 
         if (std::abs(controllerAxisInputLeft.x) > m_Deadzone)
         {
-            transform.m_Translation.x += controllerAxisInputLeft.x * m_Sensitivity;
+            transform.SetTranslationX(transform.GetTranslation().x + controllerAxisInputLeft.x * m_Sensitivity);
         }
 
         if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
         {
-            transform.m_Translation.y -= controllerAxisInputLeft.y * m_Sensitivity;
+            transform.SetTranslationY(transform.GetTranslation().y - controllerAxisInputLeft.y * m_Sensitivity);
         }
 
         // right
@@ -51,20 +51,20 @@ namespace LucreApp
     
             if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
             {
-                transform.m_Scale.x -= controllerAxisInputRight.y * m_Sensitivity;
-                transform.m_Scale.x = std::clamp(transform.m_Scale.x, 0.025f, 0.1f);
-                transform.m_Scale.y = transform.m_Scale.x;
-                transform.m_Scale.z = transform.m_Scale.x;
+                transform.SetScaleX(transform.GetScale().x - controllerAxisInputRight.y * m_Sensitivity);
+                transform.SetScaleX(std::clamp(transform.GetScale().x, 0.025f, 0.1f));
+                transform.SetScaleY(transform.GetScale().x);
+                transform.SetScaleZ(transform.GetScale().x);
             }
         }
 
         if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_DPAD_UP))
         {
-            transform.m_Translation.z += m_Sensitivity;
+            transform.SetTranslationZ(transform.GetTranslation().z + m_Sensitivity);
         }
         else if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::BUTTON_DPAD_DOWN))
         {
-            transform.m_Translation.z -= m_Sensitivity;
+            transform.SetTranslationZ(transform.GetTranslation().z - m_Sensitivity);
         }
     }
 }

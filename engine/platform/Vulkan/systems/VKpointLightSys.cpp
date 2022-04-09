@@ -115,7 +115,7 @@ namespace GfxRenderEngine
             auto& pointLight = view.get<PointLightComponent>(entity);
 
             PointLightPushConstants push{};
-            push.m_Position = glm::vec4(transform.m_Translation, 1.f);
+            push.m_Position = glm::vec4(transform.GetTranslation(), 1.f);
             push.m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
             push.m_Radius = pointLight.m_Radius;
 
@@ -145,7 +145,7 @@ namespace GfxRenderEngine
             ASSERT(lightIndex < MAX_LIGHTS);
 
             // copy light to ubo
-            ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.m_Translation, 1.f);
+            ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 1.f);
             ubo.m_PointLights[lightIndex].m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
 
             lightIndex++;

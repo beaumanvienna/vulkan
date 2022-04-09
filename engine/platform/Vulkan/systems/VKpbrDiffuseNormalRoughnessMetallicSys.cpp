@@ -101,8 +101,8 @@ namespace GfxRenderEngine
             );
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic push{};
-            push.m_ModelMatrix  = transform.Mat4();
-            push.m_NormalMatrix = transform.NormalMatrix();
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].z = pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,

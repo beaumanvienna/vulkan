@@ -120,8 +120,8 @@ namespace GfxRenderEngine
     void SCREEN_DrawBuffer::DrawImageStretch(entt::entity entity, float x1, float y1, float x2, float y2, Color color)
     {
         auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(entity);
-        transform.m_Translation = glm::vec3(x1/350.0f, y1/-150.0f, -2.1f);
-        transform.m_Translation = glm::vec3(x1/350.0f, y1/-150.0f, -2.1f);
+        transform.SetTranslation(glm::vec3(x1/350.0f, y1/-150.0f, -2.1f));
+        transform.SetTranslation(glm::vec3(x1/350.0f, y1/-150.0f, -2.1f));
         auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(entity);
         mesh.m_Enabled = true;
     }

@@ -68,68 +68,161 @@ namespace GfxRenderEngine
     {
         m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
     }
-
-    glm::mat4 TransformComponent::Mat4()
+    
+    void TransformComponent::SetScale(const glm::vec3& scale)
     {
-        const float c3 = glm::cos(m_Rotation.z);
-        const float s3 = glm::sin(m_Rotation.z);
-        const float c2 = glm::cos(m_Rotation.x);
-        const float s2 = glm::sin(m_Rotation.x);
-        const float c1 = glm::cos(m_Rotation.y);
-        const float s1 = glm::sin(m_Rotation.y);
-        return glm::mat4
-        {
-            {
-                m_Scale.x * (c1 * c3 + s1 * s2 * s3),
-                m_Scale.x * (c2 * s3),
-                m_Scale.x * (c1 * s2 * s3 - c3 * s1),
-                0.0f,
-            },
-            {
-                m_Scale.y * (c3 * s1 * s2 - c1 * s3),
-                m_Scale.y * (c2 * c3),
-                m_Scale.y * (c1 * c3 * s2 + s1 * s3),
-                0.0f,
-            },
-            {
-                m_Scale.z * (c2 * s1),
-                m_Scale.z * (-s2),
-                m_Scale.z * (c1 * c2),
-                0.0f,
-            },
-            {m_Translation.x, m_Translation.y, m_Translation.z, 1.0f}
-        };
+        m_Scale = scale;
+        m_Dirty = true;
     }
 
-    glm::mat3 TransformComponent::NormalMatrix()
+    void TransformComponent::SetScaleX(const float scaleX)
     {
-        const float c3 = glm::cos(m_Rotation.z);
-        const float s3 = glm::sin(m_Rotation.z);
-        const float c2 = glm::cos(m_Rotation.x);
-        const float s2 = glm::sin(m_Rotation.x);
-        const float c1 = glm::cos(m_Rotation.y);
-        const float s1 = glm::sin(m_Rotation.y);
+        m_Scale.x = scaleX;
+        m_Dirty = true;
+    }
 
-        const glm::vec3 inverseScale = 1.0f / m_Scale;
+    void TransformComponent::SetScaleY(const float scaleY)
+    {
+        m_Scale.y = scaleY;
+        m_Dirty = true;
+    }
 
-        return glm::mat3
+    void TransformComponent::SetScaleZ(const float scaleZ)
+    {
+        m_Scale.z = scaleZ;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetRotation(const glm::vec3& rotation)
+    {
+        m_Rotation = rotation;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetRotationX(const float rotationX)
+    {
+        m_Rotation.x = rotationX;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetRotationY(const float rotationY)
+    {
+        m_Rotation.y = rotationY;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetRotationZ(const float rotationZ)
+    {
+        m_Rotation.z = rotationZ;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetTranslation(const glm::vec3& translation)
+    {
+        m_Translation = translation;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetTranslationX(const float translationX)
+    {
+        m_Translation.x = translationX;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetTranslationY(const float translationY)
+    {
+        m_Translation.y = translationY;
+        m_Dirty = true;
+    }
+
+    void TransformComponent::SetTranslationZ(const float translationZ)
+    {
+        m_Translation.z = translationZ;
+        m_Dirty = true;
+    }
+    
+    void TransformComponent::RecalculateMatrices()
+    {
+        { // m_Mat4
+            const float c3 = glm::cos(m_Rotation.z);
+            const float s3 = glm::sin(m_Rotation.z);
+            const float c2 = glm::cos(m_Rotation.x);
+            const float s2 = glm::sin(m_Rotation.x);
+            const float c1 = glm::cos(m_Rotation.y);
+            const float s1 = glm::sin(m_Rotation.y);
+            m_Mat4 = glm::mat4
+            {
+                {
+                    m_Scale.x * (c1 * c3 + s1 * s2 * s3),
+                    m_Scale.x * (c2 * s3),
+                    m_Scale.x * (c1 * s2 * s3 - c3 * s1),
+                    0.0f,
+                },
+                {
+                    m_Scale.y * (c3 * s1 * s2 - c1 * s3),
+                    m_Scale.y * (c2 * c3),
+                    m_Scale.y * (c1 * c3 * s2 + s1 * s3),
+                    0.0f,
+                },
+                {
+                    m_Scale.z * (c2 * s1),
+                    m_Scale.z * (-s2),
+                    m_Scale.z * (c1 * c2),
+                    0.0f,
+                },
+                {m_Translation.x, m_Translation.y, m_Translation.z, 1.0f}
+            };
+        }
+        { // m_NormalMatrix
+            const float c3 = glm::cos(m_Rotation.z);
+            const float s3 = glm::sin(m_Rotation.z);
+            const float c2 = glm::cos(m_Rotation.x);
+            const float s2 = glm::sin(m_Rotation.x);
+            const float c1 = glm::cos(m_Rotation.y);
+            const float s1 = glm::sin(m_Rotation.y);
+
+            const glm::vec3 inverseScale = 1.0f / m_Scale;
+
+            m_NormalMatrix = glm::mat3
+            {
+                {
+                    inverseScale.x * (c1 * c3 + s1 * s2 * s3),
+                    inverseScale.x * (c2 * s3),
+                    inverseScale.x * (c1 * s2 * s3 - c3 * s1),
+                },
+                {
+                    inverseScale.y * (c3 * s1 * s2 - c1 * s3),
+                    inverseScale.y * (c2 * c3),
+                    inverseScale.y * (c1 * c3 * s2 + s1 * s3),
+                },
+                {
+                    inverseScale.z * (c2 * s1),
+                    inverseScale.z * (-s2),
+                    inverseScale.z * (c1 * c2),
+                }
+            };
+        }
+        
+    }
+
+    const glm::mat4& TransformComponent::GetMat4()
+    {
+        if (m_Dirty)
         {
-            {
-                inverseScale.x * (c1 * c3 + s1 * s2 * s3),
-                inverseScale.x * (c2 * s3),
-                inverseScale.x * (c1 * s2 * s3 - c3 * s1),
-            },
-            {
-                inverseScale.y * (c3 * s1 * s2 - c1 * s3),
-                inverseScale.y * (c2 * c3),
-                inverseScale.y * (c1 * c3 * s2 + s1 * s3),
-            },
-            {
-                inverseScale.z * (c2 * s1),
-                inverseScale.z * (-s2),
-                inverseScale.z * (c1 * c2),
-            }
-        };
+            m_Dirty = false;
+            RecalculateMatrices();
+        }
+        return m_Mat4;
+    }
+
+    const glm::mat3& TransformComponent::GetNormalMatrix()
+    {
+        if (m_Dirty)
+        {
+            m_Dirty = false;
+            RecalculateMatrices();
+        }
+        return m_NormalMatrix;
     }
 
 }

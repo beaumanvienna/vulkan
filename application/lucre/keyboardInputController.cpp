@@ -44,14 +44,14 @@ namespace LucreApp
 
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
         {
-            transform.m_Rotation += m_LookSpeed * (float)timestep * glm::normalize(rotate);
+            transform.SetRotation(transform.GetRotation() + m_LookSpeed * (float)timestep * glm::normalize(rotate));
         }
 
         // limit pitch values between about +/- 85ish degrees
-        transform.m_Rotation.x = glm::clamp(transform.m_Rotation.x, -1.5f, 1.5f);
-        transform.m_Rotation.y = glm::mod(transform.m_Rotation.y, glm::two_pi<float>());
+        transform.SetRotationX(glm::clamp(transform.GetRotation().x, -1.5f, 1.5f));
+        transform.SetRotationY(glm::mod(transform.GetRotation().y, glm::two_pi<float>()));
 
-        float yaw = transform.m_Rotation.y;
+        float yaw = transform.GetRotation().y;
         const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
         const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
         const glm::vec3 upDir{0.f, -1.f, 0.f};
@@ -66,7 +66,7 @@ namespace LucreApp
 
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
-            transform.m_Translation += m_MoveSpeed * (float)timestep * glm::normalize(moveDir);
+            transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * (float)timestep * glm::normalize(moveDir));
         }
     }
 }

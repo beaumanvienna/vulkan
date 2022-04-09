@@ -81,9 +81,9 @@ namespace GfxRenderEngine
         TransformComponent transform{};
         static uint cnt = 0;
         cnt = (cnt + 1) % 100;
-        transform.m_Translation = glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis - 0.01f * cnt};
-        transform.m_Scale = glm::vec3{1.0f} * particle.m_StartSize;
-        transform.m_Rotation = glm::vec3{0.0f, 0.0f, spec.m_Rotation + variation.m_Rotation * EngineCore::RandomPlusMinusOne()};
+        transform.SetTranslation(glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis - 0.01f * cnt});
+        transform.SetScale(glm::vec3{1.0f} * particle.m_StartSize);
+        transform.SetRotation(glm::vec3{0.0f, 0.0f, spec.m_Rotation + variation.m_Rotation * EngineCore::RandomPlusMinusOne()});
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
 
         particle.m_SmokeAnimation.Create(100ms /* per frame */, m_Spritesheet);
@@ -107,10 +107,10 @@ namespace GfxRenderEngine
 
             auto& transform = m_Registry.get<TransformComponent>(particle.m_Entity);
             particle.m_Velocity += particle.m_Acceleration * static_cast<float>(timestep);
-            transform.m_Translation.x += particle.m_Velocity.x * static_cast<float>(timestep);
-            transform.m_Translation.y += particle.m_Velocity.y * static_cast<float>(timestep);
+            transform.SetTranslationX(transform.GetTranslation().x + particle.m_Velocity.x * static_cast<float>(timestep));
+            transform.SetTranslationY(transform.GetTranslation().y + particle.m_Velocity.y * static_cast<float>(timestep));
 
-            transform.m_Rotation.z += particle.m_RotationSpeed * static_cast<float>(timestep);
+            transform.SetRotationZ(transform.GetRotation().z + particle.m_RotationSpeed * static_cast<float>(timestep));
             particle.m_RemainingLifeTime -= timestep;
 
             auto remainingLifeTime = static_cast<float>(particle.m_RemainingLifeTime);
@@ -118,8 +118,8 @@ namespace GfxRenderEngine
             auto normalizedRemainingLifeTime = remainingLifeTime / lifeTime;
 
             float size = glm::lerp(particle.m_FinalSize, particle.m_StartSize, normalizedRemainingLifeTime);
-            transform.m_Scale.x = size;
-            transform.m_Scale.y = size;
+            transform.SetScaleX(size);
+            transform.SetScaleY(size);
 
             {
                 if (!particle.m_SmokeAnimation.IsRunning())
