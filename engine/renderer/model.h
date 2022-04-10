@@ -79,8 +79,7 @@ namespace GfxRenderEngine
         Builder(const std::string& filepath);
 
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
-        entt::entity LoadGLTF(entt::registry& registry, TransformComponent* transform = nullptr);
-        void LoadGLTF(entt::registry& registry, TreeNode& root);
+        void LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, TransformComponent* transform = nullptr);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 
@@ -93,8 +92,9 @@ namespace GfxRenderEngine
 
         void LoadImagesGLTF();
         void LoadMaterialsGLTF();
-        void LoadVertexDataGLTF();
-        void LoadTransformationMatrix(int meshIndex);
+        void LoadVertexDataGLTF(uint meshIndex);
+        void LoadTransformationMatrix(TransformComponent& transform, int meshIndex);
+        void AssignMaterial(entt::registry& registry, entt::entity entity, int materialIndex);
         void CalculateTangents();
 
     private:

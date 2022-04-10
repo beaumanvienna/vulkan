@@ -34,17 +34,24 @@ namespace GfxRenderEngine
 
     public:
 
-        TreeNode();
-        TreeNode(entt::entity gameObject);
+        TreeNode() = delete;
+        TreeNode(entt::entity gameObject, const std::string& name);
         ~TreeNode();
 
         entt::entity GetGameObject() const;
+        const std::string& GetName() const;
         uint Children() const;
-        const TreeNode& GetChild(uint index) const;
-        void Push(const TreeNode& node);
+        TreeNode& GetChild(uint index);
+        TreeNode* AddChild(const TreeNode& node);
+        void SetGameObject(entt::entity gameObject);
+
+    public:
+
+        static void Traverse(TreeNode& node, uint indent = 0);
 
     private:
 
+        std::string m_Name;
         entt::entity m_GameObject;
         std::vector<TreeNode> m_Children;
 

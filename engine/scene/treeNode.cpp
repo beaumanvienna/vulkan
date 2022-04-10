@@ -24,10 +24,8 @@
 
 namespace GfxRenderEngine
 {
-    TreeNode::TreeNode() : m_GameObject((entt::entity) -1)
-    {}
-
-    TreeNode::TreeNode(entt::entity gameObject) : m_GameObject(gameObject)
+    TreeNode::TreeNode(entt::entity gameObject, const std::string& name)
+        : m_GameObject(gameObject), m_Name(name)
     {}
 
     TreeNode::~TreeNode()
@@ -38,18 +36,39 @@ namespace GfxRenderEngine
         return m_GameObject;
     }
 
+    const std::string& TreeNode::GetName() const
+    {
+        return m_Name;
+    }
+
     uint TreeNode::Children() const
     {
         return m_Children.size();
     }
 
-    const TreeNode& TreeNode::GetChild(uint index) const
+    TreeNode& TreeNode::GetChild(uint index)
     {
         return m_Children[index];
     }
 
-    void TreeNode::Push(const TreeNode& node)
+    TreeNode* TreeNode::AddChild(const TreeNode& node)
     {
         m_Children.push_back(node);
+        return &m_Children.back();
+    }
+
+    void TreeNode::SetGameObject(entt::entity gameObject)
+    {
+        m_GameObject = gameObject;
+    }
+
+    void TreeNode::Traverse(TreeNode& node, uint indent)
+    {
+        std::string indentStr(indent, ' ');
+        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, (uint) node.GetGameObject(), node.GetName());
+        for (uint index = 0; index < node.Children(); index++)
+        {
+            Traverse(node.GetChild(index), indent + 4);
+        }
     }
 }

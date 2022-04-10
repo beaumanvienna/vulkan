@@ -73,7 +73,6 @@ namespace GfxRenderEngine
 
     void Builder::LoadImagesGLTF()
     {
-        VK_Model::m_Images.clear();
         // retrieve all images from the glTF file
         for (uint i = 0; i < m_GltfModel.images.size(); i++)
         {
@@ -153,117 +152,250 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadVertexDataGLTF()
+    void Builder::LoadVertexDataGLTF(uint meshIndex)
     {
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
 
-        for (const auto& mesh : m_GltfModel.meshes)
+        for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
-            for (const auto& glTFPrimitive : mesh.primitives)
+            glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+            if (glTFPrimitive.material != -1)
             {
                 ASSERT(glTFPrimitive.material < m_Materials.size());
-                uint diffuseMapIndex = m_Materials[glTFPrimitive.material].m_DiffuseMapIndex;
-                if (VK_Model::m_Images.size()) ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-                glm::vec3 diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
-                uint32_t firstIndex  = 0;
-                uint32_t vertexStart = 0;
-                uint32_t indexCount  = 0;
-                // Vertices
-                {
-                    const float* positionBuffer = nullptr;
-                    const float* normalsBuffer = nullptr;
-                    const float* texCoordsBuffer = nullptr;
-                    size_t vertexCount = 0;
+                diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
+            }
+            uint32_t firstIndex  = 0;
+            uint32_t vertexStart = 0;
+            uint32_t indexCount  = 0;
+            // Vertices
+            {
+                const float* positionBuffer = nullptr;
+                const float* normalsBuffer = nullptr;
+                const float* texCoordsBuffer = nullptr;
+                size_t vertexCount = 0;
 
-                    // Get buffer data for vertex normals
-                    if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
-                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                        positionBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                        vertexCount = accessor.count;
-                    }
-                    // Get buffer data for vertex normals
-                    if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
-                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                        normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                    }
-                    // Get buffer data for vertex texture coordinates
-                    // glTF supports multiple sets, we only load the first one
-                    if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end()) {
-                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
-                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                        texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                    }
-
-                    // Append data to model's vertex buffer
-                    for (size_t v = 0; v < vertexCount; v++) {
-                        Vertex vertex{};
-                        vertex.m_Amplification      = 1.0f;
-
-                        vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
-                        vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                        vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                        vertex.m_Color = diffuseColor;
-                        m_Vertices.push_back(vertex);
-                    }
+                // Get buffer data for vertex normals
+                if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    positionBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    vertexCount = accessor.count;
                 }
-                // Indices
-                {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.indices];
-                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
-                    const tinygltf::Buffer& buffer = m_GltfModel.buffers[bufferView.buffer];
+                // Get buffer data for vertex normals
+                if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                }
+                // Get buffer data for vertex texture coordinates
+                // glTF supports multiple sets, we only load the first one
+                if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end()) {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                }
 
-                    indexCount += static_cast<uint32_t>(accessor.count);
+                // Append data to model's vertex buffer
+                for (size_t v = 0; v < vertexCount; v++) {
+                    Vertex vertex{};
+                    vertex.m_Amplification      = 1.0f;
 
-                    // glTF supports different component types of indices
-                    switch (accessor.componentType) {
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
-                        const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                        for (size_t index = 0; index < accessor.count; index++) {
-                            m_Indices.push_back(buf[index] + vertexStart);
-                        }
-                        break;
+                    vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
+                    vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    vertex.m_Color = diffuseColor;
+                    m_Vertices.push_back(vertex);
+                }
+            }
+            // Indices
+            {
+                const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.indices];
+                const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = m_GltfModel.buffers[bufferView.buffer];
+
+                indexCount += static_cast<uint32_t>(accessor.count);
+
+                // glTF supports different component types of indices
+                switch (accessor.componentType) {
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
+                    const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                    for (size_t index = 0; index < accessor.count; index++) {
+                        m_Indices.push_back(buf[index] + vertexStart);
                     }
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
-                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                        for (size_t index = 0; index < accessor.count; index++) {
-                            m_Indices.push_back(buf[index] + vertexStart);
-                        }
-                        break;
+                    break;
+                }
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
+                    const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                    for (size_t index = 0; index < accessor.count; index++) {
+                        m_Indices.push_back(buf[index] + vertexStart);
                     }
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
-                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                        for (size_t index = 0; index < accessor.count; index++) {
-                            m_Indices.push_back(buf[index] + vertexStart);
-                        }
-                        break;
+                    break;
+                }
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
+                    const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                    for (size_t index = 0; index < accessor.count; index++) {
+                        m_Indices.push_back(buf[index] + vertexStart);
                     }
-                    default:
-                        std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
-                        return;
-                    }
+                    break;
+                }
+                default:
+                    std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+                    return;
                 }
             }
         }
+
         // calculate tangents
         CalculateTangents();
     }
 
-    void Builder::LoadTransformationMatrix(int meshIndex)
+    void Builder::LoadTransformationMatrix(TransformComponent& transform, int meshIndex)
     {
         auto& node = m_GltfModel.nodes[meshIndex];
 
         if (node.matrix.size() == 16)
         {
-            m_Transform->SetScale(glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]));
-            m_Transform->SetTranslation(glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]));
+            transform.SetScale(glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]));
+            transform.SetTranslation(glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]));
+        }
+        else
+        {
+            if (node.rotation.size() == 4)
+            {
+                transform.SetRotation({node.rotation[0], node.rotation[1], node.rotation[2]});
+            }
+            if (node.scale.size() == 3)
+            {
+                transform.SetScale({node.scale[0], node.scale[1], node.scale[2]});
+            }
+            if (node.translation.size() == 3)
+            {
+                transform.SetTranslation({node.translation[0], node.translation[1], node.translation[2]});
+            }
+  
         }
     }
 
-    entt::entity Builder::LoadGLTF(entt::registry& registry, TransformComponent* transform)
+    void Builder::AssignMaterial(entt::registry& registry, entt::entity entity, int materialIndex)
+    {
+        if (materialIndex == -1)
+        {
+            PbrNoMapComponent pbrNoMapComponent{};
+            pbrNoMapComponent.m_Roughness = 0.5;
+            pbrNoMapComponent.m_Metallic  = 0.1;
+            pbrNoMapComponent.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
+
+            registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
+            return;
+        }
+        ASSERT(materialIndex < m_Materials.size());
+        auto& material = m_Materials[materialIndex];
+    
+        if (material.m_Features == Material::HAS_DIFFUSE_MAP)
+        {
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+            auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+            pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
+            pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
+
+            registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+        }
+        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
+        {
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
+            ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+            ASSERT(normalMapIndex < VK_Model::m_Images.size());
+
+            auto pbrDiffuseNormalComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
+            pbrDiffuseNormalComponent.m_Roughness                = material.m_Roughness;
+            pbrDiffuseNormalComponent.m_Metallic                 = material.m_Metallic;
+            pbrDiffuseNormalComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
+            registry.emplace<PbrDiffuseNormalComponent>(entity, pbrDiffuseNormalComponent);
+        }
+        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        {
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+            ASSERT(normalMapIndex             < VK_Model::m_Images.size());
+            ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+            auto pbrDiffuseNormalRoughnessMetallicComponent = 
+                VK_Model::CreateDescriptorSet
+                (
+                    VK_Model::m_Images[diffuseMapIndex], 
+                    VK_Model::m_Images[normalMapIndex], 
+                    VK_Model::m_Images[roughnessMettalicMapIndex]
+                );
+            pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
+            registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+        }
+        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        {
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+            ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+            PbrDiffuseRoughnessMetallicComponent pbrDiffuseRoughnessMetallicComponent{};
+            VK_Model::CreateDescriptorSet
+            (
+                VK_Model::m_Images[diffuseMapIndex],
+                VK_Model::m_Images[roughnessMettalicMapIndex],
+                pbrDiffuseRoughnessMetallicComponent
+            );
+
+            registry.emplace<PbrDiffuseRoughnessMetallicComponent>(entity, pbrDiffuseRoughnessMetallicComponent);
+        }
+        else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        {
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
+            ASSERT(normalMapIndex             < VK_Model::m_Images.size());
+            ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
+
+            auto pbrDiffuseNormalRoughnessMetallicComponent = 
+                VK_Model::CreateDescriptorSet
+                (
+                    VK_Model::m_Images[diffuseMapIndex], 
+                    VK_Model::m_Images[normalMapIndex], 
+                    VK_Model::m_Images[roughnessMettalicMapIndex]
+                );
+            pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+
+            registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+        }
+        else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
+        {
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
+            auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
+            pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
+            pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
+
+            registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+        }
+        else
+        {
+            PbrNoMapComponent pbrNoMapComponent{};
+            pbrNoMapComponent.m_Roughness = material.m_Roughness;
+            pbrNoMapComponent.m_Metallic  = material.m_Metallic;
+            pbrNoMapComponent.m_Color     = material.m_DiffuseColor;
+
+            registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
+        }
+    }
+
+    void Builder::LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, TransformComponent* transform)
     {
         std::string warn, err;
 
@@ -276,137 +408,62 @@ namespace GfxRenderEngine
 
         LoadImagesGLTF();
         LoadMaterialsGLTF();
-        LoadVertexDataGLTF();
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), m_Filepath);
 
-        auto entity = registry.create();
-        TransformComponent transformGLTF{};
-        m_Transform = &transformGLTF;
+        uint nodeIndex = 0;
 
-        for (auto& material : m_Materials)
+        for (auto& scene : m_GltfModel.scenes)
         {
-
-            if (material.m_Features == Material::HAS_DIFFUSE_MAP)
+            TreeNode* currentNode = &sceneHierarchy;
+            if (scene.nodes.size() > 1)
             {
-                uint diffuseMapIndex = material.m_DiffuseMapIndex;
-                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-                auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
-                pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
-                pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
+                //this scene has multiple nodes -> create a bundle node
+                auto entity = registry.create();
+                TransformComponent transform{};
+                registry.emplace<TransformComponent>(entity, transform);
+                TreeNode node{entity, "collection"};
 
-                registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+                currentNode = currentNode->AddChild(node);
             }
-            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
+            else if (scene.nodes.size() == 1)
             {
-                uint diffuseMapIndex = material.m_DiffuseMapIndex;
-                uint normalMapIndex = material.m_NormalMapIndex;
-                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-                ASSERT(normalMapIndex < VK_Model::m_Images.size());
-
-                auto pbrDiffuseNormalComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
-                pbrDiffuseNormalComponent.m_Roughness                = material.m_Roughness;
-                pbrDiffuseNormalComponent.m_Metallic                 = material.m_Metallic;
-                pbrDiffuseNormalComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
-
-                registry.emplace<PbrDiffuseNormalComponent>(entity, pbrDiffuseNormalComponent);
-            }
-            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
-            {
-                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-                uint normalMapIndex            = material.m_NormalMapIndex;
-                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
-                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
-                ASSERT(normalMapIndex             < VK_Model::m_Images.size());
-                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
-
-                auto pbrDiffuseNormalRoughnessMetallicComponent = 
-                    VK_Model::CreateDescriptorSet
-                    (
-                        VK_Model::m_Images[diffuseMapIndex], 
-                        VK_Model::m_Images[normalMapIndex], 
-                        VK_Model::m_Images[roughnessMettalicMapIndex]
-                    );
-                pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
-
-                registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
-            }
-            else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
-            {
-                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
-                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
-                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
-
-                PbrDiffuseRoughnessMetallicComponent pbrDiffuseRoughnessMetallicComponent{};
-                VK_Model::CreateDescriptorSet
-                (
-                    VK_Model::m_Images[diffuseMapIndex],
-                    VK_Model::m_Images[roughnessMettalicMapIndex],
-                    pbrDiffuseRoughnessMetallicComponent
-                );
-
-                registry.emplace<PbrDiffuseRoughnessMetallicComponent>(entity, pbrDiffuseRoughnessMetallicComponent);
-            }
-            else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
-            {
-                uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-                uint normalMapIndex            = material.m_NormalMapIndex;
-                uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
-                ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
-                ASSERT(normalMapIndex             < VK_Model::m_Images.size());
-                ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
-
-                auto pbrDiffuseNormalRoughnessMetallicComponent = 
-                    VK_Model::CreateDescriptorSet
-                    (
-                        VK_Model::m_Images[diffuseMapIndex], 
-                        VK_Model::m_Images[normalMapIndex], 
-                        VK_Model::m_Images[roughnessMettalicMapIndex]
-                    );
-                pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
-
-                registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
-            }
-            else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
-            {
-                uint diffuseMapIndex = material.m_DiffuseMapIndex;
-                ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-                auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
-                pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
-                pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
-
-                registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+                // scene contains exactly one model
             }
             else
             {
-                PbrNoMapComponent pbrNoMapComponent{};
-                pbrNoMapComponent.m_Roughness = material.m_Roughness;
-                pbrNoMapComponent.m_Metallic  = material.m_Metallic;
-                pbrNoMapComponent.m_Color     = material.m_DiffuseColor;
-
-                registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
+                LOG_CORE_WARN("Builder::LoadGLTF: empty scene in {0}", m_Filepath);
+                return;
             }
-        }
-        auto model = Engine::m_Engine->LoadModel(*this);
-        MeshComponent mesh{m_Filepath, model};
-        registry.emplace<MeshComponent>(entity, mesh);
 
-        if (transform)
-        {
-            registry.emplace<TransformComponent>(entity, *transform);
-        }
-        else
-        {
-            LoadTransformationMatrix(0);
-            registry.emplace<TransformComponent>(entity, *m_Transform);
-        }
-        
+            for (uint i = nodeIndex; i < nodeIndex + scene.nodes.size(); i++)
+            {
+                auto meshIndex = m_GltfModel.nodes[i].mesh;
+                if (meshIndex != -1)
+                {
+                    LoadVertexDataGLTF(meshIndex);
+                    LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, m_GltfModel.nodes[i].name);
 
-        return entity;
-    }
+                    auto model = Engine::m_Engine->LoadModel(*this);
+                    auto entity = registry.create();
 
-    void Builder::LoadGLTF(entt::registry& registry, TreeNode& root)
-    {
+                    TreeNode node{entity, m_GltfModel.nodes[i].name};
+                    currentNode->AddChild(node);
+
+                    // mesh
+                    MeshComponent mesh{m_GltfModel.nodes[i].name, model};
+                    registry.emplace<MeshComponent>(entity, mesh);
+
+                    // transform
+                    TransformComponent transform{};
+                    LoadTransformationMatrix(transform, meshIndex);
+                    registry.emplace<TransformComponent>(entity, transform);
+
+                    // material
+                    auto materialIndex = m_GltfModel.meshes[meshIndex].primitives[0].material;
+                    AssignMaterial(registry, entity, materialIndex);
+                }
+            }
+            nodeIndex += scene.nodes.size();
+        }
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)

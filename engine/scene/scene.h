@@ -160,7 +160,7 @@ namespace GfxRenderEngine
 
     public:
 
-        Scene() : m_IsRunning{false} {}
+        Scene();
         virtual ~Scene();
 
         virtual void Start() = 0;
@@ -180,7 +180,7 @@ namespace GfxRenderEngine
     protected:
 
         entt::registry m_Registry;
-        TreeNode m_Tree;
+        TreeNode m_SceneHierarchy{(entt::entity)-1, "root"};
         bool m_IsRunning;
 
     };

@@ -81,6 +81,7 @@ namespace LucreApp
         m_HornAnimation.Start();
 
         LoadModels();
+        TreeNode::Traverse(m_SceneHierarchy);
 
         m_LaunchVulcanoTimer.SetEventCallback
         (
@@ -134,7 +135,6 @@ namespace LucreApp
         auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
         auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
         auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
-        auto& barrelTransform  = view.get<TransformComponent>(m_Barrel);
 
         m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -142,11 +142,7 @@ namespace LucreApp
         // draw new scene
         m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
 
-        m_GamepadInputController->GetTransform(barrelTransform, true);
-
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
-        barrelTransform.SetRotationY(glm::mod(barrelTransform.GetRotation().y + frameRotation, glm::two_pi<float>()));
-        barrelTransform.SetRotationX(glm::mod(barrelTransform.GetRotation().x + frameRotation, glm::two_pi<float>()));
 
         ApplyDebugSettings();
 

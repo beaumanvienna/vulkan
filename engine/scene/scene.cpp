@@ -28,6 +28,17 @@
 
 namespace GfxRenderEngine
 {
+    Scene::Scene()
+        : m_IsRunning{false}
+    {
+        auto entity = m_Registry.create();
+        // The root node gets a transform so that each and every node
+        // has a transform, however, it should never be used
+        TransformComponent transform{};
+        m_Registry.emplace<TransformComponent>(entity, transform);
+        m_SceneHierarchy.SetGameObject(entity);
+    }
+
     Scene::~Scene()
     {
         #ifdef DEBUG

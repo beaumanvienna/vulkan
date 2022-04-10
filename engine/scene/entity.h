@@ -37,10 +37,6 @@ namespace GfxRenderEngine
 
     public:
 
-        using id_t = entt::entity;
-
-    public:
-
         ~Entity();
 
         Entity(const Entity&) = delete;
@@ -48,17 +44,17 @@ namespace GfxRenderEngine
         Entity(Entity&&) = default;
         Entity& operator=(Entity&&) = default;
 
-        id_t GetID() const { return m_ID; }
+        entt::entity GetID() const { return m_ID; }
 
         static Entity CreateEntity(entt::registry& registry);
 
     private:
 
-        Entity(id_t id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}
+        Entity(entt::entity id, entt::registry& registry): m_ID{id}, m_Registry{registry} {}
 
     private:
 
-        id_t m_ID;
+        entt::entity m_ID;
         entt::registry& m_Registry;
 
     };
