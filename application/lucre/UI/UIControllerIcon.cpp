@@ -41,8 +41,8 @@ namespace LucreApp
         m_ControllerSprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
         m_Renderer = Engine::m_Engine->GetRenderer();
 
-        glm::vec2 finalOutOfScreenPosition(-5.0f, -2.25f);
-        glm::vec2 finalScreenPosition(-1.25f, -2.25f);
+        glm::vec2 finalOutOfScreenPosition(-5.0f, 2.25f);
+        glm::vec2 finalScreenPosition(-1.25f, 2.25f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));

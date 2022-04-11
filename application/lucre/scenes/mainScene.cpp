@@ -55,9 +55,8 @@ namespace LucreApp
 
         m_Camera = CreateEntity();
         TransformComponent transform{};
-        transform.SetTranslation({0.0f, -1.0f, -4.6f});
-        transform.SetRotation({-0.0257f, 0.0f, 0.0f});
         m_Registry.emplace<TransformComponent>(m_Camera, transform);
+        ResetScene();
 
         KeyboardInputControllerSpec keyboardInputControllerSpec{};
         m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
@@ -201,8 +200,8 @@ namespace LucreApp
     {
         m_CameraController->SetZoomFactor(1.0f);
         auto& transform = m_Registry.get<TransformComponent>(m_Camera);
-        transform.SetTranslation({0.0f, -1.0f, -4.6f});
-        transform.SetRotation({-0.0257f, 0.0f, 0.0f});
+        transform.SetTranslation({0.0f, -0.8f, -3.4f});
+        transform.SetRotation({0.066f, 0.0f, 0.0f});
     }
 
     void MainScene::InitPhysics()
@@ -212,11 +211,11 @@ namespace LucreApp
 
         {
             b2BodyDef groundBodyDef;
-            groundBodyDef.position.Set(0.0f, -1.0f);
+            groundBodyDef.position.Set(0.0f, 0.0f);
 
             m_GroundBody = m_World->CreateBody(&groundBodyDef);
             b2PolygonShape groundBox;
-            groundBox.SetAsBox(50.0f, 0.4f);
+            groundBox.SetAsBox(50.0f, 0.04f);
             m_GroundBody->CreateFixture(&groundBox, 0.0f);
         }
 

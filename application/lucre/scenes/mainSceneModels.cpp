@@ -86,7 +86,7 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{-11.0f + 11.0f*i, 0.67f, -0.1f});
+                transform.SetTranslation(glm::vec3{-11.0f + 11.0f*i, 0.03f, -0.1f});
                 transform.SetScale(glm::vec3{0.017f, 0.014f, 0.017f});
                 transform.SetRotation(glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
@@ -111,7 +111,7 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{-0.5f, 0.32f, 0.0f});
+                transform.SetTranslation(glm::vec3{-0.5f, 0.36f, 0.0f});
                 transform.SetScale(glm::vec3{0.005f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
@@ -131,7 +131,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Ground, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.0f, 0.7f, 0.0f});
+            transform.SetTranslation(glm::vec3{0.0f, 0.0f, 0.0f});
             transform.SetScale(glm::vec3{0.01f, 100.0f, 2.0f});
             transform.SetRotation(glm::vec3{0.0f, 0.0f, glm::half_pi<float>()});
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
@@ -151,7 +151,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Vase0, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{-0.8f, -0.2f, 0.0f});
+            transform.SetTranslation(glm::vec3{-0.8f, 0.8f, 0.0f});
             transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
 
@@ -170,7 +170,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Vase1, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.8f, -0.2f, 0.0f});
+            transform.SetTranslation(glm::vec3{0.8f, 0.8f, 0.0f});
             transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
 
@@ -252,7 +252,8 @@ namespace LucreApp
                     {0.f, -1.f, 0.f}
                 );
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(-1.0f, +0.3f, -1.0f, 0.0f)));
+                glm::vec3 translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -0.25f, 1.0f, 0.0f));
+                transform.SetTranslation(translation);
                 m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
                 m_Registry.emplace<Group1>(m_PointLight[i], true);
             }
@@ -261,7 +262,7 @@ namespace LucreApp
             // light the vulcano
             m_PointLightVulcano = CreatePointLight(1.0f, 0.0f, {1.0f, 0.0f, 0.0f});
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3(0.0f, -10.0f, 39.0f));
+            transform.SetTranslation(glm::vec3(0.0f, -15.0f, 39.0f));
             m_Registry.emplace<TransformComponent>(m_PointLightVulcano, transform);
             m_Registry.emplace<Group2>(m_PointLightVulcano, true);
         }

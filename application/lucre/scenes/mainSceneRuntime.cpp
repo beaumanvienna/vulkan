@@ -58,7 +58,7 @@ namespace LucreApp
             auto body = static_cast<b2Body*>(rigidbody.m_Body);
             b2Vec2 position = body->GetPosition();
             transform.SetTranslationX(position.x);
-            transform.SetTranslationY(-position.y);
+            transform.SetTranslationY(position.y);
             transform.SetRotationY(transform.GetRotation().y + rotationDelta);
         }
 
@@ -101,7 +101,7 @@ namespace LucreApp
 
     void MainScene::ResetBananas()
     {
-        m_GroundBody->SetTransform(b2Vec2(0.0f, -1.0f), 0.0f);
+        m_GroundBody->SetTransform(b2Vec2(0.0f, 0.0f), 0.0f);
         auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
 
         uint i = 0;
@@ -110,7 +110,7 @@ namespace LucreApp
             auto& transform = view.get<TransformComponent>(banana);
             auto& rigidbody = view.get<RigidbodyComponent>(banana);
             auto body = static_cast<b2Body*>(rigidbody.m_Body);
-            body->SetLinearVelocity(b2Vec2(0.0f, -0.01f));
+            body->SetLinearVelocity(b2Vec2(0.0f, 0.01f));
             body->SetAngularVelocity(0.0f);
             if (i < 12)
             {
@@ -146,9 +146,9 @@ namespace LucreApp
 
             ParticleSystem::Specification spec =
             {
-                { 0.0f,-9.00f}, //glm::vec2 m_Position
-                { 0.0f,-2.50f}, //glm::vec2 m_Velocity
-                { 0.0f, 0.00f}, //glm::vec2 m_Acceleration
+                { 0.0f, 15.5f}, //glm::vec2 m_Position
+                { 0.0f,  2.5f}, //glm::vec2 m_Velocity
+                { 0.0f,  0.0f}, //glm::vec2 m_Acceleration
 
                 {0.0f}, //float m_Rotation
                 {0.0f}, //float m_RotationSpeed

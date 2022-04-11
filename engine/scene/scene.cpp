@@ -24,6 +24,8 @@
 #include <chrono>
 #include <thread>
 
+#include "gtc/quaternion.hpp"
+
 #include "scene/scene.h"
 
 namespace GfxRenderEngine
@@ -110,6 +112,13 @@ namespace GfxRenderEngine
         m_Dirty = true;
     }
 
+    void TransformComponent::SetRotation(const glm::quat& quaternion)
+    {
+        glm::vec3 convert = glm::eulerAngles(quaternion);
+        // ZYX - model in Blender
+        SetRotation(glm::vec3{convert.x, -convert.y, -convert.z});
+    }
+
     void TransformComponent::SetRotationX(const float rotationX)
     {
         m_Rotation.x = rotationX;
@@ -167,21 +176,21 @@ namespace GfxRenderEngine
                     m_Scale.x * (c1 * c3 + s1 * s2 * s3),
                     m_Scale.x * (c2 * s3),
                     m_Scale.x * (c1 * s2 * s3 - c3 * s1),
-                    0.0f,
+                    0.0f
                 },
                 {
                     m_Scale.y * (c3 * s1 * s2 - c1 * s3),
                     m_Scale.y * (c2 * c3),
                     m_Scale.y * (c1 * c3 * s2 + s1 * s3),
-                    0.0f,
+                    0.0f
                 },
                 {
                     m_Scale.z * (c2 * s1),
                     m_Scale.z * (-s2),
                     m_Scale.z * (c1 * c2),
-                    0.0f,
+                    0.0f
                 },
-                {m_Translation.x, m_Translation.y, m_Translation.z, 1.0f}
+                {m_Translation.x, -m_Translation.y, m_Translation.z, 1.0f}
             };
         }
         { // m_NormalMatrix

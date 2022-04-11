@@ -35,6 +35,7 @@
 #include "renderer/model.h"
 #include "auxiliary/hash.h"
 #include "auxiliary/file.h"
+#include "auxiliary/debug.h"
 #include "auxiliary/math.h"
 #include "scene/scene.h"
 
@@ -201,8 +202,8 @@ namespace GfxRenderEngine
                 for (size_t v = 0; v < vertexCount; v++) {
                     Vertex vertex{};
                     vertex.m_Amplification      = 1.0f;
-
-                    vertex.m_Position = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
+                    auto position = glm::make_vec3(&positionBuffer[v * 3]);
+                    vertex.m_Position = glm::vec4(position.x, -position.y, -position.z, 1.0f);
                     vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_Color = diffuseColor;
@@ -264,7 +265,13 @@ namespace GfxRenderEngine
         {
             if (node.rotation.size() == 4)
             {
-                transform.SetRotation({node.rotation[0], node.rotation[1], node.rotation[2]});
+                float x = node.rotation[0];
+                float y = node.rotation[1];
+                float z = node.rotation[2];
+                float w = node.rotation[3];
+
+                transform.SetRotation({w, x, y, z});
+
             }
             if (node.scale.size() == 3)
             {
@@ -274,7 +281,6 @@ namespace GfxRenderEngine
             {
                 transform.SetTranslation({node.translation[0], node.translation[1], node.translation[2]});
             }
-  
         }
     }
 
@@ -420,9 +426,9 @@ namespace GfxRenderEngine
                 auto entity = registry.create();
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
-                TreeNode node{entity, "collection"};
+                TreeNode sceneHierarchyNode{entity, "collection"};
 
-                currentNode = currentNode->AddChild(node);
+                currentNode = currentNode->AddChild(sceneHierarchyNode);
             }
             else if (scene.nodes.size() == 1)
             {
@@ -445,8 +451,8 @@ namespace GfxRenderEngine
                     auto model = Engine::m_Engine->LoadModel(*this);
                     auto entity = registry.create();
 
-                    TreeNode node{entity, m_GltfModel.nodes[i].name};
-                    currentNode->AddChild(node);
+                    TreeNode sceneHierarchyNode{entity, m_GltfModel.nodes[i].name};
+                    currentNode->AddChild(sceneHierarchyNode);
 
                     // mesh
                     MeshComponent mesh{m_GltfModel.nodes[i].name, model};

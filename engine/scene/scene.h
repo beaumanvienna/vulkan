@@ -46,6 +46,7 @@ namespace GfxRenderEngine
         void SetScaleY(const float scaleY);
         void SetScaleZ(const float scaleZ);
         void SetRotation(const glm::vec3& rotation);
+        void SetRotation(const glm::quat& quaternion);
         void SetRotationX(const float rotationX);
         void SetRotationY(const float rotationY);
         void SetRotationZ(const float rotationZ);
