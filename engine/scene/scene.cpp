@@ -25,6 +25,7 @@
 #include <thread>
 
 #include "gtc/quaternion.hpp"
+#include "gtx/quaternion.hpp"
 
 #include "scene/scene.h"
 
@@ -116,7 +117,7 @@ namespace GfxRenderEngine
     {
         glm::vec3 convert = glm::eulerAngles(quaternion);
         // ZYX - model in Blender
-        SetRotation(glm::vec3{convert.x, -convert.y, -convert.z});
+        SetRotation(glm::vec3{convert.x, -convert.y, convert.z});
     }
 
     void TransformComponent::SetRotationX(const float rotationX)
@@ -163,66 +164,12 @@ namespace GfxRenderEngine
     
     void TransformComponent::RecalculateMatrices()
     {
-        { // m_Mat4
-            const float c3 = glm::cos(m_Rotation.z);
-            const float s3 = glm::sin(m_Rotation.z);
-            const float c2 = glm::cos(m_Rotation.x);
-            const float s2 = glm::sin(m_Rotation.x);
-            const float c1 = glm::cos(m_Rotation.y);
-            const float s1 = glm::sin(m_Rotation.y);
-            m_Mat4 = glm::mat4
-            {
-                {
-                    m_Scale.x * (c1 * c3 + s1 * s2 * s3),
-                    m_Scale.x * (c2 * s3),
-                    m_Scale.x * (c1 * s2 * s3 - c3 * s1),
-                    0.0f
-                },
-                {
-                    m_Scale.y * (c3 * s1 * s2 - c1 * s3),
-                    m_Scale.y * (c2 * c3),
-                    m_Scale.y * (c1 * c3 * s2 + s1 * s3),
-                    0.0f
-                },
-                {
-                    m_Scale.z * (c2 * s1),
-                    m_Scale.z * (-s2),
-                    m_Scale.z * (c1 * c2),
-                    0.0f
-                },
-                {m_Translation.x, -m_Translation.y, m_Translation.z, 1.0f}
-            };
-        }
-        { // m_NormalMatrix
-            const float c3 = glm::cos(m_Rotation.z);
-            const float s3 = glm::sin(m_Rotation.z);
-            const float c2 = glm::cos(m_Rotation.x);
-            const float s2 = glm::sin(m_Rotation.x);
-            const float c1 = glm::cos(m_Rotation.y);
-            const float s1 = glm::sin(m_Rotation.y);
+        auto scale = glm::scale(glm::mat4(1.0f), m_Scale);
+        auto rotation = glm::toMat4(glm::quat(m_Rotation));
+        auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, -m_Translation.y, m_Translation.z});
 
-            const glm::vec3 inverseScale = 1.0f / m_Scale;
-
-            m_NormalMatrix = glm::mat3
-            {
-                {
-                    inverseScale.x * (c1 * c3 + s1 * s2 * s3),
-                    inverseScale.x * (c2 * s3),
-                    inverseScale.x * (c1 * s2 * s3 - c3 * s1),
-                },
-                {
-                    inverseScale.y * (c3 * s1 * s2 - c1 * s3),
-                    inverseScale.y * (c2 * c3),
-                    inverseScale.y * (c1 * c3 * s2 + s1 * s3),
-                },
-                {
-                    inverseScale.z * (c2 * s1),
-                    inverseScale.z * (-s2),
-                    inverseScale.z * (c1 * c2),
-                }
-            };
-        }
-        
+        m_Mat4 = translation * rotation * scale;
+        m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4)));
     }
 
     const glm::mat4& TransformComponent::GetMat4()

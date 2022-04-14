@@ -3,7 +3,7 @@ A Vulkan Render Engine<br/>
 <br/>
 <br/>
 <p align="center">
-  <img src="resources/images/I_Vulkan.png">
+  <img src="resources/images/meme.png">
 </p>
 <br/>
 <br/>
