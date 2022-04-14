@@ -37,9 +37,9 @@ namespace LucreApp
     void MainScene::LoadModels()
     {
         // --- glTF assets ---
-        if (EngineCore::FileExists("application/lucre/models/dont_upload/multipleObjects/multipleObjects.gltf"))
+        if (EngineCore::FileExists("application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf"))
         {
-            Builder builder{"application/lucre/models/dont_upload/multipleObjects/multipleObjects.gltf"};
+            Builder builder{"application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf"};
         
             builder.LoadGLTF(m_Registry, m_SceneHierarchy);
         }
