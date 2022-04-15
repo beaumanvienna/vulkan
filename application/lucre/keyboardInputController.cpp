@@ -57,8 +57,8 @@ namespace LucreApp
         const glm::vec3 upDir{0.f, -1.f, 0.f};
 
         glm::vec3 moveDir{0.f};
-        if (Input::IsKeyPressed(MOVE_FORWARD))  moveDir += forwardDir;
-        if (Input::IsKeyPressed(MOVE_BACKWARD)) moveDir -= forwardDir;
+        if (Input::IsKeyPressed(MOVE_FORWARD))  moveDir -= forwardDir;
+        if (Input::IsKeyPressed(MOVE_BACKWARD)) moveDir += forwardDir;
         if (Input::IsKeyPressed(MOVE_RIGHT))    moveDir -= rightDir;
         if (Input::IsKeyPressed(MOVE_LEFT))     moveDir += rightDir;
         if (Input::IsKeyPressed(MOVE_UP))       moveDir -= upDir;
