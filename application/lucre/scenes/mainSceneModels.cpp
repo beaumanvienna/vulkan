@@ -111,7 +111,7 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{-0.5f, 0.36f, 0.0f});
+                transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
                 transform.SetScale(glm::vec3{0.005f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
