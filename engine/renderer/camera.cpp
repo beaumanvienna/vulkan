@@ -28,7 +28,7 @@ namespace GfxRenderEngine
 
     Camera::Camera()
         : m_ProjectionType{PROJECTION_UNDEFINED},
-          m_Position{0.0f}, m_Rotation{0.0f}
+          m_Position{0.0f}, m_Rotation{0.0f, glm::pi<float>(), glm::pi<float>()}
     {
     }
 
@@ -71,8 +71,8 @@ namespace GfxRenderEngine
     }
 
     void Camera::SetRotation(const glm::vec3& rotation) 
-    { 
-        m_Rotation = rotation; 
+    {
+        m_Rotation = glm::vec3{rotation.x, rotation.y+glm::pi<float>(), rotation.z+glm::pi<float>()};
         RecalculateViewMatrix();
     }
 
@@ -131,14 +131,14 @@ namespace GfxRenderEngine
     void Camera::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
     {
         m_Position = position;
-        m_Rotation = rotation;
+        m_Rotation = glm::vec3{rotation.x, rotation.y+glm::pi<float>(), rotation.z+glm::pi<float>()};
 
-        const float c3 = glm::cos(rotation.z);
-        const float s3 = glm::sin(rotation.z);
-        const float c2 = glm::cos(rotation.x);
-        const float s2 = glm::sin(rotation.x);
-        const float c1 = glm::cos(rotation.y);
-        const float s1 = glm::sin(rotation.y);
+        const float c3 = glm::cos(m_Rotation.z);
+        const float s3 = glm::sin(m_Rotation.z);
+        const float c2 = glm::cos(m_Rotation.x);
+        const float s2 = glm::sin(m_Rotation.x);
+        const float c1 = glm::cos(m_Rotation.y);
+        const float s1 = glm::sin(m_Rotation.y);
         const glm::vec3 u{(c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1)};
         const glm::vec3 v{(c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3)};
         const glm::vec3 w{(c2 * s1), (-s2), (c1 * c2)};

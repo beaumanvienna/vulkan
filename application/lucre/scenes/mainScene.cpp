@@ -201,7 +201,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& transform = m_Registry.get<TransformComponent>(m_Camera);
         transform.SetTranslation({0.0f, 1.08f, 3.6f});
-        transform.SetRotation({-0.04f, glm::pi<float>(), glm::pi<float>()});
+        transform.SetRotation({-0.04f, 0.0f, 0.0f});
     }
 
     void MainScene::InitPhysics()
