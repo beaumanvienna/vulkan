@@ -41,7 +41,7 @@ namespace LucreApp
         {
             Builder builder{"application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf"};
         
-            builder.LoadGLTF(m_Registry, m_SceneHierarchy);
+            builder.LoadGLTF(m_Registry, m_SceneHierarchy, m_Dictionary);
         }
 
         // --- sprites from the built-in texture atlas ---

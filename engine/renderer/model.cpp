@@ -401,7 +401,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, TransformComponent* transform)
+    void Builder::LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform)
     {
         std::string warn, err;
 
@@ -426,9 +426,9 @@ namespace GfxRenderEngine
                 auto entity = registry.create();
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
-                TreeNode sceneHierarchyNode{entity, "collection"};
+                TreeNode sceneHierarchyNode{entity, EngineCore::GetFilenameWithoutPath(m_Filepath), m_Filepath};
 
-                currentNode = currentNode->AddChild(sceneHierarchyNode);
+                currentNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
             }
             else if (scene.nodes.size() == 1)
             {
@@ -451,8 +451,10 @@ namespace GfxRenderEngine
                     auto model = Engine::m_Engine->LoadModel(*this);
                     auto entity = registry.create();
 
-                    TreeNode sceneHierarchyNode{entity, m_GltfModel.nodes[i].name};
-                    currentNode->AddChild(sceneHierarchyNode);
+                    auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + m_GltfModel.nodes[i].name;
+
+                    TreeNode sceneHierarchyNode{entity, m_GltfModel.nodes[i].name, longName};
+                    currentNode->AddChild(sceneHierarchyNode, dictionary);
 
                     // mesh
                     MeshComponent mesh{m_GltfModel.nodes[i].name, model};

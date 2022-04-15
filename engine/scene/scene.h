@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
@@ -29,6 +30,7 @@
 #include "events/event.h"
 #include "scene/entity.h"
 #include "scene/treeNode.h"
+#include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
@@ -181,7 +183,8 @@ namespace GfxRenderEngine
     protected:
 
         entt::registry m_Registry;
-        TreeNode m_SceneHierarchy{(entt::entity)-1, "root"};
+        TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
+        Dictionary m_Dictionary;
         bool m_IsRunning;
 
     };

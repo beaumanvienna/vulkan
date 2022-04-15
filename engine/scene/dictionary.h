@@ -22,41 +22,29 @@
 
 #pragma once
 
-#include <vector>
+#include <iostream>
+#include <unordered_map>
 
 #include "engine.h"
 #include "entt.hpp"
-#include "scene/dictionary.h"
 
 namespace GfxRenderEngine
 {
-    class TreeNode
+    
+    class Dictionary
     {
 
     public:
 
-        TreeNode() = delete;
-        TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName);
-        ~TreeNode();
-
-        entt::entity GetGameObject() const;
-        const std::string& GetName() const;
-        const std::string& GetLongName() const;
-        uint Children() const;
-        TreeNode& GetChild(uint index);
-        TreeNode* AddChild(const TreeNode& node, Dictionary& dictionary);
-        void SetGameObject(entt::entity gameObject);
-
-    public:
-
-        static void Traverse(TreeNode& node, uint indent = 0);
+        void Insert(const std::string& key, entt::entity value);
+        entt::entity Retrieve(const std::string& key);
+        size_t Size() const { return m_Dictionary.size(); }
+        void List() const;
 
     private:
 
-        std::string m_Name;
-        std::string m_LongName;
-        entt::entity m_GameObject;
-        std::vector<TreeNode> m_Children;
-
+        std::unordered_map<std::string, entt::entity> m_Dictionary;
+        
     };
+
 }

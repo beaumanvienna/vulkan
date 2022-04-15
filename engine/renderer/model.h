@@ -28,6 +28,7 @@
 
 #include "engine.h"
 #include "scene/treeNode.h"
+#include "scene/dictionary.h"
 #include "renderer/texture.h"
 #include "sprite/sprite.h"
 #include "entt.hpp"
@@ -79,7 +80,7 @@ namespace GfxRenderEngine
         Builder(const std::string& filepath);
 
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
-        void LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, TransformComponent* transform = nullptr);
+        void LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 

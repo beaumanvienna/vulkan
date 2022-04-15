@@ -81,6 +81,7 @@ namespace LucreApp
 
         LoadModels();
         TreeNode::Traverse(m_SceneHierarchy);
+        m_Dictionary.List();
 
         m_LaunchVolcanoTimer.SetEventCallback
         (

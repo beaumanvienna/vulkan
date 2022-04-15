@@ -20,43 +20,26 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-#include <vector>
-
-#include "engine.h"
-#include "entt.hpp"
 #include "scene/dictionary.h"
 
 namespace GfxRenderEngine
 {
-    class TreeNode
+    void Dictionary::Insert(const std::string& key, entt::entity value)
     {
+        m_Dictionary[key] = value;
+    }
 
-    public:
+    entt::entity Dictionary::Retrieve(const std::string& key)
+    {
+        return m_Dictionary[key];
+    }
 
-        TreeNode() = delete;
-        TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName);
-        ~TreeNode();
-
-        entt::entity GetGameObject() const;
-        const std::string& GetName() const;
-        const std::string& GetLongName() const;
-        uint Children() const;
-        TreeNode& GetChild(uint index);
-        TreeNode* AddChild(const TreeNode& node, Dictionary& dictionary);
-        void SetGameObject(entt::entity gameObject);
-
-    public:
-
-        static void Traverse(TreeNode& node, uint indent = 0);
-
-    private:
-
-        std::string m_Name;
-        std::string m_LongName;
-        entt::entity m_GameObject;
-        std::vector<TreeNode> m_Children;
-
-    };
+    void Dictionary::List() const
+    {
+        LOG_CORE_WARN("listing dictionary:");
+        for (auto& it: m_Dictionary)
+        {
+            LOG_CORE_INFO("key: `{0}`, value: `{1}`", it.first, it.second);
+        }
+    }
 }
