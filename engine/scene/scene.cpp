@@ -117,7 +117,7 @@ namespace GfxRenderEngine
     {
         glm::vec3 convert = glm::eulerAngles(quaternion);
         // ZYX - model in Blender
-        SetRotation(glm::vec3{convert.x, -convert.y, convert.z});
+        SetRotation(glm::vec3{convert.x, convert.y, convert.z});
     }
 
     void TransformComponent::SetRotationX(const float rotationX)
@@ -166,7 +166,7 @@ namespace GfxRenderEngine
     {
         auto scale = glm::scale(glm::mat4(1.0f), m_Scale);
         auto rotation = glm::toMat4(glm::quat(m_Rotation));
-        auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, -m_Translation.y, m_Translation.z});
+        auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, m_Translation.y, m_Translation.z});
 
         m_Mat4 = translation * rotation * scale;
         m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4)));

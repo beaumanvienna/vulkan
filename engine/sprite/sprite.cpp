@@ -109,17 +109,17 @@ namespace GfxRenderEngine
 
         glm::mat4 spriteMatrix = glm::mat4
         (
-            -spriteWidth,  spriteHeight, 1.0f, 1.0f,
-            spriteWidth,   spriteHeight, 1.0f, 1.0f,
+            -spriteWidth, -spriteHeight, 1.0f, 1.0f,
             spriteWidth,  -spriteHeight, 1.0f, 1.0f,
-            -spriteWidth, -spriteHeight, 1.0f, 1.0f
+            spriteWidth,   spriteHeight, 1.0f, 1.0f,
+            -spriteWidth,  spriteHeight, 1.0f, 1.0f
         );
 
         // model matrix
         glm::vec3 scaleVec(m_ScaleX/2.0f, m_ScaleY/2.0f, 1.0f);
         if (m_Rotated)
         {
-            m_ScaleMatrix = Rotate(-Matrix::NINETY_DEGREES, {0.0f,0.0f,1.0f}) * Scale(scaleVec) * spriteMatrix;
+            m_ScaleMatrix = Rotate(Matrix::NINETY_DEGREES, {0.0f,0.0f,1.0f}) * Scale(scaleVec) * spriteMatrix;
         }
         else
         {
@@ -152,7 +152,7 @@ namespace GfxRenderEngine
             m_FlippedScaleMatrix[0][0] = x3;
             m_FlippedScaleMatrix[1][0] = x2;
             m_FlippedScaleMatrix[2][0] = x1;
-            m_FlippedScaleMatrix[3][0] = x1;
+            m_FlippedScaleMatrix[3][0] = x0;
 
             return m_FlippedScaleMatrix;
         }

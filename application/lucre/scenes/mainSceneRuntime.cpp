@@ -63,7 +63,7 @@ namespace LucreApp
         }
 
         static uint index = 0;
-        if (m_Fire)  // from vulcano
+        if (m_Fire)  // from volcano
         {
             static auto start = Engine::m_Engine->GetTime();
             if ((Engine::m_Engine->GetTime() - start) > 100ms)
@@ -137,7 +137,7 @@ namespace LucreApp
         }
     }
 
-    void MainScene::EmitVulcanoSmoke()
+    void MainScene::EmitVolcanoSmoke()
     {
         static auto start = Engine::m_Engine->GetTime();
         if ((Engine::m_Engine->GetTime() - start) > 1000ms)
@@ -164,7 +164,7 @@ namespace LucreApp
             ParticleSystem::Specification variation{};
             variation.m_Velocity = { 0.1f, 0.0f };
             variation.m_Rotation = { 0.5f };
-            m_VulcanoSmoke->Emit(spec, variation);
+            m_VolcanoSmoke->Emit(spec, variation);
         }
     }
 

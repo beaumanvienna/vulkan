@@ -16,7 +16,7 @@ Features: Vulkan support for 3D rendering, physically-based lighting, Blinn-Phon
 * Use the mouse wheel to zoom.<br/>
 * The A button plays a test sound.<br/>
 * Press ESC or the guide button on the controller to exit.<br/>
-* Press "g" to fire the vulcano and "r" to reset the scene.<br/>
+* Press "g" to fire the volcano and "r" to reset the scene.<br/>
 <br/>
 To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 <br/>

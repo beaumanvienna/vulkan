@@ -60,9 +60,9 @@ namespace LucreApp
         void LoadModels();
         void ResetScene();
         void InitPhysics();
-        void FireVulcano();
+        void FireVolcano();
         void ResetBananas();
-        void EmitVulcanoSmoke();
+        void EmitVolcanoSmoke();
         void RotateLights(const Timestep& timestep);
         void UpdateBananas(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
@@ -78,8 +78,8 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVulcano, m_Barrel;
-        entt::entity m_PointLight[MAX_LIGHTS], m_Vulcano[3], m_Walkway[3], m_Duck, m_BarramundiFish;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVolcano, m_Barrel;
+        entt::entity m_PointLight[MAX_LIGHTS], m_Volcano[3], m_Walkway[3], m_Duck, m_BarramundiFish;
         entt::entity m_GoldenDuck;
 
         static constexpr uint MAX_B = 24;
@@ -93,9 +93,9 @@ namespace LucreApp
         std::unique_ptr<b2World> m_World;
         b2Body* m_GroundBody;
         bool m_Fire;
-        Timer m_LaunchVulcanoTimer;
+        Timer m_LaunchVolcanoTimer;
 
-        std::shared_ptr<ParticleSystem> m_VulcanoSmoke;
+        std::shared_ptr<ParticleSystem> m_VolcanoSmoke;
 
         static constexpr uint HORN_ANIMATION_SPRITES = 25;
         entt::entity m_Guybrush[HORN_ANIMATION_SPRITES];

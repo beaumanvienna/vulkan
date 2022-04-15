@@ -37,10 +37,10 @@ namespace LucreApp
     {
 
         glm::vec3 rotate{0};
-        if (Input::IsKeyPressed(LOOK_RIGHT)) rotate.y += 1.f;
-        if (Input::IsKeyPressed(LOOK_LEFT))  rotate.y -= 1.f;
-        if (Input::IsKeyPressed(LOOK_UP))    rotate.x += 1.f;
-        if (Input::IsKeyPressed(LOOK_DOWN))  rotate.x -= 1.f;
+        if (Input::IsKeyPressed(LOOK_RIGHT)) rotate.y -= 1.f;
+        if (Input::IsKeyPressed(LOOK_LEFT))  rotate.y += 1.f;
+        if (Input::IsKeyPressed(LOOK_UP))    rotate.x -= 1.f;
+        if (Input::IsKeyPressed(LOOK_DOWN))  rotate.x += 1.f;
 
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
         {
@@ -59,10 +59,10 @@ namespace LucreApp
         glm::vec3 moveDir{0.f};
         if (Input::IsKeyPressed(MOVE_FORWARD))  moveDir += forwardDir;
         if (Input::IsKeyPressed(MOVE_BACKWARD)) moveDir -= forwardDir;
-        if (Input::IsKeyPressed(MOVE_RIGHT))    moveDir += rightDir;
-        if (Input::IsKeyPressed(MOVE_LEFT))     moveDir -= rightDir;
-        if (Input::IsKeyPressed(MOVE_UP))       moveDir += upDir;
-        if (Input::IsKeyPressed(MOVE_DOWN))     moveDir -= upDir;
+        if (Input::IsKeyPressed(MOVE_RIGHT))    moveDir -= rightDir;
+        if (Input::IsKeyPressed(MOVE_LEFT))     moveDir += rightDir;
+        if (Input::IsKeyPressed(MOVE_UP))       moveDir -= upDir;
+        if (Input::IsKeyPressed(MOVE_DOWN))     moveDir += upDir;
 
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {

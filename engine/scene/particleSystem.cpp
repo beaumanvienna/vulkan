@@ -81,7 +81,7 @@ namespace GfxRenderEngine
         TransformComponent transform{};
         static uint cnt = 0;
         cnt = (cnt + 1) % 100;
-        transform.SetTranslation(glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis - 0.01f * cnt});
+        transform.SetTranslation(glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis + 0.01f * cnt});
         transform.SetScale(glm::vec3{1.0f} * particle.m_StartSize);
         transform.SetRotation(glm::vec3{0.0f, 0.0f, spec.m_Rotation + variation.m_Rotation * EngineCore::RandomPlusMinusOne()});
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);

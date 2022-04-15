@@ -39,7 +39,7 @@ namespace LucreApp
 
     MainScene::MainScene()
         : m_GamepadInput{}, m_Fire{false},
-          m_LaunchVulcanoTimer(1500)
+          m_LaunchVolcanoTimer(1500)
     {
     }
 
@@ -82,7 +82,7 @@ namespace LucreApp
         LoadModels();
         TreeNode::Traverse(m_SceneHierarchy);
 
-        m_LaunchVulcanoTimer.SetEventCallback
+        m_LaunchVolcanoTimer.SetEventCallback
         (
             [](uint in, void* data)
             {
@@ -91,11 +91,11 @@ namespace LucreApp
                 return 0u;
             }
         );
-        m_LaunchVulcanoTimer.Start();
+        m_LaunchVolcanoTimer.Start();
 
         // volcano smoke animation
         int poolSize = 50;
-        float zaxis = 39.0f;
+        float zaxis = -39.0f;
         m_SpritesheetSmoke.AddSpritesheetTile
         (
             Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
@@ -103,7 +103,7 @@ namespace LucreApp
             0, /* margin */
             0.02f /* scale) */
         );
-        m_VulcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
+        m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
     }
 
@@ -151,11 +151,11 @@ namespace LucreApp
         SimulatePhysics(timestep);
         UpdateBananas(timestep);
 
-        EmitVulcanoSmoke();
-        m_VulcanoSmoke->OnUpdate(timestep);
+        EmitVolcanoSmoke();
+        m_VolcanoSmoke->OnUpdate(timestep);
 
         m_Renderer->Submit(m_Registry);
-        m_Renderer->Submit(m_VulcanoSmoke);
+        m_Renderer->Submit(m_VolcanoSmoke);
         m_Renderer->Submit(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->Submit(SCREEN_ScreenManager::m_Registry);
         m_Renderer->EndScene();
@@ -183,7 +183,7 @@ namespace LucreApp
                         ResetBananas();
                         break;
                     case ENGINE_KEY_G:
-                        FireVulcano();
+                        FireVolcano();
                         break;
                 }
                 return false;
@@ -200,8 +200,8 @@ namespace LucreApp
     {
         m_CameraController->SetZoomFactor(1.0f);
         auto& transform = m_Registry.get<TransformComponent>(m_Camera);
-        transform.SetTranslation({0.0f, -0.8f, -3.4f});
-        transform.SetRotation({0.066f, 0.0f, 0.0f});
+        transform.SetTranslation({0.0f, 1.08f, 3.6f});
+        transform.SetRotation({-0.04f, glm::pi<float>(), glm::pi<float>()});
     }
 
     void MainScene::InitPhysics()
@@ -230,7 +230,7 @@ namespace LucreApp
         }
     }
 
-    void MainScene::FireVulcano()
+    void MainScene::FireVolcano()
     {
         m_Fire = true;
         m_GroundBody->SetTransform(b2Vec2(0.0f, -10.0f), 0.0f);
