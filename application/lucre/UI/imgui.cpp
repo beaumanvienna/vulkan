@@ -21,11 +21,13 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "vendor/imgui/imgui.h"
+#include "vendor/imGuizmo/ImGuizmo.h"
 
 #include "application/lucre/UI/imgui.h"
 
 namespace LucreApp
 {
+    int   ImGUI::m_SelectedGameObject;
     float ImGUI::m_Roughness = 0.1f;
     bool  ImGUI::m_UseRoughness = false;
     float ImGUI::m_Metallic = 0.5f;
@@ -37,6 +39,8 @@ namespace LucreApp
 
     void ImGUI::DebugWindow()
     {
+        // selected entity
+        ImGui::SliderInt("Game Object", &m_SelectedGameObject, 0, 17);
         // roughness
         ImGui::Checkbox("use###001", &m_UseRoughness);
         ImGui::SameLine();
@@ -56,5 +60,14 @@ namespace LucreApp
         ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("pt lghts", &m_PointLightIntensity, 0.0f, 10.0f);
+
+        if (m_SelectedGameObject)
+        {
+            ImGuizmo::BeginFrame();
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+
+        }
     }
 }

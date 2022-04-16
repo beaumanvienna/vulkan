@@ -36,6 +36,7 @@ namespace LucreApp
 
     public:
 
+        static int   m_SelectedGameObject;
         static float m_Roughness;
         static bool  m_UseRoughness;
         static float m_Metallic;

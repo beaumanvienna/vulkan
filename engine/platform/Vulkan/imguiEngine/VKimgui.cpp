@@ -27,7 +27,6 @@
 #include "core.h"
 
 #include "imguiEngine/VKimgui.h"
-#include "ImGuizmo.h"
 
 namespace GfxRenderEngine
 {
@@ -117,7 +116,6 @@ namespace GfxRenderEngine
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGuizmo::BeginFrame();
     }
 
     // this tells imgui that we're done setting up the current frame,
