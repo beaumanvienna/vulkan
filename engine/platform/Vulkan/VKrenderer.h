@@ -72,7 +72,7 @@ namespace GfxRenderEngine
         void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
 
-        virtual void BeginScene(Camera* camera, entt::registry& registry) override;
+        virtual void BeginFrame(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry) override;
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void EndScene() override;

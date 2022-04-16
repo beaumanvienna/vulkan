@@ -43,11 +43,11 @@ namespace GfxRenderEngine
         virtual void Submit(entt::registry& registry) = 0;
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) = 0;
 
-        //void BeginScene(std::shared_ptr<OrthographicCamera>& camera, 
+        //void BeginFrame(std::shared_ptr<OrthographicCamera>& camera, 
         //                        std::shared_ptr<ShaderProgram>& shader, 
         //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
         //                        std::shared_ptr<IndexBuffer>& indexBuffer);
-        virtual void BeginScene(Camera* camera, entt::registry& registry) = 0;
+        virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
         void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));

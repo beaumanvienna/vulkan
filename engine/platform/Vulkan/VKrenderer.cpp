@@ -321,7 +321,7 @@ namespace GfxRenderEngine
         vkCmdEndRenderPass(commandBuffer);
     }
 
-    void VK_Renderer::BeginScene(Camera* camera, entt::registry& registry)
+    void VK_Renderer::BeginFrame(Camera* camera, entt::registry& registry)
     {
         m_Camera = camera;
         if (m_CurrentCommandBuffer = BeginFrame())

@@ -74,7 +74,7 @@ namespace GfxRenderEngine
         uint GetNumberOfSprites() const { return m_SpriteTable.size(); }
         uint GetRows() const { return m_Rows; }
         uint GetColumns() const { return m_Columns; }
-        void BeginScene() { m_Texture->Bind(); }
+        void BeginFrame() { m_Texture->Bind(); }
 
     private:
 

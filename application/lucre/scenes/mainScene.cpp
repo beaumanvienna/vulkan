@@ -140,7 +140,7 @@ namespace LucreApp
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
 
         // draw new scene
-        m_Renderer->BeginScene(m_CameraController->GetCamera().get(), m_Registry);
+        m_Renderer->BeginFrame(m_CameraController->GetCamera().get(), m_Registry);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
 
