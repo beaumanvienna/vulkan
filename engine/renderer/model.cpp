@@ -74,6 +74,7 @@ namespace GfxRenderEngine
 
     void Builder::LoadImagesGLTF()
     {
+        m_ImageOffset = VK_Model::m_Images.size();
         // retrieve all images from the glTF file
         for (uint i = 0; i < m_GltfModel.images.size(); i++)
         {
@@ -301,7 +302,7 @@ namespace GfxRenderEngine
 
         if (material.m_Features == Material::HAS_DIFFUSE_MAP)
         {
-            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
             auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
             pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
@@ -311,8 +312,8 @@ namespace GfxRenderEngine
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
-            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            uint normalMapIndex = material.m_NormalMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
             ASSERT(normalMapIndex < VK_Model::m_Images.size());
 
@@ -325,9 +326,9 @@ namespace GfxRenderEngine
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-            uint normalMapIndex            = material.m_NormalMapIndex;
-            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
             ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
             ASSERT(normalMapIndex             < VK_Model::m_Images.size());
             ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
@@ -345,8 +346,8 @@ namespace GfxRenderEngine
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
             ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
             ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
 
@@ -362,9 +363,9 @@ namespace GfxRenderEngine
         }
         else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-            uint normalMapIndex            = material.m_NormalMapIndex;
-            uint roughnessMettalicMapIndex = material.m_RoughnessMettalicMapIndex;
+            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
             ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
             ASSERT(normalMapIndex             < VK_Model::m_Images.size());
             ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
@@ -382,7 +383,7 @@ namespace GfxRenderEngine
         }
         else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
         {
-            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
             auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
             pbrDiffuseComponent.m_Roughness                = material.m_Roughness;

@@ -106,6 +106,7 @@ namespace GfxRenderEngine
         tinygltf::TinyGLTF m_GltfLoader;
         std::vector<Material> m_Materials;
         TransformComponent* m_Transform;
+        uint m_ImageOffset;
 
     };
 
