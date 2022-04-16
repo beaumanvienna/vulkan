@@ -30,7 +30,7 @@
 
 namespace GfxRenderEngine
 {
-    
+
     class Dictionary
     {
 
@@ -44,7 +44,7 @@ namespace GfxRenderEngine
     private:
 
         std::unordered_map<std::string, entt::entity> m_Dictionary;
-        
+
     };
 
 }

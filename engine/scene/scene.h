@@ -47,15 +47,18 @@ namespace GfxRenderEngine
         void SetScaleX(const float scaleX);
         void SetScaleY(const float scaleY);
         void SetScaleZ(const float scaleZ);
+        void AddScale(const glm::vec3& deltaScale);
         void SetRotation(const glm::vec3& rotation);
         void SetRotation(const glm::quat& quaternion);
         void SetRotationX(const float rotationX);
         void SetRotationY(const float rotationY);
         void SetRotationZ(const float rotationZ);
+        void AddRotation(const glm::vec3& deltaRotation);
         void SetTranslation(const glm::vec3& translation);
         void SetTranslationX(const float translationX);
         void SetTranslationY(const float translationY);
         void SetTranslationZ(const float translationZ);
+        void AddTranslation(const glm::vec3& deltaTranslation);
 
         // the getters must be const; only the setters have write access
         const glm::vec3& GetScale() { return m_Scale; }

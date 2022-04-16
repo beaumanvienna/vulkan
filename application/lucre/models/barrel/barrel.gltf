@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "generator" : "Khronos glTF Blender I/O v3.2.26",
         "version" : "2.0"
     },
     "scene" : 0,
@@ -21,6 +21,11 @@
                 0,
                 0,
                 0.7071068286895752
+            ],
+            "scale" : [
+                0.05000000074505806,
+                0.05000000074505806,
+                0.05000000074505806
             ]
         }
     ],
@@ -30,14 +35,14 @@
             "name" : "Default OBJ",
             "normalTexture" : {
                 "index" : 0,
-                "scale" : 0.9
+                "scale" : 0.8999999761581421
             },
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 1
                 },
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.1
+                "roughnessFactor" : 0.10000000149011612
             }
         }
     ],

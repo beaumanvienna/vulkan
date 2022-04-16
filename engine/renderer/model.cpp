@@ -298,7 +298,7 @@ namespace GfxRenderEngine
         }
         ASSERT(materialIndex < m_Materials.size());
         auto& material = m_Materials[materialIndex];
-    
+
         if (material.m_Features == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
@@ -439,12 +439,16 @@ namespace GfxRenderEngine
                 LOG_CORE_WARN("Builder::LoadGLTF: empty scene in {0}", m_Filepath);
                 return;
             }
-
             for (uint i = nodeIndex; i < nodeIndex + scene.nodes.size(); i++)
             {
                 auto meshIndex = m_GltfModel.nodes[i].mesh;
-                if (meshIndex != -1)
+                if ((meshIndex == -1) && (m_GltfModel.meshes.size() == 0))
                 {
+                    LOG_CORE_WARN("No mesh for {0}", m_Filepath);
+                }
+                else
+                {
+                    if (m_GltfModel.meshes.size() == 1) meshIndex = 0;
                     LoadVertexDataGLTF(meshIndex);
                     LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, m_GltfModel.nodes[i].name);
 

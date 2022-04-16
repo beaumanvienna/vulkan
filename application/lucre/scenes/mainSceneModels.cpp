@@ -40,8 +40,36 @@ namespace LucreApp
         if (EngineCore::FileExists("application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf"))
         {
             Builder builder{"application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf"};
-        
+
             builder.LoadGLTF(m_Registry, m_SceneHierarchy, m_Dictionary);
+        }
+        {
+            Builder builder{"application/lucre/models/barrel/barrel.gltf"};
+
+            builder.LoadGLTF(m_Registry, m_SceneHierarchy, m_Dictionary);
+
+            m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::Scene::barrel");
+            auto& transform = m_Registry.get<TransformComponent>(m_Barrel);
+            transform.SetTranslation({0.8f, 0.4f, 0.0f});
+        }
+        {
+            Builder builder{"application/lucre/models/duck/duck.gltf"};
+
+            builder.LoadGLTF(m_Registry, m_SceneHierarchy, m_Dictionary);
+
+            m_Duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+            auto& transform = m_Registry.get<TransformComponent>(m_Duck);
+            transform.SetTranslation({-1.6f, 0.5f, 0.0f});
+        }
+        {
+            Builder builder{"application/lucre/models/duck/goldenDuck.gltf"};
+
+            builder.LoadGLTF(m_Registry, m_SceneHierarchy, m_Dictionary);
+
+            m_GoldenDuck = m_Dictionary.Retrieve("application/lucre/models/duck/goldenDuck.gltf::SceneWithGoldenDuck::goldenDuck");
+            auto& transform = m_Registry.get<TransformComponent>(m_GoldenDuck);
+            transform.SetTranslation({-1.2f, 0.5f, 0.0f});
+            transform.AddRotation({0.0f, glm::pi<float>(), 0.0f});
         }
 
         // --- sprites from the built-in texture atlas ---

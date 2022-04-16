@@ -84,7 +84,7 @@ namespace GfxRenderEngine
     {
         m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
     }
-    
+
     void TransformComponent::SetScale(const glm::vec3& scale)
     {
         m_Scale = scale;
@@ -107,6 +107,11 @@ namespace GfxRenderEngine
     {
         m_Scale.z = scaleZ;
         m_Dirty = true;
+    }
+
+    void TransformComponent::AddScale(const glm::vec3& deltaScale)
+    {
+        SetScale(m_Scale + deltaScale);
     }
 
     void TransformComponent::SetRotation(const glm::vec3& rotation)
@@ -140,6 +145,11 @@ namespace GfxRenderEngine
         m_Dirty = true;
     }
 
+    void TransformComponent::AddRotation(const glm::vec3& deltaRotation)
+    {
+        SetRotation(m_Rotation + deltaRotation);
+    }
+
     void TransformComponent::SetTranslation(const glm::vec3& translation)
     {
         m_Translation = translation;
@@ -163,7 +173,12 @@ namespace GfxRenderEngine
         m_Translation.z = translationZ;
         m_Dirty = true;
     }
-    
+
+    void TransformComponent::AddTranslation(const glm::vec3& deltaTranslation)
+    {
+        SetTranslation(m_Translation + deltaTranslation);
+    }
+
     void TransformComponent::RecalculateMatrices()
     {
         auto scale = glm::scale(glm::mat4(1.0f), m_Scale);
