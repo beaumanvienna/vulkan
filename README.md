@@ -73,3 +73,10 @@ premake5.exe vs2022<br/>
 <br/>
 Open the solution for vulkan, switch to Release, and hit F5<br/>
 <br/>
+<br/>
+
+### Update Instruction<br/>
+<br/>
+To pull in the latest changes for the repository, use:<br/>
+<br/>
+git pull && git submodule update --init --recursive
