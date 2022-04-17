@@ -22,7 +22,12 @@
 
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
+#include "gtc/type_ptr.hpp"
 
+#include "core.h"
+#include "scene/scene.h"
+
+#include "application/lucre/lucre.h"
 #include "application/lucre/UI/imgui.h"
 
 namespace LucreApp
@@ -67,7 +72,22 @@ namespace LucreApp
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
 
+            uint contextWidth  = Engine::m_Engine->GetContextWidth();
+            uint contextHeight = Engine::m_Engine->GetContextHeight();
 
+            ImGuizmo::SetRect(0, 0, contextWidth, contextHeight);
+
+            auto& currentScene = Lucre::m_Application->GetScene();
+            auto& camera = currentScene.GetCamera();
+
+            auto& projectionMatrix = camera.GetProjectionMatrix();
+            auto& viewMatrix = camera.GetViewMatrix();
+
+            auto& transform = currentScene.Registry().get<TransformComponent>((entt::entity)m_SelectedGameObject);
+            glm::mat4 mat4 = transform.GetMat4();
+
+            ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
+                ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, glm::value_ptr(mat4));
         }
     }
 }

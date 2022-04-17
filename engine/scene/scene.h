@@ -32,6 +32,7 @@
 #include "scene/treeNode.h"
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
+#include "renderer/camera.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
 
@@ -173,6 +174,7 @@ namespace GfxRenderEngine
         virtual void Stop() = 0;
         virtual void OnUpdate(const Timestep& timestep) = 0;
         virtual void OnEvent(Event& event) = 0;
+        virtual Camera& GetCamera() = 0;
         virtual void OnResize() = 0;
 
         entt::entity CreateEntity();
@@ -182,6 +184,7 @@ namespace GfxRenderEngine
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
 
         bool IsFinished() const { return !m_IsRunning; }
+        entt::registry& Registry() { return m_Registry; };
 
     protected:
 

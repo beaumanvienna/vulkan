@@ -76,8 +76,8 @@ namespace GfxRenderEngine
         void* GetBackendWindow() const { return m_Window->GetBackendWindow(); }
         float GetWindowScale() const { return m_Window->GetWindowAspectRatio(); }
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
-        float GetContextWidth() const { return m_GraphicsContext->GetContextWidth(); }
-        float GetContextHeight() const { return m_GraphicsContext->GetContextHeight(); }
+        uint GetContextWidth() const { return m_GraphicsContext->GetContextWidth(); }
+        uint GetContextHeight() const { return m_GraphicsContext->GetContextHeight(); }
         float GetWindowWidth() const { return m_Window->GetWidth(); }
         float GetWindowHeight() const { return m_Window->GetHeight(); }
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }

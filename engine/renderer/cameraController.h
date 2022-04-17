@@ -50,7 +50,7 @@ namespace GfxRenderEngine
         void SetTranslation(const glm::vec3& translation);
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
 
-        std::shared_ptr<Camera>& GetCamera() { return m_Camera; }
+        Camera& GetCamera() { return *m_Camera; }
 
     private:
 

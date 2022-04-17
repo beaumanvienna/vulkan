@@ -130,6 +130,7 @@ namespace GfxRenderEngine
 
     void VK_Imgui::Run()
     {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 0.0f)); // Set transparent window background
         ImGui::Begin("Vulkan Engine Debug Window");
 
         auto callback = Imgui::m_Callback;
@@ -142,6 +143,6 @@ namespace GfxRenderEngine
             ImGui::GetIO().Framerate
         );
         ImGui::End();
-
+        ImGui::PopStyleColor();
     }
 }

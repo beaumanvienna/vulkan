@@ -50,8 +50,8 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) override;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) override { m_Renderer->ToggleDebugWindow(callback);}
 
-        virtual float GetContextWidth() const override { return m_Renderer->GetContextWidth(); }
-        virtual float GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
+        virtual uint GetContextWidth() const override { return m_Renderer->GetContextWidth(); }
+        virtual uint GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
 
     private:
 

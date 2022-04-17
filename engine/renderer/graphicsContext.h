@@ -48,8 +48,8 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
 
-        virtual float GetContextWidth() const = 0;
-        virtual float GetContextHeight() const = 0;
+        virtual uint GetContextWidth() const = 0;
+        virtual uint GetContextHeight() const = 0;
 
         static std::shared_ptr<GraphicsContext> Create(void* window, uint refreshRate = 60);
 

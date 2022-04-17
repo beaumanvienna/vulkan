@@ -39,10 +39,13 @@ namespace LucreApp
         void Start() override;
         void Stop() override;
         void OnUpdate(const Timestep& timestep) override;
+        Camera& GetCamera() override { return m_Camera; }
         void OnEvent(Event& event) override;
         void OnResize() override;
 
     private:
+
+        Camera m_Camera;
 
     };
 }
