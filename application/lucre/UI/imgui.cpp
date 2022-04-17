@@ -80,7 +80,7 @@ namespace LucreApp
             auto& currentScene = Lucre::m_Application->GetScene();
             auto& camera = currentScene.GetCamera();
 
-            auto& projectionMatrix = camera.GetProjectionMatrix();
+            auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
             auto& viewMatrix = camera.GetViewMatrix();
 
             auto& transform = currentScene.Registry().get<TransformComponent>((entt::entity)m_SelectedGameObject);

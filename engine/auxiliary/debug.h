@@ -33,9 +33,9 @@ namespace GfxRenderEngine
         static void PrintMat4(const std::string& name, const glm::mat4& matrix)
         {
             std::cout << name << std::endl;
-            for (int column = 0; column < 4; column++)
+            for (int row = 0; row < 4; row++)
             {
-                for (int row = 0; row < 4; row++)
+                for (int column = 0; column < 4; column++)
                 {
                     std::cout << matrix[column][row] << " ";
                 }
