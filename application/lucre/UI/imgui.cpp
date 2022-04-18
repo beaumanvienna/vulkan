@@ -20,9 +20,9 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "vendor/imgui/imgui.h"
-#include "vendor/imGuizmo/ImGuizmo.h"
+
 #include "gtc/type_ptr.hpp"
+#include "gtx/matrix_decompose.hpp"
 
 #include "core.h"
 #include "scene/scene.h"
@@ -41,9 +41,26 @@ namespace LucreApp
     bool  ImGUI::m_UseNormalMapIntensity = false;
     float ImGUI::m_PointLightIntensity = 1.0f;
     bool  ImGUI::m_UsePointLightIntensity = false;
+    bool  ImGUI::m_UseScale = false;
+    bool  ImGUI::m_UseRotate = false;
+    bool  ImGUI::m_UseTranslate = false;
 
     void ImGUI::DebugWindow()
     {
+        ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+        uint contextWidth  = Engine::m_Engine->GetContextWidth();
+        uint contextHeight = Engine::m_Engine->GetContextHeight();
+
+        ImGui::SetWindowPos(ImVec2(0, 0));
+        ImGui::SetWindowSize(ImVec2(contextWidth, contextHeight));
+        // scale/rotate/translate mode
+        ImGui::Checkbox("translate", &m_UseTranslate);
+        ImGui::SameLine();
+        ImGui::Checkbox("rotate", &m_UseRotate);
+        ImGui::SameLine();
+        ImGui::Checkbox("scale", &m_UseScale);
+        ImGui::SameLine();
+
         // selected entity
         ImGui::SliderInt("Game Object", &m_SelectedGameObject, 0, 17);
         // roughness
@@ -66,14 +83,12 @@ namespace LucreApp
         ImGui::SameLine();
         ImGui::SliderFloat("pt lghts", &m_PointLightIntensity, 0.0f, 10.0f);
 
-        if (m_SelectedGameObject)
+        auto guizmoMode = GetGuizmoMode();
+        if (m_SelectedGameObject > 1) // id one is the camera
         {
             ImGuizmo::BeginFrame();
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
-
-            uint contextWidth  = Engine::m_Engine->GetContextWidth();
-            uint contextHeight = Engine::m_Engine->GetContextHeight();
 
             ImGuizmo::SetRect(0, 0, contextWidth, contextHeight);
 
@@ -87,7 +102,43 @@ namespace LucreApp
             glm::mat4 mat4 = transform.GetMat4();
 
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
-                ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, glm::value_ptr(mat4));
+                guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(mat4, scale, rotation, translation, skew, perspective);
+                glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+
+                transform.SetTranslation(translation);
+                transform.SetRotation(rotationEuler);
+                transform.SetScale(scale);
+            }
         }
+    }
+
+    ImGuizmo::OPERATION ImGUI::GetGuizmoMode()
+    {
+        if (!m_UseScale && !m_UseRotate && !m_UseTranslate)
+        {
+            return ImGuizmo::TRANSLATE;
+        }
+        else if (m_UseTranslate)
+        {
+            return ImGuizmo::TRANSLATE;
+        }
+        else if (m_UseRotate)
+        {
+            return ImGuizmo::ROTATE;
+        }
+        else if (m_UseScale)
+        {
+            return ImGuizmo::SCALE;
+        }
+        return ImGuizmo::TRANSLATE;
     }
 }

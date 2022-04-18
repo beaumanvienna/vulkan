@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include "vendor/imgui/imgui.h"
+#include "vendor/imGuizmo/ImGuizmo.h"
+
 #include "engine.h"
 
 namespace LucreApp
@@ -45,5 +48,13 @@ namespace LucreApp
         static bool  m_UseNormalMapIntensity;
         static float m_PointLightIntensity;
         static bool  m_UsePointLightIntensity;
+        static bool  m_UseScale;
+        static bool  m_UseRotate;
+        static bool  m_UseTranslate;
+
+    private:
+
+        static ImGuizmo::OPERATION GetGuizmoMode();
+
     };
 }
