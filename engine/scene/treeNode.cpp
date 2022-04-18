@@ -62,8 +62,8 @@ namespace GfxRenderEngine
 
     TreeNode* TreeNode::AddChild(const TreeNode& node, Dictionary& dictionary)
     {
-        dictionary.Insert(node.GetName(), node.GetGameObject());
-        dictionary.Insert(node.GetLongName(), node.GetGameObject());
+        dictionary.InsertShort(node.GetName(), node.GetGameObject());
+        dictionary.InsertLong(node.GetLongName(), node.GetGameObject());
         m_Children.push_back(node);
         return &m_Children.back();
     }

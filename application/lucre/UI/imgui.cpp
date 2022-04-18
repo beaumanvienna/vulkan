@@ -51,6 +51,11 @@ namespace LucreApp
         uint contextWidth  = Engine::m_Engine->GetContextWidth();
         uint contextHeight = Engine::m_Engine->GetContextHeight();
 
+        auto& currentScene = Lucre::m_Application->GetScene();
+        auto& camera       = currentScene.GetCamera();
+        auto& registry     = currentScene.GetRegistry();
+        auto& dictionary   = currentScene.GetDictionary();
+
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(contextWidth, contextHeight));
         // scale/rotate/translate mode
@@ -62,7 +67,14 @@ namespace LucreApp
         ImGui::SameLine();
 
         // selected entity
-        ImGui::SliderInt("Game Object", &m_SelectedGameObject, 0, 17);
+        std::string gameObjectLabel = "Game Object";
+        if (m_SelectedGameObject > 1)
+        {
+            auto& label = dictionary.GetShortName((entt::entity)m_SelectedGameObject);
+            gameObjectLabel += std::string(" ") + label;
+        }
+
+        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, 17);
         // roughness
         ImGui::Checkbox("use###001", &m_UseRoughness);
         ImGui::SameLine();
@@ -92,13 +104,10 @@ namespace LucreApp
 
             ImGuizmo::SetRect(0, 0, contextWidth, contextHeight);
 
-            auto& currentScene = Lucre::m_Application->GetScene();
-            auto& camera = currentScene.GetCamera();
-
             auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
             auto& viewMatrix = camera.GetViewMatrix();
 
-            auto& transform = currentScene.Registry().get<TransformComponent>((entt::entity)m_SelectedGameObject);
+            auto& transform = registry.get<TransformComponent>((entt::entity)m_SelectedGameObject);
             glm::mat4 mat4 = transform.GetMat4();
 
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),

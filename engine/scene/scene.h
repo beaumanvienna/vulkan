@@ -184,7 +184,8 @@ namespace GfxRenderEngine
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
 
         bool IsFinished() const { return !m_IsRunning; }
-        entt::registry& Registry() { return m_Registry; };
+        entt::registry& GetRegistry() { return m_Registry; };
+        Dictionary& GetDictionary() { return m_Dictionary; };
 
     protected:
 

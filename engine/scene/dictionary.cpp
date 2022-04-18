@@ -26,20 +26,44 @@ namespace GfxRenderEngine
 {
     void Dictionary::Insert(const std::string& key, entt::entity value)
     {
-        m_Dictionary[key] = value;
+        m_DictStr2GameObject[key] = value;
+    }
+
+    void Dictionary::InsertLong(const std::string& key, entt::entity value)
+    {
+        m_GameObject2LongStr[value] = key;
+        Insert(key, value);
+    }
+
+    void Dictionary::InsertShort(const std::string& key, entt::entity value)
+    {
+        m_GameObject2ShortStr[value] = key;
+        Insert(key, value);
     }
 
     entt::entity Dictionary::Retrieve(const std::string& key)
     {
-        return m_Dictionary[key];
+        return m_DictStr2GameObject[key];
     }
 
     void Dictionary::List() const
     {
         LOG_CORE_WARN("listing dictionary:");
-        for (auto& it: m_Dictionary)
+        for (auto& it: m_DictStr2GameObject)
         {
             LOG_CORE_INFO("key: `{0}`, value: `{1}`", it.first, it.second);
         }
+    }
+
+    const std::string& Dictionary::GetShortName(entt::entity gameObject)
+    {
+        ASSERT(m_GameObject2ShortStr.find(gameObject) != m_GameObject2ShortStr.end());
+        return m_GameObject2ShortStr[gameObject];
+    }
+
+    const std::string& Dictionary::GetLongName(entt::entity gameObject)
+    {
+        ASSERT(m_GameObject2LongStr.find(gameObject) != m_GameObject2LongStr.end());
+        return m_GameObject2LongStr[gameObject];
     }
 }

@@ -41,7 +41,7 @@ namespace GfxRenderEngine
         m_Registry.emplace<TransformComponent>(entity, transform);
         m_SceneHierarchy.SetGameObject(entity);
 
-        m_Dictionary.Insert("root", entity);
+        m_Dictionary.InsertShort("root", entity);
     }
 
     Scene::~Scene()

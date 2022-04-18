@@ -36,14 +36,24 @@ namespace GfxRenderEngine
 
     public:
 
-        void Insert(const std::string& key, entt::entity value);
+        void InsertShort(const std::string& key, entt::entity value);
+        void InsertLong(const std::string& key, entt::entity value);
         entt::entity Retrieve(const std::string& key);
-        size_t Size() const { return m_Dictionary.size(); }
+        size_t Size() const { return m_DictStr2GameObject.size(); }
         void List() const;
+
+        const std::string& GetShortName(entt::entity gameObject);
+        const std::string& GetLongName(entt::entity gameObject);
 
     private:
 
-        std::unordered_map<std::string, entt::entity> m_Dictionary;
+        void Insert(const std::string& key, entt::entity value);
+
+    private:
+
+        std::unordered_map<std::string, entt::entity> m_DictStr2GameObject;
+        std::unordered_map<entt::entity, std::string> m_GameObject2ShortStr;
+        std::unordered_map<entt::entity, std::string> m_GameObject2LongStr;
 
     };
 
