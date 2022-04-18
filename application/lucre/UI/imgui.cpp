@@ -93,7 +93,7 @@ namespace LucreApp
         // point light intensity
         ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
         ImGui::SameLine();
-        ImGui::SliderFloat("pt lghts", &m_PointLightIntensity, 0.0f, 10.0f);
+        ImGui::SliderFloat("point lights", &m_PointLightIntensity, 0.0f, 10.0f);
 
         auto guizmoMode = GetGuizmoMode();
         if (m_SelectedGameObject > 1) // id one is the camera
@@ -113,19 +113,42 @@ namespace LucreApp
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
                 guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
 
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(mat4, scale, rotation, translation, skew, perspective);
+            glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+
             if (ImGuizmo::IsUsing())
             {
-                glm::vec3 scale;
-                glm::quat rotation;
-                glm::vec3 translation;
-                glm::vec3 skew;
-                glm::vec4 perspective;
-                glm::decompose(mat4, scale, rotation, translation, skew, perspective);
-                glm::vec3 rotationEuler = glm::eulerAngles(rotation);
-
                 transform.SetTranslation(translation);
                 transform.SetRotation(rotationEuler);
                 transform.SetScale(scale);
+            }
+
+            glm::vec3 actualTranslation   = transform.GetTranslation();
+            glm::vec3 actualRotationEuler = transform.GetRotation() * 180.0f / glm::pi<float>();
+            glm::vec3 actualScale         = transform.GetScale();
+
+            ImGui::InputFloat3("Translation", glm::value_ptr(actualTranslation));
+            ImGui::InputFloat3("Rotation",    glm::value_ptr(actualRotationEuler));
+            ImGui::InputFloat3("Scale",       glm::value_ptr(actualScale));
+
+            if (glm::length(actualTranslation - transform.GetTranslation()) > 0.001f)
+            {
+                transform.SetTranslation(actualTranslation);
+            }
+
+            if (glm::length(actualRotationEuler - (transform.GetRotation() * 180.0f / glm::pi<float>())) > 0.001f)
+            {
+                transform.SetRotation(actualRotationEuler * glm::pi<float>() / 180.0f);
+            }
+
+            if (glm::length(actualScale - transform.GetScale()) > 0.001f)
+            {
+                transform.SetScale(actualScale);
             }
         }
     }
