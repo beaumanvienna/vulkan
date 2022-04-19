@@ -26,6 +26,7 @@
 
 #include "core.h"
 #include "scene/scene.h"
+#include "scene/components.h"
 
 #include "application/lucre/lucre.h"
 #include "application/lucre/UI/imgui.h"

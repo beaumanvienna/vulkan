@@ -27,6 +27,7 @@
 
 #include "engine.h"
 #include "renderer/model.h"
+#include "scene/components.h"
 #include "scene/scene.h"
 
 #include "VKdevice.h"

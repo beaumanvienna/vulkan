@@ -31,6 +31,7 @@
 #include "gui/Common/UI/root.h"
 #include "gui/Common/UI/context.h"
 #include "gui/Common/Input/inputState.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

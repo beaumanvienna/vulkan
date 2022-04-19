@@ -34,6 +34,7 @@
 #include "gui/Common/Render/drawBuffer.h"
 #include "platform/keyCodes.h"
 #include "transform/matrix.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

@@ -23,6 +23,7 @@
 #include "core.h"
 #include "transform/matrix.h"
 #include "transform/transformation.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

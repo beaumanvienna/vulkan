@@ -33,7 +33,7 @@ namespace LucreApp
 
     public:
 
-        SplashScene() {}
+        SplashScene(const std::string& filepath) : Scene(filepath) {}
         ~SplashScene() override {}
 
         void Start() override;
@@ -42,6 +42,9 @@ namespace LucreApp
         Camera& GetCamera() override { return m_Camera; }
         void OnEvent(Event& event) override;
         void OnResize() override;
+
+        void Load() override {}
+        void Save() override {}
 
     private:
 

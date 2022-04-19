@@ -21,9 +21,10 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "scene/scene.h"
+#include "scene/components.h"
+#include "transform/matrix.h"
 #include "platform/input.h"
 #include "renderer/model.h"
-#include "transform/matrix.h"
 
 #include "lucre.h"
 #include "UI/UIControllerIcon.h"

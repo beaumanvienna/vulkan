@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/entity.h"
+#include "scene/components.h"
 #include "scene/particleSystem.h"
 #include "sprite/spriteAnimation.h"
 #include "renderer/texture.h"
@@ -46,7 +47,7 @@ namespace LucreApp
 
     public:
 
-        MainScene();
+        MainScene(const std::string& filepath);
         ~MainScene() override {}
 
         void Start() override;
@@ -55,6 +56,9 @@ namespace LucreApp
         Camera& GetCamera() override { return m_CameraController->GetCamera(); }
         void OnEvent(Event& event) override;
         void OnResize() override;
+
+        void Load() override;
+        void Save() override {}
 
     private:
 

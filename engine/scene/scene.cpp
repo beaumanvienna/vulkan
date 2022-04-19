@@ -27,13 +27,16 @@
 #include "gtc/quaternion.hpp"
 #include "gtx/quaternion.hpp"
 
+#include "auxiliary/file.h"
+#include "scene/components.h"
 #include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
-    Scene::Scene()
-        : m_IsRunning{false}
+    Scene::Scene(const std::string& filepath)
+        : m_IsRunning{false}, m_Filepath(filepath)
     {
+        m_Name = EngineCore::GetFilenameWithoutExtension(filepath);
         auto entity = m_Registry.create();
         // The root node gets a transform so that each and every node
         // has a transform, however, it should never be used
@@ -50,7 +53,6 @@ namespace GfxRenderEngine
             std::cout << "Scene::~Scene()" << std::endl;
         #endif
     }
-    uint MeshComponent::m_DefaultNameTagCounter = 0;
 
     entt::entity Scene::CreateEntity()
     {
@@ -73,140 +75,4 @@ namespace GfxRenderEngine
         m_Registry.emplace<PointLightComponent>(pointLight, pointLightComponent);
         return pointLight;
     }
-
-    MeshComponent::MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled)
-        : m_Name{name}, m_Model{model}, m_Enabled{enabled}
-    {
-    }
-
-    MeshComponent::MeshComponent(std::shared_ptr<Model> model, bool enabled)
-        : m_Model{model}, m_Enabled{enabled}
-    {
-        m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
-    }
-
-    void TransformComponent::SetScale(const glm::vec3& scale)
-    {
-        m_Scale = scale;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetScaleX(const float scaleX)
-    {
-        m_Scale.x = scaleX;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetScaleY(const float scaleY)
-    {
-        m_Scale.y = scaleY;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetScaleZ(const float scaleZ)
-    {
-        m_Scale.z = scaleZ;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::AddScale(const glm::vec3& deltaScale)
-    {
-        SetScale(m_Scale + deltaScale);
-    }
-
-    void TransformComponent::SetRotation(const glm::vec3& rotation)
-    {
-        m_Rotation = rotation;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetRotation(const glm::quat& quaternion)
-    {
-        glm::vec3 convert = glm::eulerAngles(quaternion);
-        // ZYX - model in Blender
-        SetRotation(glm::vec3{convert.x, convert.y, convert.z});
-    }
-
-    void TransformComponent::SetRotationX(const float rotationX)
-    {
-        m_Rotation.x = rotationX;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetRotationY(const float rotationY)
-    {
-        m_Rotation.y = rotationY;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetRotationZ(const float rotationZ)
-    {
-        m_Rotation.z = rotationZ;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::AddRotation(const glm::vec3& deltaRotation)
-    {
-        SetRotation(m_Rotation + deltaRotation);
-    }
-
-    void TransformComponent::SetTranslation(const glm::vec3& translation)
-    {
-        m_Translation = translation;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetTranslationX(const float translationX)
-    {
-        m_Translation.x = translationX;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetTranslationY(const float translationY)
-    {
-        m_Translation.y = translationY;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::SetTranslationZ(const float translationZ)
-    {
-        m_Translation.z = translationZ;
-        m_Dirty = true;
-    }
-
-    void TransformComponent::AddTranslation(const glm::vec3& deltaTranslation)
-    {
-        SetTranslation(m_Translation + deltaTranslation);
-    }
-
-    void TransformComponent::RecalculateMatrices()
-    {
-        auto scale = glm::scale(glm::mat4(1.0f), m_Scale);
-        auto rotation = glm::toMat4(glm::quat(m_Rotation));
-        auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, m_Translation.y, m_Translation.z});
-
-        m_Mat4 = translation * rotation * scale;
-        m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4)));
-    }
-
-    const glm::mat4& TransformComponent::GetMat4()
-    {
-        if (m_Dirty)
-        {
-            m_Dirty = false;
-            RecalculateMatrices();
-        }
-        return m_Mat4;
-    }
-
-    const glm::mat3& TransformComponent::GetNormalMatrix()
-    {
-        if (m_Dirty)
-        {
-            m_Dirty = false;
-            RecalculateMatrices();
-        }
-        return m_NormalMatrix;
-    }
-
 }

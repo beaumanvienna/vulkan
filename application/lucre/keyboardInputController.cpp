@@ -23,6 +23,7 @@
 #include <limits>
 
 #include "platform/input.h"
+#include "scene/components.h"
 
 #include "keyboardInputController.h"
 

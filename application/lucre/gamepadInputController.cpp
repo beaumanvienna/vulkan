@@ -20,8 +20,10 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "gamepadInputController.h"
 #include "platform/input.h"
+#include "scene/components.h"
+
+#include "gamepadInputController.h"
 
 namespace LucreApp
 {

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <unordered_map>
 #include <vulkan/vulkan.h>
 
@@ -38,136 +39,13 @@
 
 namespace GfxRenderEngine
 {
-    constexpr int MAX_LIGHTS = 10;
-
-    class TransformComponent
-    {
-    public:
-
-        void SetScale(const glm::vec3& scale);
-        void SetScaleX(const float scaleX);
-        void SetScaleY(const float scaleY);
-        void SetScaleZ(const float scaleZ);
-        void AddScale(const glm::vec3& deltaScale);
-        void SetRotation(const glm::vec3& rotation);
-        void SetRotation(const glm::quat& quaternion);
-        void SetRotationX(const float rotationX);
-        void SetRotationY(const float rotationY);
-        void SetRotationZ(const float rotationZ);
-        void AddRotation(const glm::vec3& deltaRotation);
-        void SetTranslation(const glm::vec3& translation);
-        void SetTranslationX(const float translationX);
-        void SetTranslationY(const float translationY);
-        void SetTranslationZ(const float translationZ);
-        void AddTranslation(const glm::vec3& deltaTranslation);
-
-        // the getters must be const; only the setters have write access
-        const glm::vec3& GetScale() { return m_Scale; }
-        const glm::vec3& GetRotation() { return m_Rotation; }
-        const glm::vec3& GetTranslation() { return m_Translation; }
-
-        const glm::mat4& GetMat4();
-        const glm::mat3& GetNormalMatrix();
-
-    private:
-
-        void RecalculateMatrices();
-
-    private:
-
-        bool m_Dirty{true};
-        glm::vec3 m_Scale{1.0f};
-        glm::vec3 m_Rotation{};
-        glm::vec3 m_Translation{};
-        glm::mat4 m_Mat4{};
-        glm::mat3 m_NormalMatrix{};
-
-    };
-
-    class MeshComponent
-    {
-
-    public:
-
-        MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled = true);
-        MeshComponent(std::shared_ptr<Model> model, bool enabled = true);
-
-        std::string m_Name;
-        std::shared_ptr<Model> m_Model;
-        bool m_Enabled;
-
-    private:
-
-        static uint m_DefaultNameTagCounter;
-
-    };
-
-    struct PointLightComponent
-    {
-        float m_LightIntensity{1.0f};
-        float m_Radius{1.0f};
-        glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
-    };
-
-    struct RigidbodyComponent
-    {
-        enum Type
-        { 
-            STATIC,
-            DYNAMIC
-        };
-
-        Type m_Type = Type::STATIC;
-        void* m_Body = nullptr;
-
-    };
-
-    // models without a normal map
-    struct DefaultDiffuseComponent // diffuse map aka albedo map aka color map
-    {
-        float m_Roughness;
-        float m_Metallic;
-    };
-
-    struct PbrNoMapComponent
-    {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_Color;
-    };
-
-    struct PbrDiffuseComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_Roughness;
-        float m_Metallic;
-    };
-
-    struct PbrDiffuseNormalComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_NormalMapIntensity;
-    };
-
-    struct PbrDiffuseRoughnessMetallicComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-    };
-
     class Scene
     {
 
     public:
 
-        Scene();
+        Scene() = delete;
+        Scene(const std::string& filepath);
         virtual ~Scene();
 
         virtual void Start() = 0;
@@ -176,6 +54,9 @@ namespace GfxRenderEngine
         virtual void OnEvent(Event& event) = 0;
         virtual Camera& GetCamera() = 0;
         virtual void OnResize() = 0;
+
+        virtual void Load() = 0;
+        virtual void Save() = 0;
 
         entt::entity CreateEntity();
         void DestroyEntity(entt::entity entity);
@@ -189,6 +70,8 @@ namespace GfxRenderEngine
 
     protected:
 
+        std::string m_Name;
+        std::string m_Filepath;
         entt::registry m_Registry;
         TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
         Dictionary m_Dictionary;

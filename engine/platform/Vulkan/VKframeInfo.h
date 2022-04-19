@@ -25,7 +25,7 @@
 #include <vulkan/vulkan.h>
 
 #include "renderer/camera.h"
-#include "scene/scene.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

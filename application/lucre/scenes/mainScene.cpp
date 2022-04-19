@@ -37,8 +37,8 @@
 namespace LucreApp
 {
 
-    MainScene::MainScene()
-        : m_GamepadInput{}, m_Fire{false},
+    MainScene::MainScene(const std::string& filepath)
+        : Scene(filepath), m_GamepadInput{}, m_Fire{false},
           m_LaunchVolcanoTimer(1500)
     {
     }
@@ -79,6 +79,7 @@ namespace LucreApp
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
+        Load();
         LoadModels();
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
@@ -106,6 +107,11 @@ namespace LucreApp
         );
         m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
+    }
+
+    void MainScene::Load()
+    {
+        
     }
 
     void MainScene::Stop()

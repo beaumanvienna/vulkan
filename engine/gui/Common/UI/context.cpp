@@ -30,6 +30,7 @@
 #include "gui/Common/Render/drawBuffer.h"
 #include "gui/Render/textureAtlas.h"
 #include "renderer/renderCommand.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

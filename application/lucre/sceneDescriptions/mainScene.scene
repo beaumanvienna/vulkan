@@ -1,0 +1,6 @@
+# Lucre scene description file
+---
+ glTF-files:
+   - application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf
+   - application/lucre/models/barrel/barrel.gltf
+   - application/lucre/models/duck/duck.gltf

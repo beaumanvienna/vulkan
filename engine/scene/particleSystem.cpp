@@ -23,6 +23,7 @@
 #include "core.h"
 #include "auxiliary/random.h"
 #include "scene/particleSystem.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {

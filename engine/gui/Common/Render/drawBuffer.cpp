@@ -33,6 +33,7 @@
 #include "gui/Common/Data/Text/wrapText.h"
 #include "gui/Common/Data/Text/utf8.h"
 #include "gui/Common/stringUtils.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
