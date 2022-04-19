@@ -114,7 +114,6 @@ namespace LucreApp
     {
         SceneLoader loader(*this);
         loader.Deserialize();
-        loader.PrintState2Console();
     }
 
     void MainScene::Stop()

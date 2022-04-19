@@ -33,33 +33,19 @@ namespace GfxRenderEngine
 
     public:
 
-        enum State
-        {
-            UNKOWN,
-            DESCRIPTION_FILE_FOUND,
-            DESCRIPTION_FILE_NOT_FOUND,
-            LOAD_SUCCESSFUL,
-            SAVE_SUCCESSFUL,
-            LOAD_FAILED,
-            SAVE_FAILED
-        };
-
-    public:
-
         SceneLoader(Scene& scene);
         ~SceneLoader() {}
-
-        SceneLoader::State GetState() const { return m_State; }
-        void PrintState2Console();
 
         void Deserialize();
         void Serialize();
 
     private:
 
-        YAML::Node m_YAMLNode;
+        void LoadPrefab(const std::string& filepath);
+
+    private:
+
         Scene& m_Scene;
-        SceneLoader::State m_State;
 
     };
 }

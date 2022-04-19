@@ -26,39 +26,95 @@
 namespace GfxRenderEngine
 {
     SceneLoader::SceneLoader(Scene& scene)
-        : m_Scene(scene),
-          m_State(UNKOWN)
+        : m_Scene(scene)
     {
     }
 
     void SceneLoader::Deserialize()
     {
-        m_State = UNKOWN;
+        YAML::Node yamlNode;
         auto& filepath = m_Scene.m_Filepath;
 
         if (EngineCore::FileExists(filepath))
         {
-            m_State = DESCRIPTION_FILE_FOUND;
-            m_YAMLNode = YAML::LoadFile(filepath);
+            LOG_CORE_WARN("Scene loader found {0}", filepath);
+            yamlNode = YAML::LoadFile(filepath);
         }
         else
         {
             LOG_CORE_CRITICAL("Scene loader could not find file {0}", filepath);
-            m_State = DESCRIPTION_FILE_NOT_FOUND;
             return;
         }
 
-        if (m_YAMLNode["glTF-files"])
+
+        if (yamlNode["glTF-files"])
         {
-            const auto& gltfFileList = m_YAMLNode["glTF-files"];
+            const auto& gltfFileList = yamlNode["glTF-files"];
             for (const auto& gltfFile : gltfFileList)
             {
                 if (EngineCore::FileExists(gltfFile.as<std::string>()))
                 {
+                    LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
                     Builder builder{gltfFile.as<std::string>()};
-
                     builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
                 }
+                else
+                {
+                    LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
+                }
+            }
+        }
+
+        if (yamlNode["prefabs"])
+        {
+            const auto& prefabsFileList = yamlNode["prefabs"];
+            for (const auto& prefab : prefabsFileList)
+            {
+                LoadPrefab(prefab.as<std::string>());
+            }
+        }
+
+    }
+
+    void SceneLoader::LoadPrefab(const std::string& filepath)
+    {
+        YAML::Node yamlNode;
+
+        if (EngineCore::FileExists(filepath))
+        {
+            LOG_CORE_WARN("Scene loader found {0}", filepath);
+            yamlNode = YAML::LoadFile(filepath);
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("Scene loader could not find file {0}", filepath);
+            return;
+        }
+
+        if (yamlNode["glTF-files"])
+        {
+            const auto& gltfFileList = yamlNode["glTF-files"];
+            for (const auto& gltfFile : gltfFileList)
+            {
+                if (EngineCore::FileExists(gltfFile.as<std::string>()))
+                {
+                    LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
+                    Builder builder{gltfFile.as<std::string>()};
+                    builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                }
+                else
+                {
+                    LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
+                }
+            }
+        }
+
+        if (yamlNode["prefabs"])
+        {
+            const auto& prefabsFileList = yamlNode["prefabs"];
+            for (const auto& prefab : prefabsFileList)
+            {
+                LoadPrefab(prefab.as<std::string>());
             }
         }
 
@@ -66,33 +122,5 @@ namespace GfxRenderEngine
 
     void SceneLoader::Serialize()
     {
-    }
-
-    void SceneLoader::PrintState2Console()
-    {
-        switch(m_State)
-        {
-            case UNKOWN:
-                LOG_CORE_INFO("Scene loader state is UNKOWN for scene '{0}'", m_Scene.m_Name);
-                break;
-            case DESCRIPTION_FILE_FOUND:
-                LOG_CORE_INFO("Scene loader state is DESCRIPTION_FILE_FOUND for scene '{0}'", m_Scene.m_Name);
-                break;
-            case DESCRIPTION_FILE_NOT_FOUND:
-                LOG_CORE_INFO("Scene loader state is DESCRIPTION_FILE_NOT_FOUND for scene '{0}'", m_Scene.m_Name);
-                break;
-            case LOAD_SUCCESSFUL:
-                LOG_CORE_INFO("Scene loader state is LOAD_SUCCESSFUL for scene '{0}'", m_Scene.m_Name);
-                break;
-            case SAVE_SUCCESSFUL:
-                LOG_CORE_INFO("Scene loader state is SAVE_SUCCESSFUL for scene '{0}'", m_Scene.m_Name);
-                break;
-            case LOAD_FAILED:
-                LOG_CORE_INFO("Scene loader state is LOAD_FAILED for scene '{0}'", m_Scene.m_Name);
-                break;
-            case SAVE_FAILED:
-                LOG_CORE_INFO("Scene loader state is SAVE_FAILED for scene '{0}'", m_Scene.m_Name);
-                break;
-        }
     }
 }
