@@ -77,5 +77,7 @@ namespace GfxRenderEngine
         Dictionary m_Dictionary;
         bool m_IsRunning;
 
+        friend class SceneLoader;
+        
     };
 }

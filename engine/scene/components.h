@@ -116,6 +116,11 @@ namespace GfxRenderEngine
 
     };
 
+    struct ScriptComponent
+    {
+        std::string m_Filepath;
+    };
+
     // models without a normal map
     struct DefaultDiffuseComponent // diffuse map aka albedo map aka color map
     {

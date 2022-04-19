@@ -36,8 +36,6 @@ namespace LucreApp
 {
     void MainScene::LoadModels()
     {
-
-
         // --- sprites from the built-in texture atlas ---
         {
             Builder builder{};

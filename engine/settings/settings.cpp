@@ -26,8 +26,8 @@
    */
 
 #include <fstream>
-#include <filesystem>
 
+#include "auxiliary/file.h"
 #include "settings/settings.h"
 #include "renderer/rendererAPI.h"
 
@@ -80,10 +80,10 @@ namespace GfxRenderEngine
     {
         m_SettingsLoadedFromFile = false;
 
-        if (std::filesystem::exists(filepath))
+        if (EngineCore::FileExists(filepath))
         {
             m_SettingsLoadedFromFile = true;
-            m_YAMLData = YAML::LoadFile(filepath);
+            m_YAMLNode = YAML::LoadFile(filepath);
             ApplySettings();
         }
 
@@ -101,22 +101,22 @@ namespace GfxRenderEngine
         {
             for (const auto& [key, value] : m_Settings)
             {
-                auto entry = m_YAMLData[key];
+                auto entry = m_YAMLNode[key];
                 if (entry)
                 {
                     switch(value.m_Type)
                     {
                         case ElementType::TYPE_INT:
-                            *((int*)value.m_Pointer) = m_YAMLData[key].as<int>();
+                            *((int*)value.m_Pointer) = m_YAMLNode[key].as<int>();
                             break;
                         case ElementType::TYPE_BOOL:
-                            *((bool*)value.m_Pointer) = m_YAMLData[key].as<bool>();
+                            *((bool*)value.m_Pointer) = m_YAMLNode[key].as<bool>();
                             break;
                         case ElementType::TYPE_STRING:
-                            *((std::string*)value.m_Pointer) = m_YAMLData[key].as<std::string>();
+                            *((std::string*)value.m_Pointer) = m_YAMLNode[key].as<std::string>();
                             break;
                         case ElementType::TYPE_RENDERERAPI_API:
-                            *((RendererAPI::API*)value.m_Pointer) = (RendererAPI::API)m_YAMLData[key].as<int>();
+                            *((RendererAPI::API*)value.m_Pointer) = (RendererAPI::API)m_YAMLNode[key].as<int>();
                             break;
                     }
                 }

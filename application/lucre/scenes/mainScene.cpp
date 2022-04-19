@@ -29,6 +29,7 @@
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
+#include "scene/sceneLoader.h"
 #include "auxiliary/math.h"
 
 #include "mainScene.h"
@@ -111,7 +112,9 @@ namespace LucreApp
 
     void MainScene::Load()
     {
-        
+        SceneLoader loader(*this);
+        loader.Deserialize();
+        loader.PrintState2Console();
     }
 
     void MainScene::Stop()

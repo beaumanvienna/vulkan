@@ -18,62 +18,48 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
-#include <iostream>
-#include <map>
-
 #include "engine.h"
+#include "scene/scene.h"
 #include "yaml-cpp/yaml.h"
 
 namespace GfxRenderEngine
 {
-
-    class SettingsManager
+    class SceneLoader
     {
+
     public:
 
-        SettingsManager();
+        enum State
+        {
+            UNKOWN,
+            DESCRIPTION_FILE_FOUND,
+            DESCRIPTION_FILE_NOT_FOUND,
+            LOAD_SUCCESSFUL,
+            SAVE_SUCCESSFUL,
+            LOAD_FAILED,
+            SAVE_FAILED
+        };
 
-        void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
+    public:
 
-        void SaveToFile();
-        void SaveToFile(const std::string& filepath);
+        SceneLoader(Scene& scene);
+        ~SceneLoader() {}
 
-        bool LoadFromFile();
-        bool LoadFromFile(const std::string& filepath);
-        bool SettingsLoadedFromFile() const { return m_SettingsLoadedFromFile; }
+        SceneLoader::State GetState() const { return m_State; }
+        void PrintState2Console();
 
-        void ApplySettings();
-        void PrintSettings() const;
-
-        template <typename T>
-        void PushSetting(std::string key, T* value); 
+        void Deserialize();
+        void Serialize();
 
     private:
 
-        enum class ElementType
-        {
-            TYPE_INT,
-            TYPE_BOOL,
-            TYPE_STRING,
-            TYPE_RENDERERAPI_API
-        };
-
-        struct ListElement
-        {
-            ElementType m_Type;
-            void* m_Pointer;
-        };
-
-    private:
-
-        std::string m_Filepath;
-        bool m_SettingsLoadedFromFile;
         YAML::Node m_YAMLNode;
-        std::map<std::string, ListElement> m_Settings;
+        Scene& m_Scene;
+        SceneLoader::State m_State;
 
     };
 }
