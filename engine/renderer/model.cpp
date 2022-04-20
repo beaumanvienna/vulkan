@@ -478,11 +478,19 @@ namespace GfxRenderEngine
         }
         else
         {
-            CreateGameObject(scene, nodeIndex, registry, dictionary, currentNode);
+            auto newNode = CreateGameObject(scene, nodeIndex, registry, dictionary, currentNode);
+            if (node.children.size())
+            {
+                for (uint childNodeArrayIndex = 0; childNodeArrayIndex < node.children.size(); childNodeArrayIndex++)
+                {
+                    uint childNodeIndex = node.children[childNodeArrayIndex];
+                    ProcessNode(scene, childNodeIndex, registry, dictionary, newNode);
+                }
+            }
         }
     }
 
-    void Builder::CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode)
+    TreeNode* Builder::CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode)
     {
         auto& node = m_GltfModel.nodes[nodeIndex];
         auto& nodeName = node.name;
@@ -497,7 +505,7 @@ namespace GfxRenderEngine
         auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + nodeName;
 
         TreeNode sceneHierarchyNode{entity, nodeName, longName};
-        currentNode->AddChild(sceneHierarchyNode, dictionary);
+        TreeNode* newNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
 
         // mesh
         MeshComponent mesh{nodeName, model};
@@ -511,6 +519,8 @@ namespace GfxRenderEngine
         // material
         auto materialIndex = m_GltfModel.meshes[meshIndex].primitives[0].material;
         AssignMaterial(registry, entity, materialIndex);
+
+        return newNode;
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)
