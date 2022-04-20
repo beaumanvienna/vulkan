@@ -253,9 +253,9 @@ namespace GfxRenderEngine
         CalculateTangents();
     }
 
-    void Builder::LoadTransformationMatrix(TransformComponent& transform, int meshIndex)
+    void Builder::LoadTransformationMatrix(TransformComponent& transform, int nodeIndex)
     {
-        auto& node = m_GltfModel.nodes[meshIndex];
+        auto& node = m_GltfModel.nodes[nodeIndex];
 
         if (node.matrix.size() == 16)
         {
@@ -416,14 +416,12 @@ namespace GfxRenderEngine
         LoadImagesGLTF();
         LoadMaterialsGLTF();
 
-        uint nodeIndex = 0;
-
         for (auto& scene : m_GltfModel.scenes)
         {
             TreeNode* currentNode = &sceneHierarchy;
             if (scene.nodes.size() > 1)
             {
-                //this scene has multiple nodes -> create a bundle node
+                //this scene has multiple nodes -> create a group node
                 auto entity = registry.create();
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
@@ -433,50 +431,86 @@ namespace GfxRenderEngine
             }
             else if (scene.nodes.size() == 1)
             {
-                // scene contains exactly one model
+                auto& name = m_GltfModel.nodes[scene.nodes[0]].name;
             }
             else
             {
                 LOG_CORE_WARN("Builder::LoadGLTF: empty scene in {0}", m_Filepath);
                 return;
             }
-            for (uint i = nodeIndex; i < nodeIndex + scene.nodes.size(); i++)
+
+            for (uint i = 0; i < scene.nodes.size(); i++)
             {
-                auto meshIndex = m_GltfModel.nodes[i].mesh;
-                if ((meshIndex == -1) && (m_GltfModel.meshes.size() == 0))
+                ProcessNode(scene, scene.nodes[i], registry, dictionary, currentNode);
+            }
+        }
+    }
+
+    void Builder::ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode)
+    {
+        auto& node = m_GltfModel.nodes[nodeIndex];
+        auto& nodeName = node.name;
+        auto meshIndex = node.mesh;
+
+        if (meshIndex == -1)
+        {
+            if (node.children.size())
+            {
+                auto entity = registry.create();
+                TransformComponent transform{};
+                LoadTransformationMatrix(transform, nodeIndex);
+                registry.emplace<TransformComponent>(entity, transform);
+                auto shortName = scene.name + std::string("::") + EngineCore::GetFilenameWithoutPath(m_Filepath);
+                auto longName = scene.name + std::string("::") + m_Filepath;
+                TreeNode sceneHierarchyNode{entity, shortName, longName};
+
+                TreeNode* groupNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
+                for (uint childNodeArrayIndex = 0; childNodeArrayIndex < node.children.size(); childNodeArrayIndex++)
                 {
-                    LOG_CORE_WARN("No mesh for {0}", m_Filepath);
-                }
-                else
-                {
-                    if (m_GltfModel.meshes.size() == 1) meshIndex = 0;
-                    LoadVertexDataGLTF(meshIndex);
-                    LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, m_GltfModel.nodes[i].name);
-
-                    auto model = Engine::m_Engine->LoadModel(*this);
-                    auto entity = registry.create();
-
-                    auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + m_GltfModel.nodes[i].name;
-
-                    TreeNode sceneHierarchyNode{entity, m_GltfModel.nodes[i].name, longName};
-                    currentNode->AddChild(sceneHierarchyNode, dictionary);
-
-                    // mesh
-                    MeshComponent mesh{m_GltfModel.nodes[i].name, model};
-                    registry.emplace<MeshComponent>(entity, mesh);
-
-                    // transform
-                    TransformComponent transform{};
-                    LoadTransformationMatrix(transform, meshIndex);
-                    registry.emplace<TransformComponent>(entity, transform);
-
-                    // material
-                    auto materialIndex = m_GltfModel.meshes[meshIndex].primitives[0].material;
-                    AssignMaterial(registry, entity, materialIndex);
+                    uint childNodeIndex = node.children[childNodeArrayIndex];
+                    ProcessNode(scene, childNodeIndex, registry, dictionary, groupNode);
                 }
             }
-            nodeIndex += scene.nodes.size();
+            else
+            {
+                LOG_CORE_WARN("No mesh and no children for node {0} in scene {1}, file {2}", nodeName, scene.name, m_Filepath);
+            }
         }
+        else
+        {
+            CreateGameObject(scene, nodeIndex, registry, dictionary, currentNode);
+        }
+    }
+
+    void Builder::CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode)
+    {
+        auto& node = m_GltfModel.nodes[nodeIndex];
+        auto& nodeName = node.name;
+        uint meshIndex = node.mesh;
+
+        LoadVertexDataGLTF(meshIndex);
+        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
+
+        auto model = Engine::m_Engine->LoadModel(*this);
+        auto entity = registry.create();
+
+        auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + nodeName;
+
+        TreeNode sceneHierarchyNode{entity, nodeName, longName};
+        currentNode->AddChild(sceneHierarchyNode, dictionary);
+
+        // mesh
+        MeshComponent mesh{nodeName, model};
+        registry.emplace<MeshComponent>(entity, mesh);
+
+        // transform
+        TransformComponent transform{};
+        LoadTransformationMatrix(transform, nodeIndex);
+        registry.emplace<TransformComponent>(entity, transform);
+
+        // material
+        auto materialIndex = m_GltfModel.meshes[meshIndex].primitives[0].material;
+        AssignMaterial(registry, entity, materialIndex);
     }
 
     void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)

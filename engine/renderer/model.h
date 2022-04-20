@@ -94,8 +94,10 @@ namespace GfxRenderEngine
         void LoadImagesGLTF();
         void LoadMaterialsGLTF();
         void LoadVertexDataGLTF(uint meshIndex);
-        void LoadTransformationMatrix(TransformComponent& transform, int meshIndex);
+        void LoadTransformationMatrix(TransformComponent& transform, int nodeIndex);
         void AssignMaterial(entt::registry& registry, entt::entity entity, int materialIndex);
+        void ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
+        void CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
         void CalculateTangents();
 
     private:
