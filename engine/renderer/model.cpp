@@ -425,7 +425,10 @@ namespace GfxRenderEngine
                 auto entity = registry.create();
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
-                TreeNode sceneHierarchyNode{entity, EngineCore::GetFilenameWithoutPath(m_Filepath), m_Filepath};
+
+                auto shortName = scene.name + "::root";
+                auto longName = m_Filepath + std::string("::") + scene.name + std::string("::root");
+                TreeNode sceneHierarchyNode{entity, shortName, longName};
 
                 currentNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
             }
@@ -460,8 +463,8 @@ namespace GfxRenderEngine
                 TransformComponent transform{};
                 LoadTransformationMatrix(transform, nodeIndex);
                 registry.emplace<TransformComponent>(entity, transform);
-                auto shortName = scene.name + std::string("::") + EngineCore::GetFilenameWithoutPath(m_Filepath);
-                auto longName = scene.name + std::string("::") + m_Filepath;
+                auto shortName = nodeName;
+                auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + nodeName;
                 TreeNode sceneHierarchyNode{entity, shortName, longName};
 
                 TreeNode* groupNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
