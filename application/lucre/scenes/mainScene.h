@@ -59,6 +59,7 @@ namespace LucreApp
 
         void Load() override;
         void Save() override {}
+        void LoadScripts() override;
 
     private:
 

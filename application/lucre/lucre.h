@@ -55,7 +55,7 @@ namespace LucreApp
 
         void PlaySound(int resourceID);
         UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
-        Scene& GetScene() { return m_GameState.GetScene(); }
+        Scene& GetScene() override { return m_GameState.GetScene(); }
 
     public:
 

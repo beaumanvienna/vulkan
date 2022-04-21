@@ -27,6 +27,7 @@
 #include <chrono>
 
 #include "engine.h"
+#include "application.h"
 #include "events/event.h"
 #include "settings/settings.h"
 #include "coreSettings.h"
@@ -66,6 +67,7 @@ namespace GfxRenderEngine
         void ApplyAppSettings();
         bool IsPaused() const { return m_Paused; }
         bool IsRunning() const { return m_Running; }
+        void RunScripts(std::shared_ptr<GfxRenderEngine::Application> application);
 
         std::string& GetHomeDirectory() { return m_HomeDir; }
         std::string GetConfigFilePath() const { return m_ConfigFilePath; }

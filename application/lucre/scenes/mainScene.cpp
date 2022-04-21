@@ -34,6 +34,7 @@
 
 #include "mainScene.h"
 #include "application/lucre/UI/imgui.h"
+#include "application/lucre/scripts/duck/duckScript.h"
 
 namespace LucreApp
 {
@@ -82,6 +83,7 @@ namespace LucreApp
 
         Load();
         LoadModels();
+        LoadScripts();
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
 
@@ -114,6 +116,14 @@ namespace LucreApp
     {
         SceneLoader loader(*this);
         loader.Deserialize();
+    }
+
+    void MainScene::LoadScripts()
+    {
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+        auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
+        
+        duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
     }
 
     void MainScene::Stop()

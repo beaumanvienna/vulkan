@@ -31,6 +31,7 @@
 #include "events/applicationEvent.h"
 #include "events/mouseEvent.h"
 #include "events/keyEvent.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
@@ -333,5 +334,26 @@ namespace GfxRenderEngine
     std::chrono::time_point<std::chrono::high_resolution_clock> Engine::GetTime() const
     {
         return std::chrono::high_resolution_clock::now();
+    }
+
+    void Engine::RunScripts(std::shared_ptr<GfxRenderEngine::Application> application)
+    {
+        auto& currentScene = application->GetScene();
+        auto& registry = currentScene.GetRegistry();
+
+        auto view = registry.view<ScriptComponent>();
+        for (auto entity : view)
+        {
+            auto& scriptComponent = view.get<ScriptComponent>(entity);
+
+            if (scriptComponent.m_Script)
+            {
+                scriptComponent.m_Script->OnUpdate(m_Timestep);
+            }
+            else
+            {
+                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", (uint)entity, currentScene.GetDictionary().GetLongName(entity));
+            }
+        }
     }
 }

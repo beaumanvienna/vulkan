@@ -3,3 +3,6 @@
 
 glTF-files:
   - application/lucre/models/duck/duck.gltf
+
+script-components:
+  application/lucre/models/duck/duck.gltf::SceneWithDuck::duck: application/lucre/scripts/duck/duck.cpp

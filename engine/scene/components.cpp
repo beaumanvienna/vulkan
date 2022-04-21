@@ -169,4 +169,6 @@ namespace GfxRenderEngine
         return m_NormalMatrix;
     }
 
+    ScriptComponent::ScriptComponent(const std::string& filepath)
+        : m_Filepath(filepath) {}
 }

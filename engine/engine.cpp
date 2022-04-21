@@ -67,6 +67,7 @@ int engine(int argc, char* argv[])
                 {
                     PROFILE_SCOPE("application->OnUpdate()");
                     application->OnUpdate(engine->GetTimestep());
+                    engine->RunScripts(application);
                 }
                 engine->OnRender();
             }

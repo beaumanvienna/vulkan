@@ -22,10 +22,11 @@
 
 #pragma once
 
-#include <iostream>
+#include <string>
 #include <memory>
 
 #include "engine.h"
+#include "scene/nativeScript.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
 
@@ -122,6 +123,9 @@ namespace GfxRenderEngine
     struct ScriptComponent
     {
         std::string m_Filepath;
+        std::shared_ptr<NativeScript> m_Script;
+
+        ScriptComponent(const std::string& filepath);
     };
 
     // models without a normal map
