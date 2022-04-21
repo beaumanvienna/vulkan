@@ -22,10 +22,12 @@
 
 #pragma once
 
+#include <string>
 #include <memory>
 
 #include "engine.h"
 #include "scene/entity.h"
+#include "scene/treeNode.h"
 #include "scene/particleSystem.h"
 #include "renderer/camera.h"
 
@@ -40,8 +42,9 @@ namespace GfxRenderEngine
 
         // a draw call requires a vertex array (with a vertex buffer bound to it), index buffer, and bound shaders
         //void Submit(const std::shared_ptr<VertexArray>& vertexArray);
-        virtual void Submit(entt::registry& registry) = 0;
+        virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) = 0;
+        virtual void SubmitGUI(entt::registry& registry) = 0;
 
         //void BeginFrame(std::shared_ptr<OrthographicCamera>& camera, 
         //                        std::shared_ptr<ShaderProgram>& shader, 

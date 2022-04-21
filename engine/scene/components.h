@@ -55,6 +55,8 @@ namespace GfxRenderEngine
         void SetTranslationZ(const float translationZ);
         void AddTranslation(const glm::vec3& deltaTranslation);
 
+        void SetMat4(const glm::mat4& mat4) { m_Mat4 = mat4; }
+
         // the getters must be const; only the setters have write access
         const glm::vec3& GetScale() { return m_Scale; }
         const glm::vec3& GetRotation() { return m_Rotation; }
@@ -62,6 +64,7 @@ namespace GfxRenderEngine
 
         const glm::mat4& GetMat4();
         const glm::mat3& GetNormalMatrix();
+        const bool GetDirtyFlag() const { return m_Dirty; }
 
     private:
 

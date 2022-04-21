@@ -340,12 +340,42 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Submit(entt::registry& registry)
+    void VK_Renderer::UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag)
+    {
+        entt::entity gameObject = node.GetGameObject();
+        auto& transform = registry.get<TransformComponent>(gameObject);
+        bool dirty = transform.GetDirtyFlag() || parentDirtyFlag;
+        auto& mat4 = transform.GetMat4();
+
+        if (dirty)
+        {
+            glm::mat4 cleanMat4 = parentMat4*mat4;
+            transform.SetMat4(cleanMat4);
+            for (uint index = 0; index < node.Children(); index++)
+            {
+                UpdateTransformCache(registry, node.GetChild(index), cleanMat4, true);
+            }
+        }
+        else
+        {
+            for (uint index = 0; index < node.Children(); index++)
+            {
+                UpdateTransformCache(registry, node.GetChild(index), mat4, false);
+            }
+
+        }
+    }
+
+    void VK_Renderer::Submit(entt::registry& registry, TreeNode& sceneHierarchy)
     {
         if (m_CurrentCommandBuffer)
         {
+            UpdateTransformCache(registry, sceneHierarchy, glm::mat4(1.0f), false);
+
+            // sprites
             m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
 
+            // 3D objects
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
@@ -360,6 +390,14 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
+        }
+    }
+
+    void VK_Renderer::SubmitGUI(entt::registry& registry)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
         }
     }
 

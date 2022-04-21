@@ -73,8 +73,9 @@ namespace GfxRenderEngine
         int GetFrameIndex() const;
 
         virtual void BeginFrame(Camera* camera, entt::registry& registry) override;
-        virtual void Submit(entt::registry& registry) override;
+        virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
+        virtual void SubmitGUI(entt::registry& registry) override;
         virtual void EndScene() override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
@@ -89,6 +90,7 @@ namespace GfxRenderEngine
         void FreeCommandBuffers();
         void RecreateSwapChain();
         void CompileShaders();
+        void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
 
     private:
 
