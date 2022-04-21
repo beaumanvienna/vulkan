@@ -344,10 +344,10 @@ namespace GfxRenderEngine
     {
         entt::entity gameObject = node.GetGameObject();
         auto& transform = registry.get<TransformComponent>(gameObject);
-        bool dirty = transform.GetDirtyFlag() || parentDirtyFlag;
+        bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
         auto& mat4 = transform.GetMat4();
 
-        if (dirty)
+        if (dirtyFlag)
         {
             glm::mat4 cleanMat4 = parentMat4*mat4;
             transform.SetMat4(cleanMat4);
