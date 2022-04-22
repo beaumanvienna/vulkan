@@ -345,10 +345,11 @@ namespace GfxRenderEngine
         entt::entity gameObject = node.GetGameObject();
         auto& transform = registry.get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
-        auto& mat4 = transform.GetMat4();
 
         if (dirtyFlag)
         {
+            transform.SetDirtyFlag();
+            auto& mat4 = transform.GetMat4();
             glm::mat4 cleanMat4 = parentMat4*mat4;
             transform.SetMat4(cleanMat4);
             for (uint index = 0; index < node.Children(); index++)
@@ -358,6 +359,7 @@ namespace GfxRenderEngine
         }
         else
         {
+            auto& mat4 = transform.GetMat4();
             for (uint index = 0; index < node.Children(); index++)
             {
                 UpdateTransformCache(registry, node.GetChild(index), mat4, false);
