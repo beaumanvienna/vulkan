@@ -28,7 +28,7 @@ namespace GfxRenderEngine
 
     VKTextureSlotManager::VKTextureSlotManager()
     {
-        uint maxTextureSlots = 16;
+        uint maxTextureSlots = 1024;
         m_TextureSlots.resize(maxTextureSlots);
         for(auto slot : m_TextureSlots)
         {

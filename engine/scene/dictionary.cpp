@@ -43,7 +43,15 @@ namespace GfxRenderEngine
 
     entt::entity Dictionary::Retrieve(const std::string& key)
     {
-        return m_DictStr2GameObject[key];
+        if (m_DictStr2GameObject.contains(key))
+        {
+            return m_DictStr2GameObject[key];
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("Dictionary::Retrieve, game object '{0}' not found", key);
+            return entt::null;
+        }
     }
 
     void Dictionary::List() const

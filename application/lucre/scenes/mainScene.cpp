@@ -121,11 +121,14 @@ namespace LucreApp
 
     void MainScene::LoadScripts()
     {
-        auto duck                 = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
-        auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
-        
-        duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
-        LOG_APP_INFO("scripts loaded");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+        if (duck != entt::null)
+        {
+            auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
+
+            duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
+            LOG_APP_INFO("scripts loaded");
+        }
     }
 
     void MainScene::StartScripts()

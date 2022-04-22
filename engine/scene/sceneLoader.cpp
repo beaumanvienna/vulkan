@@ -38,7 +38,7 @@ namespace GfxRenderEngine
 
         if (EngineCore::FileExists(filepath))
         {
-            LOG_CORE_WARN("Scene loader found {0}", filepath);
+            LOG_CORE_WARN("Loading scene {0}", filepath);
             yamlNode = YAML::LoadFile(filepath);
         }
         else
