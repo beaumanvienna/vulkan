@@ -43,7 +43,7 @@ namespace GfxRenderEngine
 
     entt::entity Dictionary::Retrieve(const std::string& key)
     {
-        if (m_DictStr2GameObject.contains(key))
+        if (m_DictStr2GameObject.find(key) != m_DictStr2GameObject.end())
         {
             return m_DictStr2GameObject[key];
         }
