@@ -77,7 +77,17 @@ namespace GfxRenderEngine
 
         if (yamlNode["script-components"])
         {
-LOG_CORE_CRITICAL("script-components found in scene");
+            const auto& scriptFileList = yamlNode["script-components"];
+            for(YAML::const_iterator it=scriptFileList.begin();it!=scriptFileList.end();++it)
+            {
+                std::string entityName = it->first.as<std::string>();
+                std::string filepath = it->second.as<std::string>();
+                LOG_CORE_INFO("found script '{0} for entity '{1}' in scene description", filepath, entityName);
+                entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(entityName);
+
+                ScriptComponent scriptComponent(filepath);
+                m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+            }
         }
     }
 
@@ -130,7 +140,7 @@ LOG_CORE_CRITICAL("script-components found in scene");
             {
                 std::string entityName = it->first.as<std::string>();
                 std::string filepath = it->second.as<std::string>();
-                LOG_CORE_INFO("found script '{0} for entity '{1}'", filepath, entityName);
+                LOG_CORE_INFO("found script '{0} for entity '{1}' in prefab", filepath, entityName);
                 entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(entityName);
 
                 ScriptComponent scriptComponent(filepath);
