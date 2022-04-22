@@ -11,7 +11,7 @@ workspace "vulkanRenderEngine"
 
 project "lucre"
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++2a"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
