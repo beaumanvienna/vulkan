@@ -31,7 +31,7 @@
 #include "events/applicationEvent.h"
 #include "events/mouseEvent.h"
 #include "events/keyEvent.h"
-#include "scene/components.h"
+#include "scene/nativeScript.h"
 
 namespace GfxRenderEngine
 {

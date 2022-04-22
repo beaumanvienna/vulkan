@@ -84,6 +84,7 @@ namespace LucreApp
         Load();
         LoadModels();
         LoadScripts();
+        StartScripts();
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
 
@@ -120,10 +121,25 @@ namespace LucreApp
 
     void MainScene::LoadScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+        auto duck                 = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
         auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
         
         duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
+        LOG_APP_INFO("scripts loaded");
+    }
+
+    void MainScene::StartScripts()
+    {
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto& entity : view)
+        {
+            auto& scriptComponent = m_Registry.get<ScriptComponent>(entity);
+            if (scriptComponent.m_Script)
+            {
+                LOG_APP_INFO("starting script {0}", scriptComponent.m_Filepath);
+                scriptComponent.m_Script->Start();
+            }
+        }
     }
 
     void MainScene::Stop()

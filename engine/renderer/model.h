@@ -28,6 +28,7 @@
 
 #include "engine.h"
 #include "scene/treeNode.h"
+#include "scene/components.h"
 #include "scene/dictionary.h"
 #include "renderer/texture.h"
 #include "sprite/sprite.h"
@@ -68,8 +69,6 @@ namespace GfxRenderEngine
         float m_Metallic;
         float m_NormalMapIntensity;
     };
-
-    struct TransformComponent;
 
     class Builder
     {

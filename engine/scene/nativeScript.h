@@ -24,6 +24,7 @@
 
 #include "engine.h"
 #include "scene/scene.h"
+#include "scene/components.h"
 #include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
@@ -34,23 +35,21 @@ namespace GfxRenderEngine
 
     public:
 
-        NativeScript(entt::entity entity, Scene* scene)
-        : m_Registry(scene->GetRegistry()),
-          m_GameObject(entity),
-          m_Scene(scene)
-        {}
+        NativeScript(entt::entity entity, Scene* scene);
         ~NativeScript() {}
 
-        virtual void Start() = 0;
-        virtual void Stop() = 0;
-        virtual void OnUpdate(const Timestep& timestep) = 0;
-        virtual void OnEvent() = 0;
+        virtual void Start() {}
+        virtual void Stop()  {}
+        virtual void OnUpdate(const Timestep& timestep) {}
+        virtual void OnEvent() {}
 
     protected:
 
         Scene* m_Scene;
         entt::entity m_GameObject;
         entt::registry& m_Registry;
+        TransformComponent& m_Transform;
+        const glm::vec3& m_Translation;
 
     };
 }

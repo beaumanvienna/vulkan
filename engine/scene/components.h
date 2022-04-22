@@ -26,7 +26,6 @@
 #include <memory>
 
 #include "engine.h"
-#include "scene/nativeScript.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
 
@@ -120,6 +119,7 @@ namespace GfxRenderEngine
 
     };
 
+    class NativeScript;
     struct ScriptComponent
     {
         std::string m_Filepath;

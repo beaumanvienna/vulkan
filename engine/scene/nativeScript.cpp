@@ -18,40 +18,16 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "scene/nativeScript.h"
 
-#include "lucre.h"
-#include "engine.h"
-#include "scene/scene.h"
-
-namespace LucreApp
+namespace GfxRenderEngine
 {
-    class SplashScene : public Scene
+    NativeScript::NativeScript(entt::entity entity, Scene* scene)
+        : m_Registry(scene->GetRegistry()), m_GameObject(entity), m_Scene(scene),
+          m_Transform(scene->GetRegistry().get<TransformComponent>(entity)),
+          m_Translation(scene->GetRegistry().get<TransformComponent>(entity).GetTranslation())
     {
-
-    public:
-
-        SplashScene(const std::string& filepath) : Scene(filepath) {}
-        ~SplashScene() override {}
-
-        virtual void Start() override;
-        virtual void Stop() override;
-        virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_Camera; }
-        virtual void OnEvent(Event& event) override;
-        virtual void OnResize() override;
-
-        virtual void Load() override {}
-        virtual void Save() override {}
-        virtual void LoadScripts() override {}
-        virtual void StartScripts() override {}
-        
-
-    private:
-
-        Camera m_Camera;
-
-    };
+    }
 }

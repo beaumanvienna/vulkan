@@ -58,6 +58,7 @@ namespace GfxRenderEngine
         virtual void Load() = 0;
         virtual void Save() = 0;
         virtual void LoadScripts() = 0;
+        virtual void StartScripts() = 0;
 
         entt::entity CreateEntity();
         void DestroyEntity(entt::entity entity);

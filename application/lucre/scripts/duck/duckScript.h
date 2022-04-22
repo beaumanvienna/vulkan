@@ -33,13 +33,11 @@ namespace LucreApp
 
     public:
 
-        DuckScript(entt::entity entity, Scene* scene) : NativeScript(entity, scene), m_Health(10), m_BloodThirstiness(10000) {}
+        DuckScript(entt::entity entity, Scene* scene);
         virtual ~DuckScript() {}
 
         virtual void Start() override;
-        virtual void Stop() override;
         virtual void OnUpdate(const Timestep& timestep) override;
-        virtual void OnEvent() override;
 
     private:
 

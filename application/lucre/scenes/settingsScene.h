@@ -36,16 +36,17 @@ namespace LucreApp
         SettingsScene(const std::string& filepath) : Scene(filepath) {}
         ~SettingsScene() override {}
 
-        void Start() override;
-        void Stop() override;
-        void OnUpdate(const Timestep& timestep) override;
-        Camera& GetCamera() override { return m_Camera; }
-        void OnEvent(Event& event) override;
-        void OnResize() override;
+        virtual void Start() override;
+        virtual void Stop() override;
+        virtual void OnUpdate(const Timestep& timestep) override;
+        virtual Camera& GetCamera() override { return m_Camera; }
+        virtual void OnEvent(Event& event) override;
+        virtual void OnResize() override;
 
-        void Load() override {}
-        void Save() override {}
+        virtual void Load() override {}
+        virtual void Save() override {}
         virtual void LoadScripts() override {}
+        virtual void StartScripts() override {}
 
     private:
 
