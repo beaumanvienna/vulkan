@@ -103,5 +103,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
         uint m_IndexCount;
 
+        std::vector<Primitive> m_Primitives{};
+
     };
 }

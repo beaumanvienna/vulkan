@@ -62,6 +62,7 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         m_ImagesInternal = m_Images;
+        m_Primitives = builder.m_Primitives; 
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
     }
@@ -137,28 +138,68 @@ namespace GfxRenderEngine
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
-        if (m_HasIndexBuffer)
+        if (m_Primitives.size())
         {
-            vkCmdDrawIndexed
-            (
-                commandBuffer,      // VkCommandBuffer commandBuffer
-                m_IndexCount,       // uint32_t        indexCount
-                1,                  // uint32_t        instanceCount
-                0,                  // uint32_t        firstIndex
-                0,                  // int32_t         vertexOffset
-                0                   // uint32_t        firstInstance
-            );
+            uint vertexOffset = 0;
+            uint indexOffset = 0;
+
+            for(auto& primitive : m_Primitives)
+            {
+                if(m_HasIndexBuffer)
+                {
+                    vkCmdDrawIndexed
+                    (
+                        commandBuffer,           // VkCommandBuffer commandBuffer
+                        primitive.m_IndexCount,  // uint32_t        indexCount
+                        1,                       // uint32_t        instanceCount
+                        indexOffset,             // uint32_t        firstIndex
+                        vertexOffset,            // int32_t         vertexOffset
+                        0                        // uint32_t        firstInstance
+                    );
+                }
+
+                else
+                {
+                    vkCmdDraw
+                    (
+                        commandBuffer,           // VkCommandBuffer commandBuffer
+                        primitive.m_VertexCount,   // uint32_t        vertexCount
+                        1,                       // uint32_t        instanceCount
+                        0,                       // uint32_t        firstVertex
+                        0                        // uint32_t        firstInstance
+                    );
+                }
+
+                vertexOffset += primitive.m_VertexCount;
+                indexOffset += primitive.m_IndexCount;
+
+            }
         }
         else
         {
-            vkCmdDraw
-            (
-                commandBuffer,      // VkCommandBuffer commandBuffer
-                m_VertexCount,      // uint32_t        vertexCount
-                1,                  // uint32_t        instanceCount
-                0,                  // uint32_t        firstVertex
-                0                   // uint32_t        firstInstance
-            );
+            if (m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    commandBuffer,      // VkCommandBuffer commandBuffer
+                    m_IndexCount,       // uint32_t        indexCount
+                    1,                  // uint32_t        instanceCount
+                    0,                  // uint32_t        firstIndex
+                    0,                  // int32_t         vertexOffset
+                    0                   // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    commandBuffer,      // VkCommandBuffer commandBuffer
+                    m_VertexCount,      // uint32_t        vertexCount
+                    1,                  // uint32_t        instanceCount
+                    0,                  // uint32_t        firstVertex
+                    0                   // uint32_t        firstInstance
+                );
+            }
         }
     }
 

@@ -159,48 +159,52 @@ namespace GfxRenderEngine
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
+        m_Primitives.clear();
 
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
+            uint vertexCount = 0;
+            uint indexCount  = 0;
+
             glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             if (glTFPrimitive.material != -1)
             {
                 ASSERT(glTFPrimitive.material < m_Materials.size());
                 diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
             }
-            uint32_t firstIndex  = 0;
-            uint32_t vertexStart = 0;
-            uint32_t indexCount  = 0;
             // Vertices
             {
-                const float* positionBuffer = nullptr;
-                const float* normalsBuffer = nullptr;
+                const float* positionBuffer  = nullptr;
+                const float* normalsBuffer   = nullptr;
                 const float* texCoordsBuffer = nullptr;
-                size_t vertexCount = 0;
 
                 // Get buffer data for vertex normals
-                if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end()) {
+                if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
+                {
                     const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
                     const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
                     positionBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     vertexCount = accessor.count;
                 }
                 // Get buffer data for vertex normals
-                if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
+                if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end())
+                {
                     const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
                     const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
                     normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
-                if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end()) {
+                if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
+                {
                     const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
                     const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
                     texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
 
                 // Append data to model's vertex buffer
-                for (size_t v = 0; v < vertexCount; v++) {
+                for (size_t v = 0; v < vertexCount; v++)
+                {
                     Vertex vertex{};
                     vertex.m_Amplification      = 1.0f;
                     auto position = glm::make_vec3(&positionBuffer[v * 3]);
@@ -224,21 +228,21 @@ namespace GfxRenderEngine
                 case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
                     const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                     for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index] + vertexStart);
+                        m_Indices.push_back(buf[index]);
                     }
                     break;
                 }
                 case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
                     const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                     for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index] + vertexStart);
+                        m_Indices.push_back(buf[index]);
                     }
                     break;
                 }
                 case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
                     const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                     for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index] + vertexStart);
+                        m_Indices.push_back(buf[index]);
                     }
                     break;
                 }
@@ -247,6 +251,14 @@ namespace GfxRenderEngine
                     return;
                 }
             }
+
+            Primitive primitive;
+            primitive.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
+            primitive.m_VertexCount = vertexCount;
+            primitive.m_IndexCount  = indexCount;
+            primitive.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+
+            m_Primitives.push_back(primitive);
         }
 
         // calculate tangents

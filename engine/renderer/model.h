@@ -52,6 +52,14 @@ namespace GfxRenderEngine
 
     };
 
+    struct Primitive
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+    };
+
     struct Material
     {
         enum Bitfield
@@ -87,6 +95,7 @@ namespace GfxRenderEngine
 
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
+        std::vector<Primitive> m_Primitives{};
 
     private:
 
