@@ -303,7 +303,6 @@ namespace GfxRenderEngine
 
     void Builder::AssignMaterial(const PrimitiveTmp& primitiveTmp, int materialIndex)
     {
-        LOG_CORE_ERROR("Builder::AssignMaterial {0}", materialIndex);
         if (materialIndex == -1)
         {
             PrimitiveNoMap primitiveNoMap{};
