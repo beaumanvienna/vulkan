@@ -159,7 +159,11 @@ namespace GfxRenderEngine
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
-        m_Primitives.clear();
+
+        m_PrimitivesNoMap.clear();
+        m_PrimitivesDiffuseMap.clear();
+        m_PrimitivesDiffuseNormalMap.clear();
+        m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
 
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
@@ -252,13 +256,13 @@ namespace GfxRenderEngine
                 }
             }
 
-            Primitive primitive;
-            primitive.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
-            primitive.m_VertexCount = vertexCount;
-            primitive.m_IndexCount  = indexCount;
-            primitive.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+            PrimitiveTmp primitiveTmp;
+            primitiveTmp.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
+            primitiveTmp.m_VertexCount = vertexCount;
+            primitiveTmp.m_IndexCount  = indexCount;
+            primitiveTmp.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
 
-            m_Primitives.push_back(primitive);
+            AssignMaterial(primitiveTmp, glTFPrimitive.material);
         }
 
         // calculate tangents
@@ -297,16 +301,23 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::AssignMaterial(entt::registry& registry, entt::entity entity, int materialIndex)
+    void Builder::AssignMaterial(const PrimitiveTmp& primitiveTmp, int materialIndex)
     {
+        LOG_CORE_ERROR("Builder::AssignMaterial {0}", materialIndex);
         if (materialIndex == -1)
         {
-            PbrNoMapComponent pbrNoMapComponent{};
-            pbrNoMapComponent.m_Roughness = 0.5;
-            pbrNoMapComponent.m_Metallic  = 0.1;
-            pbrNoMapComponent.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
+            PrimitiveNoMap primitiveNoMap{};
+            primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveNoMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveNoMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveNoMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
+            primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = 0.5f;
+            primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = 0.1f;
+            primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
+
+            m_PrimitivesNoMap.push_back(primitiveNoMap);
+
             return;
         }
         ASSERT(materialIndex < m_Materials.size());
@@ -314,67 +325,80 @@ namespace GfxRenderEngine
 
         if (material.m_Features == Material::HAS_DIFFUSE_MAP)
         {
+            PrimitiveDiffuseMap primitiveDiffuseMap{};
+            primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-            auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
-            pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
-            pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
 
-            registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+            VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial,
+                                          VK_Model::m_Images[diffuseMapIndex]);
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
+
+            m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
+            PrimitiveDiffuseNormalMap primitiveDiffuseNormalMap{};
+            primitiveDiffuseNormalMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseNormalMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseNormalMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseNormalMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
             ASSERT(normalMapIndex < VK_Model::m_Images.size());
 
-            auto pbrDiffuseNormalComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex], VK_Model::m_Images[normalMapIndex]);
-            pbrDiffuseNormalComponent.m_Roughness                = material.m_Roughness;
-            pbrDiffuseNormalComponent.m_Metallic                 = material.m_Metallic;
-            pbrDiffuseNormalComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial,
+                                          VK_Model::m_Images[diffuseMapIndex], 
+                                          VK_Model::m_Images[normalMapIndex]);
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Roughness          = material.m_Roughness;
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Metallic           = material.m_Metallic;
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            registry.emplace<PbrDiffuseNormalComponent>(entity, pbrDiffuseNormalComponent);
+            m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
+            PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
+            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
+
             ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
             ASSERT(normalMapIndex             < VK_Model::m_Images.size());
             ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
 
-            auto pbrDiffuseNormalRoughnessMetallicComponent = 
-                VK_Model::CreateDescriptorSet
-                (
-                    VK_Model::m_Images[diffuseMapIndex], 
-                    VK_Model::m_Images[normalMapIndex], 
-                    VK_Model::m_Images[roughnessMettalicMapIndex]
-                );
-            pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
+                                          VK_Model::m_Images[diffuseMapIndex], 
+                                          VK_Model::m_Images[normalMapIndex], 
+                                          VK_Model::m_Images[roughnessMettalicMapIndex]);
+            primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+            m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
         }
         else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
-            ASSERT(diffuseMapIndex            < VK_Model::m_Images.size());
-            ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
-
-            PbrDiffuseRoughnessMetallicComponent pbrDiffuseRoughnessMetallicComponent{};
-            VK_Model::CreateDescriptorSet
-            (
-                VK_Model::m_Images[diffuseMapIndex],
-                VK_Model::m_Images[roughnessMettalicMapIndex],
-                pbrDiffuseRoughnessMetallicComponent
-            );
-
-            registry.emplace<PbrDiffuseRoughnessMetallicComponent>(entity, pbrDiffuseRoughnessMetallicComponent);
+            LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
         }
         else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
+            PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
+            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
@@ -382,35 +406,45 @@ namespace GfxRenderEngine
             ASSERT(normalMapIndex             < VK_Model::m_Images.size());
             ASSERT(roughnessMettalicMapIndex  < VK_Model::m_Images.size());
 
-            auto pbrDiffuseNormalRoughnessMetallicComponent = 
-                VK_Model::CreateDescriptorSet
-                (
-                    VK_Model::m_Images[diffuseMapIndex], 
-                    VK_Model::m_Images[normalMapIndex], 
-                    VK_Model::m_Images[roughnessMettalicMapIndex]
-                );
-            pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity       = material.m_NormalMapIntensity;
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
+                                          VK_Model::m_Images[diffuseMapIndex], 
+                                          VK_Model::m_Images[normalMapIndex], 
+                                          VK_Model::m_Images[roughnessMettalicMapIndex]);
+            primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            registry.emplace<PbrDiffuseNormalRoughnessMetallicComponent>(entity, pbrDiffuseNormalRoughnessMetallicComponent);
+            m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
         }
         else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
         {
+            PrimitiveDiffuseMap primitiveDiffuseMap{};
+            primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             ASSERT(diffuseMapIndex < VK_Model::m_Images.size());
-            auto pbrDiffuseComponent = VK_Model::CreateDescriptorSet(VK_Model::m_Images[diffuseMapIndex]);
-            pbrDiffuseComponent.m_Roughness                = material.m_Roughness;
-            pbrDiffuseComponent.m_Metallic                 = material.m_Metallic;
 
-            registry.emplace<PbrDiffuseComponent>(entity, pbrDiffuseComponent);
+            VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial,
+                                          VK_Model::m_Images[diffuseMapIndex]);
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
+
+            m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
         }
         else
         {
-            PbrNoMapComponent pbrNoMapComponent{};
-            pbrNoMapComponent.m_Roughness = material.m_Roughness;
-            pbrNoMapComponent.m_Metallic  = material.m_Metallic;
-            pbrNoMapComponent.m_Color     = material.m_DiffuseColor;
+            PrimitiveNoMap primitiveNoMap{};
+            primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveNoMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveNoMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveNoMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            registry.emplace<PbrNoMapComponent>(entity, pbrNoMapComponent);
+            primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = material.m_Roughness;
+            primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = material.m_Metallic;
+            primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
+
+            m_PrimitivesNoMap.push_back(primitiveNoMap);
         }
     }
 
@@ -531,9 +565,27 @@ namespace GfxRenderEngine
         LoadTransformationMatrix(transform, nodeIndex);
         registry.emplace<TransformComponent>(entity, transform);
 
-        // material
-        auto materialIndex = m_GltfModel.meshes[meshIndex].primitives[0].material;
-        AssignMaterial(registry, entity, materialIndex);
+        // material tags
+        if (m_PrimitivesNoMap.size())
+        {
+            PbrNoMapTag pbrNoMapTag{};
+            registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+        }
+        if (m_PrimitivesDiffuseMap.size())
+        {
+            PbrDiffuseTag pbrDiffuseTag{};
+            registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+        }
+        if (m_PrimitivesDiffuseNormalMap.size())
+        {
+            PbrDiffuseNormalTag pbrDiffuseNormalTag;
+            registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
+        }
+        if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
+        {
+            PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
+            registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
+        }
 
         return newNode;
     }
@@ -608,6 +660,19 @@ namespace GfxRenderEngine
 
             }
         }
+
+        PrimitiveNoMap primitiveNoMap{};
+        primitiveNoMap.m_FirstIndex  = 0;
+        primitiveNoMap.m_FirstVertex = 0;
+        primitiveNoMap.m_IndexCount  = m_Indices.size();
+        primitiveNoMap.m_VertexCount = m_Vertices.size();
+
+        primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = 0.5f;
+        primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = 0.1f;
+        primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
+
+        m_PrimitivesNoMap.push_back(primitiveNoMap);
+
         // calculate tangents
         CalculateTangents();
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);

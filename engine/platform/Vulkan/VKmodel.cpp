@@ -24,6 +24,11 @@
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
 
+#include "systems/VKpbrNoMapSys.h"
+#include "systems/VKpbrDiffuseSys.h"
+#include "systems/VKpbrDiffuseNormalSys.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
+
 namespace GfxRenderEngine
 {
 
@@ -62,7 +67,10 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         m_ImagesInternal = m_Images;
-        m_Primitives = builder.m_Primitives; 
+        m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
+        m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
+        m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
+        m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
     }
@@ -138,74 +146,272 @@ namespace GfxRenderEngine
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
-        if (m_Primitives.size())
+        if (m_HasIndexBuffer)
         {
-            uint vertexOffset = 0;
-            uint indexOffset = 0;
-
-            for(auto& primitive : m_Primitives)
-            {
-                if(m_HasIndexBuffer)
-                {
-                    vkCmdDrawIndexed
-                    (
-                        commandBuffer,           // VkCommandBuffer commandBuffer
-                        primitive.m_IndexCount,  // uint32_t        indexCount
-                        1,                       // uint32_t        instanceCount
-                        indexOffset,             // uint32_t        firstIndex
-                        vertexOffset,            // int32_t         vertexOffset
-                        0                        // uint32_t        firstInstance
-                    );
-                }
-
-                else
-                {
-                    vkCmdDraw
-                    (
-                        commandBuffer,           // VkCommandBuffer commandBuffer
-                        primitive.m_VertexCount,   // uint32_t        vertexCount
-                        1,                       // uint32_t        instanceCount
-                        0,                       // uint32_t        firstVertex
-                        0                        // uint32_t        firstInstance
-                    );
-                }
-
-                vertexOffset += primitive.m_VertexCount;
-                indexOffset += primitive.m_IndexCount;
-
-            }
+            vkCmdDrawIndexed
+            (
+                commandBuffer,      // VkCommandBuffer commandBuffer
+                m_IndexCount,       // uint32_t        indexCount
+                1,                  // uint32_t        instanceCount
+                0,                  // uint32_t        firstIndex
+                0,                  // int32_t         vertexOffset
+                0                   // uint32_t        firstInstance
+            );
         }
         else
         {
-            if (m_HasIndexBuffer)
+            vkCmdDraw
+            (
+                commandBuffer,      // VkCommandBuffer commandBuffer
+                m_VertexCount,      // uint32_t        vertexCount
+                1,                  // uint32_t        instanceCount
+                0,                  // uint32_t        firstVertex
+                0                   // uint32_t        firstInstance
+            );
+        }
+    }
+
+    void VK_Model::DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+
+        uint vertexOffset = 0;
+        uint indexOffset  = 0;
+
+        for(auto& primitive : m_PrimitivesNoMap)
+        {
+
+            VK_PushConstantDataPbrNoMap push{};
+
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrNoMapMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrNoMapMaterial.m_Metallic;
+
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrNoMap),
+                &push);
+
+            if(m_HasIndexBuffer)
             {
                 vkCmdDrawIndexed
                 (
-                    commandBuffer,      // VkCommandBuffer commandBuffer
-                    m_IndexCount,       // uint32_t        indexCount
-                    1,                  // uint32_t        instanceCount
-                    0,                  // uint32_t        firstIndex
-                    0,                  // int32_t         vertexOffset
-                    0                   // uint32_t        firstInstance
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    indexOffset,                // uint32_t        firstIndex
+                    vertexOffset,               // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
                 );
             }
             else
             {
                 vkCmdDraw
                 (
-                    commandBuffer,      // VkCommandBuffer commandBuffer
-                    m_VertexCount,      // uint32_t        vertexCount
-                    1,                  // uint32_t        instanceCount
-                    0,                  // uint32_t        firstVertex
-                    0                   // uint32_t        firstInstance
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
                 );
             }
+
+            vertexOffset += primitive.m_VertexCount;
+            indexOffset += primitive.m_IndexCount;
         }
     }
 
-    PbrDiffuseComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap)
+    void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        PbrDiffuseComponent pbrDiffuseComponent{};
+        uint vertexOffset = 0;
+        uint indexOffset  = 0;
+
+        for(auto& primitive : m_PrimitivesDiffuseMap)
+        {
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+            VK_PushConstantDataPbrDiffuse push{};
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseMaterial.m_Metallic;
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrDiffuse),
+                &push);
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    indexOffset,                // uint32_t        firstIndex
+                    vertexOffset,               // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+
+            vertexOffset += primitive.m_VertexCount;
+            indexOffset += primitive.m_IndexCount;
+        }
+    }
+
+    void VK_Model::DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        uint vertexOffset = 0;
+        uint indexOffset  = 0;
+
+        for(auto& primitive : m_PrimitivesDiffuseNormalMap)
+        {
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+            VK_PushConstantDataPbrDiffuseNormal push{};
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseNormalMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseNormalMaterial.m_Metallic;
+            push.m_NormalMatrix[3].z = primitive.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity;
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrDiffuseNormal),
+                &push);
+
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    indexOffset,                // uint32_t        firstIndex
+                    vertexOffset,               // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+
+            vertexOffset += primitive.m_VertexCount;
+            indexOffset += primitive.m_IndexCount;
+        }
+    }
+
+    void VK_Model::DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        uint vertexOffset = 0;
+        uint indexOffset  = 0;
+
+        for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicMap)
+        {
+            VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic push{};
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].z = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity;
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic),
+                &push);
+
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    indexOffset,                // uint32_t        firstIndex
+                    vertexOffset,               // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+
+            vertexOffset += primitive.m_VertexCount;
+            indexOffset += primitive.m_IndexCount;
+        }
+    }
+
+    void VK_Model::CreateDescriptorSet(PbrDiffuseMaterial& pbrDiffuseMaterial,
+                                       const std::shared_ptr<VK_Texture>& colorMap)
+    {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
@@ -220,14 +426,14 @@ namespace GfxRenderEngine
         {
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                 .WriteImage(0, &imageInfo)
-                .Build(pbrDiffuseComponent.m_DescriptorSet[i]);
+                .Build(pbrDiffuseMaterial.m_DescriptorSet[i]);
         }
-        return pbrDiffuseComponent;
     }
 
-    PbrDiffuseNormalComponent VK_Model::CreateDescriptorSet(const std::shared_ptr<VK_Texture>& colorMap, const std::shared_ptr<VK_Texture>& normalMap)
+    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
+                                       const std::shared_ptr<VK_Texture>& colorMap,
+                                       const std::shared_ptr<VK_Texture>& normalMap)
     {
-        PbrDiffuseNormalComponent pbrDiffuseNormalComponent{};
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -254,18 +460,15 @@ namespace GfxRenderEngine
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                 .WriteImage(0, &imageInfo0)
                 .WriteImage(1, &imageInfo1)
-                .Build(pbrDiffuseNormalComponent.m_DescriptorSet[i]);
+                .Build(pbrDiffuseNormalMaterial.m_DescriptorSet[i]);
         }
-        return pbrDiffuseNormalComponent;
     }
 
-    PbrDiffuseNormalRoughnessMetallicComponent VK_Model::CreateDescriptorSet
-    (
-        const std::shared_ptr<VK_Texture>& colorMap,
-        const std::shared_ptr<VK_Texture>& normalMap, 
-        const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
+    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
+                                       const std::shared_ptr<VK_Texture>& colorMap,
+                                       const std::shared_ptr<VK_Texture>& normalMap, 
+                                       const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
     {
-        PbrDiffuseNormalRoughnessMetallicComponent pbrDiffuseNormalRoughnessMetallicComponent{};
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -302,45 +505,7 @@ namespace GfxRenderEngine
                 .WriteImage(0, &imageInfo0)
                 .WriteImage(1, &imageInfo1)
                 .WriteImage(2, &imageInfo2)
-                .Build(pbrDiffuseNormalRoughnessMetallicComponent.m_DescriptorSet[i]);
-        }
-        return pbrDiffuseNormalRoughnessMetallicComponent;
-    }
-
-
-    void VK_Model::CreateDescriptorSet
-    (
-        const std::shared_ptr<VK_Texture>& colorMap,
-        const std::shared_ptr<VK_Texture>& roughnessMetallicMap,
-        PbrDiffuseRoughnessMetallicComponent& pbrDiffuseRoughnessMetallicComponent)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        VkDescriptorImageInfo imageInfo0 {};
-        {
-            auto texture = colorMap.get();
-            imageInfo0.sampler     = texture->m_Sampler;
-            imageInfo0.imageView   = texture->m_TextureView;
-            imageInfo0.imageLayout = texture->m_ImageLayout;
-        }
-
-        VkDescriptorImageInfo imageInfo1 {};
-        {
-            auto texture = roughnessMetallicMap.get();
-            imageInfo1.sampler     = texture->m_Sampler;
-            imageInfo1.imageView   = texture->m_TextureView;
-            imageInfo1.imageLayout = texture->m_ImageLayout;
-        }
-
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, &imageInfo0)
-                .WriteImage(1, &imageInfo1)
-                .Build(pbrDiffuseRoughnessMetallicComponent.m_DescriptorSet[i]);
+                .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet[i]);
         }
     }
 }

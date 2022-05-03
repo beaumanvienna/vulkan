@@ -27,6 +27,7 @@
 #include "tinygltf/tiny_gltf.h"
 
 #include "engine.h"
+#include "scene/material.h"
 #include "scene/treeNode.h"
 #include "scene/components.h"
 #include "scene/dictionary.h"
@@ -52,14 +53,6 @@ namespace GfxRenderEngine
 
     };
 
-    struct Primitive
-    {
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-    };
-
     struct Material
     {
         enum Bitfield
@@ -76,6 +69,50 @@ namespace GfxRenderEngine
         float m_Roughness;
         float m_Metallic;
         float m_NormalMapIntensity;
+    };
+
+    struct PrimitiveTmp
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+    };
+
+    struct PrimitiveNoMap
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrNoMapMaterial m_PbrNoMapMaterial{};
+    };
+
+    struct PrimitiveDiffuseMap
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrDiffuseMaterial m_PbrDiffuseMaterial;
+    };
+
+    struct PrimitiveDiffuseNormalMap
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrDiffuseNormalMaterial m_PbrDiffuseNormalMaterial;
+    };
+
+    struct PrimitiveDiffuseNormalRoughnessMetallicMap
+    {
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrDiffuseNormalRoughnessMetallicMaterial m_PbrDiffuseNormalRoughnessMetallicMaterial;
     };
 
     class Builder
@@ -95,7 +132,10 @@ namespace GfxRenderEngine
 
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<Primitive> m_Primitives{};
+        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+        std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
+        std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
 
     private:
 
@@ -103,7 +143,7 @@ namespace GfxRenderEngine
         void LoadMaterialsGLTF();
         void LoadVertexDataGLTF(uint meshIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int nodeIndex);
-        void AssignMaterial(entt::registry& registry, entt::entity entity, int materialIndex);
+        void AssignMaterial(const PrimitiveTmp& primitiveTmp, int materialIndex);
         void ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
         TreeNode* CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
         void CalculateTangents();

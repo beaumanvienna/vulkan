@@ -128,10 +128,8 @@ namespace LucreApp
             transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), glm::half_pi<float>()});
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
 
-            PbrNoMapComponent pbrNoMapComponent{};
-            pbrNoMapComponent.m_Roughness = 0.2;
-            pbrNoMapComponent.m_Metallic  = 0.0;
-            m_Registry.emplace<PbrNoMapComponent>(m_Ground, pbrNoMapComponent);
+            PbrNoMapTag pbrNoMapTag{};
+            m_Registry.emplace<PbrNoMapTag>(m_Ground, pbrNoMapTag);
         }
         {
             Builder builder{};
@@ -147,10 +145,8 @@ namespace LucreApp
             transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
             m_Registry.emplace<TransformComponent>(m_Vase0, transform);
 
-            PbrNoMapComponent pbrNoMapComponent{};
-            pbrNoMapComponent.m_Roughness = 0.3;
-            pbrNoMapComponent.m_Metallic  = 0.0;
-            m_Registry.emplace<PbrNoMapComponent>(m_Vase0, pbrNoMapComponent);
+            PbrNoMapTag pbrNoMapTag{};
+            m_Registry.emplace<PbrNoMapTag>(m_Vase0, pbrNoMapTag);
         }
         {
             Builder builder{};
@@ -166,10 +162,8 @@ namespace LucreApp
             transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
             m_Registry.emplace<TransformComponent>(m_Vase1, transform);
 
-            PbrNoMapComponent pbrNoMapComponent{};
-            pbrNoMapComponent.m_Roughness = 0.08;
-            pbrNoMapComponent.m_Metallic  = 0.5;
-            m_Registry.emplace<PbrNoMapComponent>(m_Vase1, pbrNoMapComponent);
+            PbrNoMapTag pbrNoMapTag{};
+            m_Registry.emplace<PbrNoMapTag>(m_Vase1, pbrNoMapTag);
         }
 
         {
@@ -199,10 +193,8 @@ namespace LucreApp
 
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
 
-                PbrNoMapComponent pbrNoMapComponent{};
-                pbrNoMapComponent.m_Roughness = 0.1;
-                pbrNoMapComponent.m_Metallic  = 0.2;
-                m_Registry.emplace<PbrNoMapComponent>(m_Banana[i], pbrNoMapComponent);
+                PbrNoMapTag pbrNoMapTag{};
+                m_Registry.emplace<PbrNoMapTag>(m_Banana[i], pbrNoMapTag);
 
                 b2BodyDef bodyDef;
                 bodyDef.type = b2_dynamicBody;

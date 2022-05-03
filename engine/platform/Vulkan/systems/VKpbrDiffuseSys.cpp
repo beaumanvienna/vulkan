@@ -82,42 +82,15 @@ namespace GfxRenderEngine
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseTag>();
         for (auto entity : view)
         {
-            auto& pbrDiffuseComponent = view.get<PbrDiffuseComponent>(entity);
-            VkDescriptorSet localDescriptorSet = pbrDiffuseComponent.m_DescriptorSet[frameInfo.m_FrameIndex];
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_PipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataPbrDiffuse push{};
-            push.m_ModelMatrix  = transform.GetMat4();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = pbrDiffuseComponent.m_Roughness;
-            push.m_NormalMatrix[3].y = pbrDiffuseComponent.m_Metallic;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataPbrDiffuse),
-                &push);
-
             auto& mesh = view.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseMap(frameInfo, transform, m_PipelineLayout);
             }
         }
     }

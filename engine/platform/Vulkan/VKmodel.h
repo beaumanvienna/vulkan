@@ -27,12 +27,13 @@
 
 #include "engine.h"
 #include "renderer/model.h"
-#include "scene/components.h"
+#include "scene/material.h"
 #include "scene/scene.h"
 
 #include "VKdevice.h"
 #include "VKbuffer.h"
 #include "VKswapChain.h"
+#include "VKframeInfo.h"
 #include "VKtexture.h"
 
 namespace GfxRenderEngine
@@ -61,30 +62,32 @@ namespace GfxRenderEngine
         void CreateIndexBuffers(const std::vector<uint>& indices) override;
 
         void Bind(VkCommandBuffer commandBuffer);
+
         void Draw(VkCommandBuffer commandBuffer);
+        void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
 
     public:
 
-        static PbrDiffuseComponent CreateDescriptorSet
+        static void CreateDescriptorSet
         (
+            PbrDiffuseMaterial& pbrDiffuseMaterial,
             const std::shared_ptr<VK_Texture>& colorMap
-        );
-        static PbrDiffuseNormalComponent CreateDescriptorSet
-        (
-            const std::shared_ptr<VK_Texture>& colorMap,
-            const std::shared_ptr<VK_Texture>& normalMap
-        );
-        static PbrDiffuseNormalRoughnessMetallicComponent CreateDescriptorSet
-        (
-            const std::shared_ptr<VK_Texture>& colorMap,
-            const std::shared_ptr<VK_Texture>& normalMap, 
-            const std::shared_ptr<VK_Texture>& roughnessMetallicMap
         );
         static void CreateDescriptorSet
         (
+            PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
             const std::shared_ptr<VK_Texture>& colorMap,
-            const std::shared_ptr<VK_Texture>& roughnessMetallicMap,
-            PbrDiffuseRoughnessMetallicComponent& pbrDiffuseRoughnessMetallicComponent
+            const std::shared_ptr<VK_Texture>& normalMap
+        );
+        static void CreateDescriptorSet
+        (
+            PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
+            const std::shared_ptr<VK_Texture>& colorMap,
+            const std::shared_ptr<VK_Texture>& normalMap, 
+            const std::shared_ptr<VK_Texture>& roughnessMetallicMap
         );
 
     public:
@@ -103,7 +106,10 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
         uint m_IndexCount;
 
-        std::vector<Primitive> m_Primitives{};
+        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+        std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
+        std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
 
     };
 }

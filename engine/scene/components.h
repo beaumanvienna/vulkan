@@ -136,36 +136,23 @@ namespace GfxRenderEngine
         float m_Metallic;
     };
 
-    struct PbrNoMapComponent
+    struct PbrNoMapTag
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_Color;
+        uint m_Tag;
     };
 
-    struct PbrDiffuseComponent
+    struct PbrDiffuseTag
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_Roughness;
-        float m_Metallic;
+        uint m_Tag;
     };
 
-    struct PbrDiffuseNormalComponent
+    struct PbrDiffuseNormalTag
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
+        uint m_Tag;
     };
 
-    struct PbrDiffuseNormalRoughnessMetallicComponent
+    struct PbrDiffuseNormalRoughnessMetallicTag
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
-        float m_NormalMapIntensity;
-    };
-
-    struct PbrDiffuseRoughnessMetallicComponent
-    {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        uint m_Tag;
     };
 }

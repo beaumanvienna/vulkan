@@ -95,33 +95,17 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapTag>();
         for (auto entity : view)
         {
-            auto& pbrNoMapComponent = view.get<PbrNoMapComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataPbrNoMap push{};
-
-            push.m_ModelMatrix  = transform.GetMat4();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = pbrNoMapComponent.m_Roughness;
-            push.m_NormalMatrix[3].y = pbrNoMapComponent.m_Metallic;
-
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataPbrNoMap),
-                &push);
-
             auto& mesh = view.get<MeshComponent>(entity);
+
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawNoMap(frameInfo, transform, m_PipelineLayout);
             }
         }
     }
-
 }

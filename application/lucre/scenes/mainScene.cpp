@@ -284,73 +284,8 @@ namespace LucreApp
 
     void MainScene::ApplyDebugSettings()
     {
-                if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity || ImGUI::m_UsePointLightIntensity)
+        if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity || ImGUI::m_UsePointLightIntensity)
         {
-            { // PbrNoMapComponent
-                auto view = m_Registry.view<PbrNoMapComponent>();
-                for (auto entity : view)
-                {
-                    auto& pbrNoMapComponent = view.get<PbrNoMapComponent>(entity);
-                    if (ImGUI::m_UseRoughness)
-                    {
-                        pbrNoMapComponent.m_Roughness = ImGUI::m_Roughness;
-                    }
-
-                    if (ImGUI::m_UseMetallic)
-                    {
-                        pbrNoMapComponent.m_Metallic = ImGUI::m_Metallic;
-                    }
-                }
-            }
-            { // PbrDiffuseComponent
-                auto view = m_Registry.view<PbrDiffuseComponent>();
-                for (auto entity : view)
-                {
-                    auto& pbrDiffuseComponent = view.get<PbrDiffuseComponent>(entity);
-                    if (ImGUI::m_UseRoughness)
-                    {
-                        pbrDiffuseComponent.m_Roughness = ImGUI::m_Roughness;
-                    }
-
-                    if (ImGUI::m_UseMetallic)
-                    {
-                        pbrDiffuseComponent.m_Metallic = ImGUI::m_Metallic;
-                    }
-                }
-            }
-            { // PbrDiffuseNormalComponent
-                auto view = m_Registry.view<PbrDiffuseNormalComponent>();
-                for (auto entity : view)
-                {
-                    auto& pbrDiffuseNormalComponent = view.get<PbrDiffuseNormalComponent>(entity);
-                    if (ImGUI::m_UseRoughness)
-                    {
-                        pbrDiffuseNormalComponent.m_Roughness = ImGUI::m_Roughness;
-                    }
-
-                    if (ImGUI::m_UseMetallic)
-                    {
-                        pbrDiffuseNormalComponent.m_Metallic = ImGUI::m_Metallic;
-                    }
-                    if (ImGUI::m_UseNormalMapIntensity)
-                    {
-                        pbrDiffuseNormalComponent.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
-                    }
-                }
-            }
-            { // PbrDiffuseNormalRoughnessMetallicComponent
-                auto view = m_Registry.view<PbrDiffuseNormalRoughnessMetallicComponent>();
-                for (auto entity : view)
-                {
-                    auto& pbrDiffuseNormalRoughnessMetallicComponent = view.get<PbrDiffuseNormalRoughnessMetallicComponent>(entity);
-
-                    if (ImGUI::m_UseNormalMapIntensity)
-                    {
-                        pbrDiffuseNormalRoughnessMetallicComponent.m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
-                    }
-                }
-            }
-
             if (ImGUI::m_UsePointLightIntensity)
             {
                 auto view = m_Registry.view<PointLightComponent>();
