@@ -173,10 +173,6 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-
-        uint vertexOffset = 0;
-        uint indexOffset  = 0;
-
         for(auto& primitive : m_PrimitivesNoMap)
         {
 
@@ -202,8 +198,8 @@ namespace GfxRenderEngine
                     frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
                     primitive.m_IndexCount,     // uint32_t        indexCount
                     1,                          // uint32_t        instanceCount
-                    indexOffset,                // uint32_t        firstIndex
-                    vertexOffset,               // int32_t         vertexOffset
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
                     0                           // uint32_t        firstInstance
                 );
             }
@@ -218,17 +214,11 @@ namespace GfxRenderEngine
                     0                           // uint32_t        firstInstance
                 );
             }
-
-            vertexOffset += primitive.m_VertexCount;
-            indexOffset += primitive.m_IndexCount;
         }
     }
 
     void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        uint vertexOffset = 0;
-        uint indexOffset  = 0;
-
         for(auto& primitive : m_PrimitivesDiffuseMap)
         {
             VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
@@ -263,8 +253,8 @@ namespace GfxRenderEngine
                     frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
                     primitive.m_IndexCount,     // uint32_t        indexCount
                     1,                          // uint32_t        instanceCount
-                    indexOffset,                // uint32_t        firstIndex
-                    vertexOffset,               // int32_t         vertexOffset
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
                     0                           // uint32_t        firstInstance
                 );
             }
@@ -279,17 +269,11 @@ namespace GfxRenderEngine
                     0                           // uint32_t        firstInstance
                 );
             }
-
-            vertexOffset += primitive.m_VertexCount;
-            indexOffset += primitive.m_IndexCount;
         }
     }
 
     void VK_Model::DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        uint vertexOffset = 0;
-        uint indexOffset  = 0;
-
         for(auto& primitive : m_PrimitivesDiffuseNormalMap)
         {
             VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
@@ -326,8 +310,8 @@ namespace GfxRenderEngine
                     frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
                     primitive.m_IndexCount,     // uint32_t        indexCount
                     1,                          // uint32_t        instanceCount
-                    indexOffset,                // uint32_t        firstIndex
-                    vertexOffset,               // int32_t         vertexOffset
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
                     0                           // uint32_t        firstInstance
                 );
             }
@@ -342,17 +326,11 @@ namespace GfxRenderEngine
                     0                           // uint32_t        firstInstance
                 );
             }
-
-            vertexOffset += primitive.m_VertexCount;
-            indexOffset += primitive.m_IndexCount;
         }
     }
 
     void VK_Model::DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        uint vertexOffset = 0;
-        uint indexOffset  = 0;
-
         for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicMap)
         {
             VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic push{};
@@ -387,8 +365,8 @@ namespace GfxRenderEngine
                     frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
                     primitive.m_IndexCount,     // uint32_t        indexCount
                     1,                          // uint32_t        instanceCount
-                    indexOffset,                // uint32_t        firstIndex
-                    vertexOffset,               // int32_t         vertexOffset
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
                     0                           // uint32_t        firstInstance
                 );
             }
@@ -403,9 +381,6 @@ namespace GfxRenderEngine
                     0                           // uint32_t        firstInstance
                 );
             }
-
-            vertexOffset += primitive.m_VertexCount;
-            indexOffset += primitive.m_IndexCount;
         }
     }
 

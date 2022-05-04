@@ -167,6 +167,11 @@ namespace GfxRenderEngine
 
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
+
+            PrimitiveTmp primitiveTmp;
+            primitiveTmp.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
+            primitiveTmp.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+
             uint vertexCount = 0;
             uint indexCount  = 0;
 
@@ -256,11 +261,8 @@ namespace GfxRenderEngine
                 }
             }
 
-            PrimitiveTmp primitiveTmp;
-            primitiveTmp.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
             primitiveTmp.m_VertexCount = vertexCount;
             primitiveTmp.m_IndexCount  = indexCount;
-            primitiveTmp.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
 
             AssignMaterial(primitiveTmp, glTFPrimitive.material);
         }
