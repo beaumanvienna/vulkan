@@ -130,23 +130,31 @@ namespace GfxRenderEngine
             }
             if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
             {
-                material.m_DiffuseMapIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
+                int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
+                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                material.m_DiffuseMapIndex = diffuseTexture.source;
                 material.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
             else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
             {
                 LOG_CORE_WARN("using legacy field values/baseColorTexture");
-                material.m_DiffuseMapIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+                int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                material.m_DiffuseMapIndex = diffuseTexture.source;
                 material.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
             if (glTFMaterial.normalTexture.index != -1)
             {
-                material.m_NormalMapIndex = glTFMaterial.normalTexture.index;
+                int normalTextureIndex = glTFMaterial.normalTexture.index;
+                tinygltf::Texture& normalTexture = m_GltfModel.textures[normalTextureIndex];
+                material.m_NormalMapIndex = normalTexture.source;
                 material.m_Features |= Material::HAS_NORMAL_MAP;
             }
             if (glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
             {
-                material.m_RoughnessMettalicMapIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
+                int mettalicRoughnessTextureIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
+                tinygltf::Texture& mettalicRoughnessTexture = m_GltfModel.textures[mettalicRoughnessTextureIndex];
+                material.m_RoughnessMettalicMapIndex = mettalicRoughnessTexture.source;
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
