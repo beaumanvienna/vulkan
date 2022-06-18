@@ -34,7 +34,7 @@ layout(location = 1)       in  vec3  fragPositionWorld;
 layout(location = 2)       in  vec3  fragNormalWorld;
 layout(location = 3)       in  vec2  fragUV;
 layout(location = 4)       in  float fragAmplification;
-layout(location = 5)  flat in int   fragUnlit;
+layout(location = 5)  flat in int    fragUnlit;
 layout(location = 6)       in  vec3  fragTangentWorld;
 
 layout (location = 0) out vec4 outPosition;

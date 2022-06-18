@@ -37,6 +37,7 @@
 #include "systems/VKpbrDiffuseSys.h"
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
+#include "systems/VKdeferredRendering.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
@@ -101,6 +102,8 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuse>                        m_RenderSystemPbrDiffuse;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                  m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
+
+        std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
 
         std::unique_ptr<VK_RenderSystemDefaultDiffuseMap> m_RenderSystemDefaultDiffuseMap;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;

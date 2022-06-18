@@ -89,6 +89,12 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> deferredRenderingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
+                    .Build();
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
@@ -110,6 +116,12 @@ namespace GfxRenderEngine
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
             diffuseNormalRoughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDeferredRendering =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            deferredRenderingDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -152,6 +164,8 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+        
+        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDeferredRendering);
 
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
@@ -172,7 +186,7 @@ namespace GfxRenderEngine
 
         vkDeviceWaitIdle(m_Device->Device());
 
-        // create the swapchain and pipeline
+        // create the swapchain
         if (m_SwapChain == nullptr)
         {
             m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent);
@@ -375,15 +389,16 @@ namespace GfxRenderEngine
             UpdateTransformCache(registry, sceneHierarchy, glm::mat4(1.0f), false);
 
             // sprites
-            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
-
-            // 3D objects
-            m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
-
-            m_PointLightSystem->Render(m_FrameInfo, registry);
+//            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
+//
+//            // 3D objects
+//            m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
+//            m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
+//            m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
+//            m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
+//
+//            m_PointLightSystem->Render(m_FrameInfo, registry);
+            m_RenderSystemDeferredRendering->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -391,7 +406,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
+            //m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
         }
     }
 
@@ -399,7 +414,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
+            //m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
         }
     }
 
