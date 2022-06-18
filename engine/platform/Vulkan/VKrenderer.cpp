@@ -442,7 +442,11 @@ namespace GfxRenderEngine
             "pbrDiffuseNormal.vert",
             "pbrDiffuseNormal.frag",
             "pbrDiffuseNormalRoughnessMetallic.vert",
-            "pbrDiffuseNormalRoughnessMetallic.frag"
+            "pbrDiffuseNormalRoughnessMetallic.frag",
+            "gBuffer.vert",
+            "gBuffer.frag",
+            "deferredRendering.vert",
+            "deferredRendering.frag"
         };
 
         for (auto& filename : shaderFilenames)
