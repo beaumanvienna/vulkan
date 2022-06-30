@@ -65,7 +65,8 @@ namespace GfxRenderEngine
             VK_DescriptorPool::Builder()
             .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 10)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * (POOL_SIZE - 10))
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 20)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 3)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -95,6 +96,12 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> lightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer position input attachment
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer normal input attachment
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer color input attachment
+                    .Build();
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
@@ -122,6 +129,11 @@ namespace GfxRenderEngine
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
             deferredRenderingDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting =
+        {
+            lightingDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -164,8 +176,35 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
+            imageInfoGBufferPositionInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferPosition(i);
+            imageInfoGBufferPositionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferNormalInputAttachment {};
+            imageInfoGBufferNormalInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferNormal(i);
+            imageInfoGBufferNormalInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferColorInputAttachment {};
+            imageInfoGBufferColorInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferColor(i);
+            imageInfoGBufferColorInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VK_DescriptorWriter(*lightingDescriptorSetLayout, *m_DescriptorPool)
+                .WriteImage(0, &imageInfoGBufferPositionInputAttachment)
+                .WriteImage(1, &imageInfoGBufferNormalInputAttachment)
+                .WriteImage(2, &imageInfoGBufferColorInputAttachment)
+                .Build(m_LightingDescriptorSets[i]);
+        }
         
-        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDeferredRendering);
+        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
+        (
+            m_SwapChain->GetRenderPass(),
+            descriptorSetLayoutsDeferredRendering,
+            descriptorSetLayoutsLighting,
+            m_LightingDescriptorSets.data()
+        );
 
         m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
@@ -306,9 +345,12 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
-        std::array<VkClearValue, 2> clearValues{};
+        std::array<VkClearValue, VK_SwapChain::NUMBER_OF_ATTACHMENTS> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
+        clearValues[2].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[3].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[4].color = {0.01f, 0.01f, 0.01f, 1.0f};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -407,6 +449,22 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             //m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
+        }
+    }
+
+    void VK_Renderer::LightingPass()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
+        }
+    }
+
+    void VK_Renderer::NextSubpass()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            vkCmdNextSubpass(m_CurrentCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
 

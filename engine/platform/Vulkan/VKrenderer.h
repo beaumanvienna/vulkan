@@ -76,6 +76,8 @@ namespace GfxRenderEngine
         virtual void BeginFrame(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
         virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
+        virtual void NextSubpass() override;
+        virtual void LightingPass() override;
         virtual void SubmitGUI(entt::registry& registry) override;
         virtual void EndScene() override;
 
@@ -121,6 +123,7 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
     };

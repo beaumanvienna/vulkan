@@ -26,8 +26,6 @@
 #version 450
 #define LIGHT_COUNT 10
 
-layout (location = 0) out vec2 outUV;
-
 // this shader is called for one (!) triangle that covers NDC
 // the rest will be clipped
 //gl_VertexIndex 0: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f = -1.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f = -1.000000
@@ -53,6 +51,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 void main() 
 {
-    outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+    vec2 outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
     gl_Position = vec4(outUV * 2.0f - 1.0f, 0.0f, 1.0f);
 }

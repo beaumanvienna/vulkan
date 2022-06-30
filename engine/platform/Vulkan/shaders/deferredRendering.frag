@@ -27,11 +27,9 @@
 #define LIGHT_COUNT 10
 #define AMBIENT 0.9
 
-layout (binding = 1) uniform sampler2D positionMap;
-layout (binding = 2) uniform sampler2D normalMap;
-layout (binding = 3) uniform sampler2D diffuseMap;
-
-layout (location = 0) in vec2 fragUV;
+layout (input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput positionMap;
+layout (input_attachment_index = 1, set = 0, binding = 1) uniform subpassInput normalMap;
+layout (input_attachment_index = 2, set = 0, binding = 0) uniform subpassInput diffuseMap;
 
 layout (location = 0) out vec4 outColor;
 
@@ -57,9 +55,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 void main() 
 {
     // retrieve G buffer data
-    vec3 fragPos = texture(positionMap, fragUV).rgb;
-    vec3 normal = texture(normalMap, fragUV).rgb;
-    vec4 diffuseColor = texture(diffuseMap, fragUV);
+    vec3 fragPos = subpassLoad(positionMap).rgb;
+    vec3 normal = subpassLoad(normalMap).rgb;
+    vec4 diffuseColor = subpassLoad(diffuseMap);
     
     // Ambient part
     vec3 fragcolor  = diffuseColor.rgb * AMBIENT;
@@ -98,5 +96,6 @@ void main()
         //}    
     }        
    
-  outColor = vec4(fragcolor, 1.0);    
+//    outColor = vec4(fragcolor, 1.0);
+outColor = vec4(normal, 1.0);
 }

@@ -48,6 +48,9 @@ namespace GfxRenderEngine
         CreateDepthResources();
         CreateFramebuffers();
         CreateSyncObjects();
+
+        CreateGBufferImages();
+        CreateGBufferViews();
     }
 
     VK_SwapChain::~VK_SwapChain()
@@ -85,24 +88,48 @@ namespace GfxRenderEngine
             vkDestroySemaphore(m_Device->Device(), m_ImageAvailableSemaphores[i], nullptr);
             vkDestroyFence(m_Device->Device(), m_InFlightFences[i], nullptr);
         }
+
+        DestroyGBuffers();
+    }
+
+    void VK_SwapChain::DestroyGBuffers()
+    {
+        for (int i = 0; i < m_GBufferPositionImages.size(); i++)
+        {
+            vkDestroyImageView(m_Device->Device(), m_GBufferPositionViews[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_GBufferPositionImages[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_GBufferPositionImageMemorys[i], nullptr);
+        }
+        for (int i = 0; i < m_GBufferNormalImages.size(); i++)
+        {
+            vkDestroyImageView(m_Device->Device(), m_GBufferNormalViews[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_GBufferNormalImages[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_GBufferNormalImageMemorys[i], nullptr);
+        }
+        for (int i = 0; i < m_GBufferColorImages.size(); i++)
+        {
+            vkDestroyImageView(m_Device->Device(), m_GBufferColorViews[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_GBufferColorImages[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_GBufferColorImageMemorys[i], nullptr);
+        }
     }
 
     VkResult VK_SwapChain::AcquireNextImage(uint *imageIndex)
     {
-    vkWaitForFences(
-        m_Device->Device(),
-        1,
-        &m_InFlightFences[m_CurrentFrame],
-        VK_TRUE,
-        std::numeric_limits<uint64>::max());
+        vkWaitForFences(
+            m_Device->Device(),
+            1,
+            &m_InFlightFences[m_CurrentFrame],
+            VK_TRUE,
+            std::numeric_limits<uint64>::max());
 
-    VkResult result = vkAcquireNextImageKHR(
-        m_Device->Device(),
-        m_SwapChain,
-        std::numeric_limits<uint64>::max(),
-        m_ImageAvailableSemaphores[m_CurrentFrame],  // must be a not signaled semaphore
-        VK_NULL_HANDLE,
-        imageIndex);
+        VkResult result = vkAcquireNextImageKHR(
+            m_Device->Device(),
+            m_SwapChain,
+            std::numeric_limits<uint64>::max(),
+            m_ImageAvailableSemaphores[m_CurrentFrame],  // must be a not signaled semaphore
+            VK_NULL_HANDLE,
+            imageIndex);
 
     return result;
     }
@@ -249,22 +276,168 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_SwapChain::CreateGBufferImages()
+    {
+        VkFormat gBufferPositionFormat = VK_FORMAT_R32G32B32A32_UINT;
+        VkFormat gBufferNormalFormat = VK_FORMAT_R32G32B32A32_UINT;
+        VkFormat gBufferColorFormat = VK_FORMAT_R8G8B8A8_UINT;
+        VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
+
+        m_GBufferPositionImages.resize(ImageCount());
+        m_GBufferPositionImageMemorys.resize(ImageCount());
+        m_GBufferPositionViews.resize(ImageCount());
+
+        for (int i = 0; i < m_GBufferPositionImages.size(); i++)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = m_SwapChainExtent.width;
+            imageInfo.extent.height = m_SwapChainExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = gBufferPositionFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_GBufferPositionImages[i],
+                m_GBufferPositionImageMemorys[i]);
+        }
+
+        for (int i = 0; i < m_GBufferNormalImages.size(); i++)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = m_SwapChainExtent.width;
+            imageInfo.extent.height = m_SwapChainExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = gBufferNormalFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_GBufferNormalImages[i],
+                m_GBufferNormalImageMemorys[i]);
+        }
+
+        for (int i = 0; i < m_GBufferColorImages.size(); i++)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = m_SwapChainExtent.width;
+            imageInfo.extent.height = m_SwapChainExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = gBufferColorFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_GBufferColorImages[i],
+                m_GBufferColorImageMemorys[i]);
+        }
+    }
+
+    void VK_SwapChain::CreateGBufferViews()
+    {
+        m_GBufferPositionViews.resize(m_GBufferPositionImages.size());
+        for (size_t i = 0; i < m_GBufferPositionImages.size(); i++)
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.pNext = nullptr;
+            viewInfo.flags = 0;
+            viewInfo.image = m_GBufferPositionImages[i];
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = VK_FORMAT_R32G32B32A32_UINT;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferPositionViews[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
+        }
+
+        m_GBufferNormalViews.resize(m_GBufferNormalImages.size());
+        for (size_t i = 0; i < m_GBufferNormalImages.size(); i++)
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.pNext = nullptr;
+            viewInfo.flags = 0;
+            viewInfo.image = m_GBufferNormalImages[i];
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = VK_FORMAT_R32G32B32A32_UINT;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferNormalViews[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
+        }
+
+        m_GBufferColorViews.resize(m_GBufferColorImages.size());
+        for (size_t i = 0; i < m_GBufferColorImages.size(); i++)
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.pNext = nullptr;
+            viewInfo.flags = 0;
+            viewInfo.image = m_GBufferColorImages[i];
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = VK_FORMAT_R8G8B8A8_UINT;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferColorViews[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
+        }
+    }
+
     void VK_SwapChain::CreateRenderPass()
     {
-        VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = FindDepthFormat();
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
+        // ATTACHMENT_BACKBUFFER
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = GetSwapChainImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -276,33 +449,151 @@ namespace GfxRenderEngine
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.attachment = ATTACHMENT_BACKBUFFER;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        // ATTACHMENT_DEPTH
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = FindDepthFormat();
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = ATTACHMENT_DEPTH;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        // ATTACHMENT_GBUFFER_POSITION
+        VkAttachmentDescription gBufferPositionAttachment = {};
+        gBufferPositionAttachment.format = VK_FORMAT_R32G32B32A32_UINT;
+        gBufferPositionAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        gBufferPositionAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gBufferPositionAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        gBufferPositionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gBufferPositionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gBufferPositionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        gBufferPositionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferPositionAttachmentRef = {};
+        gBufferPositionAttachmentRef.attachment = ATTACHMENT_GBUFFER_POSITION;
+        gBufferPositionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference gBufferPositionInputAttachmentRef = {};
+        gBufferPositionInputAttachmentRef.attachment = ATTACHMENT_GBUFFER_POSITION;
+        gBufferPositionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // ATTACHMENT_GBUFFER_NORMAL
+        VkAttachmentDescription gBufferNormalAttachment = {};
+        gBufferNormalAttachment.format = VK_FORMAT_R32G32B32A32_UINT;
+        gBufferNormalAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        gBufferNormalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gBufferNormalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        gBufferNormalAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gBufferNormalAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gBufferNormalAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        gBufferNormalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferNormalAttachmentRef = {};
+        gBufferNormalAttachmentRef.attachment = ATTACHMENT_GBUFFER_NORMAL;
+        gBufferNormalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference gBufferNormalInputAttachmentRef = {};
+        gBufferNormalInputAttachmentRef.attachment = ATTACHMENT_GBUFFER_NORMAL;
+        gBufferNormalInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // ATTACHMENT_GBUFFER_COLOR
+        VkAttachmentDescription gBufferColorAttachment = {};
+        gBufferColorAttachment.format = VK_FORMAT_R8G8B8A8_UINT;
+        gBufferColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        gBufferColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gBufferColorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        gBufferColorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gBufferColorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gBufferColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        gBufferColorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferColorAttachmentRef = {};
+        gBufferColorAttachmentRef.attachment = ATTACHMENT_GBUFFER_COLOR;
+        gBufferColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference gBufferColorInputAttachmentRef = {};
+        gBufferColorInputAttachmentRef.attachment = ATTACHMENT_GBUFFER_COLOR;
+        gBufferColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // geometry pass
+        std::array<VkAttachmentReference, 3> gBufferAttachments =
+        {
+            gBufferPositionAttachmentRef,
+            gBufferNormalAttachmentRef,
+            gBufferColorAttachmentRef
+        };
+        VkSubpassDescription subpassGeometry = {};
+        subpassGeometry.flags = 0;
+        subpassGeometry.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassGeometry.inputAttachmentCount = 0;
+        subpassGeometry.pInputAttachments = nullptr;
+        subpassGeometry.colorAttachmentCount = 3;
+        subpassGeometry.pColorAttachments = gBufferAttachments.data();
+        subpassGeometry.pResolveAttachments = nullptr;
+        subpassGeometry.pDepthStencilAttachment = &depthAttachmentRef;
+        subpassGeometry.preserveAttachmentCount = 0;
+        subpassGeometry.pPreserveAttachments = nullptr;
+
+        // lighting pass
+        std::array<VkAttachmentReference, NUMBER_OF_GBUFFER_ATTACHMENTS> inputAttachments = 
+        {
+            gBufferPositionInputAttachmentRef,
+            gBufferNormalInputAttachmentRef,
+            gBufferColorInputAttachmentRef
+        };
+
+        VkSubpassDescription subpassLighting = {};
+        subpassLighting.flags = 0;
+        subpassLighting.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassLighting.inputAttachmentCount = NUMBER_OF_GBUFFER_ATTACHMENTS;
+        subpassLighting.pInputAttachments = inputAttachments.data();
+        subpassLighting.colorAttachmentCount = 1;
+        subpassLighting.pColorAttachments = &colorAttachmentRef;
+        subpassLighting.pResolveAttachments = nullptr;
+        subpassLighting.pDepthStencilAttachment = &depthAttachmentRef;
+        subpassLighting.preserveAttachmentCount = 0;
+        subpassLighting.pPreserveAttachments = nullptr;
 
         VkSubpassDependency dependency = {};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.srcAccessMask = 0;
-        dependency.srcStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.dstSubpass = 0;
-        dependency.dstStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.dstAccessMask =
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        
+        dependency.srcSubpass      = SUBPASS_GEOMETRY; // Index of the render pass being depended upon by dstSubpass
+        dependency.dstSubpass      = SUBPASS_LIGHTING; // The index of the render pass depending on srcSubpass
+        dependency.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
+        dependency.dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage is waiting on the dependency
+        dependency.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
+        dependency.dstAccessMask   = VK_ACCESS_SHADER_READ_BIT; // What access scopes are waiting on the dependency
+        dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
 
-        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+        // render pass
+        std::array<VkAttachmentDescription, NUMBER_OF_ATTACHMENTS> attachments = 
+        {
+            colorAttachment,
+            depthAttachment,
+            gBufferPositionAttachment,
+            gBufferNormalAttachment,
+            gBufferColorAttachment
+        };
+        std::array<VkSubpassDescription, NUMBER_OF_SUBPASSES> subpasses = 
+        {
+            subpassGeometry,
+            subpassLighting
+        };
+
         VkRenderPassCreateInfo m_RenderPassInfo = {};
         m_RenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        m_RenderPassInfo.attachmentCount = static_cast<uint>(attachments.size());
+        m_RenderPassInfo.attachmentCount = NUMBER_OF_ATTACHMENTS;
         m_RenderPassInfo.pAttachments = attachments.data();
-        m_RenderPassInfo.subpassCount = 1;
-        m_RenderPassInfo.pSubpasses = &subpass;
+        m_RenderPassInfo.subpassCount = NUMBER_OF_SUBPASSES;
+        m_RenderPassInfo.pSubpasses = subpasses.data();
         m_RenderPassInfo.dependencyCount = 1;
         m_RenderPassInfo.pDependencies = &dependency;
 
@@ -317,7 +608,14 @@ namespace GfxRenderEngine
         m_SwapChainFramebuffers.resize(ImageCount());
         for (size_t i = 0; i < ImageCount(); i++)
         {
-            std::array<VkImageView, 2> attachments = {m_SwapChainImageViews[i], m_DepthImageViews[i]};
+            std::array<VkImageView, NUMBER_OF_ATTACHMENTS> attachments = 
+            {
+                m_SwapChainImageViews[i],
+                m_DepthImageViews[i],
+                m_GBufferPositionViews[i],
+                m_GBufferNormalViews[i],
+                m_GBufferColorViews[i]
+            };
 
             VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};

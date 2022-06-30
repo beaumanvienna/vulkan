@@ -35,6 +35,26 @@ namespace GfxRenderEngine
     {
 
     public:
+        enum SubPasses
+        {
+            SUBPASS_GEOMETRY = 0,
+            SUBPASS_LIGHTING,
+            NUMBER_OF_SUBPASSES
+        };
+
+        enum RenderTargets
+        {
+            ATTACHMENT_BACKBUFFER = 0,
+            ATTACHMENT_DEPTH,
+            ATTACHMENT_GBUFFER_POSITION,
+            ATTACHMENT_GBUFFER_NORMAL,
+            ATTACHMENT_GBUFFER_COLOR,
+            NUMBER_OF_ATTACHMENTS
+        };
+
+        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = NUMBER_OF_ATTACHMENTS - ATTACHMENT_GBUFFER_POSITION;
+
+    public:
 
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -48,6 +68,9 @@ namespace GfxRenderEngine
         VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
         VkRenderPass GetRenderPass() { return m_RenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
+        VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
+        VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
+        VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
         size_t ImageCount() { return m_SwapChainImages.size(); }
         VkFormat GetSwapChainImageFormat() { return m_SwapChainImageFormat; }
         VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
@@ -73,6 +96,10 @@ namespace GfxRenderEngine
         void CreateFramebuffers();
         void CreateSyncObjects();
 
+        void CreateGBufferImages();
+        void CreateGBufferViews();
+        void DestroyGBuffers();
+
         // Helper functions
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
         VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
@@ -86,10 +113,22 @@ namespace GfxRenderEngine
         VkRenderPass m_RenderPass;
 
         std::vector<VkImage> m_DepthImages;
-        std::vector<VkDeviceMemory> m_DepthImageMemorys;
         std::vector<VkImageView> m_DepthImageViews;
+        std::vector<VkDeviceMemory> m_DepthImageMemorys;
+
         std::vector<VkImage> m_SwapChainImages;
+        std::vector<VkImage> m_GBufferPositionImages;
+        std::vector<VkImage> m_GBufferNormalImages;
+        std::vector<VkImage> m_GBufferColorImages;
+
         std::vector<VkImageView> m_SwapChainImageViews;
+        std::vector<VkImageView> m_GBufferPositionViews;
+        std::vector<VkImageView> m_GBufferNormalViews;
+        std::vector<VkImageView> m_GBufferColorViews;
+
+        std::vector<VkDeviceMemory> m_GBufferPositionImageMemorys;
+        std::vector<VkDeviceMemory> m_GBufferNormalImageMemorys;
+        std::vector<VkDeviceMemory> m_GBufferColorImageMemorys;
 
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_SwapChain> m_OldSwapChain;

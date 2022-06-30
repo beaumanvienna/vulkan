@@ -194,6 +194,10 @@ namespace LucreApp
 
         m_Renderer->Submit(m_Registry, m_SceneHierarchy);
         m_Renderer->Submit(m_VolcanoSmoke);
+
+        m_Renderer->NextSubpass();
+        m_Renderer->LightingPass();
+
         m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->SubmitGUI(SCREEN_ScreenManager::m_Registry);
         m_Renderer->EndScene();

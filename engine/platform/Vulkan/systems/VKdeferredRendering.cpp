@@ -28,31 +28,54 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDeferredRendering::VK_RenderSystemDeferredRendering(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemDeferredRendering::VK_RenderSystemDeferredRendering
+    (
+        VkRenderPass renderPass,
+        std::vector<VkDescriptorSetLayout>& geometryDescriptorSetLayouts,
+        std::vector<VkDescriptorSetLayout>& ligthingDescriptorSetLayouts,
+        const VkDescriptorSet* lightingDescriptorSet)
     {
-        CreatePipelineLayout(descriptorSetLayouts);
+        CreateGeometryPipelineLayout(geometryDescriptorSetLayouts);
+        CreateLightingPipelineLayout(ligthingDescriptorSetLayouts);
+        m_LightingDescriptorSets = lightingDescriptorSet;
         CreatePipeline(renderPass);
     }
 
     VK_RenderSystemDeferredRendering::~VK_RenderSystemDeferredRendering()
     {
-        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_GeometryPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemDeferredRendering::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemDeferredRendering::CreateGeometryPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_PushConstantDataDeferredRendering);
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
-        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        VkPipelineLayoutCreateInfo geometryPipelineLayoutInfo{};
+        geometryPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        geometryPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
+        geometryPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        geometryPipelineLayoutInfo.pushConstantRangeCount = 1;
+        geometryPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &geometryPipelineLayoutInfo, nullptr, &m_GeometryPipelineLayout) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create pipeline layout!");
+        }
+    }
+
+    void VK_RenderSystemDeferredRendering::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    {
+
+        VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
+        lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        lightingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
+        lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        lightingPipelineLayoutInfo.pushConstantRangeCount = 0;
+        lightingPipelineLayoutInfo.pPushConstantRanges = nullptr;
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr, &m_LightingPipelineLayout) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
@@ -60,16 +83,16 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemDeferredRendering::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        ASSERT(m_GeometryPipelineLayout != nullptr);
 
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
-        pipelineConfig.pipelineLayout = m_PipelineLayout;
+        pipelineConfig.pipelineLayout = m_GeometryPipelineLayout;
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
+        m_GeometryPipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
             "bin/gBuffer.vert.spv",
@@ -80,7 +103,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemDeferredRendering::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+        m_GeometryPipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag>();
         for (auto entity : view)
@@ -91,8 +114,34 @@ namespace GfxRenderEngine
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_GeometryPipelineLayout);
             }
         }
+    }
+
+    void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo)
+    {
+        m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
+
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_LightingPipelineLayout,                           // VkPipelineLayout layout
+            0,                                                  // uint32_t         firstSet
+            1,                                                  // uint32_t         descriptorSetCount
+            &m_LightingDescriptorSets[frameInfo.m_FrameIndex],    // VkDescriptorSet* pDescriptorSets
+            0,                                                  // uint32_t         dynamicOffsetCount
+            nullptr                                             // const uint32_t*  pDynamicOffsets
+        );
+
+        vkCmdDraw
+        (
+            frameInfo.m_CommandBuffer,
+            3,      // vertexCount
+            1,      // instanceCount
+            0,      // firstVertex
+            0       // firstInstance
+        );
     }
 }

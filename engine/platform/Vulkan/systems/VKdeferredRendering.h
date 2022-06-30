@@ -49,23 +49,36 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystemDeferredRendering(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        VK_RenderSystemDeferredRendering
+        (
+            VkRenderPass renderPass,
+            std::vector<VkDescriptorSetLayout>& geometryDescriptorSetLayouts,
+            std::vector<VkDescriptorSetLayout>& lighingDescriptorSetLayouts,
+            const VkDescriptorSet* lightingDescriptorSet
+        );
         ~VK_RenderSystemDeferredRendering();
 
         VK_RenderSystemDeferredRendering(const VK_RenderSystemDeferredRendering&) = delete;
         VK_RenderSystemDeferredRendering& operator=(const VK_RenderSystemDeferredRendering&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void LightingPass(const VK_FrameInfo& frameInfo);
 
     private:
 
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreateGeometryPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:
 
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
+        VkPipelineLayout m_GeometryPipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_GeometryPipeline;
+
+        VkPipelineLayout m_LightingPipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_LightingPipeline;
+
+        const VkDescriptorSet* m_LightingDescriptorSets;
 
     };
 }
