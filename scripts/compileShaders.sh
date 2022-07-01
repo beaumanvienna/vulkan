@@ -18,3 +18,9 @@ glslc engine/platform/Vulkan/shaders/pbrDiffuseNormal.frag                  -o b
 
 glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.vert -o bin/pbrDiffuseNormalRoughnessMetallic.vert.spv
 glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag -o bin/pbrDiffuseNormalRoughnessMetallic.frag.spv
+
+glslc engine/platform/Vulkan/shaders/gBuffer.vert                        -o bin/gBuffer.vert.spv
+glslc engine/platform/Vulkan/shaders/gBuffer.frag                        -o bin/gBuffer.frag.spv
+                                                                            
+glslc engine/platform/Vulkan/shaders/deferredRendering.vert                 -o bin/deferredRendering.vert.spv
+glslc engine/platform/Vulkan/shaders/deferredRendering.frag                 -o bin/deferredRendering.frag.spv

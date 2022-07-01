@@ -68,7 +68,8 @@ namespace GfxRenderEngine
 
         void CreateGeometryPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
+        void CreateGeometryPipeline(VkRenderPass renderPass);
+        void CreateLightingPipeline(VkRenderPass renderPass);
 
     private:
 

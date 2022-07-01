@@ -233,6 +233,19 @@ namespace GfxRenderEngine
         configInfo.m_AttributeDescriptions = VK_Model::VK_Vertex::GetAttributeDescriptions();
     }
 
+    void VK_Pipeline::SetColorBlendState(PipelineConfigInfo& configInfo, int attachmentCount, const VkPipelineColorBlendAttachmentState* blendAttachments)
+    {
+        configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
+        configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
+        configInfo.colorBlendInfo.attachmentCount = attachmentCount;
+        configInfo.colorBlendInfo.pAttachments = blendAttachments;
+        configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
+        configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
+        configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
+        configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
+    }
+
     void VK_Pipeline::Bind(VkCommandBuffer commandBuffer)
     {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);

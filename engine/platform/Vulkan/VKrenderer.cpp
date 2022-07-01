@@ -97,9 +97,9 @@ namespace GfxRenderEngine
                     .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> lightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer position input attachment
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer normal input attachment
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_ALL_GRAPHICS) // g buffer color input attachment
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer position input attachment
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer normal input attachment
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer color input attachment
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
@@ -169,13 +169,13 @@ namespace GfxRenderEngine
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        //m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        //m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
-        m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
-        m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
-        m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+        //m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        //m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        //m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        //m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -197,7 +197,7 @@ namespace GfxRenderEngine
                 .WriteImage(2, &imageInfoGBufferColorInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
         }
-        
+
         m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
         (
             m_SwapChain->GetRenderPass(),
@@ -206,7 +206,7 @@ namespace GfxRenderEngine
             m_LightingDescriptorSets.data()
         );
 
-        m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        //m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
     VK_Renderer::~VK_Renderer()
@@ -388,7 +388,7 @@ namespace GfxRenderEngine
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.02f};
-            m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
+            //m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
@@ -480,9 +480,9 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_Imgui->NewFrame();
-            m_Imgui->Run();
-            m_Imgui->Render(m_CurrentCommandBuffer);
+            //m_Imgui->NewFrame();
+            //m_Imgui->Run();
+            //m_Imgui->Render(m_CurrentCommandBuffer);
 
             EndSwapChainRenderPass(m_CurrentCommandBuffer);
             EndFrame();

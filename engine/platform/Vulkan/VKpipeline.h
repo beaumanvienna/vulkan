@@ -72,6 +72,12 @@ namespace GfxRenderEngine
         void Bind(VkCommandBuffer commandBuffer);
 
         static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+        static void SetColorBlendState
+        (
+            PipelineConfigInfo& configInfo,
+            int attachmentCount,
+            const VkPipelineColorBlendAttachmentState* blendAttachments
+        );
 
     private:
 

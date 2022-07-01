@@ -25,6 +25,7 @@
 #include "VKmodel.h"
 
 #include "systems/VKdeferredRendering.h"
+#include "VKswapChain.h"
 
 namespace GfxRenderEngine
 {
@@ -38,7 +39,8 @@ namespace GfxRenderEngine
         CreateGeometryPipelineLayout(geometryDescriptorSetLayouts);
         CreateLightingPipelineLayout(ligthingDescriptorSetLayouts);
         m_LightingDescriptorSets = lightingDescriptorSet;
-        CreatePipeline(renderPass);
+        CreateGeometryPipeline(renderPass);
+        CreateLightingPipeline(renderPass);
     }
 
     VK_RenderSystemDeferredRendering::~VK_RenderSystemDeferredRendering()
@@ -81,7 +83,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemDeferredRendering::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemDeferredRendering::CreateGeometryPipeline(VkRenderPass renderPass)
     {
         ASSERT(m_GeometryPipelineLayout != nullptr);
 
@@ -90,6 +92,18 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_GeometryPipelineLayout;
+        pipelineConfig.subpass = VK_SwapChain::SUBPASS_GEOMETRY;
+        pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
+
+        int attachmentCount = 3; // g buffer position, g buffer normal, g buffer color
+        std::vector<VkPipelineColorBlendAttachmentState> blendAttachments;
+        blendAttachments.resize(attachmentCount);
+        for(int i=0; i<attachmentCount; i++)
+        {
+            blendAttachments[i] = pipelineConfig.colorBlendAttachment;
+        }
+
+        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blendAttachments.data());
 
         // create a pipeline
         m_GeometryPipeline = std::make_unique<VK_Pipeline>
@@ -97,6 +111,27 @@ namespace GfxRenderEngine
             VK_Core::m_Device,
             "bin/gBuffer.vert.spv",
             "bin/gBuffer.frag.spv",
+            pipelineConfig
+        );
+    }
+
+    void VK_RenderSystemDeferredRendering::CreateLightingPipeline(VkRenderPass renderPass)
+    {
+        ASSERT(m_LightingPipelineLayout != nullptr);
+
+        PipelineConfigInfo pipelineConfig{};
+
+        VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+        pipelineConfig.renderPass = renderPass;
+        pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
+        pipelineConfig.subpass = VK_SwapChain::SUBPASS_LIGHTING;
+
+        // create a pipeline
+        m_LightingPipeline = std::make_unique<VK_Pipeline>
+        (
+            VK_Core::m_Device,
+            "bin/deferredRendering.vert.spv",
+            "bin/deferredRendering.frag.spv",
             pipelineConfig
         );
     }

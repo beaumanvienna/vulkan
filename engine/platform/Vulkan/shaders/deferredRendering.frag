@@ -95,7 +95,10 @@ void main()
         //    fragcolor += diff + spec;    
         //}    
     }        
-   
 //    outColor = vec4(fragcolor, 1.0);
-outColor = vec4(normal, 1.0);
+
+//outColor = vec4(0.1, 0.8, 0.2, 1.0);
+//outColor = vec4(fragPos, 1.0);
+//outColor = vec4(normal, 1.0);
+outColor = vec4(diffuseColor);
 }
