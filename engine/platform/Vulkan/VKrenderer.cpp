@@ -65,7 +65,7 @@ namespace GfxRenderEngine
             VK_DescriptorPool::Builder()
             .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 10)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 20)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 900)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 3)
             .Build();
 
