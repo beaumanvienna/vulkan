@@ -27,9 +27,9 @@
 #define LIGHT_COUNT 10
 #define AMBIENT 0.9
 
-layout (input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput positionMap;
-layout (input_attachment_index = 1, set = 0, binding = 1) uniform subpassInput normalMap;
-layout (input_attachment_index = 2, set = 0, binding = 2) uniform subpassInput diffuseMap;
+layout (input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
+layout (input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
+layout (input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput diffuseMap;
 
 layout (location = 0) out vec4 outColor;
 
@@ -70,35 +70,32 @@ void main()
         float dist = length(L);
 
         // Viewer to fragment
-        //vec3 V = ubo..xyz - fragPos;
-        //V = normalize(V);
-        //
-        ////if(dist < ubo.lights[i].radius)
-        //{
-        //    // Light to fragment
-        //    L = normalize(L);
-        //
-        //    // Attenuation
-        //    float atten = ubo.lights[i].radius / (pow(dist, 2.0) + 1.0);
-        //
-        //    // Diffuse part
-        //    vec3 N = normalize(normal);
-        //    float NdotL = max(0.0, dot(N, L));
-        //    vec3 diff = ubo.lights[i].color * diffuseColor.rgb * NdotL * atten;
-        //
-        //    // Specular part
-        //    // Specular map values are stored in alpha of albedo mrt
-        //    vec3 R = reflect(-L, N);
-        //    float NdotR = max(0.0, dot(R, V));
-        //    vec3 spec = ubo.lights[i].color * diffuseColor.a * pow(NdotR, 16.0) * atten;
-        //
-        //    fragcolor += diff + spec;    
-        //}    
-    }        
-//    outColor = vec4(fragcolor, 1.0);
+        vec3 cameraPosWorld = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
+        vec3 V = cameraPosWorld - fragPos;
+        V = normalize(V);
+        
+        //if(dist < ubo.lights[i].radius)
+        {
+            // Light to fragment
+            L = normalize(L);
+        
+            // Attenuation
+            float atten = 1.0;
+        
+            // Diffuse part
+            vec3 N = normalize(normal);
+            float NdotL = max(0.0, dot(N, L));
+            vec3 diff = diffuseColor.rgb * NdotL * atten;
+        
+            // Specular part
+            // Specular map values are stored in alpha of albedo mrt
+            vec3 R = reflect(-L, N);
+            float NdotR = max(0.0, dot(R, V));
+            vec3 spec = vec3(1.0) * diffuseColor.a * pow(NdotR, 16.0) * atten;
 
-//outColor = vec4(0.1, 0.8, 0.2, 1.0);
-//outColor = vec4(fragPos, 1.0);
-//outColor = vec4(normal, 1.0);
-outColor = vec4(diffuseColor);
+            fragcolor += diff + spec;    
+        }    
+    }        
+    outColor = vec4(fragcolor, 1.0);
+
 }

@@ -70,13 +70,17 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemDeferredRendering::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(VK_PushConstantDataDeferredRendering);
 
         VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
         lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         lightingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
         lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        lightingPipelineLayoutInfo.pushConstantRangeCount = 0;
-        lightingPipelineLayoutInfo.pPushConstantRanges = nullptr;
+        lightingPipelineLayoutInfo.pushConstantRangeCount = 1;
+        lightingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr, &m_LightingPipelineLayout) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
@@ -158,16 +162,21 @@ namespace GfxRenderEngine
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 
+        std::vector<VkDescriptorSet> descriptorSets = 
+        {
+            frameInfo.m_GlobalDescriptorSet,
+            m_LightingDescriptorSets[frameInfo.m_FrameIndex]
+        };
         vkCmdBindDescriptorSets
         (
             frameInfo.m_CommandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_LightingPipelineLayout,                           // VkPipelineLayout layout
-            0,                                                  // uint32_t         firstSet
-            1,                                                  // uint32_t         descriptorSetCount
-            &m_LightingDescriptorSets[frameInfo.m_FrameIndex],    // VkDescriptorSet* pDescriptorSets
-            0,                                                  // uint32_t         dynamicOffsetCount
-            nullptr                                             // const uint32_t*  pDynamicOffsets
+            m_LightingPipelineLayout,   // VkPipelineLayout layout
+            0,                          // uint32_t         firstSet
+            2,                          // uint32_t         descriptorSetCount
+            descriptorSets.data(),      // VkDescriptorSet* pDescriptorSets
+            0,                          // uint32_t         dynamicOffsetCount
+            nullptr                     // const uint32_t*  pDynamicOffsets
         );
 
         vkCmdDraw

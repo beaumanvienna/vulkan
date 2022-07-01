@@ -133,6 +133,7 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting =
         {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
             lightingDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
