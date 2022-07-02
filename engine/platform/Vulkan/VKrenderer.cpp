@@ -64,9 +64,9 @@ namespace GfxRenderEngine
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
             .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 10)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
             .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 900)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 3)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -100,6 +100,7 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer position input attachment
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer normal input attachment
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer color input attachment
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer material input attachment
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
@@ -192,10 +193,15 @@ namespace GfxRenderEngine
             imageInfoGBufferColorInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferColor(i);
             imageInfoGBufferColorInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+            VkDescriptorImageInfo imageInfoGBufferMaterialInputAttachment {};
+            imageInfoGBufferMaterialInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferMaterial(i);
+            imageInfoGBufferMaterialInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
             VK_DescriptorWriter(*lightingDescriptorSetLayout, *m_DescriptorPool)
                 .WriteImage(0, &imageInfoGBufferPositionInputAttachment)
                 .WriteImage(1, &imageInfoGBufferNormalInputAttachment)
                 .WriteImage(2, &imageInfoGBufferColorInputAttachment)
+                .WriteImage(3, &imageInfoGBufferMaterialInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
         }
 
@@ -352,6 +358,7 @@ namespace GfxRenderEngine
         clearValues[2].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[3].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[4].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[5].color = {0.01f, 0.01f, 0.01f, 1.0f};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 

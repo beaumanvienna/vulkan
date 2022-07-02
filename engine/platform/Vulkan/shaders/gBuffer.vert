@@ -26,13 +26,13 @@
 #version 450
 #define LIGHT_COUNT 10
 
-layout(location = 0) in vec3  position;         //ok
-layout(location = 1) in vec3  color;            //ok
-layout(location = 2) in vec3  normal;           //ok
-layout(location = 3) in vec2  uv;               //ok
-layout(location = 5) in float amplification;    //ok
-layout(location = 6) in int   unlit;            //ok
-layout(location = 7) in vec3  tangent;          //ok
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  color;
+layout(location = 2) in vec3  normal;
+layout(location = 3) in vec2  uv;
+layout(location = 5) in float amplification;
+layout(location = 6) in int   unlit;
+layout(location = 7) in vec3  tangent;
 
 struct PointLight
 {

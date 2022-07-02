@@ -49,6 +49,7 @@ namespace GfxRenderEngine
             ATTACHMENT_GBUFFER_POSITION,
             ATTACHMENT_GBUFFER_NORMAL,
             ATTACHMENT_GBUFFER_COLOR,
+            ATTACHMENT_GBUFFER_MATERIAL,
             NUMBER_OF_ATTACHMENTS
         };
 
@@ -71,6 +72,7 @@ namespace GfxRenderEngine
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
         VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
+        VkImageView GetImageViewGBufferMaterial(int index) { return m_GBufferMaterialViews[index]; }
         size_t ImageCount() { return m_SwapChainImages.size(); }
         VkFormat GetSwapChainImageFormat() { return m_SwapChainImageFormat; }
         VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
@@ -120,15 +122,18 @@ namespace GfxRenderEngine
         std::vector<VkImage> m_GBufferPositionImages;
         std::vector<VkImage> m_GBufferNormalImages;
         std::vector<VkImage> m_GBufferColorImages;
+        std::vector<VkImage> m_GBufferMaterialImages;
 
         std::vector<VkImageView> m_SwapChainImageViews;
         std::vector<VkImageView> m_GBufferPositionViews;
         std::vector<VkImageView> m_GBufferNormalViews;
         std::vector<VkImageView> m_GBufferColorViews;
+        std::vector<VkImageView> m_GBufferMaterialViews;
 
         std::vector<VkDeviceMemory> m_GBufferPositionImageMemorys;
         std::vector<VkDeviceMemory> m_GBufferNormalImageMemorys;
         std::vector<VkDeviceMemory> m_GBufferColorImageMemorys;
+        std::vector<VkDeviceMemory> m_GBufferMaterialImageMemorys;
 
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_SwapChain> m_OldSwapChain;

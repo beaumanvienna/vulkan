@@ -28,6 +28,7 @@
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
+layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap;
 
 layout(location = 0)       in  vec3  fragColor;
 layout(location = 1)       in  vec3  fragPositionWorld;
@@ -40,6 +41,7 @@ layout(location = 6)       in  vec3  fragTangentWorld;
 layout (location = 0) out vec4 outPosition;
 layout (location = 1) out vec4 outNormal;
 layout (location = 2) out vec4 outColor;
+layout (location = 3) out vec4 outMaterial;
 
 struct PointLight
 {
@@ -76,4 +78,5 @@ void main()
     outNormal = vec4(surfaceNormalfromMap, 1.0);
 
     outColor = texture(diffuseMap, fragUV);
+    outMaterial = texture(roughnessMetallicMap, fragUV);
 }

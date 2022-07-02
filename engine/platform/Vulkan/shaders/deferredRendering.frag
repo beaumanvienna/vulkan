@@ -30,6 +30,7 @@
 layout (input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout (input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
 layout (input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput diffuseMap;
+layout (input_attachment_index = 3, set = 1, binding = 3) uniform subpassInput roughnessMetallicMap;
 
 layout (location = 0) out vec4 outColor;
 
@@ -58,6 +59,7 @@ void main()
     vec3 fragPos = subpassLoad(positionMap).rgb;
     vec3 normal = subpassLoad(normalMap).rgb;
     vec4 diffuseColor = subpassLoad(diffuseMap);
+    vec4 material = subpassLoad(roughnessMetallicMap);
     
     // Ambient part
     vec3 fragcolor  = diffuseColor.rgb * AMBIENT;
@@ -97,5 +99,9 @@ void main()
         }    
     }        
     outColor = vec4(fragcolor, 1.0);
+    //outColor = vec4(normal, 1.0);
+    //outColor = vec4(fragPos, 1.0);
+    //outColor = vec4(diffuseColor);
+    //outColor = vec4(material.rgb, 1.0);
 
 }

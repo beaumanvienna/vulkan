@@ -111,6 +111,12 @@ namespace GfxRenderEngine
             vkDestroyImage(m_Device->Device(), m_GBufferColorImages[i], nullptr);
             vkFreeMemory(m_Device->Device(), m_GBufferColorImageMemorys[i], nullptr);
         }
+        for (int i = 0; i < m_GBufferMaterialImages.size(); i++)
+        {
+            vkDestroyImageView(m_Device->Device(), m_GBufferMaterialViews[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_GBufferMaterialImages[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_GBufferMaterialImageMemorys[i], nullptr);
+        }
     }
 
     VkResult VK_SwapChain::AcquireNextImage(uint *imageIndex)
@@ -277,10 +283,12 @@ namespace GfxRenderEngine
 
     void VK_SwapChain::CreateGBufferImages()
     {
+        VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
+
         VkFormat gBufferPositionFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
         VkFormat gBufferNormalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
         VkFormat gBufferColorFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
+        VkFormat gBufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         m_GBufferPositionImages.resize(ImageCount());
         m_GBufferPositionImageMemorys.resize(ImageCount());
@@ -368,6 +376,35 @@ namespace GfxRenderEngine
                 m_GBufferColorImages[i],
                 m_GBufferColorImageMemorys[i]);
         }
+
+        m_GBufferMaterialImages.resize(ImageCount());
+        m_GBufferMaterialImageMemorys.resize(ImageCount());
+        m_GBufferMaterialViews.resize(ImageCount());
+
+        for (int i = 0; i < m_GBufferMaterialImages.size(); i++)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = m_SwapChainExtent.width;
+            imageInfo.extent.height = m_SwapChainExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = gBufferMaterialFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_GBufferMaterialImages[i],
+                m_GBufferMaterialImageMemorys[i]);
+        }
     }
 
     void VK_SwapChain::CreateGBufferViews()
@@ -435,6 +472,29 @@ namespace GfxRenderEngine
             viewInfo.subresourceRange.layerCount = 1;
 
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferColorViews[i]);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
+        }
+
+        m_GBufferMaterialViews.resize(m_GBufferMaterialImages.size());
+        for (size_t i = 0; i < m_GBufferMaterialImages.size(); i++)
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.pNext = nullptr;
+            viewInfo.flags = 0;
+            viewInfo.image = m_GBufferMaterialImages[i];
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferMaterialViews[i]);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create texture image view!");
@@ -531,19 +591,39 @@ namespace GfxRenderEngine
         gBufferColorInputAttachmentRef.attachment = ATTACHMENT_GBUFFER_COLOR;
         gBufferColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+        // ATTACHMENT_GBUFFER_MATERIAL
+        VkAttachmentDescription gBufferMaterialAttachment = {};
+        gBufferMaterialAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        gBufferMaterialAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        gBufferMaterialAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gBufferMaterialAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        gBufferMaterialAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gBufferMaterialAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gBufferMaterialAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        gBufferMaterialAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferMaterialAttachmentRef = {};
+        gBufferMaterialAttachmentRef.attachment = ATTACHMENT_GBUFFER_MATERIAL;
+        gBufferMaterialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference gBufferMaterialInputAttachmentRef = {};
+        gBufferMaterialInputAttachmentRef.attachment = ATTACHMENT_GBUFFER_MATERIAL;
+        gBufferMaterialInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         // geometry pass
-        std::array<VkAttachmentReference, 3> gBufferAttachments =
+        std::array<VkAttachmentReference, NUMBER_OF_GBUFFER_ATTACHMENTS> gBufferAttachments =
         {
             gBufferPositionAttachmentRef,
             gBufferNormalAttachmentRef,
-            gBufferColorAttachmentRef
+            gBufferColorAttachmentRef,
+            gBufferMaterialAttachmentRef
         };
         VkSubpassDescription subpassGeometry = {};
         subpassGeometry.flags = 0;
         subpassGeometry.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassGeometry.inputAttachmentCount = 0;
         subpassGeometry.pInputAttachments = nullptr;
-        subpassGeometry.colorAttachmentCount = 3;
+        subpassGeometry.colorAttachmentCount = NUMBER_OF_GBUFFER_ATTACHMENTS;
         subpassGeometry.pColorAttachments = gBufferAttachments.data();
         subpassGeometry.pResolveAttachments = nullptr;
         subpassGeometry.pDepthStencilAttachment = &depthAttachmentRef;
@@ -555,7 +635,8 @@ namespace GfxRenderEngine
         {
             gBufferPositionInputAttachmentRef,
             gBufferNormalInputAttachmentRef,
-            gBufferColorInputAttachmentRef
+            gBufferColorInputAttachmentRef,
+            gBufferMaterialInputAttachmentRef
         };
 
         VkSubpassDescription subpassLighting = {};
@@ -587,7 +668,8 @@ namespace GfxRenderEngine
             depthAttachment,
             gBufferPositionAttachment,
             gBufferNormalAttachment,
-            gBufferColorAttachment
+            gBufferColorAttachment,
+            gBufferMaterialAttachment
         };
         std::array<VkSubpassDescription, NUMBER_OF_SUBPASSES> subpasses = 
         {
@@ -621,14 +703,15 @@ namespace GfxRenderEngine
                 m_DepthImageViews[i],
                 m_GBufferPositionViews[i],
                 m_GBufferNormalViews[i],
-                m_GBufferColorViews[i]
+                m_GBufferColorViews[i],
+                m_GBufferMaterialViews[i],
             };
 
             VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_RenderPass;
-            framebufferInfo.attachmentCount = static_cast<uint>(attachments.size());
+            framebufferInfo.attachmentCount = NUMBER_OF_ATTACHMENTS;
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = m_SwapChainExtent.width;
             framebufferInfo.height = m_SwapChainExtent.height;

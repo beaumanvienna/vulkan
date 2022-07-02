@@ -97,17 +97,20 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_GeometryPipelineLayout;
         pipelineConfig.subpass = VK_SwapChain::SUBPASS_GEOMETRY;
+
+        // g buffer position, g buffer normal, g buffer color, g buffer material
+        // no blending
+        int attachmentCount = VK_SwapChain::NUMBER_OF_GBUFFER_ATTACHMENTS; 
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
-        int attachmentCount = 3; // g buffer position, g buffer normal, g buffer color
-        std::vector<VkPipelineColorBlendAttachmentState> blendAttachments;
-        blendAttachments.resize(attachmentCount);
-        for(int i=0; i<attachmentCount; i++)
+        VkPipelineColorBlendAttachmentState blAttachments[] =
         {
-            blendAttachments[i] = pipelineConfig.colorBlendAttachment;
-        }
-
-        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blendAttachments.data());
+            pipelineConfig.colorBlendAttachment,
+            pipelineConfig.colorBlendAttachment,
+            pipelineConfig.colorBlendAttachment,
+            pipelineConfig.colorBlendAttachment
+        };
+        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments);
 
         // create a pipeline
         m_GeometryPipeline = std::make_unique<VK_Pipeline>
