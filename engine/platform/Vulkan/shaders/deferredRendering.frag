@@ -88,7 +88,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 // ----------------------------------------------------------------------------
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
@@ -101,7 +101,7 @@ void main()
     lights[0].m_Color = vec4(0.0, 0.0, 0.0, 1.0);
 
     lights[1].m_Position = vec4(0.0, 0.5, 0.0, 0.0);
-    lights[1].m_Color = vec4(0.0, 0.0, 1.0, 1.0);
+    lights[1].m_Color = vec4(1.0, 1.0, 1.0, 1.0);
 
     lights[2].m_Position = vec4(0.8, 0.0, 0.0, 0.0);
     lights[2].m_Color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -112,12 +112,12 @@ void main()
     // retrieve G buffer data
     vec3 fragPosition = subpassLoad(positionMap).rgb;
     vec3 normal       = subpassLoad(normalMap).rgb;
-    vec3 fragColor    = subpassLoad(diffuseMap).rgb;
+    vec4 albedo       = subpassLoad(diffuseMap);
     vec4 material     = subpassLoad(roughnessMetallicMap);
 
     float roughness           = material.g;
     float metallic            = material.r;
-    float ao                  = 1.0;
+    vec3  ambientLightColor   = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
     vec3 camPos = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
 
@@ -126,6 +126,7 @@ void main()
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
+    vec3 fragColor = vec3(1.0);
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, fragColor, metallic);
     // reflectance equation
@@ -146,7 +147,7 @@ void main()
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
         float G   = GeometrySmith(N, V, L, roughness);  
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
 
         vec3 numerator    = NDF * G * F; 
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
@@ -170,9 +171,8 @@ void main()
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
 
-    // ambient lighting (note that the next IBL tutorial will replace 
-    // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * fragColor * ao;
+
+    vec3 ambient = ambientLightColor * fragColor;
 
     vec3 color = ambient + Lo;
 
@@ -180,12 +180,13 @@ void main()
     color = color / (color + vec3(1.0));
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
-    outColor = vec4(color, 1.0);
+    outColor = albedo * vec4(color, 1.0);
 
     //outColor = vec4(fragPos, 1.0);
     //outColor = vec4(fragNormal, 1.0);
     //outColor = vec4(fragColor, 1.0);
     //outColor = vec4(roughness, 1.0, 1.0, 1.0);
     //outColor = vec4(metallic, 1.0, 1.0, 1.0);
+    //outColor = vec4(Lo, 1.0);
 
 }
