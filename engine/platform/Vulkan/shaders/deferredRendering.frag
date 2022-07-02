@@ -25,7 +25,6 @@
 
 #version 450
 #define LIGHT_COUNT 10
-#define AMBIENT 0.9
 
 layout (input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout (input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
@@ -95,20 +94,6 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 // ----------------------------------------------------------------------------
 void main() 
 {
-    PointLight lights[4];
-
-    lights[0].m_Position = vec4(0.0, 0.0, 0.0, 0.0);
-    lights[0].m_Color = vec4(0.0, 0.0, 0.0, 1.0);
-
-    lights[1].m_Position = vec4(0.0, 0.5, 0.0, 0.0);
-    lights[1].m_Color = vec4(1.0, 1.0, 1.0, 1.0);
-
-    lights[2].m_Position = vec4(0.8, 0.0, 0.0, 0.0);
-    lights[2].m_Color = vec4(0.0, 0.0, 0.0, 1.0);
-
-    lights[3].m_Position = vec4(-0.9, 0.0, 0.0, 0.0);
-    lights[3].m_Color = vec4(0.0, 0.0, 0.0, 1.0);
-
     // retrieve G buffer data
     vec3 fragPosition = subpassLoad(positionMap).rgb;
     vec3 normal       = subpassLoad(normalMap).rgb;
@@ -126,17 +111,15 @@ void main()
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
-    vec3 fragColor = vec3(1.0);
+    vec3 fragColor = albedo.rgb;
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, fragColor, metallic);
     // reflectance equation
     vec3 Lo = vec3(0.0);
 
-    //for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
     {
-        //PointLight light = ubo.m_PointLights[i];
-        PointLight light = lights[i];
+        PointLight light = ubo.m_PointLights[i];
         // calculate per-light radiance
         vec3 L = normalize(light.m_Position.xyz - fragPosition);
         vec3 H = normalize(V + L);
@@ -169,19 +152,18 @@ void main()
 
         // add to outgoing radiance Lo
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    }   
+    }
 
-
-    vec3 ambient = ambientLightColor * fragColor;
-
-    vec3 color = ambient + Lo;
+    vec3 color = ambientLightColor + Lo;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
+
     outColor = albedo * vec4(color, 1.0);
 
+    // debug
     //outColor = vec4(fragPos, 1.0);
     //outColor = vec4(fragNormal, 1.0);
     //outColor = vec4(fragColor, 1.0);

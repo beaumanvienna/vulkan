@@ -171,7 +171,7 @@ namespace GfxRenderEngine
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        //m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         //m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
         //m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
@@ -396,7 +396,7 @@ namespace GfxRenderEngine
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.02f};
-            //m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
+            m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
