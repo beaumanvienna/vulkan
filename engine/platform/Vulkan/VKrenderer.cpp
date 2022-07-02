@@ -90,13 +90,7 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> deferredRenderingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // roughness metallic map
-                    .Build();
-
-        std::unique_ptr<VK_DescriptorSetLayout> lightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        m_LightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer position input attachment
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer normal input attachment
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer color input attachment
@@ -126,16 +120,10 @@ namespace GfxRenderEngine
             diffuseNormalRoughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDeferredRendering =
-        {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            deferredRenderingDescriptorSetLayout->GetDescriptorSetLayout()
-        };
-
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            lightingDescriptorSetLayout->GetDescriptorSetLayout()
+            m_LightingDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -174,11 +162,25 @@ namespace GfxRenderEngine
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         //m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
-        //m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        //m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
-        //m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
-        //m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+        m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
 
+        CreateLightingDescriptorSets();
+
+        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
+        (
+            m_SwapChain->GetRenderPass(),
+            descriptorSetLayoutsLighting,
+            m_LightingDescriptorSets.data()
+        );
+
+        //m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+    }
+    
+    void VK_Renderer::CreateLightingDescriptorSets()
+    {
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
@@ -197,23 +199,13 @@ namespace GfxRenderEngine
             imageInfoGBufferMaterialInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferMaterial(i);
             imageInfoGBufferMaterialInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            VK_DescriptorWriter(*lightingDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*m_LightingDescriptorSetLayout, *m_DescriptorPool)
                 .WriteImage(0, &imageInfoGBufferPositionInputAttachment)
                 .WriteImage(1, &imageInfoGBufferNormalInputAttachment)
                 .WriteImage(2, &imageInfoGBufferColorInputAttachment)
                 .WriteImage(3, &imageInfoGBufferMaterialInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
         }
-
-        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
-        (
-            m_SwapChain->GetRenderPass(),
-            descriptorSetLayoutsDeferredRendering,
-            descriptorSetLayoutsLighting,
-            m_LightingDescriptorSets.data()
-        );
-
-        //m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
     VK_Renderer::~VK_Renderer()
@@ -241,7 +233,7 @@ namespace GfxRenderEngine
         {
             std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
             m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, oldSwapChain);
-
+            CreateLightingDescriptorSets();
             if (!oldSwapChain->CompareSwapFormats(*m_SwapChain.get()))
             {
                 LOG_CORE_CRITICAL("swap chain image or depth format has changed");
@@ -355,10 +347,10 @@ namespace GfxRenderEngine
         std::array<VkClearValue, VK_SwapChain::NUMBER_OF_ATTACHMENTS> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
-        clearValues[2].color = {0.01f, 0.01f, 0.01f, 1.0f};
-        clearValues[3].color = {0.01f, 0.01f, 0.01f, 1.0f};
-        clearValues[4].color = {0.01f, 0.01f, 0.01f, 1.0f};
-        clearValues[5].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
+        clearValues[3].color = {0.5f, 0.5f, 0.1f, 1.0f};
+        clearValues[4].color = {0.5f, 0.1f, 0.5f, 1.0f};
+        clearValues[5].color = {0.5f, 0.7f, 0.2f, 1.0f};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -442,13 +434,12 @@ namespace GfxRenderEngine
 //            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
 //
 //            // 3D objects
-//            m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
-//            m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
-//            m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
-//            m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
 //
 //            m_PointLightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDeferredRendering->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -524,8 +515,6 @@ namespace GfxRenderEngine
             "pbrDiffuseNormal.frag",
             "pbrDiffuseNormalRoughnessMetallic.vert",
             "pbrDiffuseNormalRoughnessMetallic.frag",
-            "gBuffer.vert",
-            "gBuffer.frag",
             "deferredRendering.vert",
             "deferredRendering.frag"
         };

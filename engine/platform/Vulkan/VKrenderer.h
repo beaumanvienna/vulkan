@@ -94,6 +94,7 @@ namespace GfxRenderEngine
         void RecreateSwapChain();
         void CompileShaders();
         void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
+        void CreateLightingDescriptorSets();
 
     private:
 
@@ -120,6 +121,8 @@ namespace GfxRenderEngine
         int m_CurrentFrameIndex;
         bool m_FrameInProgress;
         VK_FrameInfo m_FrameInfo;
+
+        std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
 
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};

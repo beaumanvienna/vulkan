@@ -1,8 +1,7 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
    *
-   * normalMapping: Blinn Phong lighting (ambient, diffuse, and specular with a texture map 
-   *                and with a normal map
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
    *
 
    Permission is hereby granted, free of charge, to any person
@@ -25,6 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#define LIGHT_COUNT 10
 
 layout(location = 0) in vec3  position;
 layout(location = 1) in vec3  color;
@@ -46,7 +46,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    PointLight m_PointLights[10];
+    PointLight m_PointLights[LIGHT_COUNT];
     int m_NumberOfActiveLights;
 } ubo;
 
@@ -62,21 +62,18 @@ layout(location = 2)  out  vec3  fragNormalWorld;
 layout(location = 3)  out  vec2  fragUV;
 layout(location = 4)  out  float fragAmplification;
 layout(location = 5)  out  int   fragUnlit;
-layout(location = 6)  out  vec3  toCameraDirection;
 
-void main()
+void main() 
 {
+    // projection * view * model * position
+    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
+
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
     fragNormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
+
     fragColor = color;
+    fragUV = uv;
     fragAmplification = amplification;
     fragUnlit = unlit;
-
-    // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
-    fragUV = uv;
-
-    vec3 cameraPosWorld = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
-    toCameraDirection = cameraPosWorld - positionWorld.xyz;
 }

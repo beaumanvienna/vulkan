@@ -32,40 +32,17 @@ namespace GfxRenderEngine
     VK_RenderSystemDeferredRendering::VK_RenderSystemDeferredRendering
     (
         VkRenderPass renderPass,
-        std::vector<VkDescriptorSetLayout>& geometryDescriptorSetLayouts,
         std::vector<VkDescriptorSetLayout>& ligthingDescriptorSetLayouts,
         const VkDescriptorSet* lightingDescriptorSet)
     {
-        CreateGeometryPipelineLayout(geometryDescriptorSetLayouts);
         CreateLightingPipelineLayout(ligthingDescriptorSetLayouts);
         m_LightingDescriptorSets = lightingDescriptorSet;
-        CreateGeometryPipeline(renderPass);
         CreateLightingPipeline(renderPass);
     }
 
     VK_RenderSystemDeferredRendering::~VK_RenderSystemDeferredRendering()
     {
-        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_GeometryPipelineLayout, nullptr);
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayout, nullptr);
-    }
-
-    void VK_RenderSystemDeferredRendering::CreateGeometryPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
-    {
-        VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataDeferredRendering);
-
-        VkPipelineLayoutCreateInfo geometryPipelineLayoutInfo{};
-        geometryPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        geometryPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
-        geometryPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        geometryPipelineLayoutInfo.pushConstantRangeCount = 1;
-        geometryPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &geometryPipelineLayoutInfo, nullptr, &m_GeometryPipelineLayout) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create pipeline layout!");
-        }
     }
 
     void VK_RenderSystemDeferredRendering::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
@@ -87,41 +64,6 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemDeferredRendering::CreateGeometryPipeline(VkRenderPass renderPass)
-    {
-        ASSERT(m_GeometryPipelineLayout != nullptr);
-
-        PipelineConfigInfo pipelineConfig{};
-
-        VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
-        pipelineConfig.renderPass = renderPass;
-        pipelineConfig.pipelineLayout = m_GeometryPipelineLayout;
-        pipelineConfig.subpass = VK_SwapChain::SUBPASS_GEOMETRY;
-
-        // g buffer position, g buffer normal, g buffer color, g buffer material
-        // no blending
-        int attachmentCount = VK_SwapChain::NUMBER_OF_GBUFFER_ATTACHMENTS; 
-        pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
-
-        VkPipelineColorBlendAttachmentState blAttachments[] =
-        {
-            pipelineConfig.colorBlendAttachment,
-            pipelineConfig.colorBlendAttachment,
-            pipelineConfig.colorBlendAttachment,
-            pipelineConfig.colorBlendAttachment
-        };
-        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments);
-
-        // create a pipeline
-        m_GeometryPipeline = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin/gBuffer.vert.spv",
-            "bin/gBuffer.frag.spv",
-            pipelineConfig
-        );
-    }
-
     void VK_RenderSystemDeferredRendering::CreateLightingPipeline(VkRenderPass renderPass)
     {
         ASSERT(m_LightingPipelineLayout != nullptr);
@@ -141,24 +83,6 @@ namespace GfxRenderEngine
             "bin/deferredRendering.frag.spv",
             pipelineConfig
         );
-    }
-
-    void VK_RenderSystemDeferredRendering::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
-    {
-        m_GeometryPipeline->Bind(frameInfo.m_CommandBuffer);
-
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag>();
-        for (auto entity : view)
-        {
-
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
-            if (mesh.m_Enabled)
-            {
-                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_GeometryPipelineLayout);
-            }
-        }
     }
 
     void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo)
