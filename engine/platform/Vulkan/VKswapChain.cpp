@@ -656,7 +656,7 @@ namespace GfxRenderEngine
         dependencies[0].srcSubpass      = SUBPASS_GEOMETRY; // Index of the render pass being depended upon by dstSubpass
         dependencies[0].dstSubpass      = SUBPASS_LIGHTING; // The index of the render pass depending on srcSubpass
         dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
-        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT; // What pipeline stage is waiting on the dependency
+        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage is waiting on the dependency
         dependencies[0].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
         dependencies[0].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT; // What access scopes are waiting on the dependency
         dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
