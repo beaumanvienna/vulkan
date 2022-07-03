@@ -651,15 +651,32 @@ namespace GfxRenderEngine
         subpassLighting.preserveAttachmentCount = 0;
         subpassLighting.pPreserveAttachments = nullptr;
 
-        VkSubpassDependency dependency = {};
+        std::array<VkSubpassDependency, 3> dependencies;
         
-        dependency.srcSubpass      = SUBPASS_GEOMETRY; // Index of the render pass being depended upon by dstSubpass
-        dependency.dstSubpass      = SUBPASS_LIGHTING; // The index of the render pass depending on srcSubpass
-        dependency.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
-        dependency.dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage is waiting on the dependency
-        dependency.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
-        dependency.dstAccessMask   = VK_ACCESS_SHADER_READ_BIT; // What access scopes are waiting on the dependency
-        dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
+        dependencies[0].srcSubpass      = SUBPASS_GEOMETRY; // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass      = SUBPASS_LIGHTING; // The index of the render pass depending on srcSubpass
+        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
+        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT; // What pipeline stage is waiting on the dependency
+        dependencies[0].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
+        dependencies[0].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT; // What access scopes are waiting on the dependency
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
+        
+        dependencies[1].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[1].dstSubpass = 0;
+        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[2].srcSubpass = 0;
+        dependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[2].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[2].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
 
         // render pass
         std::array<VkAttachmentDescription, NUMBER_OF_ATTACHMENTS> attachments = 
@@ -683,8 +700,8 @@ namespace GfxRenderEngine
         m_RenderPassInfo.pAttachments = attachments.data();
         m_RenderPassInfo.subpassCount = NUMBER_OF_SUBPASSES;
         m_RenderPassInfo.pSubpasses = subpasses.data();
-        m_RenderPassInfo.dependencyCount = 1;
-        m_RenderPassInfo.pDependencies = &dependency;
+        m_RenderPassInfo.dependencyCount = 3;
+        m_RenderPassInfo.pDependencies = dependencies.data();
 
         if (vkCreateRenderPass(m_Device->Device(), &m_RenderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
         {
