@@ -51,6 +51,15 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 } ubo;
 
 const float PI = 3.14159265359;
+
+vec3 ACESFilm(vec3 color) {
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return clamp((color*(a*color+b))/(color*(c*color+d)+e), 0.0, 1.0);
+}
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -157,7 +166,8 @@ void main()
     vec3 color = ambientLightColor + Lo;
 
     // HDR tonemapping
-    color = color / (color + vec3(1.0));
+    //color = color / (color + vec3(1.0));
+    color = ACESFilm(color);
     // gamma correct
     color = pow(color, vec3(1.0/2.2)); 
 

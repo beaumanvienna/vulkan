@@ -141,7 +141,6 @@ namespace GfxRenderEngine
         {
             glfwPollEvents();
         }
-        vkDeviceWaitIdle(VK_Core::m_Device->Device());
     }
 
     void VK_Window::OnError(int errorCode, const char* description) 

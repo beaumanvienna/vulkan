@@ -4,6 +4,7 @@
 glTF-files:
   - application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf
   - application/lucre/models/barrel/barrel.gltf
+  - application/lucre/models/dont_upload/sponza/glTF/Sponza.gltf
 
 prefabs:
   - application/lucre/prefabs/duck.prefab

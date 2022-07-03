@@ -124,7 +124,7 @@ namespace LucreApp
 
             TransformComponent transform{};
             transform.SetTranslation(glm::vec3{0.0f, 0.0f, 0.0f});
-            transform.SetScale(glm::vec3{0.01f, 100.0f, 2.0f});
+            transform.SetScale(glm::vec3{0.01f, 1.6f, 1.4f});
             transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), glm::half_pi<float>()});
             m_Registry.emplace<TransformComponent>(m_Ground, transform);
 
