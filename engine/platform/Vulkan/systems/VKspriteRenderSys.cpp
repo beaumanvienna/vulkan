@@ -24,7 +24,7 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKdefaultDiffuseMapSys.h"
+#include "systems/VKspriteRenderSys.h"
 
 namespace GfxRenderEngine
 {
@@ -72,8 +72,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/defaultDiffuseMap.vert.spv",
-            "bin/defaultDiffuseMap.frag.spv",
+            "bin/spriteRenderer.vert.spv",
+            "bin/spriteRenderer.frag.spv",
             pipelineConfig
         );
     }
@@ -93,16 +93,16 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, DefaultDiffuseComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent>();
         for (auto entity : view)
         {
-            auto& defaultDiffuseComponent = view.get<DefaultDiffuseComponent>(entity);
+            auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataDefaultDiffuseMap push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = defaultDiffuseComponent.m_Roughness;
-            push.m_NormalMatrix[3].y = defaultDiffuseComponent.m_Metallic;
+            push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
+            push.m_NormalMatrix[3].y = spriteRendererComponent.m_Metallic;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,

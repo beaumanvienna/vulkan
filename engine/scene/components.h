@@ -130,7 +130,7 @@ namespace GfxRenderEngine
     };
 
     // models without a normal map
-    struct DefaultDiffuseComponent // diffuse map aka albedo map aka color map
+    struct SpriteRendererComponent // diffuse map aka albedo map aka color map
     {
         float m_Roughness;
         float m_Metallic;

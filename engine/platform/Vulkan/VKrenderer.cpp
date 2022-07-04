@@ -160,7 +160,7 @@ namespace GfxRenderEngine
         }
 
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        //m_RenderSystemDefaultDiffuseMap                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemSpriteRenderer                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -432,15 +432,14 @@ namespace GfxRenderEngine
         {
             UpdateTransformCache(registry, sceneHierarchy, glm::mat4(1.0f), false);
 
-            // sprites
-//            m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
-//
-//            // 3D objects
+            // 3D objects
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
-//
+
+            // sprites
+            m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
 //            m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
@@ -449,7 +448,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            //m_RenderSystemDefaultDiffuseMap->DrawParticles(m_FrameInfo, particleSystem);
+            //m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
         }
     }
 
@@ -473,7 +472,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            //m_RenderSystemDefaultDiffuseMap->RenderEntities(m_FrameInfo, registry);
+            //m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -507,8 +506,8 @@ namespace GfxRenderEngine
         {
             "pointLight.vert",
             "pointLight.frag",
-            "defaultDiffuseMap.vert",
-            "defaultDiffuseMap.frag",
+            "spriteRenderer.vert",
+            "spriteRenderer.frag",
             "pbrNoMap.vert",
             "pbrNoMap.frag",
             "pbrDiffuse.vert",

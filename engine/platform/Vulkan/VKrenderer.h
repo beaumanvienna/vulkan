@@ -30,7 +30,7 @@
 #include "renderer/renderer.h"
 #include "platform/Vulkan/imguiEngine/imgui.h"
 
-#include "systems/VKdefaultDiffuseMapSys.h"
+#include "systems/VKspriteRenderSys.h"
 #include "systems/VKpointLightSys.h"
 
 #include "systems/VKpbrNoMapSys.h"
@@ -109,7 +109,7 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
 
-        std::unique_ptr<VK_RenderSystemDefaultDiffuseMap> m_RenderSystemDefaultDiffuseMap;
+        std::unique_ptr<VK_RenderSystemDefaultDiffuseMap> m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;

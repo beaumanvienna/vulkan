@@ -59,8 +59,8 @@ namespace LucreApp
                 if (flip) transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
 
-                DefaultDiffuseComponent defaultDiffuseComponent{0.1f, 0.1f};
-                m_Registry.emplace<DefaultDiffuseComponent>(m_Volcano[i], defaultDiffuseComponent);
+                SpriteRendererComponent spriteRendererComponent{0.1f, 0.1f};
+                m_Registry.emplace<SpriteRendererComponent>(m_Volcano[i], spriteRendererComponent);
             }
         }
         {
@@ -83,8 +83,8 @@ namespace LucreApp
                 transform.SetRotation(glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
 
-                DefaultDiffuseComponent defaultDiffuseComponent{};
-                m_Registry.emplace<DefaultDiffuseComponent>(m_Walkway[i], defaultDiffuseComponent);
+                SpriteRendererComponent spriteRendererComponent{};
+                m_Registry.emplace<SpriteRendererComponent>(m_Walkway[i], spriteRendererComponent);
             }
         }
         {
@@ -107,8 +107,8 @@ namespace LucreApp
                 transform.SetScale(glm::vec3{0.005f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
-                DefaultDiffuseComponent defaultDiffuseComponent{};
-                m_Registry.emplace<DefaultDiffuseComponent>(m_Guybrush[i], defaultDiffuseComponent);
+                SpriteRendererComponent spriteRendererComponent{};
+                m_Registry.emplace<SpriteRendererComponent>(m_Guybrush[i], spriteRendererComponent);
             }
         }
         // --- Obj files ---

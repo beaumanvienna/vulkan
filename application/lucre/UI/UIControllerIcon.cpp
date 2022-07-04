@@ -200,7 +200,7 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_ID, transform);
 
-            DefaultDiffuseComponent defaultDiffuseComponent{};
-            m_Registry.emplace<DefaultDiffuseComponent>(m_ID, defaultDiffuseComponent);
+            SpriteRendererComponent spriteRendererComponent{};
+            m_Registry.emplace<SpriteRendererComponent>(m_ID, spriteRendererComponent);
         }
 }
