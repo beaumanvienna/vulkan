@@ -7,10 +7,10 @@
         <file>../engine/platform/Vulkan/shaders/pointLight.frag</file>
     </gresource>    
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/defaultDiffuseMap.vert</file>
+        <file>../engine/platform/Vulkan/shaders/spriteRenderer.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/defaultDiffuseMap.frag</file>
+        <file>../engine/platform/Vulkan/shaders/spriteRenderer.frag</file>
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/pbrNoMap.vert</file>

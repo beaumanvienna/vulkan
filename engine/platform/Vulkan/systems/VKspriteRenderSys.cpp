@@ -68,15 +68,8 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = VK_SwapChain::SUBPASS_TRANSPARENCY;
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
 
-        int attachmentCount = 1;
-        pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
-
-        VkPipelineColorBlendAttachmentState blAttachments[] =
-        {
-            pipelineConfig.colorBlendAttachment
-        };
-        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments);
 
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>

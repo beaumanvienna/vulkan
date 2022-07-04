@@ -73,6 +73,7 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
         pipelineConfig.subpass = VK_SwapChain::SUBPASS_LIGHTING;
 
         // create a pipeline
