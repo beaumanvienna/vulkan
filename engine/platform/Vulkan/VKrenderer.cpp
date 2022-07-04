@@ -294,6 +294,7 @@ namespace GfxRenderEngine
         }
 
         m_FrameInProgress = true;
+        m_FrameCounter++;
 
         auto commandBuffer = GetCurrentCommandBuffer();
 
@@ -383,7 +384,6 @@ namespace GfxRenderEngine
         m_Camera = camera;
         if (m_CurrentCommandBuffer = BeginFrame())
         {
-            m_FrameCounter++;
             m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
 
             GlobalUniformBuffer ubo{};
