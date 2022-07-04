@@ -39,22 +39,22 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataDefaultDiffuseMap
+    struct VK_PushConstantDataSpriteRenderer
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemDefaultDiffuseMap
+    class VK_RenderSystemSpriteRenderer
     {
 
     public:
 
-        VK_RenderSystemDefaultDiffuseMap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemDefaultDiffuseMap();
+        VK_RenderSystemSpriteRenderer(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemSpriteRenderer();
 
-        VK_RenderSystemDefaultDiffuseMap(const VK_RenderSystemDefaultDiffuseMap&) = delete;
-        VK_RenderSystemDefaultDiffuseMap& operator=(const VK_RenderSystemDefaultDiffuseMap&) = delete;
+        VK_RenderSystemSpriteRenderer(const VK_RenderSystemSpriteRenderer&) = delete;
+        VK_RenderSystemSpriteRenderer& operator=(const VK_RenderSystemSpriteRenderer&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
         void DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem);

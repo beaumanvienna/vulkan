@@ -39,6 +39,7 @@ namespace GfxRenderEngine
         {
             SUBPASS_GEOMETRY = 0,
             SUBPASS_LIGHTING,
+            SUBPASS_TRANSPARENCY,
             NUMBER_OF_SUBPASSES
         };
 

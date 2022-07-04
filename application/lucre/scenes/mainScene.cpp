@@ -192,11 +192,16 @@ namespace LucreApp
         EmitVolcanoSmoke();
         m_VolcanoSmoke->OnUpdate(timestep);
 
+        // opaque objects
         m_Renderer->Submit(m_Registry, m_SceneHierarchy);
-        m_Renderer->Submit(m_VolcanoSmoke);
 
+        // light opaque objects
         m_Renderer->NextSubpass();
         m_Renderer->LightingPass();
+
+        // transparent objects
+        m_Renderer->NextSubpass();
+        m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke);
 
         m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->SubmitGUI(SCREEN_ScreenManager::m_Registry);

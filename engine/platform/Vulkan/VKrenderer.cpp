@@ -160,7 +160,7 @@ namespace GfxRenderEngine
         }
 
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemSpriteRenderer                 = std::make_unique<VK_RenderSystemDefaultDiffuseMap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemSpriteRenderer                 = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -400,6 +400,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag)
     {
+        
         entt::entity gameObject = node.GetGameObject();
         auto& transform = registry.get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
@@ -437,18 +438,6 @@ namespace GfxRenderEngine
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
-
-            // sprites
-            m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
-//            m_PointLightSystem->Render(m_FrameInfo, registry);
-        }
-    }
-
-    void VK_Renderer::Submit(std::shared_ptr<ParticleSystem>& particleSystem)
-    {
-        if (m_CurrentCommandBuffer)
-        {
-            //m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
         }
     }
 
@@ -457,6 +446,17 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
+        }
+    }
+
+    void VK_Renderer::TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            // sprites
+            m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
+//            m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
 
@@ -530,5 +530,4 @@ namespace GfxRenderEngine
             }
         }
     }
-
 }

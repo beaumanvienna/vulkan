@@ -43,9 +43,9 @@ namespace GfxRenderEngine
         // a draw call requires a vertex array (with a vertex buffer bound to it), index buffer, and bound shaders
         //void Submit(const std::shared_ptr<VertexArray>& vertexArray);
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
-        virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
+        virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) = 0;
         virtual void SubmitGUI(entt::registry& registry) = 0;
         virtual uint GetFrameCounter() = 0;
 

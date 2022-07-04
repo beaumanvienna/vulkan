@@ -28,23 +28,23 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDefaultDiffuseMap::VK_RenderSystemDefaultDiffuseMap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemSpriteRenderer::VK_RenderSystemSpriteRenderer(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemDefaultDiffuseMap::~VK_RenderSystemDefaultDiffuseMap()
+    VK_RenderSystemSpriteRenderer::~VK_RenderSystemSpriteRenderer()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemDefaultDiffuseMap::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemSpriteRenderer::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataDefaultDiffuseMap);
+        pushConstantRange.size = sizeof(VK_PushConstantDataSpriteRenderer);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemDefaultDiffuseMap::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemSpriteRenderer::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -67,6 +67,16 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
+        pipelineConfig.subpass = VK_SwapChain::SUBPASS_TRANSPARENCY;
+
+        int attachmentCount = 1;
+        pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
+
+        VkPipelineColorBlendAttachmentState blAttachments[] =
+        {
+            pipelineConfig.colorBlendAttachment
+        };
+        VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments);
 
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
@@ -78,7 +88,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemDefaultDiffuseMap::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemSpriteRenderer::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         vkCmdBindDescriptorSets
         (
@@ -98,7 +108,7 @@ namespace GfxRenderEngine
         {
             auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataDefaultDiffuseMap push{};
+            VK_PushConstantDataSpriteRenderer push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
@@ -108,7 +118,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataDefaultDiffuseMap),
+                sizeof(VK_PushConstantDataSpriteRenderer),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
@@ -120,7 +130,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemDefaultDiffuseMap::DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem)
+    void VK_RenderSystemSpriteRenderer::DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem)
     {
         vkCmdBindDescriptorSets
         (
@@ -143,7 +153,7 @@ namespace GfxRenderEngine
                 continue;
             }
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
-            VK_PushConstantDataDefaultDiffuseMap push{};
+            VK_PushConstantDataSpriteRenderer push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             vkCmdPushConstants(
@@ -151,7 +161,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataDefaultDiffuseMap),
+                sizeof(VK_PushConstantDataSpriteRenderer),
                 &push);
 
             auto& mesh = particleSystem->m_Registry.get<MeshComponent>(particle.m_SpriteEntity);

@@ -75,9 +75,9 @@ namespace GfxRenderEngine
 
         virtual void BeginFrame(Camera* camera, entt::registry& registry) override;
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
-        virtual void Submit(std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
+        virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void SubmitGUI(entt::registry& registry) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
@@ -109,7 +109,7 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
 
-        std::unique_ptr<VK_RenderSystemDefaultDiffuseMap> m_RenderSystemSpriteRenderer;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
         Camera* m_Camera;

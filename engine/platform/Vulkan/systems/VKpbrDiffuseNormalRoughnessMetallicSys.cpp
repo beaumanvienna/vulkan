@@ -71,7 +71,7 @@ namespace GfxRenderEngine
 
         // g buffer position, g buffer normal, g buffer color, g buffer material
         // no blending
-        int attachmentCount = VK_SwapChain::NUMBER_OF_GBUFFER_ATTACHMENTS; 
+        int attachmentCount = VK_SwapChain::NUMBER_OF_GBUFFER_ATTACHMENTS;
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
         VkPipelineColorBlendAttachmentState blAttachments[] =
