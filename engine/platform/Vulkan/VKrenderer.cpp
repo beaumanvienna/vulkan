@@ -37,7 +37,7 @@ namespace GfxRenderEngine
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
-        : m_Window{window}, m_Device{device},
+        : m_Window{window}, m_Device{device}, m_FrameCounter{0},
           m_CurrentImageIndex{0},
           m_CurrentFrameIndex{0},
           m_FrameInProgress{false}
@@ -231,6 +231,7 @@ namespace GfxRenderEngine
         }
         else
         {
+            LOG_CORE_INFO("recreating swapchain at frame {0}", m_FrameCounter);
             std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
             m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, oldSwapChain);
             CreateLightingDescriptorSets();
@@ -318,7 +319,7 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("recording of command buffer failed");
         }
         auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, &m_CurrentImageIndex);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Window->WasResized())
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             m_Window->ResetWindowResizedFlag();
             RecreateSwapChain();
@@ -382,6 +383,7 @@ namespace GfxRenderEngine
         m_Camera = camera;
         if (m_CurrentCommandBuffer = BeginFrame())
         {
+            m_FrameCounter++;
             m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
 
             GlobalUniformBuffer ubo{};

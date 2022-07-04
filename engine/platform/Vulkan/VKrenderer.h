@@ -80,6 +80,7 @@ namespace GfxRenderEngine
         virtual void LightingPass() override;
         virtual void SubmitGUI(entt::registry& registry) override;
         virtual void EndScene() override;
+        virtual uint GetFrameCounter() override { return m_FrameCounter; }
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
@@ -119,6 +120,7 @@ namespace GfxRenderEngine
 
         uint m_CurrentImageIndex;
         int m_CurrentFrameIndex;
+        uint m_FrameCounter;
         bool m_FrameInProgress;
         VK_FrameInfo m_FrameInfo;
 

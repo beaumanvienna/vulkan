@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
         virtual void SubmitGUI(entt::registry& registry) = 0;
+        virtual uint GetFrameCounter() = 0;
 
         //void BeginFrame(std::shared_ptr<OrthographicCamera>& camera, 
         //                        std::shared_ptr<ShaderProgram>& shader, 

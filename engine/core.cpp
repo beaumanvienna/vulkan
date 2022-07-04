@@ -224,7 +224,7 @@ namespace GfxRenderEngine
                 switch(event.GetKeyCode())
                 {
                     case ENGINE_KEY_F:
-                        LOG_CORE_INFO("toggle fullscreen");
+                        LOG_CORE_INFO("toggle fullscreen at frame {0}", GetRenderer()->GetFrameCounter());
                         ToggleFullscreen();
                         break;
                     case ENGINE_KEY_ESCAPE:
