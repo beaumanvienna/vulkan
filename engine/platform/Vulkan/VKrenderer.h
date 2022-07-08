@@ -128,8 +128,8 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_LightingDescriptorSets;
 
     };
 }

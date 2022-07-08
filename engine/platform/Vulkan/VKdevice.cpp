@@ -672,7 +672,7 @@ namespace GfxRenderEngine
 
         if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to allocate image memory!");
+            LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
         }
 
         if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)

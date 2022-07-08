@@ -285,8 +285,8 @@ namespace GfxRenderEngine
 
         if (node.matrix.size() == 16)
         {
-            transform.SetScale(glm::vec3(node.matrix[0], node.matrix[5], node.matrix[10]));
-            transform.SetTranslation(glm::vec3(node.matrix[3], node.matrix[7], node.matrix[11]));
+            transform.SetMat4(glm::make_mat4x4(node.matrix.data()));
+            
         }
         else
         {

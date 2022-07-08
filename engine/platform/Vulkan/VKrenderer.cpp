@@ -64,9 +64,9 @@ namespace GfxRenderEngine
         m_DescriptorPool = 
             VK_DescriptorPool::Builder()
             .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 900)
-            .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 5)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 750)
+            .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 245)
             .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -181,7 +181,8 @@ namespace GfxRenderEngine
     
     void VK_Renderer::CreateLightingDescriptorSets()
     {
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        m_LightingDescriptorSets.resize(m_SwapChain->ImageCount());
+        for (uint i = 0; i < m_SwapChain->ImageCount(); i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
             imageInfoGBufferPositionInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferPosition(i);
@@ -445,7 +446,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
+            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo, m_CurrentImageIndex);
         }
     }
 

@@ -86,15 +86,16 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo, uint currentImageIndex)
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 
         std::vector<VkDescriptorSet> descriptorSets = 
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_LightingDescriptorSets[frameInfo.m_FrameIndex]
+            m_LightingDescriptorSets[currentImageIndex]
         };
+
         vkCmdBindDescriptorSets
         (
             frameInfo.m_CommandBuffer,

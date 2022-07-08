@@ -223,7 +223,7 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory);
             if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to allocate image memory!");
+                LOG_CORE_CRITICAL("failed to allocate image memory in 'void VK_Texture::CreateImage'");
             }
         }
 
