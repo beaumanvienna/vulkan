@@ -52,8 +52,7 @@ namespace GfxRenderEngine
         virtual void Resize(uint width, uint height) override;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data) override;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
-
-        std::string m_FileName;
+        virtual void SetFilename(const std::string& filename) override { m_FileName = filename;}
 
     private:
 
@@ -61,13 +60,14 @@ namespace GfxRenderEngine
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
                           VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
-        void CreateImage(uint width, uint height, VkFormat format, VkImageTiling tiling,
-                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
-                         VkImage& image, VkDeviceMemory& imageMemory);
-        void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void CreateImage(VkFormat format, VkImageTiling tiling,
+                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+        void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
+        void GenerateMipmaps();
 
     private:
 
+        std::string m_FileName;
         uint m_RendererID;
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
@@ -80,8 +80,9 @@ namespace GfxRenderEngine
 
         VkImage m_TextureImage;
         VkDeviceMemory m_TextureImageMemory;
+        VkFormat m_ImageFormat;
 
-        public:
+    public:
 
         VkSampler m_Sampler;
         VkImageView m_TextureView;

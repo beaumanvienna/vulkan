@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager)
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_MipLevels(1),
+          m_DataFormat(0), m_MipLevels(0),
           m_TextureSlotManager(textureSlotManager)
     {
         m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
@@ -125,7 +125,7 @@ namespace GfxRenderEngine
         return true;
     }
 
-    void VK_Texture::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+    void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
 
@@ -135,10 +135,10 @@ namespace GfxRenderEngine
         barrier.newLayout = newLayout;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
+        barrier.image = m_TextureImage;
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.levelCount = m_MipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
 
@@ -181,18 +181,19 @@ namespace GfxRenderEngine
 
     void VK_Texture::CreateImage
     (
-        uint width, uint height, VkFormat format, VkImageTiling tiling,
-        VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
-        VkImage& image, VkDeviceMemory& imageMemory
+        VkFormat format, VkImageTiling tiling,
+        VkImageUsageFlags usage, VkMemoryPropertyFlags properties
     )
     {
         auto device = VK_Core::m_Device->Device();
+        m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 
+        m_ImageFormat = format;
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = width;
-        imageInfo.extent.height = height;
+        imageInfo.extent.width = m_Width;
+        imageInfo.extent.height = m_Height;
         imageInfo.extent.depth = 1;
         imageInfo.mipLevels = m_MipLevels;
         imageInfo.arrayLayers = 1;
@@ -204,7 +205,7 @@ namespace GfxRenderEngine
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         {
-            auto result = vkCreateImage(device, &imageInfo, nullptr, &image);
+            auto result = vkCreateImage(device, &imageInfo, nullptr, &m_TextureImage);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create image!");
@@ -212,7 +213,7 @@ namespace GfxRenderEngine
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(device, image, &memRequirements);
+        vkGetImageMemoryRequirements(device, m_TextureImage, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -220,14 +221,14 @@ namespace GfxRenderEngine
         allocInfo.memoryTypeIndex = VK_Core::m_Device->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
         {
-            auto result = vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory);
+            auto result = vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to allocate image memory in 'void VK_Texture::CreateImage'");
             }
         }
 
-        vkBindImageMemory(device, image, imageMemory, 0);
+        vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
     }
 
     void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -295,20 +296,14 @@ namespace GfxRenderEngine
 
         CreateImage
         (
-            m_Width,
-            m_Height,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            m_TextureImage,
-            m_TextureImageMemory
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
 
         TransitionImageLayout
         (
-            m_TextureImage,
-            VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
         );
@@ -322,41 +317,36 @@ namespace GfxRenderEngine
             1
         );
 
-        TransitionImageLayout
-        (
-            m_TextureImage,
-            VK_FORMAT_R8G8B8A8_SRGB,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        );
+        GenerateMipmaps();
+
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-                // Create a texture sampler
+        // Create a texture sampler
         // In Vulkan, textures are accessed by samplers
         // This separates sampling information from texture data.
         // This means you could have multiple sampler objects for the same texture with different settings
         // Note: Similar to the samplers available with OpenGL 3.3
-        VkSamplerCreateInfo sampler{};
-        sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        sampler.magFilter = VK_FILTER_NEAREST;
-        sampler.minFilter = VK_FILTER_NEAREST;
-        sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler.mipLodBias = 0.0f;
-        sampler.compareOp = VK_COMPARE_OP_NEVER;
-        sampler.minLod = 0.0f;
-        sampler.maxLod = 0.0f;
-        sampler.maxAnisotropy = 1.0;
-        sampler.anisotropyEnable = VK_FALSE;
-        sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        VkSamplerCreateInfo samplerCreateInfo{};
+        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+        samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+        samplerCreateInfo.mipLodBias = 0.0f;
+        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = static_cast<float>(m_MipLevels);
+        samplerCreateInfo.maxAnisotropy = 4.0;
+        samplerCreateInfo.anisotropyEnable = VK_TRUE;
+        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
         {
-            auto result = vkCreateSampler(device, &sampler, nullptr, &m_Sampler);
+            auto result = vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Sampler);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create sampler!");
@@ -371,7 +361,7 @@ namespace GfxRenderEngine
         VkImageViewCreateInfo view {};
         view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         view.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        view.format = VK_FORMAT_R8G8B8A8_SRGB;
+        view.format = m_ImageFormat;
         view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
         // A subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
         // It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
@@ -381,7 +371,7 @@ namespace GfxRenderEngine
         view.subresourceRange.layerCount = 1;
         // Linear tiling usually won't support mip maps
         // Only set mip map count if optimal tiling is used
-        view.subresourceRange.levelCount = 1;
+        view.subresourceRange.levelCount = m_MipLevels;
         // The view will be based on the texture's image
         view.image = m_TextureImage;
 
@@ -419,5 +409,80 @@ namespace GfxRenderEngine
     void VK_Texture::Resize(uint width, uint height)
     {
         LOG_CORE_CRITICAL("not implemented void VK_Texture::Resize(uint width, uint height)");
+    }
+
+    void VK_Texture::GenerateMipmaps()
+    {
+        VkFormatProperties formatProperties;
+        vkGetPhysicalDeviceFormatProperties(VK_Core::m_Device->PhysicalDevice(), m_ImageFormat, &formatProperties);
+
+        if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+        {
+            LOG_CORE_WARN("texture image format does not support linear blitting!");
+            return;
+        }
+
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.image = m_TextureImage;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.levelCount = 1;
+
+        int32_t mipWidth = m_Width;
+        int32_t mipHeight = m_Height;
+
+        for (uint i = 1; i < m_MipLevels; i++)
+        {
+            barrier.subresourceRange.baseMipLevel = i - 1;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageBlit blit{};
+            blit.srcOffsets[0] = {0, 0, 0};
+            blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
+            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel = i - 1;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount = 1;
+            blit.dstOffsets[0] = {0, 0, 0};
+            blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel = i;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount = 1;
+
+            vkCmdBlitImage(commandBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            if (mipWidth > 1) mipWidth /= 2;
+            if (mipHeight > 1) mipHeight /= 2;
+        }
+
+        barrier.subresourceRange.baseMipLevel = m_MipLevels - 1;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+
     }
 }
