@@ -31,10 +31,10 @@
 namespace GfxRenderEngine
 {
 
-    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager)
+    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, bool nearestFilter)
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_MipLevels(0),
+          m_DataFormat(0), m_MipLevels(0), m_NearestFilter(nearestFilter),
           m_TextureSlotManager(textureSlotManager)
     {
         m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
@@ -331,8 +331,16 @@ namespace GfxRenderEngine
         // Note: Similar to the samplers available with OpenGL 3.3
         VkSamplerCreateInfo samplerCreateInfo{};
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-        samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+        if (m_NearestFilter)
+        {
+            samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+            samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+        }
+        else
+        {
+            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+        }
         samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;

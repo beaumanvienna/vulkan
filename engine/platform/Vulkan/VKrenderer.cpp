@@ -128,7 +128,7 @@ namespace GfxRenderEngine
 
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
-        auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+        auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
         textureSpritesheet->Init(data, fileSize);
         textureSpritesheet->SetFilename("spritesheet");
 
@@ -390,7 +390,7 @@ namespace GfxRenderEngine
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
-            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.02f};
+            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.2f};
             m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();

@@ -36,7 +36,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager);
+        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, bool nearestFilter = false);
         VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type);
         ~VK_Texture();
 
@@ -82,6 +82,7 @@ namespace GfxRenderEngine
         VkDeviceMemory m_TextureImageMemory;
         VkFormat m_ImageFormat;
 
+        bool m_NearestFilter;
     public:
 
         VkSampler m_Sampler;

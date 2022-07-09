@@ -63,6 +63,11 @@ void main()
 {
     outPosition = vec4(fragPositionWorld, 1.0);
     outNormal   = vec4(texture(normalMap, fragUV).xyz, 1.0);
-    outColor    = texture(diffuseMap, fragUV);
+    vec4 col    = texture(diffuseMap, fragUV);
+    if (col.w < 1.0)
+    {
+        discard;
+    }
+    outColor    = col;
     outMaterial = texture(roughnessMetallicMap, fragUV);
 }
