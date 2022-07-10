@@ -63,7 +63,6 @@ namespace GfxRenderEngine
         enum class RenderTargetsGUI
         {
             ATTACHMENT_BACKBUFFER = 0,
-            ATTACHMENT_DEPTH,
             NUMBER_OF_ATTACHMENTS
         };
 

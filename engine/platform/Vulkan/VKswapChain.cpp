@@ -516,7 +516,7 @@ namespace GfxRenderEngine
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_BACKBUFFER;
@@ -747,27 +747,12 @@ namespace GfxRenderEngine
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = (uint)RenderTargetsGUI::ATTACHMENT_BACKBUFFER;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        // ATTACHMENT_DEPTH
-        VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = FindDepthFormat();
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = (uint)RenderTargetsGUI::ATTACHMENT_DEPTH;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         // subpass
         VkSubpassDescription subpassGUI = {};
@@ -778,7 +763,7 @@ namespace GfxRenderEngine
         subpassGUI.colorAttachmentCount = 1;
         subpassGUI.pColorAttachments = &colorAttachmentRef;
         subpassGUI.pResolveAttachments = nullptr;
-        subpassGUI.pDepthStencilAttachment = &depthAttachmentRef;
+        subpassGUI.pDepthStencilAttachment = nullptr;
         subpassGUI.preserveAttachmentCount = 0;
         subpassGUI.pPreserveAttachments = nullptr;
 
@@ -804,8 +789,7 @@ namespace GfxRenderEngine
         // render pass
         std::array<VkAttachmentDescription, (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS> attachments = 
         {
-            colorAttachment,
-            depthAttachment
+            colorAttachment
         };
         std::array<VkSubpassDescription, (uint)SubPassesGUI::NUMBER_OF_SUBPASSES> subpasses = 
         {
@@ -870,8 +854,7 @@ namespace GfxRenderEngine
         {
             std::array<VkImageView, (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS> attachments = 
             {
-                m_SwapChainImageViews[i],
-                m_DepthImageViews[i]
+                m_SwapChainImageViews[i]
             };
 
             VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
