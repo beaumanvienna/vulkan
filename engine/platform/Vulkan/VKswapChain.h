@@ -35,7 +35,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        enum SubPasses
+        enum class SubPasses
         {
             SUBPASS_GEOMETRY = 0,
             SUBPASS_LIGHTING,
@@ -43,7 +43,7 @@ namespace GfxRenderEngine
             NUMBER_OF_SUBPASSES
         };
 
-        enum RenderTargets
+        enum class RenderTargets
         {
             ATTACHMENT_BACKBUFFER = 0,
             ATTACHMENT_DEPTH,
@@ -54,7 +54,20 @@ namespace GfxRenderEngine
             NUMBER_OF_ATTACHMENTS
         };
 
-        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = NUMBER_OF_ATTACHMENTS - ATTACHMENT_GBUFFER_POSITION;
+        enum class SubPassesGUI
+        {
+            SUBPASS_GUI = 0,
+            NUMBER_OF_SUBPASSES
+        };
+
+        enum class RenderTargetsGUI
+        {
+            ATTACHMENT_BACKBUFFER = 0,
+            ATTACHMENT_DEPTH,
+            NUMBER_OF_ATTACHMENTS
+        };
+
+        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = (int)RenderTargets::NUMBER_OF_ATTACHMENTS - (int)RenderTargets::ATTACHMENT_GBUFFER_POSITION;
 
     public:
 
@@ -68,7 +81,9 @@ namespace GfxRenderEngine
         VK_SwapChain& operator=(const VK_SwapChain &) = delete;
 
         VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
+        VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
         VkRenderPass GetRenderPass() { return m_RenderPass; }
+        VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
@@ -91,12 +106,15 @@ namespace GfxRenderEngine
         bool CompareSwapFormats(const VK_SwapChain& swapChain) const;
 
     private:
+
         void Init();
         void CreateSwapChain();
         void CreateImageViews();
         void CreateDepthResources();
         void CreateRenderPass();
+        void CreateGUIRenderPass();
         void CreateFramebuffers();
+        void CreateGUIFramebuffers();
         void CreateSyncObjects();
 
         void CreateGBufferImages();
@@ -113,7 +131,9 @@ namespace GfxRenderEngine
         VkExtent2D m_SwapChainExtent;
 
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+        std::vector<VkFramebuffer> m_GUIFramebuffers;
         VkRenderPass m_RenderPass;
+        VkRenderPass m_GUIRenderPass;
 
         std::vector<VkImage> m_DepthImages;
         std::vector<VkImageView> m_DepthImageViews;

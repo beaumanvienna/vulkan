@@ -176,7 +176,7 @@ namespace GfxRenderEngine
             m_LightingDescriptorSets.data()
         );
 
-        m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
     
     void VK_Renderer::CreateLightingDescriptorSets()
@@ -347,7 +347,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
-        std::array<VkClearValue, VK_SwapChain::NUMBER_OF_ATTACHMENTS> clearValues{};
+        std::array<VkClearValue, (uint)VK_SwapChain::RenderTargets::NUMBER_OF_ATTACHMENTS> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -372,7 +372,37 @@ namespace GfxRenderEngine
 
     }
 
-    void VK_Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
+    void VK_Renderer::BeginGUIRenderPass(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_SwapChain->GetGUIRenderPass();
+        renderPassInfo.framebuffer = m_SwapChain->GetGUIFrameBuffer(m_CurrentImageIndex);
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+        renderPassInfo.clearValueCount = 0;
+        renderPassInfo.pClearValues = nullptr;
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChain->GetSwapChainExtent().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetSwapChainExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    }
+
+    void VK_Renderer::EndRenderPass(VkCommandBuffer commandBuffer)
     {
         ASSERT(m_FrameInProgress);
         ASSERT(commandBuffer == GetCurrentCommandBuffer());
@@ -473,6 +503,8 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
+            EndRenderPass(m_CurrentCommandBuffer);
+            BeginGUIRenderPass(m_CurrentCommandBuffer);
             m_Imgui->NewFrame();
             m_Imgui->Run();
             m_Imgui->Render(m_CurrentCommandBuffer);
@@ -483,7 +515,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            EndSwapChainRenderPass(m_CurrentCommandBuffer);
+            EndRenderPass(m_CurrentCommandBuffer);
             EndFrame();
         }
     }

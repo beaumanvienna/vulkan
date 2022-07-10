@@ -70,7 +70,8 @@ namespace GfxRenderEngine
         VkCommandBuffer BeginFrame();
         void EndFrame();
         void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-        void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
+        void BeginGUIRenderPass(VkCommandBuffer commandBuffer);
+        void EndRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
 
         virtual void BeginFrame(Camera* camera, entt::registry& registry) override;
