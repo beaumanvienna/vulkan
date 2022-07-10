@@ -24,6 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#define MAX_LIGHTS 10
 
 layout(location = 0)      in vec3  fragColor;
 layout(location = 1)      in vec3  fragPositionWorld;
@@ -47,7 +48,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    PointLight m_PointLights[10];
+    PointLight m_PointLights[MAX_LIGHTS];
     int m_NumberOfActiveLights;
 } ubo;
 
@@ -121,7 +122,7 @@ void main()
             alpha = texture(tex1,fragUV).w;
             pixelColor = texture(tex1,fragUV).xyz;
         }
-        if (alpha == 0) discard;
+        if (alpha == 0.0) discard;
         if (fragUnlit != 0)
         {
             diffusedLightColor = vec3(1.0, 1.0, 1.0);

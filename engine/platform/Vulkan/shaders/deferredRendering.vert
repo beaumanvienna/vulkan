@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define LIGHT_COUNT 10
+#define MAX_LIGHTS 10
 
 // this shader is called for one (!) triangle that covers NDC
 // the rest will be clipped
@@ -45,7 +45,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    PointLight m_PointLights[LIGHT_COUNT];
+    PointLight m_PointLights[MAX_LIGHTS];
     int m_NumberOfActiveLights;
 } ubo;
 

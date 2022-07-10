@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         glm::mat4 m_View{1.0f};
 
         // point light
-        glm::vec4 m_AmbientLightColor{1.0f, 1.0f, 1.0f, 0.2f};
+        glm::vec4 m_AmbientLightColor{0.0f, 0.0f, 0.0f, 0.0f};
         PointLight m_PointLights[MAX_LIGHTS];
         int m_NumberOfActiveLights;
     };

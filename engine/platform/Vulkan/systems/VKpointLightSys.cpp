@@ -82,6 +82,7 @@ namespace GfxRenderEngine
         pipelineConfig.m_AttributeDescriptions.clear();
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
+        pipelineConfig.subpass = VK_SwapChain::SUBPASS_TRANSPARENCY;
 
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
@@ -108,11 +109,12 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<PointLightComponent, TransformComponent>();
-        for (auto entity : view)
+        std::map<float, entt::entity>::reverse_iterator it;
+        for (it = m_SortedLight.rbegin(); it != m_SortedLight.rend(); it++)
         {
-            auto& transform  = view.get<TransformComponent>(entity);
-            auto& pointLight = view.get<PointLightComponent>(entity);
+            auto entity = it->second;
+            auto& transform  = registry.get<TransformComponent>(entity);
+            auto& pointLight = registry.get<PointLightComponent>(entity);
 
             PointLightPushConstants push{};
             push.m_Position = glm::vec4(transform.GetTranslation(), 1.f);
@@ -135,6 +137,7 @@ namespace GfxRenderEngine
 
     void VK_PointLightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
     {
+        m_SortedLight.clear();
         int lightIndex = 0;
         auto view = registry.view<PointLightComponent, TransformComponent>();
         for (auto entity : view)
@@ -143,6 +146,24 @@ namespace GfxRenderEngine
             auto& pointLight = view.get<PointLightComponent>(entity);
 
             ASSERT(lightIndex < MAX_LIGHTS);
+            
+            auto cameraPosition = frameInfo.m_Camera->GetPosition();
+            auto lightPosition  = transform.GetTranslation();
+            auto distanceVec    = cameraPosition-lightPosition;
+            float distanceToCam = glm::dot(distanceVec,distanceVec);
+
+            m_SortedLight.insert({distanceToCam, entity});
+
+            lightIndex++;
+        }
+
+        std::map<float, entt::entity>::reverse_iterator it;
+        lightIndex = 0;
+        for (it = m_SortedLight.rbegin(); it != m_SortedLight.rend(); it++)
+        {
+            auto entity = it->second;
+            auto& transform  = view.get<TransformComponent>(entity);
+            auto& pointLight = view.get<PointLightComponent>(entity);
 
             // copy light to ubo
             ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 1.f);

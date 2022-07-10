@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define LIGHT_COUNT 10
+#define MAX_LIGHTS 10
 
 layout(location = 0)       in  vec3  fragColor;
 layout(location = 1)       in  vec3  fragPositionWorld;
@@ -51,7 +51,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
     // point light
     vec4 m_AmbientLightColor;
-    PointLight m_PointLights[LIGHT_COUNT];
+    PointLight m_PointLights[MAX_LIGHTS];
     int m_NumberOfActiveLights;
 } ubo;
 

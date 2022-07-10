@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -63,5 +64,6 @@ namespace GfxRenderEngine
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
 
+        std::map<float, entt::entity> m_SortedLight;
     };
 }

@@ -41,9 +41,9 @@ void main()
     vec3 cameraRightWorld = {ubo.m_View[0][0], ubo.m_View[1][0], ubo.m_View[2][0]};
     vec3 cameraUpWorld = {ubo.m_View[0][1], ubo.m_View[1][1], ubo.m_View[2][1]};
 
-  vec3 positionWorld = push.m_Position.xyz
-    + push.m_Radius * fragOffset.x * cameraRightWorld
-    + push.m_Radius * fragOffset.y * cameraUpWorld;
+    vec3 positionWorld = push.m_Position.xyz
+        + push.m_Radius * fragOffset.x * cameraRightWorld
+        + push.m_Radius * fragOffset.y * cameraUpWorld;
 
-  gl_Position = ubo.m_Projection * ubo.m_View * vec4(positionWorld, 1.0);
+    gl_Position = ubo.m_Projection * ubo.m_View * vec4(positionWorld, 1.0);
 }

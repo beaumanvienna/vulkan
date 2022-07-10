@@ -160,7 +160,7 @@ namespace GfxRenderEngine
         }
 
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemSpriteRenderer                 = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -390,7 +390,7 @@ namespace GfxRenderEngine
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
-            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.2f};
+            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.1f};
             m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
@@ -457,7 +457,7 @@ namespace GfxRenderEngine
             // sprites
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
-//            m_PointLightSystem->Render(m_FrameInfo, registry);
+            m_PointLightSystem->Render(m_FrameInfo, registry);
         }
     }
 
