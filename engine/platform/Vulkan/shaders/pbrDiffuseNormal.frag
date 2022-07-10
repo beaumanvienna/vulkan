@@ -73,7 +73,7 @@ void main()
     outPosition = vec4(fragPositionWorld, 1.0);
     outNormal   = vec4(texture(normalMap, fragUV).xyz, 1.0);
     vec4 col    = texture(diffuseMap, fragUV);
-    if (col.w < 1.0)
+    if (col.w < 0.5)
     {
         discard;
     }

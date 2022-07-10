@@ -85,7 +85,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVolcano, m_Barrel;
+        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVolcano, m_Barrel, m_Sponza;
         entt::entity m_PointLight[MAX_LIGHTS], m_Volcano[3], m_Walkway[3], m_Duck, m_BarramundiFish;
         entt::entity m_GoldenDuck;
 

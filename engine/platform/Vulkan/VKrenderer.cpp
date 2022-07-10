@@ -176,7 +176,7 @@ namespace GfxRenderEngine
             m_LightingDescriptorSets.data()
         );
 
-        //m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        m_Imgui = Imgui::Create(m_SwapChain->GetRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
     
     void VK_Renderer::CreateLightingDescriptorSets()
@@ -473,7 +473,9 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            //m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
+            m_Imgui->NewFrame();
+            m_Imgui->Run();
+            m_Imgui->Render(m_CurrentCommandBuffer);
         }
     }
 
@@ -481,10 +483,6 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            //m_Imgui->NewFrame();
-            //m_Imgui->Run();
-            //m_Imgui->Render(m_CurrentCommandBuffer);
-
             EndSwapChainRenderPass(m_CurrentCommandBuffer);
             EndFrame();
         }

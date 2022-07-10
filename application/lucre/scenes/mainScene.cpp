@@ -111,6 +111,18 @@ namespace LucreApp
         );
         m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
+        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::Scene::barrel");
+        if (m_Barrel != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Barrel);
+            transform.SetTranslationY(0.294f);
+        }
+        m_Sponza = m_Dictionary.Retrieve("application/lucre/models/dont_upload/sponza/glTF/Sponza.gltf::::");
+        if (m_Sponza != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Sponza);
+            transform.SetTranslationX(0.229f);
+        }
     }
 
     void MainScene::Load()
