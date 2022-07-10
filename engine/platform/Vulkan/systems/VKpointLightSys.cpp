@@ -148,7 +148,7 @@ namespace GfxRenderEngine
             auto& pointLight = view.get<PointLightComponent>(entity);
 
             ASSERT(lightIndex < MAX_LIGHTS);
-            
+
             auto cameraPosition = frameInfo.m_Camera->GetPosition();
             auto lightPosition  = transform.GetTranslation();
             auto distanceVec    = cameraPosition-lightPosition;

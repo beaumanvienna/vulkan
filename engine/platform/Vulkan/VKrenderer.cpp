@@ -178,7 +178,7 @@ namespace GfxRenderEngine
 
         m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
-    
+
     void VK_Renderer::CreateLightingDescriptorSets()
     {
         m_LightingDescriptorSets.resize(m_SwapChain->ImageCount());
@@ -431,7 +431,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag)
     {
-        
+
         entt::entity gameObject = node.GetGameObject();
         auto& transform = registry.get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;

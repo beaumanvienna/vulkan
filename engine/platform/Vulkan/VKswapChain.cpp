@@ -691,7 +691,7 @@ namespace GfxRenderEngine
         dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         dependencies[1].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        
+
         dependencies[2].srcSubpass      = VK_SUBPASS_EXTERNAL;
         dependencies[2].dstSubpass      = (uint)SubPasses::SUBPASS_GEOMETRY;
         dependencies[2].srcStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
