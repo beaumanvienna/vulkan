@@ -82,6 +82,8 @@ namespace GfxRenderEngine
         virtual void SubmitGUI(entt::registry& registry) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
+        virtual void SetAmbientLightIntensity(float ambientLightIntensity) override { m_AmbientLightIntensity = ambientLightIntensity; }
+        virtual float GetAmbientLightIntensity() override { return m_AmbientLightIntensity; }
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
@@ -132,5 +134,6 @@ namespace GfxRenderEngine
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LightingDescriptorSets;
 
+        float m_AmbientLightIntensity;
     };
 }

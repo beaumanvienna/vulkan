@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 128
 
 layout (input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout (input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;

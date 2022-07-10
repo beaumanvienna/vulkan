@@ -50,6 +50,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
+        m_Renderer->SetAmbientLightIntensity(0.05f);
 
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
@@ -117,11 +118,91 @@ namespace LucreApp
             auto& transform = m_Registry.get<TransformComponent>(m_Barrel);
             transform.SetTranslationY(0.294f);
         }
-        m_Sponza = m_Dictionary.Retrieve("application/lucre/models/dont_upload/sponza/glTF/Sponza.gltf::::");
+
+        m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::Scene::node_damagedHelmet_-6514");
+        if (m_Helmet != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Helmet);
+            transform.SetScale({0.1f, 0.1f, 0.1f});
+            transform.SetTranslation({1.414f, 0.465f, 0.0f});
+        }
+
+        m_ToyCar = m_Dictionary.Retrieve("application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::::root");
+        if (m_ToyCar != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_ToyCar);
+            transform.SetScale({5.0f, 5.0f, 5.0f});
+            transform.SetTranslation({-1.046f, 0.094f, 0.0f});
+        }
+        m_Sponza = m_Dictionary.Retrieve("application/lucre/models/assets/Sponza/glTF/Sponza.gltf::::");
         if (m_Sponza != entt::null)
         {
+            // place sponze scene
             auto& transform = m_Registry.get<TransformComponent>(m_Sponza);
             transform.SetTranslationX(0.229f);
+
+            // place static lights for sponza scene
+            float intensity = 5.0f;
+            float lightRadius = 0.1f;
+            float height1 = 0.2f;
+            float height2 = 1.3f;
+            float height3 = 2.4f;
+            float height4 = 3.5f;
+            std::vector<glm::vec3> lightPositions =
+            {
+                {-0.285, height1, -1.542},
+                {-3.2,   height1, -1.5420},
+                {-6.1,   height1, -1.5420},
+                { 2.7,   height1, -1.5420},
+                { 5.6,   height1, -1.5420},
+                {-0.285, height1, 1.2},
+                {-3.2,   height1, 1.2},
+                {-6.1,   height1, 1.2},
+                { 2.7,   height1, 1.2},
+                { 5.6,   height1, 1.2},
+
+                {-0.285, height2, -1.542},
+                {-3.2,   height2, -1.5420},
+                {-6.1,   height2, -1.5420},
+                { 2.7,   height2, -1.5420},
+                { 5.6,   height2, -1.5420},
+                {-0.285, height2, 1.2},
+                {-3.2,   height2, 1.2},
+                {-6.1,   height2, 1.2},
+                { 2.7,   height2, 1.2},
+                { 5.6,   height2, 1.2},
+
+                {-0.285, height3, -1.542},
+                {-3.2,   height3, -1.5420},
+                {-6.1,   height3, -1.5420},
+                { 2.7,   height3, -1.5420},
+                { 5.6,   height3, -1.5420},
+                {-0.285, height3, 1.2},
+                {-3.2,   height3, 1.2},
+                {-6.1,   height3, 1.2},
+                { 2.7,   height3, 1.2},
+                { 5.6,   height3, 1.2},
+
+                {-0.285, height4, -1.542},
+                {-3.2,   height4, -1.5420},
+                {-6.1,   height4, -1.5420},
+                { 2.7,   height4, -1.5420},
+                { 5.6,   height4, -1.5420},
+                {-0.285, height4, 1.2},
+                {-3.2,   height4, 1.2},
+                {-6.1,   height4, 1.2},
+                { 2.7,   height4, 1.2},
+                { 5.6,   height4, 1.2}
+            };
+
+            for (int i = 0; i < lightPositions.size(); i++)
+            {
+                auto entity = CreatePointLight(intensity, lightRadius);
+                TransformComponent transform{};
+                transform.SetTranslation(lightPositions[i]);
+                m_Registry.emplace<TransformComponent>(entity, transform);
+                m_Registry.emplace<Group2>(entity, true);
+            }
         }
     }
 

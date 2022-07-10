@@ -24,6 +24,7 @@
 #include "scene/scene.h"
 
 #include "systems/VKpointLightSys.h"
+#include "auxiliary/instrumentation.h"
 
 #include "VKswapChain.h"
 #include "VKmodel.h"
@@ -137,6 +138,7 @@ namespace GfxRenderEngine
 
     void VK_PointLightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
     {
+        PROFILE_SCOPE("VK_PointLightSystem::Update");
         m_SortedLight.clear();
         int lightIndex = 0;
         auto view = registry.view<PointLightComponent, TransformComponent>();

@@ -38,7 +38,7 @@ namespace GfxRenderEngine
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device}, m_FrameCounter{0},
-          m_CurrentImageIndex{0},
+          m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f},
           m_CurrentFrameIndex{0},
           m_FrameInProgress{false}
     {
@@ -420,7 +420,7 @@ namespace GfxRenderEngine
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = m_Camera->GetProjectionMatrix();
             ubo.m_View = m_Camera->GetViewMatrix();
-            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, 0.1f};
+            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
             m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();

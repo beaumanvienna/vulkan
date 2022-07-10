@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 128
 
 layout(location = 0) in vec3  position;
 layout(location = 1) in vec3  color;

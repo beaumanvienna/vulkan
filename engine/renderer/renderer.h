@@ -60,6 +60,9 @@ namespace GfxRenderEngine
         //void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const float depth, const glm::vec4& color = glm::vec4(1.0f));
         void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f));
 
+        virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
+        virtual float GetAmbientLightIntensity() = 0;
+
     private:
 
         //void FillVertexBuffer(const int textureSlot, const glm::mat4& position, const float depth, const glm::vec4& color, const glm::vec4& textureCoordinates);

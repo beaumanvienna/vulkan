@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 128
 
 // this shader is called for one (!) triangle that covers NDC
 // the rest will be clipped

@@ -31,7 +31,7 @@
 
 namespace GfxRenderEngine
 {
-    constexpr int MAX_LIGHTS = 10;
+    constexpr int MAX_LIGHTS = 128;
     class Model;
 
     class TransformComponent

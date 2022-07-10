@@ -2,9 +2,12 @@
 ---
 
 glTF-files:
+  - application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf
   - application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf
   - application/lucre/models/barrel/barrel.gltf
-  - application/lucre/models/dont_upload/sponza/glTF/Sponza.gltf
+  - application/lucre/models/assets/Sponza/glTF/Sponza.gltf
+  - application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf
+
 
 prefabs:
   - application/lucre/prefabs/duck.prefab

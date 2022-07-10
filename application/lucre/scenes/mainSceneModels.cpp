@@ -216,7 +216,7 @@ namespace LucreApp
         }
         {
 
-            std::vector<glm::vec3> lightColors
+            std::vector<glm::vec3> lightColors =
             {
                 {1.f, .1f, .1f},
                 {.1f, .1f, 1.f},

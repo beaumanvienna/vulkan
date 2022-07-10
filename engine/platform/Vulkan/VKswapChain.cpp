@@ -23,6 +23,7 @@
 #include "engine.h"
 
 #include "VKswapChain.h"
+#include "auxiliary/instrumentation.h"
 
 namespace GfxRenderEngine
 {
@@ -124,6 +125,7 @@ namespace GfxRenderEngine
 
     VkResult VK_SwapChain::AcquireNextImage(uint *imageIndex)
     {
+            PROFILE_SCOPE("waitFor InFlightFences");
         vkWaitForFences(
             m_Device->Device(),
             1,
@@ -147,6 +149,7 @@ namespace GfxRenderEngine
     {
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
+            PROFILE_SCOPE("waitFor ImagesInFlight");
             vkWaitForFences(m_Device->Device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
         m_ImagesInFlight[*imageIndex] = m_InFlightFences[m_CurrentFrame];
