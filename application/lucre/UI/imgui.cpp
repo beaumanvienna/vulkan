@@ -45,6 +45,7 @@ namespace LucreApp
     bool  ImGUI::m_UseScale = false;
     bool  ImGUI::m_UseRotate = false;
     bool  ImGUI::m_UseTranslate = false;
+    entt::entity ImGUI::m_MaxGameObjects = (entt::entity)0;
 
     void ImGUI::DebugWindow()
     {
@@ -75,7 +76,7 @@ namespace LucreApp
             gameObjectLabel += std::string(" ") + label;
         }
 
-        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, 17);
+        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, (int)m_MaxGameObjects);
         // roughness
         ImGui::Checkbox("use###001", &m_UseRoughness);
         ImGui::SameLine();

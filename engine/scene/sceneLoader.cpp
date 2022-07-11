@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "auxiliary/file.h"
+#include "auxiliary/debug.h"
 #include "scene/components.h"
 #include "scene/sceneLoader.h"
 
@@ -31,8 +32,9 @@ namespace GfxRenderEngine
     {
     }
 
-    void SceneLoader::Deserialize()
+    void SceneLoader::Deserialize(entt::entity& maxGameObjects)
     {
+
         YAML::Node yamlNode;
         auto& filepath = m_Scene.m_Filepath;
 
@@ -47,22 +49,55 @@ namespace GfxRenderEngine
             return;
         }
 
-
-        if (yamlNode["glTF-files"])
+        for(const auto& gltfFile : yamlNode["glTF-files"])
         {
-            const auto& gltfFileList = yamlNode["glTF-files"];
-            for (const auto& gltfFile : gltfFileList)
+            std::string filename = gltfFile.first.as<std::string>();
+            if (EngineCore::FileExists(filename))
             {
-                if (EngineCore::FileExists(gltfFile.as<std::string>()))
+                LOG_CORE_WARN("Scene loader found {0}", filename);
+                Builder builder{filename};
+                auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+
+                switch (gltfFile.second.Type())
                 {
-                    LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
-                    Builder builder{gltfFile.as<std::string>()};
-                    builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                    case YAML::NodeType::Null:
+                        break;
+                    case YAML::NodeType::Scalar:
+                        break;
+                    case YAML::NodeType::Sequence:
+                        break;
+                    case YAML::NodeType::Map:
+                    {
+                        auto& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                        for(const auto& attribute : gltfFile.second)
+                        {
+                            if (attribute.first.as<std::string>() == "translation")
+                            {
+                                auto translation = ConvertToVec3(attribute.second);
+                                transform.SetTranslation(translation);
+                            } else
+                            if (attribute.first.as<std::string>() == "scale")
+                            {
+                                auto scale = ConvertToVec3(attribute.second);
+                                transform.SetScale(scale);
+                            } else
+                            if (attribute.first.as<std::string>() == "rotation")
+                            {
+                                auto rotation = ConvertToVec3(attribute.second);
+                                transform.SetRotation(rotation);
+                            } 
+                        }
+                        break;
+                    }
+                    case YAML::NodeType::Undefined:
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
-                }
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
             }
         }
 
@@ -71,7 +106,7 @@ namespace GfxRenderEngine
             const auto& prefabsFileList = yamlNode["prefabs"];
             for (const auto& prefab : prefabsFileList)
             {
-                LoadPrefab(prefab.as<std::string>());
+                LoadPrefab(prefab.as<std::string>(), maxGameObjects);
             }
         }
 
@@ -91,7 +126,20 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoader::LoadPrefab(const std::string& filepath)
+    glm::vec3 SceneLoader::ConvertToVec3(const YAML::Node& node)
+    {
+        float values[3] = {0.0f, 0.0f, 0.0f};
+
+        uint i = 0;
+        for(const auto& vectorElement : node)
+        {
+            values[i] = vectorElement.as<float>();
+            i++;
+        }
+        return glm::vec3(values[0], values[1], values[2]);
+    }
+
+    void SceneLoader::LoadPrefab(const std::string& filepath, entt::entity& maxGameObjects)
     {
         YAML::Node yamlNode;
 
@@ -115,7 +163,8 @@ namespace GfxRenderEngine
                 {
                     LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
                     Builder builder{gltfFile.as<std::string>()};
-                    builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                    auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                    if ((entity != entt::null) && (maxGameObjects < entity)) maxGameObjects = entity;
                 }
                 else
                 {
@@ -129,7 +178,7 @@ namespace GfxRenderEngine
             const auto& prefabsFileList = yamlNode["prefabs"];
             for (const auto& prefab : prefabsFileList)
             {
-                LoadPrefab(prefab.as<std::string>());
+                LoadPrefab(prefab.as<std::string>(), maxGameObjects);
             }
         }
 

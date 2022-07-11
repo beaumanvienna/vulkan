@@ -1,13 +1,18 @@
 # Lucre scene description file
 ---
 
-glTF-files:
-  - application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf
-  - application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf
-  - application/lucre/models/barrel/barrel.gltf
-  - application/lucre/models/assets/Sponza/glTF/Sponza.gltf
-  - application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf
-
+glTF-files :
+    application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf:
+        translation:    [-1.046,  0.094,  0.000]
+        scale:          [ 5.000,  5.000,  5.000]
+    application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf:
+    application/lucre/models/barrel/barrel.gltf:
+        translation:    [ 1.900,  0.294,  0.000]
+    application/lucre/models/assets/Sponza/glTF/Sponza.gltf:
+        translation:    [ 0.229,  0.000,  0.000]
+    application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+        translation:    [ 1.414,  0.465,  0.000]
+        scale:          [ 0.100,  0.100,  0.100]
 
 prefabs:
   - application/lucre/prefabs/duck.prefab

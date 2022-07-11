@@ -51,6 +51,7 @@ namespace LucreApp
         static bool  m_UseScale;
         static bool  m_UseRotate;
         static bool  m_UseTranslate;
+        static entt::entity m_MaxGameObjects;
 
     private:
 

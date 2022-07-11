@@ -124,7 +124,7 @@ namespace GfxRenderEngine
         Builder(const std::string& filepath);
 
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
-        void LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
+        entt::entity LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
         void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 
@@ -157,6 +157,7 @@ namespace GfxRenderEngine
         std::vector<Material> m_Materials;
         TransformComponent* m_Transform;
         uint m_ImageOffset;
+        entt::entity m_GameObject;
 
     };
 

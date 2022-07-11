@@ -113,27 +113,8 @@ namespace LucreApp
         m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
         m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::Scene::barrel");
-        if (m_Barrel != entt::null)
-        {
-            auto& transform = m_Registry.get<TransformComponent>(m_Barrel);
-            transform.SetTranslationY(0.294f);
-        }
-
         m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::Scene::node_damagedHelmet_-6514");
-        if (m_Helmet != entt::null)
-        {
-            auto& transform = m_Registry.get<TransformComponent>(m_Helmet);
-            transform.SetScale({0.1f, 0.1f, 0.1f});
-            transform.SetTranslation({1.414f, 0.465f, 0.0f});
-        }
-
         m_ToyCar = m_Dictionary.Retrieve("application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::::root");
-        if (m_ToyCar != entt::null)
-        {
-            auto& transform = m_Registry.get<TransformComponent>(m_ToyCar);
-            transform.SetScale({5.0f, 5.0f, 5.0f});
-            transform.SetTranslation({-1.046f, 0.094f, 0.0f});
-        }
         m_Sponza = m_Dictionary.Retrieve("application/lucre/models/assets/Sponza/glTF/Sponza.gltf::::");
         if (m_Sponza != entt::null)
         {
@@ -208,8 +189,9 @@ namespace LucreApp
 
     void MainScene::Load()
     {
+        ImGUI::m_MaxGameObjects = (entt::entity)0;
         SceneLoader loader(*this);
-        loader.Deserialize();
+        loader.Deserialize(ImGUI::m_MaxGameObjects);
     }
 
     void MainScene::LoadScripts()

@@ -286,7 +286,6 @@ namespace GfxRenderEngine
         if (node.matrix.size() == 16)
         {
             transform.SetMat4(glm::make_mat4x4(node.matrix.data()));
-            
         }
         else
         {
@@ -457,15 +456,17 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform)
+    entt::entity Builder::LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform)
     {
         std::string warn, err;
+        m_GameObject = entt::null;
 
         stbi_set_flip_vertically_on_load(false);
 
         if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
         {
             LOG_CORE_CRITICAL("LoadGLTF errors: {0}, warnings: {1}", err, warn);
+            return entt::null;
         }
 
         LoadImagesGLTF();
@@ -478,6 +479,7 @@ namespace GfxRenderEngine
             {
                 //this scene has multiple nodes -> create a group node
                 auto entity = registry.create();
+                if (m_GameObject == entt::null) m_GameObject = entity;
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
 
@@ -487,14 +489,10 @@ namespace GfxRenderEngine
 
                 currentNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
             }
-            else if (scene.nodes.size() == 1)
-            {
-                auto& name = m_GltfModel.nodes[scene.nodes[0]].name;
-            }
-            else
+            else if (scene.nodes.size() < 1)
             {
                 LOG_CORE_WARN("Builder::LoadGLTF: empty scene in {0}", m_Filepath);
-                return;
+                return entt::null;
             }
 
             for (uint i = 0; i < scene.nodes.size(); i++)
@@ -502,6 +500,7 @@ namespace GfxRenderEngine
                 ProcessNode(scene, scene.nodes[i], registry, dictionary, currentNode);
             }
         }
+        return m_GameObject;
     }
 
     void Builder::ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode)
@@ -515,6 +514,7 @@ namespace GfxRenderEngine
             if (node.children.size())
             {
                 auto entity = registry.create();
+                if (m_GameObject == entt::null) m_GameObject = entity;
                 TransformComponent transform{};
                 LoadTransformationMatrix(transform, nodeIndex);
                 registry.emplace<TransformComponent>(entity, transform);
@@ -561,6 +561,8 @@ namespace GfxRenderEngine
         auto entity = registry.create();
 
         auto longName = m_Filepath + std::string("::") + scene.name + std::string("::") + nodeName;
+
+        if (m_GameObject == entt::null) m_GameObject = entity;
 
         TreeNode sceneHierarchyNode{entity, nodeName, longName};
         TreeNode* newNode = currentNode->AddChild(sceneHierarchyNode, dictionary);
