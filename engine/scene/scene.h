@@ -45,7 +45,7 @@ namespace GfxRenderEngine
     public:
 
         Scene() = delete;
-        Scene(const std::string& filepath);
+        Scene(const std::string& filepath, const std::string& alternativeFilepath);
         virtual ~Scene();
 
         virtual void Start() = 0;
@@ -74,6 +74,7 @@ namespace GfxRenderEngine
 
         std::string m_Name;
         std::string m_Filepath;
+        std::string m_AlternativeFilepath;
         entt::registry m_Registry;
         TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
         Dictionary m_Dictionary;

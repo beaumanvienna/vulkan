@@ -33,7 +33,8 @@ namespace LucreApp
 
     public:
 
-        SplashScene(const std::string& filepath) : Scene(filepath) {}
+        SplashScene(const std::string& filepath, const std::string& alternativeFilepath)
+            : Scene(filepath, alternativeFilepath) {}
         ~SplashScene() override {}
 
         virtual void Start() override;

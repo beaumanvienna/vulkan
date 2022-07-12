@@ -29,7 +29,6 @@
 #include "events/mouseEvent.h"
 #include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
-#include "scene/sceneLoader.h"
 #include "auxiliary/math.h"
 
 #include "mainScene.h"
@@ -39,9 +38,9 @@
 namespace LucreApp
 {
 
-    MainScene::MainScene(const std::string& filepath)
-        : Scene(filepath), m_GamepadInput{}, m_Fire{false},
-          m_LaunchVolcanoTimer(1500)
+    MainScene::MainScene(const std::string& filepath, const std::string& alternativeFilepath)
+            : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false},
+          m_LaunchVolcanoTimer(1500), m_SceneLoader{*this}
     {
     }
 
@@ -190,8 +189,7 @@ namespace LucreApp
     void MainScene::Load()
     {
         ImGUI::m_MaxGameObjects = (entt::entity)0;
-        SceneLoader loader(*this);
-        loader.Deserialize(ImGUI::m_MaxGameObjects);
+        m_SceneLoader.Deserialize(ImGUI::m_MaxGameObjects);
     }
 
     void MainScene::LoadScripts()
@@ -222,6 +220,7 @@ namespace LucreApp
 
     void MainScene::Stop()
     {
+        m_SceneLoader.Serialize();
     }
 
     void MainScene::OnUpdate(const Timestep& timestep)

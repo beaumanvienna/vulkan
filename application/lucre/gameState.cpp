@@ -38,9 +38,9 @@ namespace LucreApp
 
     void GameState::Start()
     {
-        m_Scenes.emplace(State::SPLASH, std::make_unique<SplashScene>("application/lucre/sceneDescriptions/splash.scene"));
-        m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("application/lucre/sceneDescriptions/main.scene"));
-        m_Scenes.emplace(State::SETTINGS, std::make_unique<SettingsScene>("application/lucre/sceneDescriptions/settings.scene"));
+        m_Scenes.emplace(State::SPLASH, std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene"));
+        m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
+        m_Scenes.emplace(State::SETTINGS, std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene"));
 
         SetState(State::SPLASH);
     }

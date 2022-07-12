@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "engine.h"
 #include "scene/scene.h"
 #include "yaml-cpp/yaml.h"
@@ -47,6 +49,8 @@ namespace GfxRenderEngine
     private:
 
         Scene& m_Scene;
+        std::unordered_map<std::string, entt::entity> m_gltfFiles;
+        std::unordered_map<std::string, entt::entity> m_PrefabFiles;
 
     };
 }

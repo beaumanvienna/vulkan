@@ -33,7 +33,8 @@ namespace LucreApp
 
     public:
 
-        SettingsScene(const std::string& filepath) : Scene(filepath) {}
+        SettingsScene(const std::string& filepath, const std::string& alternativeFilepath)
+            : Scene(filepath, alternativeFilepath) {}
         ~SettingsScene() override {}
 
         virtual void Start() override;

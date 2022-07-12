@@ -27,6 +27,7 @@
 #include "scene/scene.h"
 #include "scene/entity.h"
 #include "scene/components.h"
+#include "scene/sceneLoader.h"
 #include "scene/particleSystem.h"
 #include "sprite/spriteAnimation.h"
 #include "renderer/texture.h"
@@ -47,7 +48,7 @@ namespace LucreApp
 
     public:
 
-        MainScene(const std::string& filepath);
+        MainScene(const std::string& filepath, const std::string& alternativeFilepath);
         ~MainScene() override {}
 
         virtual void Start() override;
@@ -79,6 +80,7 @@ namespace LucreApp
     private:
 
         std::shared_ptr<Renderer> m_Renderer;
+        SceneLoader m_SceneLoader;
 
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;

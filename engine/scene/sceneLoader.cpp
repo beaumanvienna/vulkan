@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include <fstream>
+
 #include "auxiliary/file.h"
 #include "auxiliary/debug.h"
 #include "scene/components.h"
@@ -36,16 +38,20 @@ namespace GfxRenderEngine
     {
 
         YAML::Node yamlNode;
-        auto& filepath = m_Scene.m_Filepath;
 
-        if (EngineCore::FileExists(filepath))
+        if (EngineCore::FileExists(m_Scene.m_Filepath))
         {
-            LOG_CORE_WARN("Loading scene {0}", filepath);
-            yamlNode = YAML::LoadFile(filepath);
+            LOG_CORE_WARN("Loading scene {0}", m_Scene.m_Filepath);
+            yamlNode = YAML::LoadFile(m_Scene.m_Filepath);
+        }
+        else if (EngineCore::FileExists(m_Scene.m_AlternativeFilepath))
+        {
+            LOG_CORE_WARN("Loading scene {0}", m_Scene.m_AlternativeFilepath);
+            yamlNode = YAML::LoadFile(m_Scene.m_AlternativeFilepath);
         }
         else
         {
-            LOG_CORE_CRITICAL("Scene loader could not find file {0}", filepath);
+            LOG_CORE_CRITICAL("Scene loader could neither find file {0} nor file {1}", m_Scene.m_Filepath, m_Scene.m_AlternativeFilepath);
             return;
         }
 
@@ -58,14 +64,13 @@ namespace GfxRenderEngine
                 Builder builder{filename};
                 auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
 
+                if (entity != entt::null)
+                {
+                    m_gltfFiles[filename] = entity;
+                }
+
                 switch (gltfFile.second.Type())
                 {
-                    case YAML::NodeType::Null:
-                        break;
-                    case YAML::NodeType::Scalar:
-                        break;
-                    case YAML::NodeType::Sequence:
-                        break;
                     case YAML::NodeType::Map:
                     {
                         auto& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
@@ -75,13 +80,13 @@ namespace GfxRenderEngine
                             {
                                 auto translation = ConvertToVec3(attribute.second);
                                 transform.SetTranslation(translation);
-                            } else
-                            if (attribute.first.as<std::string>() == "scale")
+                            }
+                            else if (attribute.first.as<std::string>() == "scale")
                             {
                                 auto scale = ConvertToVec3(attribute.second);
                                 transform.SetScale(scale);
-                            } else
-                            if (attribute.first.as<std::string>() == "rotation")
+                            }
+                            else if (attribute.first.as<std::string>() == "rotation")
                             {
                                 auto rotation = ConvertToVec3(attribute.second);
                                 transform.SetRotation(rotation);
@@ -89,8 +94,6 @@ namespace GfxRenderEngine
                         }
                         break;
                     }
-                    case YAML::NodeType::Undefined:
-                        break;
                     default:
                         break;
                 }
@@ -106,7 +109,9 @@ namespace GfxRenderEngine
             const auto& prefabsFileList = yamlNode["prefabs"];
             for (const auto& prefab : prefabsFileList)
             {
-                LoadPrefab(prefab.as<std::string>(), maxGameObjects);
+                auto filename = prefab.as<std::string>();
+                LoadPrefab(filename, maxGameObjects);
+                m_PrefabFiles[filename] = entt::null;
             }
         }
 
@@ -200,5 +205,71 @@ namespace GfxRenderEngine
 
     void SceneLoader::Serialize()
     {
+        auto& filepath = m_Scene.m_Filepath;
+        YAML::Emitter out;
+
+        out << YAML::Comment("Lucre scene description file");
+
+        out << YAML::BeginMap;
+
+        // glTF-files
+        {
+            out << YAML::Key << "glTF-files";
+            out << YAML::BeginMap;
+    
+            for (const auto& [filename, entity] : m_gltfFiles)
+            {
+                auto& registry = m_Scene.GetRegistry();
+                auto transform = registry.get<TransformComponent>(entity);
+                auto translation = transform.GetTranslation();
+                auto scale = transform.GetScale();
+                auto rotation = transform.GetRotation();
+                out << YAML::Key << filename;
+                {
+                    out << YAML::BeginMap;
+                    out << YAML::Key << "translation" 
+                        << YAML::Value << YAML::Flow
+                        << YAML::BeginSeq
+                            << translation.x 
+                            << translation.y
+                            << translation.z
+                        << YAML::EndSeq;
+                        out << YAML::Key << "scale" 
+                        << YAML::Value << YAML::Flow
+                        << YAML::BeginSeq
+                            << scale.x
+                            << scale.y
+                            << scale.z
+                        << YAML::EndSeq;
+                        out << YAML::Key << "rotation"
+                        << YAML::Value << YAML::Flow
+                        << YAML::BeginSeq
+                            << rotation.x
+                            << rotation.y
+                            << rotation.z
+                        << YAML::EndSeq;
+                    out << YAML::EndMap;
+                }
+            }    
+            out << YAML::EndMap;
+        }
+
+        // prefabs
+        {
+            out << YAML::Key << "prefabs";
+            out << YAML::BeginSeq;
+    
+            for (const auto& [filename, entity] : m_PrefabFiles)
+            {
+                out << YAML::Key << filename;
+            }    
+            out << YAML::EndSeq;
+        }
+
+        out << YAML::EndMap;
+
+        std::ofstream fout(filepath);
+        fout << out.c_str();
+
     }
 }
