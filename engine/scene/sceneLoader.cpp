@@ -220,10 +220,10 @@ namespace GfxRenderEngine
             for (const auto& [filename, entity] : m_gltfFiles)
             {
                 auto& registry = m_Scene.GetRegistry();
-                auto transform = registry.get<TransformComponent>(entity);
-                auto translation = transform.GetTranslation();
-                auto scale = transform.GetScale();
-                auto rotation = transform.GetRotation();
+                auto& transform = registry.get<TransformComponent>(entity);
+                auto& translation = transform.GetTranslation();
+                auto& scale = transform.GetScale();
+                auto& rotation = transform.GetRotation();
                 out << YAML::Key << filename;
                 {
                     out << YAML::BeginMap;
