@@ -25,6 +25,7 @@
 #include "lucre.h"
 #include "engine.h"
 #include "scene/scene.h"
+#include "renderer/cameraController.h"
 
 namespace LucreApp
 {
@@ -40,7 +41,7 @@ namespace LucreApp
         virtual void Start() override;
         virtual void Stop() override;
         virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_Camera; }
+        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
         virtual void OnEvent(Event& event) override;
         virtual void OnResize() override;
 
@@ -48,11 +49,16 @@ namespace LucreApp
         virtual void Save() override {}
         virtual void LoadScripts() override {}
         virtual void StartScripts() override {}
-        
 
     private:
 
-        Camera m_Camera;
+        std::shared_ptr<Renderer> m_Renderer;
+        std::shared_ptr<CameraController> m_CameraController;
+
+        static constexpr uint WALK_ANIMATION_SPRITES = 6;
+        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES];
+        SpriteSheet m_SpritesheetWalk;
+        SpriteAnimation m_WalkAnimation;
 
     };
 }

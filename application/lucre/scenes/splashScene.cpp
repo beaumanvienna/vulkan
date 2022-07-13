@@ -32,6 +32,50 @@ namespace LucreApp
     {
         m_IsRunning = true;
         Lucre::m_Application->PlaySound(IDR_WAVES);
+
+        m_Renderer = Engine::m_Engine->GetRenderer();
+
+        // create orthogonal camera 
+        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        auto& camera = m_CameraController->GetCamera();
+        auto position = glm::vec3(0.0f, 0.0f, 1.0f);
+        auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        camera.SetViewDirection(position, direction);
+
+        // --- sprites ---
+        float scaleHero = 1.5f;
+        // horn
+        m_SpritesheetWalk.AddSpritesheetRow
+        (
+            Lucre::m_Spritesheet->GetSprite(I_WALK),
+            WALK_ANIMATION_SPRITES /* frames */, 
+            scaleHero /* scale) */
+        );
+        m_WalkAnimation.Create(500ms /* per frame */, &m_SpritesheetWalk);
+        m_WalkAnimation.Start();
+
+        for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
+        {
+            Builder builder{};
+
+            auto sprite = m_SpritesheetWalk.GetSprite(i);
+            glm::mat4 position = sprite->GetScaleMatrix();
+            builder.LoadSprite(sprite, position, 10.0f /*amplification*/);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"walk animation", model};
+            mesh.m_Enabled = false;
+
+            m_Guybrush[i] = CreateEntity();
+            m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
+
+            TransformComponent transform{};
+            transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
+            transform.SetScale(glm::vec3{0.005f});
+            m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
+
+            SpriteRendererComponent spriteRendererComponent{};
+            m_Registry.emplace<SpriteRendererComponent>(m_Guybrush[i], spriteRendererComponent);
+        }
     }
 
     void SplashScene::Stop()
@@ -40,8 +84,31 @@ namespace LucreApp
 
     void SplashScene::OnUpdate(const Timestep& timestep)
     {
-        // exit right away
-        m_IsRunning = false;
+        {
+            static uint previousFrame = 0;
+            if (!m_WalkAnimation.IsRunning()) m_WalkAnimation.Start();
+            if (m_WalkAnimation.IsNewFrame())
+            {
+                auto& previousMesh = m_Registry.get<MeshComponent>(m_Guybrush[previousFrame]);
+                previousMesh.m_Enabled = false;
+                uint currentFrame = m_WalkAnimation.GetCurrentFrame();
+                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
+                currentMesh.m_Enabled = true;
+            }
+            else
+            {
+                previousFrame = m_WalkAnimation.GetCurrentFrame();
+            }
+        }
+
+        // draw new scene
+        m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
+
+        // skip geometry and lighting passes
+        m_Renderer->NextSubpass();
+        m_Renderer->NextSubpass();
+
+        m_Renderer->EndScene();
     }
 
     void SplashScene::OnEvent(Event& event)

@@ -31,16 +31,17 @@ namespace LucreApp
 {
 
     GameState::GameState()
-        : m_State{SPLASH}, m_InputIdle{false},
-          m_UserInputEnabled{false}
+        : m_State{State::SPLASH}, m_InputIdle{false},
+          m_UserInputEnabled{false},
+          m_MainSceneLoaded{false}
     {
     }
 
     void GameState::Start()
     {
-        m_Scenes.emplace(State::SPLASH, std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene"));
-        m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
-        m_Scenes.emplace(State::SETTINGS, std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene"));
+        Load(State::SPLASH);
+        Load(State::MAIN);
+        Load(State::SETTINGS);
 
         SetState(State::SPLASH);
     }
@@ -56,7 +57,7 @@ namespace LucreApp
         {
             case State::SPLASH:
             {
-                if (GetScene().IsFinished())
+                if (m_MainSceneLoaded)
                 {
                     SetState(State::MAIN);
                 }
@@ -96,12 +97,26 @@ namespace LucreApp
         return *scene_ptr;
     }
 
-    void GameState::Load()
+    void GameState::Load(GameState::State state)
     {
-    }
-
-    void GameState::Save()
-    {
+        switch(state)
+        {
+            case State::SPLASH:
+            {
+                m_Scenes.emplace(State::SPLASH, std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene"));
+                break;
+            }
+            case State::MAIN:
+            {
+                m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
+                break;
+            }
+            case State::SETTINGS:
+            {
+                m_Scenes.emplace(State::SETTINGS, std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene"));
+                break;
+            }
+        }
     }
 
     void GameState::EnableUserInput(bool enable)

@@ -52,11 +52,11 @@ namespace LucreApp
         m_Window->SetWindowAspectRatio();
         InitCursor();
 
-        m_GameState.Start();
-        m_CurrentScene = &m_GameState.GetScene();
-
         m_Atlas.AddSpritesheet();
         m_Spritesheet = &m_Atlas;
+
+        m_GameState.Start();
+        m_CurrentScene = &m_GameState.GetScene();
 
         m_UI = new UI("UI");
         Engine::m_Engine->PushLayer(m_UI);

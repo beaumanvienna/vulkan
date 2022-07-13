@@ -36,7 +36,7 @@ namespace LucreApp
 
     public:
 
-        enum State
+        enum class State
         {
             SPLASH,
             MAIN,
@@ -52,8 +52,6 @@ namespace LucreApp
         Scene* OnUpdate();
         void OnEvent(Event& event);
 
-        void Load();
-        void Save();
         void EnableUserInput(bool enable);
 
         Scene& GetScene();
@@ -63,10 +61,15 @@ namespace LucreApp
 
     private:
 
+        void Load(State state);
+
+    private:
+
         State m_State;
         std::unordered_map<State, std::unique_ptr<Scene>> m_Scenes;
         bool m_UserInputEnabled;
         bool m_InputIdle;
+        bool m_MainSceneLoaded;
 
     };
 }

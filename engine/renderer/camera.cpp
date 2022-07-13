@@ -105,7 +105,7 @@ namespace GfxRenderEngine
         const glm::vec3 w{glm::normalize(direction)};
         const glm::vec3 u{glm::normalize(glm::cross(w, up))};
         const glm::vec3 v{glm::cross(w, u)};
-    
+
         m_ViewMatrix = glm::mat4{1.f};
         m_ViewMatrix[0][0] = u.x;
         m_ViewMatrix[1][0] = u.y;

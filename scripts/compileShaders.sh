@@ -21,3 +21,6 @@ glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag -o b
 
 glslc engine/platform/Vulkan/shaders/deferredRendering.vert                 -o bin/deferredRendering.vert.spv
 glslc engine/platform/Vulkan/shaders/deferredRendering.frag                 -o bin/deferredRendering.frag.spv
+
+glslc engine/platform/Vulkan/shaders/atlasShader.vert                       -o bin/atlasShader.vert.spv
+glslc engine/platform/Vulkan/shaders/atlasShader.frag                       -o bin/atlasShader.frag.spv

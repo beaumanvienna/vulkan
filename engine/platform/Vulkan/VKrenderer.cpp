@@ -548,7 +548,9 @@ namespace GfxRenderEngine
             "pbrDiffuseNormalRoughnessMetallic.vert",
             "pbrDiffuseNormalRoughnessMetallic.frag",
             "deferredRendering.vert",
-            "deferredRendering.frag"
+            "deferredRendering.frag",
+            "atlasShader.frag",
+            "atlasShader.vert"
         };
 
         for (auto& filename : shaderFilenames)
