@@ -47,12 +47,17 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
+layout(push_constant) uniform Push
+{
+    mat4 m_ModelMatrix;
+} push;
+
 // outputs
 layout(location = 0) out vec2  fragUV;
 
 void main()
 {
-    gl_Position = ubo.m_Projection * ubo.m_View * vec4(position, 1.0);
+    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
     fragUV = uv;
 }

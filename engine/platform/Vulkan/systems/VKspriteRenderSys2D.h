@@ -18,48 +18,54 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
-#include "lucre.h"
-#include "engine.h"
-#include "scene/scene.h"
-#include "renderer/cameraController.h"
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
-namespace LucreApp
+#include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+#include "scene/particleSystem.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
+
+namespace GfxRenderEngine
 {
-    class SplashScene : public Scene
+    struct VK_PushConstantDataSpriteRenderer2D
+    {
+        glm::mat4 m_ModelMatrix{1.0f};
+    };
+
+    class VK_RenderSystemSpriteRenderer2D
     {
 
     public:
 
-        SplashScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath) {}
-        ~SplashScene() override {}
+        VK_RenderSystemSpriteRenderer2D(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_RenderSystemSpriteRenderer2D();
 
-        virtual void Start() override;
-        virtual void Stop() override;
-        virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
-        virtual void OnEvent(Event& event) override;
-        virtual void OnResize() override;
+        VK_RenderSystemSpriteRenderer2D(const VK_RenderSystemSpriteRenderer2D&) = delete;
+        VK_RenderSystemSpriteRenderer2D& operator=(const VK_RenderSystemSpriteRenderer2D&) = delete;
 
-        virtual void Load() override {}
-        virtual void Save() override {}
-        virtual void LoadScripts() override {}
-        virtual void StartScripts() override {}
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 
-        std::shared_ptr<Renderer> m_Renderer;
-        std::shared_ptr<CameraController> m_CameraController;
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+        void CreatePipeline(VkRenderPass renderPass);
 
-        static constexpr uint WALK_ANIMATION_SPRITES = 6;
-        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES];
-        SpriteSheet m_SpritesheetWalk;
-        SpriteAnimation m_WalkAnimation;
-        Sprite* m_LogoSprite;
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }
