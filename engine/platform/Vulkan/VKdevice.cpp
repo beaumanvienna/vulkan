@@ -105,7 +105,10 @@ namespace GfxRenderEngine
     
     void VK_Device::Shutdown()
     {
-        vkQueueWaitIdle(m_GraphicsQueue);
+        for (int i = 0; i < DeviceQueues::NUMBER_OF_QUEUES; i++)
+        {
+            vkQueueWaitIdle(m_DeviceQueues[i]);
+        }
     }
 
     void VK_Device::CreateInstance()
@@ -244,7 +247,10 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
 
-        vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);
+        for (int i = 0; i < DeviceQueues::NUMBER_OF_QUEUES; i++)
+        {
+            vkGetDeviceQueue(m_Device, indices.graphicsFamily, i, &m_DeviceQueues[i]);
+        }
         vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
     }
 
@@ -604,8 +610,8 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(m_GraphicsQueue);
+        vkQueueSubmit(m_DeviceQueues[DeviceQueues::LOAD_QUEUE], 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_DeviceQueues[DeviceQueues::LOAD_QUEUE]);
 
         vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
     }

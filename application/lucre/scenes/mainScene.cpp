@@ -81,9 +81,6 @@ namespace LucreApp
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
-        Load();
-        LoadModels();
-        LoadScripts();
         StartScripts();
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
@@ -190,6 +187,9 @@ namespace LucreApp
     {
         ImGUI::m_MaxGameObjects = (entt::entity)0;
         m_SceneLoader.Deserialize(ImGUI::m_MaxGameObjects);
+
+        LoadModels();
+        LoadScripts();
     }
 
     void MainScene::LoadScripts()

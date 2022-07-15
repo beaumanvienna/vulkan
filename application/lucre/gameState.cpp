@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include <thread>
+
 #include "gameState.h"
 
 #include "core.h"
@@ -57,7 +59,7 @@ namespace LucreApp
         {
             case State::SPLASH:
             {
-                if (m_MainSceneLoaded)
+                if (GetScene().IsFinished() && m_MainSceneLoaded)
                 {
                     SetState(State::MAIN);
                 }
@@ -108,7 +110,13 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
+                std::thread loadMainSceneThread([this]()
+                {
+                    m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
+                    m_Scenes[State::MAIN]->Load();
+                    m_MainSceneLoaded = true;
+                });
+                loadMainSceneThread.detach();
                 break;
             }
             case State::SETTINGS:

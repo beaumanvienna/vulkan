@@ -52,7 +52,7 @@ namespace LucreApp
             WALK_ANIMATION_SPRITES /* frames */, 
             scaleHero /* scale) */
         );
-        m_WalkAnimation.Create(250ms /* per frame */, &m_SpritesheetWalk);
+        m_WalkAnimation.Create(150ms /* per frame */, &m_SpritesheetWalk);
         m_WalkAnimation.Start();
 
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
@@ -112,7 +112,11 @@ namespace LucreApp
             {
                 m_WalkAnimation.Start();
                 walkOffset += 0.42f;
-                if (walkOffset > 1.4f) walkOffset = initialPositionX;;
+                if (walkOffset > 1.4f)
+                {
+                    walkOffset = initialPositionX;
+                    m_IsRunning = false;
+                }
             }
 
             static uint previousFrame = 0;

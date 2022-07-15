@@ -72,7 +72,7 @@ namespace GfxRenderEngine
         VkCommandPool GetCommandPool() { return m_CommandPool; }
         VkPhysicalDevice PhysicalDevice() { return m_PhysicalDevice; }
         VkSurfaceKHR Surface() { return m_Surface; }
-        VkQueue GraphicsQueue() { return m_GraphicsQueue; }
+        VkQueue GraphicsQueue() { return m_DeviceQueues[DeviceQueues::GRAPHICS_QUEUE]; }
         VkQueue PresentQueue() { return m_PresentQueue; }
 
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
@@ -144,7 +144,14 @@ namespace GfxRenderEngine
 
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;
-        VkQueue m_GraphicsQueue;
+
+        enum DeviceQueues
+        {
+            GRAPHICS_QUEUE = 0,
+            LOAD_QUEUE,
+            NUMBER_OF_QUEUES
+        };
+        VkQueue m_DeviceQueues[DeviceQueues::NUMBER_OF_QUEUES];
         VkQueue m_PresentQueue;
 
         const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
