@@ -69,7 +69,7 @@ namespace GfxRenderEngine
         void Shutdown();
 
         VkDevice Device() { return m_Device; }
-        VkCommandPool GetCommandPool() { return m_CommandPool; }
+        VkCommandPool GetCommandPool() { return m_GraphicsCommandPool; }
         VkPhysicalDevice PhysicalDevice() { return m_PhysicalDevice; }
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_DeviceQueues[DeviceQueues::GRAPHICS_QUEUE]; }
@@ -140,7 +140,8 @@ namespace GfxRenderEngine
         VkDebugUtilsMessengerEXT m_DebugMessenger;
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VK_Window* m_Window;
-        VkCommandPool m_CommandPool;
+        VkCommandPool m_GraphicsCommandPool;
+        VkCommandPool m_LoadCommandPool;
 
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;

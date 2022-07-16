@@ -91,7 +91,8 @@ namespace GfxRenderEngine
 
     VK_Device::~VK_Device()
     {
-        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+        vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
+        vkDestroyCommandPool(m_Device, m_LoadCommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
 
         if (enableValidationLayers)
@@ -203,19 +204,16 @@ namespace GfxRenderEngine
     {
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
-        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        VkDeviceQueueCreateInfo queueCreateInfos = {};
         std::set<uint> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
         float queuePriority = 1.0f;
-        for (uint queueFamily : uniqueQueueFamilies)
-        {
-            VkDeviceQueueCreateInfo queueCreateInfo = {};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueCreateInfo.queueFamilyIndex = queueFamily;
-            queueCreateInfo.queueCount = 1;
-            queueCreateInfo.pQueuePriorities = &queuePriority;
-            queueCreateInfos.push_back(queueCreateInfo);
-        }
+
+        // graphicsFamily
+        queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos.queueFamilyIndex = indices.graphicsFamily;
+        queueCreateInfos.queueCount = 2; // DeviceQueues::LOAD_QUEUE, DeviceQueues::GRAPHICS_QUEUE
+        queueCreateInfos.pQueuePriorities = &queuePriority;
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -223,8 +221,8 @@ namespace GfxRenderEngine
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-        createInfo.queueCreateInfoCount = static_cast<uint>(queueCreateInfos.size());
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = &queueCreateInfos;
 
         createInfo.pEnabledFeatures = &deviceFeatures;
         createInfo.enabledExtensionCount = static_cast<uint>(deviceExtensions.size());
@@ -251,6 +249,9 @@ namespace GfxRenderEngine
         {
             vkGetDeviceQueue(m_Device, indices.graphicsFamily, i, &m_DeviceQueues[i]);
         }
+        // caution: indices.graphicsFamily and indices.presentFamily are both zero
+        // at least on my Linux machine
+        // m_PresentQueue is a clone of m_DeviceQueues[0]
         vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
     }
 
@@ -264,9 +265,14 @@ namespace GfxRenderEngine
         poolInfo.flags =
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS)
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create command pool!");
+            LOG_CORE_CRITICAL("failed to create graphics command pool!");
+        }
+
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_LoadCommandPool) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create load command pool!");
         }
     }
 
@@ -586,7 +592,7 @@ namespace GfxRenderEngine
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = m_CommandPool;
+        allocInfo.commandPool = m_LoadCommandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -613,7 +619,7 @@ namespace GfxRenderEngine
         vkQueueSubmit(m_DeviceQueues[DeviceQueues::LOAD_QUEUE], 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(m_DeviceQueues[DeviceQueues::LOAD_QUEUE]);
 
-        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_Device, m_LoadCommandPool, 1, &commandBuffer);
     }
 
     void VK_Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)

@@ -66,18 +66,7 @@ namespace LucreApp
         GamepadInputControllerSpec gamepadInputControllerSpec{};
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
 
-        InitPhysics();
-
         // --- sprites ---
-
-        float scaleHero = 1.5f;
-        // horn
-        m_SpritesheetHorn.AddSpritesheetRow
-        (
-            Lucre::m_Spritesheet->GetSprite(I_HORN),
-            HORN_ANIMATION_SPRITES /* frames */, 
-            scaleHero /* scale) */
-        );
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
         m_HornAnimation.Start();
 
@@ -185,6 +174,18 @@ namespace LucreApp
 
     void MainScene::Load()
     {
+
+        float scaleHero = 1.5f;
+        // horn
+        m_SpritesheetHorn.AddSpritesheetRow
+        (
+            Lucre::m_Spritesheet->GetSprite(I_HORN),
+            HORN_ANIMATION_SPRITES /* frames */, 
+            scaleHero /* scale) */
+        );
+
+        InitPhysics();
+
         ImGUI::m_MaxGameObjects = (entt::entity)0;
         m_SceneLoader.Deserialize(ImGUI::m_MaxGameObjects);
 
