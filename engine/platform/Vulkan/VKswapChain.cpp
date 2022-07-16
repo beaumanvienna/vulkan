@@ -43,6 +43,11 @@ namespace GfxRenderEngine
 
     void VK_SwapChain::Init()
     {
+        m_BufferPositionFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferNormalFormat   = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferColorFormat    = VK_FORMAT_R8G8B8A8_UNORM;
+        m_BufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+        
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
@@ -291,11 +296,6 @@ namespace GfxRenderEngine
     {
         VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
 
-        VkFormat gBufferPositionFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-        VkFormat gBufferNormalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-        VkFormat gBufferColorFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        VkFormat gBufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-
         m_GBufferPositionImages.resize(ImageCount());
         m_GBufferPositionImageMemorys.resize(ImageCount());
         m_GBufferPositionViews.resize(ImageCount());
@@ -310,7 +310,7 @@ namespace GfxRenderEngine
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
-            imageInfo.format = gBufferPositionFormat;
+            imageInfo.format = m_BufferPositionFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
@@ -339,7 +339,7 @@ namespace GfxRenderEngine
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
-            imageInfo.format = gBufferNormalFormat;
+            imageInfo.format = m_BufferNormalFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
@@ -368,7 +368,7 @@ namespace GfxRenderEngine
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
-            imageInfo.format = gBufferColorFormat;
+            imageInfo.format = m_BufferColorFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
@@ -397,7 +397,7 @@ namespace GfxRenderEngine
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
-            imageInfo.format = gBufferMaterialFormat;
+            imageInfo.format = m_BufferMaterialFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
@@ -424,7 +424,7 @@ namespace GfxRenderEngine
             viewInfo.flags = 0;
             viewInfo.image = m_GBufferPositionImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            viewInfo.format = m_BufferPositionFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
@@ -447,7 +447,7 @@ namespace GfxRenderEngine
             viewInfo.flags = 0;
             viewInfo.image = m_GBufferNormalImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            viewInfo.format = m_BufferNormalFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
@@ -470,7 +470,7 @@ namespace GfxRenderEngine
             viewInfo.flags = 0;
             viewInfo.image = m_GBufferColorImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+            viewInfo.format = m_BufferColorFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
@@ -493,7 +493,7 @@ namespace GfxRenderEngine
             viewInfo.flags = 0;
             viewInfo.image = m_GBufferMaterialImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            viewInfo.format = m_BufferMaterialFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
@@ -542,7 +542,7 @@ namespace GfxRenderEngine
 
         // ATTACHMENT_GBUFFER_POSITION
         VkAttachmentDescription gBufferPositionAttachment = {};
-        gBufferPositionAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        gBufferPositionAttachment.format = m_BufferPositionFormat;
         gBufferPositionAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         gBufferPositionAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gBufferPositionAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -561,7 +561,7 @@ namespace GfxRenderEngine
 
         // ATTACHMENT_GBUFFER_NORMAL
         VkAttachmentDescription gBufferNormalAttachment = {};
-        gBufferNormalAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        gBufferNormalAttachment.format = m_BufferNormalFormat;
         gBufferNormalAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         gBufferNormalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gBufferNormalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -580,7 +580,7 @@ namespace GfxRenderEngine
 
         // ATTACHMENT_GBUFFER_COLOR
         VkAttachmentDescription gBufferColorAttachment = {};
-        gBufferColorAttachment.format = VK_FORMAT_R8G8B8A8_UNORM;
+        gBufferColorAttachment.format = m_BufferColorFormat;
         gBufferColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         gBufferColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gBufferColorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

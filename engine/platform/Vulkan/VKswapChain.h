@@ -155,6 +155,11 @@ namespace GfxRenderEngine
         std::vector<VkDeviceMemory> m_GBufferColorImageMemorys;
         std::vector<VkDeviceMemory> m_GBufferMaterialImageMemorys;
 
+        VkFormat m_BufferPositionFormat;
+        VkFormat m_BufferNormalFormat;
+        VkFormat m_BufferColorFormat;
+        VkFormat m_BufferMaterialFormat;
+
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_SwapChain> m_OldSwapChain;
         VkExtent2D m_WindowExtent;
