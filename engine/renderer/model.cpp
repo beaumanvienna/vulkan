@@ -237,16 +237,30 @@ namespace GfxRenderEngine
                     auto position = glm::make_vec3(&positionBuffer[v * 3]);
                     vertex.m_Position = glm::vec4(position.x, position.y, position.z, 1.0f);
                     vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    //vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    {
+                        
+                        if (tangentsBuffer)
+                        {
+                            LOG_CORE_CRITICAL("inserting tangents");
+                            vertex.m_Tangent = glm::normalize(glm::make_vec3(&tangentsBuffer[v * 3]));
+                        }
+                        else
+                        {
+                            vertex.m_Tangent = glm::vec3(0.0f);
+                        }
+                    }
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_Color = diffuseColor;
                     m_Vertices.push_back(vertex);
                 }
+
                 // calculate tangents
                 if (!tangentsBuffer)
                 {
                     CalculateTangents();
                 }
+
             }
             // Indices
             {
@@ -705,6 +719,8 @@ namespace GfxRenderEngine
 
     void Builder::CalculateTangents()
     {
+LOG_CORE_INFO("void Builder::CalculateTangents() m_Indices.size() = {0}", m_Indices.size());
+
         if (m_Indices.size())
         {
             CalculateTangentsFromIndexBuffer(m_Indices);
@@ -722,11 +738,16 @@ namespace GfxRenderEngine
                 }
                 CalculateTangentsFromIndexBuffer(indices);
             }
+            else
+            {
+LOG_CORE_CRITICAL("void Builder::CalculateTangents() vertexCount is zero");
+            }
         }
     }
 
     void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
     {
+LOG_CORE_INFO("Builder::CalculateTangentsFromIndexBuffer indices.size() = {0}", indices.size());
         uint cnt = 0;
         uint vertexIndex1;
         uint vertexIndex2;
@@ -782,7 +803,7 @@ namespace GfxRenderEngine
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
-            
+
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
                     m_Vertices[vertexIndex3].m_Tangent = tangent;

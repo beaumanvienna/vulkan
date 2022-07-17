@@ -62,14 +62,14 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-void main() 
+void main()
 {
     float roughness           = push.m_NormalMatrix[3].x;
     float metallic            = push.m_NormalMatrix[3].y;
 
     outPosition = vec4(fragPositionWorld, 1.0);
 
-    vec3 N = normalize(mat3(push.m_NormalMatrix) * fragNormal);
+    vec3 N = normalize(fragNormal);
     vec3 T = normalize(fragTangent);
     // Gram Schmidt
     T = normalize(T - dot(T, N) * N);

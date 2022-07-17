@@ -59,14 +59,15 @@ layout(location = 1)  out  vec2  fragUV;
 layout(location = 2)  out  vec3  fragNormal;
 layout(location = 3)  out  vec3  fragTangent;
 
-void main() 
+void main()
 {
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
-    fragNormal = normal;
-    fragTangent = tangent;
+    fragNormal = mat3(push.m_NormalMatrix) * normal;
+    fragTangent = mat3(push.m_NormalMatrix) * tangent;
+
     fragUV = uv;
 }
