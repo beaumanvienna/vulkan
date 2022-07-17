@@ -147,6 +147,7 @@ namespace GfxRenderEngine
         void ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
         TreeNode* CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
         void CalculateTangents();
+        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
     private:
 

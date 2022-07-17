@@ -195,6 +195,7 @@ namespace GfxRenderEngine
             {
                 const float* positionBuffer  = nullptr;
                 const float* normalsBuffer   = nullptr;
+                const float* tangentsBuffer  = nullptr;
                 const float* texCoordsBuffer = nullptr;
 
                 // Get buffer data for vertex normals
@@ -211,6 +212,13 @@ namespace GfxRenderEngine
                     const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
                     const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
                     normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                }
+                // Get buffer data for vertex tangents
+                if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
+                {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    tangentsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
@@ -229,9 +237,15 @@ namespace GfxRenderEngine
                     auto position = glm::make_vec3(&positionBuffer[v * 3]);
                     vertex.m_Position = glm::vec4(position.x, position.y, position.z, 1.0f);
                     vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_Color = diffuseColor;
                     m_Vertices.push_back(vertex);
+                }
+                // calculate tangents
+                if (!tangentsBuffer)
+                {
+                    CalculateTangents();
                 }
             }
             // Indices
@@ -277,8 +291,6 @@ namespace GfxRenderEngine
             AssignMaterial(primitiveTmp, glTFPrimitive.material);
         }
 
-        // calculate tangents
-        CalculateTangents();
     }
 
     void Builder::LoadTransformationMatrix(TransformComponent& transform, int nodeIndex)
@@ -693,6 +705,28 @@ namespace GfxRenderEngine
 
     void Builder::CalculateTangents()
     {
+        if (m_Indices.size())
+        {
+            CalculateTangentsFromIndexBuffer(m_Indices);
+        }
+        else
+        {
+            uint vertexCount = m_Vertices.size();
+            if (vertexCount)
+            {
+                std::vector<uint> indices;
+                indices.resize(vertexCount);
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    indices[i] = i;
+                }
+                CalculateTangentsFromIndexBuffer(indices);
+            }
+        }
+    }
+
+    void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
+    {
         uint cnt = 0;
         uint vertexIndex1;
         uint vertexIndex2;
@@ -704,10 +738,10 @@ namespace GfxRenderEngine
         glm::vec2 uv2;
         glm::vec2 uv3;
 
-        for (uint index : m_Indices)
+        for (uint index : indices)
         {
             auto& vertex = m_Vertices[index];
-
+            
             switch (cnt)
             {
                 case 0:
@@ -724,12 +758,12 @@ namespace GfxRenderEngine
                     position3 = vertex.m_Position;
                     uv3  = vertex.m_UV;
                     vertexIndex3 = index;
-
+            
                     glm::vec3 edge1 = position2 - position1;
                     glm::vec3 edge2 = position3 - position1;
                     glm::vec2 deltaUV1 = uv2 - uv1;
                     glm::vec2 deltaUV2 = uv3 - uv1;
-
+            
                     float dU1 = deltaUV1.x;
                     float dU2 = deltaUV2.x;
                     float dV1 = deltaUV1.y;
@@ -740,19 +774,19 @@ namespace GfxRenderEngine
                     float E2y = edge2.y;
                     float E1z = edge1.z;
                     float E2z = edge2.z;
-
+            
                     float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
-
+            
                     glm::vec3 tangent;
-
+            
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
-
+            
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
                     m_Vertices[vertexIndex3].m_Tangent = tangent;
-
+            
                     break;
             }
             cnt = (cnt + 1) % 3;
