@@ -27,7 +27,7 @@
 #define MAX_LIGHTS 128
 
 layout(location = 0)       in  vec3  fragColor;
-layout(location = 1)       in  vec3  fragPositionWorld;
+layout(location = 1)       in  vec3  fragPosition;
 layout(location = 2)       in  vec3  fragNormal;
 layout(location = 3)       in  vec2  fragUV;
 layout(location = 4)       in  vec3  fragTangent;
@@ -71,9 +71,8 @@ void main()
     // Gram Schmidt
     T = normalize(T - dot(T, N) * N);
 
-    outPosition = vec4(fragPositionWorld, 1.0);
+    outPosition = vec4(fragPosition, 1.0);
     outNormal   = vec4(N, 1.0);
-
 
     vec4 col    = vec4(fragColor, 1.0);
     if (col.w < 0.5)

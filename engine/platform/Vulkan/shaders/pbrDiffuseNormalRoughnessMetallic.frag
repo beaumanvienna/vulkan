@@ -30,7 +30,7 @@ layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
 layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap;
 
-layout(location = 0)       in  vec3  fragPositionWorld;
+layout(location = 0)       in  vec3  fragPosition;
 layout(location = 1)       in  vec2  fragUV;
 layout(location = 2)       in  vec3  fragNormal;
 layout(location = 3)       in  vec3  fragTangent;
@@ -66,7 +66,7 @@ layout(push_constant) uniform Push
 void main()
 {
     // --------
-    outPosition = vec4(fragPositionWorld, 1.0);
+    outPosition = vec4(fragPosition, 1.0);
 
     vec3 N = normalize(fragNormal);
     vec3 T = normalize(fragTangent);

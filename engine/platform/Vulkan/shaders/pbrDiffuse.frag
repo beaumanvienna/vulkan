@@ -28,16 +28,15 @@
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 
-layout(location = 0)       in  vec3  fragColor;
-layout(location = 1)       in  vec3  fragPosition;
-layout(location = 2)       in  vec3  fragNormal;
-layout(location = 3)       in  vec2  fragUV;
-layout(location = 4)       in  vec3  fragTangent;
+layout(location = 0)       in  vec3  fragPosition;
+layout(location = 1)       in  vec3  fragNormal;
+layout(location = 2)       in  vec2  fragUV;
+layout(location = 3)       in  vec3  fragTangent;
 
-layout (location = 0) out vec4 outPosition;
-layout (location = 1) out vec4 outNormal;
-layout (location = 2) out vec4 outColor;
-layout (location = 3) out vec4 outMaterial;
+layout(location = 0)       out vec4 outPosition;
+layout(location = 1)       out vec4 outNormal;
+layout(location = 2)       out vec4 outColor;
+layout(location = 3)       out vec4 outMaterial;
 
 struct PointLight
 {

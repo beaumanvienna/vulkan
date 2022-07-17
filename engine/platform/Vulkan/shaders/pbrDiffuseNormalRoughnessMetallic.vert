@@ -54,7 +54,7 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0)  out  vec3  fragPositionWorld;
+layout(location = 0)  out  vec3  fragPosition;
 layout(location = 1)  out  vec2  fragUV;
 layout(location = 2)  out  vec3  fragNormal;
 layout(location = 3)  out  vec3  fragTangent;
@@ -65,7 +65,7 @@ void main()
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
-    fragPositionWorld = positionWorld.xyz;
+    fragPosition = positionWorld.xyz;
     fragNormal = mat3(push.m_NormalMatrix) * normal;
     fragTangent = mat3(push.m_NormalMatrix) * tangent;
 

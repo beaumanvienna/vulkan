@@ -237,19 +237,8 @@ namespace GfxRenderEngine
                     auto position = glm::make_vec3(&positionBuffer[v * 3]);
                     vertex.m_Position = glm::vec4(position.x, position.y, position.z, 1.0f);
                     vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    //vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    {
-                        
-                        if (tangentsBuffer)
-                        {
-                            LOG_CORE_CRITICAL("inserting tangents");
-                            vertex.m_Tangent = glm::normalize(glm::make_vec3(&tangentsBuffer[v * 3]));
-                        }
-                        else
-                        {
-                            vertex.m_Tangent = glm::vec3(0.0f);
-                        }
-                    }
+                    vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
+
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_Color = diffuseColor;
                     m_Vertices.push_back(vertex);
