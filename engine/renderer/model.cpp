@@ -55,6 +55,8 @@ namespace std
 
 namespace GfxRenderEngine
 {
+    float Model::m_NormalMapIntensity = 1.0f;
+
     bool Vertex::operator==(const Vertex& other) const
     {
         return (m_Position    == other.m_Position) &&

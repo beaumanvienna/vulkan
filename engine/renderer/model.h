@@ -175,5 +175,6 @@ namespace GfxRenderEngine
         virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
         virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
 
+        static float m_NormalMapIntensity;
     };
 }

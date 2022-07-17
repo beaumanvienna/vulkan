@@ -294,7 +294,7 @@ namespace GfxRenderEngine
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseNormalMaterial.m_Roughness;
             push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseNormalMaterial.m_Metallic;
-            push.m_NormalMatrix[3].z = primitive.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity;
+            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
@@ -336,7 +336,7 @@ namespace GfxRenderEngine
             VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity;
+            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,

@@ -59,10 +59,24 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveLights;
 } ubo;
 
+layout(push_constant) uniform Push
+{
+    mat4 m_ModelMatrix;
+    mat4 m_NormalMatrix;
+} push;
+
 void main() 
 {
+    float normalMapIntensity  = push.m_NormalMatrix[3].z;
+
+    // --------
     outPosition = vec4(fragPositionWorld, 1.0);
-    outNormal   = vec4(texture(normalMap, fragUV).xyz, 1.0);
+    
+    float normalMapIntensity  = push.m_NormalMatrix[3].z;
+    vec3 normalTangentSpace = texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
+    normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
+    outNormal   = vec4((mat3(push.m_NormalMatrix) * normalTangentSpace), 1.0);
+
     vec4 col    = texture(diffuseMap, fragUV);
     if (col.w < 0.5)
     {

@@ -134,7 +134,8 @@ void main()
         vec3 H = normalize(V + L);
         float distance = length(light.m_Position.xyz - fragPosition);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = light.m_Color.rgb * attenuation;
+        float lightIntensity = light.m_Color.w;
+        vec3 radiance = light.m_Color.rgb * lightIntensity * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
@@ -173,7 +174,7 @@ void main()
 
     // debug
     //outColor = vec4(fragPosition, 1.0);
-    //outColor = vec4(normal, 1.0);
+    outColor = vec4(N, 1.0);
     //outColor = vec4(fragColor, 1.0);
     //outColor = vec4(roughness, 1.0, 1.0, 1.0);
     //outColor = vec4(metallic, 1.0, 1.0, 1.0);

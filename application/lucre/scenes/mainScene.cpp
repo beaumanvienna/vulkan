@@ -49,7 +49,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_Renderer->SetAmbientLightIntensity(0.05f);
+        m_Renderer->SetAmbientLightIntensity(0.0f);
 
         m_CameraController = std::make_shared<CameraController>();
         m_CameraController->SetTranslationSpeed(400.0f);
@@ -368,6 +368,15 @@ namespace LucreApp
 
     void MainScene::ApplyDebugSettings()
     {
+        if (ImGUI::m_UseNormalMapIntensity)
+        {
+            Model::m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+        }
+        else
+        {
+            Model::m_NormalMapIntensity = 1.0f;
+        }
+
         if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity || ImGUI::m_UsePointLightIntensity)
         {
             if (ImGUI::m_UsePointLightIntensity)
