@@ -27,11 +27,9 @@
 #define MAX_LIGHTS 128
 
 layout(location = 0) in vec3  position;
-layout(location = 1) in vec3  color;
 layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
-layout(location = 5) in float amplification;
-layout(location = 6) in int   unlit;
+layout(location = 7) in vec3  tangent;
 
 struct PointLight
 {
@@ -56,12 +54,10 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0)  out  vec3  fragColor;
-layout(location = 1)  out  vec3  fragPositionWorld;
-layout(location = 2)  out  vec3  fragNormalWorld;
-layout(location = 3)  out  vec2  fragUV;
-layout(location = 4)  out  float fragAmplification;
-layout(location = 5)  out  int   fragUnlit;
+layout(location = 0)  out  vec3  fragPositionWorld;
+layout(location = 1)  out  vec2  fragUV;
+layout(location = 2)  out  vec3  fragNormal;
+layout(location = 3)  out  vec3  fragTangent;
 
 void main() 
 {
@@ -70,10 +66,7 @@ void main()
 
     vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
     fragPositionWorld = positionWorld.xyz;
-    fragNormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
-
-    fragColor = color;
+    fragNormal = normal;
+    fragTangent = tangent;
     fragUV = uv;
-    fragAmplification = amplification;
-    fragUnlit = unlit;
 }

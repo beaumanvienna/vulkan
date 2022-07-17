@@ -29,11 +29,10 @@
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
 
-layout(location = 0)       in  vec3  fragColor;
-layout(location = 1)       in  vec3  fragPositionWorld;
-layout(location = 2)       in  vec2  fragUV;
-layout(location = 4)       in  float fragAmplification;
-layout(location = 5)  flat in int    fragUnlit;
+layout(location = 0)       in  vec3  fragPositionWorld;
+layout(location = 1)       in  vec2  fragUV;
+layout(location = 2)       in  vec3  fragNormal;
+layout(location = 3)       in  vec3  fragTangent;
 
 layout (location = 0) out vec4 outPosition;
 layout (location = 1) out vec4 outNormal;
@@ -70,10 +69,17 @@ void main()
 
     outPosition = vec4(fragPositionWorld, 1.0);
 
+    vec3 N = normalize(mat3(push.m_NormalMatrix) * fragNormal);
+    vec3 T = normalize(fragTangent);
+    // Gram Schmidt
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+    mat3 TBN = mat3(T, B, N);
+
     float normalMapIntensity  = push.m_NormalMatrix[3].z;
     vec3 normalTangentSpace = texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
     normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
-    outNormal   = vec4((mat3(push.m_NormalMatrix) * normalTangentSpace), 1.0);
+    outNormal   = vec4(normalize(TBN * normalTangentSpace), 1.0);
 
     vec4 col    = texture(diffuseMap, fragUV);
     if (col.w < 0.5)
@@ -81,6 +87,5 @@ void main()
         discard;
     }
     outColor    = col;
-
     outMaterial = vec4(metallic, roughness, 0.0, 0.0);
 }

@@ -174,7 +174,7 @@ void main()
 
     // debug
     //outColor = vec4(fragPosition, 1.0);
-    outColor = vec4(N, 1.0);
+    //outColor = vec4(N, 1.0);
     //outColor = vec4(fragColor, 1.0);
     //outColor = vec4(roughness, 1.0, 1.0, 1.0);
     //outColor = vec4(metallic, 1.0, 1.0, 1.0);
