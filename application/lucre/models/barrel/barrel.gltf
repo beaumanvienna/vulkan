@@ -20,12 +20,12 @@
                 0.7071068286895752,
                 0,
                 0,
-                0.7071068286895752
+                0.7071067094802856
             ],
             "scale" : [
                 0.05000000074505806,
-                0.05000000074505806,
-                0.05000000074505806
+                0.05000000819563866,
+                0.05000000819563866
             ],
             "translation" : [
                 1.899999976158142,
@@ -47,7 +47,7 @@
                     "index" : 1
                 },
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.10000000149011612
+                "roughnessFactor" : 0.6000000238418579
             }
         }
     ],
@@ -59,9 +59,10 @@
                     "attributes" : {
                         "POSITION" : 0,
                         "NORMAL" : 1,
-                        "TEXCOORD_0" : 2
+                        "TANGENT" : 2,
+                        "TEXCOORD_0" : 3
                     },
-                    "indices" : 3,
+                    "indices" : 4,
                     "material" : 0
                 }
             ]
@@ -116,10 +117,16 @@
             "bufferView" : 2,
             "componentType" : 5126,
             "count" : 1553,
-            "type" : "VEC2"
+            "type" : "VEC4"
         },
         {
             "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 1553,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 4,
             "componentType" : 5123,
             "count" : 4800,
             "type" : "SCALAR"
@@ -138,13 +145,18 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 12424,
+            "byteLength" : 24848,
             "byteOffset" : 37272
         },
         {
             "buffer" : 0,
+            "byteLength" : 12424,
+            "byteOffset" : 62120
+        },
+        {
+            "buffer" : 0,
             "byteLength" : 9600,
-            "byteOffset" : 49696
+            "byteOffset" : 74544
         }
     ],
     "samplers" : [
@@ -155,7 +167,7 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 59296,
+            "byteLength" : 84144,
             "uri" : "barrel.bin"
         }
     ]
