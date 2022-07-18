@@ -213,13 +213,16 @@ namespace GfxRenderEngine
                     const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
                     normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
-                // Get buffer data for vertex tangents
-                if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
-                {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    tangentsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                }
+                #define USE_TINYGLTF_TANGENTS
+                #ifdef USE_TINYGLTF_TANGENTS
+                    // Get buffer data for vertex tangents
+                    if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
+                    {
+                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second];
+                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                        tangentsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    }
+                #endif
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
                 if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
@@ -237,7 +240,9 @@ namespace GfxRenderEngine
                     auto position = glm::make_vec3(&positionBuffer[v * 3]);
                     vertex.m_Position = glm::vec4(position.x, position.y, position.z, 1.0f);
                     vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    vertex.m_Tangent = glm::normalize(glm::vec3(tangentsBuffer ? glm::make_vec3(&tangentsBuffer[v * 3]) : glm::vec3(0.0f)));
+
+                    glm::vec4 t = glm::vec4(tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));
+                    vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_Color = diffuseColor;
@@ -708,8 +713,6 @@ namespace GfxRenderEngine
 
     void Builder::CalculateTangents()
     {
-LOG_CORE_INFO("void Builder::CalculateTangents() m_Indices.size() = {0}", m_Indices.size());
-
         if (m_Indices.size())
         {
             CalculateTangentsFromIndexBuffer(m_Indices);
@@ -727,16 +730,11 @@ LOG_CORE_INFO("void Builder::CalculateTangents() m_Indices.size() = {0}", m_Indi
                 }
                 CalculateTangentsFromIndexBuffer(indices);
             }
-            else
-            {
-LOG_CORE_CRITICAL("void Builder::CalculateTangents() vertexCount is zero");
-            }
         }
     }
 
     void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
     {
-LOG_CORE_INFO("Builder::CalculateTangentsFromIndexBuffer indices.size() = {0}", indices.size());
         uint cnt = 0;
         uint vertexIndex1;
         uint vertexIndex2;
@@ -784,14 +782,23 @@ LOG_CORE_INFO("Builder::CalculateTangentsFromIndexBuffer indices.size() = {0}", 
                     float E2y = edge2.y;
                     float E1z = edge1.z;
                     float E2z = edge2.z;
-            
-                    float factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
+
+                    float factor;
+                    if ((dU1 * dV2 - dU2 * dV1) != 0.0f)
+                    {
+                        factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
+                    }
+                    else
+                    {
+                        factor = 100000.0f;
+                    }
             
                     glm::vec3 tangent;
             
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
+                    if (tangent.x==0.0f && tangent.y==0.0f && tangent.z==0.0f) tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
