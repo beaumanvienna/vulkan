@@ -78,7 +78,7 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{-11.0f + 11.0f*i, -0.024f, -0.1f});
+                transform.SetTranslation(glm::vec3{-11.0f + 11.0f*i, -0.024f+0.001*i, -0.1f});
                 transform.SetScale(glm::vec3{0.017f, 0.014f, 0.017f});
                 transform.SetRotation(glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
