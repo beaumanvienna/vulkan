@@ -33,6 +33,7 @@
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
 #include "systems/VKpointLightSys.h"
+#include "systems/VKguiRenderSys.h"
 
 #include "systems/VKpbrNoMapSys.h"
 #include "systems/VKpbrDiffuseSys.h"
@@ -81,6 +82,7 @@ namespace GfxRenderEngine
         virtual void LightingPass() override;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void SubmitGUI(entt::registry& registry) override;
+        virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) override { m_AmbientLightIntensity = ambientLightIntensity; }
@@ -115,9 +117,9 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D> m_RenderSystemSpriteRenderer2D;
+        std::unique_ptr<VK_RenderSystemGUIRenderer> m_RenderSystemGUIRenderer;
         std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
-        Camera* m_Camera;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;
         std::vector<VkCommandBuffer> m_CommandBuffers;
@@ -137,5 +139,6 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_LightingDescriptorSets;
 
         float m_AmbientLightIntensity;
+        glm::mat4 m_GUIViewProjectionMatrix;
     };
 }

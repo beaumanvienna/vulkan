@@ -47,12 +47,9 @@ namespace GfxRenderEngine
         virtual void LightingPass() = 0;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) = 0;
         virtual void SubmitGUI(entt::registry& registry) = 0;
+        virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
-        //void BeginFrame(std::shared_ptr<OrthographicCamera>& camera, 
-        //                        std::shared_ptr<ShaderProgram>& shader, 
-        //                        std::shared_ptr<VertexBuffer>& vertexBuffer, 
-        //                        std::shared_ptr<IndexBuffer>& indexBuffer);
         virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 

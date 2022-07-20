@@ -30,7 +30,6 @@
 #include "engine.h"
 #include "renderer/camera.h"
 #include "scene/scene.h"
-#include "scene/particleSystem.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"

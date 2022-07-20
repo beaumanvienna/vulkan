@@ -148,7 +148,10 @@ namespace LucreApp
         m_Renderer->NextSubpass();
         m_Renderer->NextSubpass();
 
+        // gui
+        m_Renderer->GUIRenderpass(&m_CameraController->GetCamera());
         m_Renderer->SubmitGUI(m_Registry);
+
         m_Renderer->EndScene();
     }
 

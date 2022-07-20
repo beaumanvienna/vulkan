@@ -24,3 +24,6 @@ glslc engine/platform/Vulkan/shaders/deferredRendering.frag                 -o b
 
 glslc engine/platform/Vulkan/shaders/atlasShader.vert                       -o bin/atlasShader.vert.spv
 glslc engine/platform/Vulkan/shaders/atlasShader.frag                       -o bin/atlasShader.frag.spv
+
+glslc engine/platform/Vulkan/shaders/guiShader.vert                       -o bin/guiShader.vert.spv
+glslc engine/platform/Vulkan/shaders/guiShader.frag                       -o bin/guiShader.frag.spv

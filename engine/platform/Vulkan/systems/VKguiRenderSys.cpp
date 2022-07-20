@@ -24,27 +24,27 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
-#include "systems/VKspriteRenderSys2D.h"
+#include "systems/VKguiRenderSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemSpriteRenderer2D::VK_RenderSystemSpriteRenderer2D(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
+    VK_RenderSystemGUIRenderer::VK_RenderSystemGUIRenderer(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
     {
         CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemSpriteRenderer2D::~VK_RenderSystemSpriteRenderer2D()
+    VK_RenderSystemGUIRenderer::~VK_RenderSystemGUIRenderer()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemSpriteRenderer2D::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_RenderSystemGUIRenderer::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataSpriteRenderer2D);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGUIRenderer);
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 
@@ -60,7 +60,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemSpriteRenderer2D::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemGUIRenderer::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -75,13 +75,13 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/atlasShader.vert.spv",
-            "bin/atlasShader.frag.spv",
+            "bin/guiShader.vert.spv",
+            "bin/guiShader.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemGUIRenderer::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, const glm::mat4& viewProjectionMatrix)
     {
         vkCmdBindDescriptorSets
         (
@@ -96,19 +96,19 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, GuiRendererComponent>();
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataSpriteRenderer2D push{};
-            push.m_ModelMatrix  = transform.GetMat4();
+            VK_PushConstantDataGUIRenderer push{};
+            push.m_MVP  = viewProjectionMatrix * transform.GetMat4();
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataSpriteRenderer2D),
+                sizeof(VK_PushConstantDataGUIRenderer),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);

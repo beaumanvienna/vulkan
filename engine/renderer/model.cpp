@@ -749,7 +749,7 @@ namespace GfxRenderEngine
         for (uint index : indices)
         {
             auto& vertex = m_Vertices[index];
-            
+
             switch (cnt)
             {
                 case 0:
@@ -766,12 +766,12 @@ namespace GfxRenderEngine
                     position3 = vertex.m_Position;
                     uv3  = vertex.m_UV;
                     vertexIndex3 = index;
-            
+
                     glm::vec3 edge1 = position2 - position1;
                     glm::vec3 edge2 = position3 - position1;
                     glm::vec2 deltaUV1 = uv2 - uv1;
                     glm::vec2 deltaUV2 = uv3 - uv1;
-            
+
                     float dU1 = deltaUV1.x;
                     float dU2 = deltaUV2.x;
                     float dV1 = deltaUV1.y;
@@ -792,9 +792,9 @@ namespace GfxRenderEngine
                     {
                         factor = 100000.0f;
                     }
-            
+
                     glm::vec3 tangent;
-            
+
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
@@ -803,7 +803,7 @@ namespace GfxRenderEngine
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
                     m_Vertices[vertexIndex3].m_Tangent = tangent;
-            
+
                     break;
             }
             cnt = (cnt + 1) % 3;

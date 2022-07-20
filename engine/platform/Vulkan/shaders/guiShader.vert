@@ -1,5 +1,8 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
-   https://github.com/beaumanvienna/gfxRenderEngine
+   https://github.com/beaumanvienna/vulkan
+   *
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -18,50 +21,26 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
+#version 450
+#define MAX_LIGHTS 128
 
-#include <memory>
+// inputs 
+layout(location = 0) in vec3  position;
+layout(location = 3) in vec2  uv; // keep default vertex layout
 
-#include "engine.h"
-#include "layer/layer.h"
-#include "renderer/renderer.h"
-#include "sprite/spritesheet.h"
-#include "gui/Common/UI/screen.h"
-#include "UI/mainScreen.h"
-
-namespace LucreApp
+layout(push_constant) uniform Push
 {
+    mat4 m_MVP;
+} push;
 
-    class UI : public Layer
-    {
+// outputs
+layout(location = 0) out vec2  fragUV;
 
-    public:
+void main()
+{
+    gl_Position = push.m_MVP * vec4(position, 1.0);
 
-        UI(const std::string& name = "U")
-            : Layer(name) {}
-
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnEvent(Event& event) override;
-        void OnUpdate() override;
-
-        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlasTexture;
-        static std::shared_ptr<Texture> m_SpritesheetTexture;
-
-    private:
-
-        bool Touch(int flags, float x, float y, int deviceID);
-        void Key(int keyFlag, int keyCode, int deviceID);
-        void Axis();
-
-    private:
-
-        MainScreen* m_MainScreen{nullptr};
-
-        SpriteSheet* m_Spritesheet;
-
-    };
+    fragUV = uv;
 }

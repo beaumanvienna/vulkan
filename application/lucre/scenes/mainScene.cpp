@@ -278,8 +278,11 @@ namespace LucreApp
         m_Renderer->NextSubpass();
         m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke);
 
+        // gui
+        m_Renderer->GUIRenderpass(&m_CameraController->GetCamera());
         m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->SubmitGUI(SCREEN_ScreenManager::m_Registry);
+
         m_Renderer->EndScene();
     }
 

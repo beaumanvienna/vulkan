@@ -1,5 +1,8 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
-   https://github.com/beaumanvienna/gfxRenderEngine
+   https://github.com/beaumanvienna/vulkan
+   *
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -18,50 +21,20 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
+#version 450
 
-#include <memory>
+// inputs: UVs + sammpler
+layout(location = 0)      in vec2  fragUV;
+layout(set = 0, binding = 1) uniform sampler2D tex1;
 
-#include "engine.h"
-#include "layer/layer.h"
-#include "renderer/renderer.h"
-#include "sprite/spritesheet.h"
-#include "gui/Common/UI/screen.h"
-#include "UI/mainScreen.h"
+// outputs
+layout (location = 0) out vec4 outColor;
 
-namespace LucreApp
+void main()
 {
-
-    class UI : public Layer
-    {
-
-    public:
-
-        UI(const std::string& name = "U")
-            : Layer(name) {}
-
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnEvent(Event& event) override;
-        void OnUpdate() override;
-
-        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlasTexture;
-        static std::shared_ptr<Texture> m_SpritesheetTexture;
-
-    private:
-
-        bool Touch(int flags, float x, float y, int deviceID);
-        void Key(int keyFlag, int keyCode, int deviceID);
-        void Axis();
-
-    private:
-
-        MainScreen* m_MainScreen{nullptr};
-
-        SpriteSheet* m_Spritesheet;
-
-    };
+    vec4 pixel = texture(tex1,fragUV);
+    if (pixel.w == 0.0) discard;
+    outColor = pixel;
 }

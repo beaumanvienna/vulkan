@@ -162,6 +162,7 @@ namespace GfxRenderEngine
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -413,14 +414,13 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginFrame(Camera* camera, entt::registry& registry)
     {
-        m_Camera = camera;
         if (m_CurrentCommandBuffer = BeginFrame())
         {
-            m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, m_Camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
+            m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
 
             GlobalUniformBuffer ubo{};
-            ubo.m_Projection = m_Camera->GetProjectionMatrix();
-            ubo.m_View = m_Camera->GetViewMatrix();
+            ubo.m_Projection = camera->GetProjectionMatrix();
+            ubo.m_View = camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
             m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
@@ -432,7 +432,6 @@ namespace GfxRenderEngine
 
     void VK_Renderer::UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag)
     {
-
         entt::entity gameObject = node.GetGameObject();
         auto& transform = registry.get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
@@ -455,7 +454,6 @@ namespace GfxRenderEngine
             {
                 UpdateTransformCache(registry, node.GetChild(index), mat4, false);
             }
-
         }
     }
 
@@ -500,16 +498,24 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::SubmitGUI(entt::registry& registry)
+    void VK_Renderer::GUIRenderpass(Camera* camera)
     {
         if (m_CurrentCommandBuffer)
         {
             EndRenderPass(m_CurrentCommandBuffer);
             BeginGUIRenderPass(m_CurrentCommandBuffer);
+
+            // set up orthogonal camera
+            m_GUIViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+        }
+    }
+
+    void VK_Renderer::SubmitGUI(entt::registry& registry)
+    {
+        if (m_CurrentCommandBuffer)
+        {
             m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry);
-            m_Imgui->NewFrame();
-            m_Imgui->Run();
-            m_Imgui->Render(m_CurrentCommandBuffer);
+            m_RenderSystemGUIRenderer->RenderEntities(m_FrameInfo, registry, m_GUIViewProjectionMatrix);
         }
     }
 
@@ -517,6 +523,11 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
+            // built-in editor GUI runs last
+            m_Imgui->NewFrame();
+            m_Imgui->Run();
+            m_Imgui->Render(m_CurrentCommandBuffer);
+
             EndRenderPass(m_CurrentCommandBuffer);
             EndFrame();
         }
@@ -552,7 +563,9 @@ namespace GfxRenderEngine
             "deferredRendering.vert",
             "deferredRendering.frag",
             "atlasShader.frag",
-            "atlasShader.vert"
+            "atlasShader.vert",
+            "guiShader.frag",
+            "guiShader.vert"
         };
 
         for (auto& filename : shaderFilenames)

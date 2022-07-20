@@ -68,7 +68,7 @@ namespace LucreApp
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
             glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 1.0f/*amplification*/);
+            builder.LoadSprite(sprite, position, 0.1f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"walkway", model};
 
@@ -94,7 +94,7 @@ namespace LucreApp
 
                 auto sprite = m_SpritesheetHorn.GetSprite(i);
                 glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 10.0f /*amplification*/);
+                builder.LoadSprite(sprite, position, 1.0f /*amplification*/);
                 auto model = Engine::m_Engine->LoadModel(builder);
                 MeshComponent mesh{"horn animation", model};
                 mesh.m_Enabled = false;

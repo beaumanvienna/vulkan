@@ -129,11 +129,15 @@ namespace GfxRenderEngine
         ScriptComponent(const std::string& filepath);
     };
 
-    // models without a normal map
-    struct SpriteRendererComponent // diffuse map aka albedo map aka color map
+    struct SpriteRendererComponent
     {
         float m_Roughness;
         float m_Metallic;
+    };
+
+    struct GuiRendererComponent
+    {
+        uint m_Tag;
     };
 
     struct PbrNoMapTag

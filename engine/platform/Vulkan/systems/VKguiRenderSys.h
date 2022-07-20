@@ -23,45 +23,48 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "layer/layer.h"
-#include "renderer/renderer.h"
-#include "sprite/spritesheet.h"
-#include "gui/Common/UI/screen.h"
-#include "UI/mainScreen.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
 
-namespace LucreApp
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
+
+namespace GfxRenderEngine
 {
+    struct VK_PushConstantDataGUIRenderer
+    {
+        glm::mat4 m_MVP{1.0f};
+    };
 
-    class UI : public Layer
+    class VK_RenderSystemGUIRenderer
     {
 
     public:
 
-        UI(const std::string& name = "U")
-            : Layer(name) {}
+        VK_RenderSystemGUIRenderer(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_RenderSystemGUIRenderer();
 
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnEvent(Event& event) override;
-        void OnUpdate() override;
+        VK_RenderSystemGUIRenderer(const VK_RenderSystemGUIRenderer&) = delete;
+        VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
-        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlasTexture;
-        static std::shared_ptr<Texture> m_SpritesheetTexture;
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, const glm::mat4& viewProjectionMatrix);
 
     private:
 
-        bool Touch(int flags, float x, float y, int deviceID);
-        void Key(int keyFlag, int keyCode, int deviceID);
-        void Axis();
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+        void CreatePipeline(VkRenderPass renderPass);
 
     private:
 
-        MainScreen* m_MainScreen{nullptr};
-
-        SpriteSheet* m_Spritesheet;
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }
