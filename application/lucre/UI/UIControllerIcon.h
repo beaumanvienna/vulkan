@@ -57,8 +57,6 @@ namespace LucreApp
 
     private:
 
-        std::shared_ptr<Renderer> m_Renderer;
-        Sprite* m_ControllerSprite;
         entt::entity m_ID;
 
         Animation m_Controller1MoveIn;

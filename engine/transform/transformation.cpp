@@ -82,7 +82,7 @@ namespace GfxRenderEngine
             delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
             float deltaX = m_Pos1.x * (1 - delta) + m_Pos2.x * delta;
             float deltaY = m_Pos1.y * (1 - delta) + m_Pos2.y * delta;
-            m_Translation = glm::vec3(deltaX, deltaY, -2.1f);
+            m_Translation = glm::vec3(deltaX, deltaY, 0.0f);
         }
         return m_Translation;
     }

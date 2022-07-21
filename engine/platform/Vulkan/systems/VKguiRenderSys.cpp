@@ -99,21 +99,21 @@ namespace GfxRenderEngine
         auto view = registry.view<MeshComponent, TransformComponent, GuiRendererComponent>();
         for (auto entity : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataGUIRenderer push{};
-            push.m_MVP  = viewProjectionMatrix * transform.GetMat4();
-
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGUIRenderer),
-                &push);
-
             auto& mesh = view.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
+                auto& transform = view.get<TransformComponent>(entity);
+                VK_PushConstantDataGUIRenderer push{};
+                push.m_MVP  = viewProjectionMatrix * transform.GetMat4();
+
+                vkCmdPushConstants(
+                    frameInfo.m_CommandBuffer,
+                    m_PipelineLayout,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0,
+                    sizeof(VK_PushConstantDataGUIRenderer),
+                    &push);
+
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
                 static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
             }

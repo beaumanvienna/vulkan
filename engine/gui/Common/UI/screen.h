@@ -30,6 +30,7 @@
 
 #include "scene/entity.h"
 #include "renderer/renderer.h"
+#include "renderer/cameraController.h"
 #include "sprite/spritesheet.h"
 #include "gui/Common/Input/inputState.h"
 
@@ -177,6 +178,7 @@ namespace GfxRenderEngine
         static SpriteSheet* m_SpritesheetUI;
         static SCREEN_ScreenManager* m_ScreenManager;
         static entt::registry m_Registry;
+        static std::shared_ptr<CameraController> m_CameraController;
 
     private:
 

@@ -69,10 +69,10 @@ namespace GfxRenderEngine
         {
             case Camera::ORTHOGRAPHIC_PROJECTION:
             {
-                float normalize = 1.0f;
+                float normalize = Engine::m_Engine->GetContextWidth();
 
-                float ortho_left   =  -normalize;
-                float ortho_right  =   normalize;
+                float ortho_left   =   normalize;
+                float ortho_right  =  -normalize;
                 float ortho_bottom =  -normalize / aspectRatio;
                 float ortho_top    =   normalize / aspectRatio;
                 float ortho_near   =  1.0f;

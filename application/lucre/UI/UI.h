@@ -47,6 +47,8 @@ namespace LucreApp
         void OnEvent(Event& event) override;
         void OnUpdate() override;
 
+        void OnResize();
+
         static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
         static std::shared_ptr<Texture> m_FontAtlasTexture;
         static std::shared_ptr<Texture> m_SpritesheetTexture;

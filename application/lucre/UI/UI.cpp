@@ -198,4 +198,9 @@ namespace LucreApp
         }
         m_ScreenManager->axis(axis);
     }
+
+    void UI::OnResize()
+    {
+        m_ScreenManager->resized();
+    }
 }

@@ -60,6 +60,7 @@ namespace LucreApp
         SpriteSheet m_SpritesheetWalk;
         SpriteAnimation m_WalkAnimation;
         Sprite* m_LogoSprite;
+        float m_GuybrushWalkDelta;
 
     };
 }

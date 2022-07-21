@@ -38,12 +38,9 @@ namespace LucreApp
 
         // controller 1
         m_Controller1Detected = false;
-        // controller icon
-        m_ControllerSprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-        m_Renderer = Engine::m_Engine->GetRenderer();
 
-        glm::vec2 finalOutOfScreenPosition(-5.0f, 2.25f);
-        glm::vec2 finalScreenPosition(-1.25f, 2.25f);
+        glm::vec2 finalOutOfScreenPosition(-1150.0f, -600.0f);
+        glm::vec2 finalScreenPosition(-487.0f, -600.0f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -77,7 +74,7 @@ namespace LucreApp
         // controller 2
         m_Controller2Detected = false;
 
-        finalScreenPosition = glm::vec2{-387.0f, -445.0f};
+        finalScreenPosition = glm::vec2{-387.0f, -600.0f};
 
         // controller icon: move left to center
         m_Controller2MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -108,15 +105,15 @@ namespace LucreApp
         m_Controller2MoveOut.AddScaling(Scaling(        0.9f,   0.6f,    0.6f));
     }
 
-    void UIControllerIcon::OnDetach()  {}
+    void UIControllerIcon::OnDetach() {}
 
     void UIControllerIcon::OnUpdate()
     {
 
         auto& transform = m_Registry.get<TransformComponent>(m_ID);
         auto& mesh = m_Registry.get<MeshComponent>(m_ID);
-
         uint controllerCount = Input::GetControllerCount();
+
         // controller 1
 
         // controller is conneted
@@ -188,9 +185,9 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-            sprite->SetScale(0.003f);
+            sprite->SetScale(2.0f);
             glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
+            builder.LoadSprite(sprite, position, 1.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"controller icon", model};
 
@@ -200,7 +197,7 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_ID, transform);
 
-            SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(m_ID, spriteRendererComponent);
+            GuiRendererComponent guiRendererComponent{};
+            m_Registry.emplace<GuiRendererComponent>(m_ID, guiRendererComponent);
         }
 }

@@ -40,8 +40,6 @@ namespace GfxRenderEngine
         Renderer();
         virtual ~Renderer() {}
 
-        // a draw call requires a vertex array (with a vertex buffer bound to it), index buffer, and bound shaders
-        //void Submit(const std::shared_ptr<VertexArray>& vertexArray);
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
@@ -54,20 +52,10 @@ namespace GfxRenderEngine
         virtual void EndScene() = 0;
 
         void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));
-        //void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const float depth, const glm::vec4& color = glm::vec4(1.0f));
         void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f));
 
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
         virtual float GetAmbientLightIntensity() = 0;
 
-    private:
-
-        //void FillVertexBuffer(const int textureSlot, const glm::mat4& position, const float depth, const glm::vec4& color, const glm::vec4& textureCoordinates);
-
-    private:
-
-        //std::shared_ptr<IndexBuffer> m_IndexBuffer;
-        //std::shared_ptr<VertexBuffer> m_VertexBuffer;
-        //std::shared_ptr<ShaderProgram> m_Shader;
     };
 }

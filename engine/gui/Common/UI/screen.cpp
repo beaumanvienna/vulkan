@@ -38,6 +38,7 @@ namespace GfxRenderEngine
     SCREEN_ScreenManager* SCREEN_ScreenManager::m_ScreenManager = nullptr;
     SpriteSheet* SCREEN_ScreenManager::m_SpritesheetUI = nullptr;
     entt::registry SCREEN_ScreenManager::m_Registry;
+    std::shared_ptr<CameraController> SCREEN_ScreenManager::m_CameraController;
 
     SCREEN_ScreenManager::SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI)
         : m_Renderer(renderer)
@@ -46,6 +47,12 @@ namespace GfxRenderEngine
         m_SpritesheetUI = spritesheetUI;
         uiContext_ = new SCREEN_UIContext();
         dialogFinished_ = nullptr;
+
+        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        auto& camera = m_CameraController->GetCamera();
+        auto position = glm::vec3(0.0f, 0.0f, 1.0f);
+        auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        camera.SetViewDirection(position, direction);
     }
 
     SCREEN_ScreenManager::~SCREEN_ScreenManager()
@@ -219,26 +226,6 @@ namespace GfxRenderEngine
         processFinishDialog();
     }
 
-    //void SCREEN_ScreenManager::sendMessage(const char *msg, const char *value)
-    //{
-    //    if (!strcmp(msg, "recreateviews"))
-    //    {
-    //        RecreateAllViews();
-    //    }
-    //    if (!strcmp(msg, "lost_focus"))
-    //    {
-    //        SCREEN_TouchInput input;
-    //        input.flags = TOUCH_RELEASE_ALL;
-    //        input.timestamp = Engine::m_Engine->GetTime();
-    //        input.id = 0;
-    //        touch(input);
-    //    }
-    //    if (!stack_.empty())
-    //    {
-    //        stack_.back().screen->sendMessage(msg, value);
-    //    }
-    //}
-
     SCREEN_Screen *SCREEN_ScreenManager::topScreen() const
     {
         if (!stack_.empty())
@@ -383,5 +370,10 @@ namespace GfxRenderEngine
             }
             lastFocusView.pop();
         }
+    }
+
+    void SCREEN_ScreenManager::resized()
+    {
+        m_CameraController->SetProjection();
     }
 }
