@@ -172,6 +172,9 @@ void main()
 
     outColor = albedo * vec4(color, 1.0);
 
+    // color correction
+    outColor.xyz = pow(outColor.xyz, vec3(1.0/1.5)); 
+
     // debug
     //outColor = vec4(fragPosition, 1.0);
     //outColor = vec4(N, 1.0);
