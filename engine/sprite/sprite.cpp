@@ -109,10 +109,10 @@ namespace GfxRenderEngine
 
         glm::mat4 spriteMatrix = glm::mat4
         (
-            -spriteWidth, -spriteHeight, 1.0f, 1.0f,
-            spriteWidth,  -spriteHeight, 1.0f, 1.0f,
+            -spriteWidth,  spriteHeight, 1.0f, 1.0f,
             spriteWidth,   spriteHeight, 1.0f, 1.0f,
-            -spriteWidth,  spriteHeight, 1.0f, 1.0f
+            spriteWidth,  -spriteHeight, 1.0f, 1.0f,
+            -spriteWidth, -spriteHeight, 1.0f, 1.0f
         );
 
         // model matrix

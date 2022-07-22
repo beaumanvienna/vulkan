@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
+#include "auxiliary/debug.h"
 #include "renderer/camera.h"
 #include "transform/matrix.h"
 
@@ -47,7 +48,6 @@ namespace GfxRenderEngine
         m_ProjectionMatrix[3][0] = -(right + left) / (right - left);
         m_ProjectionMatrix[3][1] = -(bottom + top) / (bottom - top);
         m_ProjectionMatrix[3][2] = -near / (far - near);
-        RecalculateViewMatrix();
     }
 
     void Camera::SetPerspectiveProjection(float fovy, float aspect, float near, float far)
@@ -61,40 +61,16 @@ namespace GfxRenderEngine
         m_ProjectionMatrix[2][2] = far / (far - near);
         m_ProjectionMatrix[2][3] = 1.f;
         m_ProjectionMatrix[3][2] = -(far * near) / (far - near);
-        RecalculateViewMatrix();
     }
 
     void Camera::SetPosition(const glm::vec3& position) 
     { 
         m_Position = position;
-        RecalculateViewMatrix();
     }
 
     void Camera::SetRotation(const glm::vec3& rotation) 
     {
         m_Rotation = glm::vec3{rotation.x, rotation.y+glm::pi<float>(), rotation.z+glm::pi<float>()};
-        RecalculateViewMatrix();
-    }
-
-    void Camera::RecalculateViewMatrix()
-    {
-        glm::mat4 translate = Translate( m_Position);
-        glm::mat4 rotate;
-        switch(m_ProjectionType)
-        {
-            case ORTHOGRAPHIC_PROJECTION:
-                rotate =  Rotate( m_Rotation.z, glm::vec3(0, 0, 1) );
-                break;
-            case PERSPECTIVE_PROJECTION:
-                rotate =  Rotate( m_Rotation.x, glm::vec3(1, 0, 0) );
-                rotate =  Rotate( m_Rotation.y, glm::vec3(0, 1, 0) ) * rotate;
-                rotate =  Rotate( m_Rotation.z, glm::vec3(0, 0, 1) ) * rotate;
-                break;
-        }
-        glm::mat4 transform =  translate * rotate;
-
-        m_ViewMatrix = glm::inverse(transform);
-        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
     void Camera::SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up)

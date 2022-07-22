@@ -86,6 +86,7 @@ namespace LucreApp
     {
         ASSERT(m_CurrentScene);
         m_CurrentScene->OnResize();
+        m_UIControllerIcon->Init();
         m_UI->OnResize();
     }
 

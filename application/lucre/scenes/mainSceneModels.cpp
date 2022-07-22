@@ -104,7 +104,7 @@ namespace LucreApp
 
                 TransformComponent transform{};
                 transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
-                transform.SetScale(glm::vec3{0.005f});
+                transform.SetScale(glm::vec3(0.005f, -0.005f, 0.005f));
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};

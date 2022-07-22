@@ -46,6 +46,7 @@ namespace LucreApp
         void OnEvent(Event& event) override;
         void OnUpdate() override;
         bool IsMovingIn();
+        void Init();
 
     public:
 

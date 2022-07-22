@@ -27,6 +27,7 @@
 namespace Matrix
 {
     constexpr float NINETY_DEGREES = 1.5707963f;
+    constexpr float HUNDRET_EIGHTY_DEGREES = 3.1415926f;
 }
 
 inline glm::mat4 Scale(glm::vec3 scaleVec)

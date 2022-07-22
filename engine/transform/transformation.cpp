@@ -205,6 +205,17 @@ namespace GfxRenderEngine
         }
     }
 
+    void Animation::Reset()
+    {
+        m_Translations.clear();
+        m_Rotations.clear();
+        m_Scalings.clear();
+        m_Running = false;
+        m_CurrentSequenceTranslation = 0;
+        m_CurrentSequenceRotation  = 0;
+        m_CurrentSequenceScale = 0;
+    }
+
     bool Animation::IsRunning()
     {
         if (m_Running)

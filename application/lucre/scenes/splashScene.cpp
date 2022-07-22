@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
+#include "core.h"
 #include "scenes/splashScene.h"
 #include "resources/resources.h"
 #include "transform/matrix.h"
@@ -44,7 +45,11 @@ namespace LucreApp
         camera.SetViewDirection(position, direction);
 
         // --- sprites ---
-        float scaleHero = 4.0f;
+        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
+        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        m_WindowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
+        m_WindowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
+        float scaleHero = m_WindowWidth / 512.0f;
         m_GuybrushWalkDelta = 66.0f * scaleHero + 30.0f;
 
         // horn
@@ -72,7 +77,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.0f, -400.0f, 0.0f});
+            transform.SetTranslation(glm::vec3{0.0f, m_WindowHeight * 0.65f, 0.0f});
             m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
             SpriteRendererComponent spriteRendererComponent{};
@@ -82,7 +87,7 @@ namespace LucreApp
             Builder builder{};
 
             m_LogoSprite = Lucre::m_Spritesheet->GetSprite(I_LUCRE);
-            m_LogoSprite->SetScale(1.0f);
+            m_LogoSprite->SetScale(0.5f);
             glm::mat4 scale = m_LogoSprite->GetScaleMatrix();
             builder.LoadSprite(m_LogoSprite, scale);
             auto model = Engine::m_Engine->LoadModel(builder);
@@ -93,7 +98,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(entity, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.0f, 200.0f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
             m_Registry.emplace<TransformComponent>(entity, transform);
 
             SpriteRendererComponent spriteRendererComponent{};
@@ -108,15 +113,14 @@ namespace LucreApp
     void SplashScene::OnUpdate(const Timestep& timestep)
     {
         {
-            constexpr float initialPositionX = -300.0f;
-            static float walkOffset = initialPositionX;
+            static float walkOffset = m_InitialPositionX;
             if (!m_WalkAnimation.IsRunning())
             {
                 m_WalkAnimation.Start();
                 walkOffset += m_GuybrushWalkDelta;
-                if (walkOffset > -initialPositionX)
+                if (walkOffset > m_EndPositionX)
                 {
-                    walkOffset = initialPositionX;
+                    walkOffset = m_InitialPositionX;
                     m_IsRunning = false;
                 }
             }
@@ -164,5 +168,8 @@ namespace LucreApp
 
     void SplashScene::OnResize()
     {
+        m_CameraController->SetProjection();
+        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
+        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
     }
 }

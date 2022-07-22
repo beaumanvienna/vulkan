@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
 #include "scene/scene.h"
 #include "scene/components.h"
 #include "transform/matrix.h"
@@ -35,12 +36,21 @@ namespace LucreApp
     void UIControllerIcon::OnAttach()
     {
         LoadModels();
+        Init();
+    }
+
+    void UIControllerIcon::Init()
+    {
+        float windowWidth  = Engine::m_Engine->GetWindowWidth();
+        float windowHeight = Engine::m_Engine->GetWindowHeight();
 
         // controller 1
         m_Controller1Detected = false;
+        m_Controller1MoveIn.Reset();
+        m_Controller1MoveOut.Reset();
 
-        glm::vec2 finalOutOfScreenPosition(-1150.0f, -600.0f);
-        glm::vec2 finalScreenPosition(-487.0f, -600.0f);
+        glm::vec2 finalOutOfScreenPosition(-windowWidth/5.0f, windowHeight * 0.9f);
+        glm::vec2 finalScreenPosition(windowWidth/5.0f, windowHeight * 0.9f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -73,8 +83,10 @@ namespace LucreApp
 
         // controller 2
         m_Controller2Detected = false;
+        m_Controller2MoveIn.Reset();
+        m_Controller2MoveOut.Reset();
 
-        finalScreenPosition = glm::vec2{-387.0f, -600.0f};
+        finalScreenPosition = glm::vec2{windowWidth/5.0f*1.2f, windowHeight * 0.9f};
 
         // controller icon: move left to center
         m_Controller2MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -185,7 +197,7 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-            sprite->SetScale(2.0f);
+            sprite->SetScale(1.0f);
             glm::mat4 position = sprite->GetScaleMatrix();
             builder.LoadSprite(sprite, position, 1.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);

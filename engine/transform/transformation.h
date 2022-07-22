@@ -109,6 +109,7 @@ namespace GfxRenderEngine
         void Start();
         void Stop();
         bool IsRunning();
+        void Reset();
 
         void AddTranslation(const Translation translation);
         void AddRotation(const Rotation rotation);
