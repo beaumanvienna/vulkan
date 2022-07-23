@@ -46,22 +46,15 @@ namespace LucreApp
 
         // --- sprites ---
         m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
-        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
-        m_WindowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
-        m_WindowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
-        float scaleHero = m_WindowWidth / 512.0f;
-        m_GuybrushWalkDelta = 66.0f * scaleHero + 30.0f;
-
         // horn
         m_SpritesheetWalk.AddSpritesheetRow
         (
             Lucre::m_Spritesheet->GetSprite(I_WALK),
             WALK_ANIMATION_SPRITES /* frames */, 
-            scaleHero /* scale) */
+            1.0f /* scale) */
         );
         m_WalkAnimation.Create(150ms /* per frame */, &m_SpritesheetWalk);
         m_WalkAnimation.Start();
-
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
             Builder builder{};
@@ -77,7 +70,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.0f, m_WindowHeight * 0.65f, 0.0f});
+            transform.SetTranslationX(m_InitialPositionX);
             m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
             SpriteRendererComponent spriteRendererComponent{};
@@ -87,22 +80,44 @@ namespace LucreApp
             Builder builder{};
 
             m_LogoSprite = Lucre::m_Spritesheet->GetSprite(I_LUCRE);
-            m_LogoSprite->SetScale(0.5f);
+            m_LogoSprite->SetScale(1.0f);
             glm::mat4 scale = m_LogoSprite->GetScaleMatrix();
             builder.LoadSprite(m_LogoSprite, scale);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"logo", model};
             mesh.m_Enabled = true;
 
-            auto entity = CreateEntity();
-            m_Registry.emplace<MeshComponent>(entity, mesh);
+            m_Logo = CreateEntity();
+            m_Registry.emplace<MeshComponent>(m_Logo, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
-            m_Registry.emplace<TransformComponent>(entity, transform);
+            m_Registry.emplace<TransformComponent>(m_Logo, transform);
 
             SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(entity, spriteRendererComponent);
+            m_Registry.emplace<SpriteRendererComponent>(m_Logo, spriteRendererComponent);
+        }
+        Init();
+    }
+
+    void SplashScene::Init()
+    {
+        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
+        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        m_WindowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
+        m_WindowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
+        float scaleHero = m_WindowHeight / 550.0f;
+        m_GuybrushWalkDelta = 66.0f * scaleHero + 30.0f;
+
+        for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
+            transform.SetScale(glm::vec3{scaleHero});
+            transform.SetTranslationY(m_WindowHeight * 0.65f);
+        }
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Logo);
+            transform.SetScale(glm::vec3{scaleHero * 0.333f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
         }
     }
 
@@ -169,7 +184,6 @@ namespace LucreApp
     void SplashScene::OnResize()
     {
         m_CameraController->SetProjection();
-        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
-        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        Init();
     }
 }

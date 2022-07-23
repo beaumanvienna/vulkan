@@ -43,78 +43,90 @@ namespace LucreApp
     {
         float windowWidth  = Engine::m_Engine->GetWindowWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
+        float aspectRatio  = Engine::m_Engine->GetWindowAspectRatio();
+
+        float sy = windowHeight / 1920.0f * 1.4f;
+        float sx = sy * aspectRatio;
 
         // controller 1
         m_Controller1Detected = false;
         m_Controller1MoveIn.Reset();
         m_Controller1MoveOut.Reset();
 
-        glm::vec2 finalOutOfScreenPosition(-windowWidth/5.0f, windowHeight * 0.9f);
-        glm::vec2 finalScreenPosition(windowWidth/5.0f, windowHeight * 0.9f);
+        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.9f);
+        glm::vec2 finalScreenPosition(windowWidth * 0.1f, windowHeight * 0.9f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
-        m_Controller1MoveIn.AddRotation(Rotation(      1.0f,    0.0f,   0.0f));                                           // idle
-        m_Controller1MoveIn.AddScaling(Scaling(        0.9f,    0.6f,   0.6f));
-        m_Controller1MoveIn.AddScaling(Scaling(        0.1f,    0.6f,   1.0f));
+        m_Controller1MoveIn.AddRotation(Rotation(      1.0f,    0.0f,    0.0f));                                          // idle
+        m_Controller1MoveIn.AddScaling(Scaling(        0.9f, sx*0.6f, sy*0.6f, sx*0.6f, sy*0.6f));
+        m_Controller1MoveIn.AddScaling(Scaling(        0.1f, sx*0.6f, sy*0.6f, sx*1.0f, sy*1.0f));
 
         // controller icon: wiggle
         const float rotationTiming = 0.75f;
         m_Controller1MoveIn.AddTranslation(Translation(1.0f * rotationTiming, finalScreenPosition, finalScreenPosition)); // idle
-        m_Controller1MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,   0.0f,   0.2f));
-        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   0.2f,  -0.2f));
-        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,  -0.2f,   0.2f));
-        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   0.2f,  -0.1f));
-        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,  -0.1f,   0.1f));
-        m_Controller1MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,   0.1f,   0.0f));
-        m_Controller1MoveIn.AddScaling(Scaling(        1.0f * rotationTiming,   1.0f,   1.0f));                           // idle
+        m_Controller1MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,    0.0f,    0.2f));
+        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,    0.2f,   -0.2f));
+        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   -0.2f,    0.2f));
+        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,    0.2f,   -0.1f));
+        m_Controller1MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   -0.1f,    0.1f));
+        m_Controller1MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,    0.1f,    0.0f));
+        m_Controller1MoveIn.AddScaling(Scaling(        1.0f * rotationTiming, sx*1.0f, sy*1.0f, sx*1.0f, sy*1.0f));       // idle
+
+        // transform for end position to prevent accummulated rounding errors
+        m_Controller1MoveIn.SetFinal({sx*1.0f, sy*1.0f, 1.0f} /*scaling*/, {0.0f, 0.0f, 0.0f} /*rotation*/, {finalScreenPosition.x, finalScreenPosition.y, 0.0f} /*translation*/);
 
         // controller icon: idle
         m_Controller1MoveOut.AddTranslation(Translation(0.5f, finalScreenPosition, finalScreenPosition));                 // idle
-        m_Controller1MoveOut.AddRotation(Rotation(      0.4f,   0.0f,   0.0f));                                           // idle
-        m_Controller1MoveOut.AddScaling(Scaling(        0.5f,   1.0f,   1.0f));                                           // idle
+        m_Controller1MoveOut.AddRotation(Rotation(      0.4f,    0.0f,    0.0f));                                         // idle
+        m_Controller1MoveOut.AddScaling(Scaling(        0.5f, sx*1.0f, sy*1.0f, sx*1.0f, sy*1.0f));                       // idle
 
         // controller icon: move center to left
         m_Controller1MoveOut.AddTranslation(Translation(1.0f, finalScreenPosition, finalOutOfScreenPosition));
-        m_Controller1MoveOut.AddRotation(Rotation(      0.1f, -0.05f,    0.0f));
-        m_Controller1MoveOut.AddRotation(Rotation(      0.9f,   0.0f,    0.0f));                                          // idle
-        m_Controller1MoveOut.AddScaling(Scaling(        0.1f,   1.0f,    0.6f));
-        m_Controller1MoveOut.AddScaling(Scaling(        0.9f,   0.6f,    0.6f));
+        m_Controller1MoveOut.AddRotation(Rotation(      0.1f,  -0.05f,    0.0f));
+        m_Controller1MoveOut.AddRotation(Rotation(      0.9f,    0.0f,    0.0f));                                         // idle
+        m_Controller1MoveOut.AddScaling(Scaling(        0.1f, sx*1.0f, sy*0.6f));
+        m_Controller1MoveOut.AddScaling(Scaling(        0.9f, sx*0.6f, sy*0.6f));
 
         // controller 2
         m_Controller2Detected = false;
         m_Controller2MoveIn.Reset();
         m_Controller2MoveOut.Reset();
 
-        finalScreenPosition = glm::vec2{windowWidth/5.0f*1.2f, windowHeight * 0.9f};
+        finalScreenPosition = glm::vec2{windowWidth * 0.1f * 1.2f, windowHeight * 0.9f};
 
         // controller icon: move left to center
         m_Controller2MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
-        m_Controller2MoveIn.AddRotation(Rotation(      1.0f,    0.0f,   0.0f));                                           // idle
-        m_Controller2MoveIn.AddScaling(Scaling(        0.9f,    0.6f,   0.6f));
-        m_Controller2MoveIn.AddScaling(Scaling(        0.1f,    0.6f,   1.0f));
+        m_Controller2MoveIn.AddRotation(Rotation(      1.0f,    0.0f,    0.0f));                                          // idle
+        m_Controller2MoveIn.AddScaling(Scaling(        0.9f, sx*0.6f, sy*0.6f));
+        m_Controller2MoveIn.AddScaling(Scaling(        0.1f, sx*0.6f, sy*1.0f));
 
         // controller icon: wiggle
-        m_Controller2MoveIn.AddTranslation(Translation(1.0f * rotationTiming, finalScreenPosition, finalScreenPosition)); // idle
-        m_Controller2MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,   0.0f,   0.2f));
-        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   0.2f,  -0.2f));
-        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,  -0.2f,   0.2f));
-        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   0.2f,  -0.1f));
-        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,  -0.1f,   0.1f));
-        m_Controller2MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,   0.1f,   0.0f));
-        m_Controller2MoveIn.AddScaling(Scaling(        1.0f * rotationTiming,   1.0f,   1.0f));                           // idle
+        m_Controller2MoveIn.AddTranslation(Translation(1.0f * rotationTiming,  finalScreenPosition, finalScreenPosition));// idle
+        m_Controller2MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,    0.0f,    0.2f));
+        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,    0.2f,   -0.2f));
+        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   -0.2f,    0.2f));
+        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,    0.2f,   -0.1f));
+        m_Controller2MoveIn.AddRotation(Rotation(      0.2f * rotationTiming,   -0.1f,    0.1f));
+        m_Controller2MoveIn.AddRotation(Rotation(      0.1f * rotationTiming,    0.1f,    0.0f));
+        m_Controller2MoveIn.AddScaling(Scaling(        1.0f * rotationTiming, sx*1.0f, sy*1.0f));                         // idle
+
+        // transform for end position
+        m_Controller2MoveIn.SetFinal({sx*1.0f, sy*1.0f, 1.0f} /*scaling*/, {0.0f, 0.0f, 0.0f} /*rotation*/, {finalScreenPosition.x, finalScreenPosition.y, 0.0f} /*translation*/);
 
         // controller icon: idle
         m_Controller2MoveOut.AddTranslation(Translation(0.5f, finalScreenPosition, finalScreenPosition));                 // idle
-        m_Controller2MoveOut.AddRotation(Rotation(      0.4f,   0.0f,   0.0f));                                           // idle
-        m_Controller2MoveOut.AddScaling(Scaling(        0.5f,   1.0f,   1.0f));                                           // idle
+        m_Controller2MoveOut.AddRotation(Rotation(      0.4f,   0.0f,    0.0f));                                          // idle
+        m_Controller2MoveOut.AddScaling(Scaling(        0.5f,sx*1.0f, sy*1.0f));                                          // idle
 
         // controller icon: move center to left
         m_Controller2MoveOut.AddTranslation(Translation(1.0f, finalScreenPosition, finalOutOfScreenPosition));
         m_Controller2MoveOut.AddRotation(Rotation(      0.1f, -0.05f,    0.0f));
         m_Controller2MoveOut.AddRotation(Rotation(      0.9f,   0.0f,    0.0f));                                          // idle
-        m_Controller2MoveOut.AddScaling(Scaling(        0.1f,   1.0f,    0.6f));
-        m_Controller2MoveOut.AddScaling(Scaling(        0.9f,   0.6f,    0.6f));
+        m_Controller2MoveOut.AddScaling(Scaling(        0.1f,sx*1.0f, sy*0.6f));
+        m_Controller2MoveOut.AddScaling(Scaling(        0.9f,sx*0.6f, sy*0.6f));
+
+        
     }
 
     void UIControllerIcon::OnDetach() {}

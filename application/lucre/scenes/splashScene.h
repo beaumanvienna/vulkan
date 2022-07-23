@@ -52,11 +52,15 @@ namespace LucreApp
 
     private:
 
+        void Init();
+
+    private:
+
         std::shared_ptr<Renderer> m_Renderer;
         std::shared_ptr<CameraController> m_CameraController;
 
         static constexpr uint WALK_ANIMATION_SPRITES = 6;
-        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES];
+        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES], m_Logo;
         SpriteSheet m_SpritesheetWalk;
         SpriteAnimation m_WalkAnimation;
         Sprite* m_LogoSprite;

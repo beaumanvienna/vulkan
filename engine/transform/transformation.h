@@ -116,6 +116,7 @@ namespace GfxRenderEngine
         void AddScaling(const Scaling scale);
         glm::mat4& GetTransformation();
         void GetTransformation(TransformComponent& transform);
+        void SetFinal(const glm::vec3& scaling, const glm::vec3& rotation, const glm::vec3 translation);
 
     private:
 
@@ -132,5 +133,8 @@ namespace GfxRenderEngine
         int m_NumberOfRotationSequences;
         int m_NumberOfScaleSequences;
 
+        glm::vec3 m_FinalScaling;
+        glm::vec3 m_FinalRotation;
+        glm::vec3 m_FinalTranslation;
     };
 }

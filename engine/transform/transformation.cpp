@@ -214,6 +214,9 @@ namespace GfxRenderEngine
         m_CurrentSequenceTranslation = 0;
         m_CurrentSequenceRotation  = 0;
         m_CurrentSequenceScale = 0;
+        m_FinalScaling = glm::vec3(1.0f);
+        m_FinalRotation = glm::vec3(0.0f);
+        m_FinalTranslation = glm::vec3(0.0f);
     }
 
     bool Animation::IsRunning()
@@ -320,5 +323,18 @@ namespace GfxRenderEngine
                 transform.SetTranslation(m_Translations[m_CurrentSequenceTranslation].GetTranslation());
             }
         }
+        else
+        {
+            transform.SetScale(m_FinalScaling);
+            transform.SetRotation(m_FinalRotation);
+            transform.SetTranslation(m_FinalTranslation);
+        }
+    }
+
+    void Animation::SetFinal(const glm::vec3& scaling, const glm::vec3& rotation, const glm::vec3 translation)
+    {
+        m_FinalScaling = scaling;
+        m_FinalRotation = rotation;
+        m_FinalTranslation = translation;
     }
 }
