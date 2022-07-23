@@ -220,6 +220,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_ID1, mesh);
 
             TransformComponent transform{};
+            transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID1, transform);
 
             GuiRendererComponent guiRendererComponent{};
@@ -230,6 +231,7 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_ID2, mesh);
 
             TransformComponent transform{};
+            transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID2, transform);
 
             GuiRendererComponent guiRendererComponent{};
