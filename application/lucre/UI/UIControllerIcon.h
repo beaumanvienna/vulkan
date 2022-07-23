@@ -58,7 +58,7 @@ namespace LucreApp
 
     private:
 
-        entt::entity m_ID;
+        entt::entity m_ID1, m_ID2;
 
         Animation m_Controller1MoveIn;
         Animation m_Controller1MoveOut;

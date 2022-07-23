@@ -336,7 +336,8 @@ namespace GfxRenderEngine
 
         int monitorX, monitorY;
         glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
-
+        m_DesktopWidth = videoMode->width;
+        m_DesktopHeight = videoMode->height;
         m_WindowedWidth = videoMode->width / 2.5f;
         m_WindowedHeight = m_WindowedWidth;// / 16 * 9;
         m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;

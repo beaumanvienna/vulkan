@@ -80,8 +80,11 @@ namespace GfxRenderEngine
         float GetWindowAspectRatio() const { return m_Window->GetWindowAspectRatio(); }
         uint GetContextWidth() const { return m_GraphicsContext->GetContextWidth(); }
         uint GetContextHeight() const { return m_GraphicsContext->GetContextHeight(); }
-        float GetWindowWidth() const { return m_Window->GetWidth(); }
-        float GetWindowHeight() const { return m_Window->GetHeight(); }
+        float GetWindowWidth() const { return static_cast<float>(m_Window->GetWidth()); }
+        float GetWindowHeight() const { return static_cast<float>(m_Window->GetHeight()); }
+        float GetDesktopWidth() const { return static_cast<float>(m_Window->GetDesktopWidth()); }
+        float GetDesktopHeight() const { return static_cast<float>(m_Window->GetDesktopHeight()); }
+
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 

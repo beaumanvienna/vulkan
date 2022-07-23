@@ -59,6 +59,8 @@ namespace GfxRenderEngine
         void OnUpdate() override;
         uint GetWidth()  const override { return m_WindowProperties.m_Width; }
         uint GetHeight() const override { return m_WindowProperties.m_Height; }
+        uint GetDesktopWidth()  const override { return m_DesktopWidth; }
+        uint GetDesktopHeight() const override { return m_DesktopHeight; }
 
         void SetEventCallback(const EventCallbackFunction& callback) override;
         void ToggleFullscreen() override;
@@ -112,6 +114,7 @@ namespace GfxRenderEngine
         int m_WindowedWidth, m_WindowedHeight;
         int m_WindowPositionX, m_WindowPositionY;
         bool m_AllowCursor;
+        uint m_DesktopWidth, m_DesktopHeight;
 
     };
 }
