@@ -40,10 +40,9 @@ namespace GfxRenderEngine
         VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type);
         ~VK_Texture();
 
-        virtual bool Init(const uint width, const uint height, const void* data) override;
-        virtual bool Init(const std::string& fileName, bool flip = true) override;
-        virtual bool Init(const unsigned char* data, int length) override;
-        virtual bool Init(const uint width, const uint height, const uint rendererID) override;
+        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) override;
+        virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;
+        virtual bool Init(const unsigned char* data, int length, bool sRGB) override;
         virtual void Bind() const override;
         virtual void Unbind() const override;
         virtual int GetWidth() const override { return m_Width; }
@@ -82,7 +81,7 @@ namespace GfxRenderEngine
         VkDeviceMemory m_TextureImageMemory;
         VkFormat m_ImageFormat;
 
-        bool m_NearestFilter;
+        bool m_NearestFilter, m_sRGB;
     public:
 
         VkSampler m_Sampler;

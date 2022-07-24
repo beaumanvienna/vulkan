@@ -63,7 +63,7 @@ namespace GfxRenderEngine
                 if (dataPtr != nullptr && fileSize)
                 {
                     texture = Texture::Create();
-                    texture->Init((const unsigned char*)dataPtr, fileSize);
+                    texture->Init((const unsigned char*)dataPtr, fileSize, Texture::USE_SRGB);
                 }
                 else
                 {

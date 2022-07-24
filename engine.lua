@@ -8,7 +8,7 @@ project "engine"
 
     defines
     {
-        "ENGINE_VERSION=\"0.8.1\"",
+        "ENGINE_VERSION=\"0.8.4\"",
         "PROFILING"
     }
 

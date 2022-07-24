@@ -129,7 +129,7 @@ namespace GfxRenderEngine
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
         auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
-        textureSpritesheet->Init(data, fileSize);
+        textureSpritesheet->Init(data, fileSize, Texture::USE_SRGB);
         textureSpritesheet->SetFilename("spritesheet");
 
         gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
@@ -140,7 +140,7 @@ namespace GfxRenderEngine
 
         data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-        textureFontAtlas->Init(data, fileSize);
+        textureFontAtlas->Init(data, fileSize, Texture::USE_SRGB);
         textureFontAtlas->SetFilename("font atlas");
 
         gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture

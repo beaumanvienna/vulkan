@@ -35,7 +35,7 @@ namespace GfxRenderEngine
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
           m_DataFormat(0), m_MipLevels(0), m_NearestFilter(nearestFilter),
-          m_TextureSlotManager(textureSlotManager)
+          m_TextureSlotManager(textureSlotManager), m_sRGB(false)
     {
         m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
@@ -54,16 +54,17 @@ namespace GfxRenderEngine
 
     VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type)
         : m_TextureSlotManager{textureSlotManager}, m_RendererID{ID}, m_InternalFormat{internalFormat},
-          m_DataFormat{dataFormat}, m_Type{type}
+          m_DataFormat{dataFormat}, m_Type{type}, m_sRGB{false}
     {
         m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
 
     // create texture from raw memory
-    bool VK_Texture::Init(const uint width, const uint height, const void* data)
+    bool VK_Texture::Init(const uint width, const uint height, bool sRGB, const void* data)
     {
         bool ok = false;
         m_FileName = "raw memory";
+        m_sRGB = sRGB;
         m_LocalBuffer = (uchar*)data;
 
         if(m_LocalBuffer)
@@ -77,12 +78,13 @@ namespace GfxRenderEngine
     }
 
     // create texture from file on disk
-    bool VK_Texture::Init(const std::string& fileName, bool flip)
+    bool VK_Texture::Init(const std::string& fileName, bool sRGB, bool flip)
     {
         bool ok = false;
         int channels_in_file;
         stbi_set_flip_vertically_on_load(flip);
         m_FileName = fileName;
+        m_sRGB = sRGB;
         m_LocalBuffer = stbi_load(m_FileName.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
 
         if(m_LocalBuffer)
@@ -98,12 +100,13 @@ namespace GfxRenderEngine
     }
 
     // create texture from file in memory
-    bool VK_Texture::Init(const unsigned char* data, int length)
+    bool VK_Texture::Init(const unsigned char* data, int length, bool sRGB)
     {
         bool ok = false;
         int channels_in_file;
         stbi_set_flip_vertically_on_load(true);
         m_FileName = "file in memory";
+        m_sRGB = sRGB;
         m_LocalBuffer = stbi_load_from_memory(data, length, &m_Width, &m_Height, &m_BytesPerPixel, 4);
 
         if(m_LocalBuffer)
@@ -116,13 +119,6 @@ namespace GfxRenderEngine
             std::cout << "Texture: Couldn't load file " << m_FileName << std::endl;
         }
         return ok;
-    }
-
-    // create texture from framebuffer attachment
-    bool VK_Texture::Init(const uint width, const uint height, const uint rendererID)
-    {
-        LOG_CORE_CRITICAL("not implemented bool VK_Texture::Init(const uint width, const uint height, const uint rendererID)");
-        return true;
     }
 
     void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -294,9 +290,10 @@ namespace GfxRenderEngine
             memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
         vkUnmapMemory(device, stagingBufferMemory);
 
+        VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage
         (
-            VK_FORMAT_R8G8B8A8_SRGB,
+            format,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT

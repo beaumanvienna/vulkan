@@ -108,9 +108,37 @@ namespace GfxRenderEngine
                 bufferSize = glTFImage.image.size();
             }
             auto texture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
-            texture->Init(glTFImage.width, glTFImage.height, buffer);
+            texture->Init(glTFImage.width, glTFImage.height, GetImageFormatGLTF(i), buffer);
             VK_Model::m_Images.push_back(texture);
         }
+    }
+
+    bool Builder::GetImageFormatGLTF(uint imageIndex)
+    {
+        for (uint i = 0; i < m_GltfModel.materials.size(); i++)
+        {
+            tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
+            
+            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+            {
+                int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
+                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                if (imageIndex == diffuseTexture.source)
+                {
+                    return Texture::USE_SRGB;
+                }
+            }
+            else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
+            {
+                int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                if (imageIndex == diffuseTexture.source)
+                {
+                    return Texture::USE_SRGB;
+                }
+            }
+        }
+        return Texture::USE_UNORM;
     }
 
     void Builder::LoadMaterialsGLTF()
@@ -135,6 +163,7 @@ namespace GfxRenderEngine
                 int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
                 tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
                 material.m_DiffuseMapIndex = diffuseTexture.source;
+LOG_CORE_CRITICAL("diffuseTexture.source = {0}", diffuseTexture.source);
                 material.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
             else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())

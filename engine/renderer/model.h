@@ -142,6 +142,7 @@ namespace GfxRenderEngine
         void LoadImagesGLTF();
         void LoadMaterialsGLTF();
         void LoadVertexDataGLTF(uint meshIndex);
+        bool GetImageFormatGLTF(uint imageIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int nodeIndex);
         void AssignMaterial(const PrimitiveTmp& primitiveTmp, int materialIndex);
         void ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);

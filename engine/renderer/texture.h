@@ -33,12 +33,16 @@ namespace GfxRenderEngine
     {
     public:
 
+        static constexpr bool USE_SRGB = true;
+        static constexpr bool USE_UNORM = false;
+
+    public:
+
         ~Texture() {}
 
-        virtual bool Init(const uint width, const uint height, const void* data) = 0;
-        virtual bool Init(const std::string& fileName, bool flip = true) = 0;
-        virtual bool Init(const unsigned char* data, int length) = 0;
-        virtual bool Init(const uint width, const uint height, const uint rendererID) = 0;
+        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) = 0;
+        virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) = 0;
+        virtual bool Init(const unsigned char* data, int length, bool sRGB) = 0;
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;
         virtual int GetWidth() const = 0;
