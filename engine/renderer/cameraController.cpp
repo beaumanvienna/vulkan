@@ -72,7 +72,7 @@ namespace GfxRenderEngine
                 float normalize = Engine::m_Engine->GetWindowWidth();
 
                 float ortho_left   =  0.0f;
-                float ortho_right  =  -normalize;
+                float ortho_right  =  normalize;
                 float ortho_bottom =  normalize / aspectRatio;
                 float ortho_top    =  0.0f;
                 float ortho_near   =  1.0f;

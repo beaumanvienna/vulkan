@@ -163,7 +163,6 @@ namespace GfxRenderEngine
                 int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
                 tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
                 material.m_DiffuseMapIndex = diffuseTexture.source;
-LOG_CORE_CRITICAL("diffuseTexture.source = {0}", diffuseTexture.source);
                 material.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
             else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
