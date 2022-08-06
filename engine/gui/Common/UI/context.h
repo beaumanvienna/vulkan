@@ -35,6 +35,7 @@
 
 namespace GfxRenderEngine
 {
+
     class SCREEN_ManagedTexture
     {
     public:

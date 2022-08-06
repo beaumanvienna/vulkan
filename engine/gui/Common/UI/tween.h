@@ -1,7 +1,7 @@
 ﻿/* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
    
-   Engine Copyright (c) 2021 Engine Development Team 
+   Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -41,14 +41,14 @@ namespace GfxRenderEngine
                 start_ = Engine::m_Engine->GetTimeDouble();
             }
             virtual ~Tween() {}
-        
+
             void Apply(View *view);
-        
+
             bool Finished() 
             {
                 return finishApplied_ && Engine::m_Engine->GetTimeDouble() >= start_ + delay_ + duration_;
             }
-        
+
             void Persist() 
             {
                 persists_ = true;
@@ -57,29 +57,29 @@ namespace GfxRenderEngine
             {
                 return persists_;
             }
-        
+
             void Delay(float s) 
             {
                 delay_ = s;
             }
-        
+
             virtual void PersistData(PersistStatus status, std::string anonId, PersistMap &storage) = 0;
-        
+
             Event Finish;
-        
+
         protected:
             float DurationOffset() 
             {
                 return (Engine::m_Engine->GetTimeDouble() - start_) - delay_;
             }
-        
+
             float Position() 
             {
                 return curve_(std::min(1.0f, DurationOffset() / duration_));
             }
-        
+
             virtual void DoApply(View *view, float pos) = 0;
-        
+
             double start_;
             float duration_;
             float delay_ = 0.0f;
@@ -88,7 +88,7 @@ namespace GfxRenderEngine
             bool valid_ = false;
             float (*curve_)(float);
         };
-    
+
         template <typename Value>
         class TweenBase: public Tween 
         {
@@ -100,11 +100,11 @@ namespace GfxRenderEngine
             {
                 valid_ = true;
             }
-    
+
             void Divert(const Value &newTo, float newDuration = -1.0f) 
             {
                 const Value newFrom = valid_ ? Current(Position()) : newTo;
-        
+
                 if (Engine::m_Engine->GetTimeDouble() < start_ + delay_ + duration_ && valid_) 
                 {
                     if (newTo == to_) 
@@ -133,7 +133,7 @@ namespace GfxRenderEngine
                     start_ = Engine::m_Engine->GetTimeDouble();
                     finishApplied_ = false;
                 }
-        
+
                 from_ = newFrom;
                 to_ = newTo;
                 valid_ = true;
@@ -142,19 +142,19 @@ namespace GfxRenderEngine
                     duration_ = newDuration;
                 }
             }
-        
+
             void Stop() 
             {
                 Reset(Current(Position()));
             }
-        
+
             void Reset(const Value &newFrom) 
             {
                 from_ = newFrom;
                 to_ = newFrom;
                 valid_ = true;
             }
-        
+
             const Value &FromValue() const 
             {
                 return from_;
@@ -167,71 +167,71 @@ namespace GfxRenderEngine
             {
                 return Current(Position());
             }
-        
+
             void PersistData(PersistStatus status, std::string anonId, PersistMap &storage) override;
-        
+
         protected:
             virtual Value Current(float pos) = 0;
-        
+
             Value from_;
             Value to_;
         };
-        
+
         class ColorTween : public TweenBase<uint32_t> 
         {
         public:
             using TweenBase::TweenBase;
-        
+
         protected:
             uint32_t Current(float pos) override;
         };
-        
+
         class TextColorTween : public ColorTween 
         {
         public:
             using ColorTween::ColorTween;
-        
+
         protected:
             void DoApply(View *view, float pos) override;
         };
-        
+
         class CallbackColorTween : public ColorTween 
         {
         public:
             using ColorTween::ColorTween;
-        
+
             void SetCallback(const std::function<void(View *v, uint32_t c)> &cb) 
             {
                 callback_ = cb;
             }
-        
+
         protected:
             void DoApply(View *view, float pos) override;
-        
+
             std::function<void(View *v, uint32_t c)> callback_;
         };
-        
+
         class VisibilityTween : public TweenBase<Visibility> 
         {
         public:
             using TweenBase::TweenBase;
-        
+
         protected:
             void DoApply(View *view, float pos) override;
-        
+
             Visibility Current(float pos) override;
         };
-        
+
         class AnchorTranslateTween : public TweenBase<Point> 
         {
         public:
             using TweenBase::TweenBase;
-        
+
         protected:
             void DoApply(View *view, float pos) override;
-        
+
             Point Current(float pos) override;
         };
-        
+
     }  // namespace
 }

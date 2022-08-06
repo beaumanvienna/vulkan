@@ -28,7 +28,6 @@
 #include <stack>
 #include <mutex>
 
-#include "scene/entity.h"
 #include "renderer/renderer.h"
 #include "renderer/cameraController.h"
 #include "sprite/spritesheet.h"
@@ -56,16 +55,12 @@ namespace GfxRenderEngine
 
     namespace SCREEN_Draw 
     {
-
         class SCREEN_DrawContext;
-
     }
 
     class SCREEN_Screen 
     {
-
     public:
-
         SCREEN_Screen() 
             : screenManager_(nullptr) 
         {
@@ -105,18 +100,13 @@ namespace GfxRenderEngine
         virtual SCREEN_TouchInput transformTouch(const SCREEN_TouchInput &touch) { return touch; }
 
     private:
-
         SCREEN_ScreenManager *screenManager_;
-
     };
 
     class SCREEN_Transition 
     {
-
     public:
-
         SCREEN_Transition() {}
-
     };
 
     enum 
@@ -129,9 +119,7 @@ namespace GfxRenderEngine
 
     class SCREEN_ScreenManager 
     {
-
     public:
-
         SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI);
         virtual ~SCREEN_ScreenManager();
 
@@ -177,11 +165,9 @@ namespace GfxRenderEngine
         std::recursive_mutex inputLock_;
         static SpriteSheet* m_SpritesheetUI;
         static SCREEN_ScreenManager* m_ScreenManager;
-        static entt::registry m_Registry;
         static std::shared_ptr<CameraController> m_CameraController;
 
     private:
-
         void pop();
         void switchToNext();
         void processFinishDialog();

@@ -34,6 +34,7 @@
 
 namespace GfxRenderEngine
 {
+
     class SCREEN_I18NCategory;
     namespace SCREEN_Draw
     {

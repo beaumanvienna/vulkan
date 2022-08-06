@@ -174,7 +174,6 @@ namespace LucreApp
         m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
         m_Renderer->SubmitGUI(m_Registry);
 
-        m_Renderer->EndScene();
     }
 
     void SplashScene::OnEvent(Event& event)

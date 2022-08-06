@@ -32,6 +32,7 @@
 #include "scene/scene.h"
 
 #include "VKdevice.h"
+#include "VKbuffer.h"
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
@@ -41,6 +42,7 @@ namespace GfxRenderEngine
     struct VK_PushConstantDataGUIRenderer
     {
         glm::mat4 m_MVP{1.0f};
+        glm::vec2 m_UV[2];
     };
 
     class VK_RenderSystemGUIRenderer
@@ -55,16 +57,20 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, const glm::mat4& viewProjectionMatrix);
+        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& viewProjectionMatrix);
 
     private:
 
         void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
         void CreatePipeline(VkRenderPass renderPass);
+        void CreateVertexBuffer();
 
     private:
 
+        const uint m_VertexCount = 4;
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        std::unique_ptr<VK_Buffer> m_VertexBuffer;
 
     };
 }

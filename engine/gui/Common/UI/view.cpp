@@ -1,7 +1,7 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
 
-   Engine Copyright (c) 2021 Engine Development Team
+   Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -34,18 +34,17 @@
 #include "gui/Common/Render/drawBuffer.h"
 #include "platform/keyCodes.h"
 #include "transform/matrix.h"
-#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
 
     namespace SCREEN_UI
     {
-    
+
         const float ITEM_HEIGHT = 64.0f;
         const float MIN_TEXT_SCALE = 0.8f;
         const float MAX_ITEM_SIZE = 65535.0f;
-    
+
         void MeasureBySpec(Size sz, float contentWidth, MeasureSpec spec, float *measured)
         {
             *measured = sz;
@@ -80,7 +79,7 @@ namespace GfxRenderEngine
                 *measured = spec.size;
             }
         }
-    
+
         void ApplyBoundBySpec(float &bound, MeasureSpec spec)
         {
             switch (spec.type)
@@ -95,25 +94,25 @@ namespace GfxRenderEngine
                     break;
             }
         }
-    
+
         void ApplyBoundsBySpec(Bounds &bounds, MeasureSpec horiz, MeasureSpec vert)
         {
             ApplyBoundBySpec(bounds.w, horiz);
             ApplyBoundBySpec(bounds.h, vert);
         }
-    
+
         void Event::Add(std::function<EventReturn(EventParams&)> func)
         {
             HandlerRegistration reg;
             reg.func = func;
             handlers_.push_back(reg);
         }
-    
+
         void Event::Trigger(EventParams &e)
         {
             EventTriggered(this, e);
         }
-    
+
         EventReturn Event::Dispatch(EventParams &e)
         {
             for (auto iter = handlers_.begin(); iter != handlers_.end(); ++iter)
@@ -125,13 +124,13 @@ namespace GfxRenderEngine
             }
             return SCREEN_UI::EVENT_SKIPPED;
         }
-    
+
         Event::~Event()
         {
             handlers_.clear();
             RemoveQueuedEventsByEvent(this);
         }
-    
+
         View::~View()
         {
             if (HasFocus())
@@ -139,12 +138,12 @@ namespace GfxRenderEngine
                 SetFocusedView(0);
             }
             RemoveQueuedEventsByView(this);
-    
+
             for (auto &tween : tweens_)
                 delete tween;
             tweens_.clear();
         }
-    
+
         void View::Update()
         {
             for (size_t i = 0; i < tweens_.size(); ++i)
@@ -162,7 +161,7 @@ namespace GfxRenderEngine
                 }
             }
         }
-    
+
         void View::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
         {
             float contentW = 0.0f, contentH = 0.0f;
@@ -170,18 +169,18 @@ namespace GfxRenderEngine
             MeasureBySpec(layoutParams_->width, contentW, horiz, &measuredWidth_);
             MeasureBySpec(layoutParams_->height, contentH, vert, &measuredHeight_);
         }
-    
+
         void View::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             w = 10.0f;
             h = 10.0f;
         }
-    
+
         void View::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
         {
             GetContentDimensions(dc, w, h);
         }
-    
+
         void View::Query(float x, float y, std::vector<View *> &list)
         {
             if (bounds_.Contains(x, y))
@@ -189,12 +188,12 @@ namespace GfxRenderEngine
                 list.push_back(this);
             }
         }
-    
+
         std::string View::Describe() const
         {
             return SCREEN_PStringFromFormat("%0.1f,%0.1f %0.1fx%0.1f", bounds_.x, bounds_.y, bounds_.w, bounds_.h);
         }
-    
+
         void View::PersistData(PersistStatus status, std::string anonId, PersistMap &storage)
         {
             std::string tag = Tag();
@@ -202,7 +201,7 @@ namespace GfxRenderEngine
             {
                 tag = anonId;
             }
-    
+
             const std::string focusedKey = "ViewFocused::" + tag;
             switch (status)
             {
@@ -219,13 +218,13 @@ namespace GfxRenderEngine
                     }
                     break;
             }
-    
+
             for (int i = 0; i < (int)tweens_.size(); ++i)
             {
                 tweens_[i]->PersistData(status, tag + "/" + SCREEN_StringFromInt(i), storage);
             }
         }
-    
+
         Point View::GetFocusPosition(FocusDirection dir)
         {
             switch (dir)
@@ -234,12 +233,12 @@ namespace GfxRenderEngine
                 case FOCUS_RIGHT: return Point(bounds_.x2() - 2, bounds_.centerY());
                 case FOCUS_UP: return Point(bounds_.centerX(), bounds_.y + 2);
                 case FOCUS_DOWN: return Point(bounds_.centerX(), bounds_.y2() - 2);
-    
+
                 default:
                     return bounds_.Center();
             }
         }
-    
+
         bool View::SetFocus()
         {
             if (IsFocusMovementEnabled())
@@ -252,17 +251,17 @@ namespace GfxRenderEngine
             }
             return false;
         }
-    
+
         Clickable::Clickable(LayoutParams *layoutParams)
             : View(layoutParams)
         {
             bgColor_ = AddTween(new CallbackColorTween(0.1f));
             bgColor_->Persist();
         }
-    
+
         void Clickable::DrawBG(SCREEN_UIContext &dc, const Style &style)
         {
-    
+
             if (style.background.type == DRAW_SOLID_COLOR)
             {
                 if (Engine::m_Engine->GetTimeDouble() - bgColorLast_ >= 0.25f)
@@ -274,7 +273,7 @@ namespace GfxRenderEngine
                     bgColor_->Divert(style.background.color, down_ ? 0.05f : 0.1f);
                 }
                 bgColorLast_ = Engine::m_Engine->GetTimeDouble();
-    
+
                 dc.FillRect(Drawable(bgColor_->CurrentValue()), bounds_);
             }
             else
@@ -282,14 +281,14 @@ namespace GfxRenderEngine
                 dc.FillRect(style.background, bounds_);
             }
         }
-    
+
         void Clickable::Click()
         {
             SCREEN_UI::EventParams e{};
             e.v = this;
             OnClick.Trigger(e);
         };
-    
+
         void Clickable::FocusChanged(int focusFlags)
         {
             if (focusFlags & FF_LOSTFOCUS)
@@ -298,7 +297,7 @@ namespace GfxRenderEngine
                 dragging_ = false;
             }
         }
-    
+
         bool Clickable::Touch(const SCREEN_TouchInput &input)
         {
             bool clicked = false;
@@ -308,7 +307,7 @@ namespace GfxRenderEngine
                 down_ = false;
                 return false;
             }
-    
+
             if (input.flags & TOUCH_DOWN)
             {
                 if (bounds_.Contains(input.x, input.y))
@@ -340,14 +339,14 @@ namespace GfxRenderEngine
                 {
                     Click();
                 }
-    
+
                 down_ = false;
                 downCountDown_ = 0;
                 dragging_ = false;
             }
             return clicked;
         }
-    
+
         bool IsDPadKey(const SCREEN_KeyInput &key)
         {
             bool codeOk = false;
@@ -357,7 +356,7 @@ namespace GfxRenderEngine
             }
             return codeOk;
         }
-    
+
         bool IsAcceptKey(const SCREEN_KeyInput &key)
         {
             bool codeOk = false;
@@ -371,11 +370,11 @@ namespace GfxRenderEngine
             }
             return codeOk;
         }
-    
+
         bool IsEscapeKey(const SCREEN_KeyInput &key)
         {
             bool codeOk = false;
-    
+
             if (key.deviceId == DEVICE_ID_KEYBOARD)
             {
                 codeOk = key.keyCode == ENGINE_KEY_ESCAPE;
@@ -386,7 +385,7 @@ namespace GfxRenderEngine
             }
             return codeOk;
         }
-    
+
         bool IsTabLeftKey(const SCREEN_KeyInput &key)
         {
             bool codeOk = false;
@@ -396,7 +395,7 @@ namespace GfxRenderEngine
             }
             return codeOk;
         }
-    
+
         bool IsTabRightKey(const SCREEN_KeyInput &key) {
             bool codeOk = false;
             if (key.deviceId == DEVICE_ID_PAD_0)
@@ -405,7 +404,7 @@ namespace GfxRenderEngine
             }
             return codeOk;
         }
-    
+
         bool Clickable::Key(const SCREEN_KeyInput &key)
         {
             if (!HasFocus() && key.deviceId != DEVICE_ID_MOUSE)
@@ -413,7 +412,7 @@ namespace GfxRenderEngine
                 down_ = false;
                 return false;
             }
-    
+
             bool ret = false;
             if (key.flags & KEY_DOWN)
             {
@@ -441,7 +440,7 @@ namespace GfxRenderEngine
             }
             return ret;
         }
-    
+
         bool StickyChoice::Touch(const SCREEN_TouchInput &input)
         {
             bool clicked = false;
@@ -451,7 +450,7 @@ namespace GfxRenderEngine
                 down_ = false;
                 return false;
             }
-    
+
             if (input.flags & TOUCH_DOWN)
             {
                 if (bounds_.Contains(input.x, input.y))
@@ -467,14 +466,14 @@ namespace GfxRenderEngine
             }
             return clicked;
         }
-    
+
         bool StickyChoice::Key(const SCREEN_KeyInput &key)
         {
             if (!HasFocus())
             {
                 return false;
             }
-    
+
             if (key.flags & KEY_DOWN)
             {
                 if (IsAcceptKey(key))
@@ -486,9 +485,9 @@ namespace GfxRenderEngine
             }
             return false;
         }
-    
+
         void StickyChoice::FocusChanged(int focusFlags) {}
-    
+
         Item::Item(LayoutParams *layoutParams) : InertView(layoutParams)
         {
             if (!layoutParams)
@@ -497,19 +496,19 @@ namespace GfxRenderEngine
                 layoutParams_->height = ITEM_HEIGHT;
             }
         }
-    
+
         void Item::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             w = 0.0f;
             h = 0.0f;
         }
-    
+
         void ClickableItem::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             w = 0.0f;
             h = ITEM_HEIGHT;
         }
-    
+
         ClickableItem::ClickableItem(LayoutParams *layoutParams) : Clickable(layoutParams)
         {
             if (!layoutParams)
@@ -518,7 +517,7 @@ namespace GfxRenderEngine
                     layoutParams_->width = FILL_PARENT;
             }
         }
-    
+
         ClickableItem::ClickableItem(LayoutParams *layoutParams, bool transparentBackground) : Clickable(layoutParams), transparentBackground_(transparentBackground)
         {
             if (!layoutParams)
@@ -527,16 +526,17 @@ namespace GfxRenderEngine
                     layoutParams_->width = FILL_PARENT;
             }
         }
-    
+
         void ClickableItem::Draw(SCREEN_UIContext &dc)
         {
+LOG_CORE_CRITICAL("ClickableItem::Draw");
             Style style  = dc.theme->itemStyle;
-    
+
             if (CoreSettings::m_UITheme == THEME_RETRO)
             {
                 if (transparentBackground_)
                 style.background = SCREEN_UI::Drawable(0x00000000);
-    
+
                 if (HasFocus())
                 {
                     style.background = SCREEN_UI::Drawable(RETRO_COLOR_FONT_BACKGROUND2);
@@ -545,10 +545,10 @@ namespace GfxRenderEngine
                 {
                     style.background = SCREEN_UI::Drawable(RETRO_COLOR_FONT_BACKGROUND);
                 }
-    
+
             } else
             {
-    
+
                 if (HasFocus())
                 {
                     style = dc.theme->itemDownStyle;
@@ -558,176 +558,8 @@ namespace GfxRenderEngine
                     style = dc.theme->itemFocusedStyle;
                 }
             }
-    
+
             DrawBG(dc, style);
-        }
-
-        Choice::Choice(const std::string &text, LayoutParams *layoutParams /*= nullptr*/)
-            : Choice(text, std::string(), false, layoutParams)
-        {
-            numIcons_= 0;
-        }
-        Choice::Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams)
-            : Choice(text, transparentBackground, std::string(), false, layoutParams)
-        {
-            numIcons_= 0;
-        }
-        Choice::Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-            : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image(nullptr),
-                            centered_(false), highlighted_(false), selected_(selected)
-        {
-            numIcons_= 0;
-        }
-        Choice::Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-            : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image(nullptr),
-                            centered_(false), highlighted_(false), selected_(selected)
-        {
-            numIcons_= 0;
-        }
-        Choice::Choice(Sprite* image, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
-            : ClickableItem(layoutParams), m_Image(image), centered_(false), highlighted_(false), selected_(false),
-                            hasHoldFeature_(hasHoldFeature), heldDown_(false)
-        {
-            numIcons_ = 1;
-        }
-        Choice::Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
-            : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                            hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image),
-                            m_ImageActive(image_active), m_ImageDepressed(image_depressed)
-        {
-            numIcons_ = 3;
-static float m = -3.0f;
-            {
-                Builder builder{};
-
-                auto sprite = m_Image;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-                TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
-m+=2.0f;
-                transform.SetScale(glm::vec3{0.003f});
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageID = entity;
-            }
-            {
-                Builder builder{};
-            
-                auto sprite = m_ImageActive;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-            
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-            
-                TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
-m+=2.0f;
-                transform.SetScale(glm::vec3{0.003f});
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageActiveID = entity;
-            }
-            {
-                Builder builder{};
-            
-                auto sprite = m_ImageDepressed;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-            
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-            
-                TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{m, -1.0f, -2.1f});
-m+=2.0f;
-                transform.SetScale(glm::vec3{0.003f});
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageDepressedID = entity;
-            }
-        }
-
-        Choice::Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, Sprite* image_depressed_inactive,
-            const std::string &text, LayoutParams *layoutParams /*= nullptr*/, bool hasHoldFeature /*= false*/)
-            : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                            hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
-                            m_ImageActive(image_active), m_ImageDepressed(image_depressed),
-                            m_ImageDepressedInactive(image_depressed_inactive)
-        {
-            numIcons_ = 4;
-            {
-                Builder builder{};
-
-                auto sprite = m_Image;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-
-                TransformComponent transform{};
-                transform.SetScale(glm::vec3{0.02f});
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageID = entity;
-            }
-            {
-                Builder builder{};
-
-                auto sprite = m_ImageActive;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-
-                TransformComponent transform{};
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageActiveID = entity;
-            }
-            {
-                Builder builder{};
-
-                auto sprite = m_ImageDepressed;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-
-                TransformComponent transform{};
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageDepressedID = entity;
-            }
-            {
-                Builder builder{};
-
-                auto sprite = m_ImageDepressedInactive;
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 20.0f/*amplification*/);
-                auto model = Engine::m_Engine->LoadModel(builder);
-                MeshComponent mesh{"choice", model, false};
-
-                auto entity = SCREEN_ScreenManager::m_Registry.create();
-                SCREEN_ScreenManager::m_Registry.emplace<MeshComponent>(entity, mesh);
-
-                TransformComponent transform{};
-                SCREEN_ScreenManager::m_Registry.emplace<TransformComponent>(entity, transform);
-                m_ImageDepressedInactiveID = entity;
-            }
         }
 
         #define HOLD_TIME 1.5f
@@ -735,9 +567,9 @@ m+=2.0f;
         {
             if ((hasHoldFeature_) && (HasFocus() || (heldDown_)))
             {
-    
+
                 double timeDiff = Engine::m_Engine->GetTimeDouble() - holdStart_;
-    
+
                 if (heldDown_ && (timeDiff >= HOLD_TIME))
                 {
                     holdStart_ = 0.0f;
@@ -763,7 +595,7 @@ m+=2.0f;
             }
             return ClickableItem::Key(key);
         }
-        
+
         bool Choice::Touch(const SCREEN_TouchInput &touch)
         {
             bool clicked = ClickableItem::Touch(touch);
@@ -794,7 +626,7 @@ m+=2.0f;
             }
             return clicked;
         }
-    
+
         void Choice::Update()
         {
             if (HasFocus())
@@ -816,7 +648,7 @@ m+=2.0f;
             }
             ClickableItem::Update();
         }
-    
+
         void Choice::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
         {
             if (m_Image)
@@ -840,7 +672,7 @@ m+=2.0f;
             h += 16.0f;
             h = std::max(h, ITEM_HEIGHT);
         }
-    
+
         float Choice::CalculateTextScale(const SCREEN_UIContext &dc, float availWidth) const
         {
             float actualWidth, actualHeight;
@@ -852,18 +684,18 @@ m+=2.0f;
             }
             return 1.0f;
         }
-    
+
         void Choice::HighlightChanged(bool highlighted)
         {
             highlighted_ = highlighted;
         }
-    
+
         void Choice::Draw(SCREEN_UIContext &dc)
         {
             Style style;
-    
+
             std::shared_ptr<Renderer> renderer = Engine::m_Engine->GetRenderer();
-    
+
             if (!IsSticky() && (numIcons_!=3))
             {
                 ClickableItem::Draw(dc);
@@ -888,7 +720,7 @@ m+=2.0f;
             else if (numIcons_ == 4)
             {
                 SCREEN_UI::Style s;
-    
+
                 // color format: 0xFF: transparency from 0 (=0%) to 255 (=100%), then 0xFF for color Blue Green Red
                 s.fgColor    = 0xFFFFFFFF; // white, 100% transparency
                 s.background = SCREEN_UI::Drawable(0x00000000); // black, 0% transparency (invinsible in other words)
@@ -899,53 +731,34 @@ m+=2.0f;
 
             if (numIcons_==3)
             {
-                {
-                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageID);
-                    mesh.m_Enabled = false;
-                }
-                {
-                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageActiveID);
-                    mesh.m_Enabled = false;
-                }
-                {
-                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageDepressedID);
-                    mesh.m_Enabled = false;
-                }
-
                 if (HasFocus())
                 {
                     if (down_)
                     {
-                        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageDepressedID);
-                        transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
-                        transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
-                        transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
-                        transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::mat4 transformationMatrix = Translate(translation);
 
-                        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageDepressedID);
-                        mesh.m_Enabled = true;
+                        // transformed position
+                        glm::mat4 position = transformationMatrix * m_ImageDepressed->GetScaleMatrix();
+                        renderer->Draw(m_ImageDepressed, position);
                     } else
                     {
-                        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageActiveID);
-                        transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
-                        transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
-                        transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
-                        transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::mat4 transformationMatrix = Translate(translation);
 
-                        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageActiveID);
-                        mesh.m_Enabled = true;
+                        // transformed position
+                        glm::mat4 position = transformationMatrix * m_ImageActive->GetScaleMatrix();
+                        renderer->Draw(m_ImageActive, position);
                     }
                 }
                 else
                 {
-                    auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(m_ImageID);
-                    transform.SetTranslationX(bounds_.centerX()-m_HalfContextWidth);
-                    transform.SetTranslationY(m_HalfContextHeight - bounds_.centerY());
-                    transform.SetTranslationX(transform.GetTranslation().x / 350.0f);
-                    transform.SetTranslationY(transform.GetTranslation().y / -150.0f);
+                    glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                    glm::mat4 transformationMatrix = Translate(translation);
 
-                    auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(m_ImageID);
-                    mesh.m_Enabled = true;
+                    // transformed position
+                    glm::mat4 position = transformationMatrix * m_Image->GetScaleMatrix();
+                    renderer->Draw(m_Image, position);
                 }
             }
             else if (numIcons_==4)
@@ -956,19 +769,19 @@ m+=2.0f;
                     {
                         glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
-    
+
                         // transformed position
                         glm::mat4 position = transformationMatrix * m_ImageDepressed->GetScaleMatrix();
-                        renderer->Draw(m_ImageDepressed, position, -0.5f);
+                        renderer->Draw(m_ImageDepressed, position);
                     }
                     else
                     {
                         glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
-    
+
                         // transformed position
                         glm::mat4 position = transformationMatrix * m_ImageActive->GetScaleMatrix();
-                        renderer->Draw(m_ImageActive, position, -0.5f);
+                        renderer->Draw(m_ImageActive, position);
                     }
                 }
                 else
@@ -977,19 +790,19 @@ m+=2.0f;
                     {
                         glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
-    
+
                         // transformed position
                         glm::mat4 position = transformationMatrix * m_ImageDepressedInactive->GetScaleMatrix();
-                        renderer->Draw(m_ImageDepressedInactive, position, -0.5f);
+                        renderer->Draw(m_ImageDepressedInactive, position);
                     }
                     else
                     {
                         glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
-    
+
                         // transformed position
                         glm::mat4 position = transformationMatrix * m_Image->GetScaleMatrix();
-                        renderer->Draw(m_Image, position, -0.5f);
+                        renderer->Draw(m_Image, position);
                     }
                 }
             }
@@ -997,36 +810,36 @@ m+=2.0f;
             {
                 dc.Draw()->DrawImage(m_Image, bounds_.centerX(), bounds_.centerY(), 1.0f, style.fgColor, ALIGN_CENTER);
             }
-    
-    
+
+
             dc.SetFontStyle(dc.theme->uiFont);
-    
+
             const float paddingX = 6.0f;
             const float availWidth = bounds_.w - paddingX * 2 - textPadding_.horiz();
             float scale = CalculateTextScale(dc, availWidth);
-    
+
             dc.SetFontScale(scale, scale);
             if (centered_)
             {
-    
+
                 float offset_down_x = 0.0f; // apply if button is pressed
                 float offset_down_y = 0.0f;
-    
+
                 if (down_)
                 {
                     style.fgColor = RETRO_COLOR_FONT_ALMOST_WHITE;
                     offset_down_x = 0.0f;
                     offset_down_y = 4.0f;
                 }
-    
+
                 //draw shadow
                 if ( (CoreSettings::m_UITheme == THEME_RETRO) && (!down_) )
                 {
                     dc.DrawTextRect(text_.c_str(), bounds_.Offset(2.0f+offset_down_x, 2.0f+offset_down_y)  , RETRO_COLOR_FONT_BACKGROUND, ALIGN_CENTER | FLAG_WRAP_TEXT);
                 }
-    
+
                 dc.DrawTextRect(text_.c_str(), bounds_.Offset(offset_down_x, offset_down_y), style.fgColor, ALIGN_CENTER | FLAG_WRAP_TEXT);
-    
+
             }
             else
             {
@@ -1038,13 +851,13 @@ m+=2.0f;
                 dc.DrawTextRect(text_.c_str(), textBounds, style.fgColor, ALIGN_VCENTER | FLAG_WRAP_TEXT);
             }
             dc.SetFontScale(1.0f, 1.0f);
-    
+
             if (selected_)
             {
                 dc.Draw()->DrawImage(dc.theme->checkOn, bounds_.x2() - 40.0f, bounds_.centerY(), 1.0f, style.fgColor, ALIGN_CENTER);
             }
         }
-    
+
     //    InfoItem::InfoItem(const std::string &text, const std::string &rightText, LayoutParams *layoutParams)
     //        : Item(layoutParams), text_(text), rightText_(rightText)
     //    {
@@ -1079,21 +892,21 @@ m+=2.0f;
     //        dc.DrawText(rightText_.c_str(), bounds_.x2() - paddingX, bounds_.centerY(), style.fgColor, ALIGN_VCENTER | ALIGN_RIGHT);
     //
     //    }
-    
+
         ItemHeader::ItemHeader(const std::string &text, LayoutParams *layoutParams)
             : Item(layoutParams), text_(text)
         {
             layoutParams_->width = FILL_PARENT;
             layoutParams_->height = 40.0f;
         }
-    
+
         void ItemHeader::Draw(SCREEN_UIContext &dc)
         {
             dc.SetFontStyle(dc.theme->uiFont);
             dc.DrawText(text_.c_str(), bounds_.x + 4.0f, bounds_.centerY(), dc.theme->headerStyle.fgColor, ALIGN_LEFT | ALIGN_VCENTER);
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->headerStyle.fgColor);
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->headerStyle.fgColor);
         }
-    
+
         void ItemHeader::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
         {
             Bounds bounds(0, 0, layoutParams_->width, layoutParams_->height);
@@ -1108,18 +921,18 @@ m+=2.0f;
             ApplyBoundsBySpec(bounds, horiz, vert);
             dc.MeasureTextRect(dc.theme->uiFontSmall, 1.0f, 1.0f, text_.c_str(), (int)text_.length(), bounds, &w, &h, ALIGN_LEFT | ALIGN_VCENTER);
         }
-    
+
         void PopupHeader::Draw(SCREEN_UIContext &dc)
         {
             const float paddingHorizontal = 12.0f;
             const float availableWidth = bounds_.w - paddingHorizontal * 2;
-    
+
             float tw, th;
             dc.SetFontStyle(dc.theme->uiFont);
             dc.MeasureText(dc.GetFontStyle(), 1.0f, 1.0f, text_.c_str(), &tw, &th, 0);
-    
+
             float sineWidth = std::max(0.0f, (tw - availableWidth)) / 2.0f;
-    
+
             float tx = paddingHorizontal;
             if (availableWidth < tw)
             {
@@ -1130,21 +943,21 @@ m+=2.0f;
                 tb.w = bounds_.w - paddingHorizontal * 2;
                 dc.PushScissor(tb);
             }
-    
+
             dc.DrawText(text_.c_str(), bounds_.x + tx, bounds_.centerY(), dc.theme->popupTitle.fgColor, ALIGN_LEFT | ALIGN_VCENTER);
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
-    
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
+
             if (availableWidth < tw)
             {
                 dc.PopScissor();
             }
         }
-    
+
         void Separator::Draw(SCREEN_UIContext &dc)
         {
-            dc.Draw()->DrawImageStretch(dc.theme->whiteImageID, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
+            dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2()-6.0f, bounds_.x2(), bounds_.y2(), dc.theme->popupTitle.fgColor);
         }
-    
+
         void CheckBox::Toggle()
         {
             if (toggle_)
@@ -1152,7 +965,7 @@ m+=2.0f;
                 *toggle_ = !(*toggle_);
             }
         }
-    
+
         bool CheckBox::Toggled() const
         {
             if (toggle_)
@@ -1161,13 +974,13 @@ m+=2.0f;
             }
             return false;
         }
-    
+
         EventReturn CheckBox::OnClicked(EventParams &e)
         {
             Toggle();
             return EVENT_CONTINUE;
         }
-    
+
         void CheckBox::Draw(SCREEN_UIContext &dc)
         {
             Style style = dc.theme->itemStyle;
@@ -1176,19 +989,19 @@ m+=2.0f;
                 style = dc.theme->itemDisabledStyle;
             }
             dc.SetFontStyle(dc.theme->uiFont);
-    
+
             ClickableItem::Draw(dc);
-    
+
             Sprite* image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
             dc.Draw()->MeasureImage(image, &imageW, &imageH);
-    
+
             const float paddingX = 12.0f;
             const float availWidth = bounds_.w - paddingX * 2 - imageW - paddingX;
             float scale = CalculateTextScale(dc, availWidth);
-    
+
             dc.SetFontScale(scale, scale);
-    
+
             Bounds textBounds(bounds_.x + paddingX, bounds_.y, availWidth, bounds_.h);
             if (CoreSettings::m_UITheme == THEME_RETRO)
             {
@@ -1198,7 +1011,7 @@ m+=2.0f;
             dc.Draw()->DrawImage(image, bounds_.x2() - paddingX, bounds_.centerY(), 1.0f, style.fgColor, ALIGN_RIGHT | ALIGN_VCENTER);
             dc.SetFontScale(1.0f, 1.0f);
         }
-    
+
         float CheckBox::CalculateTextScale(const SCREEN_UIContext &dc, float availWidth) const
         {
             float actualWidth, actualHeight;
@@ -1209,30 +1022,30 @@ m+=2.0f;
             }
             return 1.0f;
         }
-    
+
         void CheckBox::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             Sprite* image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
             dc.Draw()->MeasureImage(image, &imageW, &imageH);
-    
+
             const float paddingX = 12.0f;
-    
+
             float availWidth = bounds_.w - paddingX * 2 - imageW - paddingX;
             if (availWidth < 0.0f)
             {
                 availWidth = MAX_ITEM_SIZE;
             }
             float scale = CalculateTextScale(dc, availWidth);
-    
+
             float actualWidth, actualHeight;
             Bounds availBounds(0, 0, availWidth, bounds_.h);
             dc.MeasureTextRect(dc.theme->uiFont, scale, scale, text_.c_str(), (int)text_.size(), availBounds, &actualWidth, &actualHeight, ALIGN_VCENTER | FLAG_WRAP_TEXT);
-    
+
             w = bounds_.w;
             h = std::max(actualHeight, ITEM_HEIGHT);
         }
-    
+
     //    void BitCheckBox::Toggle()
     //    {
     //        if (bitfield_) {
@@ -1251,7 +1064,7 @@ m+=2.0f;
     //            return (bit_ & *bitfield_) == bit_;
     //        return false;
     //    }
-    
+
         Button::Button(const std::string &text, uint maxTextLength, LayoutParams *layoutParams)
                 : Clickable(layoutParams), m_Image(nullptr)
         {
@@ -1264,7 +1077,7 @@ m+=2.0f;
                 text_ = text.substr(0,maxTextLength-1);
             }
         }
-    
+
         void Button::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             if (m_Image)
@@ -1276,28 +1089,28 @@ m+=2.0f;
             {
                 dc.MeasureText(dc.theme->uiFont, 1.0f, 1.0f, text_.c_str(), &w, &h);
             }
-    
+
             w += paddingW_;
             h += paddingH_;
-    
+
             w *= scale_;
             h *= scale_;
         }
-    
+
         void Button::Draw(SCREEN_UIContext &dc)
         {
             Style style = dc.theme->buttonStyle;
-    
+
             if (HasFocus()) style = dc.theme->buttonFocusedStyle;
             if (down_) style = dc.theme->buttonDownStyle;
             if (!IsEnabled()) style = dc.theme->buttonDisabledStyle;
-    
+
             DrawBG(dc, style);
             float tw, th;
             dc.MeasureText(dc.theme->uiFont, 1.0f, 1.0f, text_.c_str(), &tw, &th);
             tw *= scale_;
             th *= scale_;
-    
+
             if (tw > bounds_.w || m_Image)
             {
                 dc.PushScissor(bounds_);
@@ -1317,18 +1130,18 @@ m+=2.0f;
                 }
             }
             dc.SetFontScale(1.0f, 1.0f);
-    
+
             if (tw > bounds_.w || m_Image)
             {
                 dc.PopScissor();
             }
         }
-    
+
         void ImageView::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             dc.Draw()->MeasureImage(m_Image, &w, &h);
         }
-    
+
         void ImageView::Draw(SCREEN_UIContext &dc)
         {
             if (m_Image)
@@ -1336,7 +1149,7 @@ m+=2.0f;
                 dc.Draw()->DrawImage(m_Image, bounds_.x, bounds_.y, 1.0f, 0xFFFFFFFF, ALIGN_TOPLEFT);
             }
         }
-    
+
         void TextView::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
         {
             Bounds bounds(0, 0, layoutParams_->width, layoutParams_->height);
@@ -1351,13 +1164,13 @@ m+=2.0f;
             ApplyBoundsBySpec(bounds, horiz, vert);
             dc.MeasureTextRect(dc.theme->uiFont, 1.0f, 1.0f, text_.c_str(), (int)text_.length(), bounds, &w, &h, textAlign_);
         }
-    
+
         void TextView::Draw(SCREEN_UIContext &dc)
         {
             uint32_t textColor = hasTextColor_ ? textColor_ : dc.theme->infoStyle.fgColor;
             if (!(textColor & 0xFF000000))
                 return;
-    
+
             bool clip = false;
             if (measuredWidth_ > bounds_.w || measuredHeight_ > bounds_.h)
             {
@@ -1372,14 +1185,14 @@ m+=2.0f;
                 dc.Flush();
                 dc.PushScissor(bounds_);
             }
-    
+
             if (HasFocus())
             {
                 SCREEN_UI::Style style = dc.theme->itemFocusedStyle;
                 style.background.color &= 0x7fffffff;
                 dc.FillRect(style.background, bounds_);
             }
-    
+
             SCREEN_UI::Style style = dc.theme->itemStyle;
             dc.FillRect(style.background, bounds_);
             dc.SetFontStyle(dc.theme->uiFont);
@@ -1390,13 +1203,13 @@ m+=2.0f;
                 dc.DrawTextRect(text_.c_str(), bounds_.Offset(2.0f, 2.0f), shadowColor, textAlign_);
             }
             dc.DrawTextRect(text_.c_str(), bounds_, textColor, textAlign_);
-    
+
             if (clip)
             {
                 dc.PopScissor();
             }
         }
-    
+
     //    TextEdit::TextEdit(const std::string &text, const std::string &placeholderText, LayoutParams *layoutParams)
     //      : View(layoutParams), text_(text), undo_(text), placeholderText_(placeholderText),
     //        textColor_(0xFFFFFFFF), maxLen_(255)
@@ -1704,7 +1517,7 @@ m+=2.0f;
     //    {
     //        dc.Draw()->GetAtlas()->measureImage(imageBackground_, &w, &h);
     //    }
-    
+
         bool Slider::Key(const SCREEN_KeyInput &input)
         {
             if (HasFocus() && (input.flags & (KEY_DOWN | KEY_IS_REPEAT)) == KEY_DOWN)
@@ -1728,7 +1541,7 @@ m+=2.0f;
                 return false;
             }
         }
-    
+
         bool Slider::ApplyKey(int keyCode)
         {
             switch (keyCode)
@@ -1746,7 +1559,7 @@ m+=2.0f;
             }
             return true;
         }
-    
+
         bool Slider::Touch(const SCREEN_TouchInput &input)
         {
             bool clicked = Clickable::Touch(input);
@@ -1764,7 +1577,7 @@ m+=2.0f;
             repeat_ = -1;
             return clicked;
         }
-    
+
         void Slider::Clamp()
         {
             if (*value_ < minValue_)
@@ -1775,16 +1588,16 @@ m+=2.0f;
             {
                 *value_ = maxValue_;
             }
-    
+
             *value_ = *value_ - fmodf(*value_, step_);
         }
-    
+
         void Slider::Draw(SCREEN_UIContext &dc)
         {
             bool focus = HasFocus();
             uint32_t linecolor = dc.theme->popupTitle.fgColor;
             Style knobStyle = (down_ || focus) ? dc.theme->popupTitle : dc.theme->popupStyle;
-    
+
             float knobX = ((float)(*value_) - minValue_) / (maxValue_ - minValue_) * (bounds_.w - paddingLeft_ - paddingRight_) + (bounds_.x + paddingLeft_);
             dc.FillRect(Drawable(linecolor), Bounds(bounds_.x + paddingLeft_, bounds_.centerY() - 2, knobX - (bounds_.x + paddingLeft_), 4));
             dc.FillRect(Drawable(0xFF808080), Bounds(knobX, bounds_.centerY() - 2, (bounds_.x + bounds_.w - paddingRight_ - knobX), 4));
@@ -1801,7 +1614,7 @@ m+=2.0f;
             dc.SetFontStyle(dc.theme->uiFont);
             dc.DrawText(temp, bounds_.x2() - 22, bounds_.centerY(), dc.theme->popupStyle.fgColor, ALIGN_CENTER | FLAG_DYNAMIC_ASCII);
         }
-    
+
         void Slider::Update()
         {
             View::Update();
@@ -1809,7 +1622,7 @@ m+=2.0f;
             {
                 repeat_++;
             }
-    
+
             if (repeat_ >= 47)
             {
                 ApplyKey(repeatCode_);
@@ -1824,13 +1637,13 @@ m+=2.0f;
                 Clamp();
             }
         }
-    
+
         void Slider::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
             w = 100.0f;
             h = 50.0f;
         }
-    
+
     //    bool SliderFloat::Key(const SCREEN_KeyInput &input)
     //    {
     //        if (HasFocus() && (input.flags & (KEY_DOWN | KEY_IS_REPEAT)) == KEY_DOWN)
@@ -1953,6 +1766,6 @@ m+=2.0f;
     //        w = 100.0f;
     //        h = 50.0f;
     //    }
-    
+
     }  // namespace
 }

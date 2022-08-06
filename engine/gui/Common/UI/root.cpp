@@ -39,6 +39,7 @@
 
 namespace GfxRenderEngine
 {
+
     namespace SCREEN_UI
     {
         static std::mutex focusLock;
@@ -238,7 +239,6 @@ namespace GfxRenderEngine
                 HeldKey hk;
                 hk.key = key.keyCode;
                 hk.deviceId = key.deviceId;
-
                 hk.triggerTime = Engine::m_Engine->GetTime() + repeatDelay;
 
                 if (heldKeys.find(hk) != heldKeys.end())

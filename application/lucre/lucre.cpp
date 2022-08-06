@@ -64,6 +64,8 @@ namespace LucreApp
         m_UIControllerIcon = new UIControllerIcon("UI controller");
         Engine::m_Engine->PushOverlay(m_UIControllerIcon);
 
+        m_Renderer = Engine::m_Engine->GetRenderer();
+
         return true;
     }
 
@@ -80,6 +82,7 @@ namespace LucreApp
         // update/render layer stack
         m_UIControllerIcon->OnUpdate();
         m_UI->OnUpdate();
+        m_Renderer->EndScene();
     }
 
     void Lucre::OnResize()

@@ -80,6 +80,7 @@ namespace LucreApp
 
         std::shared_ptr<Window> m_Window;
         std::shared_ptr<Cursor> m_Cursor;
+        std::shared_ptr<Renderer> m_Renderer;
         std::shared_ptr<Cursor> m_EmptyCursor;
 
         SpriteSheet m_Atlas;

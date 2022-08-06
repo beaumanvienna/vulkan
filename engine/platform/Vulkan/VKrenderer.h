@@ -82,11 +82,15 @@ namespace GfxRenderEngine
         virtual void LightingPass() override;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) override;
         virtual void SubmitGUI(entt::registry& registry) override;
+        virtual void SubmitGUI() override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) override { m_AmbientLightIntensity = ambientLightIntensity; }
         virtual float GetAmbientLightIntensity() override { return m_AmbientLightIntensity; }
+        virtual void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f)) override;
+        virtual void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, 
+                          const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f)) override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 

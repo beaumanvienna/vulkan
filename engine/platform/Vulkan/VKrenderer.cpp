@@ -24,6 +24,7 @@
 #include "core.h"
 #include "resources/resources.h"
 #include "auxiliary/file.h"
+#include "auxiliary/debug.h"
 
 #include "VKrenderer.h"
 #include "VKwindow.h"
@@ -519,6 +520,13 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::SubmitGUI()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+        }
+    }
+
     void VK_Renderer::EndScene()
     {
         if (m_CurrentCommandBuffer)
@@ -577,5 +585,14 @@ namespace GfxRenderEngine
                 VK_Shader shader{name, spirvFilename};
             }
         }
+    }
+
+    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
+    {
+        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position);
+    }
+
+    void VK_Renderer::Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color)
+    {
     }
 }

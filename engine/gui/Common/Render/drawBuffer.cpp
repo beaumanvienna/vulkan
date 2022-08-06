@@ -33,7 +33,6 @@
 #include "gui/Common/Data/Text/wrapText.h"
 #include "gui/Common/Data/Text/utf8.h"
 #include "gui/Common/stringUtils.h"
-#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
@@ -66,6 +65,7 @@ namespace GfxRenderEngine
 
     void SCREEN_DrawBuffer::DrawImage(Sprite* sprite, float x, float y, float scale, Color color, int align)
     {
+LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage");
         if (!sprite)
         {
             return;
@@ -93,56 +93,49 @@ namespace GfxRenderEngine
 
     void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)
     {
-        LOG_CORE_CRITICAL("not implemented void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)");
+LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImageStretch");
         glm::mat4 position;
         if (sprite->m_Rotated)
         {
             position = glm::mat4
             (
-                x1 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f,
-                x1 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-                x2 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-                x2 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f
+                x1, y2, 1.0f, 1.0f,
+                x1, y1, 1.0f, 1.0f,
+                x2, y1, 1.0f, 1.0f,
+                x2, y2, 1.0f, 1.0f
             );
         }
         else
         {
             position = glm::mat4
             (
-                x1 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-                x2 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-                x2 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f,
-                x1 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f
+                x1, y1, 1.0f, 1.0f,
+                x2, y1, 1.0f, 1.0f,
+                x2, y2, 1.0f, 1.0f,
+                x1, y2, 1.0f, 1.0f
             );
         }
         m_Renderer->Draw(sprite, position, -0.5f, ConvertColor(color));
     }
 
-    void SCREEN_DrawBuffer::DrawImageStretch(entt::entity entity, float x1, float y1, float x2, float y2, Color color)
-    {
-        auto& transform = SCREEN_ScreenManager::m_Registry.get<TransformComponent>(entity);
-        transform.SetTranslation(glm::vec3(x1/350.0f, y1/-150.0f, -2.1f));
-        transform.SetTranslation(glm::vec3(x1/350.0f, y1/-150.0f, -2.1f));
-        auto& mesh = SCREEN_ScreenManager::m_Registry.get<MeshComponent>(entity);
-        mesh.m_Enabled = true;
-    }
-
     void SCREEN_DrawBuffer::DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color)
     {
+LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawTexRect");
         glm::mat4 position = glm::mat4
         (
-            x1 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-            x2 - m_HalfContextWidth, m_HalfContextHeight - y1, 1.0f, 1.0f,
-            x2 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f,
-            x1 - m_HalfContextWidth, m_HalfContextHeight - y2, 1.0f, 1.0f
+            x1, y1, 1.0f, 1.0f,
+            x2, y1, 1.0f, 1.0f,
+            x2, y2, 1.0f, 1.0f,
+            x1, y2, 1.0f, 1.0f
         );
         glm::vec4 textureCoordinates{u1, v1, u2, v2};
+
         m_Renderer->Draw(texture, position, textureCoordinates, -0.5f, ConvertColor(color));
     }
 
     void SCREEN_DrawBuffer::DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color, float corner_scale)
     {
-
+LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage4Grid");
         if (!sprite)
         {
             return;
@@ -446,10 +439,10 @@ namespace GfxRenderEngine
 
                 glm::mat4 position = glm::mat4
                 (
-                    cx1 - m_HalfContextWidth, m_HalfContextHeight - cy1, 1.0f, 1.0f,
-                    cx2 - m_HalfContextWidth, m_HalfContextHeight - cy1, 1.0f, 1.0f,
-                    cx2 - m_HalfContextWidth, m_HalfContextHeight - cy2, 1.0f, 1.0f,
-                    cx1 - m_HalfContextWidth, m_HalfContextHeight - cy2, 1.0f, 1.0f
+                    cx1, cy1, 1.0f, 1.0f,
+                    cx2, cy1, 1.0f, 1.0f,
+                    cx2, cy2, 1.0f, 1.0f,
+                    cx1, cy2, 1.0f, 1.0f
                 );
                 glm::vec4 textureCoordinates{c.sx, 1.0f - c.sy, c.ex, 1.0f - c.ey};
                 m_Renderer->Draw(gTextureFontAtlas, position, textureCoordinates, -0.5f, ConvertColor(color));

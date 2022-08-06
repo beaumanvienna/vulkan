@@ -45,14 +45,15 @@ namespace GfxRenderEngine
         virtual void LightingPass() = 0;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) = 0;
         virtual void SubmitGUI(entt::registry& registry) = 0;
+        virtual void SubmitGUI() = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
         virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
-        void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f));
-        void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f));
+        virtual void Draw(Sprite* sprite, const glm::mat4& position, const float depth = 0.0f, const glm::vec4& color = glm::vec4(1.0f)) = 0;
+        virtual void Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color = glm::vec4(1.0f)) = 0;
 
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
         virtual float GetAmbientLightIntensity() = 0;

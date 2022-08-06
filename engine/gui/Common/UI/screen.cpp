@@ -31,13 +31,11 @@
 #include "gui/Common/UI/root.h"
 #include "gui/Common/UI/context.h"
 #include "gui/Common/Input/inputState.h"
-#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
     SCREEN_ScreenManager* SCREEN_ScreenManager::m_ScreenManager = nullptr;
     SpriteSheet* SCREEN_ScreenManager::m_SpritesheetUI = nullptr;
-    entt::registry SCREEN_ScreenManager::m_Registry;
     std::shared_ptr<CameraController> SCREEN_ScreenManager::m_CameraController;
 
     SCREEN_ScreenManager::SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI)
@@ -175,14 +173,6 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::render()
     {
-        {
-            auto view = m_Registry.view<MeshComponent>();
-            for (auto entity : view)
-            {
-                auto& mesh = view.get<MeshComponent>(entity);
-                mesh.m_Enabled = false;
-            }
-        }
         if (!stack_.empty())
         {
             switch (stack_.back().flags)
@@ -225,6 +215,26 @@ namespace GfxRenderEngine
 
         processFinishDialog();
     }
+
+    //void SCREEN_ScreenManager::sendMessage(const char *msg, const char *value)
+    //{
+    //    if (!strcmp(msg, "recreateviews"))
+    //    {
+    //        RecreateAllViews();
+    //    }
+    //    if (!strcmp(msg, "lost_focus"))
+    //    {
+    //        SCREEN_TouchInput input;
+    //        input.flags = TOUCH_RELEASE_ALL;
+    //        input.timestamp = Engine::m_Engine->GetTime();
+    //        input.id = 0;
+    //        touch(input);
+    //    }
+    //    if (!stack_.empty())
+    //    {
+    //        stack_.back().screen->sendMessage(msg, value);
+    //    }
+    //}
 
     SCREEN_Screen *SCREEN_ScreenManager::topScreen() const
     {
