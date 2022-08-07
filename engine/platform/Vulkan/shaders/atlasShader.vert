@@ -36,20 +36,9 @@ struct PointLight
     vec4 m_Color;
 };
 
-layout(set = 0, binding = 0) uniform GlobalUniformBuffer
-{
-    mat4 m_Projection;
-    mat4 m_View;
-
-    // point light
-    vec4 m_AmbientLightColor;
-    PointLight m_PointLights[MAX_LIGHTS];
-    int m_NumberOfActiveLights;
-} ubo;
-
 layout(push_constant) uniform Push
 {
-    mat4 m_ModelMatrix;
+    mat4 m_MVP;
 } push;
 
 // outputs
@@ -57,7 +46,7 @@ layout(location = 0) out vec2  fragUV;
 
 void main()
 {
-    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
+    gl_Position = push.m_MVP * vec4(position, 1.0);
 
     fragUV = uv;
 }

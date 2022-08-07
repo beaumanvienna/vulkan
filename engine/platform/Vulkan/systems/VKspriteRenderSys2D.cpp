@@ -23,6 +23,7 @@
 #include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
+#include "auxiliary/debug.h"
 
 #include "systems/VKspriteRenderSys2D.h"
 
@@ -81,7 +82,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, Camera* camera)
     {
         vkCmdBindDescriptorSets
         (
@@ -101,7 +102,7 @@ namespace GfxRenderEngine
         {
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataSpriteRenderer2D push{};
-            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_MVP  = camera->GetProjectionMatrix() * camera->GetViewMatrix() * transform.GetMat4();
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,

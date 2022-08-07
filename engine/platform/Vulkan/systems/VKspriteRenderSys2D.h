@@ -40,7 +40,7 @@ namespace GfxRenderEngine
 {
     struct VK_PushConstantDataSpriteRenderer2D
     {
-        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_MVP{1.0f};
     };
 
     class VK_RenderSystemSpriteRenderer2D
@@ -54,7 +54,7 @@ namespace GfxRenderEngine
         VK_RenderSystemSpriteRenderer2D(const VK_RenderSystemSpriteRenderer2D&) = delete;
         VK_RenderSystemSpriteRenderer2D& operator=(const VK_RenderSystemSpriteRenderer2D&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, Camera* camera);
 
     private:
 

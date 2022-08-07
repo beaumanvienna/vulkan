@@ -278,9 +278,8 @@ namespace LucreApp
         m_Renderer->NextSubpass();
         m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke);
 
-        // gui
+        // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
-        m_Renderer->Submit2D(Lucre::m_Application->GetUI()->m_Registry);
     }
 
     void MainScene::OnEvent(Event& event)

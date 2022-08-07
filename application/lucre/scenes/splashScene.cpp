@@ -169,10 +169,9 @@ namespace LucreApp
         m_Renderer->NextSubpass();
         m_Renderer->NextSubpass();
 
-        // gui
+        // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&m_CameraController->GetCamera());
-        m_Renderer->Submit2D(Lucre::m_Application->GetUI()->m_Registry);
-        m_Renderer->Submit2D(m_Registry);
+        m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_Registry);
 
     }
 

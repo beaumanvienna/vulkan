@@ -511,11 +511,11 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Submit2D(entt::registry& registry)
+    void VK_Renderer::Submit2D(Camera* camera, entt::registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry, camera);
         }
     }
 

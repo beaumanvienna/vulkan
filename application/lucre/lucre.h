@@ -29,6 +29,7 @@
 #include "scene/entity.h"
 #include "platform/window.h"
 #include "renderer/cursor.h"
+#include "renderer/cameraController.h"
 #include "sprite/spritesheet.h"
 
 #include "application.h"
@@ -82,6 +83,7 @@ namespace LucreApp
         std::shared_ptr<Cursor> m_Cursor;
         std::shared_ptr<Renderer> m_Renderer;
         std::shared_ptr<Cursor> m_EmptyCursor;
+        std::shared_ptr<CameraController> m_CameraController;
 
         SpriteSheet m_Atlas;
 

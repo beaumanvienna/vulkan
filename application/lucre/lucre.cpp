@@ -66,6 +66,13 @@ namespace LucreApp
 
         m_Renderer = Engine::m_Engine->GetRenderer();
 
+        // create orthogonal camera 
+        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        auto& camera = m_CameraController->GetCamera();
+        auto position = glm::vec3(0.0f, 0.0f, 1.0f);
+        auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        camera.SetViewDirection(position, direction);
+
         return true;
     }
 
@@ -81,7 +88,8 @@ namespace LucreApp
 
         // update/render layer stack
         m_UIControllerIcon->OnUpdate();
-        m_UI->OnUpdate();
+        m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
+        m_UI->OnUpdate();  // direct submits
         m_Renderer->EndScene();
     }
 
@@ -91,6 +99,7 @@ namespace LucreApp
         m_CurrentScene->OnResize();
         m_UIControllerIcon->Init();
         m_UI->OnResize();
+        m_CameraController->SetProjection();
     }
 
     void Lucre::InitCursor()
