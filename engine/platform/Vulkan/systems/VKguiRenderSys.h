@@ -56,7 +56,7 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer(const VK_RenderSystemGUIRenderer&) = delete;
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
-        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& viewProjectionMatrix);
+        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix);
 
     private:
 

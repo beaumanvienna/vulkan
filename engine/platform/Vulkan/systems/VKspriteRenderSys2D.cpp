@@ -23,7 +23,6 @@
 #include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKmodel.h"
-#include "auxiliary/debug.h"
 
 #include "systems/VKspriteRenderSys2D.h"
 

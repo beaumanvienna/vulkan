@@ -26,6 +26,7 @@
 
 #include "systems/VKguiRenderSys.h"
 #include "renderer/model.h"
+#include "transform/matrix.h"
 
 namespace GfxRenderEngine
 {
@@ -82,7 +83,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& viewProjectionMatrix)
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix)
     {
         vkCmdBindDescriptorSets
         (
@@ -98,7 +99,7 @@ namespace GfxRenderEngine
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         VK_PushConstantDataGUIRenderer push{};
-        push.m_MVP  = viewProjectionMatrix;
+        push.m_MVP  = modelViewProjectionMatrix;
         push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
         push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};
 

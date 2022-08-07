@@ -579,9 +579,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& position, const float depth, const glm::vec4& color)
+    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& transform, const float depth, const glm::vec4& color)
     {
-        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position);
+        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, m_GUIViewProjectionMatrix * transform);
     }
 
     void VK_Renderer::Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const float depth, const glm::vec4& color)

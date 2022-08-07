@@ -735,29 +735,30 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                 {
                     if (down_)
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageDepressed->GetScaleMatrix();
+                        glm::mat4 position = transformationMatrix /* m_ImageDepressed->GetScaleMatrix()*/* Scale({100.0f, 100.0f, 1.0f});
                         renderer->Draw(m_ImageDepressed, position);
-                    } else
+                    }
+                    else
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageActive->GetScaleMatrix();
+                        glm::mat4 position = transformationMatrix /* m_ImageActive->GetScaleMatrix()*/* Scale({100.0f, 100.0f, 1.0f});
                         renderer->Draw(m_ImageActive, position);
                     }
                 }
                 else
                 {
-                    glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                    glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                     glm::mat4 transformationMatrix = Translate(translation);
 
                     // transformed position
-                    glm::mat4 position = transformationMatrix * m_Image->GetScaleMatrix();
+                    glm::mat4 position = transformationMatrix /* m_Image->GetScaleMatrix()*/ * Scale({100.0f, 100.0f, 1.0f});
                     renderer->Draw(m_Image, position);
                 }
             }
