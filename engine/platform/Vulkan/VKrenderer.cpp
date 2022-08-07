@@ -511,19 +511,11 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::SubmitGUI(entt::registry& registry)
+    void VK_Renderer::Submit2D(entt::registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
             m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemGUIRenderer->RenderEntities(m_FrameInfo, registry, m_GUIViewProjectionMatrix);
-        }
-    }
-
-    void VK_Renderer::SubmitGUI()
-    {
-        if (m_CurrentCommandBuffer)
-        {
         }
     }
 

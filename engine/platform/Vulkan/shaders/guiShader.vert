@@ -27,20 +27,59 @@
 #define MAX_LIGHTS 128
 
 // inputs 
-layout(location = 0) in vec3  position;
-layout(location = 3) in vec2  uv; // keep default vertex layout
-
 layout(push_constant) uniform Push
 {
     mat4 m_MVP;
+    vec2 m_UV[2];
 } push;
 
 // outputs
 layout(location = 0) out vec2  fragUV;
 
+// 0 - 1
+// | / |
+// 3 - 2
+vec2 positions[6] = vec2[]
+(
+    vec2(-0.5,  0.5), // 0
+    vec2( 0.5,  0.5), // 1
+    vec2(-0.5, -0.5), // 3
+    
+    vec2( 0.5,  0.5), // 1
+    vec2( 0.5, -0.5), // 2
+    vec2(-0.5, -0.5)  // 3
+);
+
+vec2 _UV[2] = vec2[]
+(
+    vec2( 0.418457, 0.926758),
+    vec2( 0.449707, 0.895508)
+);
+
 void main()
 {
-    gl_Position = push.m_MVP * vec4(position, 1.0);
+    vec2 position = positions[gl_VertexIndex];
+    switch (gl_VertexIndex)
+    {
+        case 0:
+            fragUV = vec2(push.m_UV[0].x, push.m_UV[0].y);
+            break;
+        case 1:
+            fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
+            break;
+        case 2:
+            fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
+            break;
+        case 3:
+            fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
+            break;
+        case 4:
+            fragUV = vec2(push.m_UV[1].x, push.m_UV[1].y);
+            break;
+        case 5:
+            fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
+            break;
+    }
 
-    fragUV = uv;
+    gl_Position = vec4(position, 0.0, 1.0);
 }

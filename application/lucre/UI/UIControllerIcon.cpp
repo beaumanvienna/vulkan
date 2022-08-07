@@ -223,8 +223,8 @@ namespace LucreApp
             transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID1, transform);
 
-            GuiRendererComponent guiRendererComponent{};
-            m_Registry.emplace<GuiRendererComponent>(m_ID1, guiRendererComponent);
+            SpriteRendererComponent spriteRendererComponent{};
+            m_Registry.emplace<SpriteRendererComponent>(m_ID1, spriteRendererComponent);
         }
         {
             m_ID2 = m_Registry.create();
@@ -234,8 +234,8 @@ namespace LucreApp
             transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID2, transform);
 
-            GuiRendererComponent guiRendererComponent{};
-            m_Registry.emplace<GuiRendererComponent>(m_ID2, guiRendererComponent);
+            SpriteRendererComponent spriteRendererComponent{};
+            m_Registry.emplace<SpriteRendererComponent>(m_ID2, spriteRendererComponent);
         }
     }
 }

@@ -134,7 +134,7 @@ namespace GfxRenderEngine
             0,
             nullptr
         );
-        
+
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         for (auto& particle : particleSystem->m_ParticlePool)
@@ -143,6 +143,7 @@ namespace GfxRenderEngine
             {
                 continue;
             }
+
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
             VK_PushConstantDataSpriteRenderer push{};
             push.m_ModelMatrix  = transform.GetMat4();
@@ -159,6 +160,6 @@ namespace GfxRenderEngine
             static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
             static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
         }
-        
+
     }
 }

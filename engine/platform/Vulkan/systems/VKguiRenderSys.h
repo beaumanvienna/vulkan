@@ -56,21 +56,18 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer(const VK_RenderSystemGUIRenderer&) = delete;
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, const glm::mat4& viewProjectionMatrix);
         void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& viewProjectionMatrix);
 
     private:
 
         void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
         void CreatePipeline(VkRenderPass renderPass);
-        void CreateVertexBuffer();
 
     private:
 
-        const uint m_VertexCount = 4;
+        const uint m_VertexCount = 6;
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
-        std::unique_ptr<VK_Buffer> m_VertexBuffer;
 
     };
 }

@@ -171,8 +171,8 @@ namespace LucreApp
 
         // gui
         m_Renderer->GUIRenderpass(&m_CameraController->GetCamera());
-        m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
-        m_Renderer->SubmitGUI(m_Registry);
+        m_Renderer->Submit2D(Lucre::m_Application->GetUI()->m_Registry);
+        m_Renderer->Submit2D(m_Registry);
 
     }
 

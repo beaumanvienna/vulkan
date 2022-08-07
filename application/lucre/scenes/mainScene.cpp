@@ -280,8 +280,7 @@ namespace LucreApp
 
         // gui
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
-        m_Renderer->SubmitGUI(Lucre::m_Application->GetUI()->m_Registry);
-        m_Renderer->SubmitGUI();
+        m_Renderer->Submit2D(Lucre::m_Application->GetUI()->m_Registry);
     }
 
     void MainScene::OnEvent(Event& event)

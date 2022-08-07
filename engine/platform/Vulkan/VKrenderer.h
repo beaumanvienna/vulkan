@@ -81,8 +81,7 @@ namespace GfxRenderEngine
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) override;
-        virtual void SubmitGUI(entt::registry& registry) override;
-        virtual void SubmitGUI() override;
+        virtual void Submit2D(entt::registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }

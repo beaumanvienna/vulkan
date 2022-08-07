@@ -44,8 +44,7 @@ namespace GfxRenderEngine
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
         virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) = 0;
-        virtual void SubmitGUI(entt::registry& registry) = 0;
-        virtual void SubmitGUI() = 0;
+        virtual void Submit2D(entt::registry& registry) = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 

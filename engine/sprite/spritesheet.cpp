@@ -44,9 +44,9 @@ namespace GfxRenderEngine
             Sprite sprite = Sprite
             (
                 images[i].u1,
-                1-images[i].v1,
+                images[i].v1,
                 images[i].u2,
-                1-images[i].v2,
+                images[i].v2,
                 images[i].w,
                 images[i].h,
                 m_Texture,
@@ -103,7 +103,8 @@ namespace GfxRenderEngine
                 float u1 = currentX;
                 float v1 = currentY;
                 float u2 = currentX + tileWidthNormalized;
-                float v2 = currentY + tileHeightNormalized;
+                float v2 = currentY - tileHeightNormalized;
+
                 Sprite sprite = Sprite
                 (
                     u1,
@@ -120,7 +121,7 @@ namespace GfxRenderEngine
                 m_SpriteTable.push_back(sprite);
                 currentX += advanceX;
             }
-            currentY += advanceY;
+            currentY -= advanceY;
         }
         return true;
     }
@@ -189,9 +190,9 @@ namespace GfxRenderEngine
                 std::string name = mapName + "_" + std::to_string(row) + "_" + std::to_string(column);
                 bool rotated = false;
                 float u1 = currentX;
-                float v1 = 1.0f - currentY;
+                float v1 = currentY;
                 float u2 = currentX + tileWidthNormalized;
-                float v2 = 1.0f - (currentY + tileHeightNormalized);
+                float v2 = currentY + tileHeightNormalized;
                 Sprite sprite = Sprite
                 (
                     u1,
