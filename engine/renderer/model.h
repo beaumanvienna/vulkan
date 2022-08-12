@@ -125,7 +125,7 @@ namespace GfxRenderEngine
 
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
         entt::entity LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
-        void LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification = 0.0f, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
+        void LoadSprite(Sprite* sprite, float amplification = 0.0f, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         void LoadParticle(const glm::vec4& color);
 
     public:

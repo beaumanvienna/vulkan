@@ -44,10 +44,11 @@ namespace LucreApp
         float desktopWidth = Engine::m_Engine->GetDesktopWidth();
         float windowWidth  = Engine::m_Engine->GetWindowWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
-        float aspectRatio  = Engine::m_Engine->GetWindowAspectRatio();
+        float aspectRatio  = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetAspectRatio();
 
-        float sy = windowHeight / desktopWidth * 1.4f;
-        float sx = sy * aspectRatio;
+        float size = 100.0f * windowHeight / desktopWidth;
+        float sy = size * aspectRatio;
+        float sx = size;
 
         // controller 1
         m_Controller1Detected = false;
@@ -209,9 +210,7 @@ namespace LucreApp
         Builder builder{};
 
         auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-        sprite->SetScale(1.0f);
-        glm::mat4 position = sprite->GetScaleMatrix();
-        builder.LoadSprite(sprite, position, 1.0f/*amplification*/);
+        builder.LoadSprite(sprite);
         auto model = Engine::m_Engine->LoadModel(builder);
         MeshComponent mesh{"controller icon", model};
 
@@ -220,7 +219,6 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_ID1, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID1, transform);
 
             SpriteRendererComponent spriteRendererComponent{};
@@ -231,7 +229,6 @@ namespace LucreApp
             m_Registry.emplace<MeshComponent>(m_ID2, mesh);
 
             TransformComponent transform{};
-            transform.SetTranslationX(-1000.0f);
             m_Registry.emplace<TransformComponent>(m_ID2, transform);
 
             SpriteRendererComponent spriteRendererComponent{};

@@ -739,7 +739,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix /* m_ImageDepressed->GetScaleMatrix()*/* Scale({100.0f, 100.0f, 1.0f});
+                        glm::mat4 position = transformationMatrix /* m_ImageDepressed->GetScaleMatrix()*/* Scale({50.0f, 50.0f, 1.0f});
                         renderer->Draw(m_ImageDepressed, position);
                     }
                     else
@@ -748,7 +748,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix /* m_ImageActive->GetScaleMatrix()*/* Scale({100.0f, 100.0f, 1.0f});
+                        glm::mat4 position = transformationMatrix /* m_ImageActive->GetScaleMatrix()*/* Scale({50.0f, 50.0f, 1.0f});
                         renderer->Draw(m_ImageActive, position);
                     }
                 }
@@ -758,7 +758,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                     glm::mat4 transformationMatrix = Translate(translation);
 
                     // transformed position
-                    glm::mat4 position = transformationMatrix /* m_Image->GetScaleMatrix()*/ * Scale({100.0f, 100.0f, 1.0f});
+                    glm::mat4 position = transformationMatrix /* m_Image->GetScaleMatrix()*/ * Scale({50.0f, 50.0f, 1.0f});
                     renderer->Draw(m_Image, position);
                 }
             }

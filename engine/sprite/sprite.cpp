@@ -192,4 +192,16 @@ namespace GfxRenderEngine
         m_Height = height;
         SetScaleMatrix();
     }
+
+    float Sprite::GetAspectRatio() const
+    {
+        if (m_Rotated)
+        {
+            return  static_cast<float>(m_Width) / static_cast<float>(m_Height);
+        }
+        else
+        {
+            return static_cast<float>(m_Height) / static_cast<float>(m_Width);
+        }
+    }
 }

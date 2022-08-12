@@ -71,6 +71,7 @@ namespace GfxRenderEngine
         float GetWidthGUI() const;
         float GetHeightGUI() const;
         void Resize(uint width, uint height);
+        float GetAspectRatio() const;
 
         float m_Pos1X, m_Pos1Y, m_Pos2X, m_Pos2Y;
         int m_Width, m_Height;

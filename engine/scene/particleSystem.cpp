@@ -39,8 +39,7 @@ namespace GfxRenderEngine
             Builder builder{};
 
             auto sprite = m_Spritesheet->GetSprite(i);
-            glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, amplification, unlit);
+            builder.LoadSprite(sprite, amplification, unlit);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"particle animation", model};
             mesh.m_Enabled = false;

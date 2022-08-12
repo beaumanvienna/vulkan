@@ -1,8 +1,5 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -41,19 +38,13 @@ layout(location = 0) out vec2  fragUV;
 // 3 - 2
 vec2 positions[6] = vec2[]
 (
-    vec2(-0.5,  0.5), // 0
-    vec2( 0.5,  0.5), // 1
-    vec2(-0.5, -0.5), // 3
+    vec2(-1.0,  1.0), // 0
+    vec2( 1.0,  1.0), // 1
+    vec2(-1.0, -1.0), // 3
     
-    vec2( 0.5,  0.5), // 1
-    vec2( 0.5, -0.5), // 2
-    vec2(-0.5, -0.5)  // 3
-);
-
-vec2 _UV[2] = vec2[]
-(
-    vec2( 0.418457, 0.926758),
-    vec2( 0.449707, 0.895508)
+    vec2( 1.0,  1.0), // 1
+    vec2( 1.0, -1.0), // 2
+    vec2(-1.0, -1.0)  // 3
 );
 
 void main()

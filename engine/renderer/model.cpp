@@ -838,7 +838,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::LoadSprite(Sprite* sprite, const glm::mat4& position, float amplification, int unlit, const glm::vec4& color)
+    void Builder::LoadSprite(Sprite* sprite, float amplification, int unlit, const glm::vec4& color)
     {
         m_Vertices.clear();
         m_Indices.clear();
@@ -851,16 +851,16 @@ namespace GfxRenderEngine
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {position[0]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos1X, sprite->m_Pos2Y}, slot, amplification, unlit},
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos1X, sprite->m_Pos2Y}, slot, amplification, unlit},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ {position[1]}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos2X, sprite->m_Pos2Y}, slot, amplification, unlit},
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos2X, sprite->m_Pos2Y}, slot, amplification, unlit},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ {position[2]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos2X, sprite->m_Pos1Y}, slot, amplification, unlit},
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos2X, sprite->m_Pos1Y}, slot, amplification, unlit},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {position[3]}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos1X, sprite->m_Pos1Y}, slot, amplification, unlit}
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite->m_Pos1X, sprite->m_Pos1Y}, slot, amplification, unlit}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
         slot++;

@@ -39,6 +39,7 @@ namespace GfxRenderEngine
     public:
 
         void SetScale(const glm::vec3& scale);
+        void SetScale(const float scale);
         void SetScaleX(const float scaleX);
         void SetScaleY(const float scaleY);
         void SetScaleZ(const float scaleZ);

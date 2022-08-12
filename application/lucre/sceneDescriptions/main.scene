@@ -9,7 +9,7 @@ glTF-files :
     application/lucre/models/barrel/barrel.gltf:
         translation:    [ 1.900,  0.294,  0.000]
     application/lucre/models/assets/Sponza/glTF/Sponza.gltf:
-        translation:    [ 0.229,  0.000,  0.000]
+        translation:    [ 0.229,  -0.009,  0.000]
     application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
         translation:    [ 1.414,  0.465,  0.000]
         scale:          [ 0.100,  0.100,  0.100]

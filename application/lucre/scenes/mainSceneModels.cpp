@@ -41,8 +41,8 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND);
-            glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 4.0f/*amplification*/);
+            float aspectRatio = sprite->GetAspectRatio();
+            builder.LoadSprite(sprite, 4.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"volcano", model};
 
@@ -55,7 +55,8 @@ namespace LucreApp
 
                 TransformComponent transform{};
                 transform.SetTranslation(glm::vec3{-77.0f + 77.0f*i, 3.0f, -40.0f});
-                transform.SetScale(glm::vec3{0.17f, 0.14f, 0.17f} * 0.7f);
+                float scale = 10.0f;
+                transform.SetScale({scale, scale * aspectRatio, 0.0f});
                 if (flip) transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
 
@@ -67,8 +68,9 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
-            glm::mat4 position = sprite->GetScaleMatrix();
-            builder.LoadSprite(sprite, position, 0.1f/*amplification*/);
+            float aspectRatio = sprite->GetAspectRatio();
+
+            builder.LoadSprite(sprite, 4.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"walkway", model};
 
@@ -78,9 +80,10 @@ namespace LucreApp
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
                 TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{0.5*i, -0.024f, -0.1f});
-                transform.SetScale(glm::vec3{0.017f, 0.014f, 0.017f});
-                transform.SetRotation(glm::vec3{-glm::half_pi<float>(), 0.0f, 0.0f});
+                transform.SetTranslation({0.5*i, -0.024f, -0.1f});
+                float scale = 6.0f;
+                transform.SetScale({scale, scale * aspectRatio, 0.0f});
+                transform.SetRotation({-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};
@@ -92,9 +95,10 @@ namespace LucreApp
             {
                 Builder builder{};
 
-                auto sprite = m_SpritesheetHorn.GetSprite(i);
-                glm::mat4 position = sprite->GetScaleMatrix();
-                builder.LoadSprite(sprite, position, 1.0f /*amplification*/);
+                auto sprite       = m_SpritesheetHorn.GetSprite(i);
+                float aspectRatio = sprite->GetAspectRatio();
+                float scaleHero   = -0.22f;
+                builder.LoadSprite(sprite, 1.0f /*amplification*/);
                 auto model = Engine::m_Engine->LoadModel(builder);
                 MeshComponent mesh{"horn animation", model};
                 mesh.m_Enabled = false;
@@ -104,7 +108,7 @@ namespace LucreApp
 
                 TransformComponent transform{};
                 transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
-                transform.SetScale(glm::vec3(0.005f, -0.005f, 0.005f));
+                transform.SetScale({scaleHero, scaleHero * aspectRatio, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};

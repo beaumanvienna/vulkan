@@ -51,6 +51,12 @@ namespace GfxRenderEngine
         m_Dirty = true;
     }
 
+    void TransformComponent::SetScale(const float scale)
+    {
+        m_Scale = glm::vec3{scale};
+        m_Dirty = true;
+    }
+
     void TransformComponent::SetScaleX(const float scaleX)
     {
         m_Scale.x = scaleX;
