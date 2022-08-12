@@ -118,7 +118,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
-            
+
             if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
             {
                 int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;

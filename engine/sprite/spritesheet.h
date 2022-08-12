@@ -68,6 +68,7 @@ namespace GfxRenderEngine
         bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
                             uint frames, const float scale = 1.0f);
         Sprite* GetSprite(uint index);
+        void SetScale(const float scale);
         void ListSprites();
         uint GetTextureSlot() const { return m_Texture->GetTextureSlot(); }
         std::shared_ptr<Texture> GetTexture() const { return m_Texture; }

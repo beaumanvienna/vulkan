@@ -110,36 +110,15 @@ void main()
     // ------------------------------
 
     vec3 pixelColor;
-    float alpha = 1.0;
-    if (fragDiffuseMapTextureSlot > 0)
-    {
-        // {0.0, 1.0} - {1.0, 1.0}
-        // |        /            |
-        // {0.0, 0.0} - {1.0, 0.0}
-
-        if (fragDiffuseMapTextureSlot == 1)
-        {
-            alpha = texture(tex1,fragUV).w;
-            pixelColor = texture(tex1,fragUV).xyz;
-        }
-        if (alpha == 0.0) discard;
-        if (fragUnlit != 0)
-        {
-            diffusedLightColor = vec3(1.0, 1.0, 1.0);
-            specularLightColor = vec3(0.0, 0.0, 0.0);
-        }
-        pixelColor *= fragAmplification;
-    }
-    else
-    {
-        pixelColor = fragColor.xyz;
-    }
-
-    outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
-
+    float alpha = texture(tex1,fragUV).w;
+    if (alpha == 0.0) discard;
+    pixelColor = texture(tex1,fragUV).xyz;
+    pixelColor *= fragAmplification;
+    
+    outColor.xyz = /*ambientLightColor*pixelColor.xyz + */(diffusedLightColor  * pixelColor.xyz) + specularLightColor;
+    
     // reinhard tone mapping
     outColor.xyz = outColor.xyz / (outColor.xyz + vec3(1.0));
-
+    
     outColor.w = alpha;
-
 }

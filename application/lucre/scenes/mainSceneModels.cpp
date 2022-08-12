@@ -70,7 +70,7 @@ namespace LucreApp
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
             float aspectRatio = sprite->GetAspectRatio();
 
-            builder.LoadSprite(sprite, 4.0f/*amplification*/);
+            builder.LoadSprite(sprite, 0.1f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"walkway", model};
 
@@ -82,7 +82,7 @@ namespace LucreApp
                 TransformComponent transform{};
                 transform.SetTranslation({0.5*i, -0.024f, -0.1f});
                 float scale = 6.0f;
-                transform.SetScale({scale, scale * aspectRatio, 0.0f});
+                transform.SetScale({scale, scale * aspectRatio, 1.0f});
                 transform.SetRotation({-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
 
@@ -108,7 +108,7 @@ namespace LucreApp
 
                 TransformComponent transform{};
                 transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
-                transform.SetScale({scaleHero, scaleHero * aspectRatio, 0.0f});
+                transform.SetScale({scaleHero, scaleHero * aspectRatio, 1.0f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};

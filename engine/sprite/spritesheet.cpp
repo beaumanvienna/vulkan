@@ -383,4 +383,12 @@ namespace GfxRenderEngine
 
         return ok;
     }
+
+    void SpriteSheet::SetScale(const float scale)
+    {
+        for (auto& sprite : m_SpriteTable)
+        {
+            sprite.SetScale(scale);
+        }
+    }
 }

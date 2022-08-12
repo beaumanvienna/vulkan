@@ -58,6 +58,7 @@ namespace LucreApp
 
     private:
 
+        Sprite* m_ControllerSprite;
         entt::entity m_ID1, m_ID2;
 
         Animation m_Controller1MoveIn;

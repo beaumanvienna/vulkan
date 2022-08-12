@@ -44,7 +44,7 @@ namespace LucreApp
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
         camera.SetViewDirection(position, direction);
 
-        // horn
+        // walk
         m_SpritesheetWalk.AddSpritesheetRow
         (
             Lucre::m_Spritesheet->GetSprite(I_WALK),
@@ -101,23 +101,27 @@ namespace LucreApp
         m_WindowWidth       = static_cast<float>(Engine::m_Engine->GetWindowWidth());
         m_WindowHeight      = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
-        // horn
-        float scaleHero     = m_WindowHeight * 0.25 * 0.6f;
-        m_GuybrushWalkDelta = scaleHero * 0.75f;
+        // walk
+        float scaleHero     = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0)->m_Height;
+        m_SpritesheetWalk.SetScale(scaleHero);
+        m_GuybrushWalkDelta = m_WindowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
-            float aspectRatio  = m_SpritesheetWalk.GetSprite(i)->GetAspectRatio();
+            float width  = m_SpritesheetWalk.GetSprite(i)->GetWidth();
+            float height = m_SpritesheetWalk.GetSprite(i)->GetHeight();
+
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
-            transform.SetScale({scaleHero, scaleHero * aspectRatio, 0.0f});
+            transform.SetScale({width, height, 0.0f});
             transform.SetTranslationY(m_WindowHeight * 0.65f);
         }
 
         // logo
         {
-            float scale = m_WindowHeight * 0.25;
-            float aspectRatio  = Lucre::m_Spritesheet->GetSprite(I_LUCRE)->GetAspectRatio();
+            float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE)->GetWidth();
+            float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE)->GetHeight();
+            float scale = m_WindowHeight / height * 0.2f;
             auto& transform = m_Registry.get<TransformComponent>(m_Logo);
-            transform.SetScale({scale, scale * aspectRatio, 0.0f});
+            transform.SetScale({scale * width, scale * height, 0.0f});
             transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
         }
     }

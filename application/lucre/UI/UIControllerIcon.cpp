@@ -44,11 +44,10 @@ namespace LucreApp
         float desktopWidth = Engine::m_Engine->GetDesktopWidth();
         float windowWidth  = Engine::m_Engine->GetWindowWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
-        float aspectRatio  = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetAspectRatio();
 
-        float size = 100.0f * windowHeight / desktopWidth;
-        float sy = size * aspectRatio;
-        float sx = size;
+        m_ControllerSprite->SetScale(0.7f * windowHeight / desktopWidth);
+        float sx = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetWidth();
+        float sy = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetHeight();
 
         // controller 1
         m_Controller1Detected = false;
@@ -207,10 +206,11 @@ namespace LucreApp
 
     void UIControllerIcon::LoadModels()
     {
-        Builder builder{};
 
-        auto sprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
-        builder.LoadSprite(sprite);
+        m_ControllerSprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
+
+        Builder builder{};
+        builder.LoadSprite(m_ControllerSprite);
         auto model = Engine::m_Engine->LoadModel(builder);
         MeshComponent mesh{"controller icon", model};
 
