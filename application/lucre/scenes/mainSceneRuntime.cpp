@@ -146,7 +146,7 @@ namespace LucreApp
 
             ParticleSystem::Specification spec =
             {
-                { 0.0f, 15.5f}, //glm::vec2 m_Position
+                { 0.0f, 15.0f}, //glm::vec2 m_Position
                 { 0.0f,  2.5f}, //glm::vec2 m_Velocity
                 { 0.0f,  0.0f}, //glm::vec2 m_Acceleration
 

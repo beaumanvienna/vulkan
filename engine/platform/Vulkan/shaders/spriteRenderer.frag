@@ -115,7 +115,13 @@ void main()
     pixelColor = texture(tex1,fragUV).xyz;
     pixelColor *= fragAmplification;
     
-    outColor.xyz = /*ambientLightColor*pixelColor.xyz + */(diffusedLightColor  * pixelColor.xyz) + specularLightColor;
+    if (fragUnlit != 0)
+    {
+        diffusedLightColor = vec3(1.0, 1.0, 1.0);
+        specularLightColor = vec3(0.0, 0.0, 0.0);
+    }
+    
+    outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
     
     // reinhard tone mapping
     outColor.xyz = outColor.xyz / (outColor.xyz + vec3(1.0));

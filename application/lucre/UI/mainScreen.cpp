@@ -92,9 +92,9 @@ namespace LucreApp
         float availableHeight = Engine::m_Engine->GetContextHeight();
         float marginLeftRight = 128.0f;
         float marginUpDown = 128.0f;
-        float iconWidth = 128.0f;
-        float iconHeight = 128.0f;
-        float iconSpacer = 10.0f;
+        float iconWidth = 50.0f;
+        float iconHeight = iconWidth;
+        float iconSpacer = 80.0f;
 
         float verticalSpacer = 10.0f;
 
@@ -120,8 +120,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
+            icon->SetScale(iconWidth);
             icon_active = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED);
+            icon_active->SetScale(iconWidth);
             icon_depressed = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
+            icon_depressed->SetScale(iconWidth);
 
             m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconWidth));
         }
@@ -148,8 +151,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = m_SpritesheetOff.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
+            icon->SetScale(iconWidth);
             icon_active = m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED);
+            icon_active->SetScale(iconWidth);
             icon_depressed = m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
+            icon_depressed->SetScale(iconWidth);
             m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconHeight),true);
         }
         else

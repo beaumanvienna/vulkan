@@ -104,58 +104,26 @@ namespace GfxRenderEngine
 
     void Sprite::SetScaleMatrix()
     {
-        float spriteWidth = static_cast<float>(m_Width);
-        float spriteHeight = static_cast<float>(m_Height);
-
-        glm::mat4 spriteMatrix = glm::mat4
-        (
-            -spriteWidth,  spriteHeight, 1.0f, 1.0f,
-            spriteWidth,   spriteHeight, 1.0f, 1.0f,
-            spriteWidth,  -spriteHeight, 1.0f, 1.0f,
-            -spriteWidth, -spriteHeight, 1.0f, 1.0f
-        );
-
-        // model matrix
-        glm::vec3 scaleVec(m_ScaleX/2.0f, m_ScaleY/2.0f, 1.0f);
         if (m_Rotated)
         {
-            m_ScaleMatrix = Rotate(Matrix::NINETY_DEGREES, {0.0f,0.0f,1.0f}) * Scale(scaleVec) * spriteMatrix;
+            m_Transform.SetScale({m_ScaleX * GetAspectRatio(), m_ScaleY, 1.0f});
         }
         else
         {
-            m_ScaleMatrix = Scale(scaleVec) * spriteMatrix;
+            m_Transform.SetScale({m_ScaleX, m_ScaleY * GetAspectRatio(), 1.0f});
+        }
+        
+
+        if (m_Rotated)
+        {
+            m_Transform.SetRotationZ(glm::half_pi<float>());
         }
     }
 
-    const glm::mat4& Sprite::GetScaleMatrix(bool flipped)
-    { 
-        if (!flipped) return m_ScaleMatrix; 
-
-        float x0 = m_ScaleMatrix[0][0];
-        float x1 = m_ScaleMatrix[1][0];
-        float x2 = m_ScaleMatrix[2][0];
-        float x3 = m_ScaleMatrix[3][0];
-
-        m_FlippedScaleMatrix = m_ScaleMatrix;
-
-        if (!m_Rotated)
-        {
-            m_FlippedScaleMatrix[0][0] = x1;
-            m_FlippedScaleMatrix[1][0] = x0;
-            m_FlippedScaleMatrix[2][0] = x3;
-            m_FlippedScaleMatrix[3][0] = x2;
-
-            return m_FlippedScaleMatrix;
-        }
-        else
-        {
-            m_FlippedScaleMatrix[0][0] = x3;
-            m_FlippedScaleMatrix[1][0] = x2;
-            m_FlippedScaleMatrix[2][0] = x1;
-            m_FlippedScaleMatrix[3][0] = x0;
-
-            return m_FlippedScaleMatrix;
-        }
+    TransformComponent& Sprite::GetTransform()
+    {
+        m_Transform.GetMat4();
+        return m_Transform;
     }
 
     float Sprite::GetWidthGUI() const

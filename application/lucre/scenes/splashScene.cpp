@@ -21,6 +21,8 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "core.h"
+#include "events/event.h"
+#include "events/keyEvent.h"
 #include "scenes/splashScene.h"
 #include "resources/resources.h"
 #include "transform/matrix.h"
@@ -182,6 +184,18 @@ namespace LucreApp
 
     void SplashScene::OnEvent(Event& event)
     {
+        EventDispatcher dispatcher(event);
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+            {
+                switch(event.GetKeyCode())
+                {
+                    case ENGINE_KEY_ESCAPE:
+                        m_IsRunning = false;
+                        break;
+                }
+                return true;
+            }
+        );
     }
 
     void SplashScene::OnResize()

@@ -26,6 +26,7 @@
 
 #include "engine.h"
 #include "renderer/texture.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
@@ -62,7 +63,8 @@ namespace GfxRenderEngine
 
         std::string& GetName();
 
-        const glm::mat4& GetScaleMatrix(bool flipped = false);
+        const glm::mat4& GetMat4() { return m_Transform.GetMat4(); }
+        TransformComponent& GetTransform();
         uint GetTextureSlot() const { return m_Texture->GetTextureSlot(); }
         void SetScale(const float scale);
         void SetScale(const float scaleX, const float scaleY);
@@ -87,5 +89,6 @@ namespace GfxRenderEngine
         float m_ScaleY;
         glm::mat4 m_ScaleMatrix;
         glm::mat4 m_FlippedScaleMatrix;
+        TransformComponent m_Transform{};
     };
 }

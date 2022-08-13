@@ -236,7 +236,7 @@ namespace GfxRenderEngine
         bool ok = true;
 
         m_Texture = originalSprite->m_Texture;
-        bool rotated               = originalSprite->m_Rotated;
+        bool rotated = originalSprite->m_Rotated;
 
         if (rotated)
         {
@@ -258,9 +258,9 @@ namespace GfxRenderEngine
                 float v2 = currentY + tileHeightNormalized;
                 Sprite sprite = Sprite
                 (
-                    u1,
-                    v1,
                     u2,
+                    v1,
+                    u1,
                     v2,
                     tileWidth,
                     tileHeight,

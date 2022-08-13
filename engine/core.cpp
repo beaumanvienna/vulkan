@@ -227,9 +227,6 @@ namespace GfxRenderEngine
                         LOG_CORE_INFO("toggle fullscreen at frame {0}", GetRenderer()->GetFrameCounter());
                         ToggleFullscreen();
                         break;
-                    case ENGINE_KEY_ESCAPE:
-                        Shutdown();
-                        break;
                 }
                 return false;
             }

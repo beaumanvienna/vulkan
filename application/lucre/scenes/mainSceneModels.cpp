@@ -41,23 +41,23 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND);
-            float aspectRatio = sprite->GetAspectRatio();
+            
             builder.LoadSprite(sprite, 4.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"volcano", model};
 
             bool flip = false;
+            float size = 10.0f;
             for (uint i =0; i < 3; i++)
             {
                 flip = !flip;
                 m_Volcano[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Volcano[i], mesh);
 
-                TransformComponent transform{};
-                transform.SetTranslation(glm::vec3{-77.0f + 77.0f*i, 3.0f, -40.0f});
-                float scale = 10.0f;
-                transform.SetScale({scale, scale * aspectRatio, 0.0f});
-                if (flip) transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), 0.0f});
+                sprite->SetScale(size, flip ? size : -size);
+                TransformComponent& transform = sprite->GetTransform();
+                transform.SetTranslation({-size * 2.0f + i * 2.0f * size, 10.0f, -20.0f});
+
                 m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{0.1f, 0.1f};
@@ -68,7 +68,8 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
-            float aspectRatio = sprite->GetAspectRatio();
+            float size = 4.0f;
+            sprite->SetScale(size);
 
             builder.LoadSprite(sprite, 0.1f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
@@ -79,11 +80,9 @@ namespace LucreApp
                 m_Walkway[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
-                TransformComponent transform{};
+                TransformComponent& transform = sprite->GetTransform();                
+                transform.SetRotation({-glm::half_pi<float>(), glm::half_pi<float>(), 0.0f});
                 transform.SetTranslation({0.5*i, -0.024f, -0.1f});
-                float scale = 6.0f;
-                transform.SetScale({scale, scale * aspectRatio, 1.0f});
-                transform.SetRotation({-glm::half_pi<float>(), 0.0f, 0.0f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};
@@ -91,14 +90,17 @@ namespace LucreApp
             }
         }
         {
+            float scaleHero   = -0.0038f;
+            m_SpritesheetHorn.SetScale(scaleHero);
             for (uint i = 0; i < HORN_ANIMATION_SPRITES; i++)
             {
-                Builder builder{};
+                auto sprite  = m_SpritesheetHorn.GetSprite(i);
+                float width  = sprite->GetWidth();
+                float height = sprite->GetHeight();
 
-                auto sprite       = m_SpritesheetHorn.GetSprite(i);
-                float aspectRatio = sprite->GetAspectRatio();
-                float scaleHero   = -0.22f;
+                Builder builder{};
                 builder.LoadSprite(sprite, 1.0f /*amplification*/);
+
                 auto model = Engine::m_Engine->LoadModel(builder);
                 MeshComponent mesh{"horn animation", model};
                 mesh.m_Enabled = false;
@@ -108,7 +110,7 @@ namespace LucreApp
 
                 TransformComponent transform{};
                 transform.SetTranslation(glm::vec3{-0.5f, 0.37f, 0.0f});
-                transform.SetScale({scaleHero, scaleHero * aspectRatio, 1.0f});
+                transform.SetScale({width, height, 1.0f});
                 m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
                 SpriteRendererComponent spriteRendererComponent{};
@@ -248,9 +250,9 @@ namespace LucreApp
         }
         {
             // light the volcano
-            m_PointLightVolcano = CreatePointLight(1.0f, 0.0f, {1.0f, 0.0f, 0.0f});
+            m_PointLightVolcano = CreatePointLight(10.0f, 0.0f, {1.0f, 0.0f, 0.0f});
             TransformComponent transform{};
-            transform.SetTranslation(glm::vec3(0.0f, 15.0f, -39.0f));
+            transform.SetTranslation(glm::vec3(0.0f, 14.0f, -19.0f));
             m_Registry.emplace<TransformComponent>(m_PointLightVolcano, transform);
             m_Registry.emplace<Group2>(m_PointLightVolcano, true);
         }

@@ -87,13 +87,13 @@ namespace LucreApp
 
         // volcano smoke animation
         int poolSize = 50;
-        float zaxis = -39.0f;
+        float zaxis = -18.0f;
         m_SpritesheetSmoke.AddSpritesheetTile
         (
             Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
             8, 8, /* rows, columns */
             0, /* margin */
-            0.02f /* scale) */
+            0.01f /* scale) */
         );
         m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
 
@@ -305,6 +305,9 @@ namespace LucreApp
                         break;
                     case ENGINE_KEY_G:
                         FireVolcano();
+                        break;
+                    case ENGINE_KEY_ESCAPE:
+                        Engine::m_Engine->Shutdown();
                         break;
                 }
                 return false;
