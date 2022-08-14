@@ -50,8 +50,6 @@ namespace LucreApp
 
         float m_ContextWidth;
         float m_ContextHeight;
-        float m_HalfContextWidth;
-        float m_HalfContextHeight;
 
     };
 }

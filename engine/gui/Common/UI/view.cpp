@@ -529,7 +529,6 @@ namespace GfxRenderEngine
 
         void ClickableItem::Draw(SCREEN_UIContext &dc)
         {
-LOG_CORE_CRITICAL("ClickableItem::Draw");
             Style style  = dc.theme->itemStyle;
 
             if (CoreSettings::m_UITheme == THEME_RETRO)
@@ -768,7 +767,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                 {
                     if (down_)
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
@@ -777,7 +776,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                     }
                     else
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
@@ -789,7 +788,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                 {
                     if (down_)
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
@@ -798,7 +797,7 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
                     }
                     else
                     {
-                        glm::vec3 translation = glm::vec3(bounds_.centerX()-m_HalfContextWidth, m_HalfContextHeight - bounds_.centerY(), 0.0f);
+                        glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
@@ -811,7 +810,6 @@ LOG_CORE_CRITICAL("ClickableItem::Draw");
             {
                 dc.Draw()->DrawImage(m_Image, bounds_.centerX(), bounds_.centerY(), 1.0f, style.fgColor, ALIGN_CENTER);
             }
-
 
             dc.SetFontStyle(dc.theme->uiFont);
 

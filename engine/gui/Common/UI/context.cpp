@@ -46,11 +46,7 @@ namespace GfxRenderEngine
     SCREEN_UIContext::SCREEN_UIContext()
     {
         fontStyle_ = new SCREEN_UI::FontStyle();
-        m_ContextWidth  = Engine::m_Engine->GetContextWidth();
-        m_ContextHeight = Engine::m_Engine->GetContextHeight();
-        m_HalfContextWidth  = m_ContextWidth  * 0.5f;
-        m_HalfContextHeight = m_ContextHeight * 0.5f;
-        bounds_ = Bounds(0, 0, m_ContextWidth, m_ContextHeight);
+        bounds_ = Bounds(0, 0, Engine::m_Engine->GetContextWidth(), Engine::m_Engine->GetContextHeight());
         uidrawbuffer_ = new SCREEN_DrawBuffer();
 
         UIThemeInit();
@@ -305,7 +301,6 @@ namespace GfxRenderEngine
             return;
         }
 
-        std::shared_ptr<Renderer> renderer = Engine::m_Engine->GetRenderer();
         switch (drawable.type)
         {
             case SCREEN_UI::DRAW_SOLID_COLOR:
@@ -362,8 +357,8 @@ namespace GfxRenderEngine
             const UITransform t = transformStack_.back();
             Bounds translated = bounds.Offset(t.translate.x, t.translate.y);
 
-            float scaledX = (translated.x - m_HalfContextWidth) * t.scale.x + m_HalfContextWidth;
-            float scaledY = (translated.y - m_HalfContextHeight) * t.scale.y + m_HalfContextHeight;
+            float scaledX = translated.x * t.scale.x;
+            float scaledY = translated.y * t.scale.y;
 
             return Bounds(scaledX, scaledY, translated.w * t.scale.x, translated.h * t.scale.y);
         }

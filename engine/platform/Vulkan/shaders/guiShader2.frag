@@ -22,54 +22,17 @@
 
 #version 450
 
-// inputs 
-layout(push_constant) uniform Push
-{
-    mat4 m_MVP;
-    vec2 m_UV[2];
-} push;
+// inputs: UVs + color + sammpler
+layout(location = 0)      in vec2  fragUV;
+layout(location = 1)      in vec4  fragColor;
+layout(set = 0, binding = 1) uniform sampler2D tex1;
 
 // outputs
-layout(location = 0) out vec2  fragUV;
-
-// 0 - 1
-// | / |
-// 3 - 2
-vec2 positions[6] = vec2[]
-(
-    vec2(-1.0,  1.0), // 0
-    vec2( 1.0,  1.0), // 1
-    vec2(-1.0, -1.0), // 3
-    
-    vec2( 1.0,  1.0), // 1
-    vec2( 1.0, -1.0), // 2
-    vec2(-1.0, -1.0)  // 3
-);
+layout (location = 0) out vec4 outColor;
 
 void main()
 {
-    vec2 position = positions[gl_VertexIndex];
-    switch (gl_VertexIndex)
-    {
-        case 0:
-            fragUV = vec2(push.m_UV[0].x, push.m_UV[0].y);
-            break;
-        case 1:
-            fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
-            break;
-        case 2:
-            fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
-            break;
-        case 3:
-            fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
-            break;
-        case 4:
-            fragUV = vec2(push.m_UV[1].x, push.m_UV[1].y);
-            break;
-        case 5:
-            fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
-            break;
-    }
-
-    gl_Position = push.m_MVP * vec4(position, 0.0, 1.0);
+    vec4 pixel = texture(tex1,fragUV);
+    if (pixel.w == 0.0) discard;
+    outColor = pixel * fragColor;
 }

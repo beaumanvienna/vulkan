@@ -25,51 +25,83 @@
 // inputs 
 layout(push_constant) uniform Push
 {
-    mat4 m_MVP;
+    mat4 m_Mat4;
     vec2 m_UV[2];
 } push;
 
 // outputs
 layout(location = 0) out vec2  fragUV;
+layout(location = 1) out vec4  fragColor;
 
 // 0 - 1
 // | / |
 // 3 - 2
-vec2 positions[6] = vec2[]
-(
-    vec2(-1.0,  1.0), // 0
-    vec2( 1.0,  1.0), // 1
-    vec2(-1.0, -1.0), // 3
-    
-    vec2( 1.0,  1.0), // 1
-    vec2( 1.0, -1.0), // 2
-    vec2(-1.0, -1.0)  // 3
-);
+
+// Mat4
+// x1, y1, red,       green,
+// x2, y1, blue,      alpha,
+// x2, y2, cntxtWdth, cntxtHght,
+// x1, y2, 1.0f,      1.0f
+
+//positions
+// 0
+// 1
+// 3
+
+// 1
+// 2
+// 3
 
 void main()
 {
-    vec2 position = positions[gl_VertexIndex];
+    float red   = push.m_Mat4[2][0];
+    float green = push.m_Mat4[3][0];
+    float blue  = push.m_Mat4[2][1];
+    float alpha = push.m_Mat4[3][1];
+    fragColor = vec4(red, green, blue, alpha);
+
+    float contextWidthHalf  = push.m_Mat4[2][2]/2.0;
+    float contextHeightHalf = push.m_Mat4[2][3]/2.0;
+    float x,y;
+            float x1 = 400;
+            float y1 = 400;
+            float x2 = 750;
+            float y2 = 750;
+
     switch (gl_VertexIndex)
     {
         case 0:
             fragUV = vec2(push.m_UV[0].x, push.m_UV[0].y);
+            x = push.m_Mat4[0][0];
+            y = push.m_Mat4[1][0];
             break;
         case 1:
             fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
+            x = push.m_Mat4[0][1];
+            y = push.m_Mat4[1][1];
             break;
         case 2:
             fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
+            x = push.m_Mat4[0][3];
+            y = push.m_Mat4[1][3];
             break;
         case 3:
             fragUV = vec2(push.m_UV[1].x, push.m_UV[0].y);
+            x = push.m_Mat4[0][1];
+            y = push.m_Mat4[1][1];
             break;
         case 4:
             fragUV = vec2(push.m_UV[1].x, push.m_UV[1].y);
+            x = push.m_Mat4[0][2];
+            y = push.m_Mat4[1][2];
             break;
         case 5:
             fragUV = vec2(push.m_UV[0].x, push.m_UV[1].y);
+            x = push.m_Mat4[0][3];
+            y = push.m_Mat4[1][3];
             break;
     }
-
-    gl_Position = push.m_MVP * vec4(position, 0.0, 1.0);
+    float xNorm = (x - contextWidthHalf) / contextWidthHalf;
+    float yNorm = (y - contextHeightHalf) / contextHeightHalf;
+    gl_Position = vec4(xNorm, yNorm, 0.0, 1.0);
 }

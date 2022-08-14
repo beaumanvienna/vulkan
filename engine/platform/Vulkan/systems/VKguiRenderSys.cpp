@@ -24,6 +24,7 @@
 #include "VKswapChain.h"
 #include "VKmodel.h"
 
+#include "core.h"
 #include "systems/VKguiRenderSys.h"
 #include "renderer/model.h"
 #include "transform/matrix.h"
@@ -73,7 +74,7 @@ namespace GfxRenderEngine
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = (uint)VK_SwapChain::SubPassesGUI::SUBPASS_GUI;
 
-        // create a pipeline
+        // create pipelines
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
@@ -81,10 +82,65 @@ namespace GfxRenderEngine
             "bin/guiShader.frag.spv",
             pipelineConfig
         );
+
+        m_Pipeline2 = std::make_unique<VK_Pipeline>
+        (
+            VK_Core::m_Device,
+            "bin/guiShader2.vert.spv",
+            "bin/guiShader2.frag.spv",
+            pipelineConfig
+        );
+    }
+
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color)
+    {
+        // this function takes in a sprite, four 2D positions, and a color
+
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_GlobalDescriptorSet,
+            0,
+            nullptr
+        );
+        m_Pipeline2->Bind(frameInfo.m_CommandBuffer);
+        
+        VK_PushConstantDataGUIRenderer2 push{};
+        push.m_Mat4  = position;
+        push.m_Mat4[2][0] = color.r;
+        push.m_Mat4[3][0] = color.g;
+        push.m_Mat4[2][1] = color.b;
+        push.m_Mat4[3][1] = color.a;
+        push.m_Mat4[2][2] = Engine::m_Engine->GetContextWidth();
+        push.m_Mat4[2][3] = Engine::m_Engine->GetContextHeight();
+        push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
+        push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};
+        
+        vkCmdPushConstants(
+            frameInfo.m_CommandBuffer,
+            m_PipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_PushConstantDataGUIRenderer),
+            &push);
+        
+        vkCmdDraw
+            (
+                frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer
+                m_VertexCount,                  // uint32_t        vertexCount
+                1,                              // uint32_t        instanceCount
+                0,                              // uint32_t        firstVertex
+                0                               // uint32_t        firstInstance
+            );
     }
 
     void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix)
     {
+        // this function takes in a sprite and transformation matrix to be applied to the normalized device coordinates
         vkCmdBindDescriptorSets
         (
             frameInfo.m_CommandBuffer,
@@ -119,6 +175,5 @@ namespace GfxRenderEngine
                 0,                              // uint32_t        firstVertex
                 0                               // uint32_t        firstInstance
             );
-
     }
 }

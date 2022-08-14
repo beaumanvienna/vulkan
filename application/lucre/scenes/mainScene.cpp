@@ -243,13 +243,14 @@ namespace LucreApp
             }
         }
 
-        auto view = m_Registry.view<TransformComponent>();
-        auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
-        auto& vase0Transform   = view.get<TransformComponent>(m_Vase0);
-        auto& vase1Transform   = view.get<TransformComponent>(m_Vase1);
+        if (Lucre::m_Application->KeyboardInputIsReleased())
+        {
+            auto view = m_Registry.view<TransformComponent>();
+            auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
 
-        m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        }
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
@@ -305,9 +306,6 @@ namespace LucreApp
                         break;
                     case ENGINE_KEY_G:
                         FireVolcano();
-                        break;
-                    case ENGINE_KEY_ESCAPE:
-                        Engine::m_Engine->Shutdown();
                         break;
                 }
                 return false;

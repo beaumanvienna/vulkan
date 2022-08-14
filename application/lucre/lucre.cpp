@@ -40,7 +40,7 @@ namespace LucreApp
     SpriteSheet* Lucre::m_Spritesheet;
 
     Lucre::Lucre()
-        : m_CurrentScene{nullptr}
+        : m_CurrentScene{nullptr}, m_GUIisRunning{false}
     {
     }
 
@@ -89,7 +89,7 @@ namespace LucreApp
         // update/render layer stack
         m_UIControllerIcon->OnUpdate();
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
-        m_UI->OnUpdate();  // direct submits
+        if (m_GUIisRunning) m_UI->OnUpdate();  // direct submits
         m_Renderer->EndScene();
     }
 
@@ -179,6 +179,12 @@ namespace LucreApp
                 {
                     case ENGINE_KEY_M:
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
+                        break;
+                    case ENGINE_KEY_ESCAPE:
+                        if (m_GameState.GetState() != GameState::State::SPLASH)
+                        {
+                            m_GUIisRunning = !m_GUIisRunning;
+                        }
                         break;
                 }
                 return false;

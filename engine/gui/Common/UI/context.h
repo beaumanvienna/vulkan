@@ -139,10 +139,6 @@ namespace GfxRenderEngine
     private:
         SCREEN_Draw::SCREEN_DrawContext *draw_;
         Bounds bounds_;
-        float m_ContextWidth;
-        float m_ContextHeight;
-        float m_HalfContextWidth;
-        float m_HalfContextHeight;
 
         float fontScaleX_ = 1.0f;
         float fontScaleY_ = 1.0f;

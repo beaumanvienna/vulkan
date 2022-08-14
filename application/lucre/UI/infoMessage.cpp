@@ -39,9 +39,6 @@ namespace LucreApp
 
         m_ContextWidth  = Engine::m_Engine->GetContextWidth();
         m_ContextHeight = Engine::m_Engine->GetContextHeight();
-        m_HalfContextWidth  = m_ContextWidth  * 0.5f;
-        m_HalfContextHeight = m_ContextHeight * 0.5f;
-
     }
 
     void InfoMessage::Show(const std::string &text, SCREEN_UI::View* refView)

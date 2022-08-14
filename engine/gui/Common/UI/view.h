@@ -408,10 +408,6 @@ namespace GfxRenderEngine
                 {
                     layoutParams_.reset(new LayoutParams());
                 }
-                m_ContextWidth  = Engine::m_Engine->GetContextWidth();
-                m_ContextHeight = Engine::m_Engine->GetContextHeight();
-                m_HalfContextWidth  = m_ContextWidth  * 0.5f;
-                m_HalfContextHeight = m_ContextHeight * 0.5f;
             }
             virtual ~View();
 
@@ -534,10 +530,6 @@ namespace GfxRenderEngine
             bool enabledMeansDisabled_;
 
         protected:
-            float m_ContextWidth;
-            float m_ContextHeight;
-            float m_HalfContextWidth;
-            float m_HalfContextHeight;
 
         };
 

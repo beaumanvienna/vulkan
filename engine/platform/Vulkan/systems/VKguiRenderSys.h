@@ -45,6 +45,12 @@ namespace GfxRenderEngine
         glm::vec2 m_UV[2];
     };
 
+    struct VK_PushConstantDataGUIRenderer2
+    {
+        glm::mat4 m_Mat4{1.0f};
+        glm::vec2 m_UV[2];
+    };
+
     class VK_RenderSystemGUIRenderer
     {
 
@@ -57,6 +63,7 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
         void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix);
+        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color);
 
     private:
 
@@ -68,6 +75,7 @@ namespace GfxRenderEngine
         const uint m_VertexCount = 6;
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        std::unique_ptr<VK_Pipeline> m_Pipeline2;
 
     };
 }

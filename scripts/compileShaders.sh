@@ -27,3 +27,6 @@ glslc engine/platform/Vulkan/shaders/atlasShader.frag                       -o b
 
 glslc engine/platform/Vulkan/shaders/guiShader.vert                       -o bin/guiShader.vert.spv
 glslc engine/platform/Vulkan/shaders/guiShader.frag                       -o bin/guiShader.frag.spv
+
+glslc engine/platform/Vulkan/shaders/guiShader2.vert                       -o bin/guiShader2.vert.spv
+glslc engine/platform/Vulkan/shaders/guiShader2.frag                       -o bin/guiShader2.frag.spv

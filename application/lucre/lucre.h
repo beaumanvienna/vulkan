@@ -57,6 +57,7 @@ namespace LucreApp
         void PlaySound(int resourceID);
         UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
         Scene& GetScene() override { return m_GameState.GetScene(); }
+        bool KeyboardInputIsReleased() const { return !m_GUIisRunning; }
 
     public:
 
@@ -86,6 +87,7 @@ namespace LucreApp
         std::shared_ptr<CameraController> m_CameraController;
 
         SpriteSheet m_Atlas;
+        bool m_GUIisRunning;
 
     };
 }

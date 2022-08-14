@@ -41,8 +41,6 @@ namespace GfxRenderEngine
     {
         m_ContextWidth  = Engine::m_Engine->GetContextWidth();
         m_ContextHeight = Engine::m_Engine->GetContextHeight();
-        m_HalfContextWidth  = m_ContextWidth  * 0.5f;
-        m_HalfContextHeight = m_ContextHeight * 0.5f;
     }
 
     SCREEN_UIScreen::~SCREEN_UIScreen()
@@ -139,8 +137,8 @@ namespace GfxRenderEngine
         float x = touch.x - translation_.x;
         float y = touch.y - translation_.y;
 
-        updated.x = (x - m_HalfContextWidth) / scale_.x + m_HalfContextWidth;
-        updated.y = (y - m_HalfContextHeight) / scale_.y + m_HalfContextHeight;
+        updated.x = x / scale_.x;
+        updated.y = y / scale_.y;
 
         return updated;
     }
@@ -308,8 +306,8 @@ namespace GfxRenderEngine
 
             if (hasPopupOrigin_)
             {
-                float xoff = popupOrigin_.x - m_HalfContextWidth;
-                float yoff = popupOrigin_.y - m_HalfContextHeight;
+                float xoff = popupOrigin_.x;
+                float yoff = popupOrigin_.y;
 
                 // Pull toward the origin a bit.
                 translation_.x = xoff * (1.0f - animatePos) * 0.2f;

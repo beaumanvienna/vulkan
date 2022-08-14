@@ -65,7 +65,6 @@ namespace GfxRenderEngine
 
     void SCREEN_DrawBuffer::DrawImage(Sprite* sprite, float x, float y, float scale, Color color, int align)
     {
-LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage");
         if (!sprite)
         {
             return;
@@ -93,49 +92,53 @@ LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage");
 
     void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)
     {
-LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImageStretch");
+        glm::vec4 colorVec = ConvertColor(color);
         glm::mat4 position;
         if (sprite->m_Rotated)
         {
-            position = glm::mat4
-            (
-                x1, y2, 1.0f, 1.0f,
-                x1, y1, 1.0f, 1.0f,
-                x2, y1, 1.0f, 1.0f,
-                x2, y2, 1.0f, 1.0f
-            );
+            position[0][0] = x1; position[1][0] = y2;
+            position[0][1] = x1; position[1][1] = y1;
+            position[0][2] = x2; position[1][2] = y1;
+            position[0][3] = x2; position[1][3] = y2;
         }
         else
         {
-            position = glm::mat4
-            (
-                x1, y1, 1.0f, 1.0f,
-                x2, y1, 1.0f, 1.0f,
-                x2, y2, 1.0f, 1.0f,
-                x1, y2, 1.0f, 1.0f
-            );
+            position[0][0] = x1; position[1][0] = y1;
+            position[0][1] = x2; position[1][1] = y1;
+            position[0][2] = x2; position[1][2] = y2;
+            position[0][3] = x1; position[1][3] = y2;
         }
-        m_Renderer->Draw(sprite, position, -0.5f, ConvertColor(color));
+        m_Renderer->Draw(sprite, position, colorVec);
     }
 
     void SCREEN_DrawBuffer::DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color)
     {
-LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawTexRect");
-        glm::mat4 position = glm::mat4
-        (
-            x1, y1, 1.0f, 1.0f,
-            x2, y1, 1.0f, 1.0f,
-            x2, y2, 1.0f, 1.0f,
-            x1, y2, 1.0f, 1.0f
-        );
-        glm::vec4 textureCoordinates{u1, v1, u2, v2};
+        
+        glm::vec4 colorVec = ConvertColor(color);
+        glm::mat4 position;
 
-        m_Renderer->Draw(texture, position, textureCoordinates, -0.5f, ConvertColor(color));
+        position[0][0] = x1; position[1][0] = y1;
+        position[0][1] = x2; position[1][1] = y1;
+        position[0][2] = x2; position[1][2] = y2;
+        position[0][3] = x1; position[1][3] = y2;
+        
+        Sprite sprite = Sprite
+        (
+            u1,
+            v1,
+            u2,
+            v2,
+            0, // width not needed
+            0, // height not needed
+            nullptr, // texture is default atlas at the moment
+            ""
+        );
+
+        m_Renderer->Draw(&sprite, position, colorVec);
     }
 
     void SCREEN_DrawBuffer::DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color, float corner_scale)
     {
-LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage4Grid");
         if (!sprite)
         {
             return;
@@ -151,17 +154,17 @@ LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage4Grid");
         float ya = y1 + ih2;
         float yb = y2 - ih2;
         // Top row
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), x1, y1, xa, ya, u1, v1, um, vm, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xa, y1, xb, ya, um, v1, um, vm, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xb, y1, x2, ya, um, v1, u2, vm, color);
+        DrawTexRect(sprite->m_Texture, x1, y1, xa, ya, u1, v1, um, vm, color);
+        DrawTexRect(sprite->m_Texture, xa, y1, xb, ya, um, v1, um, vm, color);
+        DrawTexRect(sprite->m_Texture, xb, y1, x2, ya, um, v1, u2, vm, color);
         // Middle row
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), x1, ya, xa, yb, u1, vm, um, vm, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xa, ya, xb, yb, um, vm, um, vm, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xb, ya, x2, yb, um, vm, u2, vm, color);
+        DrawTexRect(sprite->m_Texture, x1, ya, xa, yb, u1, vm, um, vm, color);
+        DrawTexRect(sprite->m_Texture, xa, ya, xb, yb, um, vm, um, vm, color);
+        DrawTexRect(sprite->m_Texture, xb, ya, x2, yb, um, vm, u2, vm, color);
         // Bottom row
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), x1, yb, xa, y2, u1, vm, um, v2, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xa, yb, xb, y2, um, vm, um, v2, color);
-        DrawTexRect(SCREEN_ScreenManager::m_SpritesheetUI->GetTexture(), xb, yb, x2, y2, um, vm, u2, v2, color);
+        DrawTexRect(sprite->m_Texture, x1, yb, xa, y2, u1, vm, um, v2, color);
+        DrawTexRect(sprite->m_Texture, xa, yb, xb, y2, um, vm, um, v2, color);
+        DrawTexRect(sprite->m_Texture, xb, yb, x2, y2, um, vm, u2, v2, color);
     }
 
     class SCREEN_AtlasWordWrapper : public SCREEN_WordWrapper
@@ -437,15 +440,15 @@ LOG_CORE_CRITICAL("SCREEN_DrawBuffer::DrawImage4Grid");
                     cy2 = y + (c.oy + c.ph) * fontscaley;
                 }
 
-                glm::mat4 position = glm::mat4
-                (
-                    cx1, cy1, 1.0f, 1.0f,
-                    cx2, cy1, 1.0f, 1.0f,
-                    cx2, cy2, 1.0f, 1.0f,
-                    cx1, cy2, 1.0f, 1.0f
-                );
+                glm::mat4 position;
+
+                position[0][0] = cx1; position[1][0] = cy1;
+                position[0][1] = cx2; position[1][1] = cy1;
+                position[0][2] = cx2; position[1][2] = cy2;
+                position[0][3] = cx1; position[1][3] = cy2;
+
                 glm::vec4 textureCoordinates{c.sx, 1.0f - c.sy, c.ex, 1.0f - c.ey};
-                m_Renderer->Draw(gTextureFontAtlas, position, textureCoordinates, -0.5f, ConvertColor(color));
+                m_Renderer->Draw(gTextureFontAtlas, position, textureCoordinates, ConvertColor(color));
 
                 if (align & ROTATE_90DEG_LEFT)
                 {
