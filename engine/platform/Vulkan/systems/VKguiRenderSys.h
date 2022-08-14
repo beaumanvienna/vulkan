@@ -63,7 +63,7 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
         void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix);
-        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color);
+        void RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f);
 
     private:
 

@@ -92,7 +92,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color)
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
         // this function takes in a sprite, four 2D positions, and a color
 
@@ -108,7 +108,7 @@ namespace GfxRenderEngine
             nullptr
         );
         m_Pipeline2->Bind(frameInfo.m_CommandBuffer);
-        
+
         VK_PushConstantDataGUIRenderer2 push{};
         push.m_Mat4  = position;
         push.m_Mat4[2][0] = color.r;
@@ -117,9 +117,10 @@ namespace GfxRenderEngine
         push.m_Mat4[3][1] = color.a;
         push.m_Mat4[2][2] = Engine::m_Engine->GetContextWidth();
         push.m_Mat4[2][3] = Engine::m_Engine->GetContextHeight();
+        push.m_Mat4[3][2] = textureID;
         push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
         push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};
-        
+
         vkCmdPushConstants(
             frameInfo.m_CommandBuffer,
             m_PipelineLayout,
@@ -127,7 +128,7 @@ namespace GfxRenderEngine
             0,
             sizeof(VK_PushConstantDataGUIRenderer),
             &push);
-        
+
         vkCmdDraw
             (
                 frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer

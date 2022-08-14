@@ -140,7 +140,7 @@ namespace GfxRenderEngine
         imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
 
         data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
-        auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+        auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
         textureFontAtlas->Init(data, fileSize, Texture::USE_SRGB);
         textureFontAtlas->SetFilename("font atlas");
 
@@ -586,12 +586,8 @@ namespace GfxRenderEngine
         m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, m_GUIViewProjectionMatrix * transform);
     }
 
-    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& position, const glm::vec4& color)
+    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
-        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color);
-    }
-
-    void VK_Renderer::Draw(std::shared_ptr<Texture> texture, const glm::mat4& position, const glm::vec4 textureCoordinates, const glm::vec4& color)
-    {
+        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color, textureID);
     }
 }

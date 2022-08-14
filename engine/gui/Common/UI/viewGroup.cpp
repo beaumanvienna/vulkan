@@ -187,8 +187,9 @@ namespace GfxRenderEngine
                 dc.FillRect(SCREEN_UI::Drawable(0x60000000), dc.GetBounds().Expand(dropShadowExpand_));
                 float dropsize = 40.0f;
                 dc.Draw()->DrawImage4Grid(dc.theme->dropShadow4Grid,
-                    bounds_.x - dropsize, bounds_.y,
-                    bounds_.x2() + dropsize, bounds_.y2()+dropsize*1.5f, 0xFF000000, 3.0f);
+                    bounds_.x - dropsize, bounds_.y - dropsize*1.5f,
+                    bounds_.x2() + dropsize, bounds_.y2()+dropsize*1.5f,
+                    /*Color*/0xFF000000, /*corner_scale*/3.0f);
             }
 
             if (clip_)

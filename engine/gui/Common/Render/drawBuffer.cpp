@@ -113,7 +113,7 @@ namespace GfxRenderEngine
 
     void SCREEN_DrawBuffer::DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color)
     {
-        
+
         glm::vec4 colorVec = ConvertColor(color);
         glm::mat4 position;
 
@@ -121,7 +121,7 @@ namespace GfxRenderEngine
         position[0][1] = x2; position[1][1] = y1;
         position[0][2] = x2; position[1][2] = y2;
         position[0][3] = x1; position[1][3] = y2;
-        
+
         Sprite sprite = Sprite
         (
             u1,
@@ -440,6 +440,7 @@ namespace GfxRenderEngine
                     cy2 = y + (c.oy + c.ph) * fontscaley;
                 }
 
+                float textureID = 2.0f;
                 glm::mat4 position;
 
                 position[0][0] = cx1; position[1][0] = cy1;
@@ -448,7 +449,21 @@ namespace GfxRenderEngine
                 position[0][3] = cx1; position[1][3] = cy2;
 
                 glm::vec4 textureCoordinates{c.sx, 1.0f - c.sy, c.ex, 1.0f - c.ey};
-                m_Renderer->Draw(gTextureFontAtlas, position, textureCoordinates, ConvertColor(color));
+                glm::vec4 colorVec = ConvertColor(color);
+
+                Sprite sprite = Sprite
+                (
+                    c.sx,
+                    1.0f - c.sy,
+                    c.ex,
+                    1.0f - c.ey,
+                    0, // width not needed
+                    0, // height not needed
+                    nullptr, // texture is default atlas at the moment
+                    ""
+                );
+
+                m_Renderer->Draw(&sprite, position, colorVec, textureID);
 
                 if (align & ROTATE_90DEG_LEFT)
                 {

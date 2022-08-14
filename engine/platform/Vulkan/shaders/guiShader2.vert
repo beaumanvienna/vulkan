@@ -32,6 +32,7 @@ layout(push_constant) uniform Push
 // outputs
 layout(location = 0) out vec2  fragUV;
 layout(location = 1) out vec4  fragColor;
+layout(location = 2) out float textureID;
 
 // 0 - 1
 // | / |
@@ -63,10 +64,6 @@ void main()
     float contextWidthHalf  = push.m_Mat4[2][2]/2.0;
     float contextHeightHalf = push.m_Mat4[2][3]/2.0;
     float x,y;
-            float x1 = 400;
-            float y1 = 400;
-            float x2 = 750;
-            float y2 = 750;
 
     switch (gl_VertexIndex)
     {
@@ -104,4 +101,6 @@ void main()
     float xNorm = (x - contextWidthHalf) / contextWidthHalf;
     float yNorm = (y - contextHeightHalf) / contextHeightHalf;
     gl_Position = vec4(xNorm, yNorm, 0.0, 1.0);
+
+    textureID = push.m_Mat4[3][2];
 }

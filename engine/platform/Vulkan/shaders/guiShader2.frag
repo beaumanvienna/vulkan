@@ -25,14 +25,28 @@
 // inputs: UVs + color + sammpler
 layout(location = 0)      in vec2  fragUV;
 layout(location = 1)      in vec4  fragColor;
+layout(location = 2)      in float textureID;
+
 layout(set = 0, binding = 1) uniform sampler2D tex1;
+layout(set = 0, binding = 2) uniform sampler2D tex2;
 
 // outputs
 layout (location = 0) out vec4 outColor;
 
 void main()
 {
-    vec4 pixel = texture(tex1,fragUV);
+    vec4 pixel;
+    if (textureID == 2.0)
+    {
+        pixel = texture(tex2,fragUV);
+    }
+    else
+    {
+        pixel = texture(tex1,fragUV);
+    }
     if (pixel.w == 0.0) discard;
     outColor = pixel * fragColor;
+    // remove gamma correction
+    float gamma = 2.2;
+    outColor.rgb = pow(outColor.rgb, vec3(gamma));
 }
