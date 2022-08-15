@@ -384,6 +384,7 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::resized()
     {
+        RecreateAllViews();
         m_CameraController->SetProjection();
     }
 }

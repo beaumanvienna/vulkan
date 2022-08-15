@@ -39,8 +39,6 @@ namespace GfxRenderEngine
     SCREEN_UIScreen::SCREEN_UIScreen()
         : SCREEN_Screen()
     {
-        m_ContextWidth  = Engine::m_Engine->GetContextWidth();
-        m_ContextHeight = Engine::m_Engine->GetContextHeight();
     }
 
     SCREEN_UIScreen::~SCREEN_UIScreen()
@@ -55,6 +53,9 @@ namespace GfxRenderEngine
 
         if (recreateViews_)
         {
+            m_ContextWidth  = Engine::m_Engine->GetWindowWidth();
+            m_ContextHeight = Engine::m_Engine->GetWindowHeight();
+
             SCREEN_UI::PersistMap persisted;
             bool persisting = root_ != nullptr;
             if (persisting)

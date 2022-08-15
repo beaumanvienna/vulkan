@@ -115,8 +115,8 @@ namespace GfxRenderEngine
         push.m_Mat4[3][0] = color.g;
         push.m_Mat4[2][1] = color.b;
         push.m_Mat4[3][1] = color.a;
-        push.m_Mat4[2][2] = Engine::m_Engine->GetContextWidth();
-        push.m_Mat4[2][3] = Engine::m_Engine->GetContextHeight();
+        push.m_Mat4[2][2] = Engine::m_Engine->GetWindowWidth();
+        push.m_Mat4[2][3] = Engine::m_Engine->GetWindowHeight();
         push.m_Mat4[3][2] = textureID;
         push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
         push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};

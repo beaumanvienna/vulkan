@@ -46,7 +46,6 @@ namespace GfxRenderEngine
     SCREEN_UIContext::SCREEN_UIContext()
     {
         fontStyle_ = new SCREEN_UI::FontStyle();
-        bounds_ = Bounds(0, 0, Engine::m_Engine->GetContextWidth(), Engine::m_Engine->GetContextHeight());
         uidrawbuffer_ = new SCREEN_DrawBuffer();
 
         UIThemeInit();
@@ -62,6 +61,7 @@ namespace GfxRenderEngine
 
     void SCREEN_UIContext::UIThemeInit()
     {
+        bounds_ = Bounds(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             ui_theme.uiFont = SCREEN_UI::FontStyle(FontID("RETRO24"), "", 22);
@@ -223,8 +223,8 @@ namespace GfxRenderEngine
         Bounds bounds;
         if (scissorStack_.size()) 
         {
-            float scale_x = Engine::m_Engine->GetWindowWidth() / Engine::m_Engine->GetContextWidth();
-            float scale_y = Engine::m_Engine->GetWindowHeight() / Engine::m_Engine->GetContextHeight();
+            float scale_x = 1.0f;
+            float scale_y = 1.0f;
             bounds = scissorStack_.back();
             int x = floorf(scale_x * bounds.x);
             int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));

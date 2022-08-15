@@ -37,8 +37,8 @@ namespace LucreApp
         m_TextView = Add(new SCREEN_UI::TextView("", align, false, new LinearLayoutParams(1.0, Margins(0, 10))));
         Add(new SCREEN_UI::Spacer(10.0f));
 
-        m_ContextWidth  = Engine::m_Engine->GetContextWidth();
-        m_ContextHeight = Engine::m_Engine->GetContextHeight();
+        m_ContextWidth  = Engine::m_Engine->GetWindowWidth();
+        m_ContextHeight = Engine::m_Engine->GetWindowHeight();
     }
 
     void InfoMessage::Show(const std::string &text, SCREEN_UI::View* refView)

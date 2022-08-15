@@ -50,8 +50,8 @@ namespace LucreApp
     void ImGUI::DebugWindow()
     {
         ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
-        uint contextWidth  = Engine::m_Engine->GetContextWidth();
-        uint contextHeight = Engine::m_Engine->GetContextHeight();
+        uint contextWidth  = Engine::m_Engine->GetWindowWidth();
+        uint contextHeight = Engine::m_Engine->GetWindowHeight();
 
         auto& currentScene = Lucre::m_Application->GetScene();
         auto& camera       = currentScene.GetCamera();

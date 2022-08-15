@@ -78,7 +78,6 @@ namespace LucreApp
 
     void MainScreen::CreateViews()
     {
-        PROFILE_FUNCTION();
         auto ma = GetI18NCategory("Main");
 
         root_ = new SCREEN_UI::AnchorLayout(new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
@@ -88,8 +87,8 @@ namespace LucreApp
         verticalLayout->SetTag("verticalLayout");
         root_->Add(verticalLayout);
 
-        float availableWidth = Engine::m_Engine->GetContextWidth();
-        float availableHeight = Engine::m_Engine->GetContextHeight();
+        float availableWidth = Engine::m_Engine->GetWindowWidth();
+        float availableHeight = Engine::m_Engine->GetWindowHeight();
         float marginLeftRight = 128.0f;
         float marginUpDown = 128.0f;
         float iconWidth = 50.0f;
@@ -131,6 +130,7 @@ namespace LucreApp
         else
         {
             icon = m_Spritesheet->GetSprite(I_GEAR);
+            icon->SetScale(iconWidth);
             m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight));
         }
 
@@ -161,6 +161,7 @@ namespace LucreApp
         else
         {
             icon = m_Spritesheet->GetSprite(I_OFF);
+            icon->SetScale(iconWidth);
             m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight), true);
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::offClick);
