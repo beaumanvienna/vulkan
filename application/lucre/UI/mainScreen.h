@@ -67,6 +67,7 @@ namespace LucreApp
 
         SCREEN_UI::Choice* m_OffButton;
         SCREEN_UI::Choice* m_SettingsButton;
+        bool m_SetFocus = true;
         InfoMessage *m_MainInfo;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 

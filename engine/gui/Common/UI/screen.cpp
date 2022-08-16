@@ -303,7 +303,6 @@ namespace GfxRenderEngine
     void SCREEN_ScreenManager::RecreateAllViews()
     {
         uiContext_->UIThemeInit();
-        m_ViewsRecreated = true;
         for (auto it = stack_.begin(); it != stack_.end(); ++it)
         {
             it->screen->RecreateViews();
@@ -370,14 +369,7 @@ namespace GfxRenderEngine
             delete dialogFinished_;
             dialogFinished_ = nullptr;
 
-            if (m_ViewsRecreated)
-            {
-                m_ViewsRecreated = false;
-            }
-            else
-            {
-                SCREEN_UI::SetFocusedView(lastFocusView.top());
-            }
+            SCREEN_UI::SetFocusedView(lastFocusView.top());
             lastFocusView.pop();
         }
     }

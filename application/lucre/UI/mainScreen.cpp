@@ -54,7 +54,6 @@ namespace LucreApp
                 if ( (key.deviceId == DEVICE_ID_KEYBOARD && key.keyCode == KeyCode::ENGINE_KEY_ESCAPE) ||
                      (key.deviceId == DEVICE_ID_PAD_0    && key.keyCode == Controller::BUTTON_GUIDE) )
                 {
-                    //GfxRenderEngine::SCREEN_UI::SetFocusedView(m_OffButton);
                     return true;
                 }
             }
@@ -146,7 +145,11 @@ namespace LucreApp
         });
         topline->Add(m_SettingsButton);
         topline->Add(new SCREEN_UI::Spacer(iconSpacer,0.0f));
-        root_->SetDefaultFocusView(m_SettingsButton);
+        if (m_SetFocus)
+        {
+            root_->SetDefaultFocusView(m_SettingsButton);
+            m_SetFocus = false;
+        }
         // off button
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
