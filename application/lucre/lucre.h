@@ -70,6 +70,7 @@ namespace LucreApp
         void InitCursor();
         void ShowCursor();
         void HideCursor();
+        void Cancel();
 
     private:
 

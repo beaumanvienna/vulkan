@@ -81,14 +81,14 @@ namespace LucreApp
         dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event) 
             {
                 Key(KEY_DOWN, event.GetControllerButton(), DEVICE_ID_PAD_0);
-                return true;
+                return false;
             }
         );
 
         dispatcher.Dispatch<ControllerButtonReleasedEvent>([this](ControllerButtonReleasedEvent event) 
             {
                 Key(KEY_UP, event.GetControllerButton(), DEVICE_ID_PAD_0);
-                return true;
+                return false;
             }
         );
 

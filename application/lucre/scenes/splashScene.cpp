@@ -23,6 +23,7 @@
 #include "core.h"
 #include "events/event.h"
 #include "events/keyEvent.h"
+#include "events/controllerEvent.h"
 #include "scenes/splashScene.h"
 #include "resources/resources.h"
 #include "transform/matrix.h"
@@ -194,6 +195,18 @@ namespace LucreApp
                         break;
                 }
                 return true;
+            }
+        );
+
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event)
+            {
+                switch (event.GetControllerButton())
+                {
+                    case Controller::BUTTON_GUIDE:
+                        m_IsRunning = false;
+                        break;
+                }
+                return false;
             }
         );
     }

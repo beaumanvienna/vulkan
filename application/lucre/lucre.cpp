@@ -154,6 +154,15 @@ namespace LucreApp
         }
     }
 
+    // cancels gameplay or cancels the GUI
+    void Lucre::Cancel()
+    {
+        if (m_GameState.GetState() != GameState::State::SPLASH)
+        {
+            m_GUIisRunning = !m_GUIisRunning;
+        }
+    }
+
     void Lucre::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
@@ -163,7 +172,7 @@ namespace LucreApp
                 switch (event.GetControllerButton())
                 {
                     case Controller::BUTTON_GUIDE:
-                        Engine::m_Engine->Shutdown();
+                        Cancel();
                         break;
                     case Controller::BUTTON_A:
                         PlaySound(IDR_BUCKLE);
@@ -181,10 +190,7 @@ namespace LucreApp
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
                         break;
                     case ENGINE_KEY_ESCAPE:
-                        if (m_GameState.GetState() != GameState::State::SPLASH)
-                        {
-                            m_GUIisRunning = !m_GUIisRunning;
-                        }
+                        Cancel();
                         break;
                 }
                 return false;
