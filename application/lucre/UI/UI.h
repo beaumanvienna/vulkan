@@ -48,6 +48,7 @@ namespace LucreApp
         void OnUpdate() override;
 
         void OnResize();
+        SCREEN_DrawBuffer* Draw() const { return m_ScreenManager->getUIContext()->Draw(); }
 
         static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
         static std::shared_ptr<Texture> m_FontAtlasTexture;
