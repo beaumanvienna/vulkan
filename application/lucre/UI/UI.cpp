@@ -98,9 +98,8 @@ namespace LucreApp
                 if (event.GetButton() == MouseButtonEvent::Left) 
                 {
                     // output context coordinates adjusted for orthographic projection
-                    float windowScale = Engine::m_Engine->GetWindowScale();
-                    float contextPositionX = event.GetX()/windowScale;
-                    float contextPositionY = event.GetY()/windowScale;
+                    float contextPositionX = event.GetX();
+                    float contextPositionY = event.GetY();
 
                     int flags = TOUCH_DOWN | TOUCH_MOUSE;
                     float x = contextPositionX;
