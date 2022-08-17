@@ -26,6 +26,7 @@
 #include "lucre.h"
 #include "UI/offDialog.h"
 #include "UI/mainScreen.h"
+#include "UI/settingsScreen.h"
 #include "platform/keyCodes.h"
 #include "gui/Common/Data/Text/i18n.h"
 #include "gui/Common/Render/drawBuffer.h"
@@ -37,7 +38,7 @@ namespace LucreApp
 {
     void MainScreen::OnAttach()
     {
-        m_SpritesheetSettings.AddSpritesheetRow(m_Spritesheet->GetSprite(/*I_GEAR_R*/I_DISK_LOAD_R), 4 /* frames */);
+        m_SpritesheetSettings.AddSpritesheetRow(m_Spritesheet->GetSprite(I_GEAR_R), 4 /* frames */);
         m_SpritesheetOff.AddSpritesheetRow(m_Spritesheet->GetSprite(I_OFF_R), 4 /* frames */);
     }
 
@@ -194,6 +195,10 @@ namespace LucreApp
 
     SCREEN_UI::EventReturn MainScreen::settingsClick(SCREEN_UI::EventParams &e)
     {
+        SettingsScreen* settingsScreen = new SettingsScreen();
+        settingsScreen->OnAttach();
+        UI::m_ScreenManager->push(settingsScreen);
+
         return SCREEN_UI::EVENT_DONE;
     }
 

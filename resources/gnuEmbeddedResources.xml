@@ -43,16 +43,10 @@
         <file>images/cursorEmpty.png</file>
     </gresource>
     <gresource prefix="/images/">
-        <file>images/I_BARREL.png</file>
-    </gresource>
-    <gresource prefix="/images/">
         <file>images/I_Vulkan.png</file>
     </gresource>
     <gresource prefix="/images/">
-        <file>atlas/images/I_BLOOD_ISLAND.png</file>
-    </gresource>
-    <gresource prefix="/images/">
-        <file>atlas/images/I_WALKWAY.png</file>
+        <file>images/I_CONTROLLER_SETUP.png</file>
     </gresource>
     <gresource prefix="/images/">
         <file>atlas/atlas.png</file>

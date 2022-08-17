@@ -107,6 +107,7 @@ namespace GfxRenderEngine
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_GraphicsContext->ToggleDebugWindow(callback); }
 
         Timestep GetTimestep() const { return m_Timestep; }
+        void ToggleFullscreen();
 
     public:
 
@@ -118,7 +119,6 @@ namespace GfxRenderEngine
     private:
 
         static void SignalHandler(int signal);
-        void ToggleFullscreen();
         void AudioCallback(int eventType);
 
     private:
