@@ -45,9 +45,10 @@ namespace LucreApp
         void OnAttach() override;
         void OnDetach() override;
         void OnEvent(Event& event) override;
-        void OnUpdate() override;
+        void OnUpdate(const Timestep& timestep) override;
 
         void OnResize();
+        void Health(const float health);
         SCREEN_DrawBuffer* Draw() const { return m_ScreenManager->getUIContext()->Draw(); }
 
         static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;

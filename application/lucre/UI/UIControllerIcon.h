@@ -44,7 +44,7 @@ namespace LucreApp
         void OnAttach() override;
         void OnDetach() override;
         void OnEvent(Event& event) override;
-        void OnUpdate() override;
+        void OnUpdate(const Timestep& timestep) override;
         bool IsMovingIn();
         void Init();
 

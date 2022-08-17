@@ -29,6 +29,7 @@
 #include "events/mouseEvent.h"
 #include "events/controllerEvent.h"
 #include "gui/Common/Input/inputState.h"
+#include "gui/Common/Render/drawBuffer.h"
 #include "auxiliary/instrumentation.h"
 #include "resources/resources.h"
 #include "platform/input.h"
@@ -42,13 +43,13 @@ namespace LucreApp
     void UI::OnAttach()
     {
         auto renderer = Engine::m_Engine->GetRenderer();
-        auto spritesheet = Lucre::m_Spritesheet;
-        m_ScreenManager = std::make_unique<SCREEN_ScreenManager>(renderer, spritesheet);
+        m_Spritesheet = Lucre::m_Spritesheet;
+        m_ScreenManager = std::make_unique<SCREEN_ScreenManager>(renderer, m_Spritesheet);
 
         m_FontAtlasTexture = ResourceSystem::GetTextureFromMemory("/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
-        m_SpritesheetTexture = spritesheet->GetTexture();
+        m_SpritesheetTexture = m_Spritesheet->GetTexture();
 
-        m_MainScreen = new MainScreen(spritesheet);
+        m_MainScreen = new MainScreen(m_Spritesheet);
         m_MainScreen->OnAttach();
         m_ScreenManager->push(m_MainScreen);
 
@@ -62,7 +63,7 @@ namespace LucreApp
         m_SpritesheetTexture.reset();
     }
 
-    void UI::OnUpdate()
+    void UI::OnUpdate(const Timestep& timestep)
     {
         PROFILE_FUNCTION();
         m_ScreenManager->update();
@@ -201,5 +202,17 @@ namespace LucreApp
     void UI::OnResize()
     {
         m_ScreenManager->resized();
+    }
+
+    void UI::Health(const float health)
+    {
+        //draw health bar
+        Sprite* whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
+        float x1 = 32.0f, y1 = 52.0f, x2 = 132.0f, y2 = 90.0f;
+        Color colorForeground = 0xFF442a28;
+        Color colorBackground = 0xC0000000;
+
+        Draw()->DrawImageStretch(whiteSprite, x1-2.0f, y1-2.0f, x2+2.0f, y2+2.0f, colorBackground);
+        Draw()->DrawImageStretch(whiteSprite, x1, y1, x1 + (x2-x1)*health/100.0f, y2, colorForeground);
     }
 }

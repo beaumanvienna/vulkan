@@ -28,6 +28,7 @@
 #pragma once
 
 #include "engine.h"
+#include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
 {
@@ -44,7 +45,7 @@ namespace GfxRenderEngine
         virtual void OnAttach() {}
         virtual void OnDetach() {}
         virtual void OnEvent(Event& event) {}
-        virtual void OnUpdate() {}
+        virtual void OnUpdate(const Timestep& timestep) {}
 
         inline const std::string& GetName() const { return m_DebugName; }
 

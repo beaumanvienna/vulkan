@@ -45,7 +45,8 @@ namespace LucreApp
         float windowWidth  = Engine::m_Engine->GetWindowWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
 
-        m_ControllerSprite->SetScale(0.7f * windowHeight / desktopWidth);
+        float scale = 0.7f * windowHeight / desktopWidth;
+        m_ControllerSprite->SetScale(scale);
         float sx = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetWidth();
         float sy = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetHeight();
 
@@ -55,7 +56,7 @@ namespace LucreApp
         m_Controller1MoveOut.Reset();
 
         glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.9f);
-        glm::vec2 finalScreenPosition(windowWidth * 0.1f, windowHeight * 0.9f);
+        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.9f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -130,7 +131,7 @@ namespace LucreApp
 
     void UIControllerIcon::OnDetach() {}
 
-    void UIControllerIcon::OnUpdate()
+    void UIControllerIcon::OnUpdate(const Timestep& timestep)
     {
 
         auto& transform1 = m_Registry.get<TransformComponent>(m_ID1);

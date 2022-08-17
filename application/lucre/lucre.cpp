@@ -32,7 +32,6 @@
 #include "lucre.h"
 #include "UI/imgui.h"
 #include "keyboardInputController.h"
-#include "gui/Common/Render/drawBuffer.h"
 
 namespace LucreApp
 {
@@ -88,22 +87,10 @@ namespace LucreApp
         m_CurrentScene->OnUpdate(timestep);
 
         // update/render layer stack
-        m_UIControllerIcon->OnUpdate();
+        m_UI->Health(90.0f);
+        m_UIControllerIcon->OnUpdate(timestep);
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
-        if (m_GUIisRunning) m_UI->OnUpdate();  // direct submits
-
-        //draw health bar
-        Timestep FillTime{1s};
-        static float health = 0.0f;
-        Sprite* whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
-        float x1 = 50.0f, y1 = 50.0f, x2 = 150.0f, y2 = 100.0f;
-        Color colorForeground = 0xFFe7e890;
-        Color colorBackground = 0xC0000000;
-        
-        health += timestep / FillTime;
-        health = (health > 1.0f ? 0.0f : health);
-        m_UI->Draw()->DrawImageStretch(whiteSprite, x1-2.0f, y1-2.0f, x2+2.0f, y2+2.0f, colorBackground);
-        m_UI->Draw()->DrawImageStretch(whiteSprite, x1, y1, x1 + (x2-x1)*health, y2, colorForeground);
+        if (m_GUIisRunning) m_UI->OnUpdate(timestep);  // direct submits
 
         m_Renderer->EndScene();
     }
