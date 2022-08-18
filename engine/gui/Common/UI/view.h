@@ -529,8 +529,6 @@ namespace GfxRenderEngine
             bool enabled_;
             bool enabledMeansDisabled_;
 
-        protected:
-
         };
 
         class InertView : public View

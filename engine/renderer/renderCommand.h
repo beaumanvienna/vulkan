@@ -86,11 +86,6 @@ public:
         s_RendererAPI->Flush();
     }
 
-//    static inline void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray)
-//    {
-//        s_RendererAPI->DrawIndexed(vertexArray);
-//    }
-
     static std::unique_ptr<RendererAPI> s_RendererAPI;
     
 private:

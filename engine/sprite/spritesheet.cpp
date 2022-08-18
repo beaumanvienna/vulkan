@@ -251,7 +251,7 @@ namespace GfxRenderEngine
             float currentY = originalSprite->m_Pos1Y - tileHeightNormalized;
             for (uint row = 0; row < frames; row++)
             {
-                std::string name = "_" + std::to_string(row);
+                std::string name = originalSprite->GetName() + "_" + std::to_string(row);
                 float u1 = originalSprite->m_Pos1X;
                 float v1 = currentY;
                 float u2 = originalSprite->m_Pos2X;
@@ -287,7 +287,7 @@ namespace GfxRenderEngine
             float currentX = originalSprite->m_Pos1X;
             for (uint column = 0; column < frames; column++)
             {
-                std::string name = "_" + std::to_string(column);
+                std::string name = originalSprite->GetName() + "_" + std::to_string(column);
                 float u1 = currentX;
                 float v1 = originalSprite->m_Pos1Y;
                 float u2 = currentX + tileWidthNormalized;

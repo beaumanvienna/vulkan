@@ -90,7 +90,10 @@ namespace LucreApp
         m_UI->Health(90.0f);
         m_UIControllerIcon->OnUpdate(timestep);
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
-        if (m_GUIisRunning) m_UI->OnUpdate(timestep);  // direct submits
+        if (m_GUIisRunning)
+        {
+            m_UI->OnUpdate(timestep);  // direct submits
+        }
 
         m_Renderer->EndScene();
     }

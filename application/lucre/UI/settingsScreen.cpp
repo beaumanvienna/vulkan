@@ -78,9 +78,7 @@ namespace LucreApp
     {
         PROFILE_FUNCTION();
         using namespace SCREEN_UI;
-        auto ge  = GetI18NCategory("Bios");
-        auto ps2 = GetI18NCategory("PCSX2");
-        auto dol = GetI18NCategory("Dolphin");
+        auto ge  = GetI18NCategory("General");
 
         root_ = new AnchorLayout(new LayoutParams(FILL_PARENT, FILL_PARENT));
         root_->SetTag("setting screen root");
@@ -94,8 +92,8 @@ namespace LucreApp
 
         float iconWidth = 50.0f;
         float iconHeight = iconWidth;
-        float stripSize = 204.0f * TAB_SCALE;
-        float tabMargin = (availableWidth - 6 * stripSize) / 2.0f;
+        float stripSize = 100.0f * TAB_SCALE;
+        float tabMargin = (availableWidth - 3 * stripSize) / 2.0f;
         float tabMarginLeftRight = 80.0f;
         float tabLayoutWidth = availableWidth - 2 * tabMarginLeftRight;
 
@@ -119,13 +117,13 @@ namespace LucreApp
             Sprite* icon_depressed_inactive;
 
             icon = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED);
-            icon->SetScale(iconWidth);
+            icon->SetScale(1.0f);
             icon_active = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED);
-            icon_active->SetScale(iconWidth);
+            icon_active->SetScale(1.0f);
             icon_depressed = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED);
-            icon_depressed->SetScale(iconWidth);
+            icon_depressed->SetScale(1.0f);
             icon_depressed_inactive = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED);
-            icon_depressed_inactive->SetScale(iconWidth);
+            icon_depressed_inactive->SetScale(1.0f);
             m_TabHolder->SetIcon(icon,icon_active,icon_depressed,icon_depressed_inactive);
         }
 
@@ -246,16 +244,20 @@ namespace LucreApp
 
         // horizontal layout for margins
         LinearLayout *horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(tabLayoutWidth, FILL_PARENT));
+        horizontalLayoutCredits->SetTag("horizontalLayoutCredits");
         m_TabHolder->AddTab(ge->T("Credits"), horizontalLayoutCredits);
         horizontalLayoutCredits->Add(new Spacer(iconWidth));
 
         LinearLayout *logos = new LinearLayout(ORIENT_VERTICAL);
+        logos->SetTag("logos");
         horizontalLayoutCredits->Add(logos);
         ImageView* ppssppLogo   = new ImageView(m_Spritesheet->GetSprite(I_LOGO_PPSSPP),   new AnchorLayoutParams(192.0f, 128.0f, 1.0f, 1.0f, NONE, NONE, false));
-        logos->Add(new Spacer(27));
+        ppssppLogo->SetTag("ppssppLogo");
+        logos->Add(new Spacer(27.0f));
         logos->Add(ppssppLogo);
 
         LinearLayout *credits = new LinearLayout(ORIENT_VERTICAL);
+        credits->SetTag("credits");
         horizontalLayoutCredits->Add(credits);
         credits->Add(new Spacer(iconWidth));
 
@@ -266,7 +268,7 @@ namespace LucreApp
             "\n"
             "     PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
             "\n",
-            ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - 3 * iconWidth - 64.0f, 500.0f)));
+            ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - 3.0f * iconWidth - 64.0f, 500.0f)));
 
         LOG_APP_INFO("UI: views for setting screen created");
     }

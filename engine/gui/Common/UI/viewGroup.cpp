@@ -222,7 +222,9 @@ namespace GfxRenderEngine
             for (View *view : views_)
             {
                 if (view->GetVisibility() != V_GONE)
+                {
                     view->Update();
+                }
             }
         }
 
@@ -1339,11 +1341,14 @@ namespace GfxRenderEngine
             if (orientation == ORIENT_HORIZONTAL)
             {
                 LinearLayout *horizontalSpacer = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, FILL_PARENT));
+                horizontalSpacer->SetTag("TabHolder::horizontalSpacer");
                 horizontalSpacer->SetSpacing(0.0f);
                 horizontalSpacer->Add(new Spacer(leftMargin,0.0f));
                 tabStrip_ = new ChoiceStrip(orientation, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+                tabStrip_->SetTag("TabHolder::tabStrip_");
                 tabStrip_->SetTopTabs(true);
                 tabScroll_ = new ScrollView(orientation, new LayoutParams(FILL_PARENT, WRAP_CONTENT));
+                tabScroll_->SetTag("TabHolder::tabScroll_");
                 tabScroll_->Add(tabStrip_);
                 horizontalSpacer->Add(tabScroll_);
                 Add(horizontalSpacer);
@@ -1357,6 +1362,7 @@ namespace GfxRenderEngine
             tabStrip_->OnChoice.Handle(this, &TabHolder::OnTabClick);
 
             contents_ = new AnchorLayout(new LinearLayoutParams(FILL_PARENT, FILL_PARENT, 1.0f));
+            contents_->SetTag("TabHolder::contents_");
             Add(contents_)->SetClip(true);
         }
 
@@ -1561,6 +1567,7 @@ namespace GfxRenderEngine
                     nullptr :
                     new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
             c->OnClick.Handle(this, &ChoiceStrip::OnChoiceClick);
+            c->SetTag("ChoiceStrip::c");
             Add(c);
             if (selected_ == (int)views_.size() - 1)
                 c->Press();
@@ -1576,7 +1583,7 @@ namespace GfxRenderEngine
                     new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
             c->OnClick.Handle(this, &ChoiceStrip::OnChoiceClick);
             c->SetCentered(true);
-
+            c->SetTag("ChoiceStrip::c");
             Add(c);
             if (selected_ == (int)views_.size() - 1)
                 c->Press();
@@ -1682,11 +1689,11 @@ namespace GfxRenderEngine
             {
                 if (orientation_ == ORIENT_HORIZONTAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2() - 4, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2() - 4.0f, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
                 }
                 else if (orientation_ == ORIENT_VERTICAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x2() - 4, bounds_.y, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x2() - 4.0f, bounds_.y, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
                 }
             }
         }
