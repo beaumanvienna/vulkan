@@ -83,6 +83,7 @@ public:
 
     static void Flush()
     {
+        return; // Flush() deactivated
         s_RendererAPI->Flush();
     }
 

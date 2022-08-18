@@ -220,6 +220,7 @@ namespace GfxRenderEngine
 
     void SCREEN_UIContext::ActivateTopScissor()
     {
+        return; // scissors deactivated
         Bounds bounds;
         if (scissorStack_.size()) 
         {
