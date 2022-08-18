@@ -24,6 +24,7 @@
 
 #include "lucre.h"
 #include "UI/UI.h"
+#include "UI/settingsScreen.h"
 #include "renderer/texture.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
@@ -53,6 +54,8 @@ namespace LucreApp
         m_MainScreen->OnAttach();
         m_ScreenManager->push(m_MainScreen);
 
+        m_UIStarIcon = new UIStarIcon(false, "UI star icon");
+        Engine::m_Engine->PushOverlay(m_UIStarIcon);
     }
 
     void UI::OnDetach() 
@@ -61,6 +64,9 @@ namespace LucreApp
         m_ScreenManager.reset();
         m_FontAtlasTexture.reset();
         m_SpritesheetTexture.reset();
+
+        delete m_MainScreen;
+        delete m_UIStarIcon;
     }
 
     void UI::OnUpdate(const Timestep& timestep)
@@ -68,6 +74,17 @@ namespace LucreApp
         PROFILE_FUNCTION();
         m_ScreenManager->update();
         m_ScreenManager->render();
+
+        if (SettingsScreen::m_IsCreditsScreen)
+        {
+            m_UIStarIcon->Start();
+        }
+        else
+        {
+            m_UIStarIcon->Stop();
+        }
+
+        m_UIStarIcon->OnUpdate(timestep);
     }
 
     void UI::OnEvent(Event& event)

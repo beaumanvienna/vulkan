@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team 
    https://github.com/beaumanvienna/gfxRenderEngine
 
    Permission is hereby granted, free of charge, to any person
@@ -22,52 +22,70 @@
 
 #pragma once
 
-#include <memory>
-
 #include "engine.h"
+#include "core.h"
 #include "layer/layer.h"
 #include "renderer/renderer.h"
 #include "sprite/spritesheet.h"
-#include "gui/Common/UI/screen.h"
-#include "UI/mainScreen.h"
-#include "UI/stars.h"
+#include "transform/transformation.h"
 
 namespace LucreApp
 {
 
-    class UI : public Layer
+    class UIStarIcon : public Layer
     {
+        enum State
+        {
+            IDLE,
+            MOVE_IN,
+            ROTATE,
+            MOVE_OUT
+        };
 
     public:
 
-        UI(const std::string& name = "U")
-            : Layer(name) {}
+        UIStarIcon(bool narrow, const std::string& name = "layer")
+            : Layer(name)
+        {
+        }
 
         void OnAttach() override;
         void OnDetach() override;
         void OnEvent(Event& event) override;
         void OnUpdate(const Timestep& timestep) override;
-
-        void OnResize();
-        void Health(const float health);
-        SCREEN_DrawBuffer* Draw() const { return m_ScreenManager->getUIContext()->Draw(); }
-
-        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlasTexture;
-        static std::shared_ptr<Texture> m_SpritesheetTexture;
+        void Start() { m_Start = true; }
+        void Stop()  { m_Stop  = true; }
 
     private:
 
-        bool Touch(int flags, float x, float y, int deviceID);
-        void Key(int keyFlag, int keyCode, int deviceID);
-        void Axis();
+        void StartSequence();
+        void StopSequence();
+        void Rotate();
+        void ChangeState(State state);
 
     private:
 
-        MainScreen* m_MainScreen{nullptr};
-        UIStarIcon* m_UIStarIcon{nullptr};
+        std::shared_ptr<Renderer> m_Renderer;
 
         SpriteSheet* m_Spritesheet;
+        Sprite* m_StarSprite;
+
+        Animation m_StarMoveIn1;
+        Animation m_StarMoveIn2;
+        Animation m_StarMoveIn3;
+        Animation m_StarRotate1;
+        Animation m_StarRotate2;
+        Animation m_StarRotate3;
+        Animation m_StarMoveOut1;
+        Animation m_StarMoveOut2;
+        Animation m_StarMoveOut3;
+
+        bool m_Narrow;
+
+        bool m_Start;
+        bool m_Stop;
+        
+        State m_State;
 
     };
 }
