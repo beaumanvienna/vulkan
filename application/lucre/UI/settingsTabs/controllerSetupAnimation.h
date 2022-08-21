@@ -53,8 +53,6 @@ namespace LucreApp
         std::shared_ptr<Renderer> m_Renderer;
 
         // sprite sheets
-        Sprite* m_SetupController;
-
         SpriteSheet m_SpritesheetPointers;
         int m_Frame;
         glm::mat4 m_TranslationMatrix;

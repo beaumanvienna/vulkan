@@ -33,9 +33,7 @@ namespace LucreApp
     void ControllerSetupAnimation::OnAttach() 
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_SetupController = Lucre::m_Spritesheet->GetSprite(I_PS3_CONTROLLER);
-        m_SetupController->SetScale(250.0f, -250.0f);
-        m_SpritesheetPointers.AddSpritesheetRow("/images/images/I_CONTROLLER_SETUP.png", IDB_CONTROLLER_SETUP, "PNG", 19 /* frames */, 400.0f /* scaleX) */, 400.0f /* scaleY) */);
+        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 250.0f, -250.0f);
     }
 
     void ControllerSetupAnimation::OnDetach()  {}
@@ -62,22 +60,11 @@ namespace LucreApp
 
     void ControllerSetupAnimation::OnUpdate(const Timestep& timestep)
     {
-        // controller picture
-        {
-            // transformed position
-            glm::mat4 position = m_TranslationMatrix * m_SetupController->GetMat4();
-            m_Renderer->Draw(m_SetupController, position);
-        }
-
-        // arrows
-        {
             Sprite* sprite = m_SpritesheetPointers.GetSprite(m_Frame);
 
             // transformed position
             glm::mat4 position = m_TranslationMatrix * sprite->GetMat4();
-
-            //m_Renderer->Draw(sprite, position);
-        }
+            m_Renderer->Draw(sprite, position);
     }
 
     void ControllerSetupAnimation::OnEvent(Event& event)  {}
