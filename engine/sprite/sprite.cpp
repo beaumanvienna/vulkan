@@ -58,11 +58,21 @@ namespace GfxRenderEngine
         const bool rotated) :
                 m_Pos1X(pos1X), m_Pos1Y(pos1Y), 
                 m_Pos2X(pos2X), m_Pos2Y(pos2Y),
-                m_Width(width), m_Height(height),
                 m_Texture(texture), m_ScaleX(scale),
                 m_Name(name), m_ScaleY(scale), 
                 m_Rotated(rotated)
     {
+        if (rotated)
+        {
+            m_Width = height;
+            m_Height = width;
+        }
+        else
+        {
+            m_Width = width;
+            m_Height = height;
+        }
+        
         SetScaleMatrix();
     }
 
@@ -76,11 +86,20 @@ namespace GfxRenderEngine
         const bool rotated) :
                 m_Pos1X(pos1X), m_Pos1Y(pos1Y), 
                 m_Pos2X(pos2X), m_Pos2Y(pos2Y),
-                m_Width(width), m_Height(height),
                 m_Texture(texture), m_Name(name),
                 m_ScaleX(scaleX), m_ScaleY(scaleY),
                 m_Rotated(rotated)
     {
+        if (rotated)
+        {
+            m_Width = height;
+            m_Height = width;
+        }
+        else
+        {
+            m_Width = width;
+            m_Height = height;
+        }
         SetScaleMatrix();
     }
 
@@ -104,15 +123,7 @@ namespace GfxRenderEngine
 
     void Sprite::SetScaleMatrix()
     {
-        if (m_Rotated)
-        {
-            m_Transform.SetScale({m_ScaleX * GetAspectRatio(), m_ScaleY, 1.0f});
-        }
-        else
-        {
-            m_Transform.SetScale({m_ScaleX, m_ScaleY * GetAspectRatio(), 1.0f});
-        }
-        
+        m_Transform.SetScale({m_ScaleX, m_ScaleY * GetAspectRatio(), 1.0f});
 
         if (m_Rotated)
         {
@@ -128,30 +139,12 @@ namespace GfxRenderEngine
 
     float Sprite::GetWidthGUI() const
     {
-        float width;
-        if (m_Rotated)
-        {
-            width = static_cast<float>(m_Height) * m_ScaleX;
-        }
-        else
-        {
-            width = static_cast<float>(m_Width) * m_ScaleX;
-        }
-        return width;
+        return static_cast<float>(m_Width) * m_ScaleX;
     }
 
     float Sprite::GetHeightGUI() const
     {
-        float height;
-        if (m_Rotated)
-        {
-            height = static_cast<float>(m_Width) * m_ScaleY;
-        }
-        else
-        {
-            height = static_cast<float>(m_Height) * m_ScaleY;
-        }
-        return height;
+        return static_cast<float>(m_Height) * m_ScaleY;
     }
 
     void Sprite::Resize(uint width, uint height)
@@ -163,13 +156,6 @@ namespace GfxRenderEngine
 
     float Sprite::GetAspectRatio() const
     {
-        if (m_Rotated)
-        {
-            return  static_cast<float>(m_Width) / static_cast<float>(m_Height);
-        }
-        else
-        {
-            return static_cast<float>(m_Height) / static_cast<float>(m_Width);
-        }
+        return static_cast<float>(m_Height) / static_cast<float>(m_Width);
     }
 }

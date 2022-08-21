@@ -240,8 +240,8 @@ namespace GfxRenderEngine
 
         if (rotated)
         {
-            int tileWidth              = originalSprite->GetWidth();
-            int tileHeight             = originalSprite->GetHeight() / frames;
+            int tileWidth              = originalSprite->GetWidth() / frames;
+            int tileHeight             = originalSprite->GetHeight() ;
 
             float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
             float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
