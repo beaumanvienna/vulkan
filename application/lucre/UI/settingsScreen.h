@@ -53,8 +53,8 @@ namespace LucreApp
     private:
         enum
         {
-            CONTROLLER_SETUP_SCREEN,
             GENERAL_SCREEN,
+            CONTROLLER_SETUP_SCREEN,
             CREDITS_SCREEN
         };
 

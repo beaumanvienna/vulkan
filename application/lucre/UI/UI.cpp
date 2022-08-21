@@ -56,6 +56,9 @@ namespace LucreApp
 
         m_UIStarIcon = new UIStarIcon(false, "UI star icon");
         Engine::m_Engine->PushOverlay(m_UIStarIcon);
+
+        m_UIControllerAnimation = new ControllerSetupAnimation("controller animation");
+        Engine::m_Engine->PushOverlay(m_UIControllerAnimation);
     }
 
     void UI::OnDetach() 
@@ -82,6 +85,13 @@ namespace LucreApp
         else
         {
             m_UIStarIcon->Stop();
+        }
+
+        if ((SettingsScreen::m_IsCintrollerSetupScreen) && Input::ConfigurationRunning())
+        {
+            m_UIControllerAnimation->SetActiveController(Input::GetConfigurationActiveController());
+            m_UIControllerAnimation->SetFrame(Input::GetConfigurationStep());
+            m_UIControllerAnimation->OnUpdate(timestep);
         }
 
         m_UIStarIcon->OnUpdate(timestep);

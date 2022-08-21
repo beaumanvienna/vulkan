@@ -29,6 +29,7 @@
 #include "renderer/renderer.h"
 #include "sprite/spritesheet.h"
 #include "gui/Common/UI/screen.h"
+#include "UI/settingsTabs/controllerSetupAnimation.h"
 #include "UI/mainScreen.h"
 #include "UI/stars.h"
 
@@ -66,6 +67,7 @@ namespace LucreApp
 
         MainScreen* m_MainScreen{nullptr};
         UIStarIcon* m_UIStarIcon{nullptr};
+        ControllerSetupAnimation* m_UIControllerAnimation = nullptr;
 
         SpriteSheet* m_Spritesheet;
 

@@ -320,6 +320,7 @@ namespace GfxRenderEngine
 
     bool SpriteSheet::AddSpritesheetRow(const std::string& fileName, uint frames, const float scaleX, const float scaleY)
     {
+        m_Texture = Texture::Create();
         bool ok = m_Texture->Init(fileName, Texture::USE_SRGB);
 
         Sprite originalSprite{0.0f, 1.0f,
@@ -335,6 +336,7 @@ namespace GfxRenderEngine
 
     bool SpriteSheet::AddSpritesheetRow(const std::string& fileName, uint frames, const float scale)
     {
+        m_Texture = Texture::Create();
         bool ok = m_Texture->Init(fileName, Texture::USE_SRGB);
 
         Sprite originalSprite{0.0f, 1.0f,
@@ -351,6 +353,7 @@ namespace GfxRenderEngine
     bool SpriteSheet::AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */,
                                         uint frames, const float scaleX, const float scaleY)
     {
+        m_Texture = Texture::Create();
         size_t fileSize;
         const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, path, resourceID, resourceClass);
         bool ok = m_Texture->Init(data, fileSize, Texture::USE_SRGB);
@@ -369,6 +372,7 @@ namespace GfxRenderEngine
     bool SpriteSheet::AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */,
                                         uint frames, const float scale)
     {
+        m_Texture = Texture::Create();
         size_t fileSize;
         const uchar* data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, path, resourceID, resourceClass);
         bool ok = m_Texture->Init(data, fileSize, Texture::USE_SRGB);

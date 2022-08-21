@@ -93,7 +93,7 @@ namespace LucreApp
         float iconWidth = 50.0f;
         float iconHeight = iconWidth;
         float stripSize = 100.0f * TAB_SCALE;
-        float tabMargin = (availableWidth - 3 * stripSize) / 2.0f;
+        float tabMargin = 50.0f;
         float tabMarginLeftRight = 80.0f;
         float tabLayoutWidth = availableWidth - 2 * tabMarginLeftRight;
 
@@ -144,7 +144,7 @@ namespace LucreApp
         else
         {
             Sprite* icon = m_Spritesheet->GetSprite(I_BACK);
-            icon->SetScale(iconWidth);
+            icon->SetScale(1.0f);
             backButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
         }
         backButton->SetTag("backButton");

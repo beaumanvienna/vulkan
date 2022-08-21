@@ -34,36 +34,38 @@ namespace LucreApp
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
         m_SetupController = Lucre::m_Spritesheet->GetSprite(I_PS3_CONTROLLER);
-        m_SpritesheetPointers.AddSpritesheetRow("/images/images/I_CONTROLLER_SETUP.png", IDB_CONTROLLER_SETUP, "PNG", 19 /* frames */, 1.0f /* scaleX) */, 1.0f /* scaleY) */);
+        m_SetupController->SetScale(250.0f, -250.0f);
+        m_SpritesheetPointers.AddSpritesheetRow("/images/images/I_CONTROLLER_SETUP.png", IDB_CONTROLLER_SETUP, "PNG", 19 /* frames */, 400.0f /* scaleX) */, 400.0f /* scaleY) */);
     }
 
     void ControllerSetupAnimation::OnDetach()  {}
 
     void ControllerSetupAnimation::SetActiveController(int activeController)
     {
+        glm::vec3 translation;
+        float windowWidthHalf  = Engine::m_Engine->GetWindowWidth() / 2.0f;
+        float windowHeight = Engine::m_Engine->GetWindowHeight();
         if (activeController == Controller::FIRST_CONTROLLER)
         {
-            m_Translation = glm::vec3(0.0f, -300.0f, 0.0f);
+            translation = glm::vec3(windowWidthHalf, windowHeight * 0.75f, 0.0f);
         }
         else if (activeController == Controller::SECOND_CONTROLLER)
         {
-            m_Translation = glm::vec3(0.0f,  200.0f, 0.0f);
+            translation = glm::vec3(windowWidthHalf, windowHeight * 0.3f, 0.0f);
         }
         else
         {
             LOG_APP_CRITICAL("Only two controllers in setup screen supported");
         }
+        m_TranslationMatrix = Translate(translation);
     }
 
     void ControllerSetupAnimation::OnUpdate(const Timestep& timestep)
     {
-        glm::mat4 translationMatrix = Translate(m_Translation);
-
         // controller picture
         {
             // transformed position
-            glm::mat4 position = translationMatrix * m_SetupController->GetMat4();
-
+            glm::mat4 position = m_TranslationMatrix * m_SetupController->GetMat4();
             m_Renderer->Draw(m_SetupController, position);
         }
 
@@ -72,9 +74,9 @@ namespace LucreApp
             Sprite* sprite = m_SpritesheetPointers.GetSprite(m_Frame);
 
             // transformed position
-            glm::mat4 position = translationMatrix * sprite->GetMat4();
+            glm::mat4 position = m_TranslationMatrix * sprite->GetMat4();
 
-            m_Renderer->Draw(sprite, position);
+            //m_Renderer->Draw(sprite, position);
         }
     }
 

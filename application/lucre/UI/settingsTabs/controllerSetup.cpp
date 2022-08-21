@@ -69,8 +69,8 @@ namespace LucreApp
         float availableWidth  = Engine::m_Engine->GetContextWidth() - 2 * tabMarginLeftRight;
         float availableHeight = Engine::m_Engine->GetContextHeight();
         float marginLeftRight = 128.0f;
-        float iconWidth = 128.0f;
-        float iconHeight = 128.0f;
+        float iconWidth = 50.0f;
+        float iconHeight = iconWidth;
         float iconSpacer = 10.0f;
         float halfIconWidth  = iconWidth / 2;
         float halfIconHeight = iconHeight / 2;
@@ -121,14 +121,18 @@ namespace LucreApp
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     icon = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
+                    icon->SetScale(iconWidth);
                     icon_active = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED);
+                    icon_active->SetScale(iconWidth);
                     icon_depressed = m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
+                    icon_depressed->SetScale(iconWidth);
 
                     setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconWidth));
                 }
                 else 
                 {
                     icon = m_Spritesheet->GetSprite(I_GEAR);
+                    icon->SetScale(1.0f);
                     setupButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
                 }
 

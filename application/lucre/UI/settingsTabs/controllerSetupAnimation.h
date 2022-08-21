@@ -57,7 +57,7 @@ namespace LucreApp
 
         SpriteSheet m_SpritesheetPointers;
         int m_Frame;
-        glm::vec3 m_Translation;
+        glm::mat4 m_TranslationMatrix;
 
     };
 }

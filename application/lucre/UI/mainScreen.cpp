@@ -130,7 +130,7 @@ namespace LucreApp
         else
         {
             icon = m_Spritesheet->GetSprite(I_GEAR);
-            icon->SetScale(iconWidth);
+            icon->SetScale(1.0f);
             m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight));
         }
 
@@ -165,7 +165,7 @@ namespace LucreApp
         else
         {
             icon = m_Spritesheet->GetSprite(I_OFF);
-            icon->SetScale(iconWidth);
+            icon->SetScale(1.0f);
             m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight), true);
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::offClick);
