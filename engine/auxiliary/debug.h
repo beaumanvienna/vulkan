@@ -43,6 +43,15 @@ namespace GfxRenderEngine
             }
         }
 
+        static void PrintVec2(const std::string& name, const glm::vec2& vector)
+        {
+            std::cout << name << std::endl;
+            for (int row = 0; row < 2; row++)
+            {
+                std::cout << vector[row] << std::endl;
+            }
+        }
+
         static void PrintVec3(const std::string& name, const glm::vec3& vector)
         {
             std::cout << name << std::endl;
