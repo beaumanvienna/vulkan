@@ -75,8 +75,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/atlasShader.vert.spv",
-            "bin/atlasShader.frag.spv",
+            "bin/spriteRenderer2D.vert.spv",
+            "bin/spriteRenderer2D.frag.spv",
             pipelineConfig
         );
     }
@@ -96,7 +96,7 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent>();
+        auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent2D>();
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);

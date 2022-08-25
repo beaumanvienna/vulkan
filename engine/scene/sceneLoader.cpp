@@ -23,7 +23,6 @@
 #include <fstream>
 
 #include "auxiliary/file.h"
-#include "auxiliary/debug.h"
 #include "scene/components.h"
 #include "scene/sceneLoader.h"
 

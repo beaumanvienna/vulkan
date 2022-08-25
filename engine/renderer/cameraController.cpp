@@ -73,8 +73,8 @@ namespace GfxRenderEngine
 
                 float ortho_left   =  0.0f;
                 float ortho_right  =  normalize;
-                float ortho_bottom =  normalize / aspectRatio;
-                float ortho_top    =  0.0f;
+                float ortho_bottom =  0.0f;
+                float ortho_top    =  normalize / aspectRatio;
                 float ortho_near   =  1.0f;
                 float ortho_far    = -1.0f;
                 m_Camera->SetOrthographicProjection

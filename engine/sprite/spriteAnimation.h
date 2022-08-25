@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         bool IsNewFrame();
         void Start();
         bool IsRunning() const;
-        Sprite* GetSprite();
+        Sprite GetSprite();
 
     private:
 

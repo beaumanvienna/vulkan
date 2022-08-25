@@ -24,7 +24,6 @@
 #include "core.h"
 #include "resources/resources.h"
 #include "auxiliary/file.h"
-#include "auxiliary/debug.h"
 
 #include "VKrenderer.h"
 #include "VKwindow.h"
@@ -562,8 +561,8 @@ namespace GfxRenderEngine
             "pbrDiffuseNormalRoughnessMetallic.frag",
             "deferredRendering.vert",
             "deferredRendering.frag",
-            "atlasShader.frag",
-            "atlasShader.vert",
+            "spriteRenderer2D.frag",
+            "spriteRenderer2D.vert",
             "guiShader2.frag",
             "guiShader2.vert",
             "guiShader.frag",
@@ -581,12 +580,12 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& transform)
+    void VK_Renderer::DrawWithTransform(const Sprite& sprite, const glm::mat4& transform)
     {
         m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, m_GUIViewProjectionMatrix * transform);
     }
 
-    void VK_Renderer::Draw(Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
+    void VK_Renderer::Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
         m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color, textureID);
     }

@@ -650,10 +650,10 @@ namespace GfxRenderEngine
 
         void Choice::GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const
         {
-            if (m_Image)
+            if (m_Image.IsValid())
             {
-                w = m_Image->GetWidthGUI();
-                h = m_Image->GetHeightGUI();
+                w = m_Image.GetWidth();
+                h = m_Image.GetHeight();
             }
             else
             {
@@ -738,8 +738,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageDepressed->GetMat4();
-                        renderer->Draw(m_ImageDepressed, position);
+                        glm::mat4 position = transformationMatrix * m_ImageDepressed.GetMat4();
+                        renderer->DrawWithTransform(m_ImageDepressed, position);
                     }
                     else
                     {
@@ -747,8 +747,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageActive->GetMat4();
-                        renderer->Draw(m_ImageActive, position);
+                        glm::mat4 position = transformationMatrix * m_ImageActive.GetMat4();
+                        renderer->DrawWithTransform(m_ImageActive, position);
                     }
                 }
                 else
@@ -757,8 +757,8 @@ namespace GfxRenderEngine
                     glm::mat4 transformationMatrix = Translate(translation);
 
                     // transformed position
-                    glm::mat4 position = transformationMatrix * m_Image->GetMat4();
-                    renderer->Draw(m_Image, position);
+                    glm::mat4 position = transformationMatrix * m_Image.GetMat4();
+                    renderer->DrawWithTransform(m_Image, position);
                 }
             }
             else if (numIcons_==4)
@@ -771,8 +771,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageDepressed->GetMat4();
-                        renderer->Draw(m_ImageDepressed, position);
+                        glm::mat4 position = transformationMatrix * m_ImageDepressed.GetMat4();
+                        renderer->DrawWithTransform(m_ImageDepressed, position);
                     }
                     else
                     {
@@ -780,8 +780,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageActive->GetMat4();
-                        renderer->Draw(m_ImageActive, position);
+                        glm::mat4 position = transformationMatrix * m_ImageActive.GetMat4();
+                        renderer->DrawWithTransform(m_ImageActive, position);
                     }
                 }
                 else
@@ -792,8 +792,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_ImageDepressedInactive->GetMat4();
-                        renderer->Draw(m_ImageDepressedInactive, position);
+                        glm::mat4 position = transformationMatrix * m_ImageDepressedInactive.GetMat4();
+                        renderer->DrawWithTransform(m_ImageDepressedInactive, position);
                     }
                     else
                     {
@@ -801,8 +801,8 @@ namespace GfxRenderEngine
                         glm::mat4 transformationMatrix = Translate(translation);
 
                         // transformed position
-                        glm::mat4 position = transformationMatrix * m_Image->GetMat4();
-                        renderer->Draw(m_Image, position);
+                        glm::mat4 position = transformationMatrix * m_Image.GetMat4();
+                        renderer->DrawWithTransform(m_Image, position);
                     }
                 }
             }
@@ -991,7 +991,7 @@ namespace GfxRenderEngine
 
             ClickableItem::Draw(dc);
 
-            Sprite* image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
+            Sprite image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
             dc.Draw()->MeasureImage(image, &imageW, &imageH);
 
@@ -1024,7 +1024,7 @@ namespace GfxRenderEngine
 
         void CheckBox::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
-            Sprite* image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
+            Sprite image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
             dc.Draw()->MeasureImage(image, &imageW, &imageH);
 
@@ -1065,7 +1065,7 @@ namespace GfxRenderEngine
     //    }
 
         Button::Button(const std::string &text, uint maxTextLength, LayoutParams *layoutParams)
-                : Clickable(layoutParams), m_Image(nullptr)
+                : Clickable(layoutParams), m_Image({})
         {
             if (text.size() <= maxTextLength)
             {
@@ -1079,10 +1079,10 @@ namespace GfxRenderEngine
 
         void Button::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
-            if (m_Image)
+            if (m_Image.IsValid())
             {
-                w = m_Image->GetWidthGUI();
-                h = m_Image->GetHeightGUI();
+                w = m_Image.GetWidth();
+                h = m_Image.GetHeight();
             }
             else
             {
@@ -1110,27 +1110,27 @@ namespace GfxRenderEngine
             tw *= scale_;
             th *= scale_;
 
-            if (tw > bounds_.w || m_Image)
+            if (tw > bounds_.w || m_Image.IsValid())
             {
                 dc.PushScissor(bounds_);
             }
             dc.SetFontStyle(dc.theme->uiFont);
             dc.SetFontScale(scale_, scale_);
-            if (m_Image && text_.empty())
+            if (m_Image.IsValid() && text_.empty())
             {
                 dc.Draw()->DrawImage(m_Image, bounds_.centerX(), bounds_.centerY(), scale_, 0xFFFFFFFF, ALIGN_CENTER);
             }
             else if (!text_.empty())
             {
                 dc.DrawText(text_.c_str(), bounds_.centerX(), bounds_.centerY(), style.fgColor, ALIGN_CENTER);
-                if (m_Image)
+                if (m_Image.IsValid())
                 {
-                    dc.Draw()->DrawImage(m_Image, bounds_.centerX() - tw / 2.0f - 5.0f - m_Image->GetWidthGUI() / 2.0f, bounds_.centerY(), 1.0f, 0xFFFFFFFF, ALIGN_CENTER);
+                    dc.Draw()->DrawImage(m_Image, bounds_.centerX() - tw / 2.0f - 5.0f - m_Image.GetWidth() / 2.0f, bounds_.centerY(), 1.0f, 0xFFFFFFFF, ALIGN_CENTER);
                 }
             }
             dc.SetFontScale(1.0f, 1.0f);
 
-            if (tw > bounds_.w || m_Image)
+            if (tw > bounds_.w || m_Image.IsValid())
             {
                 dc.PopScissor();
             }
@@ -1143,7 +1143,7 @@ namespace GfxRenderEngine
 
         void ImageView::Draw(SCREEN_UIContext &dc)
         {
-            if (m_Image)
+            if (m_Image.IsValid())
             {
                 dc.Draw()->DrawImage(m_Image, bounds_.x, bounds_.y, 1.0f, 0xFFFFFFFF, ALIGN_TOPLEFT);
             }

@@ -77,25 +77,25 @@ namespace GfxRenderEngine
     }
 
     // from existing sprite
-    bool SpriteSheet::AddSpritesheetTile(Sprite* originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale)
+    bool SpriteSheet::AddSpritesheetTile(const Sprite& originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale)
     {
-        m_Texture = originalSprite->m_Texture;
+        m_Texture = originalSprite.m_Texture;
         m_Rows = rows;
         m_Columns = columns;
 
-        int tileWidth = (originalSprite->GetWidth()  - spacing * (columns - 1))/columns;
-        int tileHeight = (originalSprite->GetHeight() - spacing * (rows - 1))/rows;
+        int tileWidth = (originalSprite.GetWidth()  - spacing * (columns - 1))/columns;
+        int tileHeight = (originalSprite.GetHeight() - spacing * (rows - 1))/rows;
 
-        float tileWidthNormalized = static_cast<float>(tileWidth)  / originalSprite->m_Texture->GetWidth();
-        float tileHeightNormalized = static_cast<float>(tileHeight) / originalSprite->m_Texture->GetHeight();
+        float tileWidthNormalized = static_cast<float>(tileWidth)  / originalSprite.m_Texture->GetWidth();
+        float tileHeightNormalized = static_cast<float>(tileHeight) / originalSprite.m_Texture->GetHeight();
 
-        float advanceX = static_cast<float>(tileWidth  + spacing)  / originalSprite->m_Texture->GetWidth();
-        float advanceY = static_cast<float>(tileHeight + spacing) / originalSprite->m_Texture->GetHeight();
+        float advanceX = static_cast<float>(tileWidth  + spacing)  / originalSprite.m_Texture->GetWidth();
+        float advanceY = static_cast<float>(tileHeight + spacing) / originalSprite.m_Texture->GetHeight();
 
-        float currentY = originalSprite->m_Pos1Y;
+        float currentY = originalSprite.m_Pos1Y;
         for (uint row = 0; row < rows; row++)
         {
-            float currentX = originalSprite->m_Pos1X;
+            float currentX = originalSprite.m_Pos1X;
             for (uint column = 0; column < columns; column++)
             {
                 std::string name = mapName + "_" + std::to_string(row) + "_" + std::to_string(column);
@@ -224,44 +224,44 @@ namespace GfxRenderEngine
         }
     }
 
-    Sprite* SpriteSheet::GetSprite(uint index)
+    Sprite SpriteSheet::GetSprite(uint index)
     {
-        return &m_SpriteTable[index];
+        return m_SpriteTable[index];
     }
 
-    bool SpriteSheet::AddSpritesheetRow(Sprite* originalSprite, uint frames, const float scaleX, const float scaleY)
+    bool SpriteSheet::AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scaleX, const float scaleY)
     {
         m_Rows = 1;
         m_Columns = frames;
         bool ok = true;
 
-        m_Texture = originalSprite->m_Texture;
-        bool rotated = originalSprite->m_Rotated;
+        m_Texture = originalSprite.m_Texture;
+        bool rotated = originalSprite.IsRotated();
 
         if (rotated)
         {
-            int tileWidth              = originalSprite->GetWidth() / frames;
-            int tileHeight             = originalSprite->GetHeight() ;
+            int tileWidth              = originalSprite.GetWidth() / frames;
+            int tileHeight             = originalSprite.GetHeight() ;
 
             float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
             float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
 
             float advanceY             = tileHeightNormalized;
 
-            float currentY = originalSprite->m_Pos1Y - tileHeightNormalized;
+            float currentY = originalSprite.m_Pos1Y - tileHeightNormalized;
             for (uint row = 0; row < frames; row++)
             {
-                std::string name = originalSprite->GetName() + "_" + std::to_string(row);
-                float u1 = originalSprite->m_Pos1X;
+                std::string name = originalSprite.GetName() + "_" + std::to_string(row);
+                float u1 = originalSprite.m_Pos1X;
                 float v1 = currentY;
-                float u2 = originalSprite->m_Pos2X;
+                float u2 = originalSprite.m_Pos2X;
                 float v2 = currentY + tileHeightNormalized;
                 Sprite sprite = Sprite
                 (
-                    u2,
-                    v1,
                     u1,
                     v2,
+                    u2,
+                    v1,
                     tileWidth,
                     tileHeight,
                     m_Texture,
@@ -276,22 +276,22 @@ namespace GfxRenderEngine
         }
         else
         {
-            int tileWidth              = originalSprite->GetWidth() / frames;
-            int tileHeight             = originalSprite->GetHeight();
+            int tileWidth              = originalSprite.GetWidth() / frames;
+            int tileHeight             = originalSprite.GetHeight();
 
             float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
             float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
 
             float advanceX             = tileWidthNormalized;
 
-            float currentX = originalSprite->m_Pos1X;
+            float currentX = originalSprite.m_Pos1X;
             for (uint column = 0; column < frames; column++)
             {
-                std::string name = originalSprite->GetName() + "_" + std::to_string(column);
+                std::string name = originalSprite.GetName() + "_" + std::to_string(column);
                 float u1 = currentX;
-                float v1 = originalSprite->m_Pos1Y;
+                float v1 = originalSprite.m_Pos1Y;
                 float u2 = currentX + tileWidthNormalized;
-                float v2 = originalSprite->m_Pos2Y;
+                float v2 = originalSprite.m_Pos2Y;
                 Sprite sprite = Sprite
                 (
                     u1,
@@ -313,7 +313,7 @@ namespace GfxRenderEngine
         return ok;
     }
 
-    bool SpriteSheet::AddSpritesheetRow(Sprite* originalSprite, uint frames, const float scale)
+    bool SpriteSheet::AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scale)
     {
         return AddSpritesheetRow(originalSprite, frames, scale, scale);
     }
@@ -329,7 +329,7 @@ namespace GfxRenderEngine
                             m_Texture, fileName,
                             1.0f, 1.0f};
 
-        AddSpritesheetRow(&originalSprite, frames, scaleX, scaleY);
+        AddSpritesheetRow(originalSprite, frames, scaleX, scaleY);
 
         return ok;
     }
@@ -345,7 +345,7 @@ namespace GfxRenderEngine
                             m_Texture, fileName,
                             scale};
 
-        AddSpritesheetRow(&originalSprite, frames);
+        AddSpritesheetRow(originalSprite, frames);
 
         return ok;
     }
@@ -364,7 +364,7 @@ namespace GfxRenderEngine
                             m_Texture, std::string(path),
                             1.0f, 1.0f};
 
-        AddSpritesheetRow(&originalSprite, frames, scaleX, scaleY);
+        AddSpritesheetRow(originalSprite, frames, scaleX, scaleY);
 
         return ok;
     }
@@ -383,7 +383,7 @@ namespace GfxRenderEngine
                             m_Texture, std::string(path),
                             scale};
 
-        AddSpritesheetRow(&originalSprite, frames);
+        AddSpritesheetRow(originalSprite, frames);
 
         return ok;
     }

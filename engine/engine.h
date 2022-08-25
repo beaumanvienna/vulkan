@@ -35,6 +35,7 @@
 #include "gtx/compatibility.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
+#include "auxiliary/debug.h"
 
 int engine(int argc, char* argv[]);
 

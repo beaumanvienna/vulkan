@@ -92,7 +92,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
         // this function takes in a sprite, four 2D positions, and a color
 
@@ -118,8 +118,9 @@ namespace GfxRenderEngine
         push.m_Mat4[2][2] = Engine::m_Engine->GetWindowWidth();
         push.m_Mat4[2][3] = Engine::m_Engine->GetWindowHeight();
         push.m_Mat4[3][2] = textureID;
-        push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
-        push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};
+
+        push.m_UV[0]  = {sprite.m_Pos1X, sprite.m_Pos1Y};
+        push.m_UV[1]  = {sprite.m_Pos2X, sprite.m_Pos2Y};
 
         vkCmdPushConstants(
             frameInfo.m_CommandBuffer,
@@ -139,7 +140,7 @@ namespace GfxRenderEngine
             );
     }
 
-    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, Sprite* sprite, const glm::mat4& modelViewProjectionMatrix)
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& modelViewProjectionMatrix)
     {
         // this function takes in a sprite and transformation matrix to be applied to the normalized device coordinates
         vkCmdBindDescriptorSets
@@ -157,8 +158,9 @@ namespace GfxRenderEngine
 
         VK_PushConstantDataGUIRenderer push{};
         push.m_MVP  = modelViewProjectionMatrix;
-        push.m_UV[0]  = glm::vec2{sprite->m_Pos1X, sprite->m_Pos1Y};
-        push.m_UV[1]  = glm::vec2{sprite->m_Pos2X, sprite->m_Pos2Y};
+
+        push.m_UV[0]  = {sprite.m_Pos1X, sprite.m_Pos1Y};
+        push.m_UV[1]  = {sprite.m_Pos2X, sprite.m_Pos2Y};
 
         vkCmdPushConstants(
             frameInfo.m_CommandBuffer,

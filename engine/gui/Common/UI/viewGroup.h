@@ -297,7 +297,7 @@ namespace GfxRenderEngine
             ChoiceStrip(Orientation orientation, LayoutParams *layoutParams = 0);
 
             void AddChoice(const std::string &title);
-            void AddChoice(const std::string &title, Sprite* icon, Sprite* icon_active, Sprite* icon_depressed, Sprite* icon_depressed_inactive, const std::string &text);
+            void AddChoice(const std::string &title, const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive, const std::string &text);
 
             int GetSelection() const { return selected_; }
             void SetSelection(int sel);
@@ -341,7 +341,7 @@ namespace GfxRenderEngine
 
             int GetCurrentTab() const { return currentTab_; }
             void SetCurrentTab(int tab, bool skipTween = false);
-            void SetIcon(Sprite* icon, Sprite* icon_active, Sprite* icon_depressed, Sprite* icon_depressed_inactive);
+            void SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive);
 
             bool HasFocus(int& tab);
             void enableAllTabs();
@@ -350,10 +350,10 @@ namespace GfxRenderEngine
 
         private:
             bool useIcons_ = false;
-            Sprite* m_Icon;
-            Sprite* m_Icon_active;
-            Sprite* m_Icon_depressed;
-            Sprite* m_Icon_depressed_inactive;
+            Sprite m_Icon;
+            Sprite m_Icon_active;
+            Sprite m_Icon_depressed;
+            Sprite m_Icon_depressed_inactive;
             void AddTabContents(const std::string &title, View *tabContents);
             EventReturn OnTabClick(EventParams &e);
 

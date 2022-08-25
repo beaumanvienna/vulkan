@@ -51,8 +51,8 @@ namespace GfxRenderEngine
         virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
-        virtual void Draw(Sprite* sprite, const glm::mat4& transform) = 0;
-        virtual void Draw(Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) = 0;
+        virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) = 0;
+        virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) = 0;
 
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
         virtual float GetAmbientLightIntensity() = 0;

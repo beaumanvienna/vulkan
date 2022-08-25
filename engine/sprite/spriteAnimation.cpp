@@ -48,9 +48,9 @@ namespace GfxRenderEngine
         Create(spritesheet->GetNumberOfSprites(), durationPerFrame, spritesheet);
     }
 
-    Sprite* SpriteAnimation::GetSprite()
+    Sprite SpriteAnimation::GetSprite()
     {
-        Sprite* sprite;
+        Sprite sprite;
         if (IsRunning())
         {
             Duration timeElapsed = Engine::m_Engine->GetTime() - m_StartTime;

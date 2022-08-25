@@ -48,14 +48,15 @@ namespace LucreApp
 
             bool flip = false;
             float size = 10.0f;
+            float scale = size / sprite.GetWidth();
             for (uint i =0; i < 3; i++)
             {
                 flip = !flip;
                 m_Volcano[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Volcano[i], mesh);
 
-                sprite->SetScale(size, flip ? size : -size);
-                TransformComponent& transform = sprite->GetTransform();
+                sprite.SetScale(flip ? scale : -scale, scale);
+                TransformComponent& transform = sprite.GetTransform();
                 transform.SetTranslation({-size * 2.0f + i * 2.0f * size, 10.0f, -20.0f});
 
                 m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
@@ -68,8 +69,8 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
-            float size = 4.0f;
-            sprite->SetScale(size);
+            float size = 4.0f / sprite.GetWidth();
+            sprite.SetScale(size);
 
             builder.LoadSprite(sprite, 0.1f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
@@ -80,7 +81,7 @@ namespace LucreApp
                 m_Walkway[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
-                TransformComponent& transform = sprite->GetTransform();                
+                TransformComponent& transform = sprite.GetTransform();                
                 transform.SetRotation({-glm::half_pi<float>(), glm::half_pi<float>(), 0.0f});
                 transform.SetTranslation({0.5*i, -0.024f, -0.1f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
@@ -90,13 +91,13 @@ namespace LucreApp
             }
         }
         {
-            float scaleHero   = -0.0038f;
+            float scaleHero   = 0.0038f;
             m_SpritesheetHorn.SetScale(scaleHero);
             for (uint i = 0; i < HORN_ANIMATION_SPRITES; i++)
             {
                 auto sprite  = m_SpritesheetHorn.GetSprite(i);
-                float width  = sprite->GetWidth();
-                float height = sprite->GetHeight();
+                float width  = sprite.GetWidth();
+                float height = sprite.GetHeight();
 
                 Builder builder{};
                 builder.LoadSprite(sprite, 1.0f /*amplification*/);

@@ -55,19 +55,19 @@ namespace GfxRenderEngine
         void AddSpritesheet();
         bool AddSpritesheet(const std::string& fileName);
         bool AddSpritesheet(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
-        bool AddSpritesheetTile(Sprite* originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
+        bool AddSpritesheetTile(const Sprite& originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
         bool AddSpritesheetTile(const std::string& fileName, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
         bool AddSpritesheetTile(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
                                 const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
-        bool AddSpritesheetRow(Sprite* originalSprite, uint frames, const float scaleX, const float scaleY);
-        bool AddSpritesheetRow(Sprite* originalSprite, uint frames, const float scale = 1.0f);
+        bool AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scaleX, const float scaleY);
+        bool AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scale = 1.0f);
         bool AddSpritesheetRow(const std::string& fileName, uint frames, const float scaleX, const float scaleY);
         bool AddSpritesheetRow(const std::string& fileName, uint frames, const float scale = 1.0f);
         bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
                             uint frames, const float scaleX, const float scaleY);
         bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
                             uint frames, const float scale = 1.0f);
-        Sprite* GetSprite(uint index);
+        Sprite GetSprite(uint index);
         void SetScale(const float scale);
         void ListSprites();
         uint GetTextureSlot() const { return m_Texture->GetTextureSlot(); }

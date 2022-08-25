@@ -136,6 +136,11 @@ namespace GfxRenderEngine
         float m_Metallic;
     };
 
+    struct SpriteRendererComponent2D
+    {
+        uint m_Tag;
+    };
+
     struct PbrNoMapTag
     {
         uint m_Tag;

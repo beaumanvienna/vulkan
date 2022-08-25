@@ -111,19 +111,19 @@ namespace LucreApp
 
         if (CoreSettings::m_UITheme == THEME_RETRO)
         { 
-            Sprite* icon;
-            Sprite* icon_active;
-            Sprite* icon_depressed;
-            Sprite* icon_depressed_inactive;
+            Sprite icon;
+            Sprite icon_active;
+            Sprite icon_depressed;
+            Sprite icon_depressed_inactive;
 
             icon = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED);
-            icon->SetScale(1.0f);
+            icon.SetScale(1.0f);
             icon_active = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED);
-            icon_active->SetScale(1.0f);
+            icon_active.SetScale(1.0f);
             icon_depressed = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED);
-            icon_depressed->SetScale(1.0f);
+            icon_depressed.SetScale(1.0f);
             icon_depressed_inactive = m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED);
-            icon_depressed_inactive->SetScale(1.0f);
+            icon_depressed_inactive.SetScale(1.0f);
             m_TabHolder->SetIcon(icon,icon_active,icon_depressed,icon_depressed_inactive);
         }
 
@@ -133,18 +133,18 @@ namespace LucreApp
         horizontalLayoutBack->SetTag("horizontalLayoutBack");
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
-            Sprite* icon = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
-            icon->SetScale(iconWidth);
-            Sprite* icon_active = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED);
-            icon_active->SetScale(iconWidth);
-            Sprite* icon_depressed = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
-            icon_depressed->SetScale(iconWidth);
+            Sprite icon = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_NOT_FOCUSED);
+            icon.SetScale(0.5f);
+            Sprite icon_active = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED);
+            icon_active.SetScale(0.5f);
+            Sprite icon_depressed = m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED);
+            icon_depressed.SetScale(0.5f);
             backButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconHeight));
         }
         else
         {
-            Sprite* icon = m_Spritesheet->GetSprite(I_BACK);
-            icon->SetScale(1.0f);
+            Sprite icon = m_Spritesheet->GetSprite(I_BACK);
+            icon.SetScale(1.0f);
             backButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
         }
         backButton->SetTag("backButton");

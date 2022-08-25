@@ -46,17 +46,18 @@ namespace LucreApp
         float windowHeight = Engine::m_Engine->GetWindowHeight();
 
         float scale = 0.7f * windowHeight / desktopWidth;
-        m_ControllerSprite->SetScale(scale);
-        float sx = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetWidth();
-        float sy = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER)->GetHeight();
+        m_ControllerSprite.SetScale(scale);
+
+        float sx = m_ControllerSprite.GetWidth();
+        float sy = m_ControllerSprite.GetHeight();
 
         // controller 1
         m_Controller1Detected = false;
         m_Controller1MoveIn.Reset();
         m_Controller1MoveOut.Reset();
 
-        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.9f);
-        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.9f);
+        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.1f);
+        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.1f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -222,8 +223,8 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_ID1, transform);
 
-            SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(m_ID1, spriteRendererComponent);
+            SpriteRendererComponent2D spriteRendererComponent2D{};
+            m_Registry.emplace<SpriteRendererComponent2D>(m_ID1, spriteRendererComponent2D);
         }
         {
             m_ID2 = m_Registry.create();
@@ -232,8 +233,8 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_ID2, transform);
 
-            SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(m_ID2, spriteRendererComponent);
+            SpriteRendererComponent2D spriteRendererComponent2D{};
+            m_Registry.emplace<SpriteRendererComponent2D>(m_ID2, spriteRendererComponent2D);
         }
     }
 }

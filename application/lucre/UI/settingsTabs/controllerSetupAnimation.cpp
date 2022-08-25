@@ -33,7 +33,7 @@ namespace LucreApp
     void ControllerSetupAnimation::OnAttach() 
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 250.0f, -250.0f);
+        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 1.0f, -1.0f);
     }
 
     void ControllerSetupAnimation::OnDetach()  {}
@@ -60,11 +60,11 @@ namespace LucreApp
 
     void ControllerSetupAnimation::OnUpdate(const Timestep& timestep)
     {
-            Sprite* sprite = m_SpritesheetPointers.GetSprite(m_Frame);
+            Sprite sprite = m_SpritesheetPointers.GetSprite(m_Frame);
 
             // transformed position
-            glm::mat4 position = m_TranslationMatrix * sprite->GetMat4();
-            m_Renderer->Draw(sprite, position);
+            glm::mat4 position = m_TranslationMatrix * sprite.GetMat4();
+            m_Renderer->DrawWithTransform(sprite, position);
     }
 
     void ControllerSetupAnimation::OnEvent(Event& event)  {}

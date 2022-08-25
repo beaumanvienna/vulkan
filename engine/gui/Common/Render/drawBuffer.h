@@ -88,10 +88,10 @@ namespace GfxRenderEngine
         }
         ~SCREEN_DrawBuffer();
 
-        bool MeasureImage(Sprite* sprite, float *w, float *h);
-        void DrawImage(Sprite* sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
-        void DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
-        void DrawImageStretch(Sprite* sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
+        bool MeasureImage(const Sprite& sprite, float *w, float *h);
+        void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
+        void DrawImageStretch(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
+        void DrawImageStretch(const Sprite& sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
     //    void DrawImageRotated(SCREEN_ImageID sprite, float x, float y, float scale, float angle, Color color = COLOR(0xFFFFFF), bool mirror_h = false);
         void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color);
     //    void DrawTexRect(const Bounds &bounds, float u1, float v1, float u2, float v2, Color color) 
@@ -99,7 +99,7 @@ namespace GfxRenderEngine
     //        DrawTexRect(bounds.x, bounds.y, bounds.x2(), bounds.y2(), u1, v1, u2, v2, color);
     //    }
     //
-        void DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
+        void DrawImage4Grid(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
     //    void DrawImage2GridH(SCREEN_ImageID sprite, float x1, float y1, float x2, Color color = COLOR(0xFFFFFF), float scale = 1.0);
     //
         void MeasureText(FontID font, const char *text, float *w, float *h);

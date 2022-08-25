@@ -68,7 +68,7 @@ namespace LucreApp
         std::shared_ptr<Renderer> m_Renderer;
 
         SpriteSheet* m_Spritesheet;
-        Sprite* m_StarSprite;
+        Sprite m_StarSprite;
 
         Animation m_StarMoveIn1;
         Animation m_StarMoveIn2;

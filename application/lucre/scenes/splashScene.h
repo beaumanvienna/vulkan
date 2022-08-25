@@ -63,7 +63,6 @@ namespace LucreApp
         entt::entity m_Guybrush[WALK_ANIMATION_SPRITES], m_Logo;
         SpriteSheet m_SpritesheetWalk;
         SpriteAnimation m_WalkAnimation;
-        Sprite* m_LogoSprite;
         float m_GuybrushWalkDelta;
         float m_InitialPositionX, m_EndPositionX;
         float m_WindowWidth, m_WindowHeight;

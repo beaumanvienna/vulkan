@@ -130,11 +130,11 @@ namespace GfxRenderEngine
             FontStyle uiFontSmall;
             FontStyle uiFontSmaller;
 
-            Sprite* checkOn;
-            Sprite* checkOff;
-            Sprite* sliderKnob;
-            Sprite* whiteImage;
-            Sprite* dropShadow4Grid;
+            Sprite checkOn;
+            Sprite checkOff;
+            Sprite sliderKnob;
+            Sprite whiteImage;
+            Sprite dropShadow4Grid;
 
             Style buttonStyle;
             Style buttonFocusedStyle;
@@ -571,9 +571,9 @@ namespace GfxRenderEngine
         {
         public:
             Button(const std::string &text, uint maxTextLength, LayoutParams *layoutParams = nullptr);
-            Button(Sprite* image, LayoutParams *layoutParams = nullptr)
+            Button(const Sprite& image, LayoutParams *layoutParams = nullptr)
                 : Clickable(layoutParams), m_Image(image) {}
-            Button(const std::string &text, Sprite* image, LayoutParams *layoutParams = nullptr)
+            Button(const std::string &text, const Sprite& image, LayoutParams *layoutParams = nullptr)
                 : Clickable(layoutParams), text_(text), m_Image(image) {}
 
             void Draw(SCREEN_UIContext &dc) override;
@@ -591,7 +591,7 @@ namespace GfxRenderEngine
         private:
             Style style_;
             std::string text_;
-            Sprite* m_Image;
+            Sprite m_Image;
             int paddingW_ = 16;
             int paddingH_ = 8;
             float scale_ = 1.0f;
@@ -690,19 +690,19 @@ namespace GfxRenderEngine
             Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams)
                 : Choice(text, transparentBackground, std::string(), false, layoutParams) { numIcons_= 0; }
             Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-                : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image(nullptr),
+                : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image({}),
                                 centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
             Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-                : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image(nullptr),
+                : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image({}),
                                 centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
-            Choice(Sprite* image, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
+            Choice(const Sprite& image, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), m_Image(image), centered_(false), highlighted_(false), selected_(false),
                                 hasHoldFeature_(hasHoldFeature), heldDown_(false) { numIcons_ = 1; }
-            Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
+            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
                                 hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image),
                                 m_ImageActive(image_active), m_ImageDepressed(image_depressed) { numIcons_ = 3;}
-            Choice(Sprite* image, Sprite* image_active, Sprite* image_depressed, Sprite* image_depressed_inactive,
+            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed, const Sprite& image_depressed_inactive,
                 const std::string &text, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
                                 hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
@@ -718,7 +718,7 @@ namespace GfxRenderEngine
             void GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const override;
             void Draw(SCREEN_UIContext &dc) override;
             virtual void SetCentered(bool c) { centered_ = c; }
-            virtual void SetIcon(Sprite* iconImage) { m_Image = iconImage; }
+            virtual void SetIcon(Sprite& iconImage) { m_Image = iconImage; }
             bool CanBeFocused() const override { return focusable_; }
             void SetFocusable(bool focusable) { focusable_ = focusable; }
             void SetText(const std::string& text) { text_ = text; }
@@ -732,10 +732,10 @@ namespace GfxRenderEngine
 
             std::string text_;
             std::string smallText_;
-            Sprite* m_Image = nullptr;
-            Sprite* m_ImageActive = nullptr;
-            Sprite* m_ImageDepressed = nullptr;
-            Sprite* m_ImageDepressedInactive = nullptr;
+            Sprite m_Image;
+            Sprite m_ImageActive;
+            Sprite m_ImageDepressed;
+            Sprite m_ImageDepressedInactive;
             int numIcons_;
             Padding textPadding_;
             bool centered_;
@@ -755,9 +755,9 @@ namespace GfxRenderEngine
         public:
             StickyChoice(const std::string &text, const std::string &smallText = "", LayoutParams *layoutParams = 0)
                 : Choice(text, smallText, false, layoutParams) {}
-            StickyChoice(Sprite* buttonImage, LayoutParams *layoutParams = 0)
+            StickyChoice(const Sprite& buttonImage, LayoutParams *layoutParams = 0)
                 : Choice(buttonImage, layoutParams) {}
-            StickyChoice(Sprite* icon, Sprite* icon_active, Sprite* icon_depressed, Sprite* icon_depressed_inactive, const std::string &text, LayoutParams *layoutParams = 0)
+            StickyChoice(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive, const std::string &text, LayoutParams *layoutParams = 0)
                 : Choice(icon, icon_active, icon_depressed, icon_depressed_inactive, text, layoutParams) {}
 
             bool Key(const SCREEN_KeyInput &key) override;
@@ -964,7 +964,7 @@ namespace GfxRenderEngine
         class ImageView : public InertView
         {
         public:
-            ImageView(Sprite* atlasImage, LayoutParams *layoutParams = 0)
+            ImageView(const Sprite& atlasImage, LayoutParams *layoutParams = 0)
                 : InertView(layoutParams), m_Image(atlasImage) {}
 
             void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
@@ -972,7 +972,7 @@ namespace GfxRenderEngine
 
         private:
 
-            Sprite* m_Image;
+            Sprite m_Image;
 
         };
 

@@ -61,7 +61,9 @@ namespace GfxRenderEngine
                 const float scaleY,
                 const bool rotated = false);
 
-        std::string& GetName();
+        Sprite();
+
+        const std::string& GetName() const;
 
         const glm::mat4& GetMat4() { return m_Transform.GetMat4(); }
         TransformComponent& GetTransform();
@@ -70,25 +72,24 @@ namespace GfxRenderEngine
         void SetScale(const float scaleX, const float scaleY);
         float GetWidth() const { return static_cast<float>(m_Width) * m_ScaleX; }
         float GetHeight() const { return static_cast<float>(m_Height) * m_ScaleY; }
-        float GetWidthGUI() const;
-        float GetHeightGUI() const;
         void Resize(uint width, uint height);
         float GetAspectRatio() const;
+        bool IsRotated() const { return m_Rotated; }
+        bool IsValid() const { return m_IsValid; }
 
         float m_Pos1X, m_Pos1Y, m_Pos2X, m_Pos2Y;
-        int m_Width, m_Height;
-        bool m_Rotated;
+
         std::shared_ptr<Texture> m_Texture;
 
     private:
-        void SetScaleMatrix();
+        void SetTransform();
 
     private:
+        int m_Width, m_Height;
         std::string m_Name;
         float m_ScaleX;
         float m_ScaleY;
-        glm::mat4 m_ScaleMatrix;
-        glm::mat4 m_FlippedScaleMatrix;
+        bool m_Rotated, m_IsValid;
         TransformComponent m_Transform{};
     };
 }

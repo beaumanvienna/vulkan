@@ -1489,7 +1489,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void TabHolder::SetIcon(Sprite* icon, Sprite* icon_active, Sprite* icon_depressed, Sprite* icon_depressed_inactive)
+        void TabHolder::SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive)
         {
             m_Icon = icon;
             m_Icon_active = icon_active;
@@ -1573,9 +1573,9 @@ namespace GfxRenderEngine
                 c->Press();
         }
 
-        void ChoiceStrip::AddChoice(const std::string &title, Sprite* icon,
-                                    Sprite* icon_active, Sprite* icon_depressed,
-                                    Sprite* icon_depressed_inactive, const std::string &text)
+        void ChoiceStrip::AddChoice(const std::string &title, const Sprite& icon,
+                                    const Sprite& icon_active, const Sprite& icon_depressed,
+                                    const Sprite& icon_depressed_inactive, const std::string &text)
         {
             StickyChoice *c = new StickyChoice(icon, icon_active, icon_depressed, icon_depressed_inactive, text,
                     orientation_ == ORIENT_HORIZONTAL ?

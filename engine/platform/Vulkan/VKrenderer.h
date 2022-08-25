@@ -87,8 +87,8 @@ namespace GfxRenderEngine
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) override { m_AmbientLightIntensity = ambientLightIntensity; }
         virtual float GetAmbientLightIntensity() override { return m_AmbientLightIntensity; }
-        virtual void Draw(Sprite* sprite, const glm::mat4& transform) override;
-        virtual void Draw(Sprite* sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
+        virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) override;
+        virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 

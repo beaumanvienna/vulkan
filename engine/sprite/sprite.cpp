@@ -31,6 +31,10 @@
 namespace GfxRenderEngine
 {
 
+    // a 90-dgree rotation cannot be achieved with UVs
+    // since there are only two points and the picture only flips
+    // a 90-dgree rotation  must be done with four verticies
+
     Sprite::Sprite(
         const float pos1X, const float pos1Y, 
         const float pos2X, const float pos2Y,
@@ -43,9 +47,9 @@ namespace GfxRenderEngine
                 m_Width(width), m_Height(height),
                 m_Texture(texture), m_ScaleX(scale),
                 m_Name(name), m_ScaleY(scale), 
-                m_Rotated(false)
+                m_Rotated(false), m_IsValid(true)
     {
-        SetScaleMatrix();
+        SetTransform();
     }
 
     Sprite::Sprite(
@@ -60,8 +64,9 @@ namespace GfxRenderEngine
                 m_Pos2X(pos2X), m_Pos2Y(pos2Y),
                 m_Texture(texture), m_ScaleX(scale),
                 m_Name(name), m_ScaleY(scale), 
-                m_Rotated(rotated)
+                m_Rotated(rotated), m_IsValid(true)
     {
+
         if (rotated)
         {
             m_Width = height;
@@ -72,8 +77,8 @@ namespace GfxRenderEngine
             m_Width = width;
             m_Height = height;
         }
-        
-        SetScaleMatrix();
+        SetTransform();
+
     }
 
     Sprite::Sprite(
@@ -88,7 +93,7 @@ namespace GfxRenderEngine
                 m_Pos2X(pos2X), m_Pos2Y(pos2Y),
                 m_Texture(texture), m_Name(name),
                 m_ScaleX(scaleX), m_ScaleY(scaleY),
-                m_Rotated(rotated)
+                m_Rotated(rotated), m_IsValid(true)
     {
         if (rotated)
         {
@@ -100,10 +105,19 @@ namespace GfxRenderEngine
             m_Width = width;
             m_Height = height;
         }
-        SetScaleMatrix();
+        SetTransform();
     }
 
-    std::string& Sprite::GetName()
+    Sprite::Sprite() :
+                m_Pos1X(0.0f), m_Pos1Y(0.0f), 
+                m_Pos2X(0.0f), m_Pos2Y(0.0f),
+                m_Texture(nullptr), m_Name(""),
+                m_ScaleX(0.0f), m_ScaleY(0.0f),
+                m_Rotated(false), m_IsValid(false)
+    {
+    }
+
+    const std::string& Sprite::GetName() const
     {
         return m_Name;
     }
@@ -111,24 +125,19 @@ namespace GfxRenderEngine
     void Sprite::SetScale(const float scale)
     {
         m_ScaleX = m_ScaleY = scale;
-        SetScaleMatrix();
+        SetTransform();
     }
 
     void Sprite::SetScale(const float scaleX, const float scaleY)
     {
         m_ScaleX = scaleX;
         m_ScaleY = scaleY;
-        SetScaleMatrix();
+        SetTransform();
     }
 
-    void Sprite::SetScaleMatrix()
+    void Sprite::SetTransform()
     {
-        m_Transform.SetScale({m_ScaleX, m_ScaleY * GetAspectRatio(), 1.0f});
-
-        if (m_Rotated)
-        {
-            m_Transform.SetRotationZ(glm::half_pi<float>());
-        }
+        m_Transform.SetScale({m_ScaleX * m_Width, m_ScaleY * m_Height, 1.0f});
     }
 
     TransformComponent& Sprite::GetTransform()
@@ -137,21 +146,11 @@ namespace GfxRenderEngine
         return m_Transform;
     }
 
-    float Sprite::GetWidthGUI() const
-    {
-        return static_cast<float>(m_Width) * m_ScaleX;
-    }
-
-    float Sprite::GetHeightGUI() const
-    {
-        return static_cast<float>(m_Height) * m_ScaleY;
-    }
-
     void Sprite::Resize(uint width, uint height)
     {
         m_Width = width;
         m_Height = height;
-        SetScaleMatrix();
+        SetTransform();
     }
 
     float Sprite::GetAspectRatio() const

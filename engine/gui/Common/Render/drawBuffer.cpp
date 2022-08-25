@@ -39,39 +39,21 @@ namespace GfxRenderEngine
 
     extern std::shared_ptr<Texture> gTextureFontAtlas;
 
-    bool SCREEN_DrawBuffer::MeasureImage(Sprite* sprite, float *w, float *h)
+    bool SCREEN_DrawBuffer::MeasureImage(const Sprite& sprite, float *w, float *h)
     {
-        if (sprite)
-        {
-            if (sprite->m_Rotated)
-            {
-                *w = (float)sprite->m_Height;
-                *h = (float)sprite->m_Width;
-            }
-            else
-            {
-                *w = (float)sprite->m_Width;
-                *h = (float)sprite->m_Height;
-            }
-            return true;
-        }
-        else
-        {
-            *w = 0;
-            *h = 0;
-            return false;
-        }
+        *w = sprite.GetWidth();
+        *h = sprite.GetHeight();
+        return true;
     }
 
-    void SCREEN_DrawBuffer::DrawImage(Sprite* sprite, float x, float y, float scale, Color color, int align)
+    void SCREEN_DrawBuffer::DrawImage(const Sprite& sprite, float x, float y, float scale, Color color, int align)
     {
-        if (!sprite)
+        if (!sprite.IsValid())
         {
             return;
         }
-
-        float w = (float)sprite->GetWidthGUI() * scale;
-        float h = (float)sprite->GetHeightGUI() * scale;
+        float w = sprite.GetWidth() * scale;
+        float h = sprite.GetHeight() * scale;
         if (align & ALIGN_HCENTER) x -= w / 2;
         if (align & ALIGN_RIGHT) x -= w;
         if (align & ALIGN_VCENTER) y -= h / 2;
@@ -90,11 +72,11 @@ namespace GfxRenderEngine
         return colorVec;
     }
 
-    void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, float x1, float y1, float x2, float y2, Color color)
+    void SCREEN_DrawBuffer::DrawImageStretch(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color)
     {
         glm::vec4 colorVec = ConvertColor(color);
         glm::mat4 position;
-        if (sprite->m_Rotated)
+        if (sprite.IsRotated())
         {
             position[0][0] = x1; position[1][0] = y2;
             position[0][1] = x1; position[1][1] = y1;
@@ -134,37 +116,39 @@ namespace GfxRenderEngine
             ""
         );
 
-        m_Renderer->Draw(&sprite, position, colorVec);
+        m_Renderer->Draw(sprite, position, colorVec);
     }
 
-    void SCREEN_DrawBuffer::DrawImage4Grid(Sprite* sprite, float x1, float y1, float x2, float y2, Color color, float corner_scale)
+    void SCREEN_DrawBuffer::DrawImage4Grid(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color, float corner_scale)
     {
-        if (!sprite)
+        if (!sprite.IsValid())
         {
             return;
         }
-
-        float u1 = sprite->m_Pos1X, v1 = sprite->m_Pos1Y, u2 = sprite->m_Pos2X, v2 = sprite->m_Pos2Y;
+        float u1 = sprite.m_Pos1X;
+        float v1 = sprite.m_Pos1Y;
+        float u2 = sprite.m_Pos2X;
+        float v2 = sprite.m_Pos2Y;
         float um = (u2 + u1) * 0.5f;
         float vm = (v2 + v1) * 0.5f;
-        float iw2 = (sprite->m_Width * 0.5f) * corner_scale;
-        float ih2 = (sprite->m_Height * 0.5f) * corner_scale;
+        float iw2 = (sprite.GetWidth() * 0.5f) * corner_scale;
+        float ih2 = (sprite.GetHeight() * 0.5f) * corner_scale;
         float xa = x1 + iw2;
         float xb = x2 - iw2;
         float ya = y1 + ih2;
         float yb = y2 - ih2;
         // Top row
-        DrawTexRect(sprite->m_Texture, x1, y1, xa, ya, u1, v1, um, vm, color);
-        DrawTexRect(sprite->m_Texture, xa, y1, xb, ya, um, v1, um, vm, color);
-        DrawTexRect(sprite->m_Texture, xb, y1, x2, ya, um, v1, u2, vm, color);
+        DrawTexRect(sprite.m_Texture, x1, y1, xa, ya, u1, v1, um, vm, color);
+        DrawTexRect(sprite.m_Texture, xa, y1, xb, ya, um, v1, um, vm, color);
+        DrawTexRect(sprite.m_Texture, xb, y1, x2, ya, um, v1, u2, vm, color);
         // Middle row
-        DrawTexRect(sprite->m_Texture, x1, ya, xa, yb, u1, vm, um, vm, color);
-        DrawTexRect(sprite->m_Texture, xa, ya, xb, yb, um, vm, um, vm, color);
-        DrawTexRect(sprite->m_Texture, xb, ya, x2, yb, um, vm, u2, vm, color);
+        DrawTexRect(sprite.m_Texture, x1, ya, xa, yb, u1, vm, um, vm, color);
+        DrawTexRect(sprite.m_Texture, xa, ya, xb, yb, um, vm, um, vm, color);
+        DrawTexRect(sprite.m_Texture, xb, ya, x2, yb, um, vm, u2, vm, color);
         // Bottom row
-        DrawTexRect(sprite->m_Texture, x1, yb, xa, y2, u1, vm, um, v2, color);
-        DrawTexRect(sprite->m_Texture, xa, yb, xb, y2, um, vm, um, v2, color);
-        DrawTexRect(sprite->m_Texture, xb, yb, x2, y2, um, vm, u2, v2, color);
+        DrawTexRect(sprite.m_Texture, x1, yb, xa, y2, u1, vm, um, v2, color);
+        DrawTexRect(sprite.m_Texture, xa, yb, xb, y2, um, vm, um, v2, color);
+        DrawTexRect(sprite.m_Texture, xb, yb, x2, y2, um, vm, u2, v2, color);
     }
 
     class SCREEN_AtlasWordWrapper : public SCREEN_WordWrapper
@@ -463,7 +447,7 @@ namespace GfxRenderEngine
                     ""
                 );
 
-                m_Renderer->Draw(&sprite, position, colorVec, textureID);
+                m_Renderer->Draw(sprite, position, colorVec, textureID);
 
                 if (align & ROTATE_90DEG_LEFT)
                 {
@@ -477,7 +461,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void SCREEN_DrawBuffer::DrawImageStretch(Sprite* sprite, const Bounds &bounds, Color color)
+    void SCREEN_DrawBuffer::DrawImageStretch(const Sprite& sprite, const Bounds &bounds, Color color)
     {
         DrawImageStretch(sprite, bounds.x, bounds.y, bounds.x2(), bounds.y2(), color);
     }

@@ -234,7 +234,7 @@ namespace LucreApp
     void UI::Health(const float health)
     {
         //draw health bar
-        Sprite* whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
+        Sprite whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
         float x1 = 32.0f, y1 = 52.0f, x2 = 132.0f, y2 = 90.0f;
         Color colorForeground = 0xFF442a28;
         Color colorBackground = 0xC0000000;

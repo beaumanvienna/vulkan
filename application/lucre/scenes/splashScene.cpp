@@ -71,16 +71,16 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
 
-            SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(m_Guybrush[i], spriteRendererComponent);
+            SpriteRendererComponent2D spriteRendererComponent2D{};
+            m_Registry.emplace<SpriteRendererComponent2D>(m_Guybrush[i], spriteRendererComponent2D);
         }
 
         // logo
         {
             Builder builder{};
 
-            m_LogoSprite = Lucre::m_Spritesheet->GetSprite(I_LUCRE);
-            builder.LoadSprite(m_LogoSprite);
+            auto logoSprite = Lucre::m_Spritesheet->GetSprite(I_LUCRE);
+            builder.LoadSprite(logoSprite);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"logo", model};
             mesh.m_Enabled = true;
@@ -91,8 +91,8 @@ namespace LucreApp
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Logo, transform);
 
-            SpriteRendererComponent spriteRendererComponent{};
-            m_Registry.emplace<SpriteRendererComponent>(m_Logo, spriteRendererComponent);
+            SpriteRendererComponent2D spriteRendererComponent2D{};
+            m_Registry.emplace<SpriteRendererComponent2D>(m_Logo, spriteRendererComponent2D);
         }
         Init();
     }
@@ -105,27 +105,29 @@ namespace LucreApp
         m_WindowHeight      = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
         // walk
-        float scaleHero     = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0)->m_Height;
-        m_SpritesheetWalk.SetScale(scaleHero);
+        float scaleHero     = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
+        
         m_GuybrushWalkDelta = m_WindowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
-            float width  = m_SpritesheetWalk.GetSprite(i)->GetWidth();
-            float height = m_SpritesheetWalk.GetSprite(i)->GetHeight();
+            auto sprite = m_SpritesheetWalk.GetSprite(i);
+            sprite.SetScale(scaleHero);
+            float width  = sprite.GetWidth();
+            float height = sprite.GetHeight();
 
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
             transform.SetScale({width, height, 0.0f});
-            transform.SetTranslationY(m_WindowHeight * 0.65f);
+            transform.SetTranslationY(m_WindowHeight * 0.35f);
         }
 
         // logo
         {
-            float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE)->GetWidth();
-            float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE)->GetHeight();
+            float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetWidth();
+            float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetHeight();
             float scale = m_WindowHeight / height * 0.2f;
             auto& transform = m_Registry.get<TransformComponent>(m_Logo);
             transform.SetScale({scale * width, scale * height, 0.0f});
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.7f, 0.0f});
         }
     }
 
