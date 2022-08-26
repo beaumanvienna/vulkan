@@ -1145,7 +1145,13 @@ namespace GfxRenderEngine
         {
             if (m_Image.IsValid())
             {
-                dc.Draw()->DrawImage(m_Image, bounds_.x, bounds_.y, 1.0f, 0xFFFFFFFF, ALIGN_TOPLEFT);
+                glm::vec3 translation = glm::vec3(bounds_.x, bounds_.y, 0.0f);
+                glm::mat4 transformationMatrix = Translate(translation);
+
+                // transformed position
+                glm::mat4 position = transformationMatrix * m_Image.GetMat4();
+                dc.Draw()->DrawWithTransform(m_Image, position);
+                //dc.Draw()->DrawImage(m_Image, bounds_.x, bounds_.y, 1.0f, 0xFFFFFFFF, ALIGN_TOPLEFT);
             }
         }
 

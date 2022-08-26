@@ -92,90 +92,23 @@ namespace GfxRenderEngine
         void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
         void DrawImageStretch(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
         void DrawImageStretch(const Sprite& sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
-    //    void DrawImageRotated(SCREEN_ImageID sprite, float x, float y, float scale, float angle, Color color = COLOR(0xFFFFFF), bool mirror_h = false);
+        void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform);
         void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color);
-    //    void DrawTexRect(const Bounds &bounds, float u1, float v1, float u2, float v2, Color color) 
-    //    {
-    //        DrawTexRect(bounds.x, bounds.y, bounds.x2(), bounds.y2(), u1, v1, u2, v2, color);
-    //    }
-    //
         void DrawImage4Grid(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
-    //    void DrawImage2GridH(SCREEN_ImageID sprite, float x1, float y1, float x2, Color color = COLOR(0xFFFFFF), float scale = 1.0);
-    //
         void MeasureText(FontID font, const char *text, float *w, float *h);
         void MeasureTextCount(FontID font, const char *text, int count, float *w, float *h);
         void MeasureTextRect(FontID font, const char *text, int count, const Bounds &bounds, float *w, float *h, int align = 0);
         void DrawTextRect(FontID font, const char *text, float x, float y, float w, float h, Color color = 0xFFFFFFFF, int align = 0);
         void DrawText(FontID font, const char *text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
-    //    void DrawTextShadow(FontID font, const char *text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
 
         void SetFontScale(float xs, float ys);
 
         static void DoAlign(int flags, float *x, float *y, float *w, float *h);
-    //
-    //    void PushDrawMatrix(const SCREEN_Lin::SCREEN_Matrix4x4 &m) 
-    //    {
-    //        drawMatrixStack_.push_back(drawMatrix_);
-    //        drawMatrix_ = m;
-    //    }
-    //
-    //    void PopDrawMatrix() 
-    //    {
-    //        drawMatrix_ = drawMatrixStack_.back();
-    //        drawMatrixStack_.pop_back();
-    //    }
-    //
-    //    SCREEN_Lin::SCREEN_Matrix4x4 GetDrawMatrix() 
-    //    {
-    //        return drawMatrix_;
-    //    }
-    //
-    //    void PushAlpha(float a) 
-    //    {
-    //        alphaStack_.push_back(alpha_);
-    //        alpha_ *= a;
-    //    }
-    //
-    //    void PopAlpha() 
-    //    {
-    //        alpha_ = alphaStack_.back();
-    //        alphaStack_.pop_back();
-    //    }
-    //
-    //    void SetCurZ(float curZ) 
-    //    {
-    //        curZ_ = curZ;
-    //    }
-    //
-    //private:
-    //    struct Vertex 
-    //    {
-    //        float x, y, z;
-    //        float u, v;
-    //        uint32_t rgba;
-    //    };
-    //
-    //    glm::mat4 drawMatrix_;
-    //    std::vector<glm::mat4> drawMatrixStack_;
-    //
-    //    float alpha_ = 1.0f;
-    //    std::vector<float> alphaStack_;
-    //
-    //    SCREEN_Draw::SCREEN_DrawContext *draw_;
-    //    SCREEN_Draw::SCREEN_Buffer *vbuf_;
-    //    SCREEN_Draw::SCREEN_Pipeline *pipeline_;
-    //
-    //    Vertex *verts_;
-    //    int count_;
-    //    const SCREEN_Atlas *atlas;
-    //
-    //    bool inited_;
+
         float fontscalex;
         float fontscaley;
         std::shared_ptr<Renderer> m_Renderer;
 
-    //
-    //    float curZ_ = 0.0f;
     private:
         glm::vec4 ConvertColor(Color color);
     };

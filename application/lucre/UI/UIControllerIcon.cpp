@@ -54,8 +54,8 @@ namespace LucreApp
         m_Controller1MoveIn.Reset();
         m_Controller1MoveOut.Reset();
 
-        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.1f);
-        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.1f);
+        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.9f);
+        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.9f);
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));

@@ -33,7 +33,7 @@ namespace LucreApp
     void ControllerSetupAnimation::OnAttach() 
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 1.0f, -1.0f);
+        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 1.0f, 1.0f);
     }
 
     void ControllerSetupAnimation::OnDetach()  {}

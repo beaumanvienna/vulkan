@@ -92,6 +92,48 @@ namespace GfxRenderEngine
         );
     }
 
+    // uses guiShader
+    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& modelViewProjectionMatrix)
+    {
+        // this function takes in a sprite and transformation matrix to be applied to the normalized device coordinates
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_GlobalDescriptorSet,
+            0,
+            nullptr
+        );
+        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+
+        VK_PushConstantDataGUIRenderer push{};
+        push.m_MVP  = modelViewProjectionMatrix;
+
+        push.m_UV[0]  = {sprite.m_Pos1X, sprite.m_Pos1Y};
+        push.m_UV[1]  = {sprite.m_Pos2X, sprite.m_Pos2Y};
+
+        vkCmdPushConstants(
+            frameInfo.m_CommandBuffer,
+            m_PipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_PushConstantDataGUIRenderer),
+            &push);
+
+        vkCmdDraw
+            (
+                frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer
+                m_VertexCount,                  // uint32_t        vertexCount
+                1,                              // uint32_t        instanceCount
+                0,                              // uint32_t        firstVertex
+                0                               // uint32_t        firstInstance
+            );
+    }
+
+    // uses guiShader2
     void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
         // this function takes in a sprite, four 2D positions, and a color
@@ -118,46 +160,6 @@ namespace GfxRenderEngine
         push.m_Mat4[2][2] = Engine::m_Engine->GetWindowWidth();
         push.m_Mat4[2][3] = Engine::m_Engine->GetWindowHeight();
         push.m_Mat4[3][2] = textureID;
-
-        push.m_UV[0]  = {sprite.m_Pos1X, sprite.m_Pos1Y};
-        push.m_UV[1]  = {sprite.m_Pos2X, sprite.m_Pos2Y};
-
-        vkCmdPushConstants(
-            frameInfo.m_CommandBuffer,
-            m_PipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(VK_PushConstantDataGUIRenderer),
-            &push);
-
-        vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer
-                m_VertexCount,                  // uint32_t        vertexCount
-                1,                              // uint32_t        instanceCount
-                0,                              // uint32_t        firstVertex
-                0                               // uint32_t        firstInstance
-            );
-    }
-
-    void VK_RenderSystemGUIRenderer::RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& modelViewProjectionMatrix)
-    {
-        // this function takes in a sprite and transformation matrix to be applied to the normalized device coordinates
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
-        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
-
-        VK_PushConstantDataGUIRenderer push{};
-        push.m_MVP  = modelViewProjectionMatrix;
 
         push.m_UV[0]  = {sprite.m_Pos1X, sprite.m_Pos1Y};
         push.m_UV[1]  = {sprite.m_Pos2X, sprite.m_Pos2Y};

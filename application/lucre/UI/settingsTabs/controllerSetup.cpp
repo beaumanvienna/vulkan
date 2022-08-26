@@ -160,12 +160,13 @@ namespace LucreApp
                 }
                 textViewLayout->Add(m_TextSetup1);
                 if (IsRunning()) textViewLayout->Add(m_TextSetup1b);
-                controllerHorizontal->Add(new Spacer(halfIconWidth / 2));
+                controllerHorizontal->Add(new Spacer( 2.0f * marginLeftRight));
 
                 // controller pic
                 LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
 
                 Sprite controllerSprite = m_Spritesheet->GetSprite(I_CONTROLLER);
+                controllerSprite.SetScale(0.5f);
                 controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));

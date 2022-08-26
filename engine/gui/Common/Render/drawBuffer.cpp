@@ -85,6 +85,11 @@ namespace GfxRenderEngine
         m_Renderer->Draw(sprite, position, colorVec);
     }
 
+    void SCREEN_DrawBuffer::DrawWithTransform(const Sprite& sprite, const glm::mat4& transform)
+    {
+        m_Renderer->DrawWithTransform(sprite, transform);
+    }
+
     void SCREEN_DrawBuffer::DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color)
     {
 

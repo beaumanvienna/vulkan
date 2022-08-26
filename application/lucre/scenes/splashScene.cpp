@@ -117,7 +117,7 @@ namespace LucreApp
 
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
             transform.SetScale({width, height, 0.0f});
-            transform.SetTranslationY(m_WindowHeight * 0.35f);
+            transform.SetTranslationY(m_WindowHeight * 0.65f);
         }
 
         // logo
@@ -127,7 +127,7 @@ namespace LucreApp
             float scale = m_WindowHeight / height * 0.2f;
             auto& transform = m_Registry.get<TransformComponent>(m_Logo);
             transform.SetScale({scale * width, scale * height, 0.0f});
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.7f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
         }
     }
 
