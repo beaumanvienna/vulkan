@@ -238,14 +238,14 @@ namespace GfxRenderEngine
         m_Texture = originalSprite.m_Texture;
         bool rotated = originalSprite.IsRotated();
 
+        int tileWidth              = originalSprite.GetWidth() / frames;
+        int tileHeight             = originalSprite.GetHeight() ;
+
+        float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
+        float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
+
         if (rotated)
         {
-            int tileWidth              = originalSprite.GetWidth() / frames;
-            int tileHeight             = originalSprite.GetHeight() ;
-
-            float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
-            float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
-
             float advanceY             = tileHeightNormalized;
 
             float currentY = originalSprite.m_Pos1Y - tileHeightNormalized;
@@ -276,12 +276,6 @@ namespace GfxRenderEngine
         }
         else
         {
-            int tileWidth              = originalSprite.GetWidth() / frames;
-            int tileHeight             = originalSprite.GetHeight();
-
-            float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
-            float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
-
             float advanceX             = tileWidthNormalized;
 
             float currentX = originalSprite.m_Pos1X;

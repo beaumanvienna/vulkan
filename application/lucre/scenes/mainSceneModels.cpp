@@ -55,8 +55,8 @@ namespace LucreApp
                 m_Volcano[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Volcano[i], mesh);
 
-                sprite.SetScale(flip ? scale : -scale, scale);
-                TransformComponent& transform = sprite.GetTransform();
+                sprite.SetScale(scale, flip ? scale : -scale);
+                TransformComponent transform = TransformComponent(sprite.GetMat4());
                 transform.SetTranslation({-size * 2.0f + i * 2.0f * size, 10.0f, -20.0f});
 
                 m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
@@ -81,7 +81,7 @@ namespace LucreApp
                 m_Walkway[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
-                TransformComponent& transform = sprite.GetTransform();                
+                TransformComponent transform = TransformComponent(sprite.GetMat4());                
                 transform.SetRotation({-glm::half_pi<float>(), glm::half_pi<float>(), 0.0f});
                 transform.SetTranslation({0.5*i, -0.024f, -0.1f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);

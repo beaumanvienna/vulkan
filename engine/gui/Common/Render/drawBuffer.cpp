@@ -76,20 +76,12 @@ namespace GfxRenderEngine
     {
         glm::vec4 colorVec = ConvertColor(color);
         glm::mat4 position;
-        if (sprite.IsRotated())
-        {
-            position[0][0] = x1; position[1][0] = y2;
-            position[0][1] = x1; position[1][1] = y1;
-            position[0][2] = x2; position[1][2] = y1;
-            position[0][3] = x2; position[1][3] = y2;
-        }
-        else
-        {
-            position[0][0] = x1; position[1][0] = y1;
-            position[0][1] = x2; position[1][1] = y1;
-            position[0][2] = x2; position[1][2] = y2;
-            position[0][3] = x1; position[1][3] = y2;
-        }
+
+        position[0][0] = x1; position[1][0] = y1;
+        position[0][1] = x2; position[1][1] = y1;
+        position[0][2] = x2; position[1][2] = y2;
+        position[0][3] = x1; position[1][3] = y2;
+
         m_Renderer->Draw(sprite, position, colorVec);
     }
 

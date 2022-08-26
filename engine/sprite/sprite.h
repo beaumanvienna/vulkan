@@ -30,6 +30,7 @@
 
 namespace GfxRenderEngine
 {
+    class SpriteSheet;
     class Sprite
     {
 
@@ -64,17 +65,13 @@ namespace GfxRenderEngine
         Sprite();
 
         const std::string& GetName() const;
-
-        const glm::mat4& GetMat4() { return m_Transform.GetMat4(); }
-        TransformComponent& GetTransform();
-        uint GetTextureSlot() const { return m_Texture->GetTextureSlot(); }
+        const glm::mat4& GetMat4() const { return m_Transform; }
         void SetScale(const float scale);
         void SetScale(const float scaleX, const float scaleY);
         float GetWidth() const { return static_cast<float>(m_Width) * m_ScaleX; }
         float GetHeight() const { return static_cast<float>(m_Height) * m_ScaleY; }
         void Resize(uint width, uint height);
         float GetAspectRatio() const;
-        bool IsRotated() const { return m_Rotated; }
         bool IsValid() const { return m_IsValid; }
 
         float m_Pos1X, m_Pos1Y, m_Pos2X, m_Pos2Y;
@@ -83,6 +80,7 @@ namespace GfxRenderEngine
 
     private:
         void SetTransform();
+        bool IsRotated() const { return m_Rotated; }
 
     private:
         int m_Width, m_Height;
@@ -90,6 +88,9 @@ namespace GfxRenderEngine
         float m_ScaleX;
         float m_ScaleY;
         bool m_Rotated, m_IsValid;
-        TransformComponent m_Transform{};
+        glm::mat4 m_Transform;
+
+    private:
+        friend class SpriteSheet;
     };
 }

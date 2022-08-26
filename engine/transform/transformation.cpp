@@ -25,11 +25,14 @@
 #include "transform/transformation.h"
 #include "scene/components.h"
 
+#include "gtc/quaternion.hpp"
+#include "gtx/quaternion.hpp"
+
 namespace GfxRenderEngine
 {
 
     Transformation::Transformation(float duration)
-        : m_Duration(duration), m_StartTime(0s), m_Transformation(glm::mat4(1.0f)), m_IsRunning(false)
+        : m_Duration(duration), m_StartTime(0s), m_Transform(glm::mat4(1.0f)), m_IsRunning(false)
     {
     }
 
@@ -68,10 +71,10 @@ namespace GfxRenderEngine
             float deltaY = m_Pos1.y * (1 - delta) + m_Pos2.y * delta;
             glm::vec3 translation = glm::vec3(deltaX, deltaY, 0.0f);
 
-            m_Transformation = Translate(translation);
+            m_Transform = Translate(translation);
         }
 
-        return m_Transformation;
+        return m_Transform;
     };
 
     glm::vec3 Translation::GetTranslation()
@@ -100,10 +103,10 @@ namespace GfxRenderEngine
         {
             delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
             float deltaRotation = m_Rotation1 * (1 - delta) + m_Rotation2 * delta;
-            m_Transformation = Rotate( deltaRotation, glm::vec3(0, 0, 1));
+            m_Transform = Rotate( deltaRotation, glm::vec3(0, 0, 1));
         }
 
-        return m_Transformation;
+        return m_Transform;
     };
     
     glm::vec3 Rotation::GetRotation()
@@ -137,10 +140,10 @@ namespace GfxRenderEngine
             delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
             float deltaScaleX = m_ScaleX1 * (1 - delta) + m_ScaleX2 * delta;
             float deltaScaleY = m_ScaleY1 * (1 - delta) + m_ScaleY2 * delta;
-            m_Transformation = Scale(glm::vec3(deltaScaleX, deltaScaleY, 1.0f));
+            m_Transform = Scale(glm::vec3(deltaScaleX, deltaScaleY, 1.0f));
         }
 
-        return m_Transformation;
+        return m_Transform;
     };
 
     glm::vec3 Scaling::GetScale()
@@ -285,50 +288,31 @@ namespace GfxRenderEngine
         m_Scalings.push_back(scale);
     }
 
-    glm::mat4& Animation::GetTransformation()
+    const glm::mat4& Animation::GetMat4()
     {
         if (IsRunning()) 
         {
-            m_Transformation = glm::mat4(1.0f);
+            m_Transform = glm::mat4(1.0f);
             if (m_NumberOfScaleSequences)
             {
-                m_Transformation = m_Scalings[m_CurrentSequenceScale].GetTransformation() * m_Transformation;
+                m_Transform = m_Scalings[m_CurrentSequenceScale].GetTransformation() * m_Transform;
             }
             if (m_NumberOfRotationSequences)
             {
-                m_Transformation = m_Rotations[m_CurrentSequenceRotation].GetTransformation() * m_Transformation;
+                m_Transform = m_Rotations[m_CurrentSequenceRotation].GetTransformation() * m_Transform;
             }
             if (m_NumberOfTranslationSequences) 
             {
-                m_Transformation = m_Translations[m_CurrentSequenceTranslation].GetTransformation() * m_Transformation;
-            }
-        }
-        return m_Transformation;
-    }
-
-    void Animation::GetTransformation(TransformComponent& transform)
-    {
-        if (IsRunning()) 
-        {
-            if (m_NumberOfScaleSequences)
-            {
-                transform.SetScale(m_Scalings[m_CurrentSequenceScale].GetScale());
-            }
-            if (m_NumberOfRotationSequences)
-            {
-                transform.SetRotation(m_Rotations[m_CurrentSequenceRotation].GetRotation());
-            }
-            if (m_NumberOfTranslationSequences) 
-            {
-                transform.SetTranslation(m_Translations[m_CurrentSequenceTranslation].GetTranslation());
+                m_Transform = m_Translations[m_CurrentSequenceTranslation].GetTransformation() * m_Transform;
             }
         }
         else
         {
-            transform.SetScale(m_FinalScaling);
-            transform.SetRotation(m_FinalRotation);
-            transform.SetTranslation(m_FinalTranslation);
+            m_Transform = Scale(m_FinalScaling) * glm::mat4(1.0f);;
+            m_Transform = glm::toMat4(glm::quat(m_FinalRotation)) * m_Transform;
+            m_Transform = Translate(m_FinalTranslation) * m_Transform;
         }
+        return m_Transform;
     }
 
     void Animation::SetFinal(const glm::vec3& scaling, const glm::vec3& rotation, const glm::vec3 translation)

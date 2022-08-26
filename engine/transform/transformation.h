@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         bool m_IsRunning;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
         std::chrono::duration<float, std::chrono::seconds::period> m_Duration;
-        glm::mat4 m_Transformation;
+        glm::mat4 m_Transform;
 
     };
 
@@ -114,8 +114,7 @@ namespace GfxRenderEngine
         void AddTranslation(const Translation translation);
         void AddRotation(const Rotation rotation);
         void AddScaling(const Scaling scale);
-        glm::mat4& GetTransformation();
-        void GetTransformation(TransformComponent& transform);
+        const glm::mat4& GetMat4();
         void SetFinal(const glm::vec3& scaling, const glm::vec3& rotation, const glm::vec3 translation);
 
     private:
@@ -123,7 +122,8 @@ namespace GfxRenderEngine
         std::vector<Translation> m_Translations;
         std::vector<Rotation> m_Rotations;
         std::vector<Scaling> m_Scalings;
-        glm::mat4 m_Transformation;
+        glm::mat4 m_Transform;
+
         bool m_Running;
         int m_CurrentSequenceTranslation;
         int m_CurrentSequenceRotation;

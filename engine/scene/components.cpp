@@ -26,6 +26,7 @@
 
 #include "gtc/quaternion.hpp"
 #include "gtx/quaternion.hpp"
+#include "gtx/matrix_decompose.hpp"
 
 #include "scene/components.h"
 #include "auxiliary/file.h"
@@ -43,6 +44,21 @@ namespace GfxRenderEngine
         : m_Model{model}, m_Enabled{enabled}
     {
         m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
+    }
+
+    TransformComponent::TransformComponent()
+        : m_Scale(glm::vec3(1.0)), m_Rotation(glm::vec3(0.0)),
+          m_Translation(glm::vec3(0.0)), m_Dirty(true)
+    {}
+
+    TransformComponent::TransformComponent(const glm::mat4& transform)
+        : m_Mat4(transform), m_Dirty(false)
+    {
+        glm::quat rotation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(transform, m_Scale, rotation, m_Translation, skew, perspective);
+        m_Rotation = glm::eulerAngles(rotation);
     }
 
     void TransformComponent::SetScale(const glm::vec3& scale)
@@ -91,6 +107,7 @@ namespace GfxRenderEngine
         glm::vec3 convert = glm::eulerAngles(quaternion);
         // ZYX - model in Blender
         SetRotation(glm::vec3{convert.x, convert.y, convert.z});
+        m_Dirty = true;
     }
 
     void TransformComponent::SetRotationX(const float rotationX)

@@ -34,8 +34,12 @@ namespace LucreApp
 
         float duration = 1.0f;
         // star icon
+        float desktopWidth = Engine::m_Engine->GetDesktopWidth();
+        float windowHeight = Engine::m_Engine->GetWindowHeight();
+
+        float scale = 2.0f * windowHeight / desktopWidth;
         m_StarSprite = m_Spritesheet->GetSprite(I_STAR);
-        m_StarSprite.SetScale(20.0f);
+        m_StarSprite.SetScale(scale);
 
         // 1st star icon: move right to top right corner
         glm::vec2 finalOutOfScreenPosition;
@@ -152,21 +156,21 @@ namespace LucreApp
         if (m_StarMoveIn1.IsRunning())
         {
             {
-                auto animationMatrix = m_StarMoveIn1.GetTransformation();
+                auto animationMatrix = m_StarMoveIn1.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarMoveIn2.GetTransformation();
+                auto animationMatrix = m_StarMoveIn2.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarMoveIn3.GetTransformation();
+                auto animationMatrix = m_StarMoveIn3.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
@@ -176,21 +180,21 @@ namespace LucreApp
         else if (m_StarRotate1.IsRunning())
         {
             {
-                auto animationMatrix = m_StarRotate1.GetTransformation();
+                auto animationMatrix = m_StarRotate1.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarRotate2.GetTransformation();
+                auto animationMatrix = m_StarRotate2.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarRotate3.GetTransformation();
+                auto animationMatrix = m_StarRotate3.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
@@ -200,21 +204,21 @@ namespace LucreApp
         else if (m_StarMoveOut1.IsRunning())
         {
             {
-                auto animationMatrix = m_StarMoveOut1.GetTransformation();
+                auto animationMatrix = m_StarMoveOut1.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarMoveOut2.GetTransformation();
+                auto animationMatrix = m_StarMoveOut2.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();
                 m_Renderer->DrawWithTransform(m_StarSprite, position);
             }
             {
-                auto animationMatrix = m_StarMoveOut3.GetTransformation();
+                auto animationMatrix = m_StarMoveOut3.GetMat4();
 
                 // transformed position
                 glm::mat4 position = animationMatrix * m_StarSprite.GetMat4();

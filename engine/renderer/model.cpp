@@ -847,34 +847,18 @@ namespace GfxRenderEngine
         // 3 - 2
 
         Vertex vertex[4];
-        if (sprite.IsRotated())
-        {
-            // index /*slot*/0, 0.0f,  1.0f
-            vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
+        
+        // index /*slot*/0, 0.0f,  1.0f
+        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
 
-            // index 1, 1.0f,  1.0f
-            vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
+        // index 1, 1.0f,  1.0f
+        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
 
-            // index 2, 1.0f,  0.0f
-            vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
+        // index 2, 1.0f,  0.0f
+        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
 
-            // index 3, 0.0f,  0.0f
-            vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
-        }
-        else
-        {
-            // index /*slot*/0, 0.0f,  1.0f
-            vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
-
-            // index 1, 1.0f,  1.0f
-            vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
-
-            // index 2, 1.0f,  0.0f
-            vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
-
-            // index 3, 0.0f,  0.0f
-            vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
-        }
+        // index 3, 0.0f,  0.0f
+        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
 
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 

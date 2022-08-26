@@ -66,7 +66,6 @@ namespace GfxRenderEngine
                 m_Name(name), m_ScaleY(scale), 
                 m_Rotated(rotated), m_IsValid(true)
     {
-
         if (rotated)
         {
             m_Width = height;
@@ -113,7 +112,8 @@ namespace GfxRenderEngine
                 m_Pos2X(0.0f), m_Pos2Y(0.0f),
                 m_Texture(nullptr), m_Name(""),
                 m_ScaleX(0.0f), m_ScaleY(0.0f),
-                m_Rotated(false), m_IsValid(false)
+                m_Rotated(false), m_IsValid(false),
+                m_Transform(glm::mat4(1.0f))
     {
     }
 
@@ -137,13 +137,19 @@ namespace GfxRenderEngine
 
     void Sprite::SetTransform()
     {
-        m_Transform.SetScale({m_ScaleX * m_Width, m_ScaleY * m_Height, 1.0f});
-    }
-
-    TransformComponent& Sprite::GetTransform()
-    {
-        m_Transform.GetMat4();
-        return m_Transform;
+        glm::mat4 scale;
+        glm::mat4 rotation;
+        if (m_Rotated)
+        {
+            scale = Scale({m_ScaleX * m_Height, m_ScaleY * m_Width, 1.0f});
+            rotation = Rotate(glm::half_pi<float>(), {0.0f, 0.0f, 1.0f});
+        }
+        else
+        {
+            rotation = glm::mat4(1.0f);
+            scale = Scale({m_ScaleX * m_Width, m_ScaleY * m_Height, 1.0f});
+        }
+        m_Transform = rotation * scale;
     }
 
     void Sprite::Resize(uint width, uint height)

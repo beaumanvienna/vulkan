@@ -38,6 +38,9 @@ namespace GfxRenderEngine
     {
     public:
 
+        TransformComponent();
+        TransformComponent(const glm::mat4& transform);
+
         void SetScale(const glm::vec3& scale);
         void SetScale(const float scale);
         void SetScaleX(const float scaleX);
@@ -75,11 +78,11 @@ namespace GfxRenderEngine
     private:
 
         bool m_Dirty{true};
-        glm::vec3 m_Scale{1.0f};
-        glm::vec3 m_Rotation{};
-        glm::vec3 m_Translation{};
-        glm::mat4 m_Mat4{};
-        glm::mat3 m_NormalMatrix{};
+        glm::vec3 m_Scale;
+        glm::vec3 m_Rotation;
+        glm::vec3 m_Translation;
+        glm::mat4 m_Mat4;
+        glm::mat3 m_NormalMatrix;
 
     };
 
