@@ -993,7 +993,7 @@ namespace GfxRenderEngine
 
             Sprite image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
-            dc.Draw()->MeasureImage(image, &imageW, &imageH);
+            dc.Draw()->MeasureImage(image, imageW, imageH);
 
             const float paddingX = 12.0f;
             const float availWidth = bounds_.w - paddingX * 2 - imageW - paddingX;
@@ -1026,7 +1026,7 @@ namespace GfxRenderEngine
         {
             Sprite image = Toggled() ? dc.theme->checkOn : dc.theme->checkOff;
             float imageW, imageH;
-            dc.Draw()->MeasureImage(image, &imageW, &imageH);
+            dc.Draw()->MeasureImage(image, imageW, imageH);
 
             const float paddingX = 12.0f;
 
@@ -1138,7 +1138,7 @@ namespace GfxRenderEngine
 
         void ImageView::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
         {
-            dc.Draw()->MeasureImage(m_Image, &w, &h);
+            dc.Draw()->MeasureImage(m_Image, w, h);
         }
 
         void ImageView::Draw(SCREEN_UIContext &dc)
@@ -1520,7 +1520,7 @@ namespace GfxRenderEngine
     //
     //    void TriggerButton::GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const
     //    {
-    //        dc.Draw()->GetAtlas()->measureImage(imageBackground_, &w, &h);
+    //        dc.Draw()->GetAtlas()->measureImage(imageBackground_, w, h);
     //    }
 
         bool Slider::Key(const SCREEN_KeyInput &input)

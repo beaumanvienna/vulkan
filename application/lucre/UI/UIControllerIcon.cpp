@@ -46,7 +46,7 @@ namespace LucreApp
         float windowWidth  = Engine::m_Engine->GetWindowWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
 
-        float scale = 0.7f * windowHeight / desktopWidth;
+        float scale = 1.4f * windowHeight / desktopWidth;
         m_ControllerSprite.SetScale(scale);
 
         // controller 1

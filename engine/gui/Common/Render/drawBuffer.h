@@ -88,7 +88,7 @@ namespace GfxRenderEngine
         }
         ~SCREEN_DrawBuffer();
 
-        bool MeasureImage(const Sprite& sprite, float *w, float *h);
+        bool MeasureImage(const Sprite& sprite, float& w, float& h);
         void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
         void DrawImageStretch(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
         void DrawImageStretch(const Sprite& sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));

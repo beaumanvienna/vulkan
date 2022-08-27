@@ -91,7 +91,7 @@ namespace LucreApp
         float availableHeight = Engine::m_Engine->GetWindowHeight();
         float marginLeftRight = 128.0f;
         float marginUpDown = 128.0f;
-        float iconWidth = 50.0f;
+        float iconWidth = 128.0f;
         float iconHeight = iconWidth;
         float iconSpacer = 80.0f;
 
@@ -119,19 +119,19 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(0.5f);
+            icon.SetScale(1.0f);
             icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(0.5f);
+            icon_active.SetScale(1.0f);
             icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(0.5f);
+            icon_depressed.SetScale(1.0f);
 
-            m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconWidth));
+            m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-            icon.SetScale(1.0f);
-            m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight));
+            icon.SetScale(2.0f);
+            m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
 
         m_SettingsButton->OnClick.Handle(this, &MainScreen::settingsClick);
@@ -155,18 +155,18 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(0.5f);
+            icon.SetScale(1.0f);
             icon_active = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(0.5f);
+            icon_active.SetScale(1.0f);
             icon_depressed = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(0.5f);
-            m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(iconWidth, iconHeight),true);
+            icon_depressed.SetScale(1.0f);
+            m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()),true);
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_OFF));
-            icon.SetScale(1.0f);
-            m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(iconWidth, iconHeight), true);
+            icon.SetScale(2.0f);
+            m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()), true);
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::offClick);
         m_OffButton->OnHold.Handle(this, &MainScreen::offHold);

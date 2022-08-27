@@ -141,13 +141,13 @@ namespace GfxRenderEngine
         glm::mat4 rotation;
         if (m_Rotated)
         {
-            scale = Scale({m_ScaleX * m_Height, m_ScaleY * m_Width, 1.0f});
+            scale = Scale({m_ScaleX * m_Height / 2.0f, m_ScaleY * m_Width / 2.0f, 1.0f});
             rotation = Rotate(glm::half_pi<float>(), {0.0f, 0.0f, 1.0f});
         }
         else
         {
             rotation = glm::mat4(1.0f);
-            scale = Scale({m_ScaleX * m_Width, m_ScaleY * m_Height, 1.0f});
+            scale = Scale({m_ScaleX * m_Width / 2.0f, m_ScaleY * m_Height / 2.0f, 1.0f});
         }
         m_Transform = rotation * scale;
     }

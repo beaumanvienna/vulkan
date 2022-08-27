@@ -39,10 +39,10 @@ namespace GfxRenderEngine
 
     extern std::shared_ptr<Texture> gTextureFontAtlas;
 
-    bool SCREEN_DrawBuffer::MeasureImage(const Sprite& sprite, float *w, float *h)
+    bool SCREEN_DrawBuffer::MeasureImage(const Sprite& sprite, float& w, float& h)
     {
-        *w = sprite.GetWidth();
-        *h = sprite.GetHeight();
+        w = sprite.GetWidth();
+        h = sprite.GetHeight();
         return true;
     }
 

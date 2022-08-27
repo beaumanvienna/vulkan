@@ -121,18 +121,18 @@ namespace LucreApp
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-                    icon.SetScale(0.5f);
+                    icon.SetScale(1.0f);
                     icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-                    icon_active.SetScale(0.5f);
+                    icon_active.SetScale(1.0f);
                     icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-                    icon_depressed.SetScale(0.5f);
+                    icon_depressed.SetScale(1.0f);
 
                     setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconWidth));
                 }
                 else 
                 {
                     icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-                    icon.SetScale(1.0f);
+                    icon.SetScale(2.0f);
                     setupButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
                 }
 
@@ -166,7 +166,7 @@ namespace LucreApp
                 LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
 
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
-                controllerSprite.SetScale(0.5f);
+                controllerSprite.SetScale(1.0f);
                 controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));
@@ -202,18 +202,18 @@ namespace LucreApp
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-                    icon.SetScale(0.5f);
+                    icon.SetScale(1.0f);
                     icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-                    icon_active.SetScale(0.5f);
+                    icon_active.SetScale(1.0f);
                     icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-                    icon_depressed.SetScale(0.5f);
+                    icon_depressed.SetScale(1.0f);
 
                     setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconWidth));
                 }
                 else 
                 {
                     icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-                    icon.SetScale(1.0f);
+                    icon.SetScale(2.0f);
                     setupButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
                 }
 
@@ -247,7 +247,7 @@ namespace LucreApp
                 LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
 
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
-                controllerSprite.SetScale(0.5f);
+                controllerSprite.SetScale(1.0f);
                 controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));

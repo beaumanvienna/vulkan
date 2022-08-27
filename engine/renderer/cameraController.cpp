@@ -71,20 +71,20 @@ namespace GfxRenderEngine
             {
                 float normalize = Engine::m_Engine->GetWindowWidth();
 
-                float ortho_left   =  0.0f;
-                float ortho_right  =  normalize;
-                float ortho_bottom =  normalize / aspectRatio;
-                float ortho_top    =  0.0f;
-                float ortho_near   =  1.0f;
-                float ortho_far    = -1.0f;
+                float orthoLeft   =  0.0f;
+                float orthoRight  =  normalize;
+                float orthoBottom =  normalize / aspectRatio;
+                float orthoTop    =  0.0f;
+                float orthoNear   =  2.0f;
+                float orthoFar    = -2.0f;
                 m_Camera->SetOrthographicProjection
                 (
-                    ortho_left * m_ZoomFactor,
-                    ortho_right * m_ZoomFactor,
-                    ortho_bottom * m_ZoomFactor,
-                    ortho_top * m_ZoomFactor,
-                    ortho_near,
-                    ortho_far
+                    orthoLeft * m_ZoomFactor,
+                    orthoRight * m_ZoomFactor,
+                    orthoBottom * m_ZoomFactor,
+                    orthoTop * m_ZoomFactor,
+                    orthoNear,
+                    orthoFar
                 );
                 break;
             }

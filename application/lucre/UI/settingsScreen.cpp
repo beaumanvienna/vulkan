@@ -90,7 +90,7 @@ namespace LucreApp
         float availableWidth  = Engine::m_Engine->GetWindowWidth();
         float availableHeight = Engine::m_Engine->GetWindowHeight();
 
-        float iconWidth = 50.0f;
+        float iconWidth = 128.0f;
         float iconHeight = iconWidth;
         float stripSize = 100.0f * TAB_SCALE;
         float tabMargin = 50.0f;
@@ -117,13 +117,13 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         { 
             icon = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
-            icon.SetScale(0.5f);
+            icon.SetScale(1.5f);
             icon_active = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED));
-            icon_active.SetScale(0.5f);
+            icon_active.SetScale(1.5f);
             icon_depressed = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED));
-            icon_depressed.SetScale(0.5f);
+            icon_depressed.SetScale(1.5f);
             icon_depressed_inactive = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
-            icon_depressed_inactive.SetScale(0.5f);
+            icon_depressed_inactive.SetScale(1.5f);
             m_TabHolder->SetIcon(icon,icon_active,icon_depressed,icon_depressed_inactive);
         }
 
@@ -134,17 +134,17 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(0.5f);
+            icon.SetScale(1.0f);
             icon_active = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(0.5f);
+            icon_active.SetScale(1.0f);
             icon_depressed = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(0.5f);
+            icon_depressed.SetScale(1.0f);
             backButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconHeight));
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_BACK));
-            icon.SetScale(1.0f);
+            icon.SetScale(2.0f);
             backButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
         }
         backButton->SetTag("backButton");
