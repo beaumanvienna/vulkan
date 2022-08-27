@@ -45,7 +45,7 @@ namespace LucreApp
     public:
 
         UIStarIcon(bool narrow, const std::string& name = "layer")
-            : Layer(name)
+            : Layer(name), m_Narrow(narrow)
         {
         }
 

@@ -37,7 +37,7 @@ namespace LucreApp
         float desktopWidth = Engine::m_Engine->GetDesktopWidth();
         float windowHeight = Engine::m_Engine->GetWindowHeight();
 
-        float scale = 2.0f * windowHeight / desktopWidth;
+        float scale = 4.0f * windowHeight / desktopWidth;
         m_StarSprite = Sprite2D(m_Spritesheet->GetSprite(I_STAR));
         m_StarSprite.SetScale(scale);
 
@@ -51,7 +51,7 @@ namespace LucreApp
         }
         else
         {
-            finalScreenPosition1    = glm::vec2( 10.0f, 260.0f);
+            finalScreenPosition1    = glm::vec2( 1794.0f, 288.0f);
         }
 
         m_StarMoveIn1.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition1));
@@ -71,7 +71,7 @@ namespace LucreApp
         }
         else
         {
-            finalScreenPosition2 = glm::vec2(100.0f, 500.0f);
+            finalScreenPosition2 = glm::vec2(318.0f, 288.0f);
         }
 
         m_StarMoveIn2.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition2));
@@ -91,7 +91,7 @@ namespace LucreApp
         }
         else
         {
-            finalScreenPosition3 = glm::vec2(100.0f, 350.0f);
+            finalScreenPosition3 = glm::vec2(318.0f, 788.0f);
         }
 
         m_StarMoveIn3.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition3));

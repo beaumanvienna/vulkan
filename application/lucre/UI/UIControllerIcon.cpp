@@ -54,8 +54,16 @@ namespace LucreApp
         m_Controller1MoveIn.Reset();
         m_Controller1MoveOut.Reset();
 
-        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.9f);
-        glm::vec2 finalScreenPosition(275.0f*scale, windowHeight * 0.9f);
+        glm::vec2 finalOutOfScreenPosition(windowWidth * 1.1f, windowHeight * 0.93f);
+        glm::vec2 finalScreenPosition;
+        if (m_Indent)
+        {
+            finalScreenPosition = glm::vec2{260.0f, windowHeight * 0.93f};
+        }
+        else
+        {
+            finalScreenPosition = glm::vec2{97.0f, windowHeight * 0.93f};
+        }
 
         // controller icon: move left to center
         m_Controller1MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -94,7 +102,14 @@ namespace LucreApp
         m_Controller2MoveIn.Reset();
         m_Controller2MoveOut.Reset();
 
-        finalScreenPosition = glm::vec2{windowWidth * 0.3f, windowHeight * 0.9f};
+        if (m_Indent)
+        {
+            finalScreenPosition = glm::vec2{430.0f, windowHeight * 0.93f};
+        }
+        else
+        {
+            finalScreenPosition = glm::vec2{267.0f, windowHeight * 0.93f};
+        }
 
         // controller icon: move left to center
         m_Controller2MoveIn.AddTranslation(Translation(1.0f, finalOutOfScreenPosition, finalScreenPosition));
@@ -230,6 +245,15 @@ namespace LucreApp
 
             SpriteRendererComponent2D spriteRendererComponent2D{};
             m_Registry.emplace<SpriteRendererComponent2D>(m_ID2, spriteRendererComponent2D);
+        }
+    }
+
+    void UIControllerIcon::Indent(bool indent)
+    {
+        if (m_Indent != indent)
+        {
+            m_Indent = indent;
+            Init();
         }
     }
 }

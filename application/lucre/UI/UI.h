@@ -41,7 +41,7 @@ namespace LucreApp
 
     public:
 
-        UI(const std::string& name = "U")
+        UI(const std::string& name = "UI")
             : Layer(name) {}
 
         void OnAttach() override;

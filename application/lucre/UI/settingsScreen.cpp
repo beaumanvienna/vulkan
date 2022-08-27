@@ -264,9 +264,9 @@ namespace LucreApp
         credits->Add(new TextView
         (
             "\n"
-            "     The in-game GUI of this project is based on the project\n"
+            "   The in-game GUI used in Lucre is based on\n"
             "\n"
-            "     PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
+            "       PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
             "\n",
             ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - 3.0f * iconWidth - 64.0f, 500.0f)));
 

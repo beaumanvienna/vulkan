@@ -61,7 +61,7 @@ namespace LucreApp
         m_UI = new UI("UI");
         Engine::m_Engine->PushLayer(m_UI);
 
-        m_UIControllerIcon = new UIControllerIcon("UI controller");
+        m_UIControllerIcon = new UIControllerIcon(false /* indent */, "UI controller");
         Engine::m_Engine->PushOverlay(m_UIControllerIcon);
 
         m_Renderer = Engine::m_Engine->GetRenderer();
@@ -87,9 +87,13 @@ namespace LucreApp
         m_CurrentScene->OnUpdate(timestep);
 
         // update/render layer stack
-        m_UI->Health(90.0f);
+        // helath bar
+        if (m_GameState.GetState() == GameState::State::MAIN) m_UI->Health(90.0f);
+        // controller icons
+        m_UIControllerIcon->Indent(m_GameState.GetState() == GameState::State::SETTINGS);
         m_UIControllerIcon->OnUpdate(timestep);
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
+        // gui
         if (m_GUIisRunning)
         {
             m_UI->OnUpdate(timestep);  // direct submits
@@ -209,7 +213,7 @@ namespace LucreApp
             }
         );
 
-                // dispatch to application
+        // dispatch to application
         if (!event.IsHandled())
         {
             m_CurrentScene->OnEvent(event);

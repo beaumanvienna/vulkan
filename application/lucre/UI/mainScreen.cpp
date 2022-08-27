@@ -134,7 +134,7 @@ namespace LucreApp
             m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
 
-        m_SettingsButton->OnClick.Handle(this, &MainScreen::settingsClick);
+        m_SettingsButton->OnClick.Handle(this, &MainScreen::SettingsClick);
         m_SettingsButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
         {
             if (!m_ToolTipsShown[MAIN_SETTINGS])
@@ -168,8 +168,8 @@ namespace LucreApp
             icon.SetScale(2.0f);
             m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()), true);
         }
-        m_OffButton->OnClick.Handle(this, &MainScreen::offClick);
-        m_OffButton->OnHold.Handle(this, &MainScreen::offHold);
+        m_OffButton->OnClick.Handle(this, &MainScreen::OffClick);
+        m_OffButton->OnHold.Handle(this, &MainScreen::OffHold);
         m_OffButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
         {
             if (!m_ToolTipsShown[MAIN_OFF])
@@ -193,7 +193,7 @@ namespace LucreApp
         SCREEN_UIScreen::update();
     }
 
-    SCREEN_UI::EventReturn MainScreen::settingsClick(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::SettingsClick(SCREEN_UI::EventParams &e)
     {
         SettingsScreen* settingsScreen = new SettingsScreen();
         settingsScreen->OnAttach();
@@ -202,7 +202,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::offClick(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::OffClick(SCREEN_UI::EventParams &e)
     {
         auto ma = GetI18NCategory("System");
         auto offClick = new OffDialog(ma->T("Exit Lucre?"), OFFDIAG_QUIT);
@@ -216,7 +216,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::offHold(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::OffHold(SCREEN_UI::EventParams &e)
     {
         auto ma = GetI18NCategory("System");
         auto offDiag = new OffDialog(ma->T("Switch off computer?"), OFFDIAG_SHUTDOWN);

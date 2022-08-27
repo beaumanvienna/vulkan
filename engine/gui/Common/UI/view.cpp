@@ -808,7 +808,13 @@ namespace GfxRenderEngine
             }
             else
             {
-                dc.Draw()->DrawImage(m_Image, bounds_.centerX(), bounds_.centerY(), 1.0f, style.fgColor, ALIGN_CENTER);
+                glm::vec3 translation = glm::vec3(bounds_.centerX(), bounds_.centerY(), 0.0f);
+                glm::mat4 transformationMatrix = Translate(translation);
+
+                // transformed position
+                glm::mat4 position = transformationMatrix * m_Image.GetMat4();
+                renderer->DrawWithTransform(m_Image, position);
+                
             }
 
             dc.SetFontStyle(dc.theme->uiFont);

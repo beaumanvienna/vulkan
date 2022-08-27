@@ -50,9 +50,9 @@ namespace LucreApp
 
         void CreateViews() override;
 
-        SCREEN_UI::EventReturn settingsClick(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn offClick(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn offHold(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn SettingsClick(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams &e);
 
     private:
 

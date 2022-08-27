@@ -38,13 +38,14 @@ namespace LucreApp
 
     public:
 
-        UIControllerIcon(const std::string& name = "UIControllerIcon")
-            : Layer(name) {}
+        UIControllerIcon(bool indent, const std::string& name = "UIControllerIcon")
+            : Layer(name), m_Indent(indent) {}
 
         void OnAttach() override;
         void OnDetach() override;
         void OnEvent(Event& event) override;
         void OnUpdate(const Timestep& timestep) override;
+        void Indent(bool indent);
         bool IsMovingIn();
         void Init();
 
@@ -60,6 +61,7 @@ namespace LucreApp
 
         Sprite2D m_ControllerSprite;
         entt::entity m_ID1, m_ID2;
+        bool m_Indent;
 
         Animation m_Controller1MoveIn;
         Animation m_Controller1MoveOut;
