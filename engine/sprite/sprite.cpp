@@ -163,4 +163,78 @@ namespace GfxRenderEngine
     {
         return static_cast<float>(m_Height) / static_cast<float>(m_Width);
     }
+
+    // --------- Sprite2D ---------
+
+    Sprite2D::Sprite2D(const Sprite& sprite) :
+            Sprite(sprite.m_Pos1X, sprite.m_Pos1Y,
+                   sprite.m_Pos2X, sprite.m_Pos2Y,
+                   sprite.m_Width, sprite.m_Height,
+                   sprite.m_Texture, sprite.m_Name,
+                   sprite.m_ScaleX, sprite.m_ScaleY,
+                   sprite.m_Rotated)
+    {
+        Flip();
+    }
+
+    Sprite2D::Sprite2D(
+        const float pos1X, const float pos1Y, 
+        const float pos2X, const float pos2Y,
+        const int  width, const int  height,
+        const std::shared_ptr<Texture> texture,
+        const std::string& name,
+        const float scale) :
+            Sprite(pos1X, pos1Y,
+                   pos2X, pos2Y,
+                   width, height,
+                   texture, name,
+                   scale)
+    {
+        Flip();
+    }
+
+    Sprite2D::Sprite2D(
+        const float pos1X, const float pos1Y, 
+        const float pos2X, const float pos2Y,
+        const int  width, const int  height,
+        const std::shared_ptr<Texture> texture,
+        const std::string& name,
+        const float scale,
+        const bool rotated) :
+            Sprite(pos1X, pos1Y,
+                   pos2X, pos2Y,
+                   width, height,
+                   texture, name,
+                   scale, rotated)
+    {
+        Flip();
+    }
+
+    Sprite2D::Sprite2D(
+        const float pos1X, const float pos1Y, 
+        const float pos2X, const float pos2Y,
+        const int  width, const int  height,
+        const std::shared_ptr<Texture> texture,
+        const std::string& name,
+        const float scaleX, const float scaleY,
+        const bool rotated) :
+            Sprite(pos1X, pos1Y,
+                   pos2X, pos2Y,
+                   width, height,
+                   texture, name,
+                   scaleX, scaleY,
+                   rotated)
+    {
+        Flip();
+    }
+
+    Sprite2D::Sprite2D()
+        : Sprite()
+    {
+    }
+
+    void Sprite2D::Flip()
+    {
+        std::swap(m_Pos1Y, m_Pos2Y);
+    }
 }

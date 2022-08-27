@@ -31,6 +31,7 @@
 namespace GfxRenderEngine
 {
     class SpriteSheet;
+    class Sprite2D;
     class Sprite
     {
 
@@ -82,7 +83,7 @@ namespace GfxRenderEngine
         void SetTransform();
         bool IsRotated() const { return m_Rotated; }
 
-    private:
+    protected:
         int m_Width, m_Height;
         std::string m_Name;
         float m_ScaleX;
@@ -92,5 +93,51 @@ namespace GfxRenderEngine
 
     private:
         friend class SpriteSheet;
+        friend class Sprite2D;
+    };
+
+    // --------- Sprite2D ---------
+    // a wrapper for sprite with
+    // pos1Y and pos2Y flipped 
+    // to support a camera in the
+    // opposite up direction
+
+    class Sprite2D : public Sprite
+    {
+
+    public:
+        Sprite2D(const Sprite& sprite);
+
+        Sprite2D(
+                const float pos1X, const float pos1Y, 
+                const float pos2X, const float pos2Y,
+                const int width,  const int height,
+                const std::shared_ptr<Texture> texture,
+                const std::string& name,
+                const float scale = 1.0f);
+
+        Sprite2D(
+                const float pos1X, const float pos1Y, 
+                const float pos2X, const float pos2Y,
+                const int width,  const int height,
+                const std::shared_ptr<Texture> texture,
+                const std::string& name,
+                const float scale,
+                const bool rotated);
+
+        Sprite2D(
+                const float pos1X, const float pos1Y, 
+                const float pos2X, const float pos2Y,
+                const int width,  const int height,
+                const std::shared_ptr<Texture> texture,
+                const std::string& name,
+                const float scaleX,
+                const float scaleY,
+                const bool rotated = false);
+
+        Sprite2D();
+
+    private:
+        void Flip();
     };
 }
