@@ -167,14 +167,22 @@ namespace GfxRenderEngine
     // --------- Sprite2D ---------
 
     Sprite2D::Sprite2D(const Sprite& sprite) :
-            Sprite(sprite.m_Pos1X, sprite.m_Pos1Y,
-                   sprite.m_Pos2X, sprite.m_Pos2Y,
-                   sprite.m_Width, sprite.m_Height,
-                   sprite.m_Texture, sprite.m_Name,
-                   sprite.m_ScaleX, sprite.m_ScaleY,
-                   sprite.m_Rotated)
+            Sprite()
     {
-        Flip();
+        m_Pos1X     = sprite.m_Pos1X;
+        m_Pos1Y     = sprite.m_Pos1Y;
+        m_Pos2X     = sprite.m_Pos2X;
+        m_Pos2Y     = sprite.m_Pos2Y;
+        m_Width     = sprite.m_Width;
+        m_Height    = sprite.m_Height;
+        m_Texture   = sprite.m_Texture;
+        m_Name      = sprite.m_Name;
+        m_ScaleX    = sprite.m_ScaleX;
+        m_ScaleY    = sprite.m_ScaleY;
+        m_Rotated   = sprite.m_Rotated;
+        m_IsValid   = sprite.m_IsValid;
+        m_Transform = sprite.m_Transform;
+        FlipY();
     }
 
     Sprite2D::Sprite2D(
@@ -190,7 +198,7 @@ namespace GfxRenderEngine
                    texture, name,
                    scale)
     {
-        Flip();
+        FlipY();
     }
 
     Sprite2D::Sprite2D(
@@ -207,7 +215,7 @@ namespace GfxRenderEngine
                    texture, name,
                    scale, rotated)
     {
-        Flip();
+        FlipY();
     }
 
     Sprite2D::Sprite2D(
@@ -225,7 +233,7 @@ namespace GfxRenderEngine
                    scaleX, scaleY,
                    rotated)
     {
-        Flip();
+        FlipY();
     }
 
     Sprite2D::Sprite2D()
@@ -233,8 +241,15 @@ namespace GfxRenderEngine
     {
     }
 
-    void Sprite2D::Flip()
+    void Sprite2D::FlipY()
     {
-        std::swap(m_Pos1Y, m_Pos2Y);
+        if (m_Rotated)
+        {
+            std::swap(m_Pos1X, m_Pos2X);
+        }
+        else
+        {
+            std::swap(m_Pos1Y, m_Pos2Y);
+        }
     }
 }

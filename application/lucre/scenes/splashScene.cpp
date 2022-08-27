@@ -59,7 +59,7 @@ namespace LucreApp
         {
             Builder builder{};
 
-            auto sprite = m_SpritesheetWalk.GetSprite(i);
+            Sprite2D sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
             builder.LoadSprite(sprite);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"walk animation", model};
@@ -79,7 +79,7 @@ namespace LucreApp
         {
             Builder builder{};
 
-            auto logoSprite = Lucre::m_Spritesheet->GetSprite(I_LUCRE);
+            auto logoSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_LUCRE));
             builder.LoadSprite(logoSprite);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"logo", model};
@@ -110,7 +110,7 @@ namespace LucreApp
         m_GuybrushWalkDelta = m_WindowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
-            auto sprite = m_SpritesheetWalk.GetSprite(i);
+            auto sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
             sprite.SetScale(scaleHero);
             float width  = sprite.GetWidth();
             float height = sprite.GetHeight();

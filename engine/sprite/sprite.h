@@ -138,6 +138,6 @@ namespace GfxRenderEngine
         Sprite2D();
 
     private:
-        void Flip();
+        void FlipY();
     };
 }

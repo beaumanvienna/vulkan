@@ -38,7 +38,7 @@ namespace LucreApp
         float windowHeight = Engine::m_Engine->GetWindowHeight();
 
         float scale = 2.0f * windowHeight / desktopWidth;
-        m_StarSprite = m_Spritesheet->GetSprite(I_STAR);
+        m_StarSprite = Sprite2D(m_Spritesheet->GetSprite(I_STAR));
         m_StarSprite.SetScale(scale);
 
         // 1st star icon: move right to top right corner

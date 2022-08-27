@@ -35,7 +35,7 @@ namespace LucreApp
 
     void UIControllerIcon::OnAttach()
     {
-        m_ControllerSprite = Lucre::m_Spritesheet->GetSprite(I_CONTROLLER);
+        m_ControllerSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER));
         LoadModels();
         Init();
     }
