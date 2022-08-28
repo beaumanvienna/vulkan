@@ -252,15 +252,22 @@ namespace LucreApp
         LinearLayout *logos = new LinearLayout(ORIENT_VERTICAL);
         logos->SetTag("logos");
         horizontalLayoutCredits->Add(logos);
-        ImageView* ppssppLogo   = new ImageView(Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP)),   new AnchorLayoutParams(192.0f, 128.0f, 1.0f, 1.0f, NONE, NONE, false));
+        ImageView* ppssppLogo   = new ImageView(Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP)),   new AnchorLayoutParams(1.0f, 1.0f, 1.0f, 1.0f, NONE, NONE, false));
         ppssppLogo->SetTag("ppssppLogo");
-        logos->Add(new Spacer(27.0f));
+        logos->Add(new Spacer(190.0f, 350.0f));
         logos->Add(ppssppLogo);
 
         LinearLayout *credits = new LinearLayout(ORIENT_VERTICAL);
         credits->SetTag("credits");
         horizontalLayoutCredits->Add(credits);
-        credits->Add(new Spacer(iconWidth));
+        if (CoreSettings::m_UITheme == THEME_RETRO)
+        {
+            credits->Add(new Spacer(iconWidth));
+        }
+        else
+        {
+            credits->Add(new Spacer(iconWidth, iconWidth+50.0f));
+        }
 
         credits->Add(new TextView
         (

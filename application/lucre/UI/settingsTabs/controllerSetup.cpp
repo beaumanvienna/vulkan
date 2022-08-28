@@ -79,7 +79,7 @@ namespace LucreApp
         Clear();
 
         bool controllerPlugged = Input::GetControllerCount();
-        double verticalSpace = (availableHeight - 4 * iconHeight) / 2;
+        double verticalSpace = (availableHeight - 8 * iconHeight) / 2;
 
         if (!controllerPlugged)
         {
@@ -160,14 +160,14 @@ namespace LucreApp
                 }
                 textViewLayout->Add(m_TextSetup1);
                 if (IsRunning()) textViewLayout->Add(m_TextSetup1b);
-                controllerHorizontal->Add(new Spacer( 2.0f * marginLeftRight));
+                controllerHorizontal->Add(new Spacer( 1.5f * marginLeftRight));
 
                 // controller pic
                 LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
 
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
                 controllerSprite.SetScale(1.0f);
-                controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2));
+                controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2 + 50.0f));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));
 
@@ -183,7 +183,7 @@ namespace LucreApp
         Add(new Spacer(halfIconHeight));
 
         // second controller
-        { 
+        {
             if ( (Input::GetControllerCount() >= 2) && !m_ConfigurationIsRunningCtrl1)
             {
                 LinearLayout *controllerHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
@@ -241,14 +241,13 @@ namespace LucreApp
                 }
                 textViewLayout->Add(m_TextSetup2);
                 if (IsRunning()) textViewLayout->Add(m_TextSetup2b);
-                controllerHorizontal->Add(new Spacer( 2.0f * marginLeftRight));
+                controllerHorizontal->Add(new Spacer( 1.5f * marginLeftRight));
 
                 // controller pic
                 LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
-
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
                 controllerSprite.SetScale(1.0f);
-                controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2));
+                controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2 + 50.0f));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));
 
