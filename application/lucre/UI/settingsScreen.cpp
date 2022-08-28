@@ -22,6 +22,7 @@
 
 #include "core.h"
 #include "lucre.h"
+#include "appEvent.h"
 #include "UI/settingsScreen.h"
 #include "auxiliary/instrumentation.h"
 #include "gui/Common/Render/drawBuffer.h"
@@ -273,7 +274,11 @@ namespace LucreApp
         LOG_APP_INFO("UI: views for setting screen created");
     }
 
-    void SettingsScreen::onFinish(DialogResult result) {}
+    void SettingsScreen::onFinish(DialogResult result)
+    {
+        SceneFinishedEvent event;
+        Lucre::m_Application->OnAppEvent(event);
+    }
 
     void SettingsScreen::update()
     {

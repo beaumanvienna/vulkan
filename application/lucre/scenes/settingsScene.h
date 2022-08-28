@@ -59,5 +59,7 @@ namespace LucreApp
         std::shared_ptr<CameraController> m_CameraController;
 
         entt::entity m_BackGround, m_Barrel[NUM_BARRELS];
+        Sprite2D m_BarrelSprite;
+        float m_BarrelTranslationSpeed[NUM_BARRELS], m_BarrelRotationSpeed[NUM_BARRELS];
     };
 }

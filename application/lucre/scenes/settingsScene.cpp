@@ -22,6 +22,7 @@
 
 #include "scenes/settingsScene.h"
 #include "transform/matrix.h"
+#include "auxiliary/random.h"
 
 namespace LucreApp
 {
@@ -51,6 +52,9 @@ namespace LucreApp
         
             for (uint i = 0; i < NUM_BARRELS; i++)
             {
+                m_BarrelTranslationSpeed[i] = 250.0f + (50.0f * EngineCore::RandomPlusMinusOne());
+                m_BarrelRotationSpeed[i] = 2.0f + (0.1f * EngineCore::RandomPlusMinusOne());
+
                 m_Barrel[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Barrel[i], mesh);
         
@@ -86,43 +90,66 @@ namespace LucreApp
 
     void SettingsScene::Stop()
     {
+        m_IsRunning = false;
     }
 
     void SettingsScene::Init()
     {
-        Sprite2D backGroundSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_SETTINGS_BG));
-        Sprite2D barrelSprite     = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BARREL_LARGE));
-
         float windowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
         float windowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
+        m_IsRunning = true;
+
         // background
         {
+            Sprite2D backGroundSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_SETTINGS_BG));
+
             float scaleX = windowWidth / backGroundSprite.GetWidth();
             float scaleY = windowHeight / backGroundSprite.GetHeight();
             backGroundSprite.SetScale(scaleX, scaleY);
 
             auto& transform = m_Registry.get<TransformComponent>(m_BackGround);
             transform = TransformComponent(backGroundSprite.GetMat4());
-            transform.SetTranslation(glm::vec3{windowWidth / 2.0f, windowHeight / 2.0f, 0.0f});
+            transform.SetTranslation({windowWidth / 2.0f, windowHeight / 2.0f, 0.0f});
         }
 
         // barrels
         {
-            float scale = windowWidth / (barrelSprite.GetWidth() * static_cast<float>(NUM_BARRELS * 16));
-            barrelSprite.SetScale(scale, scale);
+            m_BarrelSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BARREL_LARGE));
+
+            float scale = windowWidth / (m_BarrelSprite.GetWidth() * static_cast<float>(NUM_BARRELS * 16));
+            m_BarrelSprite.SetScale(scale, scale);
 
             for (uint i = 0; i < NUM_BARRELS; i++)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Barrel[i]);
-                transform = TransformComponent(barrelSprite.GetMat4());
-                transform.SetTranslation(glm::vec3{windowWidth / 2.0f, (windowHeight / static_cast<float>(NUM_BARRELS + 13)) * (static_cast<float>(i) + 10.5f), 0.0f});
+                transform = TransformComponent(m_BarrelSprite.GetMat4());
+                transform.SetTranslation(
+                {
+                    windowWidth / 2.0f - windowWidth * (static_cast<float>(i)) / static_cast<float>(NUM_BARRELS),
+                    (windowHeight / static_cast<float>(NUM_BARRELS + 13)) * (static_cast<float>(i) + 10.5f),
+                    0.0f
+                });
             }
         }
     }
 
     void SettingsScene::OnUpdate(const Timestep& timestep)
     {
+        float maxPosition = static_cast<float>(Engine::m_Engine->GetWindowWidth()) + m_BarrelSprite.GetWidth();
+        for (uint i = 0; i < NUM_BARRELS; i++)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Barrel[i]);
+            glm::vec3 translation(transform.GetTranslation());
+            float delta = m_BarrelTranslationSpeed[i] * timestep;
+            translation.x += delta;
+            if (translation.x > maxPosition)
+            {
+                translation.x = -m_BarrelSprite.GetWidth();
+            }
+            transform.SetTranslation(translation);
+            transform.AddRotation({0.0f, 0.0f, m_BarrelRotationSpeed[i] * timestep});
+        }
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
         // skip geometry and lighting passes

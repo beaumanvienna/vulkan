@@ -117,4 +117,24 @@ namespace LucreApp
     private:
         GameState::State m_NewScene;
     };
+
+    class SceneFinishedEvent : public AppEvent
+    {
+
+    public:
+
+        SceneFinishedEvent() {}
+
+        EVENT_CLASS_CATEGORY(EventCategoryApplication);
+        EVENT_CLASS_TYPE(ApplicationEvent);
+        EVENT_CLASS_APP_CATEGORY(EventCategoryGameState);
+        EVENT_CLASS_APP_TYPE(SceneFinished);
+
+        std::string ToString() const override
+        {
+            std::stringstream str;
+            str << "SceneFinishedEvent event";
+            return str.str();
+        }
+    };
 }

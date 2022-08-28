@@ -221,6 +221,7 @@ namespace LucreApp
 
     void MainScene::Stop()
     {
+        m_IsRunning = false;
         m_SceneLoader.Serialize();
     }
 

@@ -88,9 +88,8 @@ namespace LucreApp
 
     void GameState::SetState(State state)
     {
-        GetScene().Stop();
         m_State = state;
-        GetScene().Start();
+        GetScene().OnResize();
     }
 
     Scene& GameState::GetScene()
@@ -106,6 +105,7 @@ namespace LucreApp
             case State::SPLASH:
             {
                 m_Scenes.emplace(State::SPLASH, std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene"));
+                m_Scenes[State::SPLASH]->Start();
                 break;
             }
             case State::MAIN:
@@ -114,6 +114,7 @@ namespace LucreApp
                 {
                     m_Scenes.emplace(State::MAIN, std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene"));
                     m_Scenes[State::MAIN]->Load();
+                    m_Scenes[State::MAIN]->Start();
                     m_MainSceneLoaded = true;
                 });
                 loadMainSceneThread.detach();
@@ -122,8 +123,12 @@ namespace LucreApp
             case State::SETTINGS:
             {
                 m_Scenes.emplace(State::SETTINGS, std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene"));
+                m_Scenes[State::SETTINGS]->Start();
                 break;
             }
+            default:
+                LOG_APP_CRITICAL("GameState::Load invalid state");
+                break;
         }
     }
 

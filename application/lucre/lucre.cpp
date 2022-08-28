@@ -230,5 +230,12 @@ namespace LucreApp
                 return true;
             }
         );
+
+        appDispatcher.Dispatch<SceneFinishedEvent>([this](SceneFinishedEvent event)
+            {
+                m_CurrentScene->Stop();
+                return true;
+            }
+        );
     }
 }
