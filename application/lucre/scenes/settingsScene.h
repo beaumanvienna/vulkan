@@ -25,6 +25,7 @@
 #include "lucre.h"
 #include "engine.h"
 #include "scene/scene.h"
+#include "sprite/sprite.h"
 
 namespace LucreApp
 {
@@ -40,7 +41,7 @@ namespace LucreApp
         virtual void Start() override;
         virtual void Stop() override;
         virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_Camera; }
+        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
         virtual void OnEvent(Event& event) override;
         virtual void OnResize() override;
 
@@ -50,8 +51,13 @@ namespace LucreApp
         virtual void StartScripts() override {}
 
     private:
+        void Init();
 
-        Camera m_Camera;
+    private:
+        static constexpr int NUM_BARRELS = 4;
+        std::shared_ptr<Renderer> m_Renderer;
+        std::shared_ptr<CameraController> m_CameraController;
 
+        entt::entity m_BackGround, m_Barrel[NUM_BARRELS];
     };
 }

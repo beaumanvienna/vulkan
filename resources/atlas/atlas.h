@@ -51,5 +51,6 @@
 #define I_UP_DIRECTORY 47
 #define I_OFF_R 48
 #define I_LOGO_MUPEN 49
-#define I_VOLCANO_SMOKE_N 50
-#define I_DISK_LOAD 51
+#define I_SETTINGS_BG 50
+#define I_VOLCANO_SMOKE_N 51
+#define I_DISK_LOAD 52

@@ -24,6 +24,7 @@
 
 #include "core.h"
 #include "lucre.h"
+#include "appEvent.h"
 #include "UI/offDialog.h"
 #include "UI/mainScreen.h"
 #include "UI/settingsScreen.h"
@@ -197,6 +198,8 @@ namespace LucreApp
     {
         SettingsScreen* settingsScreen = new SettingsScreen();
         settingsScreen->OnAttach();
+        SceneChangedEvent event(GameState::State::SETTINGS);
+        Lucre::m_Application->OnAppEvent(event);
         UI::m_ScreenManager->push(settingsScreen);
 
         return SCREEN_UI::EVENT_DONE;

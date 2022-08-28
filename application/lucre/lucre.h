@@ -35,6 +35,7 @@
 #include "application.h"
 #include "appSettings.h"
 #include "gameState.h"
+#include "appEvent.h"
 #include "UI/UIControllerIcon.h"
 #include "UI/UI.h"
 
@@ -52,6 +53,7 @@ namespace LucreApp
         void Shutdown() override;
         void OnUpdate(const Timestep& timestep) override;
         void OnEvent(Event& event) override;
+        void OnAppEvent(AppEvent& event);
         void OnResize();
 
         void PlaySound(int resourceID);

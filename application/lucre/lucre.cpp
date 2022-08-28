@@ -219,4 +219,16 @@ namespace LucreApp
             m_CurrentScene->OnEvent(event);
         }
     }
+
+    void Lucre::OnAppEvent(AppEvent& event)
+    {
+        AppEventDispatcher appDispatcher(event);
+
+        appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent event)
+            {
+                m_GameState.SetState(event.GetScene());
+                return true;
+            }
+        );
+    }
 }
