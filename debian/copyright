@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: lucre
 Upstream-Contact: JC <beaumanvienna@gmail.com>
-Source: https://github.com/beaumanvienna/gfxRenderEngine
+Source: https://github.com/beaumanvienna/vulkan
 
 Files: application/* debian/* engine/* resources/* LICENSE premake5.lua engine.lua README.md vendor/*.lua vendor/*.make scripts/* *.make Makefile .github/*
 Copyright: 2021 JC <beaumanvienna@gmail.com>
