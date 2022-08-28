@@ -23,6 +23,7 @@
 #include "core.h"
 #include "coreSettings.h"
 #include "platform/input.h"
+#include "UI/UI.h"
 #include "UI/settingsTabs/controllerSetup.h"
 #include "gui/Common/Render/drawBuffer.h"
 
@@ -65,21 +66,17 @@ namespace LucreApp
     {
         using namespace SCREEN_UI;
 
-        float tabMarginLeftRight = 80.0f;
-        float availableWidth  = Engine::m_Engine->GetContextWidth() - 2 * tabMarginLeftRight;
-        float availableHeight = Engine::m_Engine->GetContextHeight();
-        float marginLeftRight = 128.0f;
-        float iconWidth = 50.0f;
-        float iconHeight = iconWidth;
-        float iconSpacer = 10.0f;
-        float halfIconWidth  = iconWidth / 2;
-        float halfIconHeight = iconHeight / 2;
+        float availableWidth  = UI::m_Common->m_AvailableWidth - 2 * UI::m_Common->m_TabMarginLeftRight;
+        float availableHeight = UI::m_Common->m_AvailableHeight;
+
+        float halfIconWidth  = UI::m_Common->m_IconWidth / 2;
+        float halfIconHeight = UI::m_Common->m_IconHeight / 2;
 
         // Reset content
         Clear();
 
         bool controllerPlugged = Input::GetControllerCount();
-        double verticalSpace = (availableHeight - 8 * iconHeight) / 2;
+        double verticalSpace = (availableHeight - 4 * UI::m_Common->m_IconHeight) / 2;
 
         if (!controllerPlugged)
         {
@@ -105,11 +102,11 @@ namespace LucreApp
         {
             if (controllerPlugged && !m_ConfigurationIsRunningCtrl2)
             {
-                LinearLayout *controllerHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
+                LinearLayout* controllerHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
                 Add(controllerHorizontal);
 
                 // setup button
-                LinearLayout *verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(iconHeight,verticalSpace));
+                LinearLayout* verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(UI::m_Common->m_IconHeight,verticalSpace));
                 controllerHorizontal->Add(verticalLayout);
 
                 Sprite2D icon;
@@ -121,36 +118,36 @@ namespace LucreApp
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-                    icon.SetScale(1.0f);
+                    icon.SetScale(UI::m_Common->m_IconScaleRetro);
                     icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-                    icon_active.SetScale(1.0f);
+                    icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
                     icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-                    icon_depressed.SetScale(1.0f);
+                    icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
 
-                    setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconWidth));
+                    setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconWidth));
                 }
                 else 
                 {
                     icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-                    icon.SetScale(2.0f);
-                    setupButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
+                    icon.SetScale(UI::m_Common->m_IconScale);
+                    setupButton = new Choice(icon, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
                 }
 
                 setupButton->OnClick.Handle(this, &ControllerSetup::OnStartSetup1);
 
-                verticalLayout->Add(new Spacer(20.0f,(verticalSpace-iconHeight)/2));
+                verticalLayout->Add(new Spacer(20.0f,(verticalSpace-UI::m_Common->m_IconHeight)/2));
                 verticalLayout->Add(setupButton);
-                controllerHorizontal->Add(new Spacer(iconWidth));
+                controllerHorizontal->Add(new Spacer(UI::m_Common->m_IconWidth));
 
                 // text view 'instruction'
-                LinearLayout *textViewLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, verticalSpace));
+                LinearLayout* textViewLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight * 2.0f, verticalSpace));
                 controllerHorizontal->Add(textViewLayout);
 
                 m_TextSetup1 = new TextView((Controller::m_ControllerConfiguration.GetControllerID() == Controller::FIRST_CONTROLLER) ? "press dpad up" : "Start controller setup (1)", ALIGN_VCENTER | ALIGN_HCENTER | FLAG_WRAP_TEXT, 
-                                            true, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, verticalSpace));
+                                            true, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight, verticalSpace));
                 // text view 'skip button with return'
                 m_TextSetup1b = new TextView(((Controller::m_ControllerConfiguration.GetControllerID() == Controller::FIRST_CONTROLLER)) ? "(or use ENTER to skip this button)" : "", ALIGN_VCENTER | ALIGN_HCENTER | FLAG_WRAP_TEXT, 
-                                            true, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, halfIconHeight / 2));
+                                            true, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight, halfIconHeight / 2));
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     m_TextSetup1->SetTextColor(RETRO_COLOR_FONT_FOREGROUND);
@@ -160,13 +157,13 @@ namespace LucreApp
                 }
                 textViewLayout->Add(m_TextSetup1);
                 if (IsRunning()) textViewLayout->Add(m_TextSetup1b);
-                controllerHorizontal->Add(new Spacer( 1.5f * marginLeftRight));
+                controllerHorizontal->Add(new Spacer( 1.5f * UI::m_Common->m_MarginLeftRight));
 
                 // controller pic
-                LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
+                LinearLayout* controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
 
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
-                controllerSprite.SetScale(1.0f);
+                controllerSprite.SetScale(UI::m_Common->m_ControllerScale);
                 controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2 + 50.0f));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));
@@ -186,11 +183,11 @@ namespace LucreApp
         {
             if ( (Input::GetControllerCount() >= 2) && !m_ConfigurationIsRunningCtrl1)
             {
-                LinearLayout *controllerHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
+                LinearLayout* controllerHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
                 Add(controllerHorizontal);
 
                 // setup button
-                LinearLayout *verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(iconHeight,verticalSpace));
+                LinearLayout* verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(UI::m_Common->m_IconHeight,verticalSpace));
                 controllerHorizontal->Add(verticalLayout);
 
                 Sprite2D icon;
@@ -202,36 +199,36 @@ namespace LucreApp
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-                    icon.SetScale(1.0f);
+                    icon.SetScale(UI::m_Common->m_IconScaleRetro);
                     icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-                    icon_active.SetScale(1.0f);
+                    icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
                     icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-                    icon_depressed.SetScale(1.0f);
+                    icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
 
-                    setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconWidth));
+                    setupButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconWidth));
                 }
                 else 
                 {
                     icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-                    icon.SetScale(2.0f);
-                    setupButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
+                    icon.SetScale(UI::m_Common->m_IconScale);
+                    setupButton = new Choice(icon, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
                 }
 
                 setupButton->OnClick.Handle(this, &ControllerSetup::OnStartSetup2);
 
-                verticalLayout->Add(new Spacer(20.0f,(verticalSpace-iconHeight)/2));
+                verticalLayout->Add(new Spacer(20.0f,(verticalSpace-UI::m_Common->m_IconHeight)/2));
                 verticalLayout->Add(setupButton);
-                controllerHorizontal->Add(new Spacer(iconWidth));
+                controllerHorizontal->Add(new Spacer(UI::m_Common->m_IconWidth));
 
                 // text view 'instruction'
-                LinearLayout *textViewLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, verticalSpace));
+                LinearLayout* textViewLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight * 2.0f, verticalSpace));
                 controllerHorizontal->Add(textViewLayout);
 
                 m_TextSetup2 = new TextView((Controller::m_ControllerConfiguration.GetControllerID() == Controller::SECOND_CONTROLLER) ? "press dpad up" : "Start controller setup (2)", ALIGN_VCENTER | ALIGN_HCENTER | FLAG_WRAP_TEXT, 
-                                            true, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, verticalSpace));
+                                            true, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight, verticalSpace));
                 // text view 'skip button with return'
                 m_TextSetup2b = new TextView(((Controller::m_ControllerConfiguration.GetControllerID() == Controller::SECOND_CONTROLLER)) ? "(or use ENTER to skip this button)" : "", ALIGN_VCENTER | ALIGN_HCENTER | FLAG_WRAP_TEXT, 
-                                            true, new LinearLayoutParams(availableWidth-verticalSpace-iconHeight, halfIconHeight / 2));
+                                            true, new LinearLayoutParams(availableWidth-verticalSpace-UI::m_Common->m_IconHeight, halfIconHeight / 2));
                 if (CoreSettings::m_UITheme == THEME_RETRO)
                 {
                     m_TextSetup2->SetTextColor(RETRO_COLOR_FONT_FOREGROUND);
@@ -241,12 +238,12 @@ namespace LucreApp
                 }
                 textViewLayout->Add(m_TextSetup2);
                 if (IsRunning()) textViewLayout->Add(m_TextSetup2b);
-                controllerHorizontal->Add(new Spacer( 1.5f * marginLeftRight));
+                controllerHorizontal->Add(new Spacer( 1.5f * UI::m_Common->m_MarginLeftRight));
 
                 // controller pic
-                LinearLayout *controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
+                LinearLayout* controllerImageLayout = new LinearLayout(ORIENT_VERTICAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
                 Sprite2D controllerSprite = Sprite2D(m_Spritesheet->GetSprite(I_CONTROLLER));
-                controllerSprite.SetScale(1.0f);
+                controllerSprite.SetScale(UI::m_Common->m_ControllerScale);
                 controllerImageLayout->Add(new Spacer((verticalSpace - controllerSprite.GetHeight()) / 2 + 50.0f));
 
                 ImageView* controllerImage = new ImageView(controllerSprite, new AnchorLayoutParams(controllerSprite.GetWidth(), controllerSprite.GetHeight()));

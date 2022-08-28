@@ -23,6 +23,7 @@
 #include "core.h"
 #include "lucre.h"
 #include "appEvent.h"
+#include "UI/common.h"
 #include "UI/settingsScreen.h"
 #include "auxiliary/instrumentation.h"
 #include "gui/Common/Render/drawBuffer.h"
@@ -84,29 +85,19 @@ namespace LucreApp
         root_ = new AnchorLayout(new LayoutParams(FILL_PARENT, FILL_PARENT));
         root_->SetTag("setting screen root");
 
-        LinearLayout *verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LayoutParams(FILL_PARENT, FILL_PARENT));
+        LinearLayout* verticalLayout = new LinearLayout(ORIENT_VERTICAL, new LayoutParams(FILL_PARENT, FILL_PARENT));
         verticalLayout->SetTag("main verticalLayout settings screen");
         root_->Add(verticalLayout);
 
-        float availableWidth  = Engine::m_Engine->GetWindowWidth();
-        float availableHeight = Engine::m_Engine->GetWindowHeight();
-
-        float iconWidth = 128.0f;
-        float iconHeight = iconWidth;
-        float stripSize = 100.0f * TAB_SCALE;
-        float tabMargin = 50.0f;
-        float tabMarginLeftRight = 80.0f;
-        float tabLayoutWidth = availableWidth - 2 * tabMarginLeftRight;
-
         // info message
-        m_SettingsInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new AnchorLayoutParams(availableWidth - 6 * iconWidth, WRAP_CONTENT, 4 * iconWidth, 0.0f, NONE, NONE));
-        m_SettingsInfo->SetBottomCutoff(availableHeight - iconHeight);
+        m_SettingsInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new AnchorLayoutParams(UI::m_Common->m_AvailableWidth - 6 * UI::m_Common->m_IconWidth, WRAP_CONTENT, 4 * UI::m_Common->m_IconWidth, 0.0f, NONE, NONE));
+        m_SettingsInfo->SetBottomCutoff(UI::m_Common->m_AvailableHeight - UI::m_Common->m_IconHeight);
 
         root_->Add(m_SettingsInfo);
 
-        verticalLayout->Add(new Spacer(tabMargin));
+        verticalLayout->Add(new Spacer(UI::m_Common->m_TabMargin));
 
-        m_TabHolder = new TabHolder(ORIENT_HORIZONTAL, stripSize, new LinearLayoutParams(1.0f), tabMargin);
+        m_TabHolder = new TabHolder(ORIENT_HORIZONTAL, UI::m_Common->m_StripSize, new LinearLayoutParams(1.0f), UI::m_Common->m_TabMargin);
         m_TabHolder->SetTag("m_TabHolder");
         verticalLayout->Add(m_TabHolder);
 
@@ -118,35 +109,35 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         { 
             icon = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
-            icon.SetScale(1.5f);
+            icon.SetScale(UI::m_Common->m_TabIconScaleRetro);
             icon_active = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED));
-            icon_active.SetScale(1.5f);
+            icon_active.SetScale(UI::m_Common->m_TabIconScaleRetro);
             icon_depressed = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED));
-            icon_depressed.SetScale(1.5f);
+            icon_depressed.SetScale(UI::m_Common->m_TabIconScaleRetro);
             icon_depressed_inactive = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
-            icon_depressed_inactive.SetScale(1.5f);
+            icon_depressed_inactive.SetScale(UI::m_Common->m_TabIconScaleRetro);
             m_TabHolder->SetIcon(icon,icon_active,icon_depressed,icon_depressed_inactive);
         }
 
         // back button
         Choice* backButton;
-        LinearLayout *horizontalLayoutBack = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, iconHeight));
+        LinearLayout* horizontalLayoutBack = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, UI::m_Common->m_IconHeight));
         horizontalLayoutBack->SetTag("horizontalLayoutBack");
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(1.0f);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_active = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(1.0f);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_depressed = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(1.0f);
-            backButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(iconWidth, iconHeight));
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            backButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_BACK));
-            icon.SetScale(2.0f);
-            backButton = new Choice(icon, new LayoutParams(iconWidth, iconHeight));
+            icon.SetScale(UI::m_Common->m_IconScale);
+            backButton = new Choice(icon, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
         }
         backButton->SetTag("backButton");
         backButton->OnClick.Handle<SCREEN_UIScreen>(this, &SCREEN_UIScreen::OnBack);
@@ -160,24 +151,24 @@ namespace LucreApp
         // -------- general --------
 
         // horizontal layout for margins
-        LinearLayout *horizontalLayoutGeneral = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(tabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutGeneral = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         m_TabHolder->AddTab(ge->T("General"), horizontalLayoutGeneral);
-        horizontalLayoutGeneral->Add(new Spacer(tabMarginLeftRight));
+        horizontalLayoutGeneral->Add(new Spacer(UI::m_Common->m_TabMarginLeftRight));
 
-        ViewGroup *generalSettingsScroll = new ScrollView(ORIENT_VERTICAL, new LinearLayoutParams(tabLayoutWidth, FILL_PARENT));
+        ViewGroup* generalSettingsScroll = new ScrollView(ORIENT_VERTICAL, new LinearLayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutGeneral->Add(generalSettingsScroll);
         generalSettingsScroll->SetTag("GeneralSettings");
-        LinearLayout *generalSettings = new LinearLayout(ORIENT_VERTICAL);
+        LinearLayout* generalSettings = new LinearLayout(ORIENT_VERTICAL);
         generalSettingsScroll->Add(generalSettings);
 
         generalSettings->Add(new ItemHeader(ge->T("General settings for Lucre")));
 
         // -------- toggle fullscreen --------
-        CheckBox *vToggleFullscreen = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,85.0f)));
+        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,85.0f)));
         vToggleFullscreen->OnClick.Handle(this, &SettingsScreen::OnFullscreenToggle);
 
         // -------- system sounds --------
-        CheckBox *vSystemSounds = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"),"", new LayoutParams(FILL_PARENT,85.0f)));
+        CheckBox* vSystemSounds = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"),"", new LayoutParams(FILL_PARENT,85.0f)));
         vSystemSounds->OnClick.Add([=](EventParams &e) 
         {
             return SCREEN_UI::EVENT_CONTINUE;
@@ -188,7 +179,7 @@ namespace LucreApp
         const int VOLUME_OFF = 0;
         const int VOLUME_MAX = 100;
 
-        SCREEN_PopupSliderChoice *volume = generalSettings->Add(new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "", new LayoutParams(FILL_PARENT,85.0f)));
+        SCREEN_PopupSliderChoice* volume = generalSettings->Add(new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "", new LayoutParams(FILL_PARENT,85.0f)));
         m_GlobalVolumeEnabled = true;
         volume->SetEnabledPtr(&m_GlobalVolumeEnabled);
         volume->SetZeroLabel(ge->T("Mute"));
@@ -214,24 +205,24 @@ namespace LucreApp
         #endif
 
         // -------- theme --------
-        static const char *uiTheme[] = 
+        static const char* uiTheme[] = 
         {
             "Retro",
             "Plain"
         };
 
-        SCREEN_PopupMultiChoice *uiThemeChoice = generalSettings->Add(new SCREEN_PopupMultiChoice(&CoreSettings::m_UITheme, ge->T("Theme"),
+        SCREEN_PopupMultiChoice* uiThemeChoice = generalSettings->Add(new SCREEN_PopupMultiChoice(&CoreSettings::m_UITheme, ge->T("Theme"),
             uiTheme, 0, ARRAY_SIZE(uiTheme), ge->GetName(), screenManager(), new LayoutParams(FILL_PARENT, 85.0f)));
         uiThemeChoice->OnChoice.Handle(this, &SettingsScreen::OnThemeChanged);
 
         // -------- controller setup --------
 
         // horizontal layout for margins
-        LinearLayout *horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(tabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutController->SetTag("horizontalLayoutController");
         m_TabHolder->AddTab(ge->T("Controller"), horizontalLayoutController);
 
-        horizontalLayoutController->Add(new Spacer(tabMarginLeftRight));
+        horizontalLayoutController->Add(new Spacer(UI::m_Common->m_TabMarginLeftRight));
 
         m_ControllerSetup = new ControllerSetup(m_Spritesheet);
         horizontalLayoutController->Add(m_ControllerSetup);
@@ -244,12 +235,12 @@ namespace LucreApp
         // -------- credits --------
 
         // horizontal layout for margins
-        LinearLayout *horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(tabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutCredits->SetTag("horizontalLayoutCredits");
         m_TabHolder->AddTab(ge->T("Credits"), horizontalLayoutCredits);
-        horizontalLayoutCredits->Add(new Spacer(iconWidth));
+        horizontalLayoutCredits->Add(new Spacer(UI::m_Common->m_IconWidth));
 
-        LinearLayout *logos = new LinearLayout(ORIENT_VERTICAL);
+        LinearLayout* logos = new LinearLayout(ORIENT_VERTICAL);
         logos->SetTag("logos");
         horizontalLayoutCredits->Add(logos);
         ImageView* ppssppLogo   = new ImageView(Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP)),   new AnchorLayoutParams(1.0f, 1.0f, 1.0f, 1.0f, NONE, NONE, false));
@@ -257,16 +248,16 @@ namespace LucreApp
         logos->Add(new Spacer(190.0f, 350.0f));
         logos->Add(ppssppLogo);
 
-        LinearLayout *credits = new LinearLayout(ORIENT_VERTICAL);
+        LinearLayout* credits = new LinearLayout(ORIENT_VERTICAL);
         credits->SetTag("credits");
         horizontalLayoutCredits->Add(credits);
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
-            credits->Add(new Spacer(iconWidth));
+            credits->Add(new Spacer(UI::m_Common->m_IconWidth));
         }
         else
         {
-            credits->Add(new Spacer(iconWidth, iconWidth+50.0f));
+            credits->Add(new Spacer(UI::m_Common->m_IconWidth, UI::m_Common->m_IconWidth+50.0f));
         }
 
         credits->Add(new TextView
@@ -276,7 +267,7 @@ namespace LucreApp
             "\n"
             "       PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
             "\n",
-            ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - 3.0f * iconWidth - 64.0f, 500.0f)));
+            ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(UI::m_Common->m_AvailableWidth - 3.0f * UI::m_Common->m_IconWidth - 64.0f, 500.0f)));
 
         LOG_APP_INFO("UI: views for setting screen created");
     }

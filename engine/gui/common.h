@@ -34,7 +34,8 @@ namespace GfxRenderEngine
 
     enum Themes
     {
-        THEME_RETRO
+        THEME_RETRO = 0,
+        THEME_PLAIN
     };
 
     enum ButtonStatesTwoStates

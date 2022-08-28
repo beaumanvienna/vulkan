@@ -25,6 +25,7 @@
 #include "core.h"
 #include "lucre.h"
 #include "appEvent.h"
+#include "UI/common.h"
 #include "UI/offDialog.h"
 #include "UI/mainScreen.h"
 #include "UI/settingsScreen.h"
@@ -84,32 +85,22 @@ namespace LucreApp
         root_ = new SCREEN_UI::AnchorLayout(new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
         root_->SetTag("root_");
 
-        SCREEN_UI::LinearLayout *verticalLayout = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_VERTICAL, new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
+        SCREEN_UI::LinearLayout* verticalLayout = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_VERTICAL, new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
         verticalLayout->SetTag("verticalLayout");
         root_->Add(verticalLayout);
 
-        float availableWidth = Engine::m_Engine->GetWindowWidth();
-        float availableHeight = Engine::m_Engine->GetWindowHeight();
-        float marginLeftRight = 128.0f;
-        float marginUpDown = 128.0f;
-        float iconWidth = 128.0f;
-        float iconHeight = iconWidth;
-        float iconSpacer = 80.0f;
-
-        float verticalSpacer = 10.0f;
-
-        m_MainInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new SCREEN_UI::AnchorLayoutParams(availableWidth - marginLeftRight * 3 - 2 * iconWidth - iconSpacer,
-                                        SCREEN_UI::WRAP_CONTENT, marginLeftRight, 0.0f, SCREEN_UI::NONE, SCREEN_UI::NONE));
+        m_MainInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new SCREEN_UI::AnchorLayoutParams(UI::m_Common->m_AvailableWidth - UI::m_Common->m_MarginLeftRight * 3 - 2 * UI::m_Common->m_IconWidth - UI::m_Common->m_IconSpacer,
+                                        SCREEN_UI::WRAP_CONTENT, UI::m_Common->m_MarginLeftRight, 0.0f, SCREEN_UI::NONE, SCREEN_UI::NONE));
         //root_->Add(m_MainInfo);
 
-        verticalLayout->Add(new SCREEN_UI::Spacer(marginUpDown));
+        verticalLayout->Add(new SCREEN_UI::Spacer(UI::m_Common->m_MarginLeftRight));
 
         // top line
-        SCREEN_UI::LinearLayout *topline = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_HORIZONTAL, new SCREEN_UI::LinearLayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::WRAP_CONTENT));
+        SCREEN_UI::LinearLayout* topline = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_HORIZONTAL, new SCREEN_UI::LinearLayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::WRAP_CONTENT));
         topline->SetTag("topLine");
         verticalLayout->Add(topline);
 
-        float horizontalSpacerTopline = availableWidth - marginLeftRight - 2 * iconWidth - iconSpacer;
+        float horizontalSpacerTopline = UI::m_Common->m_AvailableWidth - UI::m_Common->m_MarginLeftRight - 2 * UI::m_Common->m_IconWidth - UI::m_Common->m_IconSpacer;
         topline->Add(new SCREEN_UI::Spacer(horizontalSpacerTopline,0.0f));
 
         Sprite2D icon;
@@ -120,18 +111,18 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(1.0f);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(1.0f);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(1.0f);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
 
             m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
-            icon.SetScale(2.0f);
+            icon.SetScale(UI::m_Common->m_IconScale);
             m_SettingsButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
 
@@ -146,7 +137,7 @@ namespace LucreApp
             return SCREEN_UI::EVENT_CONTINUE;
         });
         topline->Add(m_SettingsButton);
-        topline->Add(new SCREEN_UI::Spacer(iconSpacer,0.0f));
+        topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_IconSpacer,0.0f));
         if (m_SetFocus)
         {
             root_->SetDefaultFocusView(m_SettingsButton);
@@ -156,17 +147,17 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(1.0f);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_active = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(1.0f);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_depressed = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(1.0f);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
             m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()),true);
         }
         else
         {
             icon = Sprite2D(m_Spritesheet->GetSprite(I_OFF));
-            icon.SetScale(2.0f);
+            icon.SetScale(UI::m_Common->m_IconScale);
             m_OffButton = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()), true);
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::OffClick);

@@ -24,6 +24,7 @@
 
 #include "lucre.h"
 #include "UI/UI.h"
+#include "UI/common.h"
 #include "UI/settingsScreen.h"
 #include "renderer/texture.h"
 #include "events/keyEvent.h"
@@ -40,6 +41,7 @@ namespace LucreApp
     std::unique_ptr<SCREEN_ScreenManager> UI::m_ScreenManager = nullptr;
     std::shared_ptr<Texture> UI::m_FontAtlasTexture;
     std::shared_ptr<Texture> UI::m_SpritesheetTexture;
+    std::shared_ptr<Common> UI::m_Common;
 
     void UI::OnAttach()
     {
@@ -49,6 +51,7 @@ namespace LucreApp
 
         m_FontAtlasTexture = ResourceSystem::GetTextureFromMemory("/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         m_SpritesheetTexture = m_Spritesheet->GetTexture();
+        m_Common = std::make_unique<Common>();
 
         m_MainScreen = new MainScreen(m_Spritesheet);
         m_MainScreen->OnAttach();
@@ -228,6 +231,7 @@ namespace LucreApp
 
     void UI::OnResize()
     {
+        m_Common->OnResize();
         m_ScreenManager->resized();
     }
 

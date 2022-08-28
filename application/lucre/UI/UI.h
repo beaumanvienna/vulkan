@@ -31,6 +31,7 @@
 #include "gui/Common/UI/screen.h"
 #include "UI/settingsTabs/controllerSetupAnimation.h"
 #include "UI/mainScreen.h"
+#include "UI/common.h"
 #include "UI/stars.h"
 
 namespace LucreApp
@@ -56,6 +57,7 @@ namespace LucreApp
         static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
         static std::shared_ptr<Texture> m_FontAtlasTexture;
         static std::shared_ptr<Texture> m_SpritesheetTexture;
+        static std::shared_ptr<Common> m_Common;
 
     private:
 
