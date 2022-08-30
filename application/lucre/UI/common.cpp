@@ -36,24 +36,24 @@ namespace LucreApp
         m_AvailableWidth     = Engine::m_Engine->GetWindowWidth();
         m_AvailableHeight    = Engine::m_Engine->GetWindowHeight();
 
-        float scaleAll       = m_AvailableHeight / 1080.0f;
+        m_ScaleAll           = m_AvailableHeight / 1080.0f;
 
-        m_IconWidth          = 128.0f * scaleAll;
-        m_IconHeight         = 128.0f * scaleAll;
-        m_IconSpacer         = 80.0f * scaleAll;
+        m_IconWidth          = 128.0f * m_ScaleAll;
+        m_IconHeight         = 128.0f * m_ScaleAll;
+        m_IconSpacer         = 80.0f * m_ScaleAll;
 
-        m_StripSize          = 150.0f * scaleAll;
-        m_MarginLeftRight    = 128.0f * scaleAll;
+        m_StripSize          = 150.0f * m_ScaleAll;
+        m_MarginLeftRight    = 128.0f * m_ScaleAll;
 
-        m_TabMargin          = 50.0f * scaleAll;
-        m_TabMarginLeftRight = 80.0f * scaleAll;
-        m_TabLayoutWidth     = (m_AvailableWidth - 2.0f * m_TabMarginLeftRight)  * scaleAll;
+        m_TabMargin          = 50.0f * m_ScaleAll;
+        m_TabMarginLeftRight = 80.0f * m_ScaleAll;
+        m_TabLayoutWidth     = (m_AvailableWidth - 2.0f * m_TabMarginLeftRight)  * m_ScaleAll;
 
-        m_ControllerScale    = 1.0f * scaleAll;
+        m_ControllerScale    = 1.0f * m_ScaleAll;
 
-        m_TabIconScaleRetro       = 1.5 * scaleAll;
-        m_IconScaleRetro     = 1.0 * scaleAll;
-        m_IconScale          = 2.0 * scaleAll;
+        m_TabIconScaleRetro  = 1.5 * m_ScaleAll;
+        m_IconScaleRetro     = 1.0 * m_ScaleAll;
+        m_IconScale          = 2.0 * m_ScaleAll;
     }
 
     void Common::OnResize()

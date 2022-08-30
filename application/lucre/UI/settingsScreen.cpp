@@ -218,7 +218,7 @@ namespace LucreApp
         // -------- controller setup --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(WRAP_CONTENT, FILL_PARENT));
         horizontalLayoutController->SetTag("horizontalLayoutController");
         m_TabHolder->AddTab(ge->T("Controller"), horizontalLayoutController);
 
@@ -235,39 +235,14 @@ namespace LucreApp
         // -------- credits --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(WRAP_CONTENT, FILL_PARENT));
         horizontalLayoutCredits->SetTag("horizontalLayoutCredits");
         m_TabHolder->AddTab(ge->T("Credits"), horizontalLayoutCredits);
-        horizontalLayoutCredits->Add(new Spacer(UI::m_Common->m_IconWidth));
 
-        LinearLayout* logos = new LinearLayout(ORIENT_VERTICAL);
-        logos->SetTag("logos");
-        horizontalLayoutCredits->Add(logos);
-        ImageView* ppssppLogo   = new ImageView(Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP)),   new AnchorLayoutParams(1.0f, 1.0f, 1.0f, 1.0f, NONE, NONE, false));
-        ppssppLogo->SetTag("ppssppLogo");
-        logos->Add(new Spacer(190.0f, 350.0f));
-        logos->Add(ppssppLogo);
+        horizontalLayoutCredits->Add(new Spacer(UI::m_Common->m_TabMarginLeftRight));
 
-        LinearLayout* credits = new LinearLayout(ORIENT_VERTICAL);
-        credits->SetTag("credits");
-        horizontalLayoutCredits->Add(credits);
-        if (CoreSettings::m_UITheme == THEME_RETRO)
-        {
-            credits->Add(new Spacer(UI::m_Common->m_IconWidth));
-        }
-        else
-        {
-            credits->Add(new Spacer(UI::m_Common->m_IconWidth, UI::m_Common->m_IconWidth+50.0f));
-        }
-
-        credits->Add(new TextView
-        (
-            "\n"
-            "   The in-game GUI used in Lucre is based on\n"
-            "\n"
-            "       PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
-            "\n",
-            ALIGN_LEFT | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(UI::m_Common->m_AvailableWidth - 3.0f * UI::m_Common->m_IconWidth - 64.0f, 500.0f)));
+        m_Credits = new Credits(m_Spritesheet);
+        horizontalLayoutCredits->Add(m_Credits);
 
         LOG_APP_INFO("UI: views for setting screen created");
     }

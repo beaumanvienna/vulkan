@@ -25,6 +25,7 @@
 #include "engine.h"
 #include "gui/Common/UI/UIscreen.h"
 #include "UI/settingsTabs/controllerSetup.h"
+#include "UI/settingsTabs/credits.h"
 #include "UI/infoMessage.h"
 
 namespace LucreApp
@@ -64,6 +65,7 @@ namespace LucreApp
         SCREEN_UI::EventReturn OnThemeChanged(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn OnAudioDevice(SCREEN_UI::EventParams &e);
         ControllerSetup* m_ControllerSetup;
+        Credits* m_Credits;
         void SetSoundCallback();
 
     private:

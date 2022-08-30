@@ -22,42 +22,34 @@
 
 #pragma once
 
+#include "engine.h"
+#include "sprite/spritesheet.h"
+#include "gui/Common/UI/viewGroup.h"
+#include "platform/SDL/controllerConfiguration.h"
+
 namespace LucreApp
 {
 
-    class Common
-    {    
+    class Credits : public SCREEN_UI::LinearLayout
+    {
 
     public:
 
-        Common();
-        void OnResize();
+        Credits(SpriteSheet* spritesheet, SCREEN_UI::LayoutParams* layoutParams = 0);
+        ~Credits();
 
-    public:
-
-        float m_AvailableWidth;
-        float m_AvailableHeight;
-        float m_ScaleAll;
-
-        float m_IconWidth;
-        float m_IconHeight;
-        float m_IconScale;
-        float m_IconScaleRetro;
-        float m_IconSpacer;
-
-        float m_StripSize;
-        float m_MarginLeftRight;
-
-        float m_TabIconScaleRetro;
-        float m_TabMargin;
-        float m_TabMarginLeftRight;
-        float m_TabLayoutWidth;
-
-        float m_ControllerScale;
+        virtual bool Key(const SCREEN_KeyInput &input) override;
+        virtual void Update() override;
 
     private:
 
-        void Init();
+        void CreateViews();
+
+    private:
+
+        SpriteSheet* m_Spritesheet;
+
+        SCREEN_UI::TextView* m_TextSetup1;
 
     };
 }
