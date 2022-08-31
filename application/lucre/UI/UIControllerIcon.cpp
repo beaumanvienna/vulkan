@@ -217,7 +217,7 @@ namespace LucreApp
         return isMovingIn;
     }
 
-    void UIControllerIcon::OnEvent(Event& event)  {}
+    void UIControllerIcon::OnEvent(Event& event) {}
 
     void UIControllerIcon::LoadModels()
     {

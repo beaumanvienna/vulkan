@@ -32,6 +32,21 @@ namespace LucreApp
         m_Renderer = Engine::m_Engine->GetRenderer();
         m_Spritesheet = Lucre::m_Spritesheet;
 
+        Init();
+    }
+
+    void UIStarIcon::Init()
+    {
+        m_StarMoveIn1.Reset();
+        m_StarMoveIn2.Reset();
+        m_StarMoveIn3.Reset();
+        m_StarRotate1.Reset();
+        m_StarRotate2.Reset();
+        m_StarRotate3.Reset();
+        m_StarMoveOut1.Reset();
+        m_StarMoveOut2.Reset();
+        m_StarMoveOut3.Reset();
+
         float duration = 1.0f;
         // star icon
         float desktopWidth = Engine::m_Engine->GetDesktopWidth();
@@ -44,14 +59,16 @@ namespace LucreApp
         // 1st star icon: move right to top right corner
         glm::vec2 finalOutOfScreenPosition;
         glm::vec2 finalScreenPosition1;
+        float xPosWide1 = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
+        float yPosWide12 = 226.0f * UI::m_Common->m_ScaleAll;
         finalOutOfScreenPosition= glm::vec2(2000.0f, 300.0f);
         if (m_Narrow)
         {
-            finalScreenPosition1    = glm::vec2( 320.0f, 110.0f);
+            finalScreenPosition1    = glm::vec2(320.0f, 110.0f);
         }
         else
         {
-            finalScreenPosition1    = glm::vec2( 1794.0f, 288.0f);
+            finalScreenPosition1    = glm::vec2(xPosWide1, yPosWide12);
         }
 
         m_StarMoveIn1.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition1));
@@ -64,6 +81,7 @@ namespace LucreApp
         m_StarMoveOut1.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
 
         // 2nd star icon: move left to top left corner
+        float xPosWide23 = UI::m_Common->m_TabMarginLeftRight + UI::m_Common->m_IconWidth * 1.5f;
         glm::vec2 finalScreenPosition2;
         if (m_Narrow)
         {
@@ -71,7 +89,7 @@ namespace LucreApp
         }
         else
         {
-            finalScreenPosition2 = glm::vec2(318.0f, 288.0f);
+            finalScreenPosition2 = glm::vec2(xPosWide23, yPosWide12);
         }
 
         m_StarMoveIn2.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition2));
@@ -84,6 +102,7 @@ namespace LucreApp
         m_StarMoveOut2.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
 
         // 3rd star icon: move left to bottom left corner
+        float yPosWide3 = yPosWide12 + 568.0f * UI::m_Common->m_ScaleAll;
         glm::vec2 finalScreenPosition3;
         if (m_Narrow)
         {
@@ -91,7 +110,7 @@ namespace LucreApp
         }
         else
         {
-            finalScreenPosition3 = glm::vec2(318.0f, 788.0f);
+            finalScreenPosition3 = glm::vec2(xPosWide23, yPosWide3);
         }
 
         m_StarMoveIn3.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition3));
@@ -281,5 +300,16 @@ namespace LucreApp
     void UIStarIcon::ChangeState(State state)
     {
         m_State = state;
+    }
+
+    void UIStarIcon::OnResize()
+    {
+        bool start  = m_StarMoveIn1.IsRunning();
+        bool rotate = m_StarRotate1.IsRunning();
+
+        Init();
+
+        if (start || rotate) StartSequence();
+        
     }
 }

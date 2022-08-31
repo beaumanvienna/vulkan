@@ -107,7 +107,7 @@ namespace LucreApp
         Sprite2D icon_depressed_inactive;
 
         if (CoreSettings::m_UITheme == THEME_RETRO)
-        { 
+        {
             icon = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
             icon.SetScale(UI::m_Common->m_TabIconScaleRetro);
             icon_active = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_FOCUSED));

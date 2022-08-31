@@ -54,7 +54,14 @@ namespace LucreApp
         // Reset content
         Clear();
 
-        Add(new Spacer(UI::m_Common->m_IconWidth / 2.0f));
+        if (CoreSettings::m_UITheme == THEME_RETRO)
+        {
+            Add(new Spacer(UI::m_Common->m_IconWidth / 2.0f));
+        }
+        else
+        {
+            Add(new Spacer(226.0f * UI::m_Common->m_ScaleAll - 69.0f - UI::m_Common->m_TabMargin));
+        }
 
         float verticalSpace = (availableHeight - 4 * UI::m_Common->m_IconHeight);
         LinearLayout* creditsHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));

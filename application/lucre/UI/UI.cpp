@@ -232,6 +232,7 @@ namespace LucreApp
     void UI::OnResize()
     {
         m_Common->OnResize();
+        m_UIStarIcon->OnResize();
         m_ScreenManager->resized();
     }
 

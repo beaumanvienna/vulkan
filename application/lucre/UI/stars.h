@@ -53,6 +53,8 @@ namespace LucreApp
         void OnDetach() override;
         void OnEvent(Event& event) override;
         void OnUpdate(const Timestep& timestep) override;
+        void OnResize();
+
         void Start() { m_Start = true; }
         void Stop()  { m_Stop  = true; }
 
@@ -62,6 +64,7 @@ namespace LucreApp
         void StopSequence();
         void Rotate();
         void ChangeState(State state);
+        void Init();
 
     private:
 
