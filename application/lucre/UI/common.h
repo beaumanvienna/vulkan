@@ -47,6 +47,7 @@ namespace LucreApp
 
         float m_StripSize;
         float m_MarginLeftRight;
+        float m_SettingsBar;
 
         float m_TabIconScaleRetro;
         float m_TabMargin;

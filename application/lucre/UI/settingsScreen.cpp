@@ -164,11 +164,11 @@ namespace LucreApp
         generalSettings->Add(new ItemHeader(ge->T("General settings for Lucre")));
 
         // -------- toggle fullscreen --------
-        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,85.0f)));
+        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
         vToggleFullscreen->OnClick.Handle(this, &SettingsScreen::OnFullscreenToggle);
 
         // -------- system sounds --------
-        CheckBox* vSystemSounds = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"),"", new LayoutParams(FILL_PARENT,85.0f)));
+        CheckBox* vSystemSounds = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
         vSystemSounds->OnClick.Add([=](EventParams &e) 
         {
             return SCREEN_UI::EVENT_CONTINUE;
@@ -179,7 +179,7 @@ namespace LucreApp
         const int VOLUME_OFF = 0;
         const int VOLUME_MAX = 100;
 
-        SCREEN_PopupSliderChoice* volume = generalSettings->Add(new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "", new LayoutParams(FILL_PARENT,85.0f)));
+        SCREEN_PopupSliderChoice* volume = generalSettings->Add(new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
         m_GlobalVolumeEnabled = true;
         volume->SetEnabledPtr(&m_GlobalVolumeEnabled);
         volume->SetZeroLabel(ge->T("Mute"));
@@ -212,13 +212,13 @@ namespace LucreApp
         };
 
         SCREEN_PopupMultiChoice* uiThemeChoice = generalSettings->Add(new SCREEN_PopupMultiChoice(&CoreSettings::m_UITheme, ge->T("Theme"),
-            uiTheme, 0, ARRAY_SIZE(uiTheme), ge->GetName(), screenManager(), new LayoutParams(FILL_PARENT, 85.0f)));
+            uiTheme, 0, ARRAY_SIZE(uiTheme), ge->GetName(), screenManager(), new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
         uiThemeChoice->OnChoice.Handle(this, &SettingsScreen::OnThemeChanged);
 
         // -------- controller setup --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(WRAP_CONTENT, FILL_PARENT));
+        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutController->SetTag("horizontalLayoutController");
         m_TabHolder->AddTab(ge->T("Controller"), horizontalLayoutController);
 
@@ -235,7 +235,7 @@ namespace LucreApp
         // -------- credits --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(WRAP_CONTENT, FILL_PARENT));
+        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutCredits->SetTag("horizontalLayoutCredits");
         m_TabHolder->AddTab(ge->T("Credits"), horizontalLayoutCredits);
 

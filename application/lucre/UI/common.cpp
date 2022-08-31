@@ -44,10 +44,11 @@ namespace LucreApp
 
         m_StripSize          = 150.0f * m_ScaleAll;
         m_MarginLeftRight    = 128.0f * m_ScaleAll;
+        m_SettingsBar        = 85.0f * m_ScaleAll;
 
         m_TabMargin          = 50.0f * m_ScaleAll;
         m_TabMarginLeftRight = 80.0f * m_ScaleAll;
-        m_TabLayoutWidth     = (m_AvailableWidth - 2.0f * m_TabMarginLeftRight)  * m_ScaleAll;
+        m_TabLayoutWidth     = (m_AvailableWidth - 2.0f * m_TabMarginLeftRight);
 
         m_ControllerScale    = 1.0f * m_ScaleAll;
 
