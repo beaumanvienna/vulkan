@@ -192,6 +192,7 @@ namespace LucreApp
 
         // audio device list
         #ifdef LINUX
+            float widthSelectAudioDevice = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
             std::vector<std::string>& audioDeviceList = Sound::GetOutputDeviceList();
             m_AudioDevice = Sound::GetDefaultOutputDevice();
             auto selectAudioDevice = new SCREEN_PopupMultiChoiceDynamic(&m_AudioDevice,
@@ -199,7 +200,7 @@ namespace LucreApp
                                                                         audioDeviceList,
                                                                         nullptr,
                                                                         screenManager(),
-                                                                        new LayoutParams(FILL_PARENT, 85.0f), 1800.0f);
+                                                                        new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar), widthSelectAudioDevice);
             SCREEN_PopupMultiChoiceDynamic* audioDevice = generalSettings->Add(selectAudioDevice);
             audioDevice->OnChoice.Handle(this, &SettingsScreen::OnAudioDevice);
         #endif

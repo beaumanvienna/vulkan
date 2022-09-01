@@ -81,8 +81,9 @@ namespace LucreApp
             "\n"
             "The in-game GUI used in Lucre is based on\n"
             "\n"
-            "PPSSPP:          www.ppsspp.org (license: GNU GPLv2)\n"
-            "\n",
+            "PPSSPP:\n"
+            "www.ppsspp.org\n"
+            "(license: GNU GPLv2)\n",
             ALIGN_HCENTER | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - sprite.GetWidth(), verticalSpace)));
 
         return;

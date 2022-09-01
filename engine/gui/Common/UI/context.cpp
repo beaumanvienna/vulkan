@@ -241,8 +241,8 @@ namespace GfxRenderEngine
 
     void SCREEN_UIContext::SetFontScale(float scaleX, float scaleY)
     {
-        fontScaleX_ = scaleX;
-        fontScaleY_ = scaleY;
+        fontScaleX_ = scaleX * Engine::m_Engine->GetWindowHeight() / 1080.0f;
+        fontScaleY_ = scaleY * Engine::m_Engine->GetWindowHeight() / 1080.0f;
     }
 
     void SCREEN_UIContext::SetFontStyle(const SCREEN_UI::FontStyle& fontStyle)

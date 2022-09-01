@@ -361,9 +361,9 @@ namespace GfxRenderEngine
         root_ = anchor;
 
         float yres = screenManager()->getUIContext()->GetBounds().h;
-
+        float scaleWidth = Engine::m_Engine->GetWindowHeight() / 1080.0f;
         box_ = new LinearLayout(ORIENT_VERTICAL,
-            new AnchorLayoutParams(PopupWidth(), FillVertical() ? yres - 30.0f : WRAP_CONTENT, dc.GetBounds().centerX(), dc.GetBounds().centerY(), NONE, NONE, true));
+            new AnchorLayoutParams(PopupWidth() * scaleWidth, FillVertical() ? yres - 30.0f : WRAP_CONTENT, dc.GetBounds().centerX(), dc.GetBounds().centerY(), NONE, NONE, true));
 
         root_->Add(box_);
         box_->SetBG(dc.theme->popupStyle.background);
@@ -386,8 +386,9 @@ namespace GfxRenderEngine
         if (ShowButtons() && !button1_.empty())
         {
             LinearLayout *buttonRow = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-            Choice* okButton     = new Choice(button1_, TRANSPARENT_BACKGROUND, new LayoutParams(265.0f, 64.0f));
-            Choice* cancelButton = new Choice(button2_, TRANSPARENT_BACKGROUND, new LayoutParams(265.0f, 64.0f));
+            float scale = Engine::m_Engine->GetWindowHeight() / 1080.0f;
+            Choice* okButton     = new Choice(button1_, TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
+            Choice* cancelButton = new Choice(button2_, TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
 
             okButton->SetCentered(true);
             cancelButton->SetCentered(true);
