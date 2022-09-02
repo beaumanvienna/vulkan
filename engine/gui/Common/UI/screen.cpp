@@ -302,6 +302,10 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::RecreateAllViews()
     {
+        while(lastFocusView.size())
+        {
+            lastFocusView.pop();
+        }
         uiContext_->UIThemeInit();
         for (auto it = stack_.begin(); it != stack_.end(); ++it)
         {
@@ -365,12 +369,15 @@ namespace GfxRenderEngine
                 {
                     caller->dialogFinished(dialogFinished_, dialogResult_);
                 }
-            }
-            delete dialogFinished_;
-            dialogFinished_ = nullptr;
+                delete dialogFinished_;
+                dialogFinished_ = nullptr;
 
-            SCREEN_UI::SetFocusedView(lastFocusView.top());
-            lastFocusView.pop();
+                if (lastFocusView.size())
+                {
+                    SCREEN_UI::SetFocusedView(lastFocusView.top());
+                    lastFocusView.pop();
+                }
+            }
         }
     }
 
