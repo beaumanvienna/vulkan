@@ -305,6 +305,15 @@ namespace GfxRenderEngine
         while(lastFocusView.size())
         {
             lastFocusView.pop();
+
+            // if (stack_.size() > 2) to avoid
+            // having a pop-up open, that is
+            // deleted from the underlying
+            // screen
+            if (stack_.size() > 2)
+            {
+                pop();
+            }
         }
         uiContext_->UIThemeInit();
         for (auto it = stack_.begin(); it != stack_.end(); ++it)
