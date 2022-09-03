@@ -89,6 +89,7 @@ namespace LucreApp
     void GameState::SetState(State state)
     {
         m_State = state;
+        GetScene().SetRunning();
         GetScene().OnResize();
     }
 

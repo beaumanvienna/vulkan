@@ -42,6 +42,8 @@ namespace LucreApp
     {
         m_SpritesheetSettings.AddSpritesheetRow(m_Spritesheet->GetSprite(I_GEAR_R), 4 /* frames */);
         m_SpritesheetOff.AddSpritesheetRow(m_Spritesheet->GetSprite(I_OFF_R), 4 /* frames */);
+        m_SpritesheetScene1Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_1_R), 4 /* frames */);
+        m_SpritesheetScene2Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_2_R), 4 /* frames */);
     }
 
     void MainScreen::OnDetach()
@@ -100,12 +102,56 @@ namespace LucreApp
         topline->SetTag("topLine");
         verticalLayout->Add(topline);
 
-        float horizontalSpacerTopline = UI::m_Common->m_AvailableWidth - UI::m_Common->m_MarginLeftRight - 2 * UI::m_Common->m_IconWidth - UI::m_Common->m_IconSpacer;
-        topline->Add(new SCREEN_UI::Spacer(horizontalSpacerTopline,0.0f));
+        topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_MarginLeftRight,0.0f));
+        float horizontalSpacerTopline = UI::m_Common->m_AvailableWidth - 4 * UI::m_Common->m_IconWidth - 2 * UI::m_Common->m_IconSpacer - 2 * UI::m_Common->m_MarginLeftRight;
 
         Sprite2D icon;
         Sprite2D icon_active;
         Sprite2D icon_depressed;
+
+        // scene 1 button
+        if (CoreSettings::m_UITheme == THEME_RETRO)
+        {
+            icon = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
+            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_FOCUSED));
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+
+            m_Scene1Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        else
+        {
+            icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
+            icon.SetScale(UI::m_Common->m_IconScale);
+            m_Scene1Button = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        m_Scene1Button->OnClick.Handle(this, &MainScreen::Scene1Click);
+        topline->Add(m_Scene1Button);
+        topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_IconSpacer,0.0f));
+
+        // scene 2 button
+        if (CoreSettings::m_UITheme == THEME_RETRO)
+        {
+            icon = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
+            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_FOCUSED));
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+
+            m_Scene2Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        else
+        {
+            icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
+            icon.SetScale(UI::m_Common->m_IconScale);
+            m_Scene2Button = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        m_Scene2Button->OnClick.Handle(this, &MainScreen::Scene2Click);
+        topline->Add(m_Scene2Button);
+        topline->Add(new SCREEN_UI::Spacer(horizontalSpacerTopline,0.0f));
 
         // settings button
         if (CoreSettings::m_UITheme == THEME_RETRO)
@@ -193,6 +239,26 @@ namespace LucreApp
         Lucre::m_Application->OnAppEvent(event);
         UI::m_ScreenManager->push(settingsScreen);
 
+        return SCREEN_UI::EVENT_DONE;
+    }
+
+    SCREEN_UI::EventReturn MainScreen::Scene1Click(SCREEN_UI::EventParams &e)
+    {
+        if (Lucre::m_Application->GetState() == GameState::State::BEACH)
+        {
+            SceneChangedEvent event(GameState::State::MAIN);
+            Lucre::m_Application->OnAppEvent(event);
+        }
+        return SCREEN_UI::EVENT_DONE;
+    }
+
+    SCREEN_UI::EventReturn MainScreen::Scene2Click(SCREEN_UI::EventParams &e)
+    {
+        if (Lucre::m_Application->GetState() == GameState::State::MAIN)
+        {
+            SceneChangedEvent event(GameState::State::SPLASH);
+            Lucre::m_Application->OnAppEvent(event);
+        }
         return SCREEN_UI::EVENT_DONE;
     }
 

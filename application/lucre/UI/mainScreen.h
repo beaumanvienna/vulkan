@@ -51,6 +51,8 @@ namespace LucreApp
         void CreateViews() override;
 
         SCREEN_UI::EventReturn SettingsClick(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn Scene1Click(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn Scene2Click(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams &e);
 
@@ -67,6 +69,8 @@ namespace LucreApp
 
         SCREEN_UI::Choice* m_OffButton;
         SCREEN_UI::Choice* m_SettingsButton;
+        SCREEN_UI::Choice* m_Scene1Button;
+        SCREEN_UI::Choice* m_Scene2Button;
         bool m_SetFocus = true;
         InfoMessage *m_MainInfo;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
@@ -74,6 +78,7 @@ namespace LucreApp
         SpriteSheet* m_Spritesheet;
         SpriteSheet m_SpritesheetSettings;
         SpriteSheet m_SpritesheetOff;
-
+        SpriteSheet m_SpritesheetScene1Button;
+        SpriteSheet m_SpritesheetScene2Button;
     };
 }

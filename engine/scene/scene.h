@@ -67,6 +67,7 @@ namespace GfxRenderEngine
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
 
         bool IsFinished() const { return !m_IsRunning; }
+        void SetRunning() { m_IsRunning = true; }
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
 

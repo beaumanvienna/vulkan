@@ -40,6 +40,7 @@ namespace LucreApp
         {
             SPLASH,
             MAIN,
+            BEACH,
             SETTINGS
         };
 
