@@ -41,6 +41,7 @@ namespace LucreApp
             SPLASH,
             MAIN,
             BEACH,
+            CUTSCENE,
             SETTINGS
         };
 

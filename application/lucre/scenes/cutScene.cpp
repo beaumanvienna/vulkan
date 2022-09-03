@@ -24,7 +24,7 @@
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/controllerEvent.h"
-#include "scenes/splashScene.h"
+#include "scenes/cutScene.h"
 #include "resources/resources.h"
 #include "transform/matrix.h"
 
@@ -33,9 +33,8 @@
 namespace LucreApp
 {
 
-    void SplashScene::Start()
+    void CutScene::Start()
     {
-        Lucre::m_Application->PlaySound(IDR_WAVES);
 
         m_Renderer = Engine::m_Engine->GetRenderer();
 
@@ -74,29 +73,29 @@ namespace LucreApp
             m_Registry.emplace<SpriteRendererComponent2D>(m_Guybrush[i], spriteRendererComponent2D);
         }
 
-        // logo
+        // island
         {
             Builder builder{};
 
-            auto logoSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_LUCRE));
-            builder.LoadSprite(logoSprite);
+            auto islandSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND));
+            builder.LoadSprite(islandSprite);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"logo", model};
+            MeshComponent mesh{"island", model};
             mesh.m_Enabled = true;
 
-            m_Logo = CreateEntity();
-            m_Registry.emplace<MeshComponent>(m_Logo, mesh);
+            m_Island = CreateEntity();
+            m_Registry.emplace<MeshComponent>(m_Island, mesh);
 
-            TransformComponent transform{};
-            m_Registry.emplace<TransformComponent>(m_Logo, transform);
+            TransformComponent transform = TransformComponent(islandSprite.GetMat4());
+            m_Registry.emplace<TransformComponent>(m_Island, transform);
 
             SpriteRendererComponent2D spriteRendererComponent2D{};
-            m_Registry.emplace<SpriteRendererComponent2D>(m_Logo, spriteRendererComponent2D);
+            m_Registry.emplace<SpriteRendererComponent2D>(m_Island, spriteRendererComponent2D);
         }
         Init();
     }
 
-    void SplashScene::Init()
+    void CutScene::Init()
     {
         m_InitialPositionX  = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
         m_EndPositionX      = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
@@ -119,22 +118,22 @@ namespace LucreApp
             transform.SetTranslationY(m_WindowHeight * 0.65f);
         }
 
-        // logo
+        // island
         {
             float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetWidth();
             float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetHeight();
-            float scale = m_WindowHeight / height * 0.2f;
-            auto& transform = m_Registry.get<TransformComponent>(m_Logo);
-            transform.SetScale({scale * width, scale * height, 0.0f});
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
+            float scale = m_WindowHeight * 0.1f;
+            auto& transform = m_Registry.get<TransformComponent>(m_Island);
+            transform.SetScale({scale, scale, 0.0f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.4f, 0.0f});
         }
     }
 
-    void SplashScene::Stop()
+    void CutScene::Stop()
     {
     }
 
-    void SplashScene::OnUpdate(const Timestep& timestep)
+    void CutScene::OnUpdate(const Timestep& timestep)
     {
         {
             static float walkOffset = m_InitialPositionX;
@@ -145,7 +144,6 @@ namespace LucreApp
                 if (walkOffset > m_EndPositionX)
                 {
                     walkOffset = m_InitialPositionX;
-                    m_IsRunning = false;
                 }
             }
 
@@ -184,35 +182,11 @@ namespace LucreApp
 
     }
 
-    void SplashScene::OnEvent(Event& event)
+    void CutScene::OnEvent(Event& event)
     {
-        EventDispatcher dispatcher(event);
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
-            {
-                switch(event.GetKeyCode())
-                {
-                    case ENGINE_KEY_ESCAPE:
-                        m_IsRunning = false;
-                        break;
-                }
-                return true;
-            }
-        );
-
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event)
-            {
-                switch (event.GetControllerButton())
-                {
-                    case Controller::BUTTON_GUIDE:
-                        m_IsRunning = false;
-                        break;
-                }
-                return false;
-            }
-        );
     }
 
-    void SplashScene::OnResize()
+    void CutScene::OnResize()
     {
         m_CameraController->SetProjection();
         Init();

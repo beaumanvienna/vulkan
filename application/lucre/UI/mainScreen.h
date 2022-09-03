@@ -67,15 +67,16 @@ namespace LucreApp
 
     private:
 
-        SCREEN_UI::Choice* m_OffButton;
-        SCREEN_UI::Choice* m_SettingsButton;
-        SCREEN_UI::Choice* m_Scene1Button;
-        SCREEN_UI::Choice* m_Scene2Button;
+        SCREEN_UI::Choice* m_OffButton = nullptr;
+        SCREEN_UI::Choice* m_SettingsButton = nullptr;
+        SCREEN_UI::Choice* m_Scene1Button = nullptr;
+        SCREEN_UI::Choice* m_Scene2Button = nullptr;
+        InfoMessage *m_MainInfo = nullptr;
+
         bool m_SetFocus = true;
-        InfoMessage *m_MainInfo;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 
-        SpriteSheet* m_Spritesheet;
+        SpriteSheet* m_Spritesheet = nullptr;
         SpriteSheet m_SpritesheetSettings;
         SpriteSheet m_SpritesheetOff;
         SpriteSheet m_SpritesheetScene1Button;

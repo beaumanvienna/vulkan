@@ -27,6 +27,7 @@
 #include "core.h"
 #include "scenes/splashScene.h"
 #include "scenes/mainScene.h"
+#include "scenes/cutScene.h"
 #include "scenes/settingsScene.h"
 
 namespace LucreApp
@@ -43,6 +44,7 @@ namespace LucreApp
     {
         Load(State::SPLASH);
         Load(State::MAIN);
+        Load(State::CUTSCENE);
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
@@ -119,6 +121,12 @@ namespace LucreApp
                     m_MainSceneLoaded = true;
                 });
                 loadMainSceneThread.detach();
+                break;
+            }
+            case State::CUTSCENE:
+            {
+                m_Scenes.emplace(State::CUTSCENE, std::make_unique<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene"));
+                m_Scenes[State::CUTSCENE]->Start();
                 break;
             }
             case State::SETTINGS:

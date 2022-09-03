@@ -52,6 +52,7 @@ namespace LucreApp
 
     bool MainScreen::key(const SCREEN_KeyInput &key)
     {
+        if (!m_OffButton) return false;
         if (!m_OffButton->HasFocus())
         {
             if (key.flags & KEY_DOWN)
@@ -244,7 +245,7 @@ namespace LucreApp
 
     SCREEN_UI::EventReturn MainScreen::Scene1Click(SCREEN_UI::EventParams &e)
     {
-        if (Lucre::m_Application->GetState() == GameState::State::BEACH)
+        if (Lucre::m_Application->GetState() == GameState::State::CUTSCENE)
         {
             SceneChangedEvent event(GameState::State::MAIN);
             Lucre::m_Application->OnAppEvent(event);
@@ -256,7 +257,7 @@ namespace LucreApp
     {
         if (Lucre::m_Application->GetState() == GameState::State::MAIN)
         {
-            SceneChangedEvent event(GameState::State::SPLASH);
+            SceneChangedEvent event(GameState::State::CUTSCENE);
             Lucre::m_Application->OnAppEvent(event);
         }
         return SCREEN_UI::EVENT_DONE;
