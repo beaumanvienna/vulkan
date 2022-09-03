@@ -53,6 +53,8 @@ namespace LucreApp
     private:
 
         void Init();
+        void MoveClouds(const Timestep& timestep);
+        void Draw();
 
     private:
 
@@ -60,11 +62,13 @@ namespace LucreApp
         std::shared_ptr<CameraController> m_CameraController;
 
         static constexpr uint WALK_ANIMATION_SPRITES = 6;
-        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES], m_Island;
+        entt::entity m_Guybrush[WALK_ANIMATION_SPRITES], m_Beach, m_Clouds[2];
         SpriteSheet m_SpritesheetWalk;
         SpriteAnimation m_WalkAnimation;
         float m_GuybrushWalkDelta;
         float m_InitialPositionX, m_EndPositionX;
-        float m_WindowWidth, m_WindowHeight;
+        float m_Scale;
+        float m_TranslationX0;
+        float m_TranslationX1;
     };
 }

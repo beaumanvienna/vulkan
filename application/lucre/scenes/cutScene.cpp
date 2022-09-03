@@ -73,39 +73,62 @@ namespace LucreApp
             m_Registry.emplace<SpriteRendererComponent2D>(m_Guybrush[i], spriteRendererComponent2D);
         }
 
-        // island
+        // beach
         {
             Builder builder{};
 
-            auto islandSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND));
-            builder.LoadSprite(islandSprite);
+            auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
+            builder.LoadSprite(beachSprite);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"island", model};
+            MeshComponent mesh{"beach", model};
             mesh.m_Enabled = true;
 
-            m_Island = CreateEntity();
-            m_Registry.emplace<MeshComponent>(m_Island, mesh);
+            m_Beach = CreateEntity();
+            m_Registry.emplace<MeshComponent>(m_Beach, mesh);
 
-            TransformComponent transform = TransformComponent(islandSprite.GetMat4());
-            m_Registry.emplace<TransformComponent>(m_Island, transform);
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(m_Beach, transform);
 
             SpriteRendererComponent2D spriteRendererComponent2D{};
-            m_Registry.emplace<SpriteRendererComponent2D>(m_Island, spriteRendererComponent2D);
+            m_Registry.emplace<SpriteRendererComponent2D>(m_Beach, spriteRendererComponent2D);
+        }
+
+        // cloud
+        {
+            Builder builder{};
+
+            auto cloudSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
+            builder.LoadSprite(cloudSprite);
+            auto model = Engine::m_Engine->LoadModel(builder);
+            MeshComponent mesh{"clouds", model};
+            mesh.m_Enabled = true;
+
+            for (uint i = 0; i < 2; i++)
+            {
+                m_Clouds[i] = CreateEntity();
+                m_Registry.emplace<MeshComponent>(m_Clouds[i], mesh);
+
+                TransformComponent transform{};
+                m_Registry.emplace<TransformComponent>(m_Clouds[i], transform);
+
+                SpriteRendererComponent2D spriteRendererComponent2D{};
+                m_Registry.emplace<SpriteRendererComponent2D>(m_Clouds[i], spriteRendererComponent2D);
+            }
         }
         Init();
     }
 
     void CutScene::Init()
     {
-        m_InitialPositionX  = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
-        m_EndPositionX      = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
-        m_WindowWidth       = static_cast<float>(Engine::m_Engine->GetWindowWidth());
-        m_WindowHeight      = static_cast<float>(Engine::m_Engine->GetWindowHeight());
+        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
+        m_EndPositionX     = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        float windowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
+        float windowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
         // walk
-        float scaleHero     = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
+        float scaleHero     = windowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
         
-        m_GuybrushWalkDelta = m_WindowHeight * 0.16f;
+        m_GuybrushWalkDelta = windowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
             auto sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
@@ -115,17 +138,82 @@ namespace LucreApp
 
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
             transform.SetScale({width, height, 0.0f});
-            transform.SetTranslationY(m_WindowHeight * 0.65f);
+            transform.SetTranslationY(windowHeight * 0.8f);
         }
 
-        // island
+        // set up scale for beach and clouds
         {
-            float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetWidth();
-            float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetHeight();
-            float scale = m_WindowHeight * 0.1f;
-            auto& transform = m_Registry.get<TransformComponent>(m_Island);
-            transform.SetScale({scale, scale, 0.0f});
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.4f, 0.0f});
+            auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
+            float spriteHeight = beachSprite.GetHeight();
+            float spriteWidth  = beachSprite.GetWidth();
+
+            m_Scale = windowHeight / spriteHeight;
+
+            beachSprite.SetScale(m_Scale);
+            spriteHeight = beachSprite.GetHeight();
+            spriteWidth  = beachSprite.GetWidth();
+            m_TranslationX0 = spriteWidth / 2.0f;
+            m_TranslationX1 = -spriteWidth / 2.0f;
+        }
+        // beach
+        {
+            auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
+            beachSprite.SetScale(m_Scale);
+            float spriteWidth  = beachSprite.GetWidth();
+            float spriteHeight = beachSprite.GetHeight();
+
+            auto& transform = m_Registry.get<TransformComponent>(m_Beach);
+            transform = TransformComponent(beachSprite.GetMat4());
+            transform.SetTranslation(glm::vec3{windowWidth/2.0f, windowHeight - spriteHeight/2, 0.0f});
+        }
+        
+        // clouds
+        {
+            auto cloudsSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
+            cloudsSprite.SetScale(m_Scale);
+            float spriteWidth  = cloudsSprite.GetWidth();
+            float spriteHeight = cloudsSprite.GetHeight();
+
+            for (uint i = 0; i < 2; i++)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(m_Clouds[i]);
+                transform = TransformComponent(cloudsSprite.GetMat4());
+            }
+        }
+    }
+    
+    void CutScene::MoveClouds(const Timestep& timestep)
+    {
+        auto cloudSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
+        cloudSprite.SetScale(m_Scale);
+        float spriteWidth  = cloudSprite.GetWidth();
+        float spriteHeight = cloudSprite.GetHeight();
+
+        float speed = 500.0f;
+
+        m_TranslationX0 += timestep * speed;
+        m_TranslationX1 += timestep * speed;
+        if (m_TranslationX0 > spriteWidth*1.5f)
+        {
+            m_TranslationX0 = -spriteWidth/2.0f;
+        }
+        if (m_TranslationX1 > spriteWidth*1.5f)
+        {
+            m_TranslationX1 = -spriteWidth/2.0f;
+        }
+
+        // need to gloss over some rounding effects
+        cloudSprite.SetScale(m_Scale * 1.01f);
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Clouds[0]);
+            transform = TransformComponent(cloudSprite.GetMat4());
+            transform.SetTranslation(glm::vec3{m_TranslationX0, spriteHeight/2.0f, 0.0f});
+        }
+
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
+            transform = TransformComponent(cloudSprite.GetMat4());
+            transform.SetTranslation(glm::vec3{m_TranslationX1, spriteHeight/2.0f, 0.0f});
         }
     }
 
@@ -168,7 +256,7 @@ namespace LucreApp
                 transform.SetTranslationX(frameTranslationX+walkOffset);
             }
         }
-
+        MoveClouds(timestep);
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
 
