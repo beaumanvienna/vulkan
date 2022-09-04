@@ -63,6 +63,7 @@ namespace LucreApp
 
         static constexpr uint WALK_ANIMATION_SPRITES = 6;
         entt::entity m_Guybrush[WALK_ANIMATION_SPRITES], m_Beach, m_Clouds[2];
+        Sprite2D m_CloudSprite, m_BeachSprite;
         SpriteSheet m_SpritesheetWalk;
         SpriteAnimation m_WalkAnimation;
         float m_GuybrushWalkDelta;

@@ -53,9 +53,7 @@ namespace GfxRenderEngine
         Sprite sprite;
         if (IsRunning())
         {
-            Duration timeElapsed = Engine::m_Engine->GetTime() - m_StartTime;
-            uint index = static_cast<uint>(timeElapsed.count() * m_TimeFactor);
-            sprite = m_Spritesheet->GetSprite(index);
+            sprite = m_Spritesheet->GetSprite(GetCurrentFrame());
         }
         else
         {
@@ -78,7 +76,8 @@ namespace GfxRenderEngine
     uint SpriteAnimation::GetCurrentFrame() const 
     { 
         Duration timeElapsed = Engine::m_Engine->GetTime() - m_StartTime;
-        return static_cast<uint>(timeElapsed.count() * m_TimeFactor);
+        uint index = static_cast<uint>(timeElapsed.count() * m_TimeFactor);
+        return std::min(index, m_Frames-1);
     }
 
     bool SpriteAnimation::IsNewFrame()

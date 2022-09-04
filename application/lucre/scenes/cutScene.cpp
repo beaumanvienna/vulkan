@@ -68,51 +68,24 @@ namespace LucreApp
 
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Guybrush[i], transform);
-
-            SpriteRendererComponent2D spriteRendererComponent2D{};
-            m_Registry.emplace<SpriteRendererComponent2D>(m_Guybrush[i], spriteRendererComponent2D);
         }
 
         // beach
         {
-            Builder builder{};
-
-            auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
-            builder.LoadSprite(beachSprite);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"beach", model};
-            mesh.m_Enabled = true;
-
             m_Beach = CreateEntity();
-            m_Registry.emplace<MeshComponent>(m_Beach, mesh);
 
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Beach, transform);
-
-            SpriteRendererComponent2D spriteRendererComponent2D{};
-            m_Registry.emplace<SpriteRendererComponent2D>(m_Beach, spriteRendererComponent2D);
         }
 
         // cloud
         {
-            Builder builder{};
-
-            auto cloudSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
-            builder.LoadSprite(cloudSprite);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"clouds", model};
-            mesh.m_Enabled = true;
-
             for (uint i = 0; i < 2; i++)
             {
                 m_Clouds[i] = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Clouds[i], mesh);
 
                 TransformComponent transform{};
                 m_Registry.emplace<TransformComponent>(m_Clouds[i], transform);
-
-                SpriteRendererComponent2D spriteRendererComponent2D{};
-                m_Registry.emplace<SpriteRendererComponent2D>(m_Clouds[i], spriteRendererComponent2D);
             }
         }
         Init();
@@ -143,56 +116,57 @@ namespace LucreApp
 
         // set up scale for beach and clouds
         {
+            // calc scale based on original height
             auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
             float spriteHeight = beachSprite.GetHeight();
             float spriteWidth  = beachSprite.GetWidth();
-
             m_Scale = windowHeight / spriteHeight;
 
-            beachSprite.SetScale(m_Scale);
-            spriteHeight = beachSprite.GetHeight();
-            spriteWidth  = beachSprite.GetWidth();
-            m_TranslationX0 = spriteWidth / 2.0f;
-            m_TranslationX1 = -spriteWidth / 2.0f;
+            m_BeachSprite = beachSprite;
+            m_CloudSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
+
+            // scale global sprites
+            m_BeachSprite.SetScale(m_Scale);
+            m_CloudSprite.SetScale(m_Scale);
+
+            float spriteWidthClouds = m_CloudSprite.GetWidth();
+            m_TranslationX0 = spriteWidthClouds / 2.0f;
+            m_TranslationX1 = -spriteWidthClouds / 2.0f;
+
         }
         // beach
         {
-            auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
-            beachSprite.SetScale(m_Scale);
-            float spriteWidth  = beachSprite.GetWidth();
-            float spriteHeight = beachSprite.GetHeight();
+            float spriteWidth  = m_BeachSprite.GetWidth();
+            float spriteHeight = m_BeachSprite.GetHeight();
 
             auto& transform = m_Registry.get<TransformComponent>(m_Beach);
-            transform = TransformComponent(beachSprite.GetMat4());
+            transform = TransformComponent(m_BeachSprite.GetMat4());
             transform.SetTranslation(glm::vec3{windowWidth/2.0f, windowHeight - spriteHeight/2, 0.0f});
         }
         
         // clouds
         {
-            auto cloudsSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
-            cloudsSprite.SetScale(m_Scale);
-            float spriteWidth  = cloudsSprite.GetWidth();
-            float spriteHeight = cloudsSprite.GetHeight();
+            float spriteWidth  = m_CloudSprite.GetWidth();
+            float spriteHeight = m_CloudSprite.GetHeight();
 
             for (uint i = 0; i < 2; i++)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Clouds[i]);
-                transform = TransformComponent(cloudsSprite.GetMat4());
+                transform = TransformComponent(m_CloudSprite.GetMat4());
             }
         }
     }
     
     void CutScene::MoveClouds(const Timestep& timestep)
     {
-        auto cloudSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_CLOUDS));
-        cloudSprite.SetScale(m_Scale);
-        float spriteWidth  = cloudSprite.GetWidth();
-        float spriteHeight = cloudSprite.GetHeight();
+        float spriteWidth  = m_CloudSprite.GetWidth();
+        float spriteHeight = m_CloudSprite.GetHeight();
 
-        float speed = 500.0f;
+        float speed = 20.0f;
 
         m_TranslationX0 += timestep * speed;
         m_TranslationX1 += timestep * speed;
+
         if (m_TranslationX0 > spriteWidth*1.5f)
         {
             m_TranslationX0 = -spriteWidth/2.0f;
@@ -203,16 +177,16 @@ namespace LucreApp
         }
 
         // need to gloss over some rounding effects
-        cloudSprite.SetScale(m_Scale * 1.01f);
+        glm::mat4 glossOver = Scale(glm::vec3(1.01f)) * m_CloudSprite.GetMat4();
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[0]);
-            transform = TransformComponent(cloudSprite.GetMat4());
+            transform = TransformComponent(glossOver);
             transform.SetTranslation(glm::vec3{m_TranslationX0, spriteHeight/2.0f, 0.0f});
         }
 
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
-            transform = TransformComponent(cloudSprite.GetMat4());
+            transform = TransformComponent(glossOver);
             transform.SetTranslation(glm::vec3{m_TranslationX1, spriteHeight/2.0f, 0.0f});
         }
     }
@@ -266,8 +240,35 @@ namespace LucreApp
 
         // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
-        m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_Registry);
+        Draw();
 
+    }
+
+    void CutScene::Draw()
+    {
+        // cloud 0
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Clouds[0]);
+            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4());
+        }
+
+        // cloud 1
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
+            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4());
+        }
+        
+        // beach
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Beach);
+            m_Renderer->DrawWithTransform(m_BeachSprite, transform.GetMat4());
+        }
+        
+        // hero
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[0]);
+            m_Renderer->DrawWithTransform(Sprite2D(m_WalkAnimation.GetSprite()), transform.GetMat4());
+        }
     }
 
     void CutScene::OnEvent(Event& event)

@@ -70,6 +70,8 @@ namespace GfxRenderEngine
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+        pipelineConfig.m_BindingDescriptions.clear();
+        pipelineConfig.m_AttributeDescriptions.clear();
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = (uint)VK_SwapChain::SubPassesGUI::SUBPASS_GUI;
