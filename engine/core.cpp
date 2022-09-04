@@ -349,7 +349,16 @@ namespace GfxRenderEngine
             }
             else
             {
-                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", (uint)entity, currentScene.GetDictionary().GetLongName(entity));
+                static std::vector<uint> log;
+                for (uint currentLog : log)
+                {
+                    if (currentLog == static_cast<uint>(entity))
+                    {
+                        return;
+                    }
+                }
+                log.push_back(static_cast<uint>(entity));
+                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity), currentScene.GetDictionary().GetLongName(entity));
             }
         }
     }

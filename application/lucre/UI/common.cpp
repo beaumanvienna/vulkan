@@ -40,10 +40,10 @@ namespace LucreApp
 
         m_IconWidth          = 128.0f * m_ScaleAll;
         m_IconHeight         = 128.0f * m_ScaleAll;
-        m_IconSpacer         = 80.0f * m_ScaleAll;
+        m_IconSpacer         = 64.0f * m_ScaleAll;
 
         m_StripSize          = 150.0f * m_ScaleAll;
-        m_MarginLeftRight    = 128.0f * m_ScaleAll;
+        m_MarginLeftRight    = 64.0f * m_ScaleAll;
         m_SettingsBar        = 85.0f * m_ScaleAll;
 
         m_TabMargin          = 50.0f * m_ScaleAll;

@@ -62,5 +62,6 @@ emulators/mednafen/missing
 application/lucre/models/dont_upload
 renderdoc.cap
 main.scene
+beach.scene
 splash.scene
 settings.scene

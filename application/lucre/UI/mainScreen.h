@@ -53,6 +53,7 @@ namespace LucreApp
         SCREEN_UI::EventReturn SettingsClick(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn Scene1Click(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn Scene2Click(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn Scene3Click(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams &e);
         SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams &e);
 
@@ -71,6 +72,7 @@ namespace LucreApp
         SCREEN_UI::Choice* m_SettingsButton = nullptr;
         SCREEN_UI::Choice* m_Scene1Button = nullptr;
         SCREEN_UI::Choice* m_Scene2Button = nullptr;
+        SCREEN_UI::Choice* m_Scene3Button = nullptr;
         InfoMessage *m_MainInfo = nullptr;
 
         bool m_SetFocus = true;
@@ -81,5 +83,6 @@ namespace LucreApp
         SpriteSheet m_SpritesheetOff;
         SpriteSheet m_SpritesheetScene1Button;
         SpriteSheet m_SpritesheetScene2Button;
+        SpriteSheet m_SpritesheetScene3Button;
     };
 }

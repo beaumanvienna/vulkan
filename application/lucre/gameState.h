@@ -72,6 +72,7 @@ namespace LucreApp
         bool m_UserInputEnabled;
         bool m_InputIdle;
         bool m_MainSceneLoaded;
+        bool m_BeachSceneLoaded;
 
     };
 }

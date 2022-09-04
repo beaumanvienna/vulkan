@@ -50,9 +50,6 @@ namespace GfxRenderEngine
 
     Scene::~Scene()
     {
-        #ifdef DEBUG
-            std::cout << "Scene::~Scene()" << std::endl;
-        #endif
     }
 
     entt::entity Scene::CreateEntity()

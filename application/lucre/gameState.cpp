@@ -28,6 +28,7 @@
 #include "scenes/splashScene.h"
 #include "scenes/mainScene.h"
 #include "scenes/cutScene.h"
+#include "scenes/beachScene.h"
 #include "scenes/settingsScene.h"
 
 namespace LucreApp
@@ -36,7 +37,8 @@ namespace LucreApp
     GameState::GameState()
         : m_State{State::SPLASH}, m_InputIdle{false},
           m_UserInputEnabled{false},
-          m_MainSceneLoaded{false}
+          m_MainSceneLoaded{false},
+          m_BeachSceneLoaded{false}
     {
     }
 
@@ -44,6 +46,7 @@ namespace LucreApp
     {
         Load(State::SPLASH);
         Load(State::MAIN);
+        Load(State::BEACH);
         Load(State::CUTSCENE);
         Load(State::SETTINGS);
 
@@ -61,13 +64,25 @@ namespace LucreApp
         {
             case State::SPLASH:
             {
+
+                //if (GetScene().IsFinished() && m_BeachSceneLoaded)
                 if (GetScene().IsFinished() && m_MainSceneLoaded)
                 {
-                    SetState(State::MAIN);
+                    //SetState(State::BEACH);
+                    SetState(State::MAIN;
                 }
                 break;
             }
             case State::MAIN:
+            {
+                if (GetScene().IsFinished())
+                {
+                    // game over
+                    Engine::m_Engine->Shutdown();
+                }
+                break;
+            }
+            case State::BEACH:
             {
                 if (GetScene().IsFinished())
                 {
@@ -121,6 +136,19 @@ namespace LucreApp
                     m_MainSceneLoaded = true;
                 });
                 loadMainSceneThread.detach();
+                break;
+            }
+            case State::BEACH:
+            {
+                std::thread loadBeachSceneThread([this]()
+                {
+                    while(!m_MainSceneLoaded) std::this_thread::sleep_for(100ms);
+                    m_Scenes.emplace(State::BEACH, std::make_unique<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene"));
+                    m_Scenes[State::BEACH]->Load();
+                    m_Scenes[State::BEACH]->Start();
+                    m_BeachSceneLoaded = true;
+                });
+                loadBeachSceneThread.detach();
                 break;
             }
             case State::CUTSCENE:
