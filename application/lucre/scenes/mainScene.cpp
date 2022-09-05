@@ -227,6 +227,7 @@ namespace LucreApp
 
     void MainScene::OnUpdate(const Timestep& timestep)
     {
+LOG_APP_INFO("void MainScene::OnUpdate(const Timestep& timestep)");
         {
             static uint previousFrame = 0;
             if (!m_HornAnimation.IsRunning()) m_HornAnimation.Start();

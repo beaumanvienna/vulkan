@@ -68,6 +68,9 @@ namespace GfxRenderEngine
 
         bool IsFinished() const { return !m_IsRunning; }
         void SetRunning() { m_IsRunning = true; }
+        bool IsLoaded() const { return m_IsLoaded; }
+        void SetLoaded(bool loaded) { m_IsLoaded = loaded; 
+LOG_CORE_CRITICAL("scene loaded");}
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
 
@@ -79,7 +82,7 @@ namespace GfxRenderEngine
         entt::registry m_Registry;
         TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
         Dictionary m_Dictionary;
-        bool m_IsRunning;
+        bool m_IsRunning, m_IsLoaded;
 
         friend class SceneLoader;
         

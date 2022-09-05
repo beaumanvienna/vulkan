@@ -34,9 +34,10 @@
 namespace GfxRenderEngine
 {
     Scene::Scene(const std::string& filepath, const std::string& alternativeFilepath)
-        : m_IsRunning{false}, m_Filepath(filepath),
+        : m_IsRunning(false), m_IsLoaded(false), m_Filepath(filepath),
           m_AlternativeFilepath{alternativeFilepath}
     {
+LOG_CORE_CRITICAL("Scene::Scene");
         m_Name = EngineCore::GetFilenameWithoutExtension(filepath);
         auto entity = m_Registry.create();
         // The root node gets a transform so that each and every node

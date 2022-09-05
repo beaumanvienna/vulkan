@@ -226,7 +226,8 @@ namespace LucreApp
 
         appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent event)
             {
-                m_GameState.SetState(event.GetScene());
+                m_GameState.SetState(GameState::State::CUTSCENE);
+                m_GameState.SetNextState(event.GetScene());
                 return true;
             }
         );

@@ -35,7 +35,7 @@ namespace LucreApp
 
     void CutScene::Start()
     {
-
+        m_IsLoaded = true;
         m_Renderer = Engine::m_Engine->GetRenderer();
 
         // create orthogonal camera 
@@ -197,6 +197,7 @@ namespace LucreApp
 
     void CutScene::OnUpdate(const Timestep& timestep)
     {
+LOG_APP_WARN("void CutScene::OnUpdate(const Timestep& timestep)");
         {
             static float walkOffset = m_InitialPositionX;
             if (!m_WalkAnimation.IsRunning())

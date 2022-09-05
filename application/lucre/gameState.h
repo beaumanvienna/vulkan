@@ -57,8 +57,12 @@ namespace LucreApp
         void EnableUserInput(bool enable);
 
         Scene& GetScene();
+        Scene& GetNextScene();
         void SetState(State state);
+        std::string StateToString(State state) const;
+        void SetNextState(State state);
         State GetState() const { return m_State; }
+        State GetNextState() const { return m_NextState; }
         bool UserInputIsInabled() const { return m_UserInputEnabled;}
 
     private:
@@ -67,12 +71,9 @@ namespace LucreApp
 
     private:
 
-        State m_State;
+        State m_State, m_NextState;
         std::unordered_map<State, std::unique_ptr<Scene>> m_Scenes;
         bool m_UserInputEnabled;
         bool m_InputIdle;
-        bool m_MainSceneLoaded;
-        bool m_BeachSceneLoaded;
-
     };
 }
