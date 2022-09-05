@@ -197,7 +197,6 @@ namespace LucreApp
 
     void CutScene::OnUpdate(const Timestep& timestep)
     {
-LOG_APP_WARN("void CutScene::OnUpdate(const Timestep& timestep)");
         {
             static float walkOffset = m_InitialPositionX;
             if (!m_WalkAnimation.IsRunning())

@@ -42,7 +42,6 @@ namespace LucreApp
 
     void GameState::Start()
     {
-LOG_APP_CRITICAL("void GameState::Start()");
         // the splash and cutscene are loaded upfront
         Load(State::SPLASH);
         Load(State::CUTSCENE);
@@ -171,14 +170,12 @@ LOG_APP_CRITICAL("void GameState::Start()");
 
     void GameState::Load(GameState::State state)
     {
-LOG_APP_CRITICAL("void GameState::Load(GameState::State state), {0}", StateToString(state));
         if (m_Scenes[state]) return;
         switch(state)
         {
             case State::SPLASH:
             {
                 m_Scenes[state] = std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
-LOG_APP_CRITICAL("m_Scenes[state]: {0}", static_cast<void*>(m_Scenes[state].get()));
                 m_Scenes[state]->Start();
                 break;
             }

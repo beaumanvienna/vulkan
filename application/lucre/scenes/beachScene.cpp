@@ -137,7 +137,6 @@ namespace LucreApp
 
     void BeachScene::OnUpdate(const Timestep& timestep)
     {
-LOG_APP_ERROR("void BeachScene::OnUpdate(const Timestep& timestep)");
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();

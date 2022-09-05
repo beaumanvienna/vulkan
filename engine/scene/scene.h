@@ -69,8 +69,7 @@ namespace GfxRenderEngine
         bool IsFinished() const { return !m_IsRunning; }
         void SetRunning() { m_IsRunning = true; }
         bool IsLoaded() const { return m_IsLoaded; }
-        void SetLoaded(bool loaded) { m_IsLoaded = loaded; 
-LOG_CORE_CRITICAL("scene loaded");}
+        void SetLoaded(bool loaded) { m_IsLoaded = loaded; }
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
 
