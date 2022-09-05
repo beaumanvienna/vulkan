@@ -1,0 +1,8 @@
+# Lucre scene description file
+---
+
+glTF-files :
+    application/lucre/models/external_3D_files/dune/dune.gltf:
+
+prefabs:
+  - application/lucre/prefabs/duck.prefab
