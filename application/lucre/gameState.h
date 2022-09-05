@@ -39,10 +39,12 @@ namespace LucreApp
         enum class State
         {
             SPLASH,
+            SETTINGS,
+            CUTSCENE,
+            // insert game levels here
             MAIN,
             BEACH,
-            CUTSCENE,
-            SETTINGS
+            MAX_STATES
         };
 
     public:
@@ -57,8 +59,11 @@ namespace LucreApp
         void EnableUserInput(bool enable);
 
         Scene& GetScene();
+        Scene& GetScene(State state);
         Scene& GetNextScene();
         void SetState(State state);
+        bool IsLoaded(State state);
+        void SetLoaded(State state, bool isLoaded = true);
         std::string StateToString(State state) const;
         void SetNextState(State state);
         State GetState() const { return m_State; }
@@ -71,9 +76,10 @@ namespace LucreApp
 
     private:
 
-        State m_State, m_NextState;
+        State m_State, m_NextState, m_LastState;
         std::unordered_map<State, std::unique_ptr<Scene>> m_Scenes;
         bool m_UserInputEnabled;
         bool m_InputIdle;
+        bool m_StateLoaded[static_cast<int>(State::MAX_STATES)];
     };
 }

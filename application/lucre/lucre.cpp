@@ -88,7 +88,7 @@ namespace LucreApp
 
         // update/render layer stack
         // helath bar
-        if (m_GameState.GetState() == GameState::State::MAIN) m_UI->Health(90.0f);
+        if (static_cast<int>(m_GameState.GetState()) > static_cast<int>(GameState::State::CUTSCENE)) m_UI->Health(90.0f);
         // controller icons
         m_UIControllerIcon->Indent(m_GameState.GetState() == GameState::State::SETTINGS);
         m_UIControllerIcon->OnUpdate(timestep);
@@ -226,8 +226,17 @@ namespace LucreApp
 
         appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent event)
             {
-                m_GameState.SetState(GameState::State::CUTSCENE);
-                m_GameState.SetNextState(event.GetScene());
+                // show cut scene only for game levels
+                if (static_cast<int>(event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
+                {
+                    m_GameState.GetScene(GameState::State::CUTSCENE).ResetTimer();
+                    m_GameState.SetState(GameState::State::CUTSCENE);
+                    m_GameState.SetNextState(event.GetScene());
+                }
+                else
+                {
+                    m_GameState.SetState(event.GetScene());
+                }
                 return true;
             }
         );

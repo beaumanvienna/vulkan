@@ -49,9 +49,10 @@ namespace LucreApp
         virtual void Save() override {}
         virtual void LoadScripts() override {}
         virtual void StartScripts() override {}
+        virtual void ResetTimer() override;
 
     private:
-
+        static constexpr std::chrono::duration<float, std::chrono::seconds::period> MIN_TIME_IN_CUTSCENE = 1s;
         void Init();
         void MoveClouds(const Timestep& timestep);
         void Draw();
@@ -71,5 +72,6 @@ namespace LucreApp
         float m_Scale;
         float m_TranslationX0;
         float m_TranslationX1;
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
     };
 }

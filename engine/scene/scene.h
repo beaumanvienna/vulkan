@@ -59,6 +59,7 @@ namespace GfxRenderEngine
         virtual void Save() = 0;
         virtual void LoadScripts() = 0;
         virtual void StartScripts() = 0;
+        virtual void ResetTimer() {}
 
         entt::entity CreateEntity();
         void DestroyEntity(entt::entity entity);
@@ -68,8 +69,6 @@ namespace GfxRenderEngine
 
         bool IsFinished() const { return !m_IsRunning; }
         void SetRunning() { m_IsRunning = true; }
-        bool IsLoaded() const { return m_IsLoaded; }
-        void SetLoaded(bool loaded) { m_IsLoaded = loaded; }
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
 
@@ -81,7 +80,7 @@ namespace GfxRenderEngine
         entt::registry m_Registry;
         TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
         Dictionary m_Dictionary;
-        bool m_IsRunning, m_IsLoaded;
+        bool m_IsRunning;
 
         friend class SceneLoader;
         

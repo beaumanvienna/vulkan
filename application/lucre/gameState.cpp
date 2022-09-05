@@ -35,9 +35,10 @@ namespace LucreApp
 {
 
     GameState::GameState()
-        : m_State{State::SPLASH}, m_InputIdle{false},
-          m_UserInputEnabled{false}
+        : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH},
+          m_InputIdle{false}, m_UserInputEnabled{false}
     {
+        memset(m_StateLoaded, 0, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }
 
     void GameState::Start()
@@ -45,6 +46,7 @@ namespace LucreApp
         // the splash and cutscene are loaded upfront
         Load(State::SPLASH);
         Load(State::CUTSCENE);
+        Load(State::SETTINGS);
 
         SetState(State::SPLASH);
         SetNextState(State::MAIN);
@@ -98,7 +100,7 @@ namespace LucreApp
         {
             case State::SPLASH:
             {
-                if (GetScene().IsFinished() && GetNextScene().IsLoaded())
+                if (GetScene().IsFinished() && IsLoaded(GetNextState()))
                 {
                     SetState(GetNextState());
                 }
@@ -106,7 +108,7 @@ namespace LucreApp
             }
             case State::CUTSCENE:
             {
-                if (GetNextScene().IsLoaded())
+                if (GetScene().IsFinished() && IsLoaded(GetNextState()))
                 {
                     SetState(GetNextState());
                 }
@@ -134,8 +136,7 @@ namespace LucreApp
             {
                 if (GetScene().IsFinished())
                 {
-                    #warning "change me to `last scene`"
-                    SetState(State::MAIN);
+                    SetState(m_LastState);
                 }
                 break;
             }
@@ -145,6 +146,7 @@ namespace LucreApp
 
     void GameState::SetState(State state)
     {
+        m_LastState = m_State;
         m_State = state;
         GetScene().SetRunning();
         GetScene().OnResize();
@@ -153,12 +155,18 @@ namespace LucreApp
     void GameState::SetNextState(State state)
     {
         m_NextState = state;
-        Load(m_NextState);
+        if (!IsLoaded(state)) Load(state);
     }
 
     Scene& GameState::GetScene()
     {
         auto& scene_ptr = m_Scenes[m_State];
+        return *scene_ptr;
+    }
+
+    Scene& GameState::GetScene(State state)
+    {
+        auto& scene_ptr = m_Scenes[state];
         return *scene_ptr;
     }
 
@@ -177,6 +185,7 @@ namespace LucreApp
             {
                 m_Scenes[state] = std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
                 m_Scenes[state]->Start();
+                SetLoaded(state);
                 break;
             }
             case State::MAIN:
@@ -186,7 +195,7 @@ namespace LucreApp
                     m_Scenes[state] = std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
                     m_Scenes[state]->Load();
                     m_Scenes[state]->Start();
-                    m_Scenes[state]->SetLoaded(true);
+                    SetLoaded(state);
                 });
                 loadMainSceneThread.detach();
                 break;
@@ -198,7 +207,7 @@ namespace LucreApp
                     m_Scenes[state] = std::make_unique<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
                     m_Scenes[state]->Load();
                     m_Scenes[state]->Start();
-                    m_Scenes[state]->SetLoaded(true);
+                    SetLoaded(state);
                 });
                 loadBeachSceneThread.detach();
                 break;
@@ -207,18 +216,30 @@ namespace LucreApp
             {
                 m_Scenes[state] = std::make_unique<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene");
                 m_Scenes[state]->Start();
+                SetLoaded(state);
                 break;
             }
             case State::SETTINGS:
             {
                 m_Scenes[state] = std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
                 m_Scenes[state]->Start();
+                SetLoaded(state);
                 break;
             }
             default:
                 LOG_APP_CRITICAL("GameState::Load invalid state");
                 break;
         }
+    }
+
+    bool GameState::IsLoaded(State state)
+    {
+        return m_StateLoaded[static_cast<int>(state)];
+    }
+
+    void GameState::SetLoaded(State state, bool isLoaded)
+    {
+        m_StateLoaded[static_cast<int>(state)] = isLoaded;
     }
 
     void GameState::EnableUserInput(bool enable)

@@ -34,7 +34,7 @@
 namespace GfxRenderEngine
 {
     Scene::Scene(const std::string& filepath, const std::string& alternativeFilepath)
-        : m_IsRunning(false), m_IsLoaded(false), m_Filepath(filepath),
+        : m_IsRunning(false), m_Filepath(filepath),
           m_AlternativeFilepath{alternativeFilepath}
     {
         m_Name = EngineCore::GetFilenameWithoutExtension(filepath);
