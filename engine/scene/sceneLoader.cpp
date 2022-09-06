@@ -99,7 +99,7 @@ namespace GfxRenderEngine
             }
             else
             {
-                LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
+                LOG_CORE_CRITICAL("Scene loader could not find file");
             }
         }
 

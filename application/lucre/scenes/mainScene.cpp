@@ -51,20 +51,22 @@ namespace LucreApp
         m_Renderer = Engine::m_Engine->GetRenderer();
         m_Renderer->SetAmbientLightIntensity(0.06f);
 
-        m_CameraController = std::make_shared<CameraController>();
-        m_CameraController->SetTranslationSpeed(400.0f);
-        m_CameraController->SetRotationSpeed(0.5f);
+        {
+            m_CameraController = std::make_shared<CameraController>();
+            m_CameraController->SetTranslationSpeed(400.0f);
+            m_CameraController->SetRotationSpeed(0.5f);
 
-        m_Camera = CreateEntity();
-        TransformComponent transform{};
-        m_Registry.emplace<TransformComponent>(m_Camera, transform);
-        ResetScene();
+            m_Camera = CreateEntity();
+            TransformComponent cameraTransform{};
+            m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            ResetScene();
 
-        KeyboardInputControllerSpec keyboardInputControllerSpec{};
-        m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
+            KeyboardInputControllerSpec keyboardInputControllerSpec{};
+            m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
 
-        GamepadInputControllerSpec gamepadInputControllerSpec{};
-        m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
+            GamepadInputControllerSpec gamepadInputControllerSpec{};
+            m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
+        }
 
         // --- sprites ---
         m_HornAnimation.Create(500ms /* per frame */, &m_SpritesheetHorn);
@@ -322,9 +324,12 @@ namespace LucreApp
     void MainScene::ResetScene()
     {
         m_CameraController->SetZoomFactor(1.0f);
-        auto& transform = m_Registry.get<TransformComponent>(m_Camera);
-        transform.SetTranslation({3.1, 1.08, -1.6});
-        transform.SetRotation({-0.04, 1.9, 0});
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+
+        cameraTransform.SetTranslation({3.1, 1.08, -1.6});
+        cameraTransform.SetRotation({-0.04, 1.9, 0});
+
+        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
     }
 
     void MainScene::InitPhysics()
