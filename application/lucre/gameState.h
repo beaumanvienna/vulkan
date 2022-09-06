@@ -40,7 +40,7 @@ namespace LucreApp
         {
             SPLASH,
             SETTINGS,
-            CUTSCENE,
+            CUTSCENE, // do not change order 
             // insert game levels here
             MAIN,
             BEACH,
@@ -61,6 +61,8 @@ namespace LucreApp
         Scene& GetScene();
         Scene& GetScene(State state);
         Scene& GetNextScene();
+        void DeleteScene();
+        void PrepareDeleteScene();
         void SetState(State state);
         bool IsLoaded(State state);
         void SetLoaded(State state, bool isLoaded = true);
@@ -76,10 +78,11 @@ namespace LucreApp
 
     private:
 
-        State m_State, m_NextState, m_LastState;
+        State m_State, m_NextState, m_LastState, m_DeleteScene;
         std::unordered_map<State, std::unique_ptr<Scene>> m_Scenes;
         bool m_UserInputEnabled;
         bool m_InputIdle;
         bool m_StateLoaded[static_cast<int>(State::MAX_STATES)];
+        int m_DeleteSceneCounter;
     };
 }

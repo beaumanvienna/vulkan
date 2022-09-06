@@ -38,7 +38,7 @@ namespace LucreApp
         : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH},
           m_InputIdle{false}, m_UserInputEnabled{false}
     {
-        memset(m_StateLoaded, 0, static_cast<int>(State::MAX_STATES) * sizeof(bool));
+        memset(m_StateLoaded, false, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }
 
     void GameState::Start()
@@ -112,6 +112,7 @@ namespace LucreApp
                 {
                     SetState(GetNextState());
                 }
+                DeleteScene();
                 break;
             }
             case State::MAIN:
@@ -150,6 +151,7 @@ namespace LucreApp
         m_State = state;
         GetScene().SetRunning();
         GetScene().OnResize();
+        PrepareDeleteScene();
     }
 
     void GameState::SetNextState(State state)
@@ -174,6 +176,37 @@ namespace LucreApp
     {
         auto& scene_ptr = m_Scenes[m_NextState];
         return *scene_ptr;
+    }
+
+    void GameState::PrepareDeleteScene()
+    {
+        // last scene must be a game level
+        if (static_cast<int>(m_LastState) > static_cast<int>(State::CUTSCENE))
+        {
+            // current scene must be cut scene 
+            if (static_cast<int>(m_State) == static_cast<int>(State::CUTSCENE))
+            {
+                LOG_APP_INFO("deleting scene {0}", StateToString(m_LastState));
+                m_DeleteScene = m_LastState;
+                m_DeleteSceneCounter = 5;
+            }
+        }
+    }
+
+    void GameState::DeleteScene()
+    {
+        if (m_StateLoaded[static_cast<int>(m_DeleteScene)])
+        {
+            if (m_DeleteSceneCounter > 0)
+            {
+                m_DeleteSceneCounter--;
+            }
+            else
+            {
+                m_StateLoaded[static_cast<int>(m_DeleteScene)] = false;
+                m_Scenes.erase(m_DeleteScene);
+            }
+        }
     }
 
     void GameState::Load(GameState::State state)
