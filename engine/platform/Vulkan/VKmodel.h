@@ -53,7 +53,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
-        ~VK_Model() override {}
+        ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;
         VK_Model& operator=(const VK_Model&) = delete;
@@ -74,32 +74,27 @@ namespace GfxRenderEngine
         static void CreateDescriptorSet
         (
             PbrDiffuseMaterial& pbrDiffuseMaterial,
-            const std::shared_ptr<VK_Texture>& colorMap
+            const std::shared_ptr<Texture>& colorMap
         );
         static void CreateDescriptorSet
         (
             PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
-            const std::shared_ptr<VK_Texture>& colorMap,
-            const std::shared_ptr<VK_Texture>& normalMap
+            const std::shared_ptr<Texture>& colorMap,
+            const std::shared_ptr<Texture>& normalMap
         );
         static void CreateDescriptorSet
         (
             PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
-            const std::shared_ptr<VK_Texture>& colorMap,
-            const std::shared_ptr<VK_Texture>& normalMap, 
-            const std::shared_ptr<VK_Texture>& roughnessMetallicMap
+            const std::shared_ptr<Texture>& colorMap,
+            const std::shared_ptr<Texture>& normalMap, 
+            const std::shared_ptr<Texture>& roughnessMetallicMap
         );
-
-    public:
-
-        static std::vector<std::shared_ptr<VK_Texture>> m_Images;
 
     private:
 
-        std::vector<std::shared_ptr<VK_Texture>> m_ImagesInternal;
         std::shared_ptr<VK_Device> m_Device;
-
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
+
         uint m_VertexCount;
 
         bool m_HasIndexBuffer;

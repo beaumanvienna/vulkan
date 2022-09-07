@@ -31,9 +31,6 @@
 
 namespace GfxRenderEngine
 {
-
-    std::vector<std::shared_ptr<VK_Texture>> VK_Model::m_Images;
-
     // Vertex
     std::vector<VkVertexInputBindingDescription> VK_Model::VK_Vertex::GetBindingDescriptions()
     {
@@ -66,7 +63,9 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        m_ImagesInternal = m_Images;
+        // move images from builder into model
+        m_Images.insert(m_Images.end(), std::make_move_iterator(builder.m_Images.begin()), std::make_move_iterator(builder.m_Images.end()));
+
         m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
         m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
         m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
@@ -74,6 +73,8 @@ namespace GfxRenderEngine
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
     }
+
+    VK_Model::~VK_Model() {}
 
     void VK_Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
     {
@@ -385,13 +386,13 @@ namespace GfxRenderEngine
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseMaterial& pbrDiffuseMaterial,
-                                       const std::shared_ptr<VK_Texture>& colorMap)
+                                       const std::shared_ptr<Texture>& colorMap)
     {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        auto texture = colorMap.get();
+        auto texture = static_cast<VK_Texture*>(colorMap.get());
         VkDescriptorImageInfo imageInfo {};
         imageInfo.sampler     = texture->m_Sampler;
         imageInfo.imageView   = texture->m_TextureView;
@@ -406,8 +407,8 @@ namespace GfxRenderEngine
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
-                                       const std::shared_ptr<VK_Texture>& colorMap,
-                                       const std::shared_ptr<VK_Texture>& normalMap)
+                                       const std::shared_ptr<Texture>& colorMap,
+                                       const std::shared_ptr<Texture>& normalMap)
     {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -416,7 +417,7 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo imageInfo0 {};
         {
-            auto texture = colorMap.get();
+            auto texture = static_cast<VK_Texture*>(colorMap.get());
             imageInfo0.sampler     = texture->m_Sampler;
             imageInfo0.imageView   = texture->m_TextureView;
             imageInfo0.imageLayout = texture->m_ImageLayout;
@@ -424,7 +425,7 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo imageInfo1 {};
         {
-            auto texture = normalMap.get();
+            auto texture = static_cast<VK_Texture*>(normalMap.get());
             imageInfo1.sampler     = texture->m_Sampler;
             imageInfo1.imageView   = texture->m_TextureView;
             imageInfo1.imageLayout = texture->m_ImageLayout;
@@ -440,9 +441,9 @@ namespace GfxRenderEngine
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
-                                       const std::shared_ptr<VK_Texture>& colorMap,
-                                       const std::shared_ptr<VK_Texture>& normalMap, 
-                                       const std::shared_ptr<VK_Texture>& roughnessMetallicMap)
+                                       const std::shared_ptr<Texture>& colorMap,
+                                       const std::shared_ptr<Texture>& normalMap, 
+                                       const std::shared_ptr<Texture>& roughnessMetallicMap)
     {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -452,7 +453,7 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo imageInfo0 {};
         {
-            auto texture = colorMap.get();
+            auto texture = static_cast<VK_Texture*>(colorMap.get());
             imageInfo0.sampler     = texture->m_Sampler;
             imageInfo0.imageView   = texture->m_TextureView;
             imageInfo0.imageLayout = texture->m_ImageLayout;
@@ -460,7 +461,7 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo imageInfo1 {};
         {
-            auto texture = normalMap.get();
+            auto texture = static_cast<VK_Texture*>(normalMap.get());
             imageInfo1.sampler     = texture->m_Sampler;
             imageInfo1.imageView   = texture->m_TextureView;
             imageInfo1.imageLayout = texture->m_ImageLayout;
@@ -468,7 +469,7 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo imageInfo2 {};
         {
-            auto texture = roughnessMetallicMap.get();
+            auto texture = static_cast<VK_Texture*>(roughnessMetallicMap.get());
             imageInfo2.sampler     = texture->m_Sampler;
             imageInfo2.imageView   = texture->m_TextureView;
             imageInfo2.imageLayout = texture->m_ImageLayout;

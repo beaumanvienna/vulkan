@@ -41,7 +41,7 @@ namespace LucreApp
             Builder builder{};
 
             auto sprite = Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND);
-            
+
             builder.LoadSprite(sprite, 4.0f/*amplification*/);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"volcano", model};
@@ -81,7 +81,7 @@ namespace LucreApp
                 m_Walkway[i] = CreateEntity();
                 m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
 
-                TransformComponent transform = TransformComponent(sprite.GetMat4());                
+                TransformComponent transform = TransformComponent(sprite.GetMat4());
                 transform.SetRotation({-glm::half_pi<float>(), glm::half_pi<float>(), 0.0f});
                 transform.SetTranslation({0.5*i, -0.024f, -0.1f});
                 m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);

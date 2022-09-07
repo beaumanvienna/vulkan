@@ -83,6 +83,6 @@ namespace GfxRenderEngine
         bool m_IsRunning;
 
         friend class SceneLoader;
-        
+
     };
 }

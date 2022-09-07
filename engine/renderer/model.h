@@ -81,6 +81,7 @@ namespace GfxRenderEngine
 
     struct PrimitiveNoMap
     {
+        ~PrimitiveNoMap();
         uint m_FirstIndex;
         uint m_FirstVertex;
         uint m_IndexCount;
@@ -90,6 +91,7 @@ namespace GfxRenderEngine
 
     struct PrimitiveDiffuseMap
     {
+        ~PrimitiveDiffuseMap();
         uint m_FirstIndex;
         uint m_FirstVertex;
         uint m_IndexCount;
@@ -99,6 +101,7 @@ namespace GfxRenderEngine
 
     struct PrimitiveDiffuseNormalMap
     {
+        ~PrimitiveDiffuseNormalMap();
         uint m_FirstIndex;
         uint m_FirstVertex;
         uint m_IndexCount;
@@ -108,6 +111,7 @@ namespace GfxRenderEngine
 
     struct PrimitiveDiffuseNormalRoughnessMetallicMap
     {
+        ~PrimitiveDiffuseNormalRoughnessMetallicMap();
         uint m_FirstIndex;
         uint m_FirstVertex;
         uint m_IndexCount;
@@ -132,6 +136,7 @@ namespace GfxRenderEngine
 
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
+        std::vector<std::shared_ptr<Texture>> m_Images;
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
@@ -160,7 +165,6 @@ namespace GfxRenderEngine
         TransformComponent* m_Transform;
         uint m_ImageOffset;
         entt::entity m_GameObject;
-
     };
 
     class Model
@@ -169,7 +173,7 @@ namespace GfxRenderEngine
     public:
 
         Model() {}
-        virtual ~Model() {}
+        virtual ~Model();
 
         Model(const Model&) = delete;
         Model& operator=(const Model&) = delete;
@@ -178,5 +182,10 @@ namespace GfxRenderEngine
         virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
 
         static float m_NormalMapIntensity;
+
+    protected:
+
+        std::vector<std::shared_ptr<Texture>> m_Images;
+
     };
 }
