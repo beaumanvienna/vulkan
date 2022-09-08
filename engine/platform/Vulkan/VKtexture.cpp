@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         auto device = VK_Core::m_Device->Device();
         m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
 
-        vkDeviceWaitIdle(device);
+        //vkDeviceWaitIdle(device);
         vkDestroyImage(device, m_TextureImage, nullptr);
         vkDestroyImageView(device, m_TextureView, nullptr);
         vkDestroySampler(device, m_Sampler, nullptr);

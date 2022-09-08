@@ -63,8 +63,7 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        // move images from builder into model
-        m_Images.insert(m_Images.end(), std::make_move_iterator(builder.m_Images.begin()), std::make_move_iterator(builder.m_Images.end()));
+        m_Images = builder.m_Images;
 
         m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
         m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
