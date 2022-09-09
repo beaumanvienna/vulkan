@@ -100,6 +100,27 @@ namespace LucreApp
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
+
+        {
+            m_Skybox = Cubemap::Create();
+            std::vector<std::string> faces =
+            {
+                "application/lucre/models/assets/Skybox/right.png",
+                "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",
+                "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/back.png",
+                "application/lucre/models/assets/Skybox/front.png",
+            };
+            if (m_Skybox->Init(faces, true))
+            {
+                LOG_APP_INFO("BeachScene::Start(): skybox loaded");
+            }
+            else
+            {
+                LOG_APP_WARN("BeachScene::Start(): error loading skybox");
+            }
+        }
     }
 
     void BeachScene::Load()

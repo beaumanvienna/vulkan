@@ -28,8 +28,9 @@
 #include "scene/entity.h"
 #include "scene/components.h"
 #include "scene/sceneLoader.h"
-#include "renderer/renderer.h"
 #include "renderer/cameraController.h"
+#include "renderer/renderer.h"
+#include "renderer/cubemap.h"
 
 #include "lucre.h"
 #include "gamepadInputController.h"
@@ -82,6 +83,7 @@ namespace LucreApp
 
     private:
 
+        std::shared_ptr<Cubemap> m_Skybox;
 
         struct BananaComponent
         {
