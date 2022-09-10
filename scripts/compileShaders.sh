@@ -22,11 +22,14 @@ glslc engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag -o b
 glslc engine/platform/Vulkan/shaders/deferredRendering.vert                 -o bin/deferredRendering.vert.spv
 glslc engine/platform/Vulkan/shaders/deferredRendering.frag                 -o bin/deferredRendering.frag.spv
 
-glslc engine/platform/Vulkan/shaders/spriteRenderer2D.vert                       -o bin/spriteRenderer2D.vert.spv
-glslc engine/platform/Vulkan/shaders/spriteRenderer2D.frag                       -o bin/spriteRenderer2D.frag.spv
+glslc engine/platform/Vulkan/shaders/spriteRenderer2D.vert                  -o bin/spriteRenderer2D.vert.spv
+glslc engine/platform/Vulkan/shaders/spriteRenderer2D.frag                  -o bin/spriteRenderer2D.frag.spv
 
-glslc engine/platform/Vulkan/shaders/guiShader.vert                       -o bin/guiShader.vert.spv
-glslc engine/platform/Vulkan/shaders/guiShader.frag                       -o bin/guiShader.frag.spv
+glslc engine/platform/Vulkan/shaders/guiShader.vert                         -o bin/guiShader.vert.spv
+glslc engine/platform/Vulkan/shaders/guiShader.frag                         -o bin/guiShader.frag.spv
 
-glslc engine/platform/Vulkan/shaders/guiShader2.vert                       -o bin/guiShader2.vert.spv
-glslc engine/platform/Vulkan/shaders/guiShader2.frag                       -o bin/guiShader2.frag.spv
+glslc engine/platform/Vulkan/shaders/guiShader2.vert                        -o bin/guiShader2.vert.spv
+glslc engine/platform/Vulkan/shaders/guiShader2.frag                        -o bin/guiShader2.frag.spv
+
+glslc engine/platform/Vulkan/shaders/skybox.vert                            -o bin/skybox.vert.spv
+glslc engine/platform/Vulkan/shaders/skybox.frag                            -o bin/skybox.frag.spv

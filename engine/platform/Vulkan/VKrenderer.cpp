@@ -566,7 +566,9 @@ namespace GfxRenderEngine
             "guiShader2.frag",
             "guiShader2.vert",
             "guiShader.frag",
-            "guiShader.vert"
+            "guiShader.vert",
+            "skybox.vert",
+            "skybox.frag"
         };
 
         for (auto& filename : shaderFilenames)

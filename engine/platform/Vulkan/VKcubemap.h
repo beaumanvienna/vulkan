@@ -61,6 +61,7 @@ namespace GfxRenderEngine
         std::vector<std::string> m_FileNames;
         uchar* m_LocalBuffer[NUMBER_OF_CUBEMAP_IMAGES];
         int m_Width, m_Height, m_BytesPerPixel;
+        uint m_MipLevels;
 
         int m_InternalFormat, m_DataFormat;
         int m_Type;

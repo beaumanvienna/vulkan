@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     VK_Cubemap::VK_Cubemap(bool nearestFilter)
         : m_FileNames({""}), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_NearestFilter(nearestFilter),
+          m_DataFormat(0), m_MipLevels(1), m_NearestFilter(nearestFilter),
           m_sRGB(false)
     {
         for (int i = 0; i < NUMBER_OF_CUBEMAP_IMAGES; i++)
@@ -93,7 +93,7 @@ namespace GfxRenderEngine
         barrier.image = m_CubemapImage;
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 0;
+        barrier.subresourceRange.levelCount = m_MipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = NUMBER_OF_CUBEMAP_IMAGES;
 
@@ -147,7 +147,7 @@ namespace GfxRenderEngine
         imageInfo.extent.width = m_Width;
         imageInfo.extent.height = m_Height;
         imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 0;
+        imageInfo.mipLevels = m_MipLevels;
         imageInfo.arrayLayers = NUMBER_OF_CUBEMAP_IMAGES;
         imageInfo.format = format;
         imageInfo.tiling = tiling;
@@ -298,7 +298,7 @@ namespace GfxRenderEngine
         samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = 0.0f;
+        samplerCreateInfo.maxLod = static_cast<float>(m_MipLevels);
         samplerCreateInfo.maxAnisotropy = 4.0;
         samplerCreateInfo.anisotropyEnable = VK_TRUE;
         samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
@@ -329,7 +329,7 @@ namespace GfxRenderEngine
         view.subresourceRange.layerCount = NUMBER_OF_CUBEMAP_IMAGES;
         // Linear tiling usually won't support mip maps
         // Only set mip map count if optimal tiling is used
-        view.subresourceRange.levelCount = 0;
+        view.subresourceRange.levelCount = m_MipLevels;
         // The view will be based on the texture's image
         view.image = m_CubemapImage;
 
