@@ -63,6 +63,8 @@ namespace GfxRenderEngine
     PrimitiveDiffuseNormalMap::~PrimitiveDiffuseNormalMap() {}
 
     PrimitiveDiffuseNormalRoughnessMetallicMap::~PrimitiveDiffuseNormalRoughnessMetallicMap() {}
+    
+    PrimitiveCubemap::~PrimitiveCubemap() {}
 
     float Model::m_NormalMapIntensity = 1.0f;
 
@@ -905,5 +907,69 @@ namespace GfxRenderEngine
         m_Indices.push_back(1);
         m_Indices.push_back(2);
         m_Indices.push_back(3);
+    }
+
+    entt::entity Builder::LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry)
+    {
+        entt::entity entity;
+        static constexpr uint VERTEX_COUNT = 8;
+
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Cubemaps.clear();
+
+        // create vertices
+        {
+            Vertex vertex[VERTEX_COUNT];
+    
+            vertex[0] = {/*pos*/ { 1.0f, -1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[1] = {/*pos*/ { 1.0f,  1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[2] = {/*pos*/ { 1.0f, -1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[3] = {/*pos*/ { 1.0f,  1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[4] = {/*pos*/ {-1.0f, -1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[5] = {/*pos*/ {-1.0f,  1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[6] = {/*pos*/ {-1.0f, -1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+            vertex[7] = {/*pos*/ {-1.0f,  1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
+    
+            for (int i = 0; i < VERTEX_COUNT; i++) m_Vertices.push_back(vertex[i]);
+        }
+
+        // create texture
+        {
+            auto cubemap = Cubemap::Create();
+            if (cubemap->Init(faces, true))
+            {
+                m_Cubemaps.push_back(cubemap);
+            }
+            else
+            {
+                LOG_CORE_WARN("Builder::LoadCubemap: error loading skybox");
+                return entt::null;
+            }
+        }
+
+        // create descriptor set
+        {
+            PrimitiveCubemap primitiveCubemap{};
+            primitiveCubemap.m_FirstVertex = 0;
+            primitiveCubemap.m_VertexCount = VERTEX_COUNT;
+
+            VK_Model::CreateDescriptorSet(primitiveCubemap.m_CubemapMaterial, m_Cubemaps[0]);
+            m_PrimitivesCubemap.push_back(primitiveCubemap);
+        }
+
+        // create game object
+        {
+            auto model = Engine::m_Engine->LoadModel(*this);
+            entity = registry.create();
+            MeshComponent mesh{"cubemap", model};
+            registry.emplace<MeshComponent>(entity, mesh);
+            TransformComponent transform{};
+            registry.emplace<TransformComponent>(entity, transform);
+            CubemapComponent cubemapComponent{};
+            registry.emplace<CubemapComponent>(entity, cubemapComponent);
+        }
+
+        return entity;
     }
 }

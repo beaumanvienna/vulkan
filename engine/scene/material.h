@@ -58,4 +58,9 @@ namespace GfxRenderEngine
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         float m_NormalMapIntensity;
     };
+
+    struct CubemapMaterial
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+    };
 }

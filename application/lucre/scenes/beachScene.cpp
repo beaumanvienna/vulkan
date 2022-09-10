@@ -100,27 +100,6 @@ namespace LucreApp
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
-
-        {
-            m_Skybox = Cubemap::Create();
-            std::vector<std::string> faces =
-            {
-                "application/lucre/models/assets/Skybox/right.png",
-                "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",
-                "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/back.png",
-                "application/lucre/models/assets/Skybox/front.png",
-            };
-            if (m_Skybox->Init(faces, true))
-            {
-                LOG_APP_INFO("BeachScene::Start(): skybox loaded");
-            }
-            else
-            {
-                LOG_APP_WARN("BeachScene::Start(): error loading skybox");
-            }
-        }
     }
 
     void BeachScene::Load()
@@ -134,6 +113,20 @@ namespace LucreApp
 
     void BeachScene::LoadModels()
     {
+        {
+            std::vector<std::string> faces =
+            {
+                "application/lucre/models/assets/Skybox/right.png",
+                "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",
+                "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/back.png",
+                "application/lucre/models/assets/Skybox/front.png",
+            };
+
+            Builder builder;
+            m_Skybox = builder.LoadCubemap(faces, m_Registry);
+        }
     }
 
     void BeachScene::LoadScripts()
@@ -185,6 +178,7 @@ namespace LucreApp
 
         // transparent objects
         m_Renderer->NextSubpass();
+        m_Renderer->TransparencyPass(m_Registry);
 
         // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());

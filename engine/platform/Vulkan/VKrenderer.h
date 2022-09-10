@@ -31,6 +31,7 @@
 #include "platform/Vulkan/imguiEngine/imgui.h"
 
 #include "systems/VKspriteRenderSys.h"
+#include "systems/VKcubemapRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
 #include "systems/VKpointLightSys.h"
 #include "systems/VKguiRenderSys.h"
@@ -80,7 +81,7 @@ namespace GfxRenderEngine
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
-        virtual void TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem) override;
+        virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem) override;
         virtual void Submit2D(Camera* camera, entt::registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
@@ -117,6 +118,7 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
 
+        std::unique_ptr<VK_RenderSystemCubemap> m_RenderSystemCubemap;
         std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D> m_RenderSystemSpriteRenderer2D;
         std::unique_ptr<VK_RenderSystemGUIRenderer> m_RenderSystemGUIRenderer;

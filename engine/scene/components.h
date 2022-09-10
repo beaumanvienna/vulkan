@@ -163,4 +163,9 @@ namespace GfxRenderEngine
     {
         uint m_Tag;
     };
+
+    struct CubemapComponent
+    {
+        uint m_Tag;
+    };
 }

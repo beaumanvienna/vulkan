@@ -18,44 +18,53 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
-#include <string>
 #include <memory>
+#include <vector>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "scene/entity.h"
-#include "scene/treeNode.h"
-#include "scene/particleSystem.h"
 #include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    class Renderer
+    struct VK_PushConstantDataCubemap
     {
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
+    };
+
+    class VK_RenderSystemCubemap
+    {
+
     public:
 
-        Renderer();
-        virtual ~Renderer() {}
+        VK_RenderSystemCubemap(VkRenderPass renderPass, VK_DescriptorSetLayout& descriptorSetLayout);
+        ~VK_RenderSystemCubemap();
 
-        virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
-        virtual void NextSubpass() = 0;
-        virtual void LightingPass() = 0;
-        virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
-        virtual void Submit2D(Camera* camera, entt::registry& registry) = 0;
-        virtual void GUIRenderpass(Camera* camera) = 0;
-        virtual uint GetFrameCounter() = 0;
+        VK_RenderSystemCubemap(const VK_RenderSystemCubemap&) = delete;
+        VK_RenderSystemCubemap& operator=(const VK_RenderSystemCubemap&) = delete;
 
-        virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
-        virtual void EndScene() = 0;
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
-        virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) = 0;
-        virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) = 0;
+    private:
 
-        virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
-        virtual float GetAmbientLightIntensity() = 0;
+        void CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }

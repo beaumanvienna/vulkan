@@ -35,6 +35,7 @@
 #include "VKswapChain.h"
 #include "VKframeInfo.h"
 #include "VKtexture.h"
+#include "VKcubemap.h"
 
 namespace GfxRenderEngine
 {
@@ -68,6 +69,7 @@ namespace GfxRenderEngine
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
 
     public:
 
@@ -90,6 +92,8 @@ namespace GfxRenderEngine
             const std::shared_ptr<Texture>& roughnessMetallicMap
         );
 
+        static void CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap);
+
     private:
 
         std::shared_ptr<VK_Device> m_Device;
@@ -105,6 +109,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
+        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
 
     };
 }

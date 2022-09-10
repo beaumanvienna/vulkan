@@ -97,6 +97,10 @@ namespace GfxRenderEngine
                     .AddBinding(3, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer material input attachment
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // cubemap
+                    .Build();
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout()
@@ -163,6 +167,7 @@ namespace GfxRenderEngine
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_SwapChain->GetRenderPass(), *cubemapDescriptorSetLayout);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -479,14 +484,15 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::TransparencyPass(entt::registry& registry, std::shared_ptr<ParticleSystem>& particleSystem)
+    void VK_Renderer::TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem)
     {
         if (m_CurrentCommandBuffer)
         {
             // sprites
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
+            if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_PointLightSystem->Render(m_FrameInfo, registry);
+            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
         }
     }
 

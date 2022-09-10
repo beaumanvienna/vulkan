@@ -71,6 +71,9 @@ namespace GfxRenderEngine
         m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
+
+        m_PrimitivesCubemap = builder.m_PrimitivesCubemap;
+        m_Cubemaps = builder.m_Cubemaps;
     }
 
     VK_Model::~VK_Model() {}
@@ -384,6 +387,32 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& primitive : m_PrimitivesCubemap)
+        {
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                1,
+                &primitive.m_CubemapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex],
+                0,
+                nullptr
+            );
+            vkCmdDraw
+            (
+                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                primitive.m_VertexCount,    // uint32_t        vertexCount
+                1,                          // uint32_t        instanceCount
+                primitive.m_FirstVertex,    // uint32_t        firstVertex
+                0                           // uint32_t        firstInstance
+            );
+        }
+    }
+
     void VK_Model::CreateDescriptorSet(PbrDiffuseMaterial& pbrDiffuseMaterial,
                                        const std::shared_ptr<Texture>& colorMap)
     {
@@ -481,6 +510,28 @@ namespace GfxRenderEngine
                 .WriteImage(1, &imageInfo1)
                 .WriteImage(2, &imageInfo2)
                 .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet[i]);
+        }
+    }
+
+    void VK_Model::CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        VkDescriptorImageInfo cubemapInfo {};
+        {
+            auto texture = static_cast<VK_Cubemap*>(cubemap.get());
+            cubemapInfo.sampler     = texture->m_Sampler;
+            cubemapInfo.imageView   = texture->m_CubemapView;
+            cubemapInfo.imageLayout = texture->m_ImageLayout;
+        }
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, &cubemapInfo)
+                .Build(cubemapMaterial.m_DescriptorSet[i]);
         }
     }
 }

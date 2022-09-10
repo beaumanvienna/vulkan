@@ -74,7 +74,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Dune;
+        entt::entity m_Camera, m_Dune, m_Skybox;
         entt::entity m_PointLight[MAX_LIGHTS];
 
         // some game objects can be controlled with a gamepad
@@ -82,8 +82,6 @@ namespace LucreApp
         TransformComponent m_GamepadInput;
 
     private:
-
-        std::shared_ptr<Cubemap> m_Skybox;
 
         struct BananaComponent
         {

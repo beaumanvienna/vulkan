@@ -32,6 +32,7 @@
 #include "scene/components.h"
 #include "scene/dictionary.h"
 #include "renderer/texture.h"
+#include "renderer/cubemap.h"
 #include "sprite/sprite.h"
 #include "entt.hpp"
 
@@ -119,6 +120,14 @@ namespace GfxRenderEngine
         PbrDiffuseNormalRoughnessMetallicMaterial m_PbrDiffuseNormalRoughnessMetallicMaterial;
     };
 
+    struct PrimitiveCubemap
+    {
+        ~PrimitiveCubemap();
+        uint m_FirstVertex;
+        uint m_VertexCount;
+        CubemapMaterial m_CubemapMaterial;
+    };
+
     class Builder
     {
 
@@ -130,6 +139,7 @@ namespace GfxRenderEngine
         void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
         entt::entity LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
         void LoadSprite(const Sprite& sprite, float amplification = 0.0f, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
+        entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);
         void LoadParticle(const glm::vec4& color);
 
     public:
@@ -141,6 +151,9 @@ namespace GfxRenderEngine
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
+
+        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
+        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
 
     private:
 
@@ -186,6 +199,7 @@ namespace GfxRenderEngine
     protected:
 
         std::vector<std::shared_ptr<Texture>> m_Images;
+        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
 
     };
 }

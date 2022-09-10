@@ -57,7 +57,7 @@ namespace GfxRenderEngine
         VK_RenderSystemSpriteRenderer& operator=(const VK_RenderSystemSpriteRenderer&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
-        void DrawParticles(const VK_FrameInfo& frameInfo, std::shared_ptr<ParticleSystem>& particleSystem);
+        void DrawParticles(const VK_FrameInfo& frameInfo, ParticleSystem* particleSystem);
 
     private:
 
