@@ -53,6 +53,7 @@ namespace GfxRenderEngine
                           VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
+        void GenerateMipmaps();
 
     private:
 
@@ -75,7 +76,7 @@ namespace GfxRenderEngine
     public:
 
         VkSampler m_Sampler;
-        VkImageView m_CubemapView;
+        VkImageView m_ImageView;
         VkImageLayout m_ImageLayout;
     };
 }

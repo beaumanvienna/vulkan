@@ -64,16 +64,16 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         m_Images = builder.m_Images;
+        m_Cubemaps = builder.m_Cubemaps;
 
         m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
         m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
         m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
         m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
+        m_PrimitivesCubemap = builder.m_PrimitivesCubemap;
+
         CreateVertexBuffers(builder.m_Vertices);
         CreateIndexBuffers(builder.m_Indices);
-
-        m_PrimitivesCubemap = builder.m_PrimitivesCubemap;
-        m_Cubemaps = builder.m_Cubemaps;
     }
 
     VK_Model::~VK_Model() {}
@@ -402,6 +402,7 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
+
             vkCmdDraw
             (
                 frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
@@ -523,7 +524,7 @@ namespace GfxRenderEngine
         {
             auto texture = static_cast<VK_Cubemap*>(cubemap.get());
             cubemapInfo.sampler     = texture->m_Sampler;
-            cubemapInfo.imageView   = texture->m_CubemapView;
+            cubemapInfo.imageView   = texture->m_ImageView;
             cubemapInfo.imageLayout = texture->m_ImageLayout;
         }
 
