@@ -130,6 +130,12 @@ namespace GfxRenderEngine
             m_LightingDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            cubemapDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
         auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
@@ -167,7 +173,7 @@ namespace GfxRenderEngine
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_SwapChain->GetRenderPass(), *cubemapDescriptorSetLayout);
+        m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsCubemap);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
@@ -489,10 +495,10 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             // sprites
+            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_PointLightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
         }
     }
 

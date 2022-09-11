@@ -28,9 +28,9 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemCubemap::VK_RenderSystemCubemap(VkRenderPass renderPass, VK_DescriptorSetLayout& descriptorSetLayout)
+    VK_RenderSystemCubemap::VK_RenderSystemCubemap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        CreatePipelineLayout(descriptorSetLayout.GetDescriptorSetLayout());
+        CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
@@ -39,14 +39,12 @@ namespace GfxRenderEngine
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemCubemap::CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout)
+    void VK_RenderSystemCubemap::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_PushConstantDataCubemap);
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{descriptorSetLayout};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

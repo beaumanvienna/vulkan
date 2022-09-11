@@ -26,10 +26,11 @@
 #version 450
 #define MAX_LIGHTS 128
 
-layout(set = 0, binding = 0) uniform samplerCube samplerCubeMap;
 
+// inputs
 layout(location = 0)       in  vec3  fragUVW;
 
+// outputs
 layout (location = 0)      out vec4  outColor;
 
 struct PointLight
@@ -48,6 +49,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     PointLight m_PointLights[MAX_LIGHTS];
     int m_NumberOfActiveLights;
 } ubo;
+
+layout(set = 1, binding = 0) uniform samplerCube samplerCubeMap;
 
 layout(push_constant) uniform Push
 {

@@ -48,7 +48,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystemCubemap(VkRenderPass renderPass, VK_DescriptorSetLayout& descriptorSetLayout);
+        VK_RenderSystemCubemap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         ~VK_RenderSystemCubemap();
 
         VK_RenderSystemCubemap(const VK_RenderSystemCubemap&) = delete;
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
 
     private:
 
-        void CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
+        void CreatePipelineLayout( std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:

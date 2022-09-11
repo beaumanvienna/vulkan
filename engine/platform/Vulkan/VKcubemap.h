@@ -53,7 +53,6 @@ namespace GfxRenderEngine
                           VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
-        void GenerateMipmaps();
 
     private:
 

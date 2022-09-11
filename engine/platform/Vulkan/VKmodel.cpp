@@ -391,14 +391,16 @@ namespace GfxRenderEngine
     {
         for(auto& primitive : m_PrimitivesCubemap)
         {
+            VkDescriptorSet localDescriptorSet = primitive.m_CubemapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
                 frameInfo.m_CommandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 pipelineLayout,
                 0,
-                1,
-                &primitive.m_CubemapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex],
+                2,
+                descriptorSets.data(),
                 0,
                 nullptr
             );
