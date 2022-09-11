@@ -26,12 +26,11 @@
 #version 450
 #define MAX_LIGHTS 128
 
-
 // inputs
 layout(location = 0)       in  vec3  fragUVW;
 
 // outputs
-layout (location = 0)      out vec4  outColor;
+layout(location = 0)       out vec4  outColor;
 
 struct PointLight
 {

@@ -52,6 +52,7 @@ layout(location = 0)  out  vec3  fragUVW;
 void main()
 {
     // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * vec4(position, 1.0);
+    gl_Position = ubo.m_Projection * mat4(mat3(ubo.m_View)) * vec4(position, 1.0);
     fragUVW     = position;
+    fragUVW.xy *= -1.0;
 }

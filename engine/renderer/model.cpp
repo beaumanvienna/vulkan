@@ -912,26 +912,65 @@ namespace GfxRenderEngine
     entt::entity Builder::LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry)
     {
         entt::entity entity;
-        static constexpr uint VERTEX_COUNT = 8;
+        static constexpr uint VERTEX_COUNT = 36;
 
         m_Vertices.clear();
         m_Indices.clear();
         m_Cubemaps.clear();
+        
+        glm::vec3 cubemapVertices[VERTEX_COUNT] =
+        {
+            // positions          
+            {-1.0f,  1.0f, -1.0f},
+            {-1.0f, -1.0f, -1.0f},
+            { 1.0f, -1.0f, -1.0f},
+            { 1.0f, -1.0f, -1.0f},
+            { 1.0f,  1.0f, -1.0f},
+            {-1.0f,  1.0f, -1.0f},
+
+            {-1.0f, -1.0f,  1.0f},
+            {-1.0f, -1.0f, -1.0f},
+            {-1.0f,  1.0f, -1.0f},
+            {-1.0f,  1.0f, -1.0f},
+            {-1.0f,  1.0f,  1.0f},
+            {-1.0f, -1.0f,  1.0f},
+
+            {1.0f, -1.0f, -1.0f},
+            {1.0f, -1.0f,  1.0f},
+            {1.0f,  1.0f,  1.0f},
+            {1.0f,  1.0f,  1.0f},
+            {1.0f,  1.0f, -1.0f},
+            {1.0f, -1.0f, -1.0f},
+
+            {-1.0f, -1.0f,  1.0f},
+            {-1.0f,  1.0f,  1.0f},
+            { 1.0f,  1.0f,  1.0f},
+            { 1.0f,  1.0f,  1.0f},
+            { 1.0f, -1.0f,  1.0f},
+            {-1.0f, -1.0f,  1.0f},
+
+            {-1.0f,  1.0f, -1.0f},
+            { 1.0f,  1.0f, -1.0f},
+            { 1.0f,  1.0f,  1.0f},
+            { 1.0f,  1.0f,  1.0f},
+            {-1.0f,  1.0f,  1.0f},
+            {-1.0f,  1.0f, -1.0f},
+
+            {-1.0f, -1.0f, -1.0f},
+            {-1.0f, -1.0f,  1.0f},
+            { 1.0f, -1.0f, -1.0f},
+            { 1.0f, -1.0f, -1.0f},
+            {-1.0f, -1.0f,  1.0f},
+            { 1.0f, -1.0f,  1.0f}
+        };
 
         // create vertices
         {
-            Vertex vertex[VERTEX_COUNT];
-    
-            vertex[0] = {/*pos*/ { 1.0f, -1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[1] = {/*pos*/ { 1.0f,  1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[2] = {/*pos*/ { 1.0f, -1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[3] = {/*pos*/ { 1.0f,  1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[4] = {/*pos*/ {-1.0f, -1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[5] = {/*pos*/ {-1.0f,  1.0f,  1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[6] = {/*pos*/ {-1.0f, -1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-            vertex[7] = {/*pos*/ {-1.0f,  1.0f, -1.0f}, /*col*/ {0.0f, 0.0f, 1.0f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f, 0 /*unlit*/};
-    
-            for (int i = 0; i < VERTEX_COUNT; i++) m_Vertices.push_back(vertex[i]);
+            for (uint i = 0; i < VERTEX_COUNT; i++)
+            {
+                Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, /* amplification */0.0f, 0 /*unlit*/};
+                m_Vertices.push_back(vertex);
+            }    
         }
 
         // create texture
