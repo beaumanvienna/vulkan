@@ -70,6 +70,7 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = (uint)VK_SwapChain::SubPasses::SUBPASS_TRANSPARENCY;
+        pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
 
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
