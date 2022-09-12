@@ -118,14 +118,17 @@ namespace LucreApp
             {
                 "application/lucre/models/assets/Skybox/right.png",
                 "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",
                 "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/back.png",
+                "application/lucre/models/assets/Skybox/top.png",
                 "application/lucre/models/assets/Skybox/front.png",
+                "application/lucre/models/assets/Skybox/back.png"
             };
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
+            auto view = m_Registry.view<TransformComponent>();
+            auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
+            skyboxTransform.SetScale(20.0f);
         }
     }
 
