@@ -267,7 +267,7 @@ namespace GfxRenderEngine
             m_CubemapImage,
             static_cast<uint>(m_Width), 
             static_cast<uint>(m_Height),
-            1
+            NUMBER_OF_CUBEMAP_IMAGES
         );
 
         //GenerateMipmaps();
