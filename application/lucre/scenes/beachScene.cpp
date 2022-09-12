@@ -70,13 +70,13 @@ namespace LucreApp
         StartScripts();
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
-        m_Dune = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/dune/dune.gltf::Scene::dune");
+        m_Dune = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/dune/dune.gltf::Scene::duneMiddle");
 
         {
             // place static lights for beach scene
             float intensity = 5.0f;
             float lightRadius = 0.1f;
-            float height1 = 0.2f;
+            float height1 = 0.4f;
             std::vector<glm::vec3> lightPositions =
             {
                 {-0.285, height1, -1.542},
