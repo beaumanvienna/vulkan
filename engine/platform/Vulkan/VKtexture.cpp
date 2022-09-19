@@ -309,7 +309,7 @@ namespace GfxRenderEngine
             m_TextureImage, 
             static_cast<uint>(m_Width), 
             static_cast<uint>(m_Height),
-            1
+            1 /*layerCount*/
         );
 
         GenerateMipmaps();

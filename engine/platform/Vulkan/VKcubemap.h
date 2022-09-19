@@ -39,7 +39,7 @@ namespace GfxRenderEngine
         VK_Cubemap(bool nearestFilter = false);
         ~VK_Cubemap();
 
-        virtual bool Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip = true) override;
+        virtual bool Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip = false) override;
         virtual int GetWidth() const override { return m_Width; }
         virtual int GetHeight() const override { return m_Height; }
 

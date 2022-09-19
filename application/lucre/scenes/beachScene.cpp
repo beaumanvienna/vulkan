@@ -79,16 +79,16 @@ namespace LucreApp
             float height1 = 0.4f;
             std::vector<glm::vec3> lightPositions =
             {
-                {-0.285, height1, -1.542},
-                {-3.2,   height1, -1.5420},
-                {-6.1,   height1, -1.5420},
-                { 2.7,   height1, -1.5420},
-                { 5.6,   height1, -1.5420},
-                {-0.285, height1, 1.2},
-                {-3.2,   height1, 1.2},
-                {-6.1,   height1, 1.2},
-                { 2.7,   height1, 1.2},
-                { 5.6,   height1, 1.2}
+                {-0.285, height1, -2.8},
+                {-3.2,   height1, -2.8},
+                {-6.1,   height1, -2.8},
+                { 2.7,   height1, -2.8},
+                { 5.6,   height1, -2.8},
+                {-0.285, height1,  0.7},
+                {-3.2,   height1,  0.7},
+                {-6.1,   height1,  0.7},
+                { 2.7,   height1,  0.7},
+                { 5.6,   height1,  0.7}
             };
 
             for (int i = 0; i < lightPositions.size(); i++)
@@ -118,8 +118,8 @@ namespace LucreApp
             {
                 "application/lucre/models/assets/Skybox/right.png",
                 "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/bottom.png",
                 "application/lucre/models/assets/Skybox/top.png",
+                "application/lucre/models/assets/Skybox/bottom.png",
                 "application/lucre/models/assets/Skybox/front.png",
                 "application/lucre/models/assets/Skybox/back.png"
             };

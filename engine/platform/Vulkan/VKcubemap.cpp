@@ -32,10 +32,9 @@ namespace GfxRenderEngine
 {
 
     VK_Cubemap::VK_Cubemap(bool nearestFilter)
-        : m_FileNames({""}), m_Type(0),
+        : m_NearestFilter(nearestFilter), m_MipLevels(1), m_FileNames({""}), m_Type(0), 
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_MipLevels(1), m_NearestFilter(nearestFilter),
-          m_sRGB(false)
+          m_DataFormat(0), m_sRGB(false)
     {
         for (int i = 0; i < NUMBER_OF_CUBEMAP_IMAGES; i++)
         {
@@ -54,7 +53,7 @@ namespace GfxRenderEngine
     }
 
     // create texture from files on disk
-    bool VK_Cubemap::Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip)
+    bool VK_Cubemap::Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip /*= true*/)
     {
         uint ok = 0;
         int channels_in_file;
@@ -222,7 +221,7 @@ namespace GfxRenderEngine
     {
         auto device = VK_Core::m_Device->Device();
 
-        VkDeviceSize layerSize = m_Width * m_Height * 4;
+        VkDeviceSize layerSize = m_Width * m_Height * m_BytesPerPixel;
         VkDeviceSize imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
 
         VkBuffer stagingBuffer;
@@ -249,10 +248,10 @@ namespace GfxRenderEngine
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage
         (
-            format,
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            format,                                                       /*VkFormat format                 */
+            VK_IMAGE_TILING_OPTIMAL,                                      /*VkImageTiling tiling            */
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, /*VkImageUsageFlags usage         */
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT                           /*VkMemoryPropertyFlags properties*/
         );
 
         TransitionImageLayout
@@ -263,15 +262,13 @@ namespace GfxRenderEngine
 
         VK_Core::m_Device->CopyBufferToImage
         (
-            stagingBuffer,
-            m_CubemapImage,
-            static_cast<uint>(m_Width), 
-            static_cast<uint>(m_Height),
-            NUMBER_OF_CUBEMAP_IMAGES
+            stagingBuffer,                  /*VkBuffer buffer*/
+            m_CubemapImage,                 /*VkImage image  */
+            static_cast<uint>(m_Width),     /*uint width     */
+            static_cast<uint>(m_Height),    /*uint height    */
+            NUMBER_OF_CUBEMAP_IMAGES        /*uint layerCount*/
         );
 
-        //GenerateMipmaps();
-        
         TransitionImageLayout
         (
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -319,7 +316,7 @@ namespace GfxRenderEngine
         }
 
         // Create image view
-        // Cubemaps are not directly accessed by shaders and
+        // Images are not directly accessed by shaders and
         // are abstracted by image views. 
         // Image views contain additional
         // information and sub resource ranges

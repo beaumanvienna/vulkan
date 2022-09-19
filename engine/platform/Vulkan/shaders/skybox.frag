@@ -32,6 +32,10 @@ layout(location = 0)       in  vec3  fragUVW;
 // outputs
 layout(location = 0)       out vec4  outColor;
 
+layout(set = 1, binding = 0) uniform samplerCube samplerCubeMap;
+
+
+
 struct PointLight
 {
     vec4 m_Position;  // ignore w
@@ -48,8 +52,6 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     PointLight m_PointLights[MAX_LIGHTS];
     int m_NumberOfActiveLights;
 } ubo;
-
-layout(set = 1, binding = 0) uniform samplerCube samplerCubeMap;
 
 layout(push_constant) uniform Push
 {

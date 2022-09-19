@@ -35,7 +35,7 @@ namespace LucreApp
 
     void DuckScript::Start()
     {
-        m_Transform.SetTranslationY(2.5f);
+        m_Transform.SetTranslationY(3.5f);
     }
 
     void DuckScript::OnUpdate(const Timestep& timestep)
@@ -44,11 +44,11 @@ namespace LucreApp
         static constexpr float MOVE_DOWN = -1.0f;
         static float move = MOVE_DOWN;
 
-        if ((m_Translation.y > 1.0f) && (move==MOVE_UP))
+        if ((m_Translation.y > 1.5f) && (move==MOVE_UP))
         {
             move = MOVE_DOWN;
         }
-        else if ((m_Translation.y < 0.5f) && (move==MOVE_DOWN))
+        else if ((m_Translation.y < 1.0f) && (move==MOVE_DOWN))
         {
             move = MOVE_UP;
         }

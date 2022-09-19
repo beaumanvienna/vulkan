@@ -54,5 +54,4 @@ void main()
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
     fragUVW     = position;
-    fragUVW.xy *= -1.0;
 }

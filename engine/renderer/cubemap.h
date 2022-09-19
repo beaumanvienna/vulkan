@@ -40,7 +40,7 @@ namespace GfxRenderEngine
 
         ~Cubemap() {}
 
-        virtual bool Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip = true) = 0;
+        virtual bool Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip = false) = 0;
         virtual int  GetWidth() const = 0;
         virtual int  GetHeight() const = 0;
 
