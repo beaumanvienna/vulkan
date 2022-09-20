@@ -3,6 +3,10 @@
 
 glTF-files :
     application/lucre/models/external_3D_files/dune/dune.gltf:
+    application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
+        translation: [-2.07932615, 1.24600148, -1.00711334]
+        scale: [0.49999997, 0.499972969, 0.499979705]
+        rotation: [-1.57069314, 1.54480636, -3.1414907]
 
 prefabs:
   - application/lucre/prefabs/duck.prefab

@@ -71,6 +71,7 @@ namespace LucreApp
         TreeNode::Traverse(m_SceneHierarchy);
         m_Dictionary.List();
         m_Dune = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/dune/dune.gltf::Scene::duneMiddle");
+        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
 
         {
             // place static lights for beach scene
@@ -165,6 +166,10 @@ namespace LucreApp
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
         }
 
+        {
+            AnimateHero(timestep);
+        }
+
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
 
@@ -228,5 +233,30 @@ namespace LucreApp
             auto& transform  = view.get<TransformComponent>(entity);
             transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(transform.GetTranslation(), 1.f)));
         }
+    }
+
+    void BeachScene::AnimateHero(const Timestep& timestep)
+    {
+        auto view = m_Registry.view<TransformComponent>();
+        auto& heroTransform  = view.get<TransformComponent>(m_Hero);
+
+        static float deltaX = 0.5f;
+        static float deltaY = 0.5f;
+        static float deltaZ = 0.5f;
+
+        constexpr float DEFORM_X_SPEED = 0.2f;
+        static float deformX = DEFORM_X_SPEED;
+        
+        if (deltaX > 0.55f)
+        {
+            deformX = -DEFORM_X_SPEED;
+        }
+        else if (deltaX < 0.45f)
+        {
+            deformX = DEFORM_X_SPEED;
+        }
+
+        deltaX += deformX * timestep;
+        heroTransform.SetScale({deltaX, deltaY, deltaZ});
     }
 }

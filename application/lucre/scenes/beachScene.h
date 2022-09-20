@@ -63,6 +63,7 @@ namespace LucreApp
         void LoadModels();
         void ResetScene();
         void RotateLights(const Timestep& timestep);
+        void AnimateHero(const Timestep& timestep);
 
     private:
 
@@ -74,7 +75,7 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Dune, m_Skybox;
+        entt::entity m_Camera, m_Dune, m_Skybox, m_Hero;
         entt::entity m_PointLight[MAX_LIGHTS];
 
         // some game objects can be controlled with a gamepad
