@@ -35,6 +35,19 @@ namespace GfxRenderEngine
     {
 
     public:
+
+        enum class SubPassesShadow
+        {
+            SUBPASS_SHADOW = 0,
+            NUMBER_OF_SUBPASSES
+        };
+
+        enum class RenderTargetsShadow
+        {
+            ATTACHMENT_BACKBUFFER = 0,
+            NUMBER_OF_ATTACHMENTS
+        };
+
         enum class SubPasses
         {
             SUBPASS_GEOMETRY = 0,

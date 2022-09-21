@@ -66,6 +66,12 @@
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/skybox.frag</file>
     </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/shadowShader.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/shadowShader.frag</file>
+    </gresource>
     <gresource prefix="/images/">
         <file>images/cursor.png</file>
     </gresource>

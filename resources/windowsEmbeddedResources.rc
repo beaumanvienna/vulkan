@@ -36,3 +36,5 @@ IDR_SHADER_SR_VERT       TEXT                    "engine\\platform\\Vulkan\\shad
 IDR_SHADER_SR_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\spriteRenderer.frag"
 IDR_SHADER_SB_VERT       TEXT                    "engine\\platform\\Vulkan\\shaders\\skybox.vert"
 IDR_SHADER_SB_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\skybox.frag"
+IDR_SHADER_SHADOW_VERT   TEXT                    "engine\\platform\\Vulkan\\shaders\\shadowShader.vert"
+IDR_SHADER_SHADOW_FRAG   TEXT                    "engine\\platform\\Vulkan\\shaders\\shadowShader.frag"

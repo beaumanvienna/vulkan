@@ -33,3 +33,6 @@ glslc engine/platform/Vulkan/shaders/guiShader2.frag                        -o b
 
 glslc engine/platform/Vulkan/shaders/skybox.vert                            -o bin/skybox.vert.spv
 glslc engine/platform/Vulkan/shaders/skybox.frag                            -o bin/skybox.frag.spv
+
+glslc engine/platform/Vulkan/shaders/shadowShader.vert                      -o bin/shadowShader.vert.spv
+glslc engine/platform/Vulkan/shaders/shadowShader.frag                      -o bin/shadowShader.frag.spv

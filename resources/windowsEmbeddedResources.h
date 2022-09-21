@@ -30,12 +30,14 @@
 #define IDR_SHADER_SR_FRAG                  129
 #define IDR_SHADER_SB_VERT                  130
 #define IDR_SHADER_SB_FRAG                  131
+#define IDR_SHADER_SHADOW_VERT              132
+#define IDR_SHADER_SHADOW_FRAG              133
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
-        #define _APS_NEXT_RESOURCE_VALUE    132
+        #define _APS_NEXT_RESOURCE_VALUE    134
         #define _APS_NEXT_COMMAND_VALUE     40001
         #define _APS_NEXT_CONTROL_VALUE     1001
-        #define _APS_NEXT_SYMED_VALUE       131
+        #define _APS_NEXT_SYMED_VALUE       133
     #endif
 #endif
