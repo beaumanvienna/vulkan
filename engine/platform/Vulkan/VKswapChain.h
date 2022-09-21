@@ -44,7 +44,7 @@ namespace GfxRenderEngine
 
         enum class RenderTargetsShadow
         {
-            ATTACHMENT_BACKBUFFER = 0,
+            ATTACHMENT_DEPTH = 0,
             NUMBER_OF_ATTACHMENTS
         };
 
@@ -94,6 +94,7 @@ namespace GfxRenderEngine
 
         VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
+        VkRenderPass GetShadowRenderPass() { return m_ShadowRenderPass; }
         VkRenderPass GetRenderPass() { return m_RenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
@@ -124,6 +125,7 @@ namespace GfxRenderEngine
         void CreateImageViews();
         void CreateDepthResources();
         void CreateRenderPass();
+        void CreateShadowRenderPass();
         void CreateGUIRenderPass();
         void CreateFramebuffers();
         void CreateGUIFramebuffers();
@@ -144,6 +146,7 @@ namespace GfxRenderEngine
 
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
+        VkRenderPass m_ShadowRenderPass;
         VkRenderPass m_RenderPass;
         VkRenderPass m_GUIRenderPass;
 

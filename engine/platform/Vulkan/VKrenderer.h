@@ -30,6 +30,7 @@
 #include "renderer/renderer.h"
 #include "platform/Vulkan/imguiEngine/imgui.h"
 
+#include "systems/VKshadowRenderSys.h"
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKcubemapRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
@@ -111,18 +112,18 @@ namespace GfxRenderEngine
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
 
+        std::unique_ptr<VK_RenderSystemShadow>                            m_RenderSystemShadow;
         std::unique_ptr<VK_RenderSystemPbrNoMap>                          m_RenderSystemPbrNoMap;
         std::unique_ptr<VK_RenderSystemPbrDiffuse>                        m_RenderSystemPbrDiffuse;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                  m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
-
         std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
+        std::unique_ptr<VK_RenderSystemCubemap>                           m_RenderSystemCubemap;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer>                    m_RenderSystemSpriteRenderer;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                  m_RenderSystemSpriteRenderer2D;
+        std::unique_ptr<VK_RenderSystemGUIRenderer>                       m_RenderSystemGUIRenderer;
+        std::unique_ptr<VK_PointLightSystem>                              m_PointLightSystem;
 
-        std::unique_ptr<VK_RenderSystemCubemap> m_RenderSystemCubemap;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer2D> m_RenderSystemSpriteRenderer2D;
-        std::unique_ptr<VK_RenderSystemGUIRenderer> m_RenderSystemGUIRenderer;
-        std::unique_ptr<VK_PointLightSystem> m_PointLightSystem;
         std::shared_ptr<Imgui> m_Imgui;
 
         std::unique_ptr<VK_SwapChain> m_SwapChain;

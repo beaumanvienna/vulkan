@@ -50,6 +50,7 @@ namespace GfxRenderEngine
         
         CreateSwapChain();
         CreateImageViews();
+        CreateShadowRenderPass();
         CreateRenderPass();
         CreateGUIRenderPass();
         CreateDepthResources();
@@ -86,6 +87,7 @@ namespace GfxRenderEngine
             vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
         }
 
+        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_RenderPass, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_GUIRenderPass, nullptr);
 
@@ -1014,5 +1016,79 @@ namespace GfxRenderEngine
         bool depthFormatEqual = (swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat);
         bool imageFormatEqual = (swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat);
         return (depthFormatEqual && imageFormatEqual);
+    }
+
+    void VK_SwapChain::CreateShadowRenderPass()
+    {
+
+        // ATTACHMENT_DEPTH
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = FindDepthFormat();
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = static_cast<uint>(RenderTargetsShadow::ATTACHMENT_DEPTH);
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpassShadow = {};
+        subpassShadow.flags = 0;
+        subpassShadow.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassShadow.inputAttachmentCount = 0;
+        subpassShadow.pInputAttachments = nullptr;
+        subpassShadow.colorAttachmentCount = 0;
+        subpassShadow.pColorAttachments = nullptr;
+        subpassShadow.pResolveAttachments = nullptr;
+        subpassShadow.pDepthStencilAttachment = &depthAttachmentRef;
+        subpassShadow.preserveAttachmentCount = 0;
+        subpassShadow.pPreserveAttachments = nullptr;
+
+        constexpr uint NUMBER_OF_DEPENDENCIES = 2;
+        std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
+
+        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                            // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass      = 0;                                              // The index of the render pass depending on srcSubpass
+        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;          // What pipeline stage must have completed for the dependency
+        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;     // What pipeline stage is waiting on the dependency
+        dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                      // What access scopes influence the dependency
+        dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;   // What access scopes are waiting on the dependency
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                    // Other configuration about the dependency
+
+        dependencies[1].srcSubpass      = 0;
+        dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[1].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        // render pass
+        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargetsShadow::NUMBER_OF_ATTACHMENTS)> attachments = 
+        {
+            depthAttachment
+        };
+        std::array<VkSubpassDescription, static_cast<uint>(SubPassesShadow::NUMBER_OF_SUBPASSES)> subpasses = 
+        {
+            subpassShadow
+        };
+
+        VkRenderPassCreateInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargetsShadow::NUMBER_OF_ATTACHMENTS);
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = static_cast<uint>(SubPassesShadow::NUMBER_OF_SUBPASSES);
+        renderPassInfo.pSubpasses = subpasses.data();
+        renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
+        renderPassInfo.pDependencies = dependencies.data();
+
+        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_ShadowRenderPass) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create render pass!");
+        }
     }
 }

@@ -69,6 +69,10 @@ namespace GfxRenderEngine
             .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2450)
             .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> shadowDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // spritesheet
@@ -136,6 +140,11 @@ namespace GfxRenderEngine
             cubemapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadow =
+        {
+            shadowDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
         auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
@@ -169,6 +178,7 @@ namespace GfxRenderEngine
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
+        m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>(m_SwapChain->GetShadowRenderPass(), descriptorSetLayoutsShadow);
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
