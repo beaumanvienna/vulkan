@@ -42,7 +42,7 @@ namespace GfxRenderEngine
             NUMBER_OF_SUBPASSES
         };
 
-        enum class RenderTargetsShadow
+        enum class ShadowRenderTargets
         {
             ATTACHMENT_DEPTH = 0,
             NUMBER_OF_ATTACHMENTS
@@ -92,19 +92,24 @@ namespace GfxRenderEngine
         VK_SwapChain(const VK_SwapChain &) = delete;
         VK_SwapChain& operator=(const VK_SwapChain &) = delete;
 
-        VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
+        VkFramebuffer GetFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
-        VkRenderPass GetShadowRenderPass() { return m_ShadowRenderPass; }
+        VkFramebuffer GetShadowFrameBuffer(int index) { return m_ShadowFramebuffers[index]; }
+
         VkRenderPass GetRenderPass() { return m_RenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
+        VkRenderPass GetShadowRenderPass() { return m_ShadowRenderPass; }
+
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
         VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
         VkImageView GetImageViewGBufferMaterial(int index) { return m_GBufferMaterialViews[index]; }
+
         size_t ImageCount() { return m_SwapChainImages.size(); }
         VkFormat GetSwapChainImageFormat() { return m_SwapChainImageFormat; }
         VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
+        VkExtent2D GetShadowMapExtent() { return m_ShadowMapExtent; }
         uint Width() { return m_SwapChainExtent.width; }
         uint Height() { return m_SwapChainExtent.height; }
 
@@ -123,12 +128,18 @@ namespace GfxRenderEngine
         void Init();
         void CreateSwapChain();
         void CreateImageViews();
+
+        void CreateShadowDepthResources(int width);
         void CreateDepthResources();
-        void CreateRenderPass();
+
         void CreateShadowRenderPass();
+        void CreateRenderPass();
         void CreateGUIRenderPass();
+
+        void CreateShadowFramebuffers();
         void CreateFramebuffers();
         void CreateGUIFramebuffers();
+
         void CreateSyncObjects();
 
         void CreateGBufferImages();
@@ -142,13 +153,20 @@ namespace GfxRenderEngine
 
         VkFormat m_SwapChainImageFormat;
         VkFormat m_SwapChainDepthFormat;
+        VkExtent2D m_ShadowMapExtent;
         VkExtent2D m_SwapChainExtent;
 
-        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+        std::vector<VkFramebuffer> m_3DFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
-        VkRenderPass m_ShadowRenderPass;
+        std::vector<VkFramebuffer> m_ShadowFramebuffers;
+
         VkRenderPass m_RenderPass;
         VkRenderPass m_GUIRenderPass;
+        VkRenderPass m_ShadowRenderPass;
+
+        std::vector<VkImage> m_ShadowDepthImages;
+        std::vector<VkImageView> m_ShadowDepthImageViews;
+        std::vector<VkDeviceMemory> m_ShadowDepthImageMemorys;
 
         std::vector<VkImage> m_DepthImages;
         std::vector<VkImageView> m_DepthImageViews;

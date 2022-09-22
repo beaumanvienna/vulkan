@@ -50,14 +50,21 @@ namespace GfxRenderEngine
         
         CreateSwapChain();
         CreateImageViews();
+
         CreateShadowRenderPass();
         CreateRenderPass();
         CreateGUIRenderPass();
+
+        CreateShadowDepthResources(1024 /* width */);
         CreateDepthResources();
+
         CreateGBufferImages();
         CreateGBufferViews();
+
+        CreateShadowFramebuffers();
         CreateFramebuffers();
         CreateGUIFramebuffers();
+
         CreateSyncObjects();
     }
 
@@ -82,7 +89,14 @@ namespace GfxRenderEngine
             vkFreeMemory(m_Device->Device(), m_DepthImageMemorys[i], nullptr);
         }
 
-        for (auto framebuffer : m_SwapChainFramebuffers)
+        for (int i = 0; i < m_ShadowDepthImages.size(); i++)
+        {
+            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_ShadowDepthImages[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys[i], nullptr);
+        }
+
+        for (auto framebuffer : m_3DFramebuffers)
         {
             vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
         }
@@ -524,7 +538,7 @@ namespace GfxRenderEngine
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_BACKBUFFER;
+        colorAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_BACKBUFFER);
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         // ATTACHMENT_DEPTH
@@ -539,7 +553,7 @@ namespace GfxRenderEngine
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_DEPTH;
+        depthAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_DEPTH);
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_POSITION
@@ -554,11 +568,11 @@ namespace GfxRenderEngine
         gBufferPositionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferPositionAttachmentRef = {};
-        gBufferPositionAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_POSITION;
+        gBufferPositionAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_POSITION);
         gBufferPositionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferPositionInputAttachmentRef = {};
-        gBufferPositionInputAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_POSITION;
+        gBufferPositionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_POSITION);
         gBufferPositionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_NORMAL
@@ -573,11 +587,11 @@ namespace GfxRenderEngine
         gBufferNormalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferNormalAttachmentRef = {};
-        gBufferNormalAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_NORMAL;
+        gBufferNormalAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_NORMAL);
         gBufferNormalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferNormalInputAttachmentRef = {};
-        gBufferNormalInputAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_NORMAL;
+        gBufferNormalInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_NORMAL);
         gBufferNormalInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_COLOR
@@ -592,11 +606,11 @@ namespace GfxRenderEngine
         gBufferColorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferColorAttachmentRef = {};
-        gBufferColorAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_COLOR;
+        gBufferColorAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_COLOR);
         gBufferColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferColorInputAttachmentRef = {};
-        gBufferColorInputAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_COLOR;
+        gBufferColorInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_COLOR);
         gBufferColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_MATERIAL
@@ -611,11 +625,11 @@ namespace GfxRenderEngine
         gBufferMaterialAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferMaterialAttachmentRef = {};
-        gBufferMaterialAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_MATERIAL;
+        gBufferMaterialAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_MATERIAL);
         gBufferMaterialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferMaterialInputAttachmentRef = {};
-        gBufferMaterialInputAttachmentRef.attachment = (uint)RenderTargets::ATTACHMENT_GBUFFER_MATERIAL;
+        gBufferMaterialInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_MATERIAL);
         gBufferMaterialInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // geometry pass
@@ -677,8 +691,8 @@ namespace GfxRenderEngine
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
         // ligthing depends on geometry
-        dependencies[0].srcSubpass      = (uint)SubPasses::SUBPASS_GEOMETRY; // Index of the render pass being depended upon by dstSubpass
-        dependencies[0].dstSubpass      = (uint)SubPasses::SUBPASS_LIGHTING; // The index of the render pass depending on srcSubpass
+        dependencies[0].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY); // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_LIGHTING); // The index of the render pass depending on srcSubpass
         dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
         dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage is waiting on the dependency
         dependencies[0].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
@@ -686,8 +700,8 @@ namespace GfxRenderEngine
         dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
 
         // transparency depends on lighting
-        dependencies[1].srcSubpass      = (uint)SubPasses::SUBPASS_LIGHTING;
-        dependencies[1].dstSubpass      = (uint)SubPasses::SUBPASS_TRANSPARENCY;
+        dependencies[1].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_LIGHTING);
+        dependencies[1].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_TRANSPARENCY);
         dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -695,14 +709,14 @@ namespace GfxRenderEngine
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         dependencies[2].srcSubpass      = VK_SUBPASS_EXTERNAL;
-        dependencies[2].dstSubpass      = (uint)SubPasses::SUBPASS_GEOMETRY;
+        dependencies[2].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY);
         dependencies[2].srcStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
         dependencies[2].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[2].srcAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
         dependencies[2].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        dependencies[3].srcSubpass      = (uint)SubPasses::SUBPASS_GEOMETRY;
+        dependencies[3].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY);
         dependencies[3].dstSubpass      = VK_SUBPASS_EXTERNAL;
         dependencies[3].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[3].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -711,7 +725,7 @@ namespace GfxRenderEngine
         dependencies[3].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // render pass
-        std::array<VkAttachmentDescription, (uint)RenderTargets::NUMBER_OF_ATTACHMENTS> attachments = 
+        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
         {
             colorAttachment,
             depthAttachment,
@@ -720,7 +734,7 @@ namespace GfxRenderEngine
             gBufferColorAttachment,
             gBufferMaterialAttachment
         };
-        std::array<VkSubpassDescription, (uint)SubPasses::NUMBER_OF_SUBPASSES> subpasses = 
+        std::array<VkSubpassDescription, static_cast<uint>(SubPasses::NUMBER_OF_SUBPASSES)> subpasses = 
         {
             subpassGeometry,
             subpassLighting,
@@ -729,9 +743,9 @@ namespace GfxRenderEngine
 
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = (uint)RenderTargets::NUMBER_OF_ATTACHMENTS;
+        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS);
         renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = (uint)SubPasses::NUMBER_OF_SUBPASSES;
+        renderPassInfo.subpassCount = static_cast<uint>(SubPasses::NUMBER_OF_SUBPASSES);
         renderPassInfo.pSubpasses = subpasses.data();
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
@@ -756,7 +770,7 @@ namespace GfxRenderEngine
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = (uint)RenderTargetsGUI::ATTACHMENT_BACKBUFFER;
+        colorAttachmentRef.attachment = static_cast<uint>(RenderTargetsGUI::ATTACHMENT_BACKBUFFER);
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         // subpass
@@ -776,14 +790,14 @@ namespace GfxRenderEngine
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
         dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
-        dependencies[0].dstSubpass      = (uint)SubPassesGUI::SUBPASS_GUI;
+        dependencies[0].dstSubpass      = static_cast<uint>(SubPassesGUI::SUBPASS_GUI);
         dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
         dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[0].srcAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
         dependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        dependencies[1].srcSubpass      = (uint)SubPassesGUI::SUBPASS_GUI;
+        dependencies[1].srcSubpass      = static_cast<uint>(SubPassesGUI::SUBPASS_GUI);
         dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
         dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -792,20 +806,20 @@ namespace GfxRenderEngine
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // render pass
-        std::array<VkAttachmentDescription, (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS> attachments = 
+        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargetsGUI::NUMBER_OF_ATTACHMENTS)> attachments = 
         {
             colorAttachment
         };
-        std::array<VkSubpassDescription, (uint)SubPassesGUI::NUMBER_OF_SUBPASSES> subpasses = 
+        std::array<VkSubpassDescription, static_cast<uint>(SubPassesGUI::NUMBER_OF_SUBPASSES)> subpasses = 
         {
             subpassGUI
         };
 
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS;
+        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargetsGUI::NUMBER_OF_ATTACHMENTS);
         renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = (uint)SubPassesGUI::NUMBER_OF_SUBPASSES;
+        renderPassInfo.subpassCount = static_cast<uint>(SubPassesGUI::NUMBER_OF_SUBPASSES);
         renderPassInfo.pSubpasses = subpasses.data();
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
@@ -818,10 +832,10 @@ namespace GfxRenderEngine
 
     void VK_SwapChain::CreateFramebuffers()
     {
-        m_SwapChainFramebuffers.resize(ImageCount());
+        m_3DFramebuffers.resize(ImageCount());
         for (size_t i = 0; i < ImageCount(); i++)
         {
-            std::array<VkImageView, (uint)RenderTargets::NUMBER_OF_ATTACHMENTS> attachments = 
+            std::array<VkImageView, static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
                 m_SwapChainImageViews[i],
                 m_DepthImageViews[i],
@@ -835,7 +849,7 @@ namespace GfxRenderEngine
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_RenderPass;
-            framebufferInfo.attachmentCount = (uint)RenderTargets::NUMBER_OF_ATTACHMENTS;
+            framebufferInfo.attachmentCount = static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = m_SwapChainExtent.width;
             framebufferInfo.height = m_SwapChainExtent.height;
@@ -845,7 +859,7 @@ namespace GfxRenderEngine
                     m_Device->Device(),
                     &framebufferInfo,
                     nullptr,
-                    &m_SwapChainFramebuffers[i]) != VK_SUCCESS)
+                    &m_3DFramebuffers[i]) != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create framebuffer!");
             }
@@ -857,7 +871,7 @@ namespace GfxRenderEngine
         m_GUIFramebuffers.resize(ImageCount());
         for (size_t i = 0; i < ImageCount(); i++)
         {
-            std::array<VkImageView, (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS> attachments = 
+            std::array<VkImageView, static_cast<uint>(RenderTargetsGUI::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
                 m_SwapChainImageViews[i]
             };
@@ -866,7 +880,7 @@ namespace GfxRenderEngine
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_GUIRenderPass;
-            framebufferInfo.attachmentCount = (uint)RenderTargetsGUI::NUMBER_OF_ATTACHMENTS;
+            framebufferInfo.attachmentCount = static_cast<uint>(RenderTargetsGUI::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = m_SwapChainExtent.width;
             framebufferInfo.height = m_SwapChainExtent.height;
@@ -1033,7 +1047,7 @@ namespace GfxRenderEngine
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = static_cast<uint>(RenderTargetsShadow::ATTACHMENT_DEPTH);
+        depthAttachmentRef.attachment = static_cast<uint>(ShadowRenderTargets::ATTACHMENT_DEPTH);
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpassShadow = {};
@@ -1068,7 +1082,7 @@ namespace GfxRenderEngine
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // render pass
-        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargetsShadow::NUMBER_OF_ATTACHMENTS)> attachments = 
+        std::array<VkAttachmentDescription, static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
         {
             depthAttachment
         };
@@ -1079,7 +1093,7 @@ namespace GfxRenderEngine
 
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargetsShadow::NUMBER_OF_ATTACHMENTS);
+        renderPassInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
         renderPassInfo.pAttachments = attachments.data();
         renderPassInfo.subpassCount = static_cast<uint>(SubPassesShadow::NUMBER_OF_SUBPASSES);
         renderPassInfo.pSubpasses = subpasses.data();
@@ -1089,6 +1103,90 @@ namespace GfxRenderEngine
         if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_ShadowRenderPass) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create render pass!");
+        }
+    }
+
+    void VK_SwapChain::CreateShadowDepthResources(int width)
+    {
+        m_ShadowMapExtent.width = width;
+        m_ShadowMapExtent.height = width;
+
+        VkFormat depthFormat = FindDepthFormat();
+        m_SwapChainDepthFormat = depthFormat;
+
+        m_ShadowDepthImages.resize(ImageCount());
+        m_ShadowDepthImageMemorys.resize(ImageCount());
+        m_ShadowDepthImageViews.resize(ImageCount());
+
+        for (int i = 0; i < m_ShadowDepthImages.size(); i++)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = m_ShadowMapExtent.width;
+            imageInfo.extent.height = m_ShadowMapExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = depthFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_ShadowDepthImages[i],
+                m_ShadowDepthImageMemorys[i]);
+
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = m_ShadowDepthImages[i];
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = depthFormat;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageViews[i]) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
+            }
+        }
+    }
+
+    void VK_SwapChain::CreateShadowFramebuffers()
+    {
+        m_ShadowFramebuffers.resize(ImageCount());
+        for (size_t i = 0; i < ImageCount(); i++)
+        {
+            std::array<VkImageView, static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
+            {
+                m_ShadowDepthImageViews[i],
+            };
+
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = m_ShadowRenderPass;
+            framebufferInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = m_ShadowMapExtent.width;
+            framebufferInfo.height = m_ShadowMapExtent.height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(
+                    m_Device->Device(),
+                    &framebufferInfo,
+                    nullptr,
+                    &m_ShadowFramebuffers[i]) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create shadow framebuffer!");
+            }
         }
     }
 }

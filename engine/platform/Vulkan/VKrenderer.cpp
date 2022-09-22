@@ -46,6 +46,19 @@ namespace GfxRenderEngine
         RecreateSwapChain();
         CreateCommandBuffers();
 
+        for (uint i = 0; i < m_ShadowUniformBuffers.size(); i++)
+        {
+            m_ShadowUniformBuffers[i] = std::make_unique<VK_Buffer>
+            (
+                *m_Device, sizeof(ShadowUniformBuffer),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                m_Device->properties.limits.minUniformBufferOffsetAlignment
+            );
+            m_ShadowUniformBuffers[i]->Map();
+        }
+
         for (uint i = 0; i < m_UniformBuffers.size(); i++)
         {
             m_UniformBuffers[i] = std::make_unique<VK_Buffer>
@@ -167,6 +180,14 @@ namespace GfxRenderEngine
         imageInfo1.sampler     = textureFontAtlas->m_Sampler;
         imageInfo1.imageView   = textureFontAtlas->m_TextureView;
         imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkDescriptorBufferInfo bufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
+            VK_DescriptorWriter(*shadowDescriptorSetLayout, *m_DescriptorPool)
+                .WriteBuffer(0, &bufferInfo)
+                .Build(m_ShadowDescriptorSets[i]);
+        }
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -357,7 +378,45 @@ namespace GfxRenderEngine
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
-    void VK_Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+    void VK_Renderer::BeginShadowRenderPass(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass();
+        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer(m_CurrentImageIndex);
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent();
+
+        std::array<VkClearValue, static_cast<uint>(VK_SwapChain::ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
+        clearValues[0].depthStencil = {1.0f, 0};
+        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChain->GetShadowMapExtent().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetShadowMapExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetShadowMapExtent()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    }
+
+    void VK_Renderer::SubmitShadows(entt::registry& registry)
+    {
+        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry);
+    }
+
+    void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
     {
         ASSERT(m_FrameInProgress);
         ASSERT(commandBuffer == GetCurrentCommandBuffer());
@@ -370,7 +429,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
-        std::array<VkClearValue, (uint)VK_SwapChain::RenderTargets::NUMBER_OF_ATTACHMENTS> clearValues{};
+        std::array<VkClearValue, static_cast<uint>(VK_SwapChain::RenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -433,11 +492,36 @@ namespace GfxRenderEngine
         vkCmdEndRenderPass(commandBuffer);
     }
 
-    void VK_Renderer::BeginFrame(Camera* camera, entt::registry& registry)
+    void VK_Renderer::BeginFrame(Camera* camera)
     {
         if (m_CurrentCommandBuffer = BeginFrame())
         {
-            m_FrameInfo = {m_CurrentFrameIndex, 0.0f, m_CurrentCommandBuffer, camera, m_GlobalDescriptorSets[m_CurrentFrameIndex]};
+            m_FrameInfo =
+            {
+                m_CurrentFrameIndex, 
+                0.0f, /* m_FrameTime */
+                m_CurrentCommandBuffer, 
+                camera, 
+                m_GlobalDescriptorSets[m_CurrentFrameIndex],
+                m_ShadowDescriptorSets[m_CurrentFrameIndex]
+            };
+
+            ShadowUniformBuffer ubo{};
+            ubo.m_Projection = camera->GetProjectionMatrix();
+            ubo.m_View = camera->GetViewMatrix();
+            m_ShadowUniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+            m_ShadowUniformBuffers[m_CurrentFrameIndex]->Flush();
+
+            BeginShadowRenderPass(m_CurrentCommandBuffer);
+        }
+    }
+
+    void VK_Renderer::Renderpass3D(Camera* camera, entt::registry& registry)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            EndRenderPass(m_CurrentCommandBuffer); // end shadow render pass
+
 
             GlobalUniformBuffer ubo{};
             ubo.m_Projection = camera->GetProjectionMatrix();
@@ -447,7 +531,7 @@ namespace GfxRenderEngine
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
-            BeginSwapChainRenderPass(m_CurrentCommandBuffer);
+            Begin3DRenderPass(m_CurrentCommandBuffer);
         }
     }
 
@@ -524,7 +608,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            EndRenderPass(m_CurrentCommandBuffer);
+            EndRenderPass(m_CurrentCommandBuffer); // end 3D render pass
             BeginGUIRenderPass(m_CurrentCommandBuffer);
 
             // set up orthogonal camera
@@ -549,7 +633,7 @@ namespace GfxRenderEngine
             m_Imgui->Run();
             m_Imgui->Render(m_CurrentCommandBuffer);
 
-            EndRenderPass(m_CurrentCommandBuffer);
+            EndRenderPass(m_CurrentCommandBuffer); // end GUI render pass
             EndFrame();
         }
     }

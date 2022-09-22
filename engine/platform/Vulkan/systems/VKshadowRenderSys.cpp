@@ -81,6 +81,17 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemShadow::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_PipelineLayout,
+            0,
+            1,
+            &frameInfo.m_ShadowDescriptorSet,
+            0,
+            nullptr
+        );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.view<MeshComponent, TransformComponent>();
@@ -105,7 +116,7 @@ namespace GfxRenderEngine
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawNoMap(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
             }
         }
     }

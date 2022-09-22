@@ -40,6 +40,7 @@ namespace GfxRenderEngine
         Renderer();
         virtual ~Renderer() {}
 
+        virtual void SubmitShadows(entt::registry& registry) = 0;
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
@@ -48,7 +49,8 @@ namespace GfxRenderEngine
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
-        virtual void BeginFrame(Camera* camera, entt::registry& registry) = 0;
+        virtual void BeginFrame(Camera* camera) = 0;
+        virtual void Renderpass3D(Camera* camera, entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
         virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) = 0;

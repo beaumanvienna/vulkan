@@ -28,6 +28,7 @@
 #include "systems/VKpbrDiffuseSys.h"
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
+#include "systems/VKshadowRenderSys.h"
 
 namespace GfxRenderEngine
 {
@@ -361,6 +362,49 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+        }
+    }
+
+    void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& primitive : m_PrimitivesNoMap)
+        {
+
+            VK_PushConstantDataShadow push{};
+
+            push.m_ModelMatrix  = transform.GetMat4();
+
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataShadow),
+                &push);
+
             if(m_HasIndexBuffer)
             {
                 vkCmdDrawIndexed

@@ -256,7 +256,9 @@ namespace LucreApp
         }
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera(), m_Registry);
+        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->SubmitShadows(m_Registry);
+        m_Renderer->Renderpass3D(&m_CameraController->GetCamera(), m_Registry);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
 

@@ -49,6 +49,12 @@ namespace GfxRenderEngine
         int m_NumberOfActiveLights;
     };
 
+    struct ShadowUniformBuffer
+    {
+        glm::mat4 m_Projection{1.0f};
+        glm::mat4 m_View{1.0f};
+    };
+
     struct VK_FrameInfo
     {
         int m_FrameIndex;
@@ -56,6 +62,7 @@ namespace GfxRenderEngine
         VkCommandBuffer m_CommandBuffer;
         Camera* m_Camera;
         VkDescriptorSet m_GlobalDescriptorSet;
+        VkDescriptorSet m_ShadowDescriptorSet;
     };
 
 }
