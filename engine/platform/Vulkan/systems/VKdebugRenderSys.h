@@ -59,6 +59,7 @@ namespace GfxRenderEngine
 
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        PrimitiveShadowMap m_PrimitiveShadowMap;
 
     };
 }

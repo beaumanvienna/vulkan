@@ -63,4 +63,9 @@ namespace GfxRenderEngine
     {
         VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
     };
+
+    struct ShadowMapMaterial
+    {
+        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+    };
 }

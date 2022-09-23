@@ -24,7 +24,6 @@
 
 // outputs
 layout(location = 0) out vec2  fragUV;
-layout(location = 1) out vec2  fragColor;
 
 // 0 - 1
 // | / |
@@ -58,5 +57,4 @@ void main()
     vec2 position = (positions[gl_VertexIndex] * size) + moveOutOfCenter;
     gl_Position   = vec4(position.x, position.y, 0.0, 1.0);
     fragUV        = UVs[gl_VertexIndex];
-    fragColor     = UVs[gl_VertexIndex];
 }

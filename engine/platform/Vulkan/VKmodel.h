@@ -94,6 +94,7 @@ namespace GfxRenderEngine
         );
 
         static void CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap);
+        static void CreateDescriptorSet(ShadowMapMaterial& shadowMapMaterial);
 
     private:
 

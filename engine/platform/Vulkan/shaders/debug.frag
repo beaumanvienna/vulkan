@@ -24,12 +24,14 @@
 
 // inputs
 layout(location = 0)      in vec2  fragUV;
-layout(location = 1)      in vec2  fragColor;
+
+layout(set = 0, binding = 0) uniform sampler2D tex1;
 
 // outputs
 layout (location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = vec4(fragColor.x, fragColor.y, 1.0, 1.0);
+    vec4 depthValue = texture(tex1,fragUV);
+    outColor = vec4(depthValue.x, depthValue.y, 1.0, 1.0);
 }

@@ -33,8 +33,9 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
-
+    
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
+    std::unique_ptr<VK_SwapChain> VK_Renderer::m_SwapChain;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device}, m_FrameCounter{0},
@@ -164,6 +165,7 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug =
         {
+            debugDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;

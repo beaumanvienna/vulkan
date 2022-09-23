@@ -100,7 +100,9 @@ namespace GfxRenderEngine
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
         VkRenderPass GetShadowRenderPass() { return m_ShadowRenderPass; }
 
+        VkSampler   GetSamplerShadowMap() { return m_ShadowDepthSampler; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
+        VkImageView GetImageViewShadowMap(int index) { return m_ShadowDepthImageViews[index]; }
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
         VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
@@ -164,6 +166,7 @@ namespace GfxRenderEngine
         VkRenderPass m_GUIRenderPass;
         VkRenderPass m_ShadowRenderPass;
 
+        VkSampler m_ShadowDepthSampler;
         std::vector<VkImage> m_ShadowDepthImages;
         std::vector<VkImageView> m_ShadowDepthImageViews;
         std::vector<VkDeviceMemory> m_ShadowDepthImageMemorys;

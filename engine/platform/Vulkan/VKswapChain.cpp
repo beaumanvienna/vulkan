@@ -47,7 +47,7 @@ namespace GfxRenderEngine
         m_BufferNormalFormat   = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_BufferColorFormat    = VK_FORMAT_R8G8B8A8_UNORM;
         m_BufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-        
+
         CreateSwapChain();
         CreateImageViews();
 
@@ -91,10 +91,12 @@ namespace GfxRenderEngine
 
         for (int i = 0; i < m_ShadowDepthImages.size(); i++)
         {
+            vkDeviceWaitIdle(m_Device->Device());
             vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews[i], nullptr);
             vkDestroyImage(m_Device->Device(), m_ShadowDepthImages[i], nullptr);
             vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys[i], nullptr);
         }
+        vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler, nullptr);
 
         for (auto framebuffer : m_3DFramebuffers)
         {
@@ -1156,6 +1158,30 @@ namespace GfxRenderEngine
             if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageViews[i]) != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
+            }
+        }
+
+        VkSamplerCreateInfo samplerCreateInfo{};
+        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+        samplerCreateInfo.mipLodBias = 0.0f;
+        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = 1;
+        samplerCreateInfo.maxAnisotropy = 4.0;
+        samplerCreateInfo.anisotropyEnable = VK_TRUE;
+        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+        {
+            auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSampler);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
     }

@@ -101,6 +101,7 @@ namespace GfxRenderEngine
     public:
 
         static std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
+        static std::unique_ptr<VK_SwapChain> m_SwapChain;
 
     private:
 
@@ -131,7 +132,6 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Imgui> m_Imgui;
 
-        std::unique_ptr<VK_SwapChain> m_SwapChain;
         std::vector<VkCommandBuffer> m_CommandBuffers;
         VkCommandBuffer m_CurrentCommandBuffer;
 

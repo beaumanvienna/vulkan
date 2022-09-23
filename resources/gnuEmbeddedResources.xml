@@ -5,7 +5,7 @@
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/pointLight.frag</file>
-    </gresource>    
+    </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/spriteRenderer.vert</file>
     </gresource>

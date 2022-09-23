@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
 #include "VKmodel.h"
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
@@ -579,6 +580,27 @@ namespace GfxRenderEngine
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                 .WriteImage(0, &cubemapInfo)
                 .Build(cubemapMaterial.m_DescriptorSet[i]);
+        }
+    }
+
+    void VK_Model::CreateDescriptorSet(ShadowMapMaterial& shadowMapMaterial)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkDescriptorImageInfo shadowMapInfo {};
+            {
+                shadowMapInfo.sampler     = VK_Renderer::m_SwapChain->GetSamplerShadowMap();
+                shadowMapInfo.imageView   = VK_Renderer::m_SwapChain->GetImageViewShadowMap(i);
+                shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            }
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, &shadowMapInfo)
+                .Build(shadowMapMaterial.m_DescriptorSet[i]);
         }
     }
 }

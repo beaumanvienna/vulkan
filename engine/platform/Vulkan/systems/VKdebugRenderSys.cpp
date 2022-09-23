@@ -32,6 +32,11 @@ namespace GfxRenderEngine
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
+
+        m_PrimitiveShadowMap.m_FirstVertex = 0;
+        m_PrimitiveShadowMap.m_VertexCount = 6;
+
+        VK_Model::CreateDescriptorSet(m_PrimitiveShadowMap.m_ShadowMapMaterial);
     }
 
     VK_RenderSystemDebug::~VK_RenderSystemDebug()
@@ -77,8 +82,21 @@ namespace GfxRenderEngine
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        int vertexCount = 6;
+        VkDescriptorSet localDescriptorSet = m_PrimitiveShadowMap.m_ShadowMapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,         // VkCommandBuffer        commandBuffer
+            VK_PIPELINE_BIND_POINT_GRAPHICS,   // VkPipelineBindPoint    pipelineBindPoint
+            m_PipelineLayout,                  // VkPipelineLayout       layout
+            0,                                 // uint32_t               firstSet
+            1,                                 // uint32_t               descriptorSetCount
+            &localDescriptorSet,               // const VkDescriptorSet* pDescriptorSets
+            0,                                 // uint32_t               dynamicOffsetCount
+            nullptr                            // const uint32_t*        pDynamicOffsets
+        );
 
+        // vertices actually generated in the shader
+        int vertexCount = m_PrimitiveShadowMap.m_VertexCount;
         vkCmdDraw
         (
             frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer
