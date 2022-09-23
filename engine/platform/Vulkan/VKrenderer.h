@@ -34,6 +34,7 @@
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKcubemapRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
+#include "systems/VKdebugRenderSys.h"
 #include "systems/VKpointLightSys.h"
 #include "systems/VKguiRenderSys.h"
 
@@ -125,6 +126,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemSpriteRenderer>                    m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                  m_RenderSystemSpriteRenderer2D;
         std::unique_ptr<VK_RenderSystemGUIRenderer>                       m_RenderSystemGUIRenderer;
+        std::unique_ptr<VK_RenderSystemDebug>                             m_RenderSystemDebug;
         std::unique_ptr<VK_PointLightSystem>                              m_PointLightSystem;
 
         std::shared_ptr<Imgui> m_Imgui;

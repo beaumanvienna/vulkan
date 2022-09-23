@@ -86,6 +86,10 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> debugDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // spritesheet
@@ -158,6 +162,10 @@ namespace GfxRenderEngine
             shadowDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug =
+        {
+        };
+
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
         auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
@@ -200,6 +208,7 @@ namespace GfxRenderEngine
         }
 
         m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>(m_SwapChain->GetShadowRenderPass(), descriptorSetLayoutsShadow);
+        m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDebug);
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
@@ -593,6 +602,7 @@ namespace GfxRenderEngine
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_PointLightSystem->Render(m_FrameInfo, registry);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo);
         }
     }
 
@@ -676,7 +686,9 @@ namespace GfxRenderEngine
             "skybox.vert",
             "skybox.frag",
             "shadowShader.vert",
-            "shadowShader.frag"
+            "shadowShader.frag",
+            "debug.vert",
+            "debug.frag"
         };
 
         for (auto& filename : shaderFilenames)
