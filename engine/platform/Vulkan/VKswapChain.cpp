@@ -95,8 +95,8 @@ namespace GfxRenderEngine
             vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews[i], nullptr);
             vkDestroyImage(m_Device->Device(), m_ShadowDepthImages[i], nullptr);
             vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys[i], nullptr);
+            vkDestroySampler(m_Device->Device(), m_ShadowDepthSamplers[i], nullptr);
         }
-        vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler, nullptr);
 
         for (auto framebuffer : m_3DFramebuffers)
         {
@@ -1046,7 +1046,7 @@ namespace GfxRenderEngine
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = static_cast<uint>(ShadowRenderTargets::ATTACHMENT_DEPTH);
@@ -1119,6 +1119,7 @@ namespace GfxRenderEngine
         m_ShadowDepthImages.resize(ImageCount());
         m_ShadowDepthImageMemorys.resize(ImageCount());
         m_ShadowDepthImageViews.resize(ImageCount());
+        m_ShadowDepthSamplers.resize(ImageCount());
 
         for (int i = 0; i < m_ShadowDepthImages.size(); i++)
         {
@@ -1159,29 +1160,29 @@ namespace GfxRenderEngine
             {
                 LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
             }
-        }
 
-        VkSamplerCreateInfo samplerCreateInfo{};
-        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
-        samplerCreateInfo.mipLodBias = 0.0f;
-        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = 1;
-        samplerCreateInfo.maxAnisotropy = 4.0;
-        samplerCreateInfo.anisotropyEnable = VK_TRUE;
-        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+            VkSamplerCreateInfo samplerCreateInfo{};
+            samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+            samplerCreateInfo.mipLodBias = 0.0f;
+            samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            samplerCreateInfo.minLod = 0.0f;
+            samplerCreateInfo.maxLod = 1;
+            samplerCreateInfo.maxAnisotropy = 4.0;
+            samplerCreateInfo.anisotropyEnable = VK_TRUE;
+            samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
-        {
-            auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSampler);
-            if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create sampler!");
+                auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSamplers[i]);
+                if (result != VK_SUCCESS)
+                {
+                    LOG_CORE_CRITICAL("failed to create sampler!");
+                }
             }
         }
     }

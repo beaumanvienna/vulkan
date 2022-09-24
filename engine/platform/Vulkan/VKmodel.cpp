@@ -593,9 +593,9 @@ namespace GfxRenderEngine
         {
             VkDescriptorImageInfo shadowMapInfo {};
             {
-                shadowMapInfo.sampler     = VK_Renderer::m_SwapChain->GetSamplerShadowMap();
+                shadowMapInfo.sampler     = VK_Renderer::m_SwapChain->GetSamplerShadowMap(i);
                 shadowMapInfo.imageView   = VK_Renderer::m_SwapChain->GetImageViewShadowMap(i);
-                shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             }
 
             VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
