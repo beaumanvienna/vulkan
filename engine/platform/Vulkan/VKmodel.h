@@ -98,6 +98,10 @@ namespace GfxRenderEngine
 
     private:
 
+        void DrawShadowInternal(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, const PrimitiveTmp& primitive);
+
+    private:
+
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
 

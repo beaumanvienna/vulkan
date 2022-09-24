@@ -3,6 +3,10 @@
 
 glTF-files :
     application/lucre/models/external_3D_files/dune/dune.gltf:
+    application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf:
+        translation: [-1.45089197, 1.83839178, -0.818715811]
+        scale: [0.0099999439, 0.0100000137, 0.0100000398]
+        rotation: [2.43685675, -1.51297379, 2.68868923]
     application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
         translation: [-2.07932615, 1.24600148, -1.00711334]
         scale: [0.49999997, 0.499972969, 0.499979705]

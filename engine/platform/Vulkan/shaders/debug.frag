@@ -33,12 +33,13 @@ layout (location = 0) out vec4 outColor;
 void main()
 {
     vec4 depthValue = texture(shadowMapTexture,fragUV);
-    if (depthValue.x > 0.9)
+    if (depthValue.x == 1.0)
     {
-        outColor = vec4(1.0, 1.0, depthValue.x, 1.0);
+        outColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
     else
     {
         outColor = vec4(0.0, 0.0, depthValue.x, 1.0);
     }
+    //outColor = vec4(vec3(1.0 - (1.0 - depthValue) * 100.0), 1.0);
 }

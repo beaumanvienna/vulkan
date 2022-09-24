@@ -131,6 +131,20 @@ namespace LucreApp
             auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(20.0f);
         }
+        {
+            m_Lightbulb = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
+            m_LightView = std::make_shared<Camera>();
+            
+            m_LightView->SetPerspectiveProjection
+            (
+                glm::radians(50.0f),
+                1.0f, //aspectRatio
+                0.1f, // near
+                50.0f // far
+            );
+            
+            SetLightView();
+        }
     }
 
     void BeachScene::LoadScripts()
@@ -166,12 +180,11 @@ namespace LucreApp
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
         }
 
-        {
-            AnimateHero(timestep);
-        }
+        AnimateHero(timestep);
+        SetLightView();
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->BeginFrame(m_LightView.get());
         m_Renderer->SubmitShadows(m_Registry);
         m_Renderer->Renderpass3D(&m_CameraController->GetCamera(), m_Registry);
 
@@ -260,5 +273,15 @@ namespace LucreApp
 
         deltaX += deformX * timestep;
         heroTransform.SetScale({deltaX, deltaY, deltaZ});
+    }
+
+    void BeachScene::SetLightView()
+    {
+        auto view = m_Registry.view<TransformComponent>();
+        auto& lightbulbTransform  = view.get<TransformComponent>(m_Lightbulb);
+
+        glm::vec3 position  = lightbulbTransform.GetTranslation();
+        glm::vec3 rotation  = lightbulbTransform.GetRotation();
+        m_LightView->SetViewYXZ(position, rotation);
     }
 }
