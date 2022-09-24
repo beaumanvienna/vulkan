@@ -25,13 +25,20 @@
 // inputs
 layout(location = 0)      in vec2  fragUV;
 
-layout(set = 0, binding = 0) uniform sampler2D tex1;
+layout(set = 0, binding = 0) uniform sampler2D shadowMapTexture;
 
 // outputs
 layout (location = 0) out vec4 outColor;
 
 void main()
 {
-    vec4 depthValue = texture(tex1,fragUV);
-    outColor = vec4(depthValue.x, depthValue.y, 1.0, 1.0);
+    vec4 depthValue = texture(shadowMapTexture,fragUV);
+    if (depthValue.x > 0.9)
+    {
+        outColor = vec4(1.0, 1.0, depthValue.x, 1.0);
+    }
+    else
+    {
+        outColor = vec4(0.0, 0.0, depthValue.x, 1.0);
+    }
 }

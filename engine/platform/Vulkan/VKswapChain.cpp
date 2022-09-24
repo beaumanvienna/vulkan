@@ -1042,7 +1042,7 @@ namespace GfxRenderEngine
         depthAttachment.format = FindDepthFormat();
         depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1067,15 +1067,15 @@ namespace GfxRenderEngine
         constexpr uint NUMBER_OF_DEPENDENCIES = 2;
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
-        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                            // Index of the render pass being depended upon by dstSubpass
-        dependencies[0].dstSubpass      = 0;                                              // The index of the render pass depending on srcSubpass
-        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;          // What pipeline stage must have completed for the dependency
-        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;     // What pipeline stage is waiting on the dependency
-        dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                      // What access scopes influence the dependency
-        dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;   // What access scopes are waiting on the dependency
-        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                    // Other configuration about the dependency
+        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                                // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW); // The index of the render pass depending on srcSubpass
+        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;              // What pipeline stage must have completed for the dependency
+        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;         // What pipeline stage is waiting on the dependency
+        dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                          // What access scopes influence the dependency
+        dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;       // What access scopes are waiting on the dependency
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                        // Other configuration about the dependency
 
-        dependencies[1].srcSubpass      = 0;
+        dependencies[1].srcSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW);
         dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
         dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
         dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -1134,7 +1134,7 @@ namespace GfxRenderEngine
             imageInfo.format = depthFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
@@ -1173,7 +1173,7 @@ namespace GfxRenderEngine
             samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
             samplerCreateInfo.minLod = 0.0f;
             samplerCreateInfo.maxLod = 1;
-            samplerCreateInfo.maxAnisotropy = 4.0;
+            samplerCreateInfo.maxAnisotropy = 1.0;
             samplerCreateInfo.anisotropyEnable = VK_TRUE;
             samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
