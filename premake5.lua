@@ -166,6 +166,9 @@ project "lucre"
         symbols "On"
         kind "ConsoleApp"
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-g -Og" }
+
     filter { "configurations:Release" }
         defines { "NDEBUG" }
         optimize "On"

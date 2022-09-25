@@ -74,6 +74,9 @@ project "SpriteSheetGenerator"
         defines { "DEBUG" }
         symbols "On"
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-g -Og" }
+
     filter "configurations:Release"
         defines { "NDEBUG" }
         optimize "On"

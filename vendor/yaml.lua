@@ -29,6 +29,9 @@ project "yaml-cpp"
         runtime "Debug"
         symbols "on"
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-g -Og" }
+
     filter "configurations:Release"
         runtime "Release"
         optimize "on"
