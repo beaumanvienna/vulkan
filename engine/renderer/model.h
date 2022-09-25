@@ -128,14 +128,6 @@ namespace GfxRenderEngine
         CubemapMaterial m_CubemapMaterial;
     };
 
-    struct PrimitiveShadowMap
-    {
-        ~PrimitiveShadowMap();
-        uint m_FirstVertex;
-        uint m_VertexCount;
-        ShadowMapMaterial m_ShadowMapMaterial;
-    };
-
     class Builder
     {
 

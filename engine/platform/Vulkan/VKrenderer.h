@@ -101,7 +101,6 @@ namespace GfxRenderEngine
     public:
 
         static std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
-        static std::unique_ptr<VK_SwapChain> m_SwapChain;
 
     private:
 
@@ -110,12 +109,14 @@ namespace GfxRenderEngine
         void RecreateSwapChain();
         void CompileShaders();
         void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
+        void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
 
     private:
 
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
+        std::unique_ptr<VK_SwapChain> m_SwapChain;
 
         std::unique_ptr<VK_RenderSystemShadow>                            m_RenderSystemShadow;
         std::unique_ptr<VK_RenderSystemPbrNoMap>                          m_RenderSystemPbrNoMap;
@@ -141,6 +142,7 @@ namespace GfxRenderEngine
         bool m_FrameInProgress;
         VK_FrameInfo m_FrameInfo;
 
+        std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
 
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
@@ -148,6 +150,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets;
         std::vector<VkDescriptorSet> m_LightingDescriptorSets;
 
         float m_AmbientLightIntensity;

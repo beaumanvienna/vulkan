@@ -66,8 +66,6 @@ namespace GfxRenderEngine
     
     PrimitiveCubemap::~PrimitiveCubemap() {}
 
-    PrimitiveShadowMap::~PrimitiveShadowMap() {}
-
     float Model::m_NormalMapIntensity = 1.0f;
 
     bool Vertex::operator==(const Vertex& other) const

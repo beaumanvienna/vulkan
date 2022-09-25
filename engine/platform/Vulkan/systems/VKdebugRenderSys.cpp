@@ -28,15 +28,16 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDebug::VK_RenderSystemDebug(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemDebug::VK_RenderSystemDebug
+    (
+        VkRenderPass renderPass,
+        std::vector<VkDescriptorSetLayout>& descriptorSetLayouts,
+        const VkDescriptorSet* shadowMapDescriptorSet
+    )
     {
         CreatePipelineLayout(descriptorSetLayouts);
+        m_ShadowMapDescriptorSets = shadowMapDescriptorSet;
         CreatePipeline(renderPass);
-
-        m_PrimitiveShadowMap.m_FirstVertex = 0;
-        m_PrimitiveShadowMap.m_VertexCount = 6;
-
-        VK_Model::CreateDescriptorSet(m_PrimitiveShadowMap.m_ShadowMapMaterial);
     }
 
     VK_RenderSystemDebug::~VK_RenderSystemDebug()
@@ -78,25 +79,29 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemDebug::RenderEntities(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemDebug::RenderEntities(const VK_FrameInfo& frameInfo, uint currentImageIndex)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        VkDescriptorSet localDescriptorSet = m_PrimitiveShadowMap.m_ShadowMapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+        std::vector<VkDescriptorSet> localDescriptorSet = 
+        {
+            m_ShadowMapDescriptorSets[currentImageIndex]
+        };
+
         vkCmdBindDescriptorSets
         (
             frameInfo.m_CommandBuffer,         // VkCommandBuffer        commandBuffer
             VK_PIPELINE_BIND_POINT_GRAPHICS,   // VkPipelineBindPoint    pipelineBindPoint
             m_PipelineLayout,                  // VkPipelineLayout       layout
             0,                                 // uint32_t               firstSet
-            1,                                 // uint32_t               descriptorSetCount
-            &localDescriptorSet,               // const VkDescriptorSet* pDescriptorSets
+            localDescriptorSet.size(),         // uint32_t               descriptorSetCount
+            localDescriptorSet.data(),         // const VkDescriptorSet* pDescriptorSets
             0,                                 // uint32_t               dynamicOffsetCount
             nullptr                            // const uint32_t*        pDynamicOffsets
         );
 
         // vertices actually generated in the shader
-        int vertexCount = m_PrimitiveShadowMap.m_VertexCount;
+        int vertexCount = 6;
         vkCmdDraw
         (
             frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer

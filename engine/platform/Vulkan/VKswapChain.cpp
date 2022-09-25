@@ -148,7 +148,7 @@ namespace GfxRenderEngine
 
     VkResult VK_SwapChain::AcquireNextImage(uint *imageIndex)
     {
-            PROFILE_SCOPE("waitFor InFlightFences");
+        PROFILE_SCOPE("waitFor InFlightFences");
         vkWaitForFences(
             m_Device->Device(),
             1,

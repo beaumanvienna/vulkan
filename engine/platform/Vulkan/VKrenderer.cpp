@@ -35,7 +35,6 @@ namespace GfxRenderEngine
     std::shared_ptr<Texture> gTextureFontAtlas;
     
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
-    std::unique_ptr<VK_SwapChain> VK_Renderer::m_SwapChain;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device}, m_FrameCounter{0},
@@ -83,11 +82,11 @@ namespace GfxRenderEngine
             .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2450)
             .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> shadowDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> shadowUniformBufferDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> debugDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        m_ShadowMapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
@@ -160,12 +159,12 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadow =
         {
-            shadowDescriptorSetLayout->GetDescriptorSetLayout()
+            shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug =
         {
-            debugDescriptorSetLayout->GetDescriptorSetLayout()
+            m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         size_t fileSize;
@@ -194,7 +193,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
-            VK_DescriptorWriter(*shadowDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
                 .Build(m_ShadowDescriptorSets[i]);
         }
@@ -210,7 +209,6 @@ namespace GfxRenderEngine
         }
 
         m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>(m_SwapChain->GetShadowRenderPass(), descriptorSetLayoutsShadow);
-        m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDebug);
         m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
@@ -223,6 +221,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
 
         CreateLightingDescriptorSets();
+        CreateShadowMapDescriptorSets();
 
         m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
         (
@@ -230,8 +229,30 @@ namespace GfxRenderEngine
             descriptorSetLayoutsLighting,
             m_LightingDescriptorSets.data()
         );
+        m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
+        (
+            m_SwapChain->GetRenderPass(),
+            descriptorSetLayoutsDebug,
+            m_ShadowMapDescriptorSets.data()
+        );
 
         m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+    }
+
+    void VK_Renderer::CreateShadowMapDescriptorSets()
+    {
+        m_ShadowMapDescriptorSets.resize(m_SwapChain->ImageCount());
+        for (uint i = 0; i < m_SwapChain->ImageCount(); i++)
+        {
+            VkDescriptorImageInfo shadowMapInfo {};
+            shadowMapInfo.sampler     = m_SwapChain->GetSamplerShadowMap(i);
+            shadowMapInfo.imageView   = m_SwapChain->GetImageViewShadowMap(i);
+            shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+            VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, *m_DescriptorPool)
+                .WriteImage(0, &shadowMapInfo)
+                .Build(m_ShadowMapDescriptorSets[i]);
+        }
     }
 
     void VK_Renderer::CreateLightingDescriptorSets()
@@ -290,6 +311,7 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("recreating swapchain at frame {0}", m_FrameCounter);
             std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
             m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, oldSwapChain);
+            CreateShadowMapDescriptorSets();
             CreateLightingDescriptorSets();
             if (!oldSwapChain->CompareSwapFormats(*m_SwapChain.get()))
             {
@@ -604,7 +626,7 @@ namespace GfxRenderEngine
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_PointLightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_CurrentImageIndex);
         }
     }
 
