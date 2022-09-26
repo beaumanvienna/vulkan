@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <unordered_map>
+#include <mutex>
 
 #include "engine.h"
 #include "events/event.h"
@@ -38,7 +38,7 @@ namespace LucreApp
 
         enum class State
         {
-            SPLASH,
+            SPLASH = 0,
             SETTINGS,
             CUTSCENE, // do not change order 
             // insert game levels here
@@ -58,9 +58,6 @@ namespace LucreApp
 
         void EnableUserInput(bool enable);
 
-        Scene& GetScene();
-        Scene& GetScene(State state);
-        Scene& GetNextScene();
         void DeleteScene();
         void PrepareDeleteScene();
         void SetState(State state);
@@ -72,14 +69,21 @@ namespace LucreApp
         State GetNextState() const { return m_NextState; }
         bool UserInputIsInabled() const { return m_UserInputEnabled;}
 
+        Scene* GetScene();
+        Scene* GetScene(State state);
+        Scene* GetNextScene();
+        void DestroyScene(const State state);
+        void SetupScene(const State state, const std::shared_ptr<Scene>& scene);
+
     private:
 
         void Load(State state);
 
     private:
 
+        std::mutex m_Mutex;
         State m_State, m_NextState, m_LastState, m_DeleteScene;
-        std::unordered_map<State, std::unique_ptr<Scene>> m_Scenes;
+        std::shared_ptr<Scene> m_Scenes[static_cast<int>(State::MAX_STATES)];
         bool m_UserInputEnabled;
         bool m_InputIdle;
         bool m_StateLoaded[static_cast<int>(State::MAX_STATES)];

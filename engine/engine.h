@@ -46,7 +46,7 @@ int engine(int argc, char* argv[]);
 #undef CreateWindow
 
 #define ASSERT(x) if (!(x)) std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
-#define member_size(type, member) sizeof(((type *)0)->member)
+#define MEMBER_SIZE(type, member) sizeof(type::member)
 #define BIT(x) (1 << (x))
 
 #define LOG_CORE_TRACE(...)     GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)

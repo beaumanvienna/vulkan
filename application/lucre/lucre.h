@@ -58,7 +58,7 @@ namespace LucreApp
 
         void PlaySound(int resourceID);
         UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
-        Scene& GetScene() override { return m_GameState.GetScene(); }
+        Scene* GetScene() override { return m_GameState.GetScene(); }
         GameState::State GetState() const { return m_GameState.GetState(); }
         bool KeyboardInputIsReleased() const { return !m_GUIisRunning; }
 

@@ -42,7 +42,7 @@ namespace GfxRenderEngine
         virtual void Shutdown() = 0;
         virtual void OnUpdate(const Timestep& timestep) = 0;
         virtual void OnEvent(Event& event) = 0;
-        virtual Scene& GetScene() = 0;
+        virtual Scene* GetScene() = 0;
 
         static std::shared_ptr<Application> Create();
 

@@ -56,7 +56,7 @@ namespace LucreApp
         m_Spritesheet = &m_Atlas;
 
         m_GameState.Start();
-        m_CurrentScene = &m_GameState.GetScene();
+        m_CurrentScene = m_GameState.GetScene();
 
         m_UI = new UI("UI");
         Engine::m_Engine->PushLayer(m_UI);
@@ -229,7 +229,7 @@ namespace LucreApp
                 // show cut scene only for game levels
                 if (static_cast<int>(event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
                 {
-                    m_GameState.GetScene(GameState::State::CUTSCENE).ResetTimer();
+                    m_GameState.GetScene(GameState::State::CUTSCENE)->ResetTimer();
                     m_GameState.SetState(GameState::State::CUTSCENE);
                     m_GameState.SetNextState(event.GetScene());
                 }

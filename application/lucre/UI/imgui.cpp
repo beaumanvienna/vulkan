@@ -53,10 +53,10 @@ namespace LucreApp
         uint contextWidth  = Engine::m_Engine->GetWindowWidth();
         uint contextHeight = Engine::m_Engine->GetWindowHeight();
 
-        auto& currentScene = Lucre::m_Application->GetScene();
-        auto& camera       = currentScene.GetCamera();
-        auto& registry     = currentScene.GetRegistry();
-        auto& dictionary   = currentScene.GetDictionary();
+        auto  currentScene = Lucre::m_Application->GetScene();
+        auto& camera       = currentScene->GetCamera();
+        auto& registry     = currentScene->GetRegistry();
+        auto& dictionary   = currentScene->GetDictionary();
 
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(contextWidth, contextHeight));

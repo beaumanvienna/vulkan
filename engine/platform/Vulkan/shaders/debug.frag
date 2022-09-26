@@ -30,16 +30,18 @@ layout(set = 0, binding = 0) uniform sampler2D shadowMapTexture;
 // outputs
 layout (location = 0) out vec4 outColor;
 
+float near = 0.1; 
+float far  = 50.0; 
+  
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
 void main()
 {
     vec4 depthValue = texture(shadowMapTexture,fragUV);
-    if (depthValue.x == 1.0)
-    {
-        outColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
-    else
-    {
-        outColor = vec4(0.0, 0.0, depthValue.x, 1.0);
-    }
-    //outColor = vec4(vec3(1.0 - (1.0 - depthValue) * 100.0), 1.0);
+    float blue = LinearizeDepth(depthValue.x);
+    outColor = vec4(0.0, 0.0, blue, 1.0);
 }

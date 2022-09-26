@@ -335,8 +335,8 @@ namespace GfxRenderEngine
 
     void Engine::RunScripts(std::shared_ptr<GfxRenderEngine::Application> application)
     {
-        auto& currentScene = application->GetScene();
-        auto& registry = currentScene.GetRegistry();
+        auto currentScene = application->GetScene();
+        auto& registry = currentScene->GetRegistry();
 
         auto view = registry.view<ScriptComponent>();
         for (auto entity : view)
@@ -358,7 +358,7 @@ namespace GfxRenderEngine
                     }
                 }
                 log.push_back(static_cast<uint>(entity));
-                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity), currentScene.GetDictionary().GetLongName(entity));
+                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity), currentScene->GetDictionary().GetLongName(entity));
             }
         }
     }

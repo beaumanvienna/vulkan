@@ -31,6 +31,8 @@
 #include "scenes/beachScene.h"
 #include "scenes/settingsScene.h"
 
+#define MULTI_THREADED
+
 namespace LucreApp
 {
 
@@ -43,7 +45,7 @@ namespace LucreApp
 
     void GameState::Start()
     {
-        // the splash and cutscene are loaded upfront
+        // the splash, cutscene, and settings scene are loaded upfront
         Load(State::SPLASH);
         Load(State::CUTSCENE);
         Load(State::SETTINGS);
@@ -54,7 +56,7 @@ namespace LucreApp
 
     void GameState::Stop()
     {
-        GetScene().Stop();
+        GetScene()->Stop();
     }
 
     std::string GameState::StateToString(State state) const
@@ -100,7 +102,7 @@ namespace LucreApp
         {
             case State::SPLASH:
             {
-                if (GetScene().IsFinished() && IsLoaded(GetNextState()))
+                if (GetScene()->IsFinished() && IsLoaded(GetNextState()))
                 {
                     SetState(GetNextState());
                 }
@@ -108,7 +110,7 @@ namespace LucreApp
             }
             case State::CUTSCENE:
             {
-                if (GetScene().IsFinished() && IsLoaded(GetNextState()))
+                if (GetScene()->IsFinished() && IsLoaded(GetNextState()))
                 {
                     SetState(GetNextState());
                 }
@@ -117,7 +119,7 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                if (GetScene().IsFinished())
+                if (GetScene()->IsFinished())
                 {
                     // game over
                     Engine::m_Engine->Shutdown();
@@ -126,7 +128,7 @@ namespace LucreApp
             }
             case State::BEACH:
             {
-                if (GetScene().IsFinished())
+                if (GetScene()->IsFinished())
                 {
                     // game over
                     Engine::m_Engine->Shutdown();
@@ -135,22 +137,22 @@ namespace LucreApp
             }
             case State::SETTINGS:
             {
-                if (GetScene().IsFinished())
+                if (GetScene()->IsFinished())
                 {
                     SetState(m_LastState);
                 }
                 break;
             }
         }
-        return m_Scenes[m_State].get();
+        return GetScene(m_State);
     }
 
     void GameState::SetState(State state)
     {
         m_LastState = m_State;
         m_State = state;
-        GetScene().SetRunning();
-        GetScene().OnResize();
+        GetScene()->SetRunning();
+        GetScene()->OnResize();
         PrepareDeleteScene();
     }
 
@@ -158,24 +160,6 @@ namespace LucreApp
     {
         m_NextState = state;
         if (!IsLoaded(state)) Load(state);
-    }
-
-    Scene& GameState::GetScene()
-    {
-        auto& scene_ptr = m_Scenes[m_State];
-        return *scene_ptr;
-    }
-
-    Scene& GameState::GetScene(State state)
-    {
-        auto& scene_ptr = m_Scenes[state];
-        return *scene_ptr;
-    }
-
-    Scene& GameState::GetNextScene()
-    {
-        auto& scene_ptr = m_Scenes[m_NextState];
-        return *scene_ptr;
     }
 
     void GameState::PrepareDeleteScene()
@@ -195,67 +179,83 @@ namespace LucreApp
 
     void GameState::DeleteScene()
     {
-        if (m_StateLoaded[static_cast<int>(m_DeleteScene)])
+        if (IsLoaded(m_DeleteScene))
         {
             if (m_DeleteSceneCounter > 0)
             {
+                // a delay to wait a few frames
+                // so the GPU is using it no longer
                 m_DeleteSceneCounter--;
             }
             else
             {
-                m_StateLoaded[static_cast<int>(m_DeleteScene)] = false;
-                m_Scenes.erase(m_DeleteScene);
+                DestroyScene(m_DeleteScene);
             }
         }
     }
 
     void GameState::Load(GameState::State state)
     {
-        if (m_Scenes[state]) return;
+        ASSERT(!IsLoaded(state));
         switch(state)
         {
             case State::SPLASH:
             {
-                m_Scenes[state] = std::make_unique<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
-                m_Scenes[state]->Start();
+                auto scenePtr = std::make_shared<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
+                SetupScene(state, scenePtr);
+                GetScene(state)->Start();
                 SetLoaded(state);
                 break;
             }
             case State::MAIN:
             {
+                #ifdef MULTI_THREADED
                 std::thread loadMainSceneThread([=]()
+                #endif
                 {
-                    m_Scenes[state] = std::make_unique<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
-                    m_Scenes[state]->Load();
-                    m_Scenes[state]->Start();
+                    auto scenePtr = std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
                     SetLoaded(state);
-                });
+                }
+                #ifdef MULTI_THREADED
+                );
+                #endif
                 loadMainSceneThread.detach();
                 break;
             }
             case State::BEACH:
             {
+                #ifdef MULTI_THREADED
                 std::thread loadBeachSceneThread([=]()
+                #endif
                 {
-                    m_Scenes[state] = std::make_unique<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
-                    m_Scenes[state]->Load();
-                    m_Scenes[state]->Start();
+                    auto scenePtr = std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
                     SetLoaded(state);
-                });
+                }
+                #ifdef MULTI_THREADED
+                );
+                #endif
                 loadBeachSceneThread.detach();
                 break;
             }
             case State::CUTSCENE:
             {
-                m_Scenes[state] = std::make_unique<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene");
-                m_Scenes[state]->Start();
+                auto scenePtr = std::make_shared<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene");
+                SetupScene(state, scenePtr);
+                GetScene(state)->Start();
                 SetLoaded(state);
                 break;
             }
             case State::SETTINGS:
             {
-                m_Scenes[state] = std::make_unique<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
-                m_Scenes[state]->Start();
+                auto scenePtr = std::make_shared<CutScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
+                SetupScene(state, scenePtr);
+                GetScene(state)->Start();
                 SetLoaded(state);
                 break;
             }
@@ -265,18 +265,50 @@ namespace LucreApp
         }
     }
 
+    void GameState::EnableUserInput(bool enable)
+    {
+        m_UserInputEnabled = enable;
+    }
+
+    Scene* GameState::GetScene()
+    {
+        return GetScene(m_State);
+    }
+
+    Scene* GameState::GetNextScene()
+    {
+        return GetScene(m_NextState);
+    }
+
+    Scene* GameState::GetScene(State state)
+    {
+        std::lock_guard lock(m_Mutex);
+        auto scene_ptr = m_Scenes[static_cast<int>(state)].get();
+        return scene_ptr;
+    }
+
     bool GameState::IsLoaded(State state)
     {
+        std::lock_guard lock(m_Mutex);
         return m_StateLoaded[static_cast<int>(state)];
     }
 
     void GameState::SetLoaded(State state, bool isLoaded)
     {
+        std::lock_guard lock(m_Mutex);
         m_StateLoaded[static_cast<int>(state)] = isLoaded;
     }
 
-    void GameState::EnableUserInput(bool enable)
+    void GameState::SetupScene(const State state, const std::shared_ptr<Scene>& scene)
     {
-        m_UserInputEnabled = enable;
+        std::lock_guard lock(m_Mutex);
+        m_Scenes[static_cast<int>(state)] = scene;
+    }
+
+    void GameState::DestroyScene(const State state)
+    {
+        std::lock_guard lock(m_Mutex);
+        m_StateLoaded[static_cast<int>(state)] = false;
+        m_Scenes[static_cast<int>(state)] = nullptr;
     }
 }
