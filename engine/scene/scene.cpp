@@ -73,4 +73,13 @@ namespace GfxRenderEngine
         m_Registry.emplace<PointLightComponent>(pointLight, pointLightComponent);
         return pointLight;
     }
+
+    entt::entity Scene::CreateDirectionalLight(const float intensity, const glm::vec3& color)
+    {
+        entt::entity directionlLight = CreateEntity();
+
+        DirectionalLightComponent directionlLightComponent{intensity, color};
+        m_Registry.emplace<DirectionalLightComponent>(directionlLight, directionlLightComponent);
+        return directionlLight;
+    }
 }

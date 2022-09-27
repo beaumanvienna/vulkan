@@ -79,6 +79,7 @@ namespace LucreApp
         // game objects
         entt::entity m_Camera, m_Dune, m_Skybox, m_Hero, m_Lightbulb;
         entt::entity m_PointLight[MAX_LIGHTS];
+        entt::entity m_DirectionalLight;
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;

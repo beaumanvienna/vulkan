@@ -101,6 +101,13 @@ namespace LucreApp
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
+        {
+            float intensity = 5.0f;
+            glm::vec3 color{1.0f, 1.0f, 1.0f};
+            m_DirectionalLight = CreateDirectionalLight(intensity, color);
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(m_DirectionalLight, transform);
+        }
     }
 
     void BeachScene::Load()
@@ -283,5 +290,9 @@ namespace LucreApp
         glm::vec3 position  = lightbulbTransform.GetTranslation();
         glm::vec3 rotation  = lightbulbTransform.GetRotation();
         m_LightView->SetViewYXZ(position, rotation);
+
+        auto directionalLightView = m_Registry.view<DirectionalLightComponent, TransformComponent>();
+        auto& directionalLightTransform  = directionalLightView.get<TransformComponent>(m_DirectionalLight);
+        directionalLightTransform.SetMat4(lightbulbTransform.GetMat4());
     }
 }

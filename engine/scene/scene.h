@@ -66,6 +66,8 @@ namespace GfxRenderEngine
 
         entt::entity CreatePointLight(const float intensity = 1.0f, const float radius = 0.1f,
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
+        entt::entity CreateDirectionalLight(const float intensity = 1.0f, 
+                                            const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
 
         bool IsFinished() const { return !m_IsRunning; }
         void SetRunning() { m_IsRunning = true; }

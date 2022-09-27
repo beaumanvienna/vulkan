@@ -139,41 +139,62 @@ namespace GfxRenderEngine
     void VK_PointLightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
     {
         PROFILE_SCOPE("VK_PointLightSystem::Update");
-        m_SortedLight.clear();
-        int lightIndex = 0;
-        auto view = registry.view<PointLightComponent, TransformComponent>();
-        for (auto entity : view)
         {
-            auto& transform  = view.get<TransformComponent>(entity);
-            auto& pointLight = view.get<PointLightComponent>(entity);
+            m_SortedLight.clear();
+            int lightIndex = 0;
+            auto view = registry.view<PointLightComponent, TransformComponent>();
+            for (auto entity : view)
+            {
+                auto& transform  = view.get<TransformComponent>(entity);
+                auto& pointLight = view.get<PointLightComponent>(entity);
 
-            ASSERT(lightIndex < MAX_LIGHTS);
+                ASSERT(lightIndex < MAX_LIGHTS);
 
-            auto cameraPosition = frameInfo.m_Camera->GetPosition();
-            auto lightPosition  = transform.GetTranslation();
-            auto distanceVec    = cameraPosition-lightPosition;
-            float distanceToCam = glm::dot(distanceVec,distanceVec);
+                auto cameraPosition = frameInfo.m_Camera->GetPosition();
+                auto lightPosition  = transform.GetTranslation();
+                auto distanceVec    = cameraPosition-lightPosition;
+                float distanceToCam = glm::dot(distanceVec,distanceVec);
 
-            m_SortedLight.insert({distanceToCam, entity});
+                m_SortedLight.insert({distanceToCam, entity});
 
-            lightIndex++;
+                lightIndex++;
+            }
+
+            std::map<float, entt::entity>::reverse_iterator it;
+            lightIndex = 0;
+            for (it = m_SortedLight.rbegin(); it != m_SortedLight.rend(); it++)
+            {
+                auto entity = it->second;
+                auto& transform  = view.get<TransformComponent>(entity);
+                auto& pointLight = view.get<PointLightComponent>(entity);
+
+                // copy light to ubo
+                ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 1.f);
+                ubo.m_PointLights[lightIndex].m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
+
+                lightIndex++;
+            }
+
+            ubo.m_NumberOfActivePointLights = lightIndex;
         }
-
-        std::map<float, entt::entity>::reverse_iterator it;
-        lightIndex = 0;
-        for (it = m_SortedLight.rbegin(); it != m_SortedLight.rend(); it++)
         {
-            auto entity = it->second;
-            auto& transform  = view.get<TransformComponent>(entity);
-            auto& pointLight = view.get<PointLightComponent>(entity);
-
-            // copy light to ubo
-            ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 1.f);
-            ubo.m_PointLights[lightIndex].m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
-
-            lightIndex++;
+            int lightIndex = 0;
+            auto view = registry.view<DirectionalLightComponent, TransformComponent>();
+            for (auto entity : view)
+            {
+                auto& transform  = view.get<TransformComponent>(entity);
+                auto& directionalLight = view.get<DirectionalLightComponent>(entity);
+        
+                ASSERT(lightIndex < MAX_LIGHTS);
+        
+                // copy light to ubo
+                ubo.m_DirectionalLight.m_Position = glm::vec4(transform.GetTranslation(), 1.f);
+                ubo.m_DirectionalLight.m_Color = glm::vec4(directionalLight.m_Color, directionalLight.m_LightIntensity);
+        
+                lightIndex++;
+            }
+        
+            ubo.m_NumberOfActiveDirectionalLights = lightIndex;
         }
-
-        ubo.m_NumberOfActivePointLights = lightIndex;
     }
 }
