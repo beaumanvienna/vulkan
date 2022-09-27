@@ -38,7 +38,7 @@ namespace GfxRenderEngine
 
     struct DirectionalLight
     {
-        glm::vec4 m_Position{};  // ignore w
+        glm::vec4 m_Direction{};  // ignore w
         glm::vec4 m_Color{};     // w is intensity
     };
 

@@ -40,7 +40,7 @@ struct PointLight
 
 struct DirectionalLight
 {
-    vec4 m_Position;  // ignore w
+    vec4 m_Direction;  // ignore w
     vec4 m_Color;     // w is intensity
 };
 

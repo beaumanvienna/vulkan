@@ -169,7 +169,7 @@ namespace GfxRenderEngine
                 auto& pointLight = view.get<PointLightComponent>(entity);
 
                 // copy light to ubo
-                ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 1.f);
+                ubo.m_PointLights[lightIndex].m_Position = glm::vec4(transform.GetTranslation(), 0.0f);
                 ubo.m_PointLights[lightIndex].m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
 
                 lightIndex++;
@@ -188,7 +188,7 @@ namespace GfxRenderEngine
                 ASSERT(lightIndex < MAX_LIGHTS);
         
                 // copy light to ubo
-                ubo.m_DirectionalLight.m_Position = glm::vec4(transform.GetTranslation(), 1.f);
+                ubo.m_DirectionalLight.m_Direction = glm::vec4(transform.GetRotation(), 0.0f);
                 ubo.m_DirectionalLight.m_Color = glm::vec4(directionalLight.m_Color, directionalLight.m_LightIntensity);
         
                 lightIndex++;
