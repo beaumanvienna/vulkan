@@ -48,7 +48,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     // point light
     vec4 m_AmbientLightColor;
     PointLight m_PointLights[MAX_LIGHTS];
-    int m_NumberOfActiveLights;
+    int m_NumberOfActivePointLights;
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;

@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         // point light
         glm::vec4 m_AmbientLightColor{0.0f, 0.0f, 0.0f, 0.0f};
         PointLight m_PointLights[MAX_LIGHTS];
-        int m_NumberOfActiveLights;
+        int m_NumberOfActivePointLights;
     };
 
     struct ShadowUniformBuffer

@@ -174,6 +174,6 @@ namespace GfxRenderEngine
             lightIndex++;
         }
 
-        ubo.m_NumberOfActiveLights = lightIndex;
+        ubo.m_NumberOfActivePointLights = lightIndex;
     }
 }

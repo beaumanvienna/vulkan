@@ -49,7 +49,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     // point light
     vec4 m_AmbientLightColor;
     PointLight m_PointLights[MAX_LIGHTS];
-    int m_NumberOfActiveLights;
+    int m_NumberOfActivePointLights;
 } ubo;
 
 layout(set = 0, binding = 1) uniform sampler2D tex1;
@@ -74,7 +74,7 @@ void main()
     // blinn phong: theta between N and H
     vec3 specularLightColor = vec3(0.0, 0.0, 0.0);
 
-    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
+    for (int i = 0; i < ubo.m_NumberOfActivePointLights; i++)
     {
         PointLight light = ubo.m_PointLights[i];
 

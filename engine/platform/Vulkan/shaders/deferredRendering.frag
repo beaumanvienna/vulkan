@@ -47,7 +47,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     // point light
     vec4 m_AmbientLightColor;
     PointLight m_PointLights[MAX_LIGHTS];
-    int m_NumberOfActiveLights;
+    int m_NumberOfActivePointLights;
 } ubo;
 
 const float PI = 3.14159265359;
@@ -126,7 +126,7 @@ void main()
     // reflectance equation
     vec3 Lo = vec3(0.0);
 
-    for (int i = 0; i < ubo.m_NumberOfActiveLights; i++)
+    for (int i = 0; i < ubo.m_NumberOfActivePointLights; i++)
     {
         PointLight light = ubo.m_PointLights[i];
         // calculate per-light radiance
