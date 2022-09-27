@@ -31,8 +31,13 @@ layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
 layout(location = 7) in vec3  tangent;
 
-
 struct PointLight
+{
+    vec4 m_Position;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
+
+struct DirectionalLight
 {
     vec4 m_Position;  // ignore w
     vec4 m_Color;     // w is intensity
@@ -46,7 +51,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     // point light
     vec4 m_AmbientLightColor;
     PointLight m_PointLights[MAX_LIGHTS];
+    DirectionalLight m_DirectionalLight;
     int m_NumberOfActivePointLights;
+    int m_NumberOfActiveDirectionalLights;
 } ubo;
 
 layout(push_constant) uniform Push

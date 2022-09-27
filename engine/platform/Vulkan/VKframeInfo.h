@@ -36,8 +36,14 @@ namespace GfxRenderEngine
         glm::vec4 m_Color{};     // w is intensity
     };
 
+    struct DirectionalLight
+    {
+        glm::vec4 m_Position{};  // ignore w
+        glm::vec4 m_Color{};     // w is intensity
+    };
+
     // remember alignment requirements!
-    // http s://www.oreilly.com/library/view/opengl-programming-guide/9780132748445/app09lev1sec2.html
+    // https://www.oreilly.com/library/view/opengl-programming-guide/9780132748445/app09lev1sec2.html
     struct GlobalUniformBuffer
     {
         glm::mat4 m_Projection{1.0f};
@@ -46,7 +52,9 @@ namespace GfxRenderEngine
         // point light
         glm::vec4 m_AmbientLightColor{0.0f, 0.0f, 0.0f, 0.0f};
         PointLight m_PointLights[MAX_LIGHTS];
+        DirectionalLight m_DirectionalLight;
         int m_NumberOfActivePointLights;
+        int m_NumberOfActiveDirectionalLights;
     };
 
     struct ShadowUniformBuffer

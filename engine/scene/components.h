@@ -111,6 +111,12 @@ namespace GfxRenderEngine
         glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
     };
 
+    struct DirectionalLightComponent
+    {
+        float m_LightIntensity{1.0f};
+        glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
+    };
+
     struct RigidbodyComponent
     {
         enum Type

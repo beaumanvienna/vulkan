@@ -39,6 +39,12 @@ struct PointLight
     vec4 m_Color;     // w is intensity
 };
 
+struct DirectionalLight
+{
+    vec4 m_Position;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
+
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     mat4 m_Projection;
@@ -47,7 +53,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     // point light
     vec4 m_AmbientLightColor;
     PointLight m_PointLights[MAX_LIGHTS];
+    DirectionalLight m_DirectionalLight;
     int m_NumberOfActivePointLights;
+    int m_NumberOfActiveDirectionalLights;
 } ubo;
 
 const float PI = 3.14159265359;
