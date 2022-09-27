@@ -65,6 +65,7 @@ namespace LucreApp
         void RotateLights(const Timestep& timestep);
         void AnimateHero(const Timestep& timestep);
         void SetLightView();
+        void SetDirectionalLight();
 
     private:
 

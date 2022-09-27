@@ -182,13 +182,12 @@ namespace GfxRenderEngine
             auto view = registry.view<DirectionalLightComponent, TransformComponent>();
             for (auto entity : view)
             {
-                auto& transform  = view.get<TransformComponent>(entity);
                 auto& directionalLight = view.get<DirectionalLightComponent>(entity);
         
                 ASSERT(lightIndex < MAX_LIGHTS);
         
                 // copy light to ubo
-                ubo.m_DirectionalLight.m_Direction = glm::vec4(transform.GetRotation(), 0.0f);
+                ubo.m_DirectionalLight.m_Direction = glm::vec4(directionalLight.m_Direction, 0.0f);
                 ubo.m_DirectionalLight.m_Color = glm::vec4(directionalLight.m_Color, directionalLight.m_LightIntensity);
         
                 lightIndex++;
