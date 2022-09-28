@@ -26,12 +26,12 @@
 #version 450
 #define MAX_LIGHTS 128
 
-layout (input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
-layout (input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
-layout (input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput diffuseMap;
-layout (input_attachment_index = 3, set = 1, binding = 3) uniform subpassInput roughnessMetallicMap;
+layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
+layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
+layout(input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput diffuseMap;
+layout(input_attachment_index = 3, set = 1, binding = 3) uniform subpassInput roughnessMetallicMap;
 
-layout (location = 0) out vec4 outColor;
+layout(location = 0) out vec4 outColor;
 
 struct PointLight
 {
@@ -57,6 +57,14 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActivePointLights;
     int m_NumberOfActiveDirectionalLights;
 } ubo;
+
+layout(set = 0, binding = 3) uniform ShadowUniformBuffer
+{
+    mat4 m_Projection;
+    mat4 m_View;
+} lightUbo;
+
+layout(set = 2, binding = 0) uniform sampler2D shadowMapTexture;
 
 const float PI = 3.14159265359;
 
@@ -172,6 +180,69 @@ void main()
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
 
+    if(ubo.m_NumberOfActiveDirectionalLights > 0)
+    {
+        // calculate radiance for a directional light
+        vec3 L = normalize(-ubo.m_DirectionalLight.m_Direction.xyz);
+        vec3 H = normalize(V + L);
+        float lightIntensity = ubo.m_DirectionalLight.m_Color.w;
+        vec3 radiance = ubo.m_DirectionalLight.m_Color.rgb * lightIntensity;
+
+        // Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);   
+        float G   = GeometrySmith(N, V, L, roughness);  
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+
+        vec3 numerator    = NDF * G * F; 
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
+
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;  
+
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);
+        
+        bool isInShadow = false;
+
+        vec4 lightSpacePosistion = lightUbo.m_Projection * lightUbo.m_View * vec4(fragPosition, 1.0);
+        vec3 lightSpacePosistionNDC = lightSpacePosistion.xyz / lightSpacePosistion.w;
+        if (
+                abs(lightSpacePosistionNDC.x) > 1.0 ||
+                abs(lightSpacePosistionNDC.y) > 1.0 ||
+                abs(lightSpacePosistionNDC.z) > 1.0
+            )
+        {
+            isInShadow = true;
+        }
+        else
+        {
+            // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
+            vec2 shadowMapCoord = lightSpacePosistionNDC.xy * 0.5 + 0.5;
+ 
+            // Check if the sample is in the light or in the shadow
+            vec4 depthValueFromMap = texture(shadowMapTexture, shadowMapCoord);
+            if (lightSpacePosistionNDC.z > depthValueFromMap.x)
+            {
+                isInShadow = true;
+            }
+        }
+
+        // add to outgoing radiance Lo
+        if (!isInShadow)
+        {
+            Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        }
+    }
+
     vec3 color = ambientLightColor + Lo;
 
     // HDR tonemapping
@@ -182,13 +253,4 @@ void main()
 
     // color correction
     outColor.xyz = pow(outColor.xyz, vec3(1.0/1.5)); 
-
-    // debug
-    //outColor = vec4(fragPosition, 1.0);
-    //outColor = vec4(N, 1.0);
-    //outColor = vec4(fragColor, 1.0);
-    //outColor = vec4(roughness, 1.0, 1.0, 1.0);
-    //outColor = vec4(metallic, 1.0, 1.0, 1.0);
-    //outColor = vec4(Lo, 1.0);
-
 }

@@ -53,7 +53,7 @@ vec2 UVs[6] = vec2[]
 void main()
 {
     float size = 0.3;
-    vec2 moveOutOfCenter = vec2(-0.65, 0.0);
+    vec2 moveOutOfCenter = vec2(0.65, 0.65);
     vec2 position = (positions[gl_VertexIndex] * size) + moveOutOfCenter;
     gl_Position   = vec4(position.x, position.y, 0.0, 1.0);
     fragUV        = UVs[gl_VertexIndex];

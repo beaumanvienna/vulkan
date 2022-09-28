@@ -23,7 +23,7 @@
 #include "core.h"
 #include "scene/scene.h"
 
-#include "systems/VKpointLightSys.h"
+#include "systems/VKlightSys.h"
 #include "auxiliary/instrumentation.h"
 
 #include "VKswapChain.h"
@@ -39,19 +39,19 @@ namespace GfxRenderEngine
         float m_Radius;
     };
 
-    VK_PointLightSystem::VK_PointLightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
+    VK_LightSystem::VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
         : m_Device(device)
     {
         CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
         CreatePipeline(renderPass);
     }
 
-    VK_PointLightSystem::~VK_PointLightSystem()
+    VK_LightSystem::~VK_LightSystem()
     {
         vkDestroyPipelineLayout(m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_PointLightSystem::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_LightSystem::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -72,7 +72,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_PointLightSystem::CreatePipeline(VkRenderPass renderPass)
+    void VK_LightSystem::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -95,7 +95,7 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_PointLightSystem::Render(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_LightSystem::Render(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         vkCmdBindDescriptorSets
         (
@@ -136,9 +136,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_PointLightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
+    void VK_LightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
     {
-        PROFILE_SCOPE("VK_PointLightSystem::Update");
+        PROFILE_SCOPE("VK_LightSystem::Update");
         {
             m_SortedLight.clear();
             int lightIndex = 0;
@@ -179,20 +179,20 @@ namespace GfxRenderEngine
         }
         {
             int lightIndex = 0;
-            auto view = registry.view<DirectionalLightComponent, TransformComponent>();
+            auto view = registry.view<DirectionalLightComponent>();
             for (auto entity : view)
             {
                 auto& directionalLight = view.get<DirectionalLightComponent>(entity);
-        
+
                 ASSERT(lightIndex < MAX_LIGHTS);
-        
+
                 // copy light to ubo
                 ubo.m_DirectionalLight.m_Direction = glm::vec4(directionalLight.m_Direction, 0.0f);
                 ubo.m_DirectionalLight.m_Color = glm::vec4(directionalLight.m_Color, directionalLight.m_LightIntensity);
-        
+
                 lightIndex++;
             }
-        
+
             ubo.m_NumberOfActiveDirectionalLights = lightIndex;
         }
     }

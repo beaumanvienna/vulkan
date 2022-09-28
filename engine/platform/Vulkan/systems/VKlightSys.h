@@ -39,16 +39,16 @@
 
 namespace GfxRenderEngine
 {
-    class VK_PointLightSystem
+    class VK_LightSystem
     {
 
     public:
 
-        VK_PointLightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
-        ~VK_PointLightSystem();
+        VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_LightSystem();
 
-        VK_PointLightSystem(const VK_PointLightSystem&) = delete;
-        VK_PointLightSystem& operator=(const VK_PointLightSystem&) = delete;
+        VK_LightSystem(const VK_LightSystem&) = delete;
+        VK_LightSystem& operator=(const VK_LightSystem&) = delete;
 
         void Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry);
         void Render(const VK_FrameInfo& frameInfo, entt::registry& registry);

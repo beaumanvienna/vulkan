@@ -33,10 +33,13 @@ namespace GfxRenderEngine
     (
         VkRenderPass renderPass,
         std::vector<VkDescriptorSetLayout>& ligthingDescriptorSetLayouts,
-        const VkDescriptorSet* lightingDescriptorSet)
+        const VkDescriptorSet* lightingDescriptorSet,
+        const VkDescriptorSet* shadowMapDescriptorSet
+    )
     {
         CreateLightingPipelineLayout(ligthingDescriptorSetLayouts);
         m_LightingDescriptorSets = lightingDescriptorSet;
+        m_ShadowMapDescriptorSets = shadowMapDescriptorSet;
         CreateLightingPipeline(renderPass);
     }
 
@@ -90,10 +93,11 @@ namespace GfxRenderEngine
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 
-        std::vector<VkDescriptorSet> descriptorSets = 
+        std::vector<VkDescriptorSet> descriptorSets =
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_LightingDescriptorSets[currentImageIndex]
+            m_LightingDescriptorSets[currentImageIndex],
+            m_ShadowMapDescriptorSets[currentImageIndex]
         };
 
         vkCmdBindDescriptorSets
@@ -102,7 +106,7 @@ namespace GfxRenderEngine
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             m_LightingPipelineLayout,   // VkPipelineLayout layout
             0,                          // uint32_t         firstSet
-            2,                          // uint32_t         descriptorSetCount
+            descriptorSets.size(),      // uint32_t         descriptorSetCount
             descriptorSets.data(),      // VkDescriptorSet* pDescriptorSets
             0,                          // uint32_t         dynamicOffsetCount
             nullptr                     // const uint32_t*  pDynamicOffsets

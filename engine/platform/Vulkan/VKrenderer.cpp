@@ -33,7 +33,7 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
-    
+
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
 
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
@@ -94,6 +94,7 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // spritesheet
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> diffuseDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -148,7 +149,8 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_LightingDescriptorSetLayout->GetDescriptorSetLayout()
+            m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
@@ -192,24 +194,26 @@ namespace GfxRenderEngine
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorBufferInfo bufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
+            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
-                .WriteBuffer(0, &bufferInfo)
+                .WriteBuffer(0, &shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets[i]);
         }
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
+            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
                 .WriteImage(2, &imageInfo1)
+                .WriteBuffer(3, &shadowUBObufferInfo)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
         m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>(m_SwapChain->GetShadowRenderPass(), descriptorSetLayoutsShadow);
-        m_PointLightSystem                              = std::make_unique<VK_PointLightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
+        m_LightSystem                                   = std::make_unique<VK_LightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
@@ -227,7 +231,8 @@ namespace GfxRenderEngine
         (
             m_SwapChain->GetRenderPass(),
             descriptorSetLayoutsLighting,
-            m_LightingDescriptorSets.data()
+            m_LightingDescriptorSets.data(),
+            m_ShadowMapDescriptorSets.data()
         );
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
@@ -560,7 +565,7 @@ namespace GfxRenderEngine
             ubo.m_Projection = camera->GetProjectionMatrix();
             ubo.m_View = camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
-            m_PointLightSystem->Update(m_FrameInfo, ubo, registry);
+            m_LightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
             m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
@@ -625,7 +630,7 @@ namespace GfxRenderEngine
             m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
-            m_PointLightSystem->Render(m_FrameInfo, registry);
+            m_LightSystem->Render(m_FrameInfo, registry);
             m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_CurrentImageIndex);
         }
     }

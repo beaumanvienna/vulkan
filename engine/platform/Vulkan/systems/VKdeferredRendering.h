@@ -53,7 +53,8 @@ namespace GfxRenderEngine
         (
             VkRenderPass renderPass,
             std::vector<VkDescriptorSetLayout>& lighingDescriptorSetLayouts,
-            const VkDescriptorSet* lightingDescriptorSet
+            const VkDescriptorSet* lightingDescriptorSet,
+            const VkDescriptorSet* shadowMapDescriptorSet
         );
         ~VK_RenderSystemDeferredRendering();
 
@@ -73,6 +74,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Pipeline> m_LightingPipeline;
 
         const VkDescriptorSet* m_LightingDescriptorSets;
+        const VkDescriptorSet* m_ShadowMapDescriptorSets;
 
     };
 }
