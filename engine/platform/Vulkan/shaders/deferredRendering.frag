@@ -210,8 +210,7 @@ void main()
 
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
-        
-        bool isInShadow = false;
+        float shadowPercentage;
 
         vec4 lightSpacePosistion = lightUbo.m_Projection * lightUbo.m_View * vec4(fragPosition, 1.0);
         vec3 lightSpacePosistionNDC = lightSpacePosistion.xyz / lightSpacePosistion.w;
@@ -221,26 +220,45 @@ void main()
                 abs(lightSpacePosistionNDC.z) > 1.0
             )
         {
-            isInShadow = true;
+            shadowPercentage = 0.0;
         }
         else
         {
             // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
             vec2 shadowMapCoord = lightSpacePosistionNDC.xy * 0.5 + 0.5;
- 
-            // Check if the sample is in the light or in the shadow
-            vec4 depthValueFromMap = texture(shadowMapTexture, shadowMapCoord);
-            if (lightSpacePosistionNDC.z > depthValueFromMap.x)
+
+            int PCF_SIZE = 3;
+            int SHADOWMAP_SIZE = 4096;
+
+            // compute total number of samples to take from the shadow map
+            int pcfSizeMinus1 = int(PCF_SIZE - 1);
+            float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
+            float numSamples = kernelSize * kernelSize;
+
+            // Counter for the shadow map samples not in the shadow
+            float litCount = 0.0;
+
+            // Take samples from the shadow map
+            float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE;
+            for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
             {
-                isInShadow = true;
+                for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
+                {
+                    // Compute coordinate for this PFC sample
+                    vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
+
+                    // Check if the sample is in light or in the shadow
+                    if (lightSpacePosistionNDC.z <= texture(shadowMapTexture, pcfCoordinate).x)
+                    {
+                        litCount += 1.0;
+                    }
+                }
             }
+            shadowPercentage = litCount / numSamples;
         }
 
         // add to outgoing radiance Lo
-        if (!isInShadow)
-        {
-            Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-        }
+        Lo += (kD * fragColor / PI + specular) * radiance * NdotL * shadowPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
 
     vec3 color = ambientLightColor + Lo;
