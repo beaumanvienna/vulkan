@@ -69,6 +69,11 @@ namespace GfxRenderEngine
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = (uint)VK_SwapChain::SubPassesShadow::SUBPASS_SHADOW;
 
+        pipelineConfig.rasterizationInfo.depthBiasEnable = VK_TRUE;
+        pipelineConfig.rasterizationInfo.depthBiasConstantFactor = 4.0f;  // Optional
+        pipelineConfig.rasterizationInfo.depthBiasClamp = 0.0f;           // Optional
+        pipelineConfig.rasterizationInfo.depthBiasSlopeFactor = 1.5f;     // Optional
+
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>
         (

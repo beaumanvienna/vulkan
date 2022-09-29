@@ -142,7 +142,7 @@ namespace LucreApp
             
             m_LightView->SetPerspectiveProjection
             (
-                glm::radians(50.0f),
+                glm::radians(100.0f),
                 1.0f, //aspectRatio
                 0.1f, // near
                 50.0f // far

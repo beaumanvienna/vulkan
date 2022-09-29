@@ -55,7 +55,7 @@ namespace GfxRenderEngine
         CreateRenderPass();
         CreateGUIRenderPass();
 
-        CreateShadowDepthResources(1024 /* width */);
+        CreateShadowDepthResources(2048 /* width */);
         CreateDepthResources();
 
         CreateGBufferImages();
