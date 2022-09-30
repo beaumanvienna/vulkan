@@ -220,7 +220,7 @@ void main()
                 abs(lightSpacePosistionNDC.z) > 1.0
             )
         {
-            shadowPercentage = 0.0;
+            shadowPercentage = 1.0;
         }
         else
         {
