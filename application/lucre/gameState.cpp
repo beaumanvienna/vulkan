@@ -253,7 +253,7 @@ namespace LucreApp
             }
             case State::SETTINGS:
             {
-                auto scenePtr = std::make_shared<CutScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
+                auto scenePtr = std::make_shared<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
                 SetupScene(state, scenePtr);
                 GetScene(state)->Start();
                 SetLoaded(state);
