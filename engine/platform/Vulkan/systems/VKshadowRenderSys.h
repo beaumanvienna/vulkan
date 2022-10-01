@@ -34,6 +34,7 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -48,23 +49,40 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystemShadow(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        VK_RenderSystemShadow
+        (
+            VkRenderPass renderPass0,
+            VkRenderPass renderPass1,
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayouts
+        );
         ~VK_RenderSystemShadow();
 
         VK_RenderSystemShadow(const VK_RenderSystemShadow&) = delete;
         VK_RenderSystemShadow& operator=(const VK_RenderSystemShadow&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void RenderEntities
+        (
+            const VK_FrameInfo& frameInfo,
+            entt::registry& registry,
+            int renderpass,
+            std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+        );
 
     private:
 
         void CreatePipelineLayout( std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
+        void CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass);
+        void SetShadowUniformBuffer
+        (
+            const VK_FrameInfo& frameInfo, Camera* lightView,
+            std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+        );
 
     private:
 
         VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
+        std::unique_ptr<VK_Pipeline> m_Pipeline0;
+        std::unique_ptr<VK_Pipeline> m_Pipeline1;
 
     };
 }

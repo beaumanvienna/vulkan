@@ -104,7 +104,8 @@ namespace LucreApp
         {
             float intensity = 5.0f;
             glm::vec3 color{1.0f, 1.0f, 1.0f};
-            m_DirectionalLight = CreateDirectionalLight(intensity, color);
+            m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
+            m_DirectionalLight1 = CreateDirectionalLight(intensity, color);
         }
     }
 
@@ -137,18 +138,32 @@ namespace LucreApp
             skyboxTransform.SetScale(20.0f);
         }
         {
-            m_Lightbulb = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
-            m_LightView = std::make_shared<Camera>();
-            
-            m_LightView->SetPerspectiveProjection
-            (
-                glm::radians(100.0f),
-                1.0f, //aspectRatio
-                0.1f, // near
-                50.0f // far
-            );
-            
-            SetLightView();
+            {
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
+                m_LightView0 = std::make_shared<Camera>();
+                
+                m_LightView0->SetPerspectiveProjection
+                (
+                    glm::radians(100.0f),
+                    1.0f, //aspectRatio
+                    0.1f, // near
+                    50.0f // far
+                );
+                SetLightView(m_Lightbulb0, m_LightView0);
+            }
+
+            {
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::Scene::arrow");
+                m_LightView1 = std::make_shared<Camera>();
+                m_LightView1->SetPerspectiveProjection
+                (
+                    glm::radians(100.0f),
+                    1.0f, //aspectRatio
+                    0.1f, // near
+                    50.0f // far
+                );            
+                SetLightView(m_Lightbulb1, m_LightView1);
+            }
         }
     }
 
@@ -186,13 +201,15 @@ namespace LucreApp
         }
 
         AnimateHero(timestep);
-        SetLightView();
-        SetDirectionalLight();
+        SetLightView(m_Lightbulb0, m_LightView0);
+        SetLightView(m_Lightbulb1, m_LightView1);
+        SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
+        SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
         // draw new scene
-        m_Renderer->BeginFrame(m_LightView.get());
+        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
         m_Renderer->SubmitShadows(m_Registry);
-        m_Renderer->Renderpass3D(&m_CameraController->GetCamera(), m_Registry);
+        m_Renderer->Renderpass3D(m_Registry);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
 
@@ -281,20 +298,29 @@ namespace LucreApp
         heroTransform.SetScale({deltaX, deltaY, deltaZ});
     }
 
-    void BeachScene::SetLightView()
+    void BeachScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
-        auto view = m_Registry.view<TransformComponent>();
-        auto& lightbulbTransform  = view.get<TransformComponent>(m_Lightbulb);
+        {
+            auto& lightbulbTransform  = m_Registry.get<TransformComponent>(lightbulb);
 
-        glm::vec3 position  = lightbulbTransform.GetTranslation();
-        glm::vec3 rotation  = lightbulbTransform.GetRotation();
-        m_LightView->SetViewYXZ(position, rotation);
+            glm::vec3 position  = lightbulbTransform.GetTranslation();
+            glm::vec3 rotation  = lightbulbTransform.GetRotation();
+            lightView->SetViewYXZ(position, rotation);
+        }
     }
 
-    void BeachScene::SetDirectionalLight()
+    void BeachScene::SetDirectionalLight
+    (
+        const entt::entity directionalLight,
+        const entt::entity lightbulb,
+        const std::shared_ptr<Camera>& lightView,
+        int renderpass
+    )
     {
-        auto& lightbulbTransform         = m_Registry.get<TransformComponent>(m_Lightbulb);
-        auto& directionalLightComponent  = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight);
-        directionalLightComponent.m_Direction = lightbulbTransform.GetRotation();
+        auto& lightbulbTransform         = m_Registry.get<TransformComponent>(lightbulb);
+        auto& directionalLightComponent  = m_Registry.get<DirectionalLightComponent>(directionalLight);
+        directionalLightComponent.m_Direction  = lightbulbTransform.GetRotation();
+        directionalLightComponent.m_LightView  = lightView.get();
+        directionalLightComponent.m_RenderPass = renderpass;
     }
 }

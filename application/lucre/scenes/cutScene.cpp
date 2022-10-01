@@ -244,7 +244,7 @@ namespace LucreApp
         MoveClouds(timestep);
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
-        m_Renderer->Renderpass3D(&m_CameraController->GetCamera(), m_Registry);
+        m_Renderer->Renderpass3D(m_Registry);
 
         // skip geometry and lighting passes
         m_Renderer->NextSubpass();

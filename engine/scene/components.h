@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "engine.h"
+#include "renderer/camera.h"
 
 #include "engine/platform/Vulkan/VKswapChain.h"
 
@@ -116,6 +117,8 @@ namespace GfxRenderEngine
         float m_LightIntensity{1.0f};
         glm::vec3 m_Color{1.0f, 1.0f, 1.0f};
         glm::vec3 m_Direction{};
+        Camera* m_LightView{nullptr};
+        int m_RenderPass{0};
     };
 
     struct RigidbodyComponent

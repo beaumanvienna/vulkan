@@ -50,7 +50,7 @@ namespace GfxRenderEngine
         virtual uint GetFrameCounter() = 0;
 
         virtual void BeginFrame(Camera* camera) = 0;
-        virtual void Renderpass3D(Camera* camera, entt::registry& registry) = 0;
+        virtual void Renderpass3D(entt::registry& registry) = 0;
         virtual void EndScene() = 0;
 
         virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) = 0;

@@ -51,17 +51,51 @@ namespace GfxRenderEngine
         CreateSwapChain();
         CreateImageViews();
 
-        CreateShadowRenderPass();
+        CreateShadowRenderPass(m_ShadowRenderPass0);
+        CreateShadowRenderPass(m_ShadowRenderPass1);
         CreateRenderPass();
         CreateGUIRenderPass();
 
-        CreateShadowDepthResources(4096 /* width */);
+        // hi-res shadow map
+        CreateShadowDepthResources
+        (
+            4096,                        /* width */
+            m_ShadowMapExtent0,          /*VkExtent2D&*/
+            m_ShadowDepthImages0,        /*std::vector<VkImage>&*/
+            m_ShadowDepthImageMemorys0,  /*std::vector<VkDeviceMemory>&*/
+            m_ShadowDepthImageViews0,    /*std::vector<VkImageView>&*/
+            m_ShadowDepthSamplers0       /*std::vector<VkSampler>&*/
+        );
+        // low-res shadow map
+        CreateShadowDepthResources
+        (
+            1024,                        /* width */
+            m_ShadowMapExtent1,          /*VkExtent2D&*/
+            m_ShadowDepthImages1,        /*std::vector<VkImage>&*/
+            m_ShadowDepthImageMemorys1,  /*std::vector<VkDeviceMemory>&*/
+            m_ShadowDepthImageViews1,    /*std::vector<VkImageView>&*/
+            m_ShadowDepthSamplers1       /*std::vector<VkSampler>&*/
+        );
         CreateDepthResources();
 
         CreateGBufferImages();
         CreateGBufferViews();
 
-        CreateShadowFramebuffers();
+        CreateShadowFramebuffers
+        (
+            m_ShadowMapExtent0,          /*const VkExtent2D&*/
+            m_ShadowFramebuffers0,       /*std::vector<VkFramebuffer>&*/
+            m_ShadowDepthImageViews0,    /*const std::vector<VkImageView>&*/
+            m_ShadowRenderPass0          /*const VkRenderPass&*/
+        );
+
+        CreateShadowFramebuffers
+        (
+            m_ShadowMapExtent1,          /*const VkExtent2D&*/
+            m_ShadowFramebuffers1,       /*std::vector<VkFramebuffer>&*/
+            m_ShadowDepthImageViews1,    /*const std::vector<VkImageView>&*/
+            m_ShadowRenderPass1          /*const VkRenderPass&*/
+        );
         CreateFramebuffers();
         CreateGUIFramebuffers();
 
@@ -89,13 +123,22 @@ namespace GfxRenderEngine
             vkFreeMemory(m_Device->Device(), m_DepthImageMemorys[i], nullptr);
         }
 
-        for (int i = 0; i < m_ShadowDepthImages.size(); i++)
+        for (int i = 0; i < m_ShadowDepthImages0.size(); i++)
         {
             vkDeviceWaitIdle(m_Device->Device());
-            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews[i], nullptr);
-            vkDestroyImage(m_Device->Device(), m_ShadowDepthImages[i], nullptr);
-            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys[i], nullptr);
-            vkDestroySampler(m_Device->Device(), m_ShadowDepthSamplers[i], nullptr);
+            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews0[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_ShadowDepthImages0[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys0[i], nullptr);
+            vkDestroySampler(m_Device->Device(), m_ShadowDepthSamplers0[i], nullptr);
+        }
+
+        for (int i = 0; i < m_ShadowDepthImages1.size(); i++)
+        {
+            vkDeviceWaitIdle(m_Device->Device());
+            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageViews1[i], nullptr);
+            vkDestroyImage(m_Device->Device(), m_ShadowDepthImages1[i], nullptr);
+            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemorys1[i], nullptr);
+            vkDestroySampler(m_Device->Device(), m_ShadowDepthSamplers1[i], nullptr);
         }
 
         for (auto framebuffer : m_3DFramebuffers)
@@ -103,7 +146,8 @@ namespace GfxRenderEngine
             vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass, nullptr);
+        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass0, nullptr);
+        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass1, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_RenderPass, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_GUIRenderPass, nullptr);
 
@@ -1034,7 +1078,7 @@ namespace GfxRenderEngine
         return (depthFormatEqual && imageFormatEqual);
     }
 
-    void VK_SwapChain::CreateShadowRenderPass()
+    void VK_SwapChain::CreateShadowRenderPass(VkRenderPass& shadowRenderPass)
     {
 
         // ATTACHMENT_DEPTH
@@ -1102,32 +1146,39 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
 
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_ShadowRenderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &shadowRenderPass) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create render pass!");
         }
     }
 
-    void VK_SwapChain::CreateShadowDepthResources(int width)
+    void VK_SwapChain::CreateShadowDepthResources
+    (
+        int width, VkExtent2D& shadowMapExtent,
+        std::vector<VkImage>& shadowDepthImages,
+        std::vector<VkDeviceMemory>& shadowDepthImageMemorys,
+        std::vector<VkImageView>& shadowDepthImageViews,
+        std::vector<VkSampler>& shadowDepthSamplers
+    )
     {
-        m_ShadowMapExtent.width = width;
-        m_ShadowMapExtent.height = width;
+        shadowMapExtent.width = width;
+        shadowMapExtent.height = width;
 
         VkFormat depthFormat = FindDepthFormat();
         m_SwapChainDepthFormat = depthFormat;
 
-        m_ShadowDepthImages.resize(ImageCount());
-        m_ShadowDepthImageMemorys.resize(ImageCount());
-        m_ShadowDepthImageViews.resize(ImageCount());
-        m_ShadowDepthSamplers.resize(ImageCount());
+        shadowDepthImages.resize(ImageCount());
+        shadowDepthImageMemorys.resize(ImageCount());
+        shadowDepthImageViews.resize(ImageCount());
+        shadowDepthSamplers.resize(ImageCount());
 
-        for (int i = 0; i < m_ShadowDepthImages.size(); i++)
+        for (int i = 0; i < shadowDepthImages.size(); i++)
         {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_ShadowMapExtent.width;
-            imageInfo.extent.height = m_ShadowMapExtent.height;
+            imageInfo.extent.width = shadowMapExtent.width;
+            imageInfo.extent.height = shadowMapExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -1142,12 +1193,12 @@ namespace GfxRenderEngine
             m_Device->CreateImageWithInfo(
                 imageInfo,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_ShadowDepthImages[i],
-                m_ShadowDepthImageMemorys[i]);
+                shadowDepthImages[i],
+                shadowDepthImageMemorys[i]);
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = m_ShadowDepthImages[i];
+            viewInfo.image = shadowDepthImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = depthFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -1156,7 +1207,7 @@ namespace GfxRenderEngine
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageViews[i]) != VK_SUCCESS)
+            if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &shadowDepthImageViews[i]) != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
             }
@@ -1178,7 +1229,7 @@ namespace GfxRenderEngine
             samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
             {
-                auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSamplers[i]);
+                auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &shadowDepthSamplers[i]);
                 if (result != VK_SUCCESS)
                 {
                     LOG_CORE_CRITICAL("failed to create sampler!");
@@ -1187,30 +1238,36 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_SwapChain::CreateShadowFramebuffers()
+    void VK_SwapChain::CreateShadowFramebuffers
+    (
+        const VkExtent2D& shadowMapExtent,
+        std::vector<VkFramebuffer>& shadowFramebuffers,
+        const std::vector<VkImageView>& shadowDepthImageViews,
+        const VkRenderPass& shadowRenderPass
+    )
     {
-        m_ShadowFramebuffers.resize(ImageCount());
+        shadowFramebuffers.resize(ImageCount());
         for (size_t i = 0; i < ImageCount(); i++)
         {
             std::array<VkImageView, static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
-                m_ShadowDepthImageViews[i],
+                shadowDepthImageViews[i],
             };
 
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = m_ShadowRenderPass;
+            framebufferInfo.renderPass = shadowRenderPass;
             framebufferInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = m_ShadowMapExtent.width;
-            framebufferInfo.height = m_ShadowMapExtent.height;
+            framebufferInfo.width = shadowMapExtent.width;
+            framebufferInfo.height = shadowMapExtent.height;
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(
                     m_Device->Device(),
                     &framebufferInfo,
                     nullptr,
-                    &m_ShadowFramebuffers[i]) != VK_SUCCESS)
+                    &shadowFramebuffers[i]) != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create shadow framebuffer!");
             }

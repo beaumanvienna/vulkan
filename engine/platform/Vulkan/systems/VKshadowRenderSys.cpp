@@ -28,10 +28,16 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemShadow::VK_RenderSystemShadow(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemShadow::VK_RenderSystemShadow
+    (
+        VkRenderPass renderPass0,
+        VkRenderPass renderPass1,
+        std::vector<VkDescriptorSetLayout>& descriptorSetLayouts
+    )
     {
         CreatePipelineLayout(descriptorSetLayouts);
-        CreatePipeline(renderPass);
+        CreatePipeline(m_Pipeline0, renderPass0);
+        CreatePipeline(m_Pipeline1, renderPass1);
     }
 
     VK_RenderSystemShadow::~VK_RenderSystemShadow()
@@ -58,7 +64,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemShadow::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemShadow::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -75,7 +81,7 @@ namespace GfxRenderEngine
         pipelineConfig.rasterizationInfo.depthBiasSlopeFactor = 3.0f;     // Optional
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
+        pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
             "bin/shadowShader.vert.spv",
@@ -84,44 +90,88 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemShadow::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemShadow::SetShadowUniformBuffer
+    (
+        const VK_FrameInfo& frameInfo, Camera* lightView,
+        std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+    )
     {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_ShadowDescriptorSet,
-            0,
-            nullptr
-        );
-        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+        ShadowUniformBuffer ubo{};
+        ubo.m_Projection = lightView->GetProjectionMatrix();
+        ubo.m_View = lightView->GetViewMatrix();
+        shadowUniformBuffers[frameInfo.m_FrameIndex]->WriteToBuffer(&ubo);
+        shadowUniformBuffers[frameInfo.m_FrameIndex]->Flush();
+    }
 
-        auto view = registry.view<MeshComponent, TransformComponent>();
-        for (auto entity : view)
+    void VK_RenderSystemShadow::RenderEntities
+    (
+        const VK_FrameInfo& frameInfo,
+        entt::registry& registry,
+        int renderpass,
+        std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+    )
+    {
+        auto meshView = registry.view<MeshComponent, TransformComponent>();
+        auto directionalLightView = registry.view<DirectionalLightComponent>();
+
+        for (auto entity : directionalLightView)
         {
-            auto& transform = view.get<TransformComponent>(entity);
+            auto& directionalLight = directionalLightView.get<DirectionalLightComponent>(entity);
 
-            VK_PushConstantDataShadow push{};
+            SetShadowUniformBuffer
+            (
+                frameInfo,
+                directionalLight.m_LightView,
+                shadowUniformBuffers
+            );
 
-            push.m_ModelMatrix  = transform.GetMat4();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-
-            vkCmdPushConstants(
+            vkCmdBindDescriptorSets
+            (
                 frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataShadow),
-                &push);
+                1,
+                &frameInfo.m_ShadowDescriptorSet,
+                0,
+                nullptr
+            );
 
-            auto& mesh = view.get<MeshComponent>(entity);
-            if (mesh.m_Enabled)
+            if (renderpass == directionalLight.m_RenderPass)
             {
-                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
+                if (directionalLight.m_RenderPass == 0)
+            {
+                m_Pipeline0->Bind(frameInfo.m_CommandBuffer);
+            }
+            else
+            {
+                m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
+            }
+
+            for (auto entity : meshView)
+            {
+                auto& transform = meshView.get<TransformComponent>(entity);
+
+                VK_PushConstantDataShadow push{};
+
+                push.m_ModelMatrix  = transform.GetMat4();
+                push.m_NormalMatrix = transform.GetNormalMatrix();
+
+                vkCmdPushConstants(
+                    frameInfo.m_CommandBuffer,
+                    m_PipelineLayout,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0,
+                    sizeof(VK_PushConstantDataShadow),
+                    &push);
+
+                auto& mesh = meshView.get<MeshComponent>(entity);
+                if (mesh.m_Enabled)
+                {
+                    static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                    static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
+                }
+            }
             }
         }
     }

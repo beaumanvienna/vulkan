@@ -221,8 +221,8 @@ namespace LucreApp
                 }
                 #ifdef MULTI_THREADED
                 );
-                #endif
                 loadMainSceneThread.detach();
+                #endif
                 break;
             }
             case State::BEACH:
@@ -239,8 +239,8 @@ namespace LucreApp
                 }
                 #ifdef MULTI_THREADED
                 );
-                #endif
                 loadBeachSceneThread.detach();
+                #endif
                 break;
             }
             case State::CUTSCENE:

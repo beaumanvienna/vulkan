@@ -197,7 +197,15 @@ namespace GfxRenderEngine
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &shadowUBObufferInfo)
-                .Build(m_ShadowDescriptorSets[i]);
+                .Build(m_ShadowDescriptorSets0[i]);
+        }
+
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
+            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
+                .WriteBuffer(0, &shadowUBObufferInfo)
+                .Build(m_ShadowDescriptorSets1[i]);
         }
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
@@ -212,7 +220,12 @@ namespace GfxRenderEngine
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
-        m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>(m_SwapChain->GetShadowRenderPass(), descriptorSetLayoutsShadow);
+        m_RenderSystemShadow                            = std::make_unique<VK_RenderSystemShadow>
+                                                          (
+                                                              m_SwapChain->GetShadowRenderPass0(),
+                                                              m_SwapChain->GetShadowRenderPass1(),
+                                                              descriptorSetLayoutsShadow
+                                                          );
         m_LightSystem                                   = std::make_unique<VK_LightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
@@ -232,13 +245,13 @@ namespace GfxRenderEngine
             m_SwapChain->GetRenderPass(),
             descriptorSetLayoutsLighting,
             m_LightingDescriptorSets.data(),
-            m_ShadowMapDescriptorSets.data()
+            m_ShadowMapDescriptorSets0.data()
         );
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
             m_SwapChain->GetRenderPass(),
             descriptorSetLayoutsDebug,
-            m_ShadowMapDescriptorSets.data()
+            m_ShadowMapDescriptorSets0.data()
         );
 
         m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
@@ -246,17 +259,17 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
     {
-        m_ShadowMapDescriptorSets.resize(m_SwapChain->ImageCount());
+        m_ShadowMapDescriptorSets0.resize(m_SwapChain->ImageCount());
         for (uint i = 0; i < m_SwapChain->ImageCount(); i++)
         {
             VkDescriptorImageInfo shadowMapInfo {};
-            shadowMapInfo.sampler     = m_SwapChain->GetSamplerShadowMap(i);
-            shadowMapInfo.imageView   = m_SwapChain->GetImageViewShadowMap(i);
+            shadowMapInfo.sampler     = m_SwapChain->GetSamplerShadowMap0(i);
+            shadowMapInfo.imageView   = m_SwapChain->GetImageViewShadowMap0(i);
             shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
             VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, *m_DescriptorPool)
                 .WriteImage(0, &shadowMapInfo)
-                .Build(m_ShadowMapDescriptorSets[i]);
+                .Build(m_ShadowMapDescriptorSets0[i]);
         }
     }
 
@@ -389,7 +402,6 @@ namespace GfxRenderEngine
         }
 
         return commandBuffer;
-
     }
 
     void VK_Renderer::EndFrame()
@@ -416,18 +428,18 @@ namespace GfxRenderEngine
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
-    void VK_Renderer::BeginShadowRenderPass(VkCommandBuffer commandBuffer)
+    void VK_Renderer::BeginShadowRenderPass0(VkCommandBuffer commandBuffer)
     {
         ASSERT(m_FrameInProgress);
         ASSERT(commandBuffer == GetCurrentCommandBuffer());
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass();
-        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer(m_CurrentImageIndex);
+        renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass0();
+        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer0(m_CurrentImageIndex);
 
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent();
+        renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent0();
 
         std::array<VkClearValue, static_cast<uint>(VK_SwapChain::ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
         clearValues[0].depthStencil = {1.0f, 0};
@@ -439,11 +451,44 @@ namespace GfxRenderEngine
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(m_SwapChain->GetShadowMapExtent().width);
-        viewport.height = static_cast<float>(m_SwapChain->GetShadowMapExtent().height);
+        viewport.width = static_cast<float>(m_SwapChain->GetShadowMapExtent0().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetShadowMapExtent0().height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        VkRect2D scissor{{0, 0}, m_SwapChain->GetShadowMapExtent()};
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetShadowMapExtent0()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    }
+
+    void VK_Renderer::BeginShadowRenderPass1(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass1();
+        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer1(m_CurrentImageIndex);
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent1();
+
+        std::array<VkClearValue, static_cast<uint>(VK_SwapChain::ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
+        clearValues[0].depthStencil = {1.0f, 0};
+        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChain->GetShadowMapExtent1().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetShadowMapExtent1().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetShadowMapExtent1()};
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
@@ -451,7 +496,13 @@ namespace GfxRenderEngine
 
     void VK_Renderer::SubmitShadows(entt::registry& registry)
     {
-        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry);
+        BeginShadowRenderPass0(m_CurrentCommandBuffer);
+        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry, 0 /* shadow pass 0*/, m_ShadowUniformBuffers);
+        EndRenderPass(m_CurrentCommandBuffer);
+
+        BeginShadowRenderPass1(m_CurrentCommandBuffer);
+        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry, 1 /* shadow pass 1*/, m_ShadowUniformBuffers);
+        EndRenderPass(m_CurrentCommandBuffer);
     }
 
     void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
@@ -539,31 +590,20 @@ namespace GfxRenderEngine
                 m_CurrentFrameIndex, 
                 0.0f, /* m_FrameTime */
                 m_CurrentCommandBuffer, 
-                camera, 
+                camera,
                 m_GlobalDescriptorSets[m_CurrentFrameIndex],
-                m_ShadowDescriptorSets[m_CurrentFrameIndex]
+                m_ShadowDescriptorSets0[m_CurrentFrameIndex]
             };
-
-            ShadowUniformBuffer ubo{};
-            ubo.m_Projection = camera->GetProjectionMatrix();
-            ubo.m_View = camera->GetViewMatrix();
-            m_ShadowUniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-            m_ShadowUniformBuffers[m_CurrentFrameIndex]->Flush();
-
-            BeginShadowRenderPass(m_CurrentCommandBuffer);
         }
     }
 
-    void VK_Renderer::Renderpass3D(Camera* camera, entt::registry& registry)
+    void VK_Renderer::Renderpass3D(entt::registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
-            EndRenderPass(m_CurrentCommandBuffer); // end shadow render pass
-
-
             GlobalUniformBuffer ubo{};
-            ubo.m_Projection = camera->GetProjectionMatrix();
-            ubo.m_View = camera->GetViewMatrix();
+            ubo.m_Projection = m_FrameInfo.m_Camera->GetProjectionMatrix();
+            ubo.m_View = m_FrameInfo.m_Camera->GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
             m_LightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
