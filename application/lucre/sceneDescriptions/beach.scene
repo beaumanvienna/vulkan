@@ -19,6 +19,14 @@ glTF-files :
         translation: [0, 0.0999100804, -10.9879932]
         scale: [0.999999523, 1, 0.999999523]
         rotation: [2.49916695e-07, 1.39898598, 2.54068709e-07]
+    application/lucre/models/external_3D_files/rock01/rock01.gltf:
+        translation: [-18.6503143, -0.0689417124, -18.4104939]
+        scale: [1.0, 1.0, 1.0]
+        rotation: [0, -0, 0]
+    application/lucre/models/external_3D_files/rock01/rock02.gltf:
+        translation: [18.6503143, -0.0689999983, -18.4104939]
+        scale: [1.0, 1.0, 1.0]
+        rotation: [0, -0, 0]
 
 prefabs:
   - application/lucre/prefabs/duck.prefab
