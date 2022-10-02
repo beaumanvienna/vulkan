@@ -15,6 +15,10 @@ glTF-files :
         translation: [-2.07932615, 1.24600148, -1.00711334]
         scale: [0.5, 0.5, 0.5]
         rotation: [-1.57069314, 1.54480636, -3.1414907]
+    application/lucre/models/external_3D_files/pirateship/pirateship.gltf:
+        translation: [0, 0.0999100804, -10.9879932]
+        scale: [0.999999523, 1, 0.999999523]
+        rotation: [2.49916695e-07, 1.39898598, 2.54068709e-07]
 
 prefabs:
   - application/lucre/prefabs/duck.prefab
