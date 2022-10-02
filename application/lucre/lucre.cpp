@@ -226,16 +226,19 @@ namespace LucreApp
 
         appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent event)
             {
-                // show cut scene only for game levels
-                if (static_cast<int>(event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
+                if (m_GameState.GetState() != GameState::State::CUTSCENE)
                 {
-                    m_GameState.GetScene(GameState::State::CUTSCENE)->ResetTimer();
-                    m_GameState.SetState(GameState::State::CUTSCENE);
-                    m_GameState.SetNextState(event.GetScene());
-                }
-                else
-                {
-                    m_GameState.SetState(event.GetScene());
+                    // show cut scene only for game levels
+                    if (static_cast<int>(event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
+                    {
+                        m_GameState.GetScene(GameState::State::CUTSCENE)->ResetTimer();
+                        m_GameState.SetState(GameState::State::CUTSCENE);
+                        m_GameState.SetNextState(event.GetScene());
+                    }
+                    else
+                    {
+                        m_GameState.SetState(event.GetScene());
+                    }
                 }
                 return true;
             }
