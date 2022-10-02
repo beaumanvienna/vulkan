@@ -46,9 +46,9 @@ namespace GfxRenderEngine
         RecreateSwapChain();
         CreateCommandBuffers();
 
-        for (uint i = 0; i < m_ShadowUniformBuffers.size(); i++)
+        for (uint i = 0; i < m_ShadowUniformBuffers0.size(); i++)
         {
-            m_ShadowUniformBuffers[i] = std::make_unique<VK_Buffer>
+            m_ShadowUniformBuffers0[i] = std::make_unique<VK_Buffer>
             (
                 *m_Device, sizeof(ShadowUniformBuffer),
                 1,
@@ -56,7 +56,20 @@ namespace GfxRenderEngine
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                 m_Device->properties.limits.minUniformBufferOffsetAlignment
             );
-            m_ShadowUniformBuffers[i]->Map();
+            m_ShadowUniformBuffers0[i]->Map();
+        }
+
+        for (uint i = 0; i < m_ShadowUniformBuffers1.size(); i++)
+        {
+            m_ShadowUniformBuffers1[i] = std::make_unique<VK_Buffer>
+            (
+                *m_Device, sizeof(ShadowUniformBuffer),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                m_Device->properties.limits.minUniformBufferOffsetAlignment
+            );
+            m_ShadowUniformBuffers1[i]->Map();
         }
 
         for (uint i = 0; i < m_UniformBuffers.size(); i++)
@@ -88,6 +101,9 @@ namespace GfxRenderEngine
 
         m_ShadowMapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -194,7 +210,7 @@ namespace GfxRenderEngine
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
+            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers0[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets0[i]);
@@ -202,7 +218,7 @@ namespace GfxRenderEngine
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
+            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers1[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets1[i]);
@@ -211,12 +227,10 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
-            VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
                 .WriteBuffer(0, &bufferInfo)
                 .WriteImage(1, &imageInfo0)
                 .WriteImage(2, &imageInfo1)
-                .WriteBuffer(3, &shadowUBObufferInfo)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
@@ -245,13 +259,13 @@ namespace GfxRenderEngine
             m_SwapChain->GetRenderPass(),
             descriptorSetLayoutsLighting,
             m_LightingDescriptorSets.data(),
-            m_ShadowMapDescriptorSets0.data()
+            m_ShadowMapDescriptorSets.data()
         );
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
             m_SwapChain->GetRenderPass(),
             descriptorSetLayoutsDebug,
-            m_ShadowMapDescriptorSets0.data()
+            m_ShadowMapDescriptorSets.data()
         );
 
         m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
@@ -259,24 +273,33 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
     {
-        m_ShadowMapDescriptorSets0.resize(m_SwapChain->ImageCount());
-        for (uint i = 0; i < m_SwapChain->ImageCount(); i++)
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorImageInfo shadowMapInfo {};
-            shadowMapInfo.sampler     = m_SwapChain->GetSamplerShadowMap0(i);
-            shadowMapInfo.imageView   = m_SwapChain->GetImageViewShadowMap0(i);
-            shadowMapInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            VkDescriptorImageInfo shadowMapInfo0{};
+            shadowMapInfo0.sampler     = m_SwapChain->GetSamplerShadowMap0(i);
+            shadowMapInfo0.imageView   = m_SwapChain->GetImageViewShadowMap0(i);
+            shadowMapInfo0.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo shadowMapInfo1{};
+            shadowMapInfo1.sampler     = m_SwapChain->GetSamplerShadowMap1(i);
+            shadowMapInfo1.imageView   = m_SwapChain->GetImageViewShadowMap1(i);
+            shadowMapInfo1.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+            VkDescriptorBufferInfo shadowUBObufferInfo0 = m_ShadowUniformBuffers0[i]->DescriptorInfo();
+            VkDescriptorBufferInfo shadowUBObufferInfo1 = m_ShadowUniformBuffers1[i]->DescriptorInfo();
 
             VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, *m_DescriptorPool)
-                .WriteImage(0, &shadowMapInfo)
-                .Build(m_ShadowMapDescriptorSets0[i]);
+                .WriteImage(0, &shadowMapInfo0)
+                .WriteImage(1, &shadowMapInfo1)
+                .WriteBuffer(2, &shadowUBObufferInfo0)
+                .WriteBuffer(3, &shadowUBObufferInfo1)
+                .Build(m_ShadowMapDescriptorSets[i]);
         }
     }
 
     void VK_Renderer::CreateLightingDescriptorSets()
     {
-        m_LightingDescriptorSets.resize(m_SwapChain->ImageCount());
-        for (uint i = 0; i < m_SwapChain->ImageCount(); i++)
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
             imageInfoGBufferPositionInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferPosition(i);
@@ -494,15 +517,60 @@ namespace GfxRenderEngine
 
     }
 
-    void VK_Renderer::SubmitShadows(entt::registry& registry)
+    void VK_Renderer::SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights)
     {
-        BeginShadowRenderPass0(m_CurrentCommandBuffer);
-        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry, 0 /* shadow pass 0*/, m_ShadowUniformBuffers);
-        EndRenderPass(m_CurrentCommandBuffer);
+        // this function supports one directional light 
+        // with a high-resolution and
+        // with a low-resolution component
+        // --> either both or none must be provided
+        if (directionalLights.size() == 2)
+        {
+            {
+                ShadowUniformBuffer ubo{};
+                ubo.m_Projection = directionalLights[0]->m_LightView->GetProjectionMatrix();
+                ubo.m_View = directionalLights[0]->m_LightView->GetViewMatrix();
+                m_ShadowUniformBuffers0[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+                m_ShadowUniformBuffers0[m_CurrentFrameIndex]->Flush();
+            }
+            {
+                ShadowUniformBuffer ubo{};
+                ubo.m_Projection = directionalLights[1]->m_LightView->GetProjectionMatrix();
+                ubo.m_View = directionalLights[1]->m_LightView->GetViewMatrix();
+                m_ShadowUniformBuffers1[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+                m_ShadowUniformBuffers1[m_CurrentFrameIndex]->Flush();
+            }
 
-        BeginShadowRenderPass1(m_CurrentCommandBuffer);
-        m_RenderSystemShadow->RenderEntities(m_FrameInfo, registry, 1 /* shadow pass 1*/, m_ShadowUniformBuffers);
-        EndRenderPass(m_CurrentCommandBuffer);
+            BeginShadowRenderPass0(m_CurrentCommandBuffer);
+            m_RenderSystemShadow->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[0],
+                0 /* shadow pass 0*/,
+                m_ShadowDescriptorSets0[m_CurrentFrameIndex]
+            );
+            EndRenderPass(m_CurrentCommandBuffer);
+
+            BeginShadowRenderPass1(m_CurrentCommandBuffer);
+            m_RenderSystemShadow->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[1],
+                1 /* shadow pass 1*/,
+                m_ShadowDescriptorSets1[m_CurrentFrameIndex]
+            );
+            EndRenderPass(m_CurrentCommandBuffer);
+        }
+        else
+        {
+            // we still have to clear the shadow map depth buffers
+            // because the lighting shader expects values
+            BeginShadowRenderPass0(m_CurrentCommandBuffer);
+            EndRenderPass(m_CurrentCommandBuffer);
+            BeginShadowRenderPass1(m_CurrentCommandBuffer);
+            EndRenderPass(m_CurrentCommandBuffer);
+        }
     }
 
     void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
@@ -591,8 +659,7 @@ namespace GfxRenderEngine
                 0.0f, /* m_FrameTime */
                 m_CurrentCommandBuffer, 
                 camera,
-                m_GlobalDescriptorSets[m_CurrentFrameIndex],
-                m_ShadowDescriptorSets0[m_CurrentFrameIndex]
+                m_GlobalDescriptorSets[m_CurrentFrameIndex]
             };
         }
     }
@@ -658,7 +725,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo, m_CurrentImageIndex);
+            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
         }
     }
 
@@ -671,7 +738,7 @@ namespace GfxRenderEngine
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_CurrentImageIndex);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo);
         }
     }
 

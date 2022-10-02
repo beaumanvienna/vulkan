@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         VK_RenderSystemDebug(const VK_RenderSystemDebug&) = delete;
         VK_RenderSystemDebug& operator=(const VK_RenderSystemDebug&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, uint currentImageIndex);
+        void RenderEntities(const VK_FrameInfo& frameInfo);
 
     private:
 

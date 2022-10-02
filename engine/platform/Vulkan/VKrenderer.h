@@ -83,7 +83,7 @@ namespace GfxRenderEngine
 
         virtual void BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(entt::registry& registry) override;
-        virtual void SubmitShadows(entt::registry& registry) override;
+        virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
@@ -151,10 +151,10 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets0;
-        std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets1;
-        std::vector<VkDescriptorSet> m_LightingDescriptorSets;
+        std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

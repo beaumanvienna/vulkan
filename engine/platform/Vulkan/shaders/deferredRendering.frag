@@ -58,13 +58,20 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 0, binding = 3) uniform ShadowUniformBuffer
+
+layout(set = 2, binding = 0) uniform sampler2D shadowMapTextureHiRes;
+layout(set = 2, binding = 1) uniform sampler2D shadowMapTextureLowRes;
+layout(set = 2, binding = 2) uniform ShadowUniformBuffer0
 {
     mat4 m_Projection;
     mat4 m_View;
-} lightUbo;
+} lightUboHiRes;
 
-layout(set = 2, binding = 0) uniform sampler2D shadowMapTexture;
+layout(set = 2, binding = 3) uniform ShadowUniformBuffer1
+{
+    mat4 m_Projection;
+    mat4 m_View;
+} lightUboLowRes;
 
 const float PI = 3.14159265359;
 
@@ -211,24 +218,65 @@ void main()
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
         float shadowPercentage;
+        int PCF_SIZE = 3;
+        int SHADOWMAP_SIZE_HIRES_RES = 4096;
+        int SHADOWMAP_SIZE_LOW_RES   = 1024;
 
-        vec4 lightSpacePosistion = lightUbo.m_Projection * lightUbo.m_View * vec4(fragPosition, 1.0);
-        vec3 lightSpacePosistionNDC = lightSpacePosistion.xyz / lightSpacePosistion.w;
+        vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);
+        vec3 lightSpacePosistionNDCHiRes = lightSpacePosistionHiRes.xyz / lightSpacePosistionHiRes.w;
         if (
-                abs(lightSpacePosistionNDC.x) > 1.0 ||
-                abs(lightSpacePosistionNDC.y) > 1.0 ||
-                abs(lightSpacePosistionNDC.z) > 1.0
+                abs(lightSpacePosistionNDCHiRes.x) > 1.0 ||
+                abs(lightSpacePosistionNDCHiRes.y) > 1.0 ||
+                abs(lightSpacePosistionNDCHiRes.z) > 1.0
             )
         {
-            shadowPercentage = 1.0;
+            // check low-resolution shadow map
+            vec4 lightSpacePosistionLowRes = lightUboLowRes.m_Projection * lightUboLowRes.m_View * vec4(fragPosition, 1.0);
+            vec3 lightSpacePosistionNDCLowRes = lightSpacePosistionLowRes.xyz / lightSpacePosistionLowRes.w;
+            if (
+                    abs(lightSpacePosistionNDCLowRes.x) > 1.0 ||
+                    abs(lightSpacePosistionNDCLowRes.y) > 1.0 ||
+                    abs(lightSpacePosistionNDCLowRes.z) > 1.0
+                )
+            {
+                shadowPercentage = 1.0;
+            }
+            else
+            {
+                // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
+                vec2 shadowMapCoord = lightSpacePosistionNDCLowRes.xy * 0.5 + 0.5;
+
+                // compute total number of samples to take from the shadow map
+                int pcfSizeMinus1 = int(PCF_SIZE - 1);
+                float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
+                float numSamples = kernelSize * kernelSize;
+
+                // Counter for the shadow map samples not in the shadow
+                float litCount = 0.0;
+
+                // Take samples from the shadow map
+                float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_LOW_RES;
+                for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
+                {
+                    for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
+                    {
+                        // Compute coordinate for this PFC sample
+                        vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
+
+                        // Check if the sample is in light or in the shadow
+                        if (lightSpacePosistionNDCLowRes.z <= texture(shadowMapTextureLowRes, pcfCoordinate).x)
+                        {
+                            litCount += 1.0;
+                        }
+                    }
+                }
+                shadowPercentage = litCount / numSamples;
+            }
         }
         else
         {
             // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
-            vec2 shadowMapCoord = lightSpacePosistionNDC.xy * 0.5 + 0.5;
-
-            int PCF_SIZE = 3;
-            int SHADOWMAP_SIZE = 4096;
+            vec2 shadowMapCoord = lightSpacePosistionNDCHiRes.xy * 0.5 + 0.5;
 
             // compute total number of samples to take from the shadow map
             int pcfSizeMinus1 = int(PCF_SIZE - 1);
@@ -239,7 +287,7 @@ void main()
             float litCount = 0.0;
 
             // Take samples from the shadow map
-            float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE;
+            float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_HIRES_RES;
             for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
             {
                 for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
@@ -248,7 +296,7 @@ void main()
                     vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
 
                     // Check if the sample is in light or in the shadow
-                    if (lightSpacePosistionNDC.z <= texture(shadowMapTexture, pcfCoordinate).x)
+                    if (lightSpacePosistionNDCHiRes.z <= texture(shadowMapTextureHiRes, pcfCoordinate).x)
                     {
                         litCount += 1.0;
                     }

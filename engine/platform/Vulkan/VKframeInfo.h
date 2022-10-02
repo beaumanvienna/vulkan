@@ -70,7 +70,6 @@ namespace GfxRenderEngine
         VkCommandBuffer m_CommandBuffer;
         Camera* m_Camera;
         VkDescriptorSet m_GlobalDescriptorSet;
-        VkDescriptorSet m_ShadowDescriptorSet;
     };
 
 }

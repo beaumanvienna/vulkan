@@ -40,7 +40,7 @@ namespace GfxRenderEngine
         Renderer();
         virtual ~Renderer() {}
 
-        virtual void SubmitShadows(entt::registry& registry) = 0;
+        virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;

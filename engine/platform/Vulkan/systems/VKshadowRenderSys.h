@@ -64,19 +64,15 @@ namespace GfxRenderEngine
         (
             const VK_FrameInfo& frameInfo,
             entt::registry& registry,
+            DirectionalLightComponent* directionalLight,
             int renderpass,
-            std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+            VkDescriptorSet shadowDescriptorSet
         );
 
     private:
 
         void CreatePipelineLayout( std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass);
-        void SetShadowUniformBuffer
-        (
-            const VK_FrameInfo& frameInfo, Camera* lightView,
-            std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
-        );
 
     private:
 

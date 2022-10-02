@@ -106,6 +106,10 @@ namespace LucreApp
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
             m_DirectionalLight1 = CreateDirectionalLight(intensity, color);
+            auto& directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
+            auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
+            m_DirectionalLights.push_back(&directionalLightComponent0);
+            m_DirectionalLights.push_back(&directionalLightComponent1);
         }
     }
 
@@ -208,7 +212,7 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
-        m_Renderer->SubmitShadows(m_Registry);
+        m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);
 
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;

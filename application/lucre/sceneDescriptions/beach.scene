@@ -8,9 +8,9 @@ glTF-files :
         scale: [0.01, 0.01, 0.01]
         rotation: [2.01439095, -1.5009135, -2.90928268]
     application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf:
-        translation: [4.5, 7, 0.0]
+        translation: [11, 21, -0.0604987815]
         scale: [0.0018, 0.038, 0.0018]
-        rotation: [0.0, 0.0, 1.02477884]
+        rotation: [2.44346118, -1.57079637, 3.14159274]
     application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
         translation: [-2.07932615, 1.24600148, -1.00711334]
         scale: [0.5, 0.5, 0.5]

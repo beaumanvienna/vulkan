@@ -90,88 +90,60 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemShadow::SetShadowUniformBuffer
-    (
-        const VK_FrameInfo& frameInfo, Camera* lightView,
-        std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
-    )
-    {
-        ShadowUniformBuffer ubo{};
-        ubo.m_Projection = lightView->GetProjectionMatrix();
-        ubo.m_View = lightView->GetViewMatrix();
-        shadowUniformBuffers[frameInfo.m_FrameIndex]->WriteToBuffer(&ubo);
-        shadowUniformBuffers[frameInfo.m_FrameIndex]->Flush();
-    }
-
     void VK_RenderSystemShadow::RenderEntities
     (
         const VK_FrameInfo& frameInfo,
         entt::registry& registry,
+        DirectionalLightComponent* directionalLight,
         int renderpass,
-        std::vector<std::unique_ptr<VK_Buffer>>& shadowUniformBuffers
+        VkDescriptorSet shadowDescriptorSet
     )
     {
         auto meshView = registry.view<MeshComponent, TransformComponent>();
-        auto directionalLightView = registry.view<DirectionalLightComponent>();
 
-        for (auto entity : directionalLightView)
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,            // VkCommandBuffer commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,      // VkPipelineBindPoint pipelineBindPoint,
+            m_PipelineLayout,                     // VkPipelineLayout layout,
+            0,                                    // uint32_t firstSet,
+            1,                                    // uint32_t descriptorSetCount,
+            &shadowDescriptorSet,                 // const VkDescriptorSet* pDescriptorSets,
+            0,                                    // uint32_t dynamicOffsetCount,
+            nullptr                               // const uint32_t* pDynamicOffsets
+        );
+
+        if (directionalLight->m_RenderPass == 0)
         {
-            auto& directionalLight = directionalLightView.get<DirectionalLightComponent>(entity);
+            m_Pipeline0->Bind(frameInfo.m_CommandBuffer);
+        }
+        else
+        {
+            m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
+        }
 
-            SetShadowUniformBuffer
-            (
-                frameInfo,
-                directionalLight.m_LightView,
-                shadowUniformBuffers
-            );
+        for (auto entity : meshView)
+        {
+            auto& transform = meshView.get<TransformComponent>(entity);
 
-            vkCmdBindDescriptorSets
-            (
+            VK_PushConstantDataShadow push{};
+
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+
+            vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_PipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                1,
-                &frameInfo.m_ShadowDescriptorSet,
-                0,
-                nullptr
-            );
+                sizeof(VK_PushConstantDataShadow),
+                &push);
 
-            if (renderpass == directionalLight.m_RenderPass)
+            auto& mesh = meshView.get<MeshComponent>(entity);
+            if (mesh.m_Enabled)
             {
-                if (directionalLight.m_RenderPass == 0)
-            {
-                m_Pipeline0->Bind(frameInfo.m_CommandBuffer);
-            }
-            else
-            {
-                m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
-            }
-
-            for (auto entity : meshView)
-            {
-                auto& transform = meshView.get<TransformComponent>(entity);
-
-                VK_PushConstantDataShadow push{};
-
-                push.m_ModelMatrix  = transform.GetMat4();
-                push.m_NormalMatrix = transform.GetNormalMatrix();
-
-                vkCmdPushConstants(
-                    frameInfo.m_CommandBuffer,
-                    m_PipelineLayout,
-                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                    0,
-                    sizeof(VK_PushConstantDataShadow),
-                    &push);
-
-                auto& mesh = meshView.get<MeshComponent>(entity);
-                if (mesh.m_Enabled)
-                {
-                    static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                    static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
-                }
-            }
+                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
             }
         }
     }

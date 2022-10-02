@@ -61,7 +61,7 @@ namespace GfxRenderEngine
         VK_RenderSystemDeferredRendering(const VK_RenderSystemDeferredRendering&) = delete;
         VK_RenderSystemDeferredRendering& operator=(const VK_RenderSystemDeferredRendering&) = delete;
 
-        void LightingPass(const VK_FrameInfo& frameInfo, uint currentImageIndex);
+        void LightingPass(const VK_FrameInfo& frameInfo);
 
     private:
 
