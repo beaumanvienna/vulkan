@@ -299,7 +299,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateLightingDescriptorSets()
     {
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1; i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
             imageInfoGBufferPositionInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferPosition(i);
@@ -655,7 +655,8 @@ namespace GfxRenderEngine
         {
             m_FrameInfo =
             {
-                m_CurrentFrameIndex, 
+                m_CurrentFrameIndex,
+                m_CurrentImageIndex,
                 0.0f, /* m_FrameTime */
                 m_CurrentCommandBuffer, 
                 camera,

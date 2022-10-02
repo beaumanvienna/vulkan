@@ -270,18 +270,18 @@ namespace GfxRenderEngine
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(m_SwapChainSupport.presentModes);
         VkExtent2D extent = ChooseSwapExtent(m_SwapChainSupport.capabilities);
 
-        uint ImageCount = m_SwapChainSupport.capabilities.minImageCount + 1;
+        uint imageCount = m_SwapChainSupport.capabilities.minImageCount + 1;
         if (m_SwapChainSupport.capabilities.maxImageCount > 0 &&
-            ImageCount > m_SwapChainSupport.capabilities.maxImageCount)
+            imageCount > m_SwapChainSupport.capabilities.maxImageCount)
         {
-            ImageCount = m_SwapChainSupport.capabilities.maxImageCount;
+            imageCount = m_SwapChainSupport.capabilities.maxImageCount;
         }
 
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = m_Device->Surface();
 
-        createInfo.minImageCount = ImageCount;
+        createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
@@ -322,9 +322,9 @@ namespace GfxRenderEngine
         // allowed to create a swap chain with more. That's why we'll first query the final number of
         // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
         // retrieve the handles.
-        vkGetSwapchainImagesKHR(m_Device->Device(), m_SwapChain, &ImageCount, nullptr);
-        m_SwapChainImages.resize(ImageCount);
-        vkGetSwapchainImagesKHR(m_Device->Device(), m_SwapChain, &ImageCount, m_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(m_Device->Device(), m_SwapChain, &imageCount, nullptr);
+        m_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device->Device(), m_SwapChain, &imageCount, m_SwapChainImages.data());
 
         m_SwapChainImageFormat = surfaceFormat.format;
         m_SwapChainExtent = extent;

@@ -154,7 +154,7 @@ namespace GfxRenderEngine
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1}; // the 3D pass is using the swap chain images
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

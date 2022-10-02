@@ -96,7 +96,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> descriptorSets =
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_LightingDescriptorSets[frameInfo.m_FrameIndex],
+            m_LightingDescriptorSets[frameInfo.m_ImageIndex],
             m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]
         };
 

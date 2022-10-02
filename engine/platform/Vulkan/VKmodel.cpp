@@ -226,7 +226,7 @@ namespace GfxRenderEngine
     {
         for(auto& primitive : m_PrimitivesDiffuseMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet;
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -281,7 +281,7 @@ namespace GfxRenderEngine
     {
         for(auto& primitive : m_PrimitivesDiffuseNormalMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalMaterial.m_DescriptorSet;
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -350,7 +350,7 @@ namespace GfxRenderEngine
                 sizeof(VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic),
                 &push);
 
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet;
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -456,7 +456,7 @@ namespace GfxRenderEngine
     {
         for(auto& primitive : m_PrimitivesCubemap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_CubemapMaterial.m_DescriptorSet[frameInfo.m_FrameIndex];
+            VkDescriptorSet localDescriptorSet = primitive.m_CubemapMaterial.m_DescriptorSet;
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -494,12 +494,9 @@ namespace GfxRenderEngine
         imageInfo.imageView   = texture->m_TextureView;
         imageInfo.imageLayout = texture->m_ImageLayout;
 
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, &imageInfo)
-                .Build(pbrDiffuseMaterial.m_DescriptorSet[i]);
-        }
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, &imageInfo)
+            .Build(pbrDiffuseMaterial.m_DescriptorSet);
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
@@ -527,13 +524,10 @@ namespace GfxRenderEngine
             imageInfo1.imageLayout = texture->m_ImageLayout;
         }
 
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, &imageInfo0)
-                .WriteImage(1, &imageInfo1)
-                .Build(pbrDiffuseNormalMaterial.m_DescriptorSet[i]);
-        }
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, &imageInfo0)
+            .WriteImage(1, &imageInfo1)
+            .Build(pbrDiffuseNormalMaterial.m_DescriptorSet);
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
@@ -571,14 +565,11 @@ namespace GfxRenderEngine
             imageInfo2.imageLayout = texture->m_ImageLayout;
         }
 
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, &imageInfo0)
-                .WriteImage(1, &imageInfo1)
-                .WriteImage(2, &imageInfo2)
-                .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet[i]);
-        }
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, &imageInfo0)
+            .WriteImage(1, &imageInfo1)
+            .WriteImage(2, &imageInfo2)
+            .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet);
     }
 
     void VK_Model::CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap)
@@ -595,11 +586,8 @@ namespace GfxRenderEngine
             cubemapInfo.imageLayout = texture->m_ImageLayout;
         }
 
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, &cubemapInfo)
-                .Build(cubemapMaterial.m_DescriptorSet[i]);
-        }
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, &cubemapInfo)
+            .Build(cubemapMaterial.m_DescriptorSet);
     }
 }

@@ -40,14 +40,14 @@ namespace GfxRenderEngine
 
     struct PbrDiffuseMaterial
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        VkDescriptorSet m_DescriptorSet;
         float m_Roughness;
         float m_Metallic;
     };
 
     struct PbrDiffuseNormalMaterial
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        VkDescriptorSet m_DescriptorSet;
         float m_Roughness;
         float m_Metallic;
         float m_NormalMapIntensity;
@@ -55,12 +55,12 @@ namespace GfxRenderEngine
 
     struct PbrDiffuseNormalRoughnessMetallicMaterial
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        VkDescriptorSet m_DescriptorSet;
         float m_NormalMapIntensity;
     };
 
     struct CubemapMaterial
     {
-        VkDescriptorSet m_DescriptorSet[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
+        VkDescriptorSet m_DescriptorSet;
     };
 }

@@ -66,6 +66,7 @@ namespace GfxRenderEngine
     struct VK_FrameInfo
     {
         int m_FrameIndex;
+        uint m_ImageIndex;
         float m_FrameTime;
         VkCommandBuffer m_CommandBuffer;
         Camera* m_Camera;
