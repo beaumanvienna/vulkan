@@ -31,6 +31,13 @@
 namespace GfxRenderEngine
 {
 
+    class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
+    {
+        shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override;
+        void ReleaseInclude(shaderc_include_result* data) override;
+        static std::string ReadFile(const std::string& filepath);
+    };
+
     VK_Shader::VK_Shader(const std::string& sourceFilepath, const std::string& spirvFilepath, bool optimize)
         : m_SourceFilepath(sourceFilepath), m_SpirvFilepath(spirvFilepath), m_Optimize(optimize)
     {
@@ -48,7 +55,7 @@ namespace GfxRenderEngine
         {
             in.seekg(0, std::ios::end);
             size_t size = in.tellg();
-            if (size != -1)
+            if (size > 0)
             {
                 sourceCode.resize(size);
                 in.seekg(0, std::ios::beg);
@@ -76,6 +83,7 @@ namespace GfxRenderEngine
         m_Ok = false;
 
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2); // 1.3?
+        options.SetIncluder(std::make_unique<ShaderIncluder>());
 
         if (m_Optimize)
         {
@@ -98,20 +106,89 @@ namespace GfxRenderEngine
             return;
         }
 
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(m_SourceCode, shaderType, m_SourceFilepath.c_str(), options);
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success)
+        // precompile
+        // shaderc::PreprocessedSourceCompilationResult precompileResult
+        auto precompileResult = compiler.PreprocessGlsl(m_SourceCode, shaderType, m_SourceFilepath.c_str(), options);
+        if (precompileResult.GetCompilationStatus() != shaderc_compilation_status_success)
         {
-            LOG_CORE_ERROR("VK_Shader: Could not compile shader {0}, error message: {1}", m_SourceFilepath, result.GetErrorMessage());
+            LOG_CORE_ERROR("VK_Shader: Could not preompile shader {0}, error message: {1}", m_SourceFilepath, precompileResult.GetErrorMessage());
+            return;
+        }
+
+        // compile
+        // shaderc::SpvCompilationResult compileResult
+        auto compileResult = compiler.CompileGlslToSpv(m_SourceCode, shaderType, m_SourceFilepath.c_str(), options);
+        if (compileResult.GetCompilationStatus() != shaderc_compilation_status_success)
+        {
+            LOG_CORE_ERROR("VK_Shader: Could not compile shader {0}, error message: {1}", m_SourceFilepath, compileResult.GetErrorMessage());
             return;
         }
 
         std::ofstream outputFile(m_SpirvFilepath, std::ios::out | std::ios::binary);
         if (outputFile.is_open())
         {
-            auto buffer = std::vector<uint>(result.cbegin(), result.cend());
+            auto buffer = std::vector<uint>(compileResult.cbegin(), compileResult.cend());
             outputFile.write((char*)buffer.data(), buffer.size() * sizeof(uint));
             outputFile.flush();
             m_Ok = true;
         }
+    }
+
+    shaderc_include_result* ShaderIncluder::GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth)
+    {
+        std::string msg = std::string(requestingSource);
+        msg += std::to_string(type);
+        msg += static_cast<char>(includeDepth);
+
+        const std::string name = std::string(requestedSource);
+        const std::string contents = ReadFile(name);
+
+        auto container = new std::array<std::string, 2>;
+        (*container)[0] = name;
+        (*container)[1] = contents;
+
+        auto data = new shaderc_include_result;
+
+        data->user_data = container;
+
+        data->source_name = (*container)[0].data();
+        data->source_name_length = (*container)[0].size();
+
+        data->content = (*container)[1].data();
+        data->content_length = (*container)[1].size();
+
+        return data;
+    };
+
+    void ShaderIncluder::ReleaseInclude(shaderc_include_result* data)
+    {
+        delete static_cast<std::array<std::string, 2>*>(data->user_data);
+        delete data;
+    };
+
+    std::string ShaderIncluder::ReadFile(const std::string& filepath)
+    {
+        std::string sourceCode;
+        std::ifstream in(filepath, std::ios::in | std::ios::binary);
+        if (in)
+        {
+            in.seekg(0, std::ios::end);
+            size_t size = in.tellg();
+            if (size > 0)
+            {
+                sourceCode.resize(size);
+                in.seekg(0, std::ios::beg);
+                in.read(&sourceCode[0], size);
+            }
+            else
+            {
+                LOG_CORE_WARN("ShaderIncluder::ReadFile: Could not read shader file '{0}'", filepath);
+            }
+        }
+        else
+        {
+            LOG_CORE_WARN("ShaderIncluder::ReadFile Could not open shader file '{0}'", filepath);
+        }
+        return sourceCode;
     }
 }
