@@ -49,6 +49,12 @@ namespace GfxRenderEngine
         m_ProjectionMatrix[3][2] = -near / (far - near);
     }
 
+    void Camera::SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far)
+    {
+        m_ProjectionType = ORTHOGRAPHIC_PROJECTION;
+        m_ProjectionMatrix = glm::ortho(left, right, bottom, top, near, far);
+    }
+
     void Camera::SetPerspectiveProjection(float fovy, float aspect, float near, float far)
     {
         ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);

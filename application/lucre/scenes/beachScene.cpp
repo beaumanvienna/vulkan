@@ -145,27 +145,26 @@ namespace LucreApp
             {
                 m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
                 m_LightView0 = std::make_shared<Camera>();
-                
-                m_LightView0->SetPerspectiveProjection
-                (
-                    glm::radians(100.0f),
-                    1.0f, //aspectRatio
-                    0.1f, // near
-                    50.0f // far
-                );
+                float left   =   4.0f;
+                float right  =  -4.0f;
+                float bottom =  -7.5f;
+                float top    =   7.5f;
+                float near   =  -0.1f;
+                float far    =  10.0f;
+                m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb0, m_LightView0);
             }
 
             {
                 m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::Scene::arrow");
                 m_LightView1 = std::make_shared<Camera>();
-                m_LightView1->SetPerspectiveProjection
-                (
-                    glm::radians(100.0f),
-                    1.0f, //aspectRatio
-                    0.1f, // near
-                    50.0f // far
-                );            
+                float left   =  20.0f;
+                float right  = -20.0f;
+                float bottom = -7.5f;
+                float top    =  7.5f;
+                float near   = -0.1f;
+                float far    = 40.0f;
+                m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }

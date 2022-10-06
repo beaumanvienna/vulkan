@@ -43,6 +43,7 @@ namespace GfxRenderEngine
         Camera();
 
         void SetOrthographicProjection(float left, float right, float bottom, float top, float near, float far);
+        void SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far);
         void SetPerspectiveProjection(float fovy, float aspect, float near, float far);
         void SetProjection(float left, float right, float bottom, float top, float near, float far);
         ProjectionType GetProjectionType() const { return m_ProjectionType; }
