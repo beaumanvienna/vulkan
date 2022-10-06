@@ -149,7 +149,7 @@ namespace LucreApp
                 float right  =  -4.0f;
                 float bottom =  -7.5f;
                 float top    =   7.5f;
-                float near   =  -0.1f;
+                float near   =   0.1f;
                 float far    =  10.0f;
                 m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb0, m_LightView0);
@@ -162,7 +162,7 @@ namespace LucreApp
                 float right  = -20.0f;
                 float bottom = -7.5f;
                 float top    =  7.5f;
-                float near   = -0.1f;
+                float near   =  0.1f;
                 float far    = 40.0f;
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
@@ -257,7 +257,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-1.45341f, 2.0f, 2.30515f});
+        cameraTransform.SetTranslation({-0.4f, 2.0f, 2.30515f});
         cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
 
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());

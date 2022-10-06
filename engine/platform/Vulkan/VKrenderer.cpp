@@ -276,13 +276,13 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo shadowMapInfo0{};
-            shadowMapInfo0.sampler     = m_SwapChain->GetSamplerShadowMap0(i);
-            shadowMapInfo0.imageView   = m_SwapChain->GetImageViewShadowMap0(i);
+            shadowMapInfo0.sampler     = m_SwapChain->GetSamplerShadowMap0();
+            shadowMapInfo0.imageView   = m_SwapChain->GetImageViewShadowMap0();
             shadowMapInfo0.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
             VkDescriptorImageInfo shadowMapInfo1{};
-            shadowMapInfo1.sampler     = m_SwapChain->GetSamplerShadowMap1(i);
-            shadowMapInfo1.imageView   = m_SwapChain->GetImageViewShadowMap1(i);
+            shadowMapInfo1.sampler     = m_SwapChain->GetSamplerShadowMap1();
+            shadowMapInfo1.imageView   = m_SwapChain->GetImageViewShadowMap1();
             shadowMapInfo1.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
             VkDescriptorBufferInfo shadowUBObufferInfo0 = m_ShadowUniformBuffers0[i]->DescriptorInfo();
@@ -459,7 +459,7 @@ namespace GfxRenderEngine
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass0();
-        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer0(m_CurrentImageIndex);
+        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer0();
 
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent0();
@@ -492,7 +492,7 @@ namespace GfxRenderEngine
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_SwapChain->GetShadowRenderPass1();
-        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer1(m_CurrentImageIndex);
+        renderPassInfo.framebuffer = m_SwapChain->GetShadowFrameBuffer1();
 
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetShadowMapExtent1();

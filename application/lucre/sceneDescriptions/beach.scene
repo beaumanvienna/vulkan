@@ -12,13 +12,13 @@ glTF-files :
         scale: [0.0018, 0.038, 0.0018]
         rotation: [-0.69813174, -1.57079637, 0]
     application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
-        translation: [-2.07932615, 1.24600148, -1.00711334]
-        scale: [0.5, 0.5, 0.5]
-        rotation: [-1.57069314, 1.54480636, -3.1414907]
+        translation: [-1.3087281, 1.24600148, -1.02713811]
+        scale: [0.513390124, 0.5, 0.5]
+        rotation: [-1.57069302, 1.54484308, -3.14149284]
     application/lucre/models/external_3D_files/pirateship/pirateship.gltf:
-        translation: [0, 0.0999100804, -10.9879932]
-        scale: [0.999999523, 1, 0.999999523]
-        rotation: [2.49916695e-07, 1.39898598, 2.54068709e-07]
+        translation: [2.74061155, 0.0999100804, -10.5124426]
+        scale: [0.999999821, 1, 0.999999821]
+        rotation: [8.23974844e-08, 1.0256424, 7.82850194e-08]
     application/lucre/models/external_3D_files/rock01/rock01.gltf:
         translation: [-18.6503143, -0.0689417124, -18.4104939]
         scale: [1.0, 1.0, 1.0]

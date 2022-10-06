@@ -94,19 +94,19 @@ namespace GfxRenderEngine
 
         VkFramebuffer GetFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
-        VkFramebuffer GetShadowFrameBuffer0(int index) { return m_ShadowFramebuffers0[index]; }
-        VkFramebuffer GetShadowFrameBuffer1(int index) { return m_ShadowFramebuffers1[index]; }
+        VkFramebuffer GetShadowFrameBuffer0() { return m_ShadowFramebuffer0; }
+        VkFramebuffer GetShadowFrameBuffer1() { return m_ShadowFramebuffer1; }
 
         VkRenderPass GetRenderPass() { return m_RenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
         VkRenderPass GetShadowRenderPass0() { return m_ShadowRenderPass0; }
         VkRenderPass GetShadowRenderPass1() { return m_ShadowRenderPass1; }
 
-        VkSampler   GetSamplerShadowMap0(int index) { return m_ShadowDepthSamplers0[index]; }
-        VkSampler   GetSamplerShadowMap1(int index) { return m_ShadowDepthSamplers1[index]; }
+        VkSampler   GetSamplerShadowMap0() { return m_ShadowDepthSampler0; }
+        VkSampler   GetSamplerShadowMap1() { return m_ShadowDepthSampler1; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
-        VkImageView GetImageViewShadowMap0(int index) { return m_ShadowDepthImageViews0[index]; }
-        VkImageView GetImageViewShadowMap1(int index) { return m_ShadowDepthImageViews1[index]; }
+        VkImageView GetImageViewShadowMap0() { return m_ShadowDepthImageView0; }
+        VkImageView GetImageViewShadowMap1() { return m_ShadowDepthImageView1; }
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
         VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
@@ -141,10 +141,10 @@ namespace GfxRenderEngine
         void CreateShadowDepthResources
         (
             int width, VkExtent2D& shadowMapExtent,
-            std::vector<VkImage>& shadowDepthImages,
-            std::vector<VkDeviceMemory>& shadowDepthImageMemorys,
-            std::vector<VkImageView>& shadowDepthImageViews,
-            std::vector<VkSampler>& shadowDepthSamplers
+            VkImage& shadowDepthImage,
+            VkDeviceMemory& shadowDepthImageMemory,
+            VkImageView& shadowDepthImageView,
+            VkSampler& shadowDepthSampler
         );
         void CreateDepthResources();
 
@@ -152,12 +152,12 @@ namespace GfxRenderEngine
         void CreateRenderPass();
         void CreateGUIRenderPass();
 
-        void CreateShadowFramebuffers
+        void CreateShadowFramebuffer
         (
             const VkExtent2D& shadowMapExtent,
-            std::vector<VkFramebuffer>& shadowFramebuffers,
-            const std::vector<VkImageView>& shadowDepthImageViews,
-            const VkRenderPass& shadowRenderPass
+            VkFramebuffer& shadowFramebuffer,
+            VkImageView& shadowDepthImageView,
+            VkRenderPass& shadowRenderPass
         );
         void CreateFramebuffers();
         void CreateGUIFramebuffers();
@@ -181,22 +181,22 @@ namespace GfxRenderEngine
 
         std::vector<VkFramebuffer> m_3DFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
-        std::vector<VkFramebuffer> m_ShadowFramebuffers0;
-        std::vector<VkFramebuffer> m_ShadowFramebuffers1;
+        VkFramebuffer m_ShadowFramebuffer0;
+        VkFramebuffer m_ShadowFramebuffer1;
 
         VkRenderPass m_RenderPass;
         VkRenderPass m_GUIRenderPass;
         VkRenderPass m_ShadowRenderPass0;
         VkRenderPass m_ShadowRenderPass1;
 
-        std::vector<VkSampler> m_ShadowDepthSamplers0;
-        std::vector<VkSampler> m_ShadowDepthSamplers1;
-        std::vector<VkImage> m_ShadowDepthImages0;
-        std::vector<VkImage> m_ShadowDepthImages1;
-        std::vector<VkImageView> m_ShadowDepthImageViews0;
-        std::vector<VkImageView> m_ShadowDepthImageViews1;
-        std::vector<VkDeviceMemory> m_ShadowDepthImageMemorys0;
-        std::vector<VkDeviceMemory> m_ShadowDepthImageMemorys1;
+        VkSampler m_ShadowDepthSampler0;
+        VkSampler m_ShadowDepthSampler1;
+        VkImage m_ShadowDepthImage0;
+        VkImage m_ShadowDepthImage1;
+        VkImageView m_ShadowDepthImageView0;
+        VkImageView m_ShadowDepthImageView1;
+        VkDeviceMemory m_ShadowDepthImageMemory0;
+        VkDeviceMemory m_ShadowDepthImageMemory1;
 
         std::vector<VkImage> m_DepthImages;
         std::vector<VkImageView> m_DepthImageViews;
