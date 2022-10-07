@@ -23,6 +23,7 @@
 #include "engine.h"
 
 #include "VKswapChain.h"
+#include "platform/Vulkan/shadowMapping.h"
 #include "auxiliary/instrumentation.h"
 
 namespace GfxRenderEngine
@@ -59,7 +60,7 @@ namespace GfxRenderEngine
         // hi-res shadow map
         CreateShadowDepthResources
         (
-            4096,                        /* width */
+            SHADOW_MAP_HI_RES,           /* width */
             m_ShadowMapExtent0,          /*VkExtent2D&*/
             m_ShadowDepthImage0,         /*VkImage*/
             m_ShadowDepthImageMemory0,   /*VkDeviceMemory*/
@@ -69,7 +70,7 @@ namespace GfxRenderEngine
         // low-res shadow map
         CreateShadowDepthResources
         (
-            1024,                        /* width */
+            SHADOW_MAP_LOW_RES,          /* width */
             m_ShadowMapExtent1,          /*VkExtent2D&*/
             m_ShadowDepthImage1,         /*VkImage*/
             m_ShadowDepthImageMemory1,   /*VkDeviceMemory*/

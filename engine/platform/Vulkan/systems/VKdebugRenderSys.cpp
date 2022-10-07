@@ -79,8 +79,9 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemDebug::RenderEntities(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemDebug::RenderEntities(const VK_FrameInfo& frameInfo, bool showDebugShadowMap)
     {
+        if (!showDebugShadowMap) return;
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         std::vector<VkDescriptorSet> localDescriptorSet = 

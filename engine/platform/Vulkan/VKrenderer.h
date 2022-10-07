@@ -96,6 +96,7 @@ namespace GfxRenderEngine
         virtual float GetAmbientLightIntensity() override { return m_AmbientLightIntensity; }
         virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) override;
         virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
+        virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
@@ -158,5 +159,7 @@ namespace GfxRenderEngine
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;
+
+        bool m_ShowDebugShadowMap;
     };
 }

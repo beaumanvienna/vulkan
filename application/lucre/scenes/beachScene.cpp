@@ -145,10 +145,10 @@ namespace LucreApp
             {
                 m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
                 m_LightView0 = std::make_shared<Camera>();
-                float left   =   4.0f;
-                float right  =  -4.0f;
-                float bottom =  -7.5f;
-                float top    =   7.5f;
+                float left   =  -4.0f;
+                float right  =   4.0f;
+                float bottom =  -4.0f;
+                float top    =   4.0f;
                 float near   =   0.1f;
                 float far    =  10.0f;
                 m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
@@ -158,12 +158,12 @@ namespace LucreApp
             {
                 m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::Scene::arrow");
                 m_LightView1 = std::make_shared<Camera>();
-                float left   =  20.0f;
-                float right  = -20.0f;
-                float bottom = -7.5f;
-                float top    =  7.5f;
-                float near   =  0.1f;
-                float far    = 40.0f;
+                float left   = -20.0f;
+                float right  =  20.0f;
+                float bottom = -14.0f;
+                float top    =  14.0f;
+                float near   =   0.1f;
+                float far    =  40.0f;
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
@@ -211,6 +211,7 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);
 

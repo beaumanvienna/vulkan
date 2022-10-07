@@ -45,6 +45,7 @@ namespace LucreApp
     bool  ImGUI::m_UseScale = false;
     bool  ImGUI::m_UseRotate = false;
     bool  ImGUI::m_UseTranslate = false;
+    bool  ImGUI::m_ShowDebugShadowMap = false;
     entt::entity ImGUI::m_MaxGameObjects = (entt::entity)0;
 
     void ImGUI::DebugWindow()
@@ -96,6 +97,9 @@ namespace LucreApp
         ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("point lights", &m_PointLightIntensity, 0.0f, 10.0f);
+
+        // point light intensity
+        ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
 
         auto guizmoMode = GetGuizmoMode();
         if (m_SelectedGameObject > 1) // id one is the camera

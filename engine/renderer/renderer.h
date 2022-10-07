@@ -59,5 +59,7 @@ namespace GfxRenderEngine
         virtual void SetAmbientLightIntensity(float ambientLightIntensity) = 0;
         virtual float GetAmbientLightIntensity() = 0;
 
+        virtual void ShowDebugShadowMap(bool showDebugShadowMap) = 0;
+
     };
 }

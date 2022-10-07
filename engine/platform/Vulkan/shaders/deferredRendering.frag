@@ -25,7 +25,8 @@
 
 #version 450
 #extension GL_GOOGLE_include_directive : enable
-#include "pointlights.h"
+#include "../pointlights.h"
+#include "../shadowMapping.h"
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
@@ -220,8 +221,8 @@ void main()
         float NdotL = max(dot(N, L), 0.0);
         float shadowPercentage;
         int PCF_SIZE = 3;
-        int SHADOWMAP_SIZE_HIRES_RES = 4096;
-        int SHADOWMAP_SIZE_LOW_RES   = 1024;
+        int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HI_RES;
+        int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
 
         vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);
         vec3 lightSpacePosistionNDCHiRes = lightSpacePosistionHiRes.xyz / lightSpacePosistionHiRes.w;

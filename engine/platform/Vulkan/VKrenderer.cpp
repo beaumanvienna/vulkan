@@ -39,7 +39,7 @@ namespace GfxRenderEngine
     VK_Renderer::VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device)
         : m_Window{window}, m_Device{device}, m_FrameCounter{0},
           m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f},
-          m_CurrentFrameIndex{0},
+          m_CurrentFrameIndex{0}, m_ShowDebugShadowMap{false},
           m_FrameInProgress{false}
     {
         CompileShaders();
@@ -739,7 +739,7 @@ namespace GfxRenderEngine
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem) m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
         }
     }
 

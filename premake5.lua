@@ -86,11 +86,6 @@ project "lucre"
 
         linkoptions { "-fno-pie -no-pie" }
 
-        prebuildcommands
-        {
-            "scripts/compileShaders.sh"
-        }
-
         files 
         { 
         }

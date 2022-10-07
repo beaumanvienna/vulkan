@@ -1,5 +1,8 @@
 /* Engine Copyright (c) 2022 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
+   *
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -18,45 +21,7 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
-
-#include "vendor/imgui/imgui.h"
-#include "vendor/imGuizmo/ImGuizmo.h"
-
-#include "engine.h"
-
-namespace LucreApp
-{
-
-    class ImGUI
-    {
-
-    public:
-
-        static void DebugWindow();
-
-    public:
-
-        static int   m_SelectedGameObject;
-        static float m_Roughness;
-        static bool  m_UseRoughness;
-        static float m_Metallic;
-        static bool  m_UseMetallic;
-        static float m_NormalMapIntensity;
-        static bool  m_UseNormalMapIntensity;
-        static float m_PointLightIntensity;
-        static bool  m_UsePointLightIntensity;
-        static bool  m_UseScale;
-        static bool  m_UseRotate;
-        static bool  m_UseTranslate;
-        static bool  m_ShowDebugShadowMap;
-        static entt::entity m_MaxGameObjects;
-
-    private:
-
-        static ImGuizmo::OPERATION GetGuizmoMode();
-
-    };
-}
+#define SHADOW_MAP_HI_RES 2048
+#define SHADOW_MAP_LOW_RES 2048

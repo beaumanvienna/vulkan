@@ -52,7 +52,7 @@ namespace GfxRenderEngine
     void Camera::SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far)
     {
         m_ProjectionType = ORTHOGRAPHIC_PROJECTION;
-        m_ProjectionMatrix = glm::ortho(left, right, bottom, top, near, far);
+        m_ProjectionMatrix = glm::ortho(-left, -right, bottom, top, near, far);
     }
 
     void Camera::SetPerspectiveProjection(float fovy, float aspect, float near, float far)
