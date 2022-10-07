@@ -25,8 +25,8 @@
 
 #version 450
 #extension GL_GOOGLE_include_directive : enable
-#include "../pointlights.h"
-#include "../shadowMapping.h"
+#include "engine/platform/Vulkan/pointlights.h"
+#include "engine/platform/Vulkan/shadowMapping.h"
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
