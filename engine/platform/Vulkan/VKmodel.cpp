@@ -488,14 +488,10 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        auto texture = static_cast<VK_Texture*>(colorMap.get());
-        VkDescriptorImageInfo imageInfo {};
-        imageInfo.sampler     = texture->m_Sampler;
-        imageInfo.imageView   = texture->m_TextureView;
-        imageInfo.imageLayout = texture->m_ImageLayout;
+        const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
 
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, &imageInfo)
+            .WriteImage(0, imageInfo)
             .Build(pbrDiffuseMaterial.m_DescriptorSet);
     }
 
@@ -508,25 +504,12 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        VkDescriptorImageInfo imageInfo0 {};
-        {
-            auto texture = static_cast<VK_Texture*>(colorMap.get());
-            imageInfo0.sampler     = texture->m_Sampler;
-            imageInfo0.imageView   = texture->m_TextureView;
-            imageInfo0.imageLayout = texture->m_ImageLayout;
-        }
-
-        VkDescriptorImageInfo imageInfo1 {};
-        {
-            auto texture = static_cast<VK_Texture*>(normalMap.get());
-            imageInfo1.sampler     = texture->m_Sampler;
-            imageInfo1.imageView   = texture->m_TextureView;
-            imageInfo1.imageLayout = texture->m_ImageLayout;
-        }
+        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
 
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, &imageInfo0)
-            .WriteImage(1, &imageInfo1)
+            .WriteImage(0, imageInfo0)
+            .WriteImage(1, imageInfo1)
             .Build(pbrDiffuseNormalMaterial.m_DescriptorSet);
     }
 
@@ -541,34 +524,14 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        VkDescriptorImageInfo imageInfo0 {};
-        {
-            auto texture = static_cast<VK_Texture*>(colorMap.get());
-            imageInfo0.sampler     = texture->m_Sampler;
-            imageInfo0.imageView   = texture->m_TextureView;
-            imageInfo0.imageLayout = texture->m_ImageLayout;
-        }
-
-        VkDescriptorImageInfo imageInfo1 {};
-        {
-            auto texture = static_cast<VK_Texture*>(normalMap.get());
-            imageInfo1.sampler     = texture->m_Sampler;
-            imageInfo1.imageView   = texture->m_TextureView;
-            imageInfo1.imageLayout = texture->m_ImageLayout;
-        }
-
-        VkDescriptorImageInfo imageInfo2 {};
-        {
-            auto texture = static_cast<VK_Texture*>(roughnessMetallicMap.get());
-            imageInfo2.sampler     = texture->m_Sampler;
-            imageInfo2.imageView   = texture->m_TextureView;
-            imageInfo2.imageLayout = texture->m_ImageLayout;
-        }
+        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
 
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, &imageInfo0)
-            .WriteImage(1, &imageInfo1)
-            .WriteImage(2, &imageInfo2)
+            .WriteImage(0, imageInfo0)
+            .WriteImage(1, imageInfo1)
+            .WriteImage(2, imageInfo2)
             .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet);
     }
 
@@ -578,16 +541,10 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
 
-        VkDescriptorImageInfo cubemapInfo {};
-        {
-            auto texture = static_cast<VK_Cubemap*>(cubemap.get());
-            cubemapInfo.sampler     = texture->m_Sampler;
-            cubemapInfo.imageView   = texture->m_ImageView;
-            cubemapInfo.imageLayout = texture->m_ImageLayout;
-        }
+        VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
 
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, &cubemapInfo)
+            .WriteImage(0, cubemapInfo)
             .Build(cubemapMaterial.m_DescriptorSet);
     }
 }

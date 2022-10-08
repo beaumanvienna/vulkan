@@ -196,10 +196,7 @@ namespace GfxRenderEngine
         textureSpritesheet->SetFilename("spritesheet");
 
         gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
-        VkDescriptorImageInfo imageInfo0 {};
-        imageInfo0.sampler     = textureSpritesheet->m_Sampler;
-        imageInfo0.imageView   = textureSpritesheet->m_TextureView;
-        imageInfo0.imageLayout = textureSpritesheet->m_ImageLayout;
+        VkDescriptorImageInfo imageInfo0 = textureSpritesheet->GetDescriptorImageInfo();
 
         data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
@@ -207,16 +204,13 @@ namespace GfxRenderEngine
         textureFontAtlas->SetFilename("font atlas");
 
         gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture
-        VkDescriptorImageInfo imageInfo1 {};
-        imageInfo1.sampler     = textureFontAtlas->m_Sampler;
-        imageInfo1.imageView   = textureFontAtlas->m_TextureView;
-        imageInfo1.imageLayout = textureFontAtlas->m_ImageLayout;
+        VkDescriptorImageInfo imageInfo1 = textureFontAtlas->GetDescriptorImageInfo();
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers0[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
-                .WriteBuffer(0, &shadowUBObufferInfo)
+                .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets0[i]);
         }
 
@@ -224,7 +218,7 @@ namespace GfxRenderEngine
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers1[i]->DescriptorInfo();
             VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
-                .WriteBuffer(0, &shadowUBObufferInfo)
+                .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets1[i]);
         }
 
@@ -232,9 +226,9 @@ namespace GfxRenderEngine
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
             VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
-                .WriteBuffer(0, &bufferInfo)
-                .WriteImage(1, &imageInfo0)
-                .WriteImage(2, &imageInfo1)
+                .WriteBuffer(0, bufferInfo)
+                .WriteImage(1, imageInfo0)
+                .WriteImage(2, imageInfo1)
                 .Build(m_GlobalDescriptorSets[i]);
         }
 
@@ -279,24 +273,17 @@ namespace GfxRenderEngine
     {
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorImageInfo shadowMapInfo0{};
-            shadowMapInfo0.sampler     = m_ShadowMap[ShadowMaps::HIGH_RES]->GetSamplerShadowMap();
-            shadowMapInfo0.imageView   = m_ShadowMap[ShadowMaps::HIGH_RES]->GetImageViewShadowMap();
-            shadowMapInfo0.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-            VkDescriptorImageInfo shadowMapInfo1{};
-            shadowMapInfo1.sampler     = m_ShadowMap[ShadowMaps::LOW_RES]->GetSamplerShadowMap();
-            shadowMapInfo1.imageView   = m_ShadowMap[ShadowMaps::LOW_RES]->GetImageViewShadowMap();
-            shadowMapInfo1.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            VkDescriptorImageInfo shadowMapInfo0 = m_ShadowMap[ShadowMaps::HIGH_RES]->GetDescriptorImageInfo();
+            VkDescriptorImageInfo shadowMapInfo1 = m_ShadowMap[ShadowMaps::LOW_RES]->GetDescriptorImageInfo();
 
             VkDescriptorBufferInfo shadowUBObufferInfo0 = m_ShadowUniformBuffers0[i]->DescriptorInfo();
             VkDescriptorBufferInfo shadowUBObufferInfo1 = m_ShadowUniformBuffers1[i]->DescriptorInfo();
 
             VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, *m_DescriptorPool)
-                .WriteImage(0, &shadowMapInfo0)
-                .WriteImage(1, &shadowMapInfo1)
-                .WriteBuffer(2, &shadowUBObufferInfo0)
-                .WriteBuffer(3, &shadowUBObufferInfo1)
+                .WriteImage(0, shadowMapInfo0)
+                .WriteImage(1, shadowMapInfo1)
+                .WriteBuffer(2, shadowUBObufferInfo0)
+                .WriteBuffer(3, shadowUBObufferInfo1)
                 .Build(m_ShadowMapDescriptorSets[i]);
         }
     }
@@ -322,10 +309,10 @@ namespace GfxRenderEngine
             imageInfoGBufferMaterialInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VK_DescriptorWriter(*m_LightingDescriptorSetLayout, *m_DescriptorPool)
-                .WriteImage(0, &imageInfoGBufferPositionInputAttachment)
-                .WriteImage(1, &imageInfoGBufferNormalInputAttachment)
-                .WriteImage(2, &imageInfoGBufferColorInputAttachment)
-                .WriteImage(3, &imageInfoGBufferMaterialInputAttachment)
+                .WriteImage(0, imageInfoGBufferPositionInputAttachment)
+                .WriteImage(1, imageInfoGBufferNormalInputAttachment)
+                .WriteImage(2, imageInfoGBufferColorInputAttachment)
+                .WriteImage(3, imageInfoGBufferMaterialInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
         }
     }

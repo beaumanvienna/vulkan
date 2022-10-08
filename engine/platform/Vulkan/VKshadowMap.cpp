@@ -62,7 +62,8 @@ namespace GfxRenderEngine
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        m_ImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        depthAttachment.finalLayout = m_ImageLayout;
 
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = static_cast<uint>(ShadowRenderTargets::ATTACHMENT_DEPTH);
@@ -185,6 +186,10 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
+
+        m_DescriptorImageInfo.sampler     = m_ShadowDepthSampler;
+        m_DescriptorImageInfo.imageView   = m_ShadowDepthImageView;
+        m_DescriptorImageInfo.imageLayout = m_ImageLayout;
     }
 
     void VK_ShadowMap::CreateShadowFramebuffer()

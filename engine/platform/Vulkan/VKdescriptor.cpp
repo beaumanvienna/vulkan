@@ -198,7 +198,7 @@ namespace GfxRenderEngine
     VK_DescriptorWriter& VK_DescriptorWriter::WriteBuffer
         (
             uint binding,
-            VkDescriptorBufferInfo *bufferInfo
+            const VkDescriptorBufferInfo& bufferInfo
         )
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1); // layout does not contain specified binding
@@ -211,7 +211,7 @@ namespace GfxRenderEngine
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
-        write.pBufferInfo = bufferInfo;
+        write.pBufferInfo = &bufferInfo;
         write.descriptorCount = 1;
 
         m_Writes.push_back(write);
@@ -221,7 +221,7 @@ namespace GfxRenderEngine
     VK_DescriptorWriter& VK_DescriptorWriter::WriteImage
         (
             uint binding,
-            VkDescriptorImageInfo *imageInfo
+            const VkDescriptorImageInfo& imageInfo
         )
     {
         ASSERT(m_SetLayout.m_Bindings.count(binding) == 1) // layout does not contain specified binding
@@ -234,7 +234,7 @@ namespace GfxRenderEngine
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
-        write.pImageInfo = imageInfo;
+        write.pImageInfo = &imageInfo;
         write.descriptorCount = 1;
 
         m_Writes.push_back(write);

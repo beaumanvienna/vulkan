@@ -53,6 +53,8 @@ namespace GfxRenderEngine
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
         virtual void SetFilename(const std::string& filename) override { m_FileName = filename;}
 
+        const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo;}
+
     private:
 
         bool Create();
@@ -75,18 +77,16 @@ namespace GfxRenderEngine
         std::shared_ptr<TextureSlotManager> m_TextureSlotManager;
 
         int m_InternalFormat, m_DataFormat;
+        bool m_NearestFilter, m_sRGB;
         int m_Type;
 
+        VkFormat m_ImageFormat;
         VkImage m_TextureImage;
         VkDeviceMemory m_TextureImageMemory;
-        VkFormat m_ImageFormat;
-
-        bool m_NearestFilter, m_sRGB;
-    public:
-
-        VkSampler m_Sampler;
-        VkImageView m_TextureView;
         VkImageLayout m_ImageLayout;
+        VkImageView m_ImageView;
+        VkSampler m_Sampler;
 
+        VkDescriptorImageInfo m_DescriptorImageInfo;
     };
 }

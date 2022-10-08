@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
 
         vkDestroyImage(device, m_TextureImage, nullptr);
-        vkDestroyImageView(device, m_TextureView, nullptr);
+        vkDestroyImageView(device, m_ImageView, nullptr);
         vkDestroySampler(device, m_Sampler, nullptr);
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
     }
@@ -379,12 +379,16 @@ namespace GfxRenderEngine
         view.image = m_TextureImage;
 
         {
-            auto result = vkCreateImageView(device, &view, nullptr, &m_TextureView);
+            auto result = vkCreateImageView(device, &view, nullptr, &m_ImageView);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create image view!");
             }
         }
+
+        m_DescriptorImageInfo.sampler     = m_Sampler;
+        m_DescriptorImageInfo.imageView   = m_ImageView;
+        m_DescriptorImageInfo.imageLayout = m_ImageLayout;
 
         return true;
     }

@@ -144,8 +144,8 @@ namespace GfxRenderEngine
 
         VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& pool);
 
-        VK_DescriptorWriter& WriteBuffer(uint binding, VkDescriptorBufferInfo* bufferInfo);
-        VK_DescriptorWriter& WriteImage(uint binding, VkDescriptorImageInfo* imageInfo);
+        VK_DescriptorWriter& WriteBuffer(uint binding, const VkDescriptorBufferInfo& bufferInfo);
+        VK_DescriptorWriter& WriteImage(uint binding, const VkDescriptorImageInfo& imageInfo);
 
         bool Build(VkDescriptorSet& set);
         void Overwrite(VkDescriptorSet& set);

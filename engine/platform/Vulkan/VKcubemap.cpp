@@ -345,6 +345,10 @@ namespace GfxRenderEngine
             }
         }
 
+        m_DescriptorImageInfo.sampler     = m_Sampler;
+        m_DescriptorImageInfo.imageView   = m_ImageView;
+        m_DescriptorImageInfo.imageLayout = m_ImageLayout;
+
         return true;
     }
 }

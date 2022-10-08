@@ -43,6 +43,8 @@ namespace GfxRenderEngine
         virtual int GetWidth() const override { return m_Width; }
         virtual int GetHeight() const override { return m_Height; }
 
+        const VkDescriptorImageInfo GetDescriptorImageInfo() const { return m_DescriptorImageInfo;}
+
     private:
 
         bool Create();
@@ -63,19 +65,17 @@ namespace GfxRenderEngine
         int m_Width, m_Height, m_BytesPerPixel;
         uint m_MipLevels;
 
+        bool m_NearestFilter, m_sRGB;
         int m_InternalFormat, m_DataFormat;
         int m_Type;
 
+        VkFormat m_ImageFormat;
         VkImage m_CubemapImage;
         VkDeviceMemory m_CubemapImageMemory;
-        VkFormat m_ImageFormat;
-
-        bool m_NearestFilter, m_sRGB;
-
-    public:
-
-        VkSampler m_Sampler;
-        VkImageView m_ImageView;
         VkImageLayout m_ImageLayout;
+        VkImageView m_ImageView;
+        VkSampler m_Sampler;
+
+        VkDescriptorImageInfo m_DescriptorImageInfo;
     };
 }

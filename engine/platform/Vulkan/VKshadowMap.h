@@ -57,9 +57,8 @@ namespace GfxRenderEngine
 
         VkFramebuffer GetShadowFrameBuffer() { return m_ShadowFramebuffer; }
         VkRenderPass  GetShadowRenderPass() { return m_ShadowRenderPass; }
-        VkSampler     GetSamplerShadowMap() { return m_ShadowDepthSampler; }
-        VkImageView   GetImageViewShadowMap() { return m_ShadowDepthImageView; }
         VkExtent2D    GetShadowMapExtent() { return m_ShadowMapExtent; }
+        const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo;}
 
     private:
 
@@ -77,8 +76,11 @@ namespace GfxRenderEngine
         VkRenderPass m_ShadowRenderPass;
 
         VkImage m_ShadowDepthImage;
+        VkImageLayout m_ImageLayout;
         VkImageView m_ShadowDepthImageView;
         VkDeviceMemory m_ShadowDepthImageMemory;
         VkSampler m_ShadowDepthSampler;
+
+        VkDescriptorImageInfo m_DescriptorImageInfo;
     };
 }
