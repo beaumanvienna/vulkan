@@ -36,18 +36,6 @@ namespace GfxRenderEngine
 
     public:
 
-        enum class SubPassesShadow
-        {
-            SUBPASS_SHADOW = 0,
-            NUMBER_OF_SUBPASSES
-        };
-
-        enum class ShadowRenderTargets
-        {
-            ATTACHMENT_DEPTH = 0,
-            NUMBER_OF_ATTACHMENTS
-        };
-
         enum class SubPasses
         {
             SUBPASS_GEOMETRY = 0,
@@ -94,19 +82,11 @@ namespace GfxRenderEngine
 
         VkFramebuffer GetFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
-        VkFramebuffer GetShadowFrameBuffer0() { return m_ShadowFramebuffer0; }
-        VkFramebuffer GetShadowFrameBuffer1() { return m_ShadowFramebuffer1; }
 
         VkRenderPass GetRenderPass() { return m_RenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
-        VkRenderPass GetShadowRenderPass0() { return m_ShadowRenderPass0; }
-        VkRenderPass GetShadowRenderPass1() { return m_ShadowRenderPass1; }
 
-        VkSampler   GetSamplerShadowMap0() { return m_ShadowDepthSampler0; }
-        VkSampler   GetSamplerShadowMap1() { return m_ShadowDepthSampler1; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
-        VkImageView GetImageViewShadowMap0() { return m_ShadowDepthImageView0; }
-        VkImageView GetImageViewShadowMap1() { return m_ShadowDepthImageView1; }
         VkImageView GetImageViewGBufferPosition(int index) { return m_GBufferPositionViews[index]; }
         VkImageView GetImageViewGBufferNormal(int index) { return m_GBufferNormalViews[index]; }
         VkImageView GetImageViewGBufferColor(int index) { return m_GBufferColorViews[index]; }
@@ -115,8 +95,6 @@ namespace GfxRenderEngine
         size_t ImageCount() { return m_SwapChainImages.size(); }
         VkFormat GetSwapChainImageFormat() { return m_SwapChainImageFormat; }
         VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
-        VkExtent2D GetShadowMapExtent0() { return m_ShadowMapExtent0; }
-        VkExtent2D GetShadowMapExtent1() { return m_ShadowMapExtent1; }
         uint Width() { return m_SwapChainExtent.width; }
         uint Height() { return m_SwapChainExtent.height; }
 
@@ -124,7 +102,6 @@ namespace GfxRenderEngine
         {
             return static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height);
         }
-        VkFormat FindDepthFormat();
 
         VkResult AcquireNextImage(uint *imageIndex);
         VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint *imageIndex);
@@ -132,33 +109,14 @@ namespace GfxRenderEngine
 
     private:
 
-        static constexpr int NUMBER_OF_SHADOW_MAPS = 2;
-
         void Init();
         void CreateSwapChain();
         void CreateImageViews();
-
-        void CreateShadowDepthResources
-        (
-            int width, VkExtent2D& shadowMapExtent,
-            VkImage& shadowDepthImage,
-            VkDeviceMemory& shadowDepthImageMemory,
-            VkImageView& shadowDepthImageView,
-            VkSampler& shadowDepthSampler
-        );
         void CreateDepthResources();
 
-        void CreateShadowRenderPass(VkRenderPass& shadowRenderPass);
         void CreateRenderPass();
         void CreateGUIRenderPass();
 
-        void CreateShadowFramebuffer
-        (
-            const VkExtent2D& shadowMapExtent,
-            VkFramebuffer& shadowFramebuffer,
-            VkImageView& shadowDepthImageView,
-            VkRenderPass& shadowRenderPass
-        );
         void CreateFramebuffers();
         void CreateGUIFramebuffers();
 
@@ -175,28 +133,13 @@ namespace GfxRenderEngine
 
         VkFormat m_SwapChainImageFormat;
         VkFormat m_SwapChainDepthFormat;
-        VkExtent2D m_ShadowMapExtent0;
-        VkExtent2D m_ShadowMapExtent1;
         VkExtent2D m_SwapChainExtent;
 
         std::vector<VkFramebuffer> m_3DFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
-        VkFramebuffer m_ShadowFramebuffer0;
-        VkFramebuffer m_ShadowFramebuffer1;
 
         VkRenderPass m_RenderPass;
         VkRenderPass m_GUIRenderPass;
-        VkRenderPass m_ShadowRenderPass0;
-        VkRenderPass m_ShadowRenderPass1;
-
-        VkSampler m_ShadowDepthSampler0;
-        VkSampler m_ShadowDepthSampler1;
-        VkImage m_ShadowDepthImage0;
-        VkImage m_ShadowDepthImage1;
-        VkImageView m_ShadowDepthImageView0;
-        VkImageView m_ShadowDepthImageView1;
-        VkDeviceMemory m_ShadowDepthImageMemory0;
-        VkDeviceMemory m_ShadowDepthImageMemory1;
 
         std::vector<VkImage> m_DepthImages;
         std::vector<VkImageView> m_DepthImageViews;

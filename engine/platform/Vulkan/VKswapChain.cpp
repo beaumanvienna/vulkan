@@ -23,7 +23,6 @@
 #include "engine.h"
 
 #include "VKswapChain.h"
-#include "platform/Vulkan/shadowMapping.h"
 #include "auxiliary/instrumentation.h"
 
 namespace GfxRenderEngine
@@ -52,51 +51,14 @@ namespace GfxRenderEngine
         CreateSwapChain();
         CreateImageViews();
 
-        CreateShadowRenderPass(m_ShadowRenderPass0);
-        CreateShadowRenderPass(m_ShadowRenderPass1);
         CreateRenderPass();
         CreateGUIRenderPass();
 
-        // hi-res shadow map
-        CreateShadowDepthResources
-        (
-            SHADOW_MAP_HI_RES,           /* width */
-            m_ShadowMapExtent0,          /*VkExtent2D&*/
-            m_ShadowDepthImage0,         /*VkImage*/
-            m_ShadowDepthImageMemory0,   /*VkDeviceMemory*/
-            m_ShadowDepthImageView0,     /*VkImageView*/
-            m_ShadowDepthSampler0        /*VkSampler*/
-        );
-        // low-res shadow map
-        CreateShadowDepthResources
-        (
-            SHADOW_MAP_LOW_RES,          /* width */
-            m_ShadowMapExtent1,          /*VkExtent2D&*/
-            m_ShadowDepthImage1,         /*VkImage*/
-            m_ShadowDepthImageMemory1,   /*VkDeviceMemory*/
-            m_ShadowDepthImageView1,     /*VkImageView*/
-            m_ShadowDepthSampler1        /*VkSampler*/
-        );
         CreateDepthResources();
 
         CreateGBufferImages();
         CreateGBufferViews();
 
-        CreateShadowFramebuffer
-        (
-            m_ShadowMapExtent0,          /*const VkExtent2D&*/
-            m_ShadowFramebuffer0,        /*VkFramebuffer*/
-            m_ShadowDepthImageView0,     /*VkImageView*/
-            m_ShadowRenderPass0          /*const VkRenderPass&*/
-        );
-
-        CreateShadowFramebuffer
-        (
-            m_ShadowMapExtent1,          /*const VkExtent2D&*/
-            m_ShadowFramebuffer1,        /*VkFramebuffer*/
-            m_ShadowDepthImageView1,     /*VkImageView*/
-            m_ShadowRenderPass1          /*const VkRenderPass&*/
-        );
         CreateFramebuffers();
         CreateGUIFramebuffers();
 
@@ -124,29 +86,11 @@ namespace GfxRenderEngine
             vkFreeMemory(m_Device->Device(), m_DepthImageMemorys[i], nullptr);
         }
 
-        {
-            vkDeviceWaitIdle(m_Device->Device());
-            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageView0, nullptr);
-            vkDestroyImage(m_Device->Device(), m_ShadowDepthImage0, nullptr);
-            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemory0, nullptr);
-            vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler0, nullptr);
-        }
-
-        {
-            vkDeviceWaitIdle(m_Device->Device());
-            vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageView1, nullptr);
-            vkDestroyImage(m_Device->Device(), m_ShadowDepthImage1, nullptr);
-            vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemory1, nullptr);
-            vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler1, nullptr);
-        }
-
         for (auto framebuffer : m_3DFramebuffers)
         {
             vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass0, nullptr);
-        vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass1, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_RenderPass, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_GUIRenderPass, nullptr);
 
@@ -588,7 +532,7 @@ namespace GfxRenderEngine
 
         // ATTACHMENT_DEPTH
         VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = FindDepthFormat();
+        depthAttachment.format = m_Device->FindDepthFormat();
         depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -944,7 +888,7 @@ namespace GfxRenderEngine
 
     void VK_SwapChain::CreateDepthResources()
     {
-        VkFormat depthFormat = FindDepthFormat();
+        VkFormat depthFormat = m_Device->FindDepthFormat();
         m_SwapChainDepthFormat = depthFormat;
         VkExtent2D m_SwapChainExtent = GetSwapChainExtent();
 
@@ -1062,202 +1006,10 @@ namespace GfxRenderEngine
         }
     }
 
-    VkFormat VK_SwapChain::FindDepthFormat()
-    {
-        return m_Device->FindSupportedFormat(
-            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    }
-
     bool VK_SwapChain::CompareSwapFormats(const VK_SwapChain& swapChain) const
     {
         bool depthFormatEqual = (swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat);
         bool imageFormatEqual = (swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat);
         return (depthFormatEqual && imageFormatEqual);
-    }
-
-    void VK_SwapChain::CreateShadowRenderPass(VkRenderPass& shadowRenderPass)
-    {
-
-        // ATTACHMENT_DEPTH
-        VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = FindDepthFormat();
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = static_cast<uint>(ShadowRenderTargets::ATTACHMENT_DEPTH);
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpassShadow = {};
-        subpassShadow.flags = 0;
-        subpassShadow.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpassShadow.inputAttachmentCount = 0;
-        subpassShadow.pInputAttachments = nullptr;
-        subpassShadow.colorAttachmentCount = 0;
-        subpassShadow.pColorAttachments = nullptr;
-        subpassShadow.pResolveAttachments = nullptr;
-        subpassShadow.pDepthStencilAttachment = &depthAttachmentRef;
-        subpassShadow.preserveAttachmentCount = 0;
-        subpassShadow.pPreserveAttachments = nullptr;
-
-        constexpr uint NUMBER_OF_DEPENDENCIES = 2;
-        std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
-
-        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                                // Index of the render pass being depended upon by dstSubpass
-        dependencies[0].dstSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW); // The index of the render pass depending on srcSubpass
-        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;              // What pipeline stage must have completed for the dependency
-        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;         // What pipeline stage is waiting on the dependency
-        dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                          // What access scopes influence the dependency
-        dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;       // What access scopes are waiting on the dependency
-        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                        // Other configuration about the dependency
-
-        dependencies[1].srcSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW);
-        dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
-        dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dependencies[1].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependencies[1].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
-        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-        // render pass
-        std::array<VkAttachmentDescription, static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
-        {
-            depthAttachment
-        };
-        std::array<VkSubpassDescription, static_cast<uint>(SubPassesShadow::NUMBER_OF_SUBPASSES)> subpasses = 
-        {
-            subpassShadow
-        };
-
-        VkRenderPassCreateInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
-        renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = static_cast<uint>(SubPassesShadow::NUMBER_OF_SUBPASSES);
-        renderPassInfo.pSubpasses = subpasses.data();
-        renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
-        renderPassInfo.pDependencies = dependencies.data();
-
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &shadowRenderPass) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create render pass!");
-        }
-    }
-
-    void VK_SwapChain::CreateShadowDepthResources
-    (
-        int width, VkExtent2D& shadowMapExtent,
-        VkImage& shadowDepthImage,
-        VkDeviceMemory& shadowDepthImageMemory,
-        VkImageView& shadowDepthImageView,
-        VkSampler& shadowDepthSampler
-    )
-    {
-        shadowMapExtent.width = width;
-        shadowMapExtent.height = width;
-
-        VkFormat depthFormat = FindDepthFormat();
-        m_SwapChainDepthFormat = depthFormat;
-
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = shadowMapExtent.width;
-        imageInfo.extent.height = shadowMapExtent.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = depthFormat;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.flags = 0;
-
-        m_Device->CreateImageWithInfo(
-            imageInfo,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            shadowDepthImage,
-            shadowDepthImageMemory);
-
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = shadowDepthImage;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = depthFormat;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &shadowDepthImageView) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
-        }
-
-        VkSamplerCreateInfo samplerCreateInfo{};
-        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
-        samplerCreateInfo.mipLodBias = 0.0f;
-        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = 1;
-        samplerCreateInfo.maxAnisotropy = 1.0;
-        samplerCreateInfo.anisotropyEnable = VK_TRUE;
-        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
-        {
-            auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &shadowDepthSampler);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create sampler!");
-            }
-        }
-    }
-
-    void VK_SwapChain::CreateShadowFramebuffer
-    (
-        const VkExtent2D& shadowMapExtent,
-        VkFramebuffer& shadowFramebuffer,
-        VkImageView& shadowDepthImageView,
-        VkRenderPass& shadowRenderPass
-    )
-    {
-        std::array<VkImageView, static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
-        {
-            shadowDepthImageView,
-        };
-
-        VkFramebufferCreateInfo framebufferInfo = {};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = shadowRenderPass;
-        framebufferInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
-        framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = shadowMapExtent.width;
-        framebufferInfo.height = shadowMapExtent.height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(
-                m_Device->Device(),
-                &framebufferInfo,
-                nullptr,
-                &shadowFramebuffer) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create shadow framebuffer!");
-        }
     }
 }

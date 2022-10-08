@@ -221,7 +221,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0);
         float shadowPercentage;
         int PCF_SIZE = 3;
-        int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HI_RES;
+        int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HIGH_RES;
         int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
 
         vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);

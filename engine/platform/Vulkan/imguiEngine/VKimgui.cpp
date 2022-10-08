@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-        pool_info.poolSizeCount = (uint)IM_ARRAYSIZE(pool_sizes);
+        pool_info.poolSizeCount = static_cast<uint>(IM_ARRAYSIZE(pool_sizes));
         pool_info.pPoolSizes = pool_sizes;
 
         auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &pool_info, nullptr, &m_DescriptorPool);

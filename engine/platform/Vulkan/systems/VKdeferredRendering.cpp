@@ -77,7 +77,7 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
-        pipelineConfig.subpass = (uint)VK_SwapChain::SubPasses::SUBPASS_LIGHTING;
+        pipelineConfig.subpass = static_cast<uint>(VK_SwapChain::SubPasses::SUBPASS_LIGHTING);
 
         // create a pipeline
         m_LightingPipeline = std::make_unique<VK_Pipeline>

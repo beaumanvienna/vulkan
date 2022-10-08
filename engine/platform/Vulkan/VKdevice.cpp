@@ -95,7 +95,7 @@ namespace GfxRenderEngine
         vkDestroyCommandPool(m_Device, m_LoadCommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
 
-        if (enableValidationLayers)
+        if (m_EnableValidationLayers)
         {
             DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
         }
@@ -114,7 +114,7 @@ namespace GfxRenderEngine
 
     void VK_Device::CreateInstance()
     {
-        if (enableValidationLayers && !CheckValidationLayerSupport())
+        if (m_EnableValidationLayers && !CheckValidationLayerSupport())
         {
             LOG_CORE_CRITICAL("validation layers requested, but not available!");
         }
@@ -125,7 +125,7 @@ namespace GfxRenderEngine
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "gfxRenderEngine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.apiVersion = VK_API_VERSION_1_3;
 
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -136,7 +136,7 @@ namespace GfxRenderEngine
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-        if (enableValidationLayers)
+        if (m_EnableValidationLayers)
         {
             createInfo.enabledLayerCount = static_cast<uint>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -230,7 +230,7 @@ namespace GfxRenderEngine
 
         // might not really be necessary anymore because device specific validation layers
         // have been deprecated
-        if (enableValidationLayers)
+        if (m_EnableValidationLayers)
         {
             createInfo.enabledLayerCount = static_cast<uint>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -346,7 +346,7 @@ namespace GfxRenderEngine
 
     void VK_Device::SetupDebugMessenger()
     {
-        if (!enableValidationLayers) return;
+        if (!m_EnableValidationLayers) return;
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         PopulateDebugMessengerCreateInfo(createInfo);
         auto result = CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger);
@@ -394,7 +394,7 @@ namespace GfxRenderEngine
 
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-        if (enableValidationLayers)
+        if (m_EnableValidationLayers)
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
@@ -515,8 +515,12 @@ namespace GfxRenderEngine
         return details;
     }
 
-    VkFormat VK_Device::FindSupportedFormat(
-        const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+    VkFormat VK_Device::FindSupportedFormat
+    (
+        const std::vector<VkFormat> &candidates,
+        VkImageTiling tiling,
+        VkFormatFeatureFlags features
+    )
     {
         for (VkFormat format : candidates)
         {
@@ -534,6 +538,16 @@ namespace GfxRenderEngine
         }
         LOG_CORE_CRITICAL("failed to find supported format!");
         return VK_FORMAT_UNDEFINED;
+    }
+
+    VkFormat VK_Device::FindDepthFormat()
+    {
+        return FindSupportedFormat
+        (
+            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
     }
 
     uint VK_Device::FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)

@@ -46,6 +46,7 @@
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
+#include "VKshadowMap.h"
 #include "VKdescriptor.h"
 #include "VKtexture.h"
 #include "VKbuffer.h"
@@ -58,7 +59,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_Renderer(VK_Window* window, std::shared_ptr<VK_Device> device);
+        VK_Renderer(VK_Window* window);
         ~VK_Renderer() override;
 
         VK_Renderer(const VK_Renderer&) = delete;
@@ -109,6 +110,7 @@ namespace GfxRenderEngine
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void RecreateSwapChain();
+        void RecreateShadowMaps();
         void CompileShaders();
         void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
         void CreateShadowMapDescriptorSets();
@@ -119,6 +121,14 @@ namespace GfxRenderEngine
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_SwapChain> m_SwapChain;
+
+        enum ShadowMaps
+        {
+            HIGH_RES = 0,
+            LOW_RES,
+            NUMBER_OF_SHADOW_MAPS
+        };
+        std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS]; 
 
         std::unique_ptr<VK_RenderSystemShadow>                            m_RenderSystemShadow;
         std::unique_ptr<VK_RenderSystemPbrNoMap>                          m_RenderSystemPbrNoMap;

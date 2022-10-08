@@ -76,7 +76,7 @@ namespace GfxRenderEngine
     void TreeNode::Traverse(TreeNode& node, uint indent)
     {
         std::string indentStr(indent, ' ');
-        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, (uint) node.GetGameObject(), node.GetName());
+        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(node.GetGameObject()), node.GetName());
         for (uint index = 0; index < node.Children(); index++)
         {
             Traverse(node.GetChild(index), indent + 4);

@@ -67,7 +67,7 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = (uint)VK_SwapChain::SubPasses::SUBPASS_GEOMETRY;
+        pipelineConfig.subpass = static_cast<uint>(VK_SwapChain::SubPasses::SUBPASS_GEOMETRY);
 
         // g buffer position, g buffer normal, g buffer color, g buffer material
         // no blending

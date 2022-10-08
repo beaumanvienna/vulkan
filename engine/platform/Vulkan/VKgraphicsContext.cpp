@@ -41,7 +41,7 @@ namespace GfxRenderEngine
 
     bool VK_Context::Init()
     {
-        m_Renderer = std::make_shared<VK_Renderer>(m_Window, VK_Core::m_Device);
+        m_Renderer = std::make_shared<VK_Renderer>(m_Window);
         m_Initialized = true;
         return m_Initialized;
     }

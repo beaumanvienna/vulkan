@@ -20,11 +20,12 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "VKcore.h"
-#include "VKswapChain.h"
-#include "VKmodel.h"
-
 #include "systems/VKshadowRenderSys.h"
+
+#include "VKcore.h"
+#include "VKmodel.h"
+#include "VKswapChain.h"
+#include "VKshadowMap.h"
 
 namespace GfxRenderEngine
 {
@@ -73,7 +74,7 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = (uint)VK_SwapChain::SubPassesShadow::SUBPASS_SHADOW;
+        pipelineConfig.subpass = static_cast<uint>(VK_ShadowMap::SubPassesShadow::SUBPASS_SHADOW);
 
         pipelineConfig.rasterizationInfo.depthBiasEnable = VK_TRUE;
         pipelineConfig.rasterizationInfo.depthBiasConstantFactor = 8.0f;  // Optional

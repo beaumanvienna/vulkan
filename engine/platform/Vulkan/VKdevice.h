@@ -52,9 +52,9 @@ namespace GfxRenderEngine
     public:
 
         #ifdef NDEBUG
-        const bool enableValidationLayers = false;
+        const bool m_EnableValidationLayers = false;
         #else
-        const bool enableValidationLayers = true;
+        const bool m_EnableValidationLayers = true;
         #endif
 
         VK_Device(VK_Window* window);
@@ -78,8 +78,13 @@ namespace GfxRenderEngine
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
         QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(m_PhysicalDevice); }
-        VkFormat FindSupportedFormat(
-        const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        VkFormat FindSupportedFormat
+        (
+            const std::vector<VkFormat> &candidates,
+            VkImageTiling tiling,
+            VkFormatFeatureFlags features
+        );
+        VkFormat FindDepthFormat();
 
         // Buffer Helper Functions
         void CreateBuffer
