@@ -126,6 +126,12 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 // ----------------------------------------------------------------------------
+// rand: returns a value between zero and one
+float Rand(vec2 co)
+{
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+// ----------------------------------------------------------------------------
 void main()
 {
     // retrieve G buffer data
@@ -305,6 +311,11 @@ void main()
                 }
             }
             shadowPercentage = litCount / numSamples;
+        }
+        if ((shadowPercentage > 0.0) && (shadowPercentage < 1.0))
+        {
+            shadowPercentage -= Rand(lightSpacePosistionNDCHiRes.xy) * 0.3;
+            shadowPercentage = max(shadowPercentage, 0.0);
         }
 
         // add to outgoing radiance Lo
