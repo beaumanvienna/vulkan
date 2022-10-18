@@ -226,9 +226,14 @@ void main()
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
         float shadowPercentage;
-        int PCF_SIZE = 3;
         int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HIGH_RES;
         int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
+
+        // compute total number of samples to take from the shadow map
+        int PCF_SIZE = 3;
+        int pcfSizeMinus1 = int(PCF_SIZE - 1);
+        float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
+        float numSamples = kernelSize * kernelSize;
 
         vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);
         vec3 lightSpacePosistionNDCHiRes = lightSpacePosistionHiRes.xyz / lightSpacePosistionHiRes.w;
@@ -254,11 +259,6 @@ void main()
                 // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
                 vec2 shadowMapCoord = lightSpacePosistionNDCLowRes.xy * 0.5 + 0.5;
 
-                // compute total number of samples to take from the shadow map
-                int pcfSizeMinus1 = int(PCF_SIZE - 1);
-                float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
-                float numSamples = kernelSize * kernelSize;
-
                 // Counter for the shadow map samples not in the shadow
                 float litCount = 0.0;
 
@@ -283,41 +283,118 @@ void main()
         }
         else
         {
+            #define NUM_KERNEL_SAMPLES 25
+            int x[NUM_KERNEL_SAMPLES];
+            int y[NUM_KERNEL_SAMPLES];
+
+            float randomValue = Rand(lightSpacePosistionNDCHiRes.xy);
+            if (randomValue < 0.20)
+            {
+                x[0]  = -3; x[1]  = -2; x[2]  = -1; x[3]  =  0; x[4]  =  1;
+                y[0]  =  2; y[1]  =  2; y[2]  =  2; y[3]  =  2; y[4]  =  2;
+
+                x[5]  = -3; x[6]  = -2; x[7]  = -1; x[8]  =  0; x[9]  =  1;
+                y[5]  =  1; y[6]  =  1; y[7]  =  1; y[8]  =  1; y[9]  =  1;
+
+                x[10] = -3; x[11] = -2; x[12] = -1; x[13] =  0; x[14] =  1;
+                y[10] =  0; y[11] =  0; y[12] =  0; y[13] =  0; y[14] =  0;
+
+                x[15] = -1; x[16] =  0; x[17] =  2; x[18] =  2; x[19] =  3;
+                y[15] = -1; y[16] = -1; y[17] = -1; y[18] = -1; y[19] = -1;
+
+                x[20] = -1; x[21] =  0; x[22] =  1; x[23] =  2; x[24] =  3;
+                y[20] = -2; y[21] = -2; y[22] = -2; y[23] = -2; y[24] = -2;
+            }
+            else if (randomValue < 0.4)
+            {
+                x[0]  = -3; x[1]  = -2; x[2]  = -1; x[3]  =  0; x[4]  =  1;
+                y[0]  = -2; y[1]  = -2; y[2]  = -2; y[3]  = -2; y[4]  = -2;
+
+                x[5]  = -3; x[6]  = -2; x[7]  = -1; x[8]  =  0; x[9]  =  1;
+                y[5]  = -1; y[6]  = -1; y[7]  = -1; y[8]  = -1; y[9]  = -1;
+
+                x[10] = -3; x[11] = -2; x[12] = -1; x[13] =  0; x[14] =  1;
+                y[10] =  0; y[11] =  0; y[12] =  0; y[13] =  0; y[14] =  0;
+
+                x[15] = -1; x[16] =  0; x[17] =  2; x[18] =  2; x[19] =  3;
+                y[15] =  1; y[16] =  1; y[17] =  1; y[18] =  1; y[19] =  1;
+
+                x[20] = -1; x[21] =  0; x[22] =  1; x[23] =  2; x[24] =  3;
+                y[20] =  2; y[21] =  2; y[22] =  2; y[23] =  2; y[24] =  2;
+            }
+            else if (randomValue < 0.6)
+            {
+                x[0]  = -2; x[1]  = -1; x[2]  =  0; x[3]  =  1; x[4]  =  2;
+                y[0]  =  3; y[1]  =  3; y[2]  =  3; y[3]  =  3; y[4]  =  3;
+
+                x[5]  = -2; x[6]  = -1; x[7]  =  0; x[8]  =  1; x[9]  =  2;
+                y[5]  =  2; y[6]  =  2; y[7]  =  2; y[8]  =  2; y[9]  =  2;
+
+                x[10] = -2; x[11] = -1; x[12] =  0; x[13] =  1; x[14] =  2;
+                y[10] =  1; y[11] =  1; y[12] =  1; y[13] =  1; y[14] =  1;
+
+                x[15] = -2; x[16] = -1; x[17] =  0; x[18] =  1; x[19] =  2;
+                y[15] =  0; y[16] =  0; y[17] =  0; y[18] =  0; y[19] =  0;
+
+                x[20] = -2; x[21] = -1; x[22] =  0; x[23] =  1; x[24] =  2;
+                y[20] = -1; y[21] = -1; y[22] = -1; y[23] = -1; y[24] = -1;
+            }
+            else if (randomValue < 0.8)
+            {
+                x[0]  = -2; x[1]  = -1; x[2]  =  0; x[3]  =  1; x[4]  =  2;
+                y[0]  =  1; y[1]  =  1; y[2]  =  1; y[3]  =  1; y[4]  =  2;
+
+                x[5]  = -2; x[6]  = -1; x[7]  =  0; x[8]  =  1; x[9]  =  2;
+                y[5]  =  0; y[6]  =  0; y[7]  =  0; y[8]  =  0; y[9]  =  0;
+
+                x[10] = -2; x[11] = -1; x[12] =  0; x[13] =  1; x[14] =  2;
+                y[10] = -1; y[11] = -1; y[12] = -1; y[13] = -1; y[14] = -1;
+
+                x[15] = -2; x[16] = -1; x[17] =  0; x[18] =  1; x[19] =  2;
+                y[15] = -2; y[16] = -2; y[17] = -2; y[18] = -2; y[19] = -2;
+
+                x[20] = -2; x[21] = -1; x[22] =  0; x[23] =  1; x[24] =  2;
+                y[20] = -3; y[21] = -3; y[22] = -3; y[23] = -3; y[24] = -3;
+            }
+            else
+            {
+                x[0]  = -2; x[1]  = -1; x[2]  =  0; x[3]  =  1; x[4]  =  2;
+                y[0]  =  2; y[1]  =  2; y[2]  =  2; y[3]  =  2; y[4]  =  2;
+
+                x[5]  = -2; x[6]  = -1; x[7]  =  0; x[8]  =  1; x[9]  =  2;
+                y[5]  =  1; y[6]  =  1; y[7]  =  1; y[8]  =  1; y[9]  =  1;
+
+                x[10] = -2; x[11] = -1; x[12] =  0; x[13] =  1; x[14] =  2;
+                y[10] =  0; y[11] =  0; y[12] =  0; y[13] =  0; y[14] =  0;
+
+                x[15] = -2; x[16] = -1; x[17] =  0; x[18] =  1; x[19] =  2;
+                y[15] = -1; y[16] = -1; y[17] = -1; y[18] = -1; y[19] = -1;
+
+                x[20] = -2; x[21] = -1; x[22] =  0; x[23] =  1; x[24] =  2;
+                y[20] = -2; y[21] = -2; y[22] = -2; y[23] = -2; y[24] = -2;
+            }
+
             // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
             vec2 shadowMapCoord = lightSpacePosistionNDCHiRes.xy * 0.5 + 0.5;
-
-            // compute total number of samples to take from the shadow map
-            int pcfSizeMinus1 = int(PCF_SIZE - 1);
-            float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
-            float numSamples = kernelSize * kernelSize;
 
             // Counter for the shadow map samples not in the shadow
             float litCount = 0.0;
 
             // Take samples from the shadow map
             float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_HIRES_RES;
-            for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
+            for (int i = 0; i < NUM_KERNEL_SAMPLES; i++)
             {
-                for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
-                {
-                    // Compute coordinate for this PFC sample
-                    vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
+                // Compute coordinate for this PFC sample
+                vec2 pcfCoordinate = shadowMapCoord + vec2(x[i], y[i]) * shadowmapTexelSize;
 
-                    // Check if the sample is in light or in the shadow
-                    if (lightSpacePosistionNDCHiRes.z <= texture(shadowMapTextureHiRes, pcfCoordinate).x)
-                    {
-                        litCount += 1.0;
-                    }
+                // Check if the sample is in light or in the shadow
+                if (lightSpacePosistionNDCHiRes.z <= texture(shadowMapTextureHiRes, pcfCoordinate).x)
+                {
+                    litCount += 1.0;
                 }
             }
             shadowPercentage = litCount / numSamples;
         }
-        if ((shadowPercentage > 0.0) && (shadowPercentage < 1.0))
-        {
-            shadowPercentage -= Rand(lightSpacePosistionNDCHiRes.xy) * 0.3;
-            shadowPercentage = max(shadowPercentage, 0.0);
-        }
-
         // add to outgoing radiance Lo
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL * shadowPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
