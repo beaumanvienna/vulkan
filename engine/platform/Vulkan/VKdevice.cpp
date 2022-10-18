@@ -175,8 +175,9 @@ namespace GfxRenderEngine
             if (IsPreferredDevice(device))
             {
                 m_PhysicalDevice = device;
-                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
-                LOG_CORE_INFO("found a dedicated graphics card: {0}", properties.deviceName);
+                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
+                LOG_CORE_INFO("found a dedicated graphics card: {0}", m_Properties.deviceName);
+                SetMaxUsableSampleCount();
                 return;
             }
         }
@@ -186,8 +187,8 @@ namespace GfxRenderEngine
             if (IsSuitableDevice(device))
             {
                 m_PhysicalDevice = device;
-                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
-                LOG_CORE_INFO("found an onboard graphics card: {0}", properties.deviceName);
+                vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
+                LOG_CORE_INFO("found an onboard graphics card: {0}", m_Properties.deviceName);
                 break;
             }
         }
@@ -297,9 +298,9 @@ namespace GfxRenderEngine
     bool VK_Device::IsSuitableDevice(VkPhysicalDevice device)
     {
         // check if blacklisted
-        vkGetPhysicalDeviceProperties(device, &properties);
+        vkGetPhysicalDeviceProperties(device, &m_Properties);
 
-        std::string name = properties.deviceName;
+        std::string name = m_Properties.deviceName;
         std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
 
         std::string blacklisted = CoreSettings::m_BlacklistedDevice;
@@ -704,6 +705,47 @@ namespace GfxRenderEngine
         if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to bind image memory!");
+        }
+    }
+
+    void VK_Device::SetMaxUsableSampleCount()
+    {
+        VkSampleCountFlags counts = m_Properties.limits.framebufferColorSampleCounts & m_Properties.limits.framebufferDepthSampleCounts;
+
+        if (counts & VK_SAMPLE_COUNT_64_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_64_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_64_BIT;
+        }
+        else if (counts & VK_SAMPLE_COUNT_32_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_32_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_32_BIT;
+        }
+        else if (counts & VK_SAMPLE_COUNT_16_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_16_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_16_BIT;
+        }
+        else if (counts & VK_SAMPLE_COUNT_8_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_8_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_8_BIT;
+        }
+        else if (counts & VK_SAMPLE_COUNT_4_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_4_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_4_BIT;
+        }
+        else if (counts & VK_SAMPLE_COUNT_2_BIT)
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_2_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_2_BIT;
+        }
+        else
+        {
+            LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_1_BIT");
+            m_SampleCountFlagBits = VK_SAMPLE_COUNT_1_BIT;
         }
     }
 }

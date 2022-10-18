@@ -58,7 +58,7 @@ namespace GfxRenderEngine
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                m_Device->properties.limits.minUniformBufferOffsetAlignment
+                m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
             m_ShadowUniformBuffers0[i]->Map();
         }
@@ -71,7 +71,7 @@ namespace GfxRenderEngine
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                m_Device->properties.limits.minUniformBufferOffsetAlignment
+                m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
             m_ShadowUniformBuffers1[i]->Map();
         }
@@ -84,7 +84,7 @@ namespace GfxRenderEngine
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                m_Device->properties.limits.minUniformBufferOffsetAlignment
+                m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
             m_UniformBuffers[i]->Map();
         }

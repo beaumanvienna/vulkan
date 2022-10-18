@@ -78,6 +78,7 @@ namespace GfxRenderEngine
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
         QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(m_PhysicalDevice); }
+        void SetMaxUsableSampleCount();
         VkFormat FindSupportedFormat
         (
             const std::vector<VkFormat> &candidates,
@@ -116,7 +117,8 @@ namespace GfxRenderEngine
             VkDeviceMemory &imageMemory
         );
 
-        VkPhysicalDeviceProperties properties;
+        VkPhysicalDeviceProperties m_Properties;
+        VkSampleCountFlagBits m_SampleCountFlagBits;
         
         VkInstance GetInstance() const { return m_Instance; }
         uint32_t GetGraphicsQueueFamily() { return FindPhysicalQueueFamilies().graphicsFamily; }
