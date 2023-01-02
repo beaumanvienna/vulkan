@@ -61,7 +61,6 @@ namespace GfxRenderEngine
         static constexpr int NUMBER_OF_CUBEMAP_IMAGES = 6;
 
         std::vector<std::string> m_FileNames;
-        uchar* m_LocalBuffer[NUMBER_OF_CUBEMAP_IMAGES];
         int m_Width, m_Height, m_BytesPerPixel;
         uint m_MipLevels;
 

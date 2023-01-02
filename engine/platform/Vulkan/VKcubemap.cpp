@@ -212,28 +212,30 @@ namespace GfxRenderEngine
         {
             // load all faces
             pixels = stbi_load(m_FileNames[i].c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4); //4 == STBI_rgb_alpha
-            if(!pixels)
+            if (!pixels)
             {
                 LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", m_FileNames[i]);
                 return false;
             }
-           if(i == 0) {
-              layerSize = m_Width * m_Height * m_BytesPerPixel;
-              imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
+            if (i == 0)
+            {
+                layerSize = m_Width * m_Height * m_BytesPerPixel;
+                imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
               
-              CreateBuffer(
-                  imageSize, 
-                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                  stagingBuffer,
-                  stagingBufferMemory
-              );
-              vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
-              memAddress = reinterpret_cast<uint64>(data);
-           }
-           memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
-           stbi_image_free(pixels);
-           memAddress += layerSize;
+                CreateBuffer
+                (
+                    imageSize, 
+                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    stagingBuffer,
+                    stagingBufferMemory
+                );
+                vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+                memAddress = reinterpret_cast<uint64>(data);
+            }
+            memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
+            stbi_image_free(pixels);
+            memAddress += layerSize;
         }
         vkUnmapMemory(device, stagingBufferMemory);
 
