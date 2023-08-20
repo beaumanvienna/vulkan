@@ -51,7 +51,7 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        SetNextState(State::MAIN);
+        SetNextState(State::BEACH);
     }
 
     void GameState::Stop()
