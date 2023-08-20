@@ -60,9 +60,8 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-
-layout(set = 2, binding = 0) uniform sampler2D shadowMapTextureHiRes;
-layout(set = 2, binding = 1) uniform sampler2D shadowMapTextureLowRes;
+layout(set = 2, binding = 0) uniform sampler2DShadow shadowMapTextureHiRes;
+layout(set = 2, binding = 1) uniform sampler2DShadow shadowMapTextureLowRes;
 layout(set = 2, binding = 2) uniform ShadowUniformBuffer0
 {
     mat4 m_Projection;
@@ -236,7 +235,7 @@ void main()
 
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
-        float shadowPercentage = 0.0;
+        float litPercentage = 1.0;
         int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HIGH_RES;
         int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
 
@@ -264,7 +263,7 @@ void main()
                     abs(lightSpacePosistionNDCLowRes.z) > 1.0
                 )
             {
-                shadowPercentage = 1.0;
+                litPercentage = 1.0;
             }
             else
             {
@@ -282,15 +281,13 @@ void main()
                     {
                         // Compute coordinate for this PFC sample
                         vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
+                        vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCLowRes.z);
             
-                        // Check if the sample is in light or in the shadow
-                        if (lightSpacePosistionNDCLowRes.z <= texture(shadowMapTextureLowRes, pcfCoordinate).x)
-                        {
-                            litCount += 1.0;
-                        }
+                        // Check if the sample is in light
+                        litCount += texture(shadowMapTextureLowRes, pcfCoordinatePlusReference).x;
                     }
                 }
-                shadowPercentage = litCount / numSamples;
+                litPercentage = litCount / numSamples;
             }
         }
         else
@@ -314,9 +311,8 @@ void main()
                 vec2(scale *  0.34, scale *  0.02),
                 vec2(scale *  0.18, scale * -0.80),
                 vec2(scale * -0.06, scale *  0.49),
-                vec2(scale *  0.48, scale * -0.31),
+                vec2(scale *  0.48, scale * -0.31)
             };
-
 
             mat2 gradientMatrix = getGradientSampleMatrix();
 
@@ -332,17 +328,14 @@ void main()
             {
                 // Compute coordinate for this PFC sample
                 vec2 pcfCoordinate = shadowMapCoord + (gradientMatrix * samples[i]) * shadowmapTexelSize;
-
-                // Check if the sample is in light or in the shadow
-                if (lightSpacePosistionNDCHiRes.z <= texture(shadowMapTextureHiRes, pcfCoordinate).x)
-                {
-                    litCount += 1.0;
-                }
+                vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCHiRes.z);
+                // Check if the sample is in light
+                litCount += texture(shadowMapTextureHiRes, pcfCoordinatePlusReference).x;
             }
-            shadowPercentage = litCount / NUM_KERNEL_SAMPLES;
+            litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.15);
         }
         // add to outgoing radiance Lo
-        Lo = (kD * fragColor / PI + specular) * radiance * NdotL * shadowPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += (kD * fragColor / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
 
     vec3 color = ambientLightColor + Lo;

@@ -170,13 +170,13 @@ namespace GfxRenderEngine
         samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+        samplerCreateInfo.compareEnable = VK_TRUE;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_LESS;
         samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         samplerCreateInfo.minLod = 0.0f;
         samplerCreateInfo.maxLod = 1;
         samplerCreateInfo.maxAnisotropy = 1.0;
-        samplerCreateInfo.anisotropyEnable = VK_TRUE;
         samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
         {
