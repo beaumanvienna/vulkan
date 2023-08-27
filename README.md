@@ -7,31 +7,37 @@ A Vulkan Render Engine<br/>
 </p>
 <br/>
 <br/>
-Features:<br/>
- * Vulkan support for 2D and 3D rendering and supporting the 3D file formats Obj Wavefront and glTF<br/>
- * Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping<br/>
- * Point lights, directional lights with shadows<br/>
- * Scene management with scene descriptions, background loading, and scene saving<br/>
- * Hotplug gamepad support<br/>
- * Sound<br/>
- * Profiling<br/>
- * Cross-platform resource system (Windows/Linux)<br/>
- * Render-API abstraction and engine/application separation<br/>
- * Event system<br/>
- * Settings manager<br/>
- * An enity component system based on EnTT<br/>
- * Physics simulator based on Box2D,<br/>
- * In-game GUI and debug GUI based on imgui <br/>
- * Sprite sheets, sprite sheet generator<br/>
-<br/>
-* Press "f" to toggle fullscreen and "m" to toggle the debug imgui window.<br/>
-* Use the left and right sticks on the controller to move some objects around and scale them.<br/>
-* Use the AWSD keys to move the camera. Q and E are for up and down<br/>
-* Use the arrow keys to look around.<br/>
-* Use the mouse wheel to zoom.<br/>
-* The A button plays a test sound.<br/>
-* Press ESC or the guide button on the controller to exit.<br/>
-* Press "g" to fire the volcano and "r" to reset the scene.<br/>
+
+Features:
+
+- Vulkan support for 2D and 3D rendering and supporting the 3D file formats Obj Wavefront and glTF
+- Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping
+- Point lights, directional lights with shadows
+- Scene management with scene descriptions, background loading, and scene saving
+- Sound support and desktop volume settings
+- Hotplug gamepad support
+- Cross-platform resource system (Windows/Linux)
+- Render-API abstraction and engine/application separation
+- Event system
+- Settings manager
+- Particle system
+- An entity component system based on EnTT
+- Physics simulator based on Box2D,
+- In-game GUI with two themes and debug GUI based on imgui 
+- Sprite sheets, sprite sheet generator
+- Profiling JSON output file for chrome://tracing<br/>
+
+Usage:<br/>
+
+
+- Press "f" to toggle fullscreen and "m" to toggle the debug imgui window.
+- Use the left and right sticks on the controller to move some objects around and scale them.
+- Use the AWSD keys to move the camera. Q and E are for up and down
+- Use the arrow keys to look around.
+- Use the mouse wheel to zoom.
+- The A button plays a test sound.
+- Press ESC or the guide button on the controller to exit.
+- Press "g" to fire the volcano and "r" to reset the scene.
 <br/>
 To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 <br/>
@@ -78,7 +84,7 @@ Compile and run release target: make config=release verbose=1 && ./bin/Release/e
 <br/>
 Dependencies: premake5, Visual Studio, Vulkan SDK<br/>
 <br/>
-Download the Vulkan SDK from lunarg.com, install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/VulkanSDK. The version number is omitted in the path.<br/>
+Download the Vulkan SDK from lunarg.com, install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/Vulkan SDK. The version number is omitted in the path.<br/>
 <br/>
 In a terminal, starting from the root folder vulkan, if you have Visual Studio 2019:<br/>
 premake5.exe vs2019<br/>
@@ -86,7 +92,7 @@ premake5.exe vs2019<br/>
 If you have Visual Studio 2022, use instead:<br/>
 premake5.exe vs2022<br/>
 <br/>
-Open the solution for vulkan, switch to Release, and hit F5<br/>
+Open the solution for Vulkan, switch to Release, and hit F5<br/>
 <br/>
 <br/>
 
