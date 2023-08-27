@@ -78,8 +78,8 @@ int engine(int argc, char* argv[])
         }
     }
 
-    engine->Quit();
     application->Shutdown();
+    engine->Quit();
 
     PROFILE_END_SESSION();
     #ifdef DEBUG
