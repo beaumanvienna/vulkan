@@ -7,22 +7,22 @@ A Vulkan Render Engine<br/>
 </p>
 <br/>
 <br/>
-Features:
-  * Vulkan support for 2D and 3D rendering and supporting the 3D file formats Obj Wavefront and glTF<br/>
-  * Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping<br/>
-  * Point lights, directional lights with shadows,
-  * Scene management with scene descriptions, background loading, and scene saving<br/>
-  * Hotplug gamepad support<br/>
-  * Sound<br/>
-  * Profiling<br/>
-  * Cross-platform resource system (Windows/Linux)<br/>
-  * Render-API abstraction and engine/application separation<br/>
-  * Event system<br/>
-  * Settings manager<br/>
-  * An enity component system based on EnTT<br/>
-  * Physics simulator based on Box2D,<br/>
-  * In-game GUI and debug GUI based on imgui <br/>
-  * Sprite sheets, sprite sheet generator<br/>
+Features:<br/>
+ * Vulkan support for 2D and 3D rendering and supporting the 3D file formats Obj Wavefront and glTF<br/>
+ * Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping<br/>
+ * Point lights, directional lights with shadows<br/>
+ * Scene management with scene descriptions, background loading, and scene saving<br/>
+ * Hotplug gamepad support<br/>
+ * Sound<br/>
+ * Profiling<br/>
+ * Cross-platform resource system (Windows/Linux)<br/>
+ * Render-API abstraction and engine/application separation<br/>
+ * Event system<br/>
+ * Settings manager<br/>
+ * An enity component system based on EnTT<br/>
+ * Physics simulator based on Box2D,<br/>
+ * In-game GUI and debug GUI based on imgui <br/>
+ * Sprite sheets, sprite sheet generator<br/>
 <br/>
 * Press "f" to toggle fullscreen and "m" to toggle the debug imgui window.<br/>
 * Use the left and right sticks on the controller to move some objects around and scale them.<br/>
