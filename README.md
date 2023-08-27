@@ -10,21 +10,22 @@ A Vulkan Render Engine<br/>
 
 Features:
 
-- Vulkan support for 2D and 3D rendering and supporting the 3D file formats Obj Wavefront and glTF
+- A Vulkan renderer with support for 2D and 3D scenes
+- Supporting for the 3D file formats Obj Wavefront and glTF
 - Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping
-- Point lights, directional lights with shadows
-- Scene management with scene descriptions, background loading, and scene saving
-- Sound support and desktop volume settings
-- Hotplug gamepad support
+- Point lights, directional lights with shadows, and deferred shading
+- Scene management with scene descriptions, background loading, scene saving, and attachable scripts
+- Sound support and desktop volume settings (Linux only)
+- Hotplug gamepad support based on SDL2 and a controller database
 - Cross-platform resource system (Windows/Linux)
-- Render-API abstraction and engine/application separation
 - Event system
 - Settings manager
 - Particle system
 - An entity component system based on EnTT
 - Physics simulator based on Box2D,
 - In-game GUI with two themes and debug GUI based on imgui 
-- Sprite sheets, sprite sheet generator
+- Sprite sheets, a sprite sheet generator, sprite sheet animations
+- Render-API abstraction and engine/application separation
 - Profiling JSON output file for chrome://tracing<br/>
 
 Usage:<br/>
