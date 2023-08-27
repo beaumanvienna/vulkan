@@ -11,8 +11,8 @@ A Vulkan Render Engine<br/>
 Features:
 
 - A Vulkan renderer with support for 2D and 3D scenes
-- Supporting for the 3D file formats Obj Wavefront and glTF
-- Physically-based lighting, materials based on the roughness-metallic workflow, normal mapping
+- Support for the 3D file formats Obj Wavefront and glTF
+- Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
 - Point lights, directional lights with shadows, and deferred shading
 - Scene management with scene descriptions, background loading, scene saving, and attachable scripts
 - Sound support and desktop volume settings (Linux only)
@@ -22,7 +22,7 @@ Features:
 - Event system for mouse, keyboard, controller, window and game events
 - Settings manager and a message logger
 - An entity component system based on EnTT
-- Physics simulator based on Box2D,
+- Physics simulator based on Box2D
 - In-game GUI with two themes and debug GUI based on imgui 
 - Sprite sheets, a sprite sheet generator, sprite sheet animations
 - Render-API abstraction and engine/application separation
