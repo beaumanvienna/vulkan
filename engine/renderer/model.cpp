@@ -74,7 +74,6 @@ namespace GfxRenderEngine
                (m_Color       == other.m_Color) &&
                (m_Normal      == other.m_Normal) &&
                (m_UV          == other.m_UV) &&
-               (m_DiffuseMapTextureSlot == other.m_DiffuseMapTextureSlot) &&
                (m_Amplification == other.m_Amplification) &&
                (m_Unlit       == other.m_Unlit);
     }
@@ -656,7 +655,7 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    void Builder::LoadModel(const std::string &filepath, int diffuseMapTextureSlot, int fragAmplification, int normalTextureSlot)
+    void Builder::LoadModel(const std::string &filepath, int fragAmplification)
     {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
@@ -678,7 +677,6 @@ namespace GfxRenderEngine
             for (const auto& index : shape.mesh.indices)
             {
                 Vertex vertex{};
-                vertex.m_DiffuseMapTextureSlot = diffuseMapTextureSlot;
                 vertex.m_Amplification      = fragAmplification;
 
                 if (index.vertex_index >= 0)
@@ -854,17 +852,17 @@ namespace GfxRenderEngine
 
         Vertex vertex[4];
 
-        // index /*slot*/0, 0.0f,  1.0f
-        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
+        // index 0, 0.0f,  1.0f
+        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, amplification, unlit};
 
         // index 1, 1.0f,  1.0f
-        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, /*slot*/0, amplification, unlit};
+        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, amplification, unlit};
 
         // index 2, 1.0f,  0.0f
-        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
+        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, amplification, unlit};
 
         // index 3, 0.0f,  0.0f
-        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, /*slot*/0, amplification, unlit};
+        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, amplification, unlit};
 
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 
@@ -888,16 +886,16 @@ namespace GfxRenderEngine
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, 1.0f /*amplification*/, 0 /*unlit*/}
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 
@@ -968,7 +966,7 @@ namespace GfxRenderEngine
         {
             for (uint i = 0; i < VERTEX_COUNT; i++)
             {
-                Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /*slot*/0, /* amplification */0.0f, 0 /*unlit*/};
+                Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /* amplification */0.0f, 0 /*unlit*/};
                 m_Vertices.push_back(vertex);
             }    
         }

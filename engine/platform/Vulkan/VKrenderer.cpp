@@ -191,7 +191,7 @@ namespace GfxRenderEngine
 
         size_t fileSize;
         auto data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/atlas.png", IDB_ATLAS, "PNG");
-        auto textureSpritesheet = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
+        auto textureSpritesheet = std::make_shared<VK_Texture>(true);
         textureSpritesheet->Init(data, fileSize, Texture::USE_SRGB);
         textureSpritesheet->SetFilename("spritesheet");
 
@@ -199,7 +199,7 @@ namespace GfxRenderEngine
         VkDescriptorImageInfo imageInfo0 = textureSpritesheet->GetDescriptorImageInfo();
 
         data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
-        auto textureFontAtlas = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager, true);
+        auto textureFontAtlas = std::make_shared<VK_Texture>(true);
         textureFontAtlas->Init(data, fileSize, Texture::USE_SRGB);
         textureFontAtlas->SetFilename("font atlas");
 

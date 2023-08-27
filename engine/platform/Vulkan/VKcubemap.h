@@ -28,7 +28,6 @@
 #include "renderer/cubemap.h"
 
 #include "VKdevice.h"
-#include "VKtextureSlotManager.h"
 
 namespace GfxRenderEngine
 {

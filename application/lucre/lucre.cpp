@@ -197,6 +197,7 @@ namespace LucreApp
                 {
                     case ENGINE_KEY_M:
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
+                        ShowCursor();
                         break;
                     case ENGINE_KEY_ESCAPE:
                         Cancel();

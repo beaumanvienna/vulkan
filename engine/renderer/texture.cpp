@@ -36,7 +36,7 @@ namespace GfxRenderEngine
         switch(RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
-                texture = std::make_shared<VK_Texture>(Engine::m_TextureSlotManager);
+                texture = std::make_shared<VK_Texture>();
                 break;
             default:
                 texture = nullptr;

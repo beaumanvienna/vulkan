@@ -31,19 +31,17 @@
 namespace GfxRenderEngine
 {
 
-    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, bool nearestFilter)
+    VK_Texture::VK_Texture(bool nearestFilter)
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
           m_DataFormat(0), m_MipLevels(0), m_NearestFilter(nearestFilter),
-          m_TextureSlotManager(textureSlotManager), m_sRGB(false)
+          m_sRGB(false)
     {
-        m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
 
     VK_Texture::~VK_Texture()
     {
         auto device = VK_Core::m_Device->Device();
-        m_TextureSlotManager->RemoveTextureSlot(m_TextureSlot);
 
         vkDestroyImage(device, m_TextureImage, nullptr);
         vkDestroyImageView(device, m_ImageView, nullptr);
@@ -51,11 +49,10 @@ namespace GfxRenderEngine
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
     }
 
-    VK_Texture::VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type)
-        : m_TextureSlotManager{textureSlotManager}, m_RendererID{ID}, m_InternalFormat{internalFormat},
+    VK_Texture::VK_Texture(uint ID, int internalFormat, int dataFormat, int type)
+        : m_RendererID{ID}, m_InternalFormat{internalFormat},
           m_DataFormat{dataFormat}, m_Type{type}, m_sRGB{false}
     {
-        m_TextureSlot = m_TextureSlotManager->GetTextureSlot();
     }
 
     // create texture from raw memory

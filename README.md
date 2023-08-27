@@ -18,9 +18,9 @@ Features:
 - Sound support and desktop volume settings (Linux only)
 - Hotplug gamepad support based on SDL2 and a controller database
 - Cross-platform resource system (Windows/Linux)
-- Event system
-- Settings manager
 - Particle system
+- Event system for mouse, keyboard, controller, window and game events
+- Settings manager and a message logger
 - An entity component system based on EnTT
 - Physics simulator based on Box2D,
 - In-game GUI with two themes and debug GUI based on imgui 

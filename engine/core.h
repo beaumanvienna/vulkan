@@ -37,7 +37,6 @@
 #include "platform/window.h"
 #include "layer/layerStack.h"
 #include "renderer/graphicsContext.h"
-#include "renderer/textureSlotManager.h"
 #include "renderer/renderer.h"
 #include "renderer/model.h"
 #include "audio/audio.h"
@@ -114,7 +113,6 @@ namespace GfxRenderEngine
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
-        static std::shared_ptr<TextureSlotManager> m_TextureSlotManager;
 
     private:
 

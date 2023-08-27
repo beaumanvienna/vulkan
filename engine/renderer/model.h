@@ -45,7 +45,6 @@ namespace GfxRenderEngine
         glm::vec3 m_Color;
         glm::vec3 m_Normal;
         glm::vec2 m_UV;
-        int m_DiffuseMapTextureSlot;
         float m_Amplification;
         int m_Unlit;
         glm::vec3 m_Tangent;
@@ -136,7 +135,7 @@ namespace GfxRenderEngine
         Builder() {}
         Builder(const std::string& filepath);
 
-        void LoadModel(const std::string& filepath, int diffuseMapTextureSlot = 0, int fragAmplification = 1.0, int normalTextureSlot = 0);
+        void LoadModel(const std::string& filepath, int fragAmplification = 1.0);
         entt::entity LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
         void LoadSprite(const Sprite& sprite, float amplification = 0.0f, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
         entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);

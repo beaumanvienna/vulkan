@@ -28,7 +28,6 @@
 #include "renderer/texture.h"
 
 #include "VKdevice.h"
-#include "VKtextureSlotManager.h"
 
 namespace GfxRenderEngine
 {
@@ -36,8 +35,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, bool nearestFilter = false);
-        VK_Texture(std::shared_ptr<TextureSlotManager> textureSlotManager, uint ID, int internalFormat, int dataFormat, int type);
+        VK_Texture(bool nearestFilter = false);
+        VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
         ~VK_Texture();
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) override;
@@ -47,7 +46,6 @@ namespace GfxRenderEngine
         virtual void Unbind() const override;
         virtual int GetWidth() const override { return m_Width; }
         virtual int GetHeight() const override { return m_Height; }
-        virtual uint GetTextureSlot() const override { return m_TextureSlot; }
         virtual void Resize(uint width, uint height) override;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data) override;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
@@ -72,9 +70,7 @@ namespace GfxRenderEngine
         uint m_RendererID;
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
-        int m_TextureSlot;
         uint m_MipLevels;
-        std::shared_ptr<TextureSlotManager> m_TextureSlotManager;
 
         int m_InternalFormat, m_DataFormat;
         bool m_NearestFilter, m_sRGB;
