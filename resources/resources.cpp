@@ -115,7 +115,6 @@ namespace GfxRenderEngine
                 {
                     texture = Texture::Create();
                     texture->Init((const unsigned char*)dataPtr, fileSize, Texture::USE_SRGB);
-                    texture->Bind();
                 }
                 else
                 {

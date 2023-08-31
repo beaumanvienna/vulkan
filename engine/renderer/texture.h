@@ -43,10 +43,8 @@ namespace GfxRenderEngine
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) = 0;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) = 0;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) = 0;
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
-        virtual int GetWidth() const = 0;
-        virtual int GetHeight() const = 0;
+        virtual int  GetWidth() const = 0;
+        virtual int  GetHeight() const = 0;
         virtual void Resize(uint width, uint height) = 0;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bpp, const void* data) = 0;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) = 0;

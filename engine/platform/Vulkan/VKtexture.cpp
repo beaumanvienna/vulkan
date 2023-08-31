@@ -390,16 +390,6 @@ namespace GfxRenderEngine
         return true;
     }
 
-    void VK_Texture::Bind() const
-    {
-        LOG_CORE_CRITICAL("not implemented void VK_Texture::Bind() const");
-    }
-
-    void VK_Texture::Unbind() const
-    {
-        LOG_CORE_CRITICAL("not implemented void VK_Texture::Unbind() const");
-    }
-
     void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data)
     {
         LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data)");

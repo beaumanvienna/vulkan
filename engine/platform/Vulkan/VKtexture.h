@@ -42,10 +42,8 @@ namespace GfxRenderEngine
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) override;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) override;
-        virtual void Bind() const override;
-        virtual void Unbind() const override;
-        virtual int GetWidth() const override { return m_Width; }
-        virtual int GetHeight() const override { return m_Height; }
+        virtual int  GetWidth() const override { return m_Width; }
+        virtual int  GetHeight() const override { return m_Height; }
         virtual void Resize(uint width, uint height) override;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data) override;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
