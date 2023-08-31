@@ -25,71 +25,72 @@
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
    */
 
-#pragma once
-
-#include <memory>
-
-#include "engine.h"
-#include "renderer/rendererAPI.h"
-
-class RenderCommand
-{
-public:
-
-    static void SetClearColor(const glm::vec4& color)
-    {
-        s_RendererAPI->SetClearColor(color);
-    }
-
-    static void Clear()
-    {
-        s_RendererAPI->Clear();
-    }
-
-    static void EnableBlending()
-    {
-        s_RendererAPI->EnableBlending();
-    }
-
-    static void DisableBlending()
-    {
-        s_RendererAPI->DisableBlending();
-    }
-
-    static void EnableDethTesting()
-    {
-        s_RendererAPI->EnableDethTesting();
-    }
-
-    static void DisableDethTesting()
-    {
-        s_RendererAPI->DisableDethTesting();
-    }
-
-    static void EnableScissor()
-    {
-        s_RendererAPI->EnableScissor();
-    }
-
-    static void DisableScissorg()
-    {
-        s_RendererAPI->DisableScissor();
-    }
-
-    static void SetScissor(int left, int bottom, int width, int height)
-    {
-        s_RendererAPI->SetScissor(left, bottom, width, height);
-    }
-
-    static void Flush()
-    {
-        return; // Flush() deactivated
-        s_RendererAPI->Flush();
-    }
-
-    static std::unique_ptr<RendererAPI> s_RendererAPI;
-    
-private:
-
-    
-};
+//#pragma once
+//
+//#include <memory>
+//
+//#include "engine.h"
+//#include "renderer/rendererAPI.h"
+//
+//class RenderCommand
+//{
+//public:
+//
+//    static void SetClearColor(const glm::vec4& color)
+//    {
+//        s_RendererAPI->SetClearColor(color);
+//    }
+//    
+//    static void Clear()
+//    {
+//        s_RendererAPI->Clear();
+//    }
+//    
+//    static void EnableBlending()
+//    {
+//        s_RendererAPI->EnableBlending();
+//    }
+//    
+//    static void DisableBlending()
+//    {
+//        s_RendererAPI->DisableBlending();
+//    }
+//    
+//    static void EnableDethTesting()
+//    {
+//        s_RendererAPI->EnableDethTesting();
+//    }
+//    
+//    static void DisableDethTesting()
+//    {
+//        s_RendererAPI->DisableDethTesting();
+//    }
+//    
+//    static void EnableScissor()
+//    {
+//        s_RendererAPI->EnableScissor();
+//    }
+//    
+//    static void DisableScissorg()
+//    {
+//        s_RendererAPI->DisableScissor();
+//    }
+//
+//    static void SetScissor(int left, int bottom, int width, int height)
+//    {
+//        s_RendererAPI->SetScissor(left, bottom, width, height);
+//    }
+//
+//    static void Flush()
+//    {
+//        return; // Flush() deactivated
+//        s_RendererAPI->Flush();
+//    }
+//
+//    static std::unique_ptr<RendererAPI> s_RendererAPI;
+//    
+//private:
+//
+//    
+//};
+//

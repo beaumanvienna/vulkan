@@ -31,7 +31,7 @@
 #include "VKgraphicsContext.h"
 #include "VKwindow.h"
 
-std::shared_ptr<GraphicsContext> GraphicsContext::Create(void* window, uint refreshRate)
+std::shared_ptr<GraphicsContext> GraphicsContext::Create(void* window)
 {
     std::shared_ptr<GraphicsContext> graphicsContext;
 

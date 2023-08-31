@@ -37,7 +37,6 @@ namespace GfxRenderEngine
     {
     public:
 
-        Renderer();
         virtual ~Renderer() {}
 
         virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;

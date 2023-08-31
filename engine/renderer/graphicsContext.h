@@ -51,7 +51,7 @@ namespace GfxRenderEngine
         virtual uint GetContextWidth() const = 0;
         virtual uint GetContextHeight() const = 0;
 
-        static std::shared_ptr<GraphicsContext> Create(void* window, uint refreshRate = 60);
+        static std::shared_ptr<GraphicsContext> Create(void* window);
 
     private: 
     

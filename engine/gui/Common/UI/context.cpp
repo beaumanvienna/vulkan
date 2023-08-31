@@ -167,7 +167,7 @@ namespace GfxRenderEngine
 
     void SCREEN_UIContext::Flush()
     {
-        RenderCommand::Flush();
+        ///RenderCommand::Flush();
     }
 
     //void SCREEN_UIContext::SetCurZ(float curZ)
@@ -231,11 +231,11 @@ namespace GfxRenderEngine
             int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));
             int w = std::max(0.0f, ceilf(scale_x * bounds.w));
             int h = std::max(0.0f, ceilf(scale_y * bounds.h));
-            RenderCommand::SetScissor(x, y, w, h);
+            //RenderCommand::SetScissor(x, y, w, h);
         } 
         else 
         {
-            RenderCommand::SetScissor(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());
+            //RenderCommand::SetScissor(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());
         }
     }
 

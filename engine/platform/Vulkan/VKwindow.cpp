@@ -317,7 +317,7 @@ namespace GfxRenderEngine
     {
         if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("Could not create surface");
+            LOG_CORE_CRITICAL("Could not create window surface");
         }
     }
 

@@ -22,6 +22,6 @@
    
 */
 
-#include "renderer/renderCommand.h"
-
-std::unique_ptr<RendererAPI> RenderCommand::s_RendererAPI;
+//#include "renderer/renderCommand.h"
+//
+//std::unique_ptr<RendererAPI> RenderCommand::s_RendererAPI;

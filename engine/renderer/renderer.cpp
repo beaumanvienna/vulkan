@@ -26,13 +26,9 @@
    */
 
 #include "renderer/renderer.h"
-#include "renderer/rendererAPI.h"
 
 #include "VKrenderer.h"
 
 namespace GfxRenderEngine
 {
-    Renderer::Renderer()
-    {
-    }
 }
