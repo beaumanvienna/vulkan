@@ -76,8 +76,8 @@ premake5 gmake2<br/>
 export MAKEFLAGS=-j$(nproc)<br />
 <br />
 <br />
-Compile and run debug target: make verbose=1 && ./bin/Debug/engine <br/>
-Compile and run release target: make config=release verbose=1 && ./bin/Release/engine<br/>
+Compile and run debug target: make verbose=1 && ./bin/Debug/lucre <br/>
+Compile and run release target: make config=release verbose=1 && ./bin/Release/lucre<br/>
 <br/>
 <br/>
 
