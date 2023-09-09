@@ -22,10 +22,10 @@
 
 #include "core.h"
 #include "engine.h"
-#include "platform/Vulkan/shadowMapping.h"
 #include "resources/resources.h"
 #include "auxiliary/file.h"
 
+#include "shadowMapping.h"
 #include "VKrenderer.h"
 #include "VKwindow.h"
 #include "VKshader.h"
@@ -47,7 +47,6 @@ namespace GfxRenderEngine
 
         CompileShaders();
         RecreateSwapChain();
-        RecreateShadowMaps();
         CreateCommandBuffers();
 
         for (uint i = 0; i < m_ShadowUniformBuffers0.size(); i++)
@@ -238,35 +237,35 @@ namespace GfxRenderEngine
                                                               m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(),
                                                               descriptorSetLayoutsShadow
                                                           );
-        m_LightSystem                                   = std::make_unique<VK_LightSystem>(m_Device, m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
-        m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_SwapChain->GetGUIRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsCubemap);
+        m_LightSystem                                   = std::make_unique<VK_LightSystem>(m_Device, m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemSpriteRenderer2D                  = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_RenderPass->GetGUIRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemGUIRenderer                       = std::make_unique<VK_RenderSystemGUIRenderer>(m_RenderPass->GetGUIRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsCubemap);
 
-        m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_SwapChain->GetRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuse);
-        m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormal);
-        m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_SwapChain->GetRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
+        m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
 
         CreateLightingDescriptorSets();
         CreateShadowMapDescriptorSets();
 
         m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
         (
-            m_SwapChain->GetRenderPass(),
+            m_RenderPass->Get3DRenderPass(),
             descriptorSetLayoutsLighting,
             m_LightingDescriptorSets.data(),
             m_ShadowMapDescriptorSets.data()
         );
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
-            m_SwapChain->GetRenderPass(),
+            m_RenderPass->Get3DRenderPass(),
             descriptorSetLayoutsDebug,
             m_ShadowMapDescriptorSets.data()
         );
 
-        m_Imgui = Imgui::Create(m_SwapChain->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        m_Imgui = Imgui::Create(m_RenderPass->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
     }
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
@@ -293,19 +292,19 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1; i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
-            imageInfoGBufferPositionInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferPosition(i);
+            imageInfoGBufferPositionInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferPosition();
             imageInfoGBufferPositionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VkDescriptorImageInfo imageInfoGBufferNormalInputAttachment {};
-            imageInfoGBufferNormalInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferNormal(i);
+            imageInfoGBufferNormalInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferNormal();
             imageInfoGBufferNormalInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VkDescriptorImageInfo imageInfoGBufferColorInputAttachment {};
-            imageInfoGBufferColorInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferColor(i);
+            imageInfoGBufferColorInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferColor();
             imageInfoGBufferColorInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VkDescriptorImageInfo imageInfoGBufferMaterialInputAttachment {};
-            imageInfoGBufferMaterialInputAttachment.imageView   = m_SwapChain->GetImageViewGBufferMaterial(i);
+            imageInfoGBufferMaterialInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferMaterial();
             imageInfoGBufferMaterialInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VK_DescriptorWriter(*m_LightingDescriptorSetLayout, *m_DescriptorPool)
@@ -336,33 +335,31 @@ namespace GfxRenderEngine
         // create the swapchain
         if (m_SwapChain == nullptr)
         {
-            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent);
+            m_SwapChain = std::make_unique<VK_SwapChain>(extent);
         }
         else
         {
             LOG_CORE_INFO("recreating swapchain at frame {0}", m_FrameCounter);
             std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
-            m_SwapChain = std::make_unique<VK_SwapChain>(m_Device, extent, oldSwapChain);
+            m_SwapChain = std::make_unique<VK_SwapChain>(extent, oldSwapChain);
             CreateLightingDescriptorSets();
             if (!oldSwapChain->CompareSwapFormats(*m_SwapChain.get()))
             {
                 LOG_CORE_CRITICAL("swap chain image or depth format has changed");
             }
         }
+        RecreateRenderpass();
+        RecreateShadowMaps();
+    }
 
+    void VK_Renderer::RecreateRenderpass()
+    {
+        auto extent = m_Window->GetExtend();
+        m_RenderPass = std::make_unique<VK_RenderPass>(extent, m_SwapChain.get());
     }
 
     void VK_Renderer::RecreateShadowMaps()
     {
-        auto extent = m_Window->GetExtend();
-        while (extent.width == 0 || extent.height == 0)
-        {
-            extent = m_Window->GetExtend();
-            glfwWaitEvents();
-        }
-
-        vkDeviceWaitIdle(m_Device->Device());
-
         if (m_ShadowMap[ShadowMaps::HIGH_RES] == nullptr)
         {
             m_ShadowMap[ShadowMaps::HIGH_RES] = std::make_unique<VK_ShadowMap>(SHADOW_MAP_HIGH_RES);
@@ -419,7 +416,6 @@ namespace GfxRenderEngine
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
             RecreateSwapChain();
-            RecreateShadowMaps();
             return nullptr;
         }
 
@@ -458,7 +454,6 @@ namespace GfxRenderEngine
         {
             m_Window->ResetWindowResizedFlag();
             RecreateSwapChain();
-            RecreateShadowMaps();
         }
         else if (result != VK_SUCCESS)
         {
@@ -596,13 +591,13 @@ namespace GfxRenderEngine
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
-        renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(m_CurrentImageIndex);
+        renderPassInfo.renderPass = m_RenderPass->Get3DRenderPass();
+        renderPassInfo.framebuffer = m_RenderPass->Get3DFrameBuffer(m_CurrentImageIndex);
 
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
-        std::array<VkClearValue, static_cast<uint>(VK_SwapChain::RenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
+        std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -634,8 +629,8 @@ namespace GfxRenderEngine
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_SwapChain->GetGUIRenderPass();
-        renderPassInfo.framebuffer = m_SwapChain->GetGUIFrameBuffer(m_CurrentImageIndex);
+        renderPassInfo.renderPass = m_RenderPass->GetGUIRenderPass();
+        renderPassInfo.framebuffer = m_RenderPass->GetGUIFrameBuffer(m_CurrentImageIndex);
 
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();

@@ -22,6 +22,7 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKrenderPass.h"
 #include "VKmodel.h"
 
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
@@ -67,11 +68,11 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = static_cast<uint>(VK_SwapChain::SubPasses::SUBPASS_GEOMETRY);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_GEOMETRY);
 
         // g buffer position, g buffer normal, g buffer color, g buffer material
         // no blending
-        auto attachmentCount = (int)VK_SwapChain::NUMBER_OF_GBUFFER_ATTACHMENTS;
+        auto attachmentCount = (int)VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS;
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
         VkPipelineColorBlendAttachmentState blAttachments[] =

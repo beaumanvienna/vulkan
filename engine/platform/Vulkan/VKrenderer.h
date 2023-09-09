@@ -46,6 +46,7 @@
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
+#include "VKrenderPass.h"
 #include "VKshadowMap.h"
 #include "VKdescriptor.h"
 #include "VKtexture.h"
@@ -65,7 +66,6 @@ namespace GfxRenderEngine
         VK_Renderer(const VK_Renderer&) = delete;
         VK_Renderer& operator=(const VK_Renderer&) = delete;
 
-        VkRenderPass GetSwapChainRenderPass() const { return m_SwapChain->GetRenderPass(); }
         float GetAspectRatio() const { return m_SwapChain->ExtentAspectRatio(); }
         uint GetContextWidth() const { return m_SwapChain->Width(); }
         uint GetContextHeight() const { return m_SwapChain->Height(); }
@@ -110,6 +110,7 @@ namespace GfxRenderEngine
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void RecreateSwapChain();
+        void RecreateRenderpass();
         void RecreateShadowMaps();
         void CompileShaders();
         void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
@@ -128,7 +129,8 @@ namespace GfxRenderEngine
             LOW_RES,
             NUMBER_OF_SHADOW_MAPS
         };
-        std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS]; 
+        std::unique_ptr<VK_RenderPass> m_RenderPass;
+        std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
         std::unique_ptr<VK_RenderSystemShadow>                            m_RenderSystemShadow;
         std::unique_ptr<VK_RenderSystemPbrNoMap>                          m_RenderSystemPbrNoMap;

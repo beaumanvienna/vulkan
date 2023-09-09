@@ -18,7 +18,12 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+   Encapsulates a vulkan buffer
+   Based on https://github.com/blurrypiano/littleVulkanEngine/blob/main/src/lve_buffer.cpp
+   Initially based off VulkanBuffer by Sascha Willems -
+   https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h */
 
 #pragma once
 

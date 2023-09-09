@@ -22,6 +22,7 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKrenderPass.h"
 #include "VKmodel.h"
 
 #include "systems/VKdeferredRendering.h"
@@ -77,7 +78,7 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
-        pipelineConfig.subpass = static_cast<uint>(VK_SwapChain::SubPasses::SUBPASS_LIGHTING);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_LIGHTING);
 
         // create a pipeline
         m_LightingPipeline = std::make_unique<VK_Pipeline>

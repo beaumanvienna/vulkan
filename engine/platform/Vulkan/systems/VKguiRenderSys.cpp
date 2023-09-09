@@ -22,6 +22,7 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKrenderPass.h"
 #include "VKmodel.h"
 
 #include "core.h"
@@ -74,7 +75,7 @@ namespace GfxRenderEngine
         pipelineConfig.m_AttributeDescriptions.clear();
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = static_cast<uint>(VK_SwapChain::SubPassesGUI::SUBPASS_GUI);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPassesGUI::SUBPASS_GUI);
 
         // create pipelines
         m_Pipeline = std::make_unique<VK_Pipeline>
