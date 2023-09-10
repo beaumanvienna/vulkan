@@ -47,6 +47,8 @@ namespace GfxRenderEngine
 
         CompileShaders();
         RecreateSwapChain();
+        RecreateRenderpass();
+        RecreateShadowMaps();
         CreateCommandBuffers();
 
         for (uint i = 0; i < m_ShadowUniformBuffers0.size(); i++)
@@ -342,14 +344,11 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("recreating swapchain at frame {0}", m_FrameCounter);
             std::shared_ptr<VK_SwapChain> oldSwapChain = std::move(m_SwapChain);
             m_SwapChain = std::make_unique<VK_SwapChain>(extent, oldSwapChain);
-            CreateLightingDescriptorSets();
             if (!oldSwapChain->CompareSwapFormats(*m_SwapChain.get()))
             {
                 LOG_CORE_CRITICAL("swap chain image or depth format has changed");
             }
         }
-        RecreateRenderpass();
-        RecreateShadowMaps();
     }
 
     void VK_Renderer::RecreateRenderpass()
@@ -360,18 +359,9 @@ namespace GfxRenderEngine
 
     void VK_Renderer::RecreateShadowMaps()
     {
-        if (m_ShadowMap[ShadowMaps::HIGH_RES] == nullptr)
-        {
-            m_ShadowMap[ShadowMaps::HIGH_RES] = std::make_unique<VK_ShadowMap>(SHADOW_MAP_HIGH_RES);
-            m_ShadowMap[ShadowMaps::LOW_RES]  = std::make_unique<VK_ShadowMap>(SHADOW_MAP_LOW_RES);
-        }
-        else
-        {
-            // create shadow maps
-            m_ShadowMap[ShadowMaps::HIGH_RES] = std::make_unique<VK_ShadowMap>(SHADOW_MAP_HIGH_RES);
-            m_ShadowMap[ShadowMaps::LOW_RES]  = std::make_unique<VK_ShadowMap>(SHADOW_MAP_LOW_RES);
-            CreateShadowMapDescriptorSets();
-        }
+        // create shadow maps
+        m_ShadowMap[ShadowMaps::HIGH_RES] = std::make_unique<VK_ShadowMap>(SHADOW_MAP_HIGH_RES);
+        m_ShadowMap[ShadowMaps::LOW_RES]  = std::make_unique<VK_ShadowMap>(SHADOW_MAP_LOW_RES);
     }
 
     void VK_Renderer::CreateCommandBuffers()
@@ -416,6 +406,8 @@ namespace GfxRenderEngine
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
             RecreateSwapChain();
+            RecreateRenderpass();
+            CreateLightingDescriptorSets();
             return nullptr;
         }
 
@@ -454,6 +446,8 @@ namespace GfxRenderEngine
         {
             m_Window->ResetWindowResizedFlag();
             RecreateSwapChain();
+            RecreateRenderpass();
+            CreateLightingDescriptorSets();
         }
         else if (result != VK_SUCCESS)
         {

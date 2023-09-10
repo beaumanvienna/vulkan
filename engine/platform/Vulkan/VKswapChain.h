@@ -76,7 +76,6 @@ namespace GfxRenderEngine
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat m_SwapChainImageFormat;
-        VkFormat m_SwapChainDepthFormat;
         VkExtent2D m_SwapChainExtent;
 
         std::vector<VkImage> m_SwapChainImages;

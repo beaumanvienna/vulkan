@@ -97,8 +97,16 @@ Open the solution for Vulkan, switch to Release, and hit F5<br/>
 <br/>
 <br/>
 
+### Clean Instruction<br/>
+<br/>
+To clean all temporary files (including the spv-files, engine.cfg, imgui.ini, and the scene files in the top directory), use:<br/>
+<br/>
+premake5 clean<br/>
+<br/>
+
 ### Update Instruction<br/>
 <br/>
 To pull in the latest changes for the repository, use:<br/>
 <br/>
-git pull && git submodule update --init --recursive
+git pull && git submodule update --init --recursive<br/>
+<br/>

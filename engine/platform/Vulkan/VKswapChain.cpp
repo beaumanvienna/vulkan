@@ -309,8 +309,7 @@ namespace GfxRenderEngine
 
     bool VK_SwapChain::CompareSwapFormats(const VK_SwapChain& swapChain) const
     {
-        bool depthFormatEqual = (swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat);
         bool imageFormatEqual = (swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat);
-        return (depthFormatEqual && imageFormatEqual);
+        return (imageFormatEqual);
     }
 }
