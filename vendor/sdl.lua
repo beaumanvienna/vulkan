@@ -187,6 +187,15 @@ project "sdl"
             "VC_EXTRALEAN",
         }
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"

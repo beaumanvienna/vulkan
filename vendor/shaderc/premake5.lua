@@ -43,7 +43,13 @@ project "shaderc"
         symbols "on"
 
     filter { "action:gmake*", "configurations:Debug"}
-        buildoptions { "-g -Og" }
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Release"
         runtime "Release"
@@ -95,6 +101,15 @@ project "shaderc_util"
 
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fvisibility=hidden -fPIC -pthread" }
+
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Debug"
         runtime "Debug"
@@ -255,6 +270,15 @@ project "SPIRV-Tools-opt"
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-exceptions" }
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"
@@ -379,6 +403,15 @@ project "SPIRV-Tools"
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-rtti -fno-exceptions" }
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"
@@ -465,6 +498,15 @@ project "MachineIndependent"
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-exceptions -fno-rtti -pthread" }
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"
@@ -506,6 +548,15 @@ project "OSDependent"
         
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always" }
+
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Debug"
         runtime "Debug"
@@ -555,6 +606,15 @@ project "GenericCodeGen"
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always" }
 
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"
@@ -590,6 +650,15 @@ project "OGLCompiler"
 
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always" }
+
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Debug"
         runtime "Debug"
@@ -631,6 +700,15 @@ project "SPIRV"
 
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always" }
+
+    filter { "action:gmake*", "configurations:Debug"}
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Debug"
         runtime "Debug"

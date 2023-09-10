@@ -30,7 +30,13 @@ project "yaml-cpp"
         symbols "on"
 
     filter { "action:gmake*", "configurations:Debug"}
-        buildoptions { "-g -Og" }
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter "configurations:Release"
         runtime "Release"

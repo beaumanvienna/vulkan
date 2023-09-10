@@ -162,7 +162,13 @@ project "lucre"
         kind "ConsoleApp"
 
     filter { "action:gmake*", "configurations:Debug"}
-        buildoptions { "-g -Og" }
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Release"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+
+    filter { "action:gmake*", "configurations:Dist"}
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
 
     filter { "configurations:Release" }
         defines { "NDEBUG" }
@@ -176,6 +182,37 @@ project "lucre"
         }
         optimize "On"
         kind "WindowedApp"
+
+    if _ACTION == 'clean' then
+        print("clean the build...")
+        os.rmdir("./bin")
+        os.rmdir("./bin-int")
+        os.remove("./engine.cfg")
+        os.remove("./imgui.ini")
+        os.remove("./*.scene")
+        os.remove("./resources/gnuEmbeddedResources.cpp")
+        os.remove("./resources/gnuEmbeddedResources.h")
+        os.remove("./**.make")
+        os.remove("./Makefile")
+        os.remove("./vendor/pamanager/libpamanager/Makefile")
+        os.remove("./vendor/atlas/Makefile")
+        os.remove("./vendor/box2d/Makefile")
+        os.remove("./profiling (open with chrome tracing).json")
+        os.rmdir("./vendor/atlas/bin/")
+        os.remove("./vendor/atlas/MakefileMakefile")
+        os.rmdir("./vendor/box2d/bin")
+        os.rmdir("./vendor/box2d/bin-int")
+        os.rmdir("./vendor/glfw/build")
+        os.rmdir("./vendor/pamanager/libpamanager/bin")
+        os.rmdir("./vendor/pamanager/libpamanager/obj")
+        os.rmdir("./vendor/sdl/build")
+        os.rmdir("./vendor/sdl_mixer/build")
+        os.rmdir("./vendor/sfml/build")
+        os.rmdir("./vendor/shaderc/bin")
+        os.rmdir("./vendor/shaderc/bin-int")
+        os.rmdir("./vendor/yaml-cpp/build")
+        print("done.")
+    end
 
     include "engine.lua"
 
