@@ -41,7 +41,7 @@ namespace GfxRenderEngine
     VK_Shader::VK_Shader(const std::string& sourceFilepath, const std::string& spirvFilepath, bool optimize)
         : m_SourceFilepath(sourceFilepath), m_SpirvFilepath(spirvFilepath), m_Optimize(optimize)
     {
-
+        LOG_CORE_INFO("compiling {0}", sourceFilepath);
         ReadFile();
         Compile();
 
@@ -158,13 +158,13 @@ namespace GfxRenderEngine
         data->content_length = (*container)[1].size();
 
         return data;
-    };
+    }
 
     void ShaderIncluder::ReleaseInclude(shaderc_include_result* data)
     {
         delete static_cast<std::array<std::string, 2>*>(data->user_data);
         delete data;
-    };
+    }
 
     std::string ShaderIncluder::ReadFile(const std::string& filepath)
     {

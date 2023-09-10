@@ -90,8 +90,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             m_Device,
-            "bin/pointLight.vert.spv",
-            "bin/pointLight.frag.spv",
+            "bin-int/pointLight.vert.spv",
+            "bin-int/pointLight.frag.spv",
             pipelineConfig
         );
     }

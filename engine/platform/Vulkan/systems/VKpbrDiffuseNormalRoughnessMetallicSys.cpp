@@ -88,8 +88,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/pbrDiffuseNormalRoughnessMetallic.vert.spv",
-            "bin/pbrDiffuseNormalRoughnessMetallic.frag.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic.vert.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic.frag.spv",
             pipelineConfig
         );
     }

@@ -82,6 +82,7 @@ namespace GfxRenderEngine
         void EndRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
 
+        virtual bool Init() override;
         virtual void BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(entt::registry& registry) override;
         virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
@@ -119,6 +120,7 @@ namespace GfxRenderEngine
 
     private:
 
+        bool m_ShadersCompiled;
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_SwapChain> m_SwapChain;

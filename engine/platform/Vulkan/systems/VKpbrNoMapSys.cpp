@@ -90,8 +90,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/pbrNoMap.vert.spv",
-            "bin/pbrNoMap.frag.spv",
+            "bin-int/pbrNoMap.vert.spv",
+            "bin-int/pbrNoMap.frag.spv",
             pipelineConfig
         );
     }

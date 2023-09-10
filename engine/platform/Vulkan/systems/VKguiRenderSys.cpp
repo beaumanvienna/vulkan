@@ -81,16 +81,16 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/guiShader.vert.spv",
-            "bin/guiShader.frag.spv",
+            "bin-int/guiShader.vert.spv",
+            "bin-int/guiShader.frag.spv",
             pipelineConfig
         );
 
         m_Pipeline2 = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/guiShader2.vert.spv",
-            "bin/guiShader2.frag.spv",
+            "bin-int/guiShader2.vert.spv",
+            "bin-int/guiShader2.frag.spv",
             pipelineConfig
         );
     }

@@ -74,8 +74,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/debug.vert.spv",
-            "bin/debug.frag.spv",
+            "bin-int/debug.vert.spv",
+            "bin-int/debug.frag.spv",
             pipelineConfig
         );
     }

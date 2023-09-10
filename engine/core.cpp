@@ -42,7 +42,7 @@ namespace GfxRenderEngine
                 m_ConfigFilePath(configFilePath),
                 m_DisableMousePointerTimer(2500),
                 m_Running(false), m_Paused(false),
-                m_Timestep{0ms}
+                m_Timestep{0ms}, m_GraphicsContextInitialized(false)
     {
         #ifdef _MSC_VER
             m_HomeDir = "";
@@ -136,6 +136,25 @@ namespace GfxRenderEngine
         m_CoreSettings.m_EngineVersion    = ENGINE_VERSION;
         m_CoreSettings.m_EnableFullscreen = IsFullscreen();
         m_SettingsManager.SaveToFile();
+    }
+
+    void Engine::WaitInitialized()
+    {
+        m_Window->OnUpdate();
+
+        auto time = GetTime();
+        m_Timestep = time - m_TimeLastFrame;
+        m_TimeLastFrame = time;
+
+        if (!m_Window->IsOK())
+        {
+            Shutdown();
+        }
+
+        if (!m_GraphicsContextInitialized)
+        {
+            m_GraphicsContextInitialized = m_GraphicsContext->Init();
+        }
     }
 
     void Engine::OnUpdate()
@@ -251,7 +270,7 @@ namespace GfxRenderEngine
             }
         }
         // dispatch to application
-        if (!event.IsHandled())
+        if (!event.IsHandled() && m_GraphicsContextInitialized)
         {
             m_AppEventCallback(event);
         }

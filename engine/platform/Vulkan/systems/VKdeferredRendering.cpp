@@ -84,8 +84,8 @@ namespace GfxRenderEngine
         m_LightingPipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/deferredRendering.vert.spv",
-            "bin/deferredRendering.frag.spv",
+            "bin-int/deferredRendering.vert.spv",
+            "bin-int/deferredRendering.frag.spv",
             pipelineConfig
         );
     }

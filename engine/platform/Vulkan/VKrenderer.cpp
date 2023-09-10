@@ -41,11 +41,16 @@ namespace GfxRenderEngine
         : m_Window{window}, m_FrameCounter{0},
           m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f},
           m_CurrentFrameIndex{0}, m_ShowDebugShadowMap{false},
-          m_FrameInProgress{false}
+          m_FrameInProgress{false}, m_ShadersCompiled{false},
+          m_Device{VK_Core::m_Device}
     {
-        m_Device = VK_Core::m_Device;
+        CompileShaders();  // runs in a parallel thread and sets m_ShadersCompiled
+    }
 
-        CompileShaders();
+    bool VK_Renderer::Init()
+    {
+        if (!m_ShadersCompiled) return m_ShadersCompiled;
+
         RecreateSwapChain();
         RecreateRenderpass();
         RecreateShadowMaps();
@@ -268,6 +273,7 @@ namespace GfxRenderEngine
         );
 
         m_Imgui = Imgui::Create(m_RenderPass->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
+        return m_ShadersCompiled;
     }
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
@@ -798,50 +804,58 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CompileShaders()
     {
-        if (!EngineCore::FileExists("bin"))
+        
+        std::thread shaderCompileThread([this]()
         {
-            LOG_CORE_WARN("creating bin directory for spirv files");
-            EngineCore::CreateDirectory("bin");
-        }
-        std::vector<std::string> shaderFilenames = 
-        {
-            "pointLight.vert",
-            "pointLight.frag",
-            "spriteRenderer.vert",
-            "spriteRenderer.frag",
-            "pbrNoMap.vert",
-            "pbrNoMap.frag",
-            "pbrDiffuse.vert",
-            "pbrDiffuse.frag",
-            "pbrDiffuseNormal.vert",
-            "pbrDiffuseNormal.frag",
-            "pbrDiffuseNormalRoughnessMetallic.vert",
-            "pbrDiffuseNormalRoughnessMetallic.frag",
-            "deferredRendering.vert",
-            "deferredRendering.frag",
-            "spriteRenderer2D.frag",
-            "spriteRenderer2D.vert",
-            "guiShader2.frag",
-            "guiShader2.vert",
-            "guiShader.frag",
-            "guiShader.vert",
-            "skybox.vert",
-            "skybox.frag",
-            "shadowShader.vert",
-            "shadowShader.frag",
-            "debug.vert",
-            "debug.frag"
-        };
-
-        for (auto& filename : shaderFilenames)
-        {
-            std::string spirvFilename = std::string("bin/") + filename + std::string(".spv");
-            if (!EngineCore::FileExists(spirvFilename))
+            if (!EngineCore::FileExists("bin-int"))
             {
-                std::string name = std::string("engine/platform/Vulkan/shaders/") + filename;
-                VK_Shader shader{name, spirvFilename};
+                LOG_CORE_WARN("creating bin directory for spirv files");
+                EngineCore::CreateDirectory("bin-int");
             }
-        }
+            std::vector<std::string> shaderFilenames = 
+            {
+                // 2D
+                "spriteRenderer.vert",
+                "spriteRenderer.frag",
+                "spriteRenderer2D.frag",
+                "spriteRenderer2D.vert",
+                "guiShader.frag",
+                "guiShader.vert",
+                "guiShader2.frag",
+                "guiShader2.vert",
+                // 3D
+                "pointLight.vert",
+                "pointLight.frag",
+                "pbrNoMap.vert",
+                "pbrNoMap.frag",
+                "pbrDiffuse.vert",
+                "pbrDiffuse.frag",
+                "pbrDiffuseNormal.vert",
+                "pbrDiffuseNormal.frag",
+                "pbrDiffuseNormalRoughnessMetallic.vert",
+                "pbrDiffuseNormalRoughnessMetallic.frag",
+                "deferredRendering.vert",
+                "deferredRendering.frag",
+                "skybox.vert",
+                "skybox.frag",
+                "shadowShader.vert",
+                "shadowShader.frag",
+                "debug.vert",
+                "debug.frag"
+            };
+    
+            for (auto& filename : shaderFilenames)
+            {
+                std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");
+                if (!EngineCore::FileExists(spirvFilename))
+                {
+                    std::string name = std::string("engine/platform/Vulkan/shaders/") + filename;
+                    VK_Shader shader{name, spirvFilename};
+                }
+            }
+            m_ShadersCompiled = true;
+        });
+        shaderCompileThread.detach();
     }
 
     void VK_Renderer::DrawWithTransform(const Sprite& sprite, const glm::mat4& transform)

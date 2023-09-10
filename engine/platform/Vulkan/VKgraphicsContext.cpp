@@ -34,15 +34,22 @@ namespace GfxRenderEngine
 {
     VK_Context::VK_Context(VK_Window* window)
         : m_Window{window}, m_FrameDuration{16.667ms},
-          m_VSyncIsWorking{10}
+          m_VSyncIsWorking{10}, m_Initialized{false}
     {
-        Init();
+        m_Renderer = std::make_shared<VK_Renderer>(m_Window);
+        m_Initialized = m_Renderer->Init();
     }
 
     bool VK_Context::Init()
     {
-        m_Renderer = std::make_shared<VK_Renderer>(m_Window);
-        m_Initialized = true;
+        if (!m_Initialized)
+        {
+            m_Initialized = m_Renderer->Init();
+        }
+        else
+        {
+            LOG_CORE_WARN("VK_Context: already initialized");
+        }
         return m_Initialized;
     }
 

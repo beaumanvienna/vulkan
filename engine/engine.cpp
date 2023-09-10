@@ -43,7 +43,23 @@ int engine(int argc, char* argv[])
         {
             return -1;
         }
+        while (!engine->IsInitialized())
+        {
+            // poll window events 
+            // to prevent desktop message
+            // "app not responding"
+            // while shaders compile
+            engine->WaitInitialized();
+            if (!engine->IsRunning())
+            {
+                engine->Quit();
+                PROFILE_END_SESSION();
+                exit(0);
+            }
+            std::this_thread::sleep_for(16ms);
+        }
     }
+
     {
         PROFILE_SCOPE("application startup");
         application = GfxRenderEngine::Application::Create();
@@ -86,4 +102,4 @@ int engine(int argc, char* argv[])
         LOG_CORE_INFO("leaving main");
     #endif
     return 0;
-};
+}

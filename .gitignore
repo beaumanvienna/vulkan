@@ -18,7 +18,7 @@ engine.cfg
 resources/gnuEmbeddedResources.cpp
 resources/gnuEmbeddedResources.h
 .marley
-*.json
+profiling (open with chrome tracing).json
 resources/nsis/marleyInstaller.exe
 # Prerequisites
 *.d

@@ -75,8 +75,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/skybox.vert.spv",
-            "bin/skybox.frag.spv",
+            "bin-int/skybox.vert.spv",
+            "bin-int/skybox.frag.spv",
             pipelineConfig
         );
     }

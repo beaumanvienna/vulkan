@@ -55,6 +55,7 @@ namespace GfxRenderEngine
         ~Engine();
 
         bool Start();
+        void WaitInitialized();
         void OnUpdate();
         void OnRender();
         void OnEvent(Event& event);
@@ -65,6 +66,7 @@ namespace GfxRenderEngine
         void InitSettings();
         void ApplyAppSettings();
         bool IsPaused() const { return m_Paused; }
+        bool IsInitialized() const { return m_GraphicsContextInitialized; }
         bool IsRunning() const { return m_Running; }
         void RunScripts(std::shared_ptr<GfxRenderEngine::Application> application);
 
@@ -134,7 +136,7 @@ namespace GfxRenderEngine
         Timestep m_Timestep;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;
 
-        bool m_Running, m_Paused;
+        bool m_Running, m_Paused, m_GraphicsContextInitialized;
         std::vector<std::unique_ptr<Event>> m_EventQueue;
 
     };

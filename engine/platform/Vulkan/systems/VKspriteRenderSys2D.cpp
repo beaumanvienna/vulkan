@@ -76,8 +76,8 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/spriteRenderer2D.vert.spv",
-            "bin/spriteRenderer2D.frag.spv",
+            "bin-int/spriteRenderer2D.vert.spv",
+            "bin-int/spriteRenderer2D.frag.spv",
             pipelineConfig
         );
     }

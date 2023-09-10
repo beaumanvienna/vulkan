@@ -85,8 +85,8 @@ namespace GfxRenderEngine
         pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin/shadowShader.vert.spv",
-            "bin/shadowShader.frag.spv",
+            "bin-int/shadowShader.vert.spv",
+            "bin-int/shadowShader.frag.spv",
             pipelineConfig
         );
     }
