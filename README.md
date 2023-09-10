@@ -79,7 +79,6 @@ export MAKEFLAGS=-j$(nproc)<br />
 Compile and run debug target: make verbose=1 && ./bin/Debug/lucre <br/>
 Compile and run release target: make config=release verbose=1 && ./bin/Release/lucre<br/>
 <br/>
-<br/>
 
 ### Windows Build Instructions<br/>
 <br/>
@@ -94,7 +93,6 @@ If you have Visual Studio 2022, use instead:<br/>
 premake5.exe vs2022<br/>
 <br/>
 Open the solution for Vulkan, switch to Release, and hit F5<br/>
-<br/>
 <br/>
 
 ### Clean Instruction<br/>
