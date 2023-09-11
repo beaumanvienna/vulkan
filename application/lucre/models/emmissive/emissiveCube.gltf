@@ -43,9 +43,9 @@
             "name" : "Emissive",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0,
-                    0,
-                    0,
+                    1,
+                    0.9545900225639343,
+                    0.2697720229625702,
                     1
                 ]
             }
@@ -53,7 +53,7 @@
     ],
     "meshes" : [
         {
-            "name" : "Cube",
+            "name" : "EmissiveCube",
             "primitives" : [
                 {
                     "attributes" : {
