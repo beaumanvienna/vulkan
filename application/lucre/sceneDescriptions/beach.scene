@@ -36,6 +36,10 @@ glTF-files:
     translation: [-0.899999976, 0.263500631, -3]
     scale: [1, 1, 1]
     rotation: [0, -0, 0]
+  application/lucre/models/emmissive/emissiveCube.gltf:
+    translation: [-0.899999976, 0.263500631, -3]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
 
 prefabs:
   - application/lucre/prefabs/duck.prefab
