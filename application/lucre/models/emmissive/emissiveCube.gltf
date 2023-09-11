@@ -43,9 +43,9 @@
             "name" : "Emissive",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0,
-                    0,
-                    0,
+                    1,
+                    1,
+                    0.878431373,
                     1
                 ]
             }
