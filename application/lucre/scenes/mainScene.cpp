@@ -163,12 +163,12 @@ namespace LucreApp
                 { 5.6,   height4, 1.2}
             };
 
-            for (int i = 0; i < lightPositions.size(); i++)
+            for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
-                transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
+                TransformComponent lightTransform{};
+                lightTransform.SetTranslation(lightPositions[i]);
+                m_Registry.emplace<TransformComponent>(entity, lightTransform);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -260,8 +260,6 @@ namespace LucreApp
         m_Renderer->SubmitShadows(m_Registry);
         m_Renderer->Renderpass3D(m_Registry);
 
-        auto frameRotation = static_cast<const float>(timestep) * 0.6f;
-
         ApplyDebugSettings();
 
         RotateLights(timestep);
@@ -292,18 +290,18 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent event)
+        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent mouseEvent)
             {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= event.GetY()*0.1f;
+                zoomFactor -= mouseEvent.GetY()*0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
             }
         );
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent keyboardEvent)
             {
-                switch(event.GetKeyCode())
+                switch(keyboardEvent.GetKeyCode())
                 {
                     case ENGINE_KEY_R:
                         ResetScene();

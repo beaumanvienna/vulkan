@@ -49,7 +49,8 @@ namespace GfxRenderEngine
     private:
 
         Scene& m_Scene;
-        std::unordered_map<std::string, entt::entity> m_gltfFiles;
+        std::map<std::string, entt::entity> m_gltfFiles;
+        std::vector<std::string> m_gltfFilesKeys;
         std::unordered_map<std::string, entt::entity> m_PrefabFiles;
 
     };

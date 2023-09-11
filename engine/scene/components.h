@@ -70,7 +70,7 @@ namespace GfxRenderEngine
         const glm::mat4& GetMat4();
         const glm::mat3& GetNormalMatrix();
         void  SetDirtyFlag() { m_Dirty = true; }
-        const bool GetDirtyFlag() const { return m_Dirty; }
+        bool GetDirtyFlag() const { return m_Dirty; }
 
     private:
 

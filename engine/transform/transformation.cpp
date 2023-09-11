@@ -107,7 +107,7 @@ namespace GfxRenderEngine
         }
 
         return m_Transform;
-    };
+    }
     
     glm::vec3 Rotation::GetRotation()
     {
@@ -144,7 +144,7 @@ namespace GfxRenderEngine
         }
 
         return m_Transform;
-    };
+    }
 
     glm::vec3 Scaling::GetScale()
     {

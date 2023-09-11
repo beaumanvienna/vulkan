@@ -54,6 +54,7 @@ namespace GfxRenderEngine
             return;
         }
 
+        uint nodeCounter = 0;
         for(const auto& gltfFile : yamlNode["glTF-files"])
         {
             std::string filename = gltfFile.first.as<std::string>();
@@ -65,7 +66,9 @@ namespace GfxRenderEngine
 
                 if (entity != entt::null)
                 {
-                    m_gltfFiles[filename] = entity;
+                    std::string key = filename + std::to_string(nodeCounter++);
+                    m_gltfFiles[key] = entity;
+                    m_gltfFilesKeys.push_back(key);
                 }
 
                 switch (gltfFile.second.Type())
@@ -192,11 +195,11 @@ namespace GfxRenderEngine
             for(YAML::const_iterator it=scriptFileList.begin();it!=scriptFileList.end();++it)
             {
                 std::string entityName = it->first.as<std::string>();
-                std::string filepath = it->second.as<std::string>();
-                LOG_CORE_INFO("found script '{0} for entity '{1}' in prefab", filepath, entityName);
+                std::string filename = it->second.as<std::string>();
+                LOG_CORE_INFO("found script '{0} for entity '{1}' in prefab", filename, entityName);
                 entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(entityName);
 
-                ScriptComponent scriptComponent(filepath);
+                ScriptComponent scriptComponent(filename);
                 m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
             }
         }
@@ -215,9 +218,10 @@ namespace GfxRenderEngine
         {
             out << YAML::Key << "glTF-files";
             out << YAML::BeginMap;
-    
-            for (const auto& [filename, entity] : m_gltfFiles)
+ 
+            for (const auto& [key, entity] : m_gltfFiles)
             {
+                std::string filename = key.substr(0,key.rfind(".gltf")+5);
                 auto& registry = m_Scene.GetRegistry();
                 auto& transform = registry.get<TransformComponent>(entity);
                 auto& translation = transform.GetTranslation();
