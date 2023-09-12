@@ -163,6 +163,24 @@ namespace GfxRenderEngine
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
+            if (glTFMaterial.emissiveFactor.size() == 3)
+            {
+                material.m_EmissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
+                if (it != glTFMaterial.extensions.end())
+                {
+                    auto extension = it->second;
+                    if (extension.IsObject())
+                    {
+                        auto emissiveStrength = extension.Get("emissiveStrength");
+                        if (emissiveStrength.IsReal())
+                        {
+                            material.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
+                            LOG_CORE_CRITICAL("material.m_EmissiveStrength = {0}", material.m_EmissiveStrength);
+                        }
+                    }
+                }
+            }
 
             if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
             {

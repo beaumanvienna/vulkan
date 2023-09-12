@@ -62,6 +62,8 @@ namespace GfxRenderEngine
             HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2
         };
         glm::vec3 m_DiffuseColor;
+        glm::vec3 m_EmissiveFactor;
+        float m_EmissiveStrength;
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMettalicMapIndex;
