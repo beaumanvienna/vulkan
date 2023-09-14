@@ -22,61 +22,50 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
 
-#include "engine/platform/Vulkan/VKswapChain.h"
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    struct PbrNoMapMaterial
+    struct VK_PushConstantDataPbrEmissiveTexture
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_Color;
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    struct PbrEmissiveMaterial
+    class VK_RenderSystemPbrEmissiveTexture
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_EmissiveFactor;
-        float m_EmissiveStrength;
-    };
 
-    struct PbrEmissiveTextureMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-        float m_EmissiveStrength;
-    };
+    public:
 
-    struct PbrDiffuseMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-    };
+        VK_RenderSystemPbrEmissiveTexture(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrEmissiveTexture();
 
-    struct PbrDiffuseNormalMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-    };
+        VK_RenderSystemPbrEmissiveTexture(const VK_RenderSystemPbrEmissiveTexture&) = delete;
+        VK_RenderSystemPbrEmissiveTexture& operator=(const VK_RenderSystemPbrEmissiveTexture&) = delete;
 
-    struct PbrDiffuseNormalRoughnessMetallicMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_NormalMapIntensity;
-    };
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
-    struct CubemapMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
+    private:
+
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
     };
 }

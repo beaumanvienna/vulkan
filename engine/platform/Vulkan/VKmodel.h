@@ -68,6 +68,7 @@ namespace GfxRenderEngine
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawShadow(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
@@ -79,6 +80,11 @@ namespace GfxRenderEngine
         (
             PbrDiffuseMaterial& pbrDiffuseMaterial,
             const std::shared_ptr<Texture>& colorMap
+        );
+        static void CreateDescriptorSet
+        (
+            PbrEmissiveTextureMaterial& pbrEmmissiveTextureMaterial,
+            const std::shared_ptr<Texture>& emissiveMap
         );
         static void CreateDescriptorSet
         (
@@ -114,6 +120,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
         std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};

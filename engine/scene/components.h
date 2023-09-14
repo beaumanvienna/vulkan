@@ -159,6 +159,11 @@ namespace GfxRenderEngine
         uint m_Tag;
     };
 
+    struct PbrEmissiveTextureTag
+    {
+        uint m_Tag;
+    };
+
     struct PbrNoMapTag
     {
         uint m_Tag;

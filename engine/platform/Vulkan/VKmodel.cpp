@@ -29,6 +29,7 @@
 #include "systems/VKpbrDiffuseSys.h"
 #include "systems/VKpbrEmissiveSys.h"
 #include "systems/VKpbrDiffuseNormalSys.h"
+#include "systems/VKpbrEmissiveTextureSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKshadowRenderSys.h"
 
@@ -71,6 +72,7 @@ namespace GfxRenderEngine
         m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
         m_PrimitivesEmissive = builder.m_PrimitivesEmissive;
         m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
+        m_PrimitivesEmissiveTexture = builder.m_PrimitivesEmissiveTexture;
         m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
         m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
         m_PrimitivesCubemap = builder.m_PrimitivesCubemap;
@@ -243,6 +245,61 @@ namespace GfxRenderEngine
                 sizeof(VK_PushConstantDataPbrEmissive),
                 &push);
 
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+        }
+    }
+
+    void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& primitive : m_PrimitivesEmissiveTexture)
+        {
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrEmissiveTextureMaterial.m_DescriptorSet;
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+            VK_PushConstantDataPbrDiffuse push{};
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveTextureMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrEmissiveTextureMaterial.m_Metallic;
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrEmissiveTexture),
+                &push);
             if(m_HasIndexBuffer)
             {
                 vkCmdDrawIndexed
@@ -487,6 +544,11 @@ namespace GfxRenderEngine
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
             DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
         }
+        for(auto& primitive : m_PrimitivesEmissiveTexture)
+        {
+            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
+            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+        }
         for(auto& primitive : m_PrimitivesDiffuseMap)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
@@ -545,6 +607,20 @@ namespace GfxRenderEngine
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
             .WriteImage(0, imageInfo)
             .Build(pbrDiffuseMaterial.m_DescriptorSet);
+    }
+
+    void VK_Model::CreateDescriptorSet(PbrEmissiveTextureMaterial& pbrEmissiveTextureMaterial,
+                                       const std::shared_ptr<Texture>& emissiveMap)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        const auto& imageInfo = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
+
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, imageInfo)
+            .Build(pbrEmissiveTextureMaterial.m_DescriptorSet);
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,

@@ -59,7 +59,8 @@ namespace GfxRenderEngine
         {
             HAS_DIFFUSE_MAP             = 0x01 << 0,
             HAS_NORMAL_MAP              = 0x01 << 1,
-            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2
+            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2,
+            HAS_EMISSIVE_MAP            = 0x01 << 3
         };
         glm::vec3 m_DiffuseColor;
         glm::vec3 m_EmissiveFactor;
@@ -67,6 +68,7 @@ namespace GfxRenderEngine
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMettalicMapIndex;
+        uint m_EmissiveMapIndex;
         uint m_Features;
         float m_Roughness;
         float m_Metallic;
@@ -99,6 +101,16 @@ namespace GfxRenderEngine
         uint m_IndexCount;
         uint m_VertexCount;
         PbrEmissiveMaterial m_PbrEmissiveMaterial{};
+    };
+
+    struct PrimitiveEmissiveTexture
+    {
+        ~PrimitiveEmissiveTexture();
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrEmissiveTextureMaterial m_PbrEmissiveTextureMaterial{};
     };
 
     struct PrimitiveDiffuseMap
@@ -161,6 +173,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
         std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
 
