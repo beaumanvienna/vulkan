@@ -27,6 +27,7 @@
 
 #include "systems/VKpbrNoMapSys.h"
 #include "systems/VKpbrDiffuseSys.h"
+#include "systems/VKpbrEmissiveSys.h"
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKshadowRenderSys.h"
@@ -68,6 +69,7 @@ namespace GfxRenderEngine
         m_Cubemaps = builder.m_Cubemaps;
 
         m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
+        m_PrimitivesEmissive = builder.m_PrimitivesEmissive;
         m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
         m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
         m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
@@ -193,6 +195,52 @@ namespace GfxRenderEngine
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(VK_PushConstantDataPbrNoMap),
+                &push);
+
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+        }
+    }
+
+    void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& primitive : m_PrimitivesEmissive)
+        {
+
+            VK_PushConstantDataPbrEmissive push{};
+
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrEmissiveMaterial.m_Metallic;
+
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrEmissive),
                 &push);
 
             if(m_HasIndexBuffer)
@@ -430,6 +478,11 @@ namespace GfxRenderEngine
     void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& primitive : m_PrimitivesNoMap)
+        {
+            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
+            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+        }
+        for(auto& primitive : m_PrimitivesEmissive)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
             DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);

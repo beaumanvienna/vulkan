@@ -22,53 +22,50 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
 
-#include "engine/platform/Vulkan/VKswapChain.h"
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    struct PbrNoMapMaterial
+    struct VK_PushConstantDataPbrEmissive
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_Color;
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    struct PbrEmissiveMaterial
+    class VK_RenderSystemPbrEmissive
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_EmissiveFactor;
-        float m_EmissiveStrength;
-    };
 
-    struct PbrDiffuseMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-    };
+    public:
 
-    struct PbrDiffuseNormalMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-    };
+        VK_RenderSystemPbrEmissive(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        ~VK_RenderSystemPbrEmissive();
 
-    struct PbrDiffuseNormalRoughnessMetallicMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_NormalMapIntensity;
-    };
+        VK_RenderSystemPbrEmissive(const VK_RenderSystemPbrEmissive&) = delete;
+        VK_RenderSystemPbrEmissive& operator=(const VK_RenderSystemPbrEmissive&) = delete;
 
-    struct CubemapMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+
+    private:
+
+        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
     };
 }

@@ -57,6 +57,8 @@ namespace GfxRenderEngine
     Model::~Model() {}
 
     PrimitiveNoMap::~PrimitiveNoMap() {}
+    
+    PrimitiveEmissive::~PrimitiveEmissive() {}
 
     PrimitiveDiffuseMap::~PrimitiveDiffuseMap() {}
 
@@ -163,6 +165,7 @@ namespace GfxRenderEngine
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
+            material.m_EmissiveStrength = 0;
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
                 material.m_EmissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
@@ -176,7 +179,6 @@ namespace GfxRenderEngine
                         if (emissiveStrength.IsReal())
                         {
                             material.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
-                            LOG_CORE_CRITICAL("material.m_EmissiveStrength = {0}", material.m_EmissiveStrength);
                         }
                     }
                 }
@@ -227,6 +229,7 @@ namespace GfxRenderEngine
         m_Indices.clear();
 
         m_PrimitivesNoMap.clear();
+        m_PrimitivesEmissive.clear();
         m_PrimitivesDiffuseMap.clear();
         m_PrimitivesDiffuseNormalMap.clear();
         m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
@@ -254,7 +257,7 @@ namespace GfxRenderEngine
                 const float* tangentsBuffer  = nullptr;
                 const float* texCoordsBuffer = nullptr;
 
-                // Get buffer data for vertex normals
+                // Get buffer data for vertex positions
                 if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
                 {
                     const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
@@ -409,7 +412,22 @@ namespace GfxRenderEngine
         ASSERT(materialIndex < m_Materials.size());
         auto& material = m_Materials[materialIndex];
 
-        if (material.m_Features == Material::HAS_DIFFUSE_MAP)
+        if (material.m_EmissiveStrength != 0)
+        {
+            PrimitiveEmissive primitiveEmissive{};
+            primitiveEmissive.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveEmissive.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveEmissive.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveEmissive.m_VertexCount = primitiveTmp.m_VertexCount;
+
+            primitiveEmissive.m_PbrEmissiveMaterial.m_Roughness = material.m_Roughness;
+            primitiveEmissive.m_PbrEmissiveMaterial.m_Metallic  = material.m_Metallic;
+            primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveFactor = material.m_EmissiveFactor;
+            primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
+
+            m_PrimitivesEmissive.push_back(primitiveEmissive);
+        }
+        else if (material.m_Features == Material::HAS_DIFFUSE_MAP)
         {
             PrimitiveDiffuseMap primitiveDiffuseMap{};
             primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -653,6 +671,11 @@ namespace GfxRenderEngine
         {
             PbrNoMapTag pbrNoMapTag{};
             registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+        }
+        if (m_PrimitivesEmissive.size())
+        {
+            PbrEmissiveTag pbrEmissiveTag{};
+            registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
         }
         if (m_PrimitivesDiffuseMap.size())
         {

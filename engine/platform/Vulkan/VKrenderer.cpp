@@ -251,6 +251,7 @@ namespace GfxRenderEngine
         m_RenderSystemCubemap                           = std::make_unique<VK_RenderSystemCubemap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsCubemap);
 
         m_RenderSystemPbrNoMap                          = std::make_unique<VK_RenderSystemPbrNoMap>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemPbrEmissive                       = std::make_unique<VK_RenderSystemPbrEmissive>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                        = std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrDiffuseNormal                  = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormal);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
@@ -727,6 +728,7 @@ namespace GfxRenderEngine
 
             // 3D objects
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrEmissive->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
@@ -841,7 +843,9 @@ namespace GfxRenderEngine
                 "shadowShader.vert",
                 "shadowShader.frag",
                 "debug.vert",
-                "debug.frag"
+                "debug.frag",
+                "pbrEmissive.vert",
+                "pbrEmissive.frag"
             };
     
             for (auto& filename : shaderFilenames)

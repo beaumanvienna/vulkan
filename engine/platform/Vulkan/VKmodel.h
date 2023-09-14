@@ -66,6 +66,7 @@ namespace GfxRenderEngine
 
         void Draw(VkCommandBuffer commandBuffer);
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
@@ -111,6 +112,7 @@ namespace GfxRenderEngine
         uint m_IndexCount;
 
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+        std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};

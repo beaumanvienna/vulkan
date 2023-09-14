@@ -26,16 +26,11 @@
 #version 450
 #define MAX_LIGHTS 128
 
-layout(location = 0)       in  vec3  fragColor;
-layout(location = 1)       in  vec3  fragPosition;
-layout(location = 2)       in  vec3  fragNormal;
-layout(location = 3)       in  vec2  fragUV;
-layout(location = 4)       in  vec3  fragTangent;
-
-layout (location = 0) out vec4 outPosition;
-layout (location = 1) out vec4 outNormal;
-layout (location = 2) out vec4 outColor;
-layout (location = 3) out vec4 outMaterial;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  color;
+layout(location = 2) in vec3  normal;
+layout(location = 3) in vec2  uv;
+layout(location = 6) in vec3  tangent;
 
 struct PointLight
 {
@@ -68,21 +63,23 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
+layout(location = 0)  out  vec3  fragColor;
+layout(location = 1)  out  vec3  fragPosition;
+layout(location = 2)  out  vec3  fragNormal;
+layout(location = 3)  out  vec2  fragUV;
+layout(location = 4)  out  vec3  fragTangent;
+
 void main()
 {
-    float roughness           = push.m_NormalMatrix[3].x;
-    float metallic            = push.m_NormalMatrix[3].y;
-    float normalMapIntensity  = push.m_NormalMatrix[3].z;
+    // projection * view * model * position
+    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
-    vec3 N = normalize(fragNormal);
-    vec3 T = normalize(fragTangent);
-    // Gram Schmidt
-    T = normalize(T - dot(T, N) * N);
+    vec4 positionWorld = push.m_ModelMatrix * vec4(position, 1.0);
+    fragPosition = positionWorld.xyz;
+    fragNormal = mat3(push.m_NormalMatrix) * normal;
+    fragTangent = mat3(push.m_NormalMatrix) * tangent;
 
-    outPosition = vec4(fragPosition, 1.0);
-    outNormal   = vec4(N, 1.0);
-
-    vec4 col    = vec4(fragColor, 1.0);
-    outColor    = col;
-    outMaterial = vec4(metallic, roughness, normalMapIntensity, 0.0);
+    fragColor = color;
+    fragTangent = tangent;
+    fragUV = uv;
 }

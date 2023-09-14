@@ -37,8 +37,12 @@ glTF-files:
     scale: [1, 1, 1]
     rotation: [0, -0, 0]
   application/lucre/models/emmissive/emissiveCube.gltf:
-    translation: [-0.899999976, 0.263500631, -3]
-    scale: [1, 1, 1]
+    translation: [-3.44930482, 2.37203526, -3]
+    scale: [0.5, 0.5, 0.5]
+    rotation: [0, -0, 0]
+  application/lucre/models/emmissive/emissiveCubeWithTexture.gltf:
+    translation: [-1.96972346, 1.86582327, -3]
+    scale: [0.5, 0.5, 0.5]
     rotation: [0, -0, 0]
 
 prefabs:

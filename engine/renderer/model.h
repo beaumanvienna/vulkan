@@ -91,6 +91,16 @@ namespace GfxRenderEngine
         PbrNoMapMaterial m_PbrNoMapMaterial{};
     };
 
+    struct PrimitiveEmissive
+    {
+        ~PrimitiveEmissive();
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrEmissiveMaterial m_PbrEmissiveMaterial{};
+    };
+
     struct PrimitiveDiffuseMap
     {
         ~PrimitiveDiffuseMap();
@@ -149,6 +159,7 @@ namespace GfxRenderEngine
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Images;
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+        std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
