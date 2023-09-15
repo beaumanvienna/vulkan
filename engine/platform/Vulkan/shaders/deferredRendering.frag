@@ -346,6 +346,4 @@ void main()
 
     outColor = albedo * vec4(color, 1.0);
 
-    // color correction
-    outColor.xyz = pow(outColor.xyz, vec3(1.0/1.5)); 
 }

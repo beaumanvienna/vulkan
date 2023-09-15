@@ -49,7 +49,8 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_Renderer->SetAmbientLightIntensity(0.06f);
+        ImGUI::m_AmbientLightIntensity = 0.35;
+        m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         {
             m_CameraController = std::make_shared<CameraController>();
@@ -394,6 +395,11 @@ namespace LucreApp
                     pointLight.m_LightIntensity = ImGUI::m_PointLightIntensity;
                 }
             }
+        }
+
+        if (ImGUI::m_UseAmbientLightIntensity)
+        {
+            m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
 }

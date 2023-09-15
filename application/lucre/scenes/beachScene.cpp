@@ -48,7 +48,8 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_Renderer->SetAmbientLightIntensity(0.06f);
+        ImGUI::m_AmbientLightIntensity = 0.177;
+        m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         {  // set up camera
             m_CameraController = std::make_shared<CameraController>();
@@ -218,6 +219,7 @@ namespace LucreApp
         auto frameRotation = static_cast<const float>(timestep) * 0.6f;
 
         RotateLights(timestep);
+        ApplyDebugSettings();
 
         // opaque objects
         m_Renderer->Submit(m_Registry, m_SceneHierarchy);
@@ -326,5 +328,13 @@ namespace LucreApp
         directionalLightComponent.m_Direction  = lightbulbTransform.GetRotation();
         directionalLightComponent.m_LightView  = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
+    }
+
+    void BeachScene::ApplyDebugSettings()
+    {
+        if (ImGUI::m_UseAmbientLightIntensity)
+        {
+            m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
+        }
     }
 }

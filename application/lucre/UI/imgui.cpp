@@ -41,6 +41,8 @@ namespace LucreApp
     float ImGUI::m_NormalMapIntensity = 0.9f;
     bool  ImGUI::m_UseNormalMapIntensity = false;
     float ImGUI::m_PointLightIntensity = 1.0f;
+    float ImGUI::m_AmbientLightIntensity = 0.1f;
+    bool  ImGUI::m_UseAmbientLightIntensity = false;
     bool  ImGUI::m_UsePointLightIntensity = false;
     bool  ImGUI::m_UseScale = false;
     bool  ImGUI::m_UseRotate = false;
@@ -71,7 +73,7 @@ namespace LucreApp
 
         // selected entity
         std::string gameObjectLabel = "Game Object";
-        if (m_SelectedGameObject > 1)
+        if (m_SelectedGameObject > 0)
         {
             auto& label = dictionary.GetShortName((entt::entity)m_SelectedGameObject);
             gameObjectLabel += std::string(" ") + label;
@@ -98,11 +100,16 @@ namespace LucreApp
         ImGui::SameLine();
         ImGui::SliderFloat("point lights", &m_PointLightIntensity, 0.0f, 10.0f);
 
+        // ambient light intensity
+        ImGui::Checkbox("use###005", &m_UseAmbientLightIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("ambient light", &m_AmbientLightIntensity, 0.0f, 1.0f);
+
         // point light intensity
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
 
         auto guizmoMode = GetGuizmoMode();
-        if (m_SelectedGameObject > 1) // id one is the camera
+        if (m_SelectedGameObject > 0)
         {
             ImGuizmo::BeginFrame();
             ImGuizmo::SetOrthographic(false);

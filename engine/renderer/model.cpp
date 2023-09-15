@@ -133,14 +133,13 @@ namespace GfxRenderEngine
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
 
-            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index == imageIndex)
             {
-                int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
-                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                if (imageIndex == diffuseTexture.source)
-                {
-                    return Texture::USE_SRGB;
-                }
+                return Texture::USE_SRGB;
+            }
+            else if (glTFMaterial.emissiveTexture.index == imageIndex)
+            {
+                return Texture::USE_SRGB;
             }
             else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
             {

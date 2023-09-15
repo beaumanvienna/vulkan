@@ -72,6 +72,7 @@ namespace LucreApp
             const std::shared_ptr<Camera>& lightView,
             int renderpass
         );
+        void ApplyDebugSettings();
 
     private:
 
