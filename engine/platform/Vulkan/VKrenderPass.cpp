@@ -42,6 +42,7 @@ namespace GfxRenderEngine
         m_BufferNormalFormat   = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_BufferColorFormat    = VK_FORMAT_R8G8B8A8_UNORM;
         m_BufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferEmissionFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
         Create3DRenderPass();
         CreateGUIRenderPass();
@@ -135,6 +136,7 @@ namespace GfxRenderEngine
                 m_GBufferNormalView,
                 m_GBufferColorView,
                 m_GBufferMaterialView,
+                m_GBufferEmissionView
             };
 
             VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
@@ -289,6 +291,30 @@ namespace GfxRenderEngine
                 m_GBufferMaterialImageMemory);
         }
 
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent.width = swapChainExtent.width;
+            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.format = m_BufferEmissionFormat;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.flags = 0;
+
+            m_Device->CreateImageWithInfo(
+                imageInfo,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                m_GBufferEmissionImage,
+                m_GBufferEmissionImageMemory);
+        }
+
     }
 
     void VK_RenderPass::CreateGBufferImageViews()
@@ -371,6 +397,27 @@ namespace GfxRenderEngine
             viewInfo.subresourceRange.layerCount = 1;
 
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferMaterialView);
+            if (result != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
+        }
+
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.pNext = nullptr;
+            viewInfo.flags = 0;
+            viewInfo.image = m_GBufferEmissionImage;
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = m_BufferEmissionFormat;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferEmissionView);
             if (result != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create texture image view!");
@@ -486,14 +533,35 @@ namespace GfxRenderEngine
         gBufferMaterialInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_MATERIAL);
         gBufferMaterialInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+        // ATTACHMENT_GBUFFER_EMISSION
+        VkAttachmentDescription gBufferEmissionAttachment = {};
+        gBufferEmissionAttachment.format = m_BufferEmissionFormat;
+        gBufferEmissionAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        gBufferEmissionAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gBufferEmissionAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        gBufferEmissionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gBufferEmissionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        gBufferEmissionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        gBufferEmissionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferEmissionAttachmentRef = {};
+        gBufferEmissionAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference gBufferEmissionInputAttachmentRef = {};
+        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         // geometry pass
         std::array<VkAttachmentReference, NUMBER_OF_GBUFFER_ATTACHMENTS> gBufferAttachments =
         {
             gBufferPositionAttachmentRef,
             gBufferNormalAttachmentRef,
             gBufferColorAttachmentRef,
-            gBufferMaterialAttachmentRef
+            gBufferMaterialAttachmentRef,
+            gBufferEmissionAttachmentRef
         };
+
         VkSubpassDescription subpassGeometry = {};
         subpassGeometry.flags = 0;
         subpassGeometry.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -512,7 +580,8 @@ namespace GfxRenderEngine
             gBufferPositionInputAttachmentRef,
             gBufferNormalInputAttachmentRef,
             gBufferColorInputAttachmentRef,
-            gBufferMaterialInputAttachmentRef
+            gBufferMaterialInputAttachmentRef,
+            gBufferEmissionInputAttachmentRef
         };
 
         VkSubpassDescription subpassLighting = {};
@@ -586,7 +655,8 @@ namespace GfxRenderEngine
             gBufferPositionAttachment,
             gBufferNormalAttachment,
             gBufferColorAttachment,
-            gBufferMaterialAttachment
+            gBufferMaterialAttachment,
+            gBufferEmissionAttachment
         };
         std::array<VkSubpassDescription, static_cast<uint>(SubPasses::NUMBER_OF_SUBPASSES)> subpasses = 
         {
@@ -701,5 +771,9 @@ namespace GfxRenderEngine
         vkDestroyImageView(m_Device->Device(), m_GBufferMaterialView, nullptr);
         vkDestroyImage(m_Device->Device(), m_GBufferMaterialImage, nullptr);
         vkFreeMemory(m_Device->Device(), m_GBufferMaterialImageMemory, nullptr);
+
+        vkDestroyImageView(m_Device->Device(), m_GBufferEmissionView, nullptr);
+        vkDestroyImage(m_Device->Device(), m_GBufferEmissionImage, nullptr);
+        vkFreeMemory(m_Device->Device(), m_GBufferEmissionImageMemory, nullptr);
     }
 }
