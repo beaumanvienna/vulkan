@@ -759,11 +759,14 @@ namespace GfxRenderEngine
 
             // 3D objects
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrEmissive->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrEmissiveTexture->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
+
+            // the emissive pipelines need to go last
+            // their do not write to the depth buffer
+            m_RenderSystemPbrEmissive->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrEmissiveTexture->RenderEntities(m_FrameInfo, registry);
         }
     }
 
