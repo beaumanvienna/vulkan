@@ -72,6 +72,10 @@ namespace GfxRenderEngine
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_GEOMETRY);
 
+        // disable depth
+        pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+
         // g buffer position, g buffer normal, g buffer color, g buffer material, g buffer emission
         // no blending
         auto attachmentCount = (int)VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS; 

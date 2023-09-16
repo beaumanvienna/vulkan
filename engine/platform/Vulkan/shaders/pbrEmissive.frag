@@ -24,64 +24,14 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 128
 
 layout(location = 0)       in  vec3  fragColor;
-layout(location = 1)       in  vec3  fragPosition;
-layout(location = 2)       in  vec3  fragNormal;
-layout(location = 3)       in  vec2  fragUV;
-layout(location = 4)       in  vec3  fragTangent;
 
-layout (location = 0) out vec4 outPosition;
-layout (location = 1) out vec4 outNormal;
-layout (location = 2) out vec4 outColor;
-layout (location = 3) out vec4 outMaterial;
-
-struct PointLight
-{
-    vec4 m_Position;  // ignore w
-    vec4 m_Color;     // w is intensity
-};
-
-struct DirectionalLight
-{
-    vec4 m_Direction;  // ignore w
-    vec4 m_Color;     // w is intensity
-};
-
-layout(set = 0, binding = 0) uniform GlobalUniformBuffer
-{
-    mat4 m_Projection;
-    mat4 m_View;
-
-    // point light
-    vec4 m_AmbientLightColor;
-    PointLight m_PointLights[MAX_LIGHTS];
-    DirectionalLight m_DirectionalLight;
-    int m_NumberOfActivePointLights;
-    int m_NumberOfActiveDirectionalLights;
-} ubo;
-
-layout(push_constant) uniform Push
-{
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-} push;
+layout(location = 2)       out vec4 outColor;
+layout(location = 4)       out vec4 outEmissive;
 
 void main()
 {
-    float roughness           = push.m_NormalMatrix[3].x;
-    float metallic            = push.m_NormalMatrix[3].y;
-    float normalMapIntensity  = push.m_NormalMatrix[3].z;
-
-    vec3 N = normalize(fragNormal);
-    vec3 T = normalize(fragTangent);
-    // Gram Schmidt
-    T = normalize(T - dot(T, N) * N);
-
-    outPosition = vec4(fragPosition, 1.0);
-    outNormal   = vec4(N, 1.0);
-
-    outColor    = vec4(fragColor, 1.0);
-    outMaterial = vec4(metallic, roughness, normalMapIntensity, 0.0);
+    if (fragColor == vec3(0,0,0)) discard;
+    outEmissive    = vec4(fragColor, 1.0);
 }

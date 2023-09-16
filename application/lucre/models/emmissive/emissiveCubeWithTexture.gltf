@@ -53,12 +53,9 @@
             },
             "name":"EmissiveTexture",
             "pbrMetallicRoughness":{
-                "baseColorFactor":[
-                    0,
-                    0,
-                    0,
-                    1
-                ],
+                "baseColorTexture":{
+                    "index":1
+                },
                 "metallicFactor":0.954954981803894,
                 "roughnessFactor":0.9594594836235046
             }
@@ -90,6 +87,10 @@
         }
     ],
     "textures":[
+        {
+            "sampler":0,
+            "source":0
+        },
         {
             "sampler":0,
             "source":0

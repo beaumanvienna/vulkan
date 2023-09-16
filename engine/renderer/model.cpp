@@ -169,7 +169,12 @@ namespace GfxRenderEngine
             material.m_EmissiveStrength = 0;
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
-                material.m_EmissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                if (emissiveFactor != glm::vec3(0,0,0))
+                {
+                    material.m_EmissiveFactor = emissiveFactor;
+                    material.m_EmissiveStrength = 1;
+                }
             }
             {
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
@@ -423,41 +428,9 @@ namespace GfxRenderEngine
         ASSERT(materialIndex < m_Materials.size());
         auto& material = m_Materials[materialIndex];
 
-        if ((material.m_EmissiveStrength != 0) && (material.m_Features == Material::HAS_EMISSIVE_MAP))
-        {
-            PrimitiveEmissiveTexture primitiveEmissiveTexture{};
-            primitiveEmissiveTexture.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveEmissiveTexture.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveEmissiveTexture.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveEmissiveTexture.m_VertexCount = primitiveTmp.m_VertexCount;
-
-            uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
-            ASSERT(emissiveMapIndex < m_Images.size());
-
-            VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);
-
-            primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Roughness = material.m_Roughness;
-            primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Metallic  = material.m_Metallic;
-            primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
-
-            m_PrimitivesEmissiveTexture.push_back(primitiveEmissiveTexture);
-        }
-        else if (material.m_EmissiveStrength != 0)
-        {
-            PrimitiveEmissive primitiveEmissive{};
-            primitiveEmissive.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveEmissive.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveEmissive.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveEmissive.m_VertexCount = primitiveTmp.m_VertexCount;
-
-            primitiveEmissive.m_PbrEmissiveMaterial.m_Roughness = material.m_Roughness;
-            primitiveEmissive.m_PbrEmissiveMaterial.m_Metallic  = material.m_Metallic;
-            primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveFactor = material.m_EmissiveFactor;
-            primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
-
-            m_PrimitivesEmissive.push_back(primitiveEmissive);
-        }
-        else if (material.m_Features == Material::HAS_DIFFUSE_MAP)
+        uint pbrFeatures = material.m_Features & (
+                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP);
+        if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             PrimitiveDiffuseMap primitiveDiffuseMap{};
             primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -474,7 +447,7 @@ namespace GfxRenderEngine
 
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
         }
-        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
             PrimitiveDiffuseNormalMap primitiveDiffuseNormalMap{};
             primitiveDiffuseNormalMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -494,7 +467,7 @@ namespace GfxRenderEngine
 
             m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
         }
-        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
             PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
             primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -518,11 +491,11 @@ namespace GfxRenderEngine
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
         }
-        else if (material.m_Features == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
             LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
         }
-        else if (material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
             PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
             primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -543,7 +516,7 @@ namespace GfxRenderEngine
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
         }
-        else if (material.m_Features & Material::HAS_DIFFUSE_MAP)
+        else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
             PrimitiveDiffuseMap primitiveDiffuseMap{};
             primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -573,6 +546,46 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
+        }
+
+        // emissive materials
+        if (material.m_EmissiveStrength != 0)
+        {
+            // emissive texture
+            if (material.m_Features & Material::HAS_EMISSIVE_MAP)
+            {
+                PrimitiveEmissiveTexture primitiveEmissiveTexture{};
+                primitiveEmissiveTexture.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+                primitiveEmissiveTexture.m_FirstVertex = primitiveTmp.m_FirstVertex;
+                primitiveEmissiveTexture.m_IndexCount  = primitiveTmp.m_IndexCount;
+                primitiveEmissiveTexture.m_VertexCount = primitiveTmp.m_VertexCount;
+
+                uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
+                ASSERT(emissiveMapIndex < m_Images.size());
+
+                VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);
+
+                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Roughness = material.m_Roughness;
+                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Metallic  = material.m_Metallic;
+                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
+
+                m_PrimitivesEmissiveTexture.push_back(primitiveEmissiveTexture);
+            }
+            else // emissive vertex color
+            {
+                PrimitiveEmissive primitiveEmissive{};
+                primitiveEmissive.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+                primitiveEmissive.m_FirstVertex = primitiveTmp.m_FirstVertex;
+                primitiveEmissive.m_IndexCount  = primitiveTmp.m_IndexCount;
+                primitiveEmissive.m_VertexCount = primitiveTmp.m_VertexCount;
+
+                primitiveEmissive.m_PbrEmissiveMaterial.m_Roughness = material.m_Roughness;
+                primitiveEmissive.m_PbrEmissiveMaterial.m_Metallic  = material.m_Metallic;
+                primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveFactor = material.m_EmissiveFactor;
+                primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
+
+                m_PrimitivesEmissive.push_back(primitiveEmissive);
+            }
         }
     }
 
@@ -696,21 +709,13 @@ namespace GfxRenderEngine
         LoadTransformationMatrix(transform, nodeIndex);
         registry.emplace<TransformComponent>(entity, transform);
 
-        // material tags
+        // material tags (can have multiple tags)
+
+        // vertex diffuse color, diffuse map, normal map, roughness/metallic map
         if (m_PrimitivesNoMap.size())
         {
             PbrNoMapTag pbrNoMapTag{};
             registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
-        }
-        if (m_PrimitivesEmissive.size())
-        {
-            PbrEmissiveTag pbrEmissiveTag{};
-            registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
-        }
-        if (m_PrimitivesEmissiveTexture.size())
-        {
-            PbrEmissiveTextureTag pbrEmissiveTextureTag{};
-            registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
         }
         if (m_PrimitivesDiffuseMap.size())
         {
@@ -726,6 +731,18 @@ namespace GfxRenderEngine
         {
             PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
             registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
+        }
+
+        // emissive materials
+        if (m_PrimitivesEmissive.size())
+        {
+            PbrEmissiveTag pbrEmissiveTag{};
+            registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
+        }
+        if (m_PrimitivesEmissiveTexture.size())
+        {
+            PbrEmissiveTextureTag pbrEmissiveTextureTag{};
+            registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
         }
 
         return newNode;

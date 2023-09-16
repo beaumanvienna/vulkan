@@ -622,7 +622,7 @@ namespace GfxRenderEngine
         clearValues[3].color = {0.5f, 0.5f, 0.1f, 1.0f};
         clearValues[4].color = {0.5f, 0.1f, 0.5f, 1.0f};
         clearValues[5].color = {0.5f, 0.7f, 0.2f, 1.0f};
-        clearValues[6].color = {0.5f, 0.7f, 0.2f, 1.0f};
+        clearValues[6].color = {0.0f, 0.0f, 0.0f, 1.0f};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
