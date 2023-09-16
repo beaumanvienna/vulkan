@@ -38,43 +38,41 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataDeferredRendering
+    struct VK_PushConstantDataPostProcessing
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemDeferredRendering
+    class VK_RenderSystemPostProcessing
     {
 
     public:
 
-        VK_RenderSystemDeferredRendering
+        VK_RenderSystemPostProcessing
         (
             VkRenderPass renderPass,
-            std::vector<VkDescriptorSetLayout>& lightingDescriptorSetLayouts,
-            const VkDescriptorSet* lightingDescriptorSet,
-            const VkDescriptorSet* shadowMapDescriptorSet
+            std::vector<VkDescriptorSetLayout>& postProcessingDescriptorSetLayouts,
+            const VkDescriptorSet* postProcessingDescriptorSet
         );
-        ~VK_RenderSystemDeferredRendering();
+        ~VK_RenderSystemPostProcessing();
 
-        VK_RenderSystemDeferredRendering(const VK_RenderSystemDeferredRendering&) = delete;
-        VK_RenderSystemDeferredRendering& operator=(const VK_RenderSystemDeferredRendering&) = delete;
+        VK_RenderSystemPostProcessing(const VK_RenderSystemPostProcessing&) = delete;
+        VK_RenderSystemPostProcessing& operator=(const VK_RenderSystemPostProcessing&) = delete;
 
-        void LightingPass(const VK_FrameInfo& frameInfo);
-
-    private:
-
-        void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreateLightingPipeline(VkRenderPass renderPass);
+        void PostProcessingPass(const VK_FrameInfo& frameInfo);
 
     private:
 
-        VkPipelineLayout m_LightingPipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_LightingPipeline;
+        void CreatePostProcessingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePostProcessingPipeline(VkRenderPass renderPass);
 
-        const VkDescriptorSet* m_LightingDescriptorSets;
-        const VkDescriptorSet* m_ShadowMapDescriptorSets;
+    private:
+
+        VkPipelineLayout m_PostProcessingPipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_PostProcessingPipeline;
+
+        const VkDescriptorSet* m_PostProcessingDescriptorSets;
 
     };
 }

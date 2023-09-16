@@ -25,87 +25,84 @@
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKdeferredRendering.h"
+#include "systems/VKpostprocessingSys.h"
 #include "VKswapChain.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDeferredRendering::VK_RenderSystemDeferredRendering
+    VK_RenderSystemPostProcessing::VK_RenderSystemPostProcessing
     (
         VkRenderPass renderPass,
-        std::vector<VkDescriptorSetLayout>& lightingDescriptorSetLayouts,
-        const VkDescriptorSet* lightingDescriptorSet,
-        const VkDescriptorSet* shadowMapDescriptorSet
+        std::vector<VkDescriptorSetLayout>& postProcessingDescriptorSetLayouts,
+        const VkDescriptorSet* postProcessingDescriptorSet
     )
     {
-        CreateLightingPipelineLayout(lightingDescriptorSetLayouts);
-        m_LightingDescriptorSets = lightingDescriptorSet;
-        m_ShadowMapDescriptorSets = shadowMapDescriptorSet;
-        CreateLightingPipeline(renderPass);
+        CreatePostProcessingPipelineLayout(postProcessingDescriptorSetLayouts);
+        m_PostProcessingDescriptorSets = postProcessingDescriptorSet;
+        CreatePostProcessingPipeline(renderPass);
     }
 
-    VK_RenderSystemDeferredRendering::~VK_RenderSystemDeferredRendering()
+    VK_RenderSystemPostProcessing::~VK_RenderSystemPostProcessing()
     {
-        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PostProcessingPipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemDeferredRendering::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPostProcessing::CreatePostProcessingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataDeferredRendering);
+        pushConstantRange.size = sizeof(VK_PushConstantDataPostProcessing);
 
-        VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
-        lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        lightingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
-        lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        lightingPipelineLayoutInfo.pushConstantRangeCount = 1;
-        lightingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr, &m_LightingPipelineLayout) != VK_SUCCESS)
+        VkPipelineLayoutCreateInfo postProcessingPipelineLayoutInfo{};
+        postProcessingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        postProcessingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
+        postProcessingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        postProcessingPipelineLayoutInfo.pushConstantRangeCount = 1;
+        postProcessingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &postProcessingPipelineLayoutInfo, nullptr, &m_PostProcessingPipelineLayout) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }
 
-    void VK_RenderSystemDeferredRendering::CreateLightingPipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPostProcessing::CreatePostProcessingPipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_LightingPipelineLayout != nullptr);
+        ASSERT(m_PostProcessingPipelineLayout != nullptr);
 
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
-        pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
+        pipelineConfig.pipelineLayout = m_PostProcessingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_LIGHTING);
 
         // create a pipeline
-        m_LightingPipeline = std::make_unique<VK_Pipeline>
+        m_PostProcessingPipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/deferredRendering.vert.spv",
-            "bin-int/deferredRendering.frag.spv",
+            "bin-int/postprocessing.vert.spv",
+            "bin-int/postprocessing.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemPostProcessing::PostProcessingPass(const VK_FrameInfo& frameInfo)
     {
-        m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
+        m_PostProcessingPipeline->Bind(frameInfo.m_CommandBuffer);
 
         std::vector<VkDescriptorSet> descriptorSets =
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_LightingDescriptorSets[frameInfo.m_ImageIndex],
-            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]
+            m_PostProcessingDescriptorSets[frameInfo.m_ImageIndex]
         };
 
         vkCmdBindDescriptorSets
         (
             frameInfo.m_CommandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_LightingPipelineLayout,   // VkPipelineLayout layout
+            m_PostProcessingPipelineLayout,   // VkPipelineLayout layout
             0,                          // uint32_t         firstSet
             descriptorSets.size(),      // uint32_t         descriptorSetCount
             descriptorSets.data(),      // VkDescriptorSet* pDescriptorSets

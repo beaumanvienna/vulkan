@@ -613,7 +613,7 @@ namespace GfxRenderEngine
         constexpr uint NUMBER_OF_DEPENDENCIES = 4;
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
-        // ligthing depends on geometry
+        // lighting depends on geometry
         dependencies[0].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY); // Index of the render pass being depended upon by dstSubpass
         dependencies[0].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_LIGHTING); // The index of the render pass depending on srcSubpass
         dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency

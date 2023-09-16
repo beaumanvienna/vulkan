@@ -45,6 +45,7 @@
 #include "systems/VKpbrEmissiveTextureSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKdeferredRendering.h"
+#include "systems/VKpostprocessingSys.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
@@ -144,6 +145,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                m_RenderSystemPbrEmissiveTexture;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
         std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
+        std::unique_ptr<VK_RenderSystemPostProcessing>                    m_RenderSystemPostProcessing;
         std::unique_ptr<VK_RenderSystemCubemap>                           m_RenderSystemCubemap;
         std::unique_ptr<VK_RenderSystemSpriteRenderer>                    m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                  m_RenderSystemSpriteRenderer2D;

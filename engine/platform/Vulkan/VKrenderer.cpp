@@ -190,6 +190,12 @@ namespace GfxRenderEngine
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPostProcessing =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
+        };
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
@@ -277,6 +283,13 @@ namespace GfxRenderEngine
             descriptorSetLayoutsLighting,
             m_LightingDescriptorSets.data(),
             m_ShadowMapDescriptorSets.data()
+        );
+
+        m_RenderSystemPostProcessing                 = std::make_unique<VK_RenderSystemPostProcessing>
+        (
+            m_RenderPass->Get3DRenderPass(),
+            descriptorSetLayoutsPostProcessing,
+            m_LightingDescriptorSets.data()
         );
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
@@ -759,6 +772,7 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
+            m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
         }
     }
 
@@ -866,7 +880,9 @@ namespace GfxRenderEngine
                 "pbrEmissive.vert",
                 "pbrEmissive.frag",
                 "pbrEmissiveTexture.vert",
-                "pbrEmissiveTexture.frag"
+                "pbrEmissiveTexture.frag",
+                "postprocessing.vert",
+                "postprocessing.frag"
             };
     
             for (auto& filename : shaderFilenames)
