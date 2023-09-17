@@ -37,10 +37,10 @@
         <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/deferredRendering.vert</file>
+        <file>../engine/platform/Vulkan/shaders/deferredShading.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/deferredRendering.frag</file>
+        <file>../engine/platform/Vulkan/shaders/deferredShading.frag</file>
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/spriteRenderer2D.vert</file>
