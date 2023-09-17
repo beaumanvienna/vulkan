@@ -176,6 +176,14 @@ namespace GfxRenderEngine
                     material.m_EmissiveStrength = 1;
                 }
             }
+            if (glTFMaterial.emissiveTexture.index != -1)
+            {
+                int emissiveTextureIndex = glTFMaterial.emissiveTexture.index;
+                tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
+                material.m_EmissiveMapIndex = emissiveTexture.source;
+                material.m_Features |= Material::HAS_EMISSIVE_MAP;
+                material.m_EmissiveStrength = 1;
+            }
             {
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
                 if (it != glTFMaterial.extensions.end())
@@ -189,13 +197,6 @@ namespace GfxRenderEngine
                             material.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
                         }
                     }
-                }
-                if (glTFMaterial.emissiveTexture.index != -1)
-                {
-                    int emissiveTextureIndex = glTFMaterial.emissiveTexture.index;
-                    tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
-                    material.m_EmissiveMapIndex = emissiveTexture.source;
-                    material.m_Features |= Material::HAS_EMISSIVE_MAP;
                 }
             }
 

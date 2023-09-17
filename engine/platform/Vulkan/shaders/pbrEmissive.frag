@@ -1,8 +1,5 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
