@@ -79,6 +79,8 @@ namespace GfxRenderEngine
         pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_LIGHTING);
+        pipelineConfig.m_BindingDescriptions.clear();   // this pipeline is not using vertices
+        pipelineConfig.m_AttributeDescriptions.clear();
 
         // create a pipeline
         m_LightingPipeline = std::make_unique<VK_Pipeline>
@@ -97,7 +99,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> descriptorSets =
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_LightingDescriptorSets[frameInfo.m_ImageIndex],
+            m_LightingDescriptorSets[frameInfo.m_FrameIndex],
             m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]
         };
 

@@ -364,7 +364,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreatePostProcessingDescriptorSets()
     {
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1; i++)
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo imageInfoColorInputAttachment {};
             imageInfoColorInputAttachment.imageView   = m_RenderPass->GetImageViewColorAttachment();

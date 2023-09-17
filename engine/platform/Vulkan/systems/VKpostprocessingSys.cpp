@@ -77,6 +77,8 @@ namespace GfxRenderEngine
         pipelineConfig.pipelineLayout = m_PostProcessingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPassesPostProcessing::SUBPASS_BLOOM);
+        pipelineConfig.m_BindingDescriptions.clear();   // this pipeline is not using vertices
+        pipelineConfig.m_AttributeDescriptions.clear();
 
         // create a pipeline
         m_PostProcessingPipeline = std::make_unique<VK_Pipeline>
@@ -95,7 +97,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> descriptorSets =
         {
             frameInfo.m_GlobalDescriptorSet,
-            m_PostProcessingDescriptorSets[frameInfo.m_ImageIndex]
+            m_PostProcessingDescriptorSets[frameInfo.m_FrameIndex]
         };
 
         vkCmdBindDescriptorSets

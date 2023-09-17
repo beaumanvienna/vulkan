@@ -180,7 +180,7 @@ namespace GfxRenderEngine
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1}; // the post processing pass is using the swap chain images
+        std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

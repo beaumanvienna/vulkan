@@ -64,14 +64,9 @@ namespace GfxRenderEngine
         enum class RenderTargetsPostProcessing
         {
             ATTACHMENT_COLOR = 0,
-            NUMBER_OF_ATTACHMENTS
-        };
-
-        enum class InputAttachmentsPostProcessing
-        {
-            INPUT_ATTACHMENT_COLOR = 0,
+            INPUT_ATTACHMENT_3DPASS_COLOR,
             INPUT_ATTACHMENT_GBUFFER_EMISSION,
-            NUMBER_OF_INPUT_ATTACHMENTS
+            NUMBER_OF_ATTACHMENTS
         };
 
         enum class SubPassesGUI
@@ -87,7 +82,8 @@ namespace GfxRenderEngine
         };
 
         static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = (int)RenderTargets3D::NUMBER_OF_ATTACHMENTS - (int)RenderTargets3D::ATTACHMENT_GBUFFER_POSITION;
-        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS = (int)InputAttachmentsPostProcessing::NUMBER_OF_INPUT_ATTACHMENTS;
+        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS = (int)RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS - (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR;
+        static constexpr int NUMBER_OF_POSTPROCESSING_OUPUT_ATTACHMENTS = (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR; // 1st input attachment == number of output attachments
 
     public:
 

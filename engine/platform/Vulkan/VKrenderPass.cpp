@@ -223,7 +223,9 @@ namespace GfxRenderEngine
         {
             std::array<VkImageView, static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
-                m_SwapChain->GetImageView(i)
+                m_SwapChain->GetImageView(i),
+                m_ColorAttachmentView,
+                m_GBufferEmissionView
             };
 
             VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
@@ -523,7 +525,7 @@ namespace GfxRenderEngine
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_COLOR);
@@ -773,24 +775,46 @@ namespace GfxRenderEngine
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = m_SwapChain->GetSwapChainImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = static_cast<uint>(RenderTargetsPostProcessing::ATTACHMENT_COLOR);
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        // INPUT_ATTACHMENT_3DPASS_COLOR
+        VkAttachmentDescription inputAttachment3DPassColor = {};
+        inputAttachment3DPassColor.format = m_SwapChain->GetSwapChainImageFormat();
+        inputAttachment3DPassColor.samples = VK_SAMPLE_COUNT_1_BIT;
+        inputAttachment3DPassColor.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        inputAttachment3DPassColor.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        inputAttachment3DPassColor.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        inputAttachment3DPassColor.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        inputAttachment3DPassColor.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        inputAttachment3DPassColor.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // INPUT_ATTACHMENT_GBUFFER_EMISSION
+        VkAttachmentDescription inputAttachmentgBufferEmission = {};
+        inputAttachmentgBufferEmission.format = m_BufferEmissionFormat;
+        inputAttachmentgBufferEmission.samples = VK_SAMPLE_COUNT_1_BIT;
+        inputAttachmentgBufferEmission.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        inputAttachmentgBufferEmission.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        inputAttachmentgBufferEmission.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        inputAttachmentgBufferEmission.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        inputAttachmentgBufferEmission.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        inputAttachmentgBufferEmission.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         // input attachments
         VkAttachmentReference gColorInputAttachmentRef = {};
-        gColorInputAttachmentRef.attachment = static_cast<uint>(InputAttachmentsPostProcessing::INPUT_ATTACHMENT_COLOR);
+        gColorInputAttachmentRef.attachment = static_cast<uint>(RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR);
         gColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferEmissionInputAttachmentRef = {};
-        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(InputAttachmentsPostProcessing::INPUT_ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(RenderTargetsPostProcessing::INPUT_ATTACHMENT_GBUFFER_EMISSION);
         gBufferEmissionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         std::array<VkAttachmentReference, NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS> inputAttachments = 
@@ -805,7 +829,7 @@ namespace GfxRenderEngine
         subpassPostProcessing.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassPostProcessing.inputAttachmentCount = NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS;
         subpassPostProcessing.pInputAttachments = inputAttachments.data();
-        subpassPostProcessing.colorAttachmentCount = static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS);
+        subpassPostProcessing.colorAttachmentCount = NUMBER_OF_POSTPROCESSING_OUPUT_ATTACHMENTS;
         subpassPostProcessing.pColorAttachments = &colorAttachmentRef;
         subpassPostProcessing.pResolveAttachments = nullptr;
         subpassPostProcessing.pDepthStencilAttachment = nullptr;
@@ -834,7 +858,9 @@ namespace GfxRenderEngine
         // render pass
         std::array<VkAttachmentDescription, static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> attachments = 
         {
-            colorAttachment
+            colorAttachment,
+            inputAttachment3DPassColor,
+            inputAttachmentgBufferEmission
         };
         std::array<VkSubpassDescription, static_cast<uint>(SubPassesPostProcessing::NUMBER_OF_SUBPASSES)> subpasses = 
         {
