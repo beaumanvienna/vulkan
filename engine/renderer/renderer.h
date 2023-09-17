@@ -45,6 +45,7 @@ namespace GfxRenderEngine
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
+        virtual void PostProcessingRenderpass() = 0;
         virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
         virtual void Submit2D(Camera* camera, entt::registry& registry) = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;

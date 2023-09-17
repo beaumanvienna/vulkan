@@ -150,6 +150,11 @@ namespace GfxRenderEngine
                     .AddBinding(4, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
                     .Build();
 
+        m_PostProcessingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // color input attachment
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // cubemap
                     .Build();
@@ -193,7 +198,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPostProcessing =
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_PostProcessingDescriptorSetLayout->GetDescriptorSetLayout(),
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
@@ -274,10 +279,11 @@ namespace GfxRenderEngine
         m_RenderSystemPbrEmissiveTexture                = std::make_unique<VK_RenderSystemPbrEmissiveTexture>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTexture);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
 
-        CreateLightingDescriptorSets();
         CreateShadowMapDescriptorSets();
+        CreateLightingDescriptorSets();
+        CreatePostProcessingDescriptorSets();
 
-        m_RenderSystemDeferredRendering                 = std::make_unique<VK_RenderSystemDeferredRendering>
+        m_RenderSystemDeferredShading                 = std::make_unique<VK_RenderSystemDeferredShading>
         (
             m_RenderPass->Get3DRenderPass(),
             descriptorSetLayoutsLighting,
@@ -287,10 +293,11 @@ namespace GfxRenderEngine
 
         m_RenderSystemPostProcessing                 = std::make_unique<VK_RenderSystemPostProcessing>
         (
-            m_RenderPass->Get3DRenderPass(),
+            m_RenderPass->GetPostProcessingRenderPass(),
             descriptorSetLayoutsPostProcessing,
-            m_LightingDescriptorSets.data()
+            m_PostProcessingDescriptorSets.data()
         );
+
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
             m_RenderPass->Get3DRenderPass(),
@@ -323,7 +330,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateLightingDescriptorSets()
     {
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1; i++)
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment {};
             imageInfoGBufferPositionInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferPosition();
@@ -352,6 +359,25 @@ namespace GfxRenderEngine
                 .WriteImage(3, imageInfoGBufferMaterialInputAttachment)
                 .WriteImage(4, imageInfoGBufferEmissionInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
+        }
+    }
+
+    void VK_Renderer::CreatePostProcessingDescriptorSets()
+    {
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1; i++)
+        {
+            VkDescriptorImageInfo imageInfoColorInputAttachment {};
+            imageInfoColorInputAttachment.imageView   = m_RenderPass->GetImageViewColorAttachment();
+            imageInfoColorInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferEmissionInputAttachment {};
+            imageInfoGBufferEmissionInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferEmission();
+            imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout, *m_DescriptorPool)
+                .WriteImage(0, imageInfoColorInputAttachment)
+                .WriteImage(1, imageInfoGBufferEmissionInputAttachment)
+                .Build(m_PostProcessingDescriptorSets[i]);
         }
     }
 
@@ -445,6 +471,7 @@ namespace GfxRenderEngine
             RecreateSwapChain();
             RecreateRenderpass();
             CreateLightingDescriptorSets();
+            CreatePostProcessingDescriptorSets();
             return nullptr;
         }
 
@@ -485,6 +512,7 @@ namespace GfxRenderEngine
             RecreateSwapChain();
             RecreateRenderpass();
             CreateLightingDescriptorSets();
+            CreatePostProcessingDescriptorSets();
         }
         else if (result != VK_SUCCESS)
         {
@@ -628,7 +656,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
-        std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargets::NUMBER_OF_ATTACHMENTS)> clearValues{};
+        std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)> clearValues{};
         clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -651,7 +679,38 @@ namespace GfxRenderEngine
         VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    }
 
+    void VK_Renderer::BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer)
+    {
+        ASSERT(m_FrameInProgress);
+        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_RenderPass->GetPostProcessingRenderPass();
+        renderPassInfo.framebuffer = m_RenderPass->GetPostProcessingFrameBuffer(m_CurrentImageIndex);
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+
+        std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> clearValues{};
+        clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChain->GetSwapChainExtent().width);
+        viewport.height = static_cast<float>(m_SwapChain->GetSwapChainExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
 
     void VK_Renderer::BeginGUIRenderPass(VkCommandBuffer commandBuffer)
@@ -681,7 +740,6 @@ namespace GfxRenderEngine
         VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
     }
 
     void VK_Renderer::EndRenderPass(VkCommandBuffer commandBuffer)
@@ -774,8 +832,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDeferredRendering->LightingPass(m_FrameInfo);
-            m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
+            m_RenderSystemDeferredShading->LightingPass(m_FrameInfo);
         }
     }
 
@@ -792,6 +849,16 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::PostProcessingRenderpass()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            EndRenderPass(m_CurrentCommandBuffer); // end 3D renderpass
+            BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
+            m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
+        }
+    }
+
     void VK_Renderer::NextSubpass()
     {
         if (m_CurrentCommandBuffer)
@@ -804,7 +871,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            EndRenderPass(m_CurrentCommandBuffer); // end 3D render pass
+            EndRenderPass(m_CurrentCommandBuffer); // end post processing renderpass
             BeginGUIRenderPass(m_CurrentCommandBuffer);
 
             // set up orthogonal camera
@@ -872,8 +939,8 @@ namespace GfxRenderEngine
                 "pbrDiffuseNormal.frag",
                 "pbrDiffuseNormalRoughnessMetallic.vert",
                 "pbrDiffuseNormalRoughnessMetallic.frag",
-                "deferredRendering.vert",
-                "deferredRendering.frag",
+                "deferredShading.vert",
+                "deferredShading.frag",
                 "skybox.vert",
                 "skybox.frag",
                 "shadowShader.vert",

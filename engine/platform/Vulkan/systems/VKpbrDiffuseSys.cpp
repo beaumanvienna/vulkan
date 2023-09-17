@@ -68,15 +68,15 @@ namespace GfxRenderEngine
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_GEOMETRY);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_GEOMETRY);
 
         // g buffer position, g buffer normal, g buffer color, g buffer material, g buffer emission
         // no blending
         auto attachmentCount = (int) VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS; 
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
-        std::array<VkPipelineColorBlendAttachmentState, static_cast<uint>(VK_RenderPass::RenderTargets::NUMBER_OF_ATTACHMENTS)> blAttachments;
-        for (uint i = 0; i < static_cast<uint>(VK_RenderPass::RenderTargets::NUMBER_OF_ATTACHMENTS); ++i)
+        std::array<VkPipelineColorBlendAttachmentState, static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)> blAttachments;
+        for (uint i = 0; i < static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS); ++i)
         {
             blAttachments[i] = pipelineConfig.colorBlendAttachment;
         }

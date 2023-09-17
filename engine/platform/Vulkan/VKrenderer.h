@@ -44,7 +44,7 @@
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrEmissiveTextureSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
-#include "systems/VKdeferredRendering.h"
+#include "systems/VKdeferredShading.h"
 #include "systems/VKpostprocessingSys.h"
 
 #include "VKdevice.h"
@@ -81,6 +81,7 @@ namespace GfxRenderEngine
         void BeginShadowRenderPass0(VkCommandBuffer commandBuffer);
         void BeginShadowRenderPass1(VkCommandBuffer commandBuffer);
         void Begin3DRenderPass(VkCommandBuffer commandBuffer);
+        void BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer);
         void BeginGUIRenderPass(VkCommandBuffer commandBuffer);
         void EndRenderPass(VkCommandBuffer commandBuffer);
         int GetFrameIndex() const;
@@ -92,6 +93,7 @@ namespace GfxRenderEngine
         virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
+        virtual void PostProcessingRenderpass() override;
         virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem) override;
         virtual void Submit2D(Camera* camera, entt::registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
@@ -120,6 +122,7 @@ namespace GfxRenderEngine
         void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
+        void CreatePostProcessingDescriptorSets();
 
     private:
 
@@ -144,7 +147,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                  m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                m_RenderSystemPbrEmissiveTexture;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
-        std::unique_ptr<VK_RenderSystemDeferredRendering>                 m_RenderSystemDeferredRendering;
+        std::unique_ptr<VK_RenderSystemDeferredShading>                   m_RenderSystemDeferredShading;
         std::unique_ptr<VK_RenderSystemPostProcessing>                    m_RenderSystemPostProcessing;
         std::unique_ptr<VK_RenderSystemCubemap>                           m_RenderSystemCubemap;
         std::unique_ptr<VK_RenderSystemSpriteRenderer>                    m_RenderSystemSpriteRenderer;
@@ -166,6 +169,7 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
+        std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
 
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
@@ -175,7 +179,8 @@ namespace GfxRenderEngine
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1}; // the 3D pass is using the swap chain images
+        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT+1}; // the post processing pass is using the swap chain images
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

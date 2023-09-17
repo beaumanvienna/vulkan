@@ -25,12 +25,12 @@
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKdeferredRendering.h"
+#include "systems/VKdeferredShading.h"
 #include "VKswapChain.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDeferredRendering::VK_RenderSystemDeferredRendering
+    VK_RenderSystemDeferredShading::VK_RenderSystemDeferredShading
     (
         VkRenderPass renderPass,
         std::vector<VkDescriptorSetLayout>& lightingDescriptorSetLayouts,
@@ -44,17 +44,17 @@ namespace GfxRenderEngine
         CreateLightingPipeline(renderPass);
     }
 
-    VK_RenderSystemDeferredRendering::~VK_RenderSystemDeferredRendering()
+    VK_RenderSystemDeferredShading::~VK_RenderSystemDeferredShading()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemDeferredRendering::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemDeferredShading::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataDeferredRendering);
+        pushConstantRange.size = sizeof(VK_PushConstantDataDeferredShading);
 
         VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
         lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -68,7 +68,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemDeferredRendering::CreateLightingPipeline(VkRenderPass renderPass)
+    void VK_RenderSystemDeferredShading::CreateLightingPipeline(VkRenderPass renderPass)
     {
         ASSERT(m_LightingPipelineLayout != nullptr);
 
@@ -78,19 +78,19 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_LightingPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
-        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_LIGHTING);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_LIGHTING);
 
         // create a pipeline
         m_LightingPipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/deferredRendering.vert.spv",
-            "bin-int/deferredRendering.frag.spv",
+            "bin-int/deferredShading.vert.spv",
+            "bin-int/deferredShading.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemDeferredRendering::LightingPass(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemDeferredShading::LightingPass(const VK_FrameInfo& frameInfo)
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 

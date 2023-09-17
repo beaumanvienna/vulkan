@@ -38,21 +38,24 @@ namespace GfxRenderEngine
         m_Device = VK_Core::m_Device;
 
         m_DepthFormat = m_Device->FindDepthFormat();
-        m_BufferPositionFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-        m_BufferNormalFormat   = VK_FORMAT_R16G16B16A16_SFLOAT;
-        m_BufferColorFormat    = VK_FORMAT_R8G8B8A8_UNORM;
-        m_BufferMaterialFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-        m_BufferEmissionFormat = VK_FORMAT_R8G8B8A8_UNORM;
+        m_BufferPositionFormat  = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferNormalFormat    = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferColorFormat     = VK_FORMAT_R8G8B8A8_UNORM;
+        m_BufferMaterialFormat  = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_BufferEmissionFormat  = VK_FORMAT_R8G8B8A8_UNORM;
 
         Create3DRenderPass();
+        CreatePostProcessingRenderPass();
         CreateGUIRenderPass();
 
+        CreateColorAttachmentResources();
         CreateDepthResources();
 
         CreateGBufferImages();
         CreateGBufferImageViews();
 
         Create3DFramebuffers();
+        CreatePostProcessingFramebuffers();
         CreateGUIFramebuffers();
     }
 
@@ -62,7 +65,15 @@ namespace GfxRenderEngine
         vkDestroyImage(m_Device->Device(), m_DepthImage, nullptr);
         vkFreeMemory(m_Device->Device(), m_DepthImageMemory, nullptr);
 
+        vkDestroyImageView(m_Device->Device(), m_ColorAttachmentView, nullptr);
+        vkDestroyImage(m_Device->Device(), m_ColorAttachmentImage, nullptr);
+        vkFreeMemory(m_Device->Device(), m_ColorAttachmentImageMemory, nullptr);
+
         for (auto framebuffer : m_3DFramebuffers)
+        {
+            vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
+        }
+        for (auto framebuffer : m_PostProcessingFramebuffers)
         {
             vkDestroyFramebuffer(m_Device->Device(), framebuffer, nullptr);
         }
@@ -72,13 +83,58 @@ namespace GfxRenderEngine
         }
 
         vkDestroyRenderPass(m_Device->Device(), m_3DRenderPass, nullptr);
+        vkDestroyRenderPass(m_Device->Device(), m_PostProcessingRenderPass, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_GUIRenderPass, nullptr);
 
         DestroyGBuffers();
 
     }
 
-       void VK_RenderPass::CreateDepthResources()
+    void VK_RenderPass::CreateColorAttachmentResources()
+    {
+        VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
+        VkFormat format = m_SwapChain->GetSwapChainImageFormat();
+
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = swapChainExtent.width;
+        imageInfo.extent.height = swapChainExtent.height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.flags = 0;
+
+        m_Device->CreateImageWithInfo(
+            imageInfo,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            m_ColorAttachmentImage,
+            m_ColorAttachmentImageMemory);
+
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = m_ColorAttachmentImage;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create texture image view!");
+        }
+    }
+
+    void VK_RenderPass::CreateDepthResources()                                                                             
     {
         VkFormat depthFormat = m_Device->FindDepthFormat();
         m_DepthFormat = depthFormat;
@@ -128,9 +184,9 @@ namespace GfxRenderEngine
         m_3DFramebuffers.resize(m_SwapChain->ImageCount());
         for (size_t i = 0; i < m_SwapChain->ImageCount(); i++)
         {
-            std::array<VkImageView, static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
+            std::array<VkImageView, static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
-                m_SwapChain->GetImageView(i),
+                m_ColorAttachmentView,
                 m_DepthImageView,
                 m_GBufferPositionView,
                 m_GBufferNormalView,
@@ -143,7 +199,7 @@ namespace GfxRenderEngine
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_3DRenderPass;
-            framebufferInfo.attachmentCount = static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS);
+            framebufferInfo.attachmentCount = static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = swapChainExtent.width;
             framebufferInfo.height = swapChainExtent.height;
@@ -154,6 +210,37 @@ namespace GfxRenderEngine
                     &framebufferInfo,
                     nullptr,
                     &m_3DFramebuffers[i]) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create framebuffer!");
+            }
+        }
+    }
+
+    void VK_RenderPass::CreatePostProcessingFramebuffers()
+    {
+        m_PostProcessingFramebuffers.resize(m_SwapChain->ImageCount());
+        for (size_t i = 0; i < m_SwapChain->ImageCount(); i++)
+        {
+            std::array<VkImageView, static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> attachments = 
+            {
+                m_SwapChain->GetImageView(i)
+            };
+
+            VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = m_PostProcessingRenderPass;
+            framebufferInfo.attachmentCount = static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS);
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = swapChainExtent.width;
+            framebufferInfo.height = swapChainExtent.height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(
+                    m_Device->Device(),
+                    &framebufferInfo,
+                    nullptr,
+                    &m_PostProcessingFramebuffers[i]) != VK_SUCCESS)
             {
                 LOG_CORE_CRITICAL("failed to create framebuffer!");
             }
@@ -427,7 +514,7 @@ namespace GfxRenderEngine
 
     void VK_RenderPass::Create3DRenderPass()
     {
-        // ATTACHMENT_BACKBUFFER
+        // ATTACHMENT_COLOR
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = m_SwapChain->GetSwapChainImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -439,7 +526,7 @@ namespace GfxRenderEngine
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_BACKBUFFER);
+        colorAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_COLOR);
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         // ATTACHMENT_DEPTH
@@ -454,7 +541,7 @@ namespace GfxRenderEngine
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_DEPTH);
+        depthAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_DEPTH);
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_POSITION
@@ -469,11 +556,11 @@ namespace GfxRenderEngine
         gBufferPositionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferPositionAttachmentRef = {};
-        gBufferPositionAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_POSITION);
+        gBufferPositionAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_POSITION);
         gBufferPositionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferPositionInputAttachmentRef = {};
-        gBufferPositionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_POSITION);
+        gBufferPositionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_POSITION);
         gBufferPositionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_NORMAL
@@ -488,11 +575,11 @@ namespace GfxRenderEngine
         gBufferNormalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferNormalAttachmentRef = {};
-        gBufferNormalAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_NORMAL);
+        gBufferNormalAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_NORMAL);
         gBufferNormalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferNormalInputAttachmentRef = {};
-        gBufferNormalInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_NORMAL);
+        gBufferNormalInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_NORMAL);
         gBufferNormalInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_COLOR
@@ -507,11 +594,11 @@ namespace GfxRenderEngine
         gBufferColorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferColorAttachmentRef = {};
-        gBufferColorAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_COLOR);
+        gBufferColorAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_COLOR);
         gBufferColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferColorInputAttachmentRef = {};
-        gBufferColorInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_COLOR);
+        gBufferColorInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_COLOR);
         gBufferColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_MATERIAL
@@ -526,11 +613,11 @@ namespace GfxRenderEngine
         gBufferMaterialAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferMaterialAttachmentRef = {};
-        gBufferMaterialAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_MATERIAL);
+        gBufferMaterialAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_MATERIAL);
         gBufferMaterialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferMaterialInputAttachmentRef = {};
-        gBufferMaterialInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_MATERIAL);
+        gBufferMaterialInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_MATERIAL);
         gBufferMaterialInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // ATTACHMENT_GBUFFER_EMISSION
@@ -545,11 +632,11 @@ namespace GfxRenderEngine
         gBufferEmissionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferEmissionAttachmentRef = {};
-        gBufferEmissionAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_EMISSION);
         gBufferEmissionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentReference gBufferEmissionInputAttachmentRef = {};
-        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets::ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_EMISSION);
         gBufferEmissionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         // geometry pass
@@ -614,8 +701,8 @@ namespace GfxRenderEngine
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
         // lighting depends on geometry
-        dependencies[0].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY); // Index of the render pass being depended upon by dstSubpass
-        dependencies[0].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_LIGHTING); // The index of the render pass depending on srcSubpass
+        dependencies[0].srcSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_GEOMETRY); // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_LIGHTING); // The index of the render pass depending on srcSubpass
         dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // What pipeline stage must have completed for the dependency
         dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage is waiting on the dependency
         dependencies[0].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes influence the dependency
@@ -623,8 +710,8 @@ namespace GfxRenderEngine
         dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
 
         // transparency depends on lighting
-        dependencies[1].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_LIGHTING);
-        dependencies[1].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_TRANSPARENCY);
+        dependencies[1].srcSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_LIGHTING);
+        dependencies[1].dstSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_TRANSPARENCY);
         dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -632,14 +719,14 @@ namespace GfxRenderEngine
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         dependencies[2].srcSubpass      = VK_SUBPASS_EXTERNAL;
-        dependencies[2].dstSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY);
+        dependencies[2].dstSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_GEOMETRY);
         dependencies[2].srcStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
         dependencies[2].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[2].srcAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
         dependencies[2].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        dependencies[3].srcSubpass      = static_cast<uint>(SubPasses::SUBPASS_GEOMETRY);
+        dependencies[3].srcSubpass      = static_cast<uint>(SubPasses3D::SUBPASS_GEOMETRY);
         dependencies[3].dstSubpass      = VK_SUBPASS_EXTERNAL;
         dependencies[3].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependencies[3].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -648,7 +735,7 @@ namespace GfxRenderEngine
         dependencies[3].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // render pass
-        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS)> attachments = 
+        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS)> attachments = 
         {
             colorAttachment,
             depthAttachment,
@@ -658,7 +745,7 @@ namespace GfxRenderEngine
             gBufferMaterialAttachment,
             gBufferEmissionAttachment
         };
-        std::array<VkSubpassDescription, static_cast<uint>(SubPasses::NUMBER_OF_SUBPASSES)> subpasses = 
+        std::array<VkSubpassDescription, static_cast<uint>(SubPasses3D::NUMBER_OF_SUBPASSES)> subpasses = 
         {
             subpassGeometry,
             subpassLighting,
@@ -667,9 +754,9 @@ namespace GfxRenderEngine
 
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargets::NUMBER_OF_ATTACHMENTS);
+        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS);
         renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = static_cast<uint>(SubPasses::NUMBER_OF_SUBPASSES);
+        renderPassInfo.subpassCount = static_cast<uint>(SubPasses3D::NUMBER_OF_SUBPASSES);
         renderPassInfo.pSubpasses = subpasses.data();
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
@@ -680,9 +767,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderPass::CreateGUIRenderPass()
+    void VK_RenderPass::CreatePostProcessingRenderPass()
     {
-        // ATTACHMENT_BACKBUFFER
+        // ATTACHMENT_COLOR
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = m_SwapChain->GetSwapChainImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -694,7 +781,96 @@ namespace GfxRenderEngine
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = static_cast<uint>(RenderTargetsGUI::ATTACHMENT_BACKBUFFER);
+        colorAttachmentRef.attachment = static_cast<uint>(RenderTargetsPostProcessing::ATTACHMENT_COLOR);
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // input attachments
+        VkAttachmentReference gColorInputAttachmentRef = {};
+        gColorInputAttachmentRef.attachment = static_cast<uint>(InputAttachmentsPostProcessing::INPUT_ATTACHMENT_COLOR);
+        gColorInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference gBufferEmissionInputAttachmentRef = {};
+        gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(InputAttachmentsPostProcessing::INPUT_ATTACHMENT_GBUFFER_EMISSION);
+        gBufferEmissionInputAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        std::array<VkAttachmentReference, NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS> inputAttachments = 
+        {
+            gColorInputAttachmentRef,
+            gBufferEmissionInputAttachmentRef
+        };
+
+        // subpass
+        VkSubpassDescription subpassPostProcessing = {};
+        subpassPostProcessing.flags = 0;
+        subpassPostProcessing.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassPostProcessing.inputAttachmentCount = NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS;
+        subpassPostProcessing.pInputAttachments = inputAttachments.data();
+        subpassPostProcessing.colorAttachmentCount = static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS);
+        subpassPostProcessing.pColorAttachments = &colorAttachmentRef;
+        subpassPostProcessing.pResolveAttachments = nullptr;
+        subpassPostProcessing.pDepthStencilAttachment = nullptr;
+        subpassPostProcessing.preserveAttachmentCount = 0;
+        subpassPostProcessing.pPreserveAttachments = nullptr;
+
+        constexpr uint NUMBER_OF_DEPENDENCIES = 2;
+        std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
+
+        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
+        dependencies[0].dstSubpass      = static_cast<uint>(SubPassesPostProcessing::SUBPASS_BLOOM);
+        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[0].srcAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[1].srcSubpass      = static_cast<uint>(SubPassesPostProcessing::SUBPASS_BLOOM);
+        dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        // render pass
+        std::array<VkAttachmentDescription, static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> attachments = 
+        {
+            colorAttachment
+        };
+        std::array<VkSubpassDescription, static_cast<uint>(SubPassesPostProcessing::NUMBER_OF_SUBPASSES)> subpasses = 
+        {
+            subpassPostProcessing
+        };
+
+        VkRenderPassCreateInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS);
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = static_cast<uint>(SubPassesPostProcessing::NUMBER_OF_SUBPASSES);
+        renderPassInfo.pSubpasses = subpasses.data();
+        renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
+        renderPassInfo.pDependencies = dependencies.data();
+
+        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_PostProcessingRenderPass) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create render pass!");
+        }
+    }
+
+    void VK_RenderPass::CreateGUIRenderPass()
+    {
+        // ATTACHMENT_COLOR
+        VkAttachmentDescription colorAttachment = {};
+        colorAttachment.format = m_SwapChain->GetSwapChainImageFormat();
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference colorAttachmentRef = {};
+        colorAttachmentRef.attachment = static_cast<uint>(RenderTargetsGUI::ATTACHMENT_COLOR);
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         // subpass

@@ -84,7 +84,7 @@ namespace GfxRenderEngine
         pipelineConfig.m_AttributeDescriptions.clear();
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
-        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses::SUBPASS_TRANSPARENCY);
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
 
         // create a pipeline
         m_Pipeline = std::make_unique<VK_Pipeline>

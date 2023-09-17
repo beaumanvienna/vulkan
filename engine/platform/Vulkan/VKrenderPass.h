@@ -35,7 +35,7 @@ namespace GfxRenderEngine
 
     public:
 
-        enum class SubPasses
+        enum class SubPasses3D
         {
             SUBPASS_GEOMETRY = 0,
             SUBPASS_LIGHTING,
@@ -43,9 +43,9 @@ namespace GfxRenderEngine
             NUMBER_OF_SUBPASSES
         };
 
-        enum class RenderTargets
+        enum class RenderTargets3D
         {
-            ATTACHMENT_BACKBUFFER = 0,
+            ATTACHMENT_COLOR = 0,
             ATTACHMENT_DEPTH,
             ATTACHMENT_GBUFFER_POSITION,
             ATTACHMENT_GBUFFER_NORMAL,
@@ -53,6 +53,25 @@ namespace GfxRenderEngine
             ATTACHMENT_GBUFFER_MATERIAL,
             ATTACHMENT_GBUFFER_EMISSION,
             NUMBER_OF_ATTACHMENTS
+        };
+
+        enum class SubPassesPostProcessing
+        {
+            SUBPASS_BLOOM = 0,
+            NUMBER_OF_SUBPASSES
+        };
+
+        enum class RenderTargetsPostProcessing
+        {
+            ATTACHMENT_COLOR = 0,
+            NUMBER_OF_ATTACHMENTS
+        };
+
+        enum class InputAttachmentsPostProcessing
+        {
+            INPUT_ATTACHMENT_COLOR = 0,
+            INPUT_ATTACHMENT_GBUFFER_EMISSION,
+            NUMBER_OF_INPUT_ATTACHMENTS
         };
 
         enum class SubPassesGUI
@@ -63,11 +82,12 @@ namespace GfxRenderEngine
 
         enum class RenderTargetsGUI
         {
-            ATTACHMENT_BACKBUFFER = 0,
+            ATTACHMENT_COLOR = 0,
             NUMBER_OF_ATTACHMENTS
         };
 
-        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = (int)RenderTargets::NUMBER_OF_ATTACHMENTS - (int)RenderTargets::ATTACHMENT_GBUFFER_POSITION;
+        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = (int)RenderTargets3D::NUMBER_OF_ATTACHMENTS - (int)RenderTargets3D::ATTACHMENT_GBUFFER_POSITION;
+        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS = (int)InputAttachmentsPostProcessing::NUMBER_OF_INPUT_ATTACHMENTS;
 
     public:
 
@@ -77,6 +97,7 @@ namespace GfxRenderEngine
         VK_RenderPass(const VK_RenderPass &) = delete;
         VK_RenderPass& operator=(const VK_RenderPass &) = delete;
 
+        VkImageView GetImageViewColorAttachment() { return m_ColorAttachmentView; }
         VkImageView GetImageViewGBufferPosition() { return m_GBufferPositionView; }
         VkImageView GetImageViewGBufferNormal() { return m_GBufferNormalView; }
         VkImageView GetImageViewGBufferColor() { return m_GBufferColorView; }
@@ -84,21 +105,26 @@ namespace GfxRenderEngine
         VkImageView GetImageViewGBufferEmission() { return m_GBufferEmissionView; }
 
         VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
+        VkFramebuffer GetPostProcessingFrameBuffer(int index) { return m_PostProcessingFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
 
         VkRenderPass Get3DRenderPass() { return m_3DRenderPass; }
+        VkRenderPass GetPostProcessingRenderPass() { return m_PostProcessingRenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
 
         VkExtent2D GetExtent() { return m_RenderPassExtent; }
 
     private:
 
+        void CreateColorAttachmentResources();
         void CreateDepthResources();
 
         void Create3DRenderPass();
+        void CreatePostProcessingRenderPass();
         void CreateGUIRenderPass();
 
         void Create3DFramebuffers();
+        void CreatePostProcessingFramebuffers();
         void CreateGUIFramebuffers();
 
         void CreateGBufferImages();
@@ -119,6 +145,7 @@ namespace GfxRenderEngine
         VkFormat m_BufferEmissionFormat;
 
         VkImage m_DepthImage;
+        VkImage m_ColorAttachmentImage;
         VkImage m_GBufferPositionImage;
         VkImage m_GBufferNormalImage;
         VkImage m_GBufferColorImage;
@@ -126,6 +153,7 @@ namespace GfxRenderEngine
         VkImage m_GBufferEmissionImage;
 
         VkImageView m_DepthImageView;
+        VkImageView m_ColorAttachmentView;
         VkImageView m_GBufferPositionView;
         VkImageView m_GBufferNormalView;
         VkImageView m_GBufferColorView;
@@ -133,6 +161,7 @@ namespace GfxRenderEngine
         VkImageView m_GBufferEmissionView;
     
         VkDeviceMemory m_DepthImageMemory;
+        VkDeviceMemory m_ColorAttachmentImageMemory;
         VkDeviceMemory m_GBufferPositionImageMemory;
         VkDeviceMemory m_GBufferNormalImageMemory;
         VkDeviceMemory m_GBufferColorImageMemory;
@@ -140,9 +169,11 @@ namespace GfxRenderEngine
         VkDeviceMemory m_GBufferEmissionImageMemory;
 
         std::vector<VkFramebuffer> m_3DFramebuffers;
+        std::vector<VkFramebuffer> m_PostProcessingFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
 
         VkRenderPass m_3DRenderPass;
+        VkRenderPass m_PostProcessingRenderPass;
         VkRenderPass m_GUIRenderPass;
     };
 }

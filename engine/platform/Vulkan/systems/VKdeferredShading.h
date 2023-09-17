@@ -38,28 +38,28 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataDeferredRendering
+    struct VK_PushConstantDataDeferredShading
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemDeferredRendering
+    class VK_RenderSystemDeferredShading
     {
 
     public:
 
-        VK_RenderSystemDeferredRendering
+        VK_RenderSystemDeferredShading
         (
             VkRenderPass renderPass,
             std::vector<VkDescriptorSetLayout>& lightingDescriptorSetLayouts,
             const VkDescriptorSet* lightingDescriptorSet,
             const VkDescriptorSet* shadowMapDescriptorSet
         );
-        ~VK_RenderSystemDeferredRendering();
+        ~VK_RenderSystemDeferredShading();
 
-        VK_RenderSystemDeferredRendering(const VK_RenderSystemDeferredRendering&) = delete;
-        VK_RenderSystemDeferredRendering& operator=(const VK_RenderSystemDeferredRendering&) = delete;
+        VK_RenderSystemDeferredShading(const VK_RenderSystemDeferredShading&) = delete;
+        VK_RenderSystemDeferredShading& operator=(const VK_RenderSystemDeferredShading&) = delete;
 
         void LightingPass(const VK_FrameInfo& frameInfo);
 
