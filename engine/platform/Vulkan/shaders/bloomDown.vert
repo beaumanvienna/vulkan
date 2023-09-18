@@ -22,24 +22,14 @@
 
 #version 450
 
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput colorAttachment;
-layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput emissiveMap;
+// this shader is called for one (!) triangle that covers NDC
+// the rest will be clipped
+//gl_VertexIndex 0: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f = -1.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f = -1.000000
+//gl_VertexIndex 1: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f =  3.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f = -1.000000
+//gl_VertexIndex 2: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f = -1.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f =  3.000000
 
-layout(location = 0) out vec4 outColor;
-
-void main()
+void main() 
 {
-    // retrieve G buffer data
-    vec3 emissiveColor = subpassLoad(emissiveMap).rgb;
-    // retrieve 3D pass main output color attachment
-    vec3 inColor = subpassLoad(colorAttachment).rgb;
-
-    if (emissiveColor == vec3(0,0,0))
-    {
-        outColor = vec4(inColor, 1.0);
-    }
-    else
-    {
-        outColor = vec4(inColor + emissiveColor, 1.0);
-    }
+    vec2 outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+    gl_Position = vec4(outUV * 2.0f - 1.0f, 0.0f, 1.0f);
 }

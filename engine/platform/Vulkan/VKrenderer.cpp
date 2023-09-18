@@ -155,6 +155,10 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
                     .Build();
 
+        m_BloomDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // cubemap
                     .Build();
@@ -199,6 +203,12 @@ namespace GfxRenderEngine
         {
             globalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_PostProcessingDescriptorSetLayout->GetDescriptorSetLayout(),
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsBloom =
+        {
+            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_BloomDescriptorSetLayout->GetDescriptorSetLayout(),
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
@@ -298,6 +308,13 @@ namespace GfxRenderEngine
             m_PostProcessingDescriptorSets.data()
         );
 
+        m_RenderSystemBloom                 = std::make_unique<VK_RenderSystemBloom>
+        (
+            m_RenderPass->GetPostProcessingRenderPass(),
+            descriptorSetLayoutsBloom,
+            m_BloomDescriptorSets.data()
+        );
+
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
         (
             m_RenderPass->Get3DRenderPass(),
@@ -364,6 +381,19 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreatePostProcessingDescriptorSets()
     {
+        // bloom
+        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkDescriptorImageInfo imageInfoGBufferEmissionInputAttachment {};
+            imageInfoGBufferEmissionInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferEmission();
+            imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VK_DescriptorWriter(*m_BloomDescriptorSetLayout, *m_DescriptorPool)
+                .WriteImage(0, imageInfoGBufferEmissionInputAttachment)
+                .Build(m_BloomDescriptorSets[i]);
+        }
+
+        // post processing
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorImageInfo imageInfoColorInputAttachment {};
@@ -855,6 +885,7 @@ namespace GfxRenderEngine
         {
             EndRenderPass(m_CurrentCommandBuffer); // end 3D renderpass
             BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
+            m_RenderSystemBloom->RenderBloom(m_FrameInfo);
             m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
         }
     }
@@ -952,7 +983,11 @@ namespace GfxRenderEngine
                 "pbrEmissiveTexture.vert",
                 "pbrEmissiveTexture.frag",
                 "postprocessing.vert",
-                "postprocessing.frag"
+                "postprocessing.frag",
+                "bloomUp.vert",
+                "bloomUp.frag",
+                "bloomDown.vert",
+                "bloomDown.frag"
             };
     
             for (auto& filename : shaderFilenames)

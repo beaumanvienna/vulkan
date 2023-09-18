@@ -46,6 +46,7 @@
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKdeferredShading.h"
 #include "systems/VKpostprocessingSys.h"
+#include "systems/VKbloomSys.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
@@ -149,6 +150,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
         std::unique_ptr<VK_RenderSystemDeferredShading>                   m_RenderSystemDeferredShading;
         std::unique_ptr<VK_RenderSystemPostProcessing>                    m_RenderSystemPostProcessing;
+        std::unique_ptr<VK_RenderSystemBloom>                             m_RenderSystemBloom;
         std::unique_ptr<VK_RenderSystemCubemap>                           m_RenderSystemCubemap;
         std::unique_ptr<VK_RenderSystemSpriteRenderer>                    m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                  m_RenderSystemSpriteRenderer2D;
@@ -170,6 +172,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
+        std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetLayout;
 
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
@@ -181,6 +184,7 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::vector<VkDescriptorSet> m_BloomDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

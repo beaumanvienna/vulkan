@@ -22,24 +22,10 @@
 
 #version 450
 
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput colorAttachment;
-layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput emissiveMap;
-
-layout(location = 0) out vec4 outColor;
+layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput emissiveMap;
 
 void main()
 {
     // retrieve G buffer data
     vec3 emissiveColor = subpassLoad(emissiveMap).rgb;
-    // retrieve 3D pass main output color attachment
-    vec3 inColor = subpassLoad(colorAttachment).rgb;
-
-    if (emissiveColor == vec3(0,0,0))
-    {
-        outColor = vec4(inColor, 1.0);
-    }
-    else
-    {
-        outColor = vec4(inColor + emissiveColor, 1.0);
-    }
 }
