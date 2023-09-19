@@ -1,0 +1,1 @@
+#define BLOOM_MIP_LEVELS 4

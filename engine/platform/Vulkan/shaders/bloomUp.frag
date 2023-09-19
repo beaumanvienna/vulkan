@@ -1,6 +1,8 @@
 /* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
+   Credits: https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
+
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
    (the "Software"), to deal in the Software without restriction,

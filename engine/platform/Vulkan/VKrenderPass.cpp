@@ -28,6 +28,7 @@
 #include "VKswapChain.h"
 #include "VKshadowMap.h"
 #include "VKrenderPass.h"
+#include "systems/VKbloomSys.h"
 
 namespace GfxRenderEngine
 {
@@ -387,7 +388,7 @@ namespace GfxRenderEngine
             imageInfo.extent.width = swapChainExtent.width;
             imageInfo.extent.height = swapChainExtent.height;
             imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
+            imageInfo.mipLevels = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS;
             imageInfo.arrayLayers = 1;
             imageInfo.format = m_BufferEmissionFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;

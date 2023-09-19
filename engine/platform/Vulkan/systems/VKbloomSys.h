@@ -35,17 +35,24 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "bloom.h"
 
 namespace GfxRenderEngine
 {
     struct VK_PushConstantDataBloom
     {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
+        glm::vec2 m_SrcResolution;
+        float m_FilterRadius;
+        int m_ImageViewID;
     };
+
 
     class VK_RenderSystemBloom
     {
+
+    public:
+
+        static constexpr int NUMBER_OF_MIPMAPS = BLOOM_MIP_LEVELS; // number of down-sampled images
 
     public:
 
@@ -61,6 +68,7 @@ namespace GfxRenderEngine
         VK_RenderSystemBloom& operator=(const VK_RenderSystemBloom&) = delete;
 
         void RenderBloom(const VK_FrameInfo& frameInfo);
+        void SetFilterRadius(float radius) {m_FilterRadius = radius;}
 
     private:
 
@@ -75,6 +83,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Pipeline> m_BloomPipelineDown;
 
         const VkDescriptorSet* m_BloomDescriptorSets;
+        float m_FilterRadius;
 
     };
 }

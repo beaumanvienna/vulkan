@@ -35,7 +35,7 @@ namespace GfxRenderEngine
         VkRenderPass renderPass,
         std::vector<VkDescriptorSetLayout>& bloomDescriptorSetLayout,
         const VkDescriptorSet* bloomDescriptorSet
-    )
+    ) : m_FilterRadius{0.05}
     {
         CreateBloomPipelinesLayout(bloomDescriptorSetLayout);
         m_BloomDescriptorSets = bloomDescriptorSet;
@@ -111,7 +111,7 @@ namespace GfxRenderEngine
             (
                 frameInfo.m_CommandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_BloomPipelineLayout,  // VkPipelineLayout layout
+                m_BloomPipelineLayout,      // VkPipelineLayout layout
                 0,                          // uint32_t         firstSet
                 descriptorSets.size(),      // uint32_t         descriptorSetCount
                 descriptorSets.data(),      // VkDescriptorSet* pDescriptorSets
@@ -120,32 +120,49 @@ namespace GfxRenderEngine
             );
         }
 
-        // down
+        for (uint i = 0; i < NUMBER_OF_MIPMAPS; ++i)
         {
-            m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
+            // down
+            {
+                VK_PushConstantDataBloom push{};
+            
+                push.m_SrcResolution = glm::vec2(1,1);
+                push.m_FilterRadius  = m_FilterRadius;
+                push.m_ImageViewID   = i;
+        
+                vkCmdPushConstants(
+                    frameInfo.m_CommandBuffer,
+                    m_BloomPipelineLayout,
+                    VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0,
+                    sizeof(VK_PushConstantDataBloom),
+                    &push);
+    
+                m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
+    
+                //vkCmdDraw
+                //(
+                //    frameInfo.m_CommandBuffer,
+                //    3,      // vertexCount
+                //    1,      // instanceCount
+                //    0,      // firstVertex
+                //    0       // firstInstance
+                //);
+            }
 
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,
-                3,      // vertexCount
-                1,      // instanceCount
-                0,      // firstVertex
-                0       // firstInstance
-            );
-        }
-
-        // up
-        {
-            m_BloomPipelineUp->Bind(frameInfo.m_CommandBuffer);
-
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,
-                3,      // vertexCount
-                1,      // instanceCount
-                0,      // firstVertex
-                0       // firstInstance
-            );
+            // up
+            {
+                m_BloomPipelineUp->Bind(frameInfo.m_CommandBuffer);
+    
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,
+                    3,      // vertexCount
+                    1,      // instanceCount
+                    0,      // firstVertex
+                    0       // firstInstance
+                );
+            }
         }
     }
 }
