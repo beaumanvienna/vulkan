@@ -186,6 +186,8 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_BloomDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
 
+        VkImageView m_EmissionMipmapViews[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;
 

@@ -100,6 +100,9 @@ namespace GfxRenderEngine
         VkImageView GetImageViewGBufferMaterial() { return m_GBufferMaterialView; }
         VkImageView GetImageViewGBufferEmission() { return m_GBufferEmissionView; }
 
+        VkImage GetImageEmission() { return m_GBufferEmissionImage; }
+        VkFormat GetFormatEmission() { return m_BufferEmissionFormat; }
+
         VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetPostProcessingFrameBuffer(int index) { return m_PostProcessingFramebuffers[index]; }
         VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }

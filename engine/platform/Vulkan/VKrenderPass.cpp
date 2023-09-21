@@ -43,7 +43,7 @@ namespace GfxRenderEngine
         m_BufferNormalFormat    = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_BufferColorFormat     = VK_FORMAT_R8G8B8A8_UNORM;
         m_BufferMaterialFormat  = VK_FORMAT_R16G16B16A16_SFLOAT;
-        m_BufferEmissionFormat  = VK_FORMAT_R8G8B8A8_UNORM;
+        m_BufferEmissionFormat  = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         Create3DRenderPass();
         CreatePostProcessingRenderPass();

@@ -27,6 +27,7 @@
 
 #include "systems/VKbloomSys.h"
 #include "VKswapChain.h"
+#include "VKrenderPassBuilder.h"
 
 namespace GfxRenderEngine
 {
@@ -34,8 +35,9 @@ namespace GfxRenderEngine
     (
         VkRenderPass renderPass,
         std::vector<VkDescriptorSetLayout>& bloomDescriptorSetLayout,
-        const VkDescriptorSet* bloomDescriptorSet
-    ) : m_FilterRadius{0.05}
+        const VkDescriptorSet* bloomDescriptorSet,
+        const VkExtent2D& resolution
+    ) : m_FilterRadius{0.05}, m_Resolution{resolution}
     {
         CreateBloomPipelinesLayout(bloomDescriptorSetLayout);
         m_BloomDescriptorSets = bloomDescriptorSet;
@@ -45,6 +47,17 @@ namespace GfxRenderEngine
     VK_RenderSystemBloom::~VK_RenderSystemBloom()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_BloomPipelineLayout, nullptr);
+    }
+
+    void VK_RenderSystemBloom::CreateRenderPassesDown()
+    {
+        for (uint renderPassIndex = 0; renderPassIndex < BLOOM_MIP_LEVELS; ++renderPassIndex)
+        {
+            VK_RenderPassBuilder renderPassBuilder(VK_SwapChain::MAX_FRAMES_IN_FLIGHT);
+            VK_RenderPassBuilder::Attachment attachment{};
+            renderPassBuilder.AddAttachment(attachment);
+            m_RenderPassesDown[renderPassIndex] = renderPassBuilder.Build();
+        }
     }
 
     // up & down share the same layout
@@ -120,15 +133,15 @@ namespace GfxRenderEngine
             );
         }
 
-        for (uint i = 0; i < NUMBER_OF_MIPMAPS; ++i)
+        for (uint mipLevel = 0; mipLevel < NUMBER_OF_MIPMAPS; ++mipLevel)
         {
             // down
             {
                 VK_PushConstantDataBloom push{};
             
-                push.m_SrcResolution = glm::vec2(1,1);
+                push.m_SrcResolution = glm::vec2(m_Resolution.width << mipLevel, m_Resolution.height << mipLevel);
                 push.m_FilterRadius  = m_FilterRadius;
-                push.m_ImageViewID   = i;
+                push.m_ImageViewID   = mipLevel;
         
                 vkCmdPushConstants(
                     frameInfo.m_CommandBuffer,
@@ -140,14 +153,14 @@ namespace GfxRenderEngine
     
                 m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
     
-                //vkCmdDraw
-                //(
-                //    frameInfo.m_CommandBuffer,
-                //    3,      // vertexCount
-                //    1,      // instanceCount
-                //    0,      // firstVertex
-                //    0       // firstInstance
-                //);
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,
+                    3,      // vertexCount
+                    1,      // instanceCount
+                    0,      // firstVertex
+                    0       // firstInstance
+                );
             }
 
             // up

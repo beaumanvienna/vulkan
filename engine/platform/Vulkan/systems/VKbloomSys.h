@@ -46,7 +46,6 @@ namespace GfxRenderEngine
         int m_ImageViewID;
     };
 
-
     class VK_RenderSystemBloom
     {
 
@@ -60,7 +59,8 @@ namespace GfxRenderEngine
         (
             VkRenderPass renderPass,
             std::vector<VkDescriptorSetLayout>& bloomDescriptorSetLayout,
-            const VkDescriptorSet* bloomDescriptorSet
+            const VkDescriptorSet* bloomDescriptorSet,
+            const VkExtent2D& resolution
         );
         ~VK_RenderSystemBloom();
 
@@ -72,6 +72,7 @@ namespace GfxRenderEngine
 
     private:
 
+        void CreateRenderPassesDown();
         void CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout);
         void CreateBloomPipelines(VkRenderPass renderPass);
 
@@ -83,7 +84,10 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Pipeline> m_BloomPipelineDown;
 
         const VkDescriptorSet* m_BloomDescriptorSets;
+        VkExtent2D m_Resolution;
         float m_FilterRadius;
+
+        VkRenderPass m_RenderPassesDown[BLOOM_MIP_LEVELS];
 
     };
 }

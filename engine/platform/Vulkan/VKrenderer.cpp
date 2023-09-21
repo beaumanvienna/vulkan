@@ -155,9 +155,12 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
                     .Build();
 
-        m_BloomDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
-                    .Build();
+        VK_DescriptorSetLayout::Builder bloomDescriptorSetLayoutBuilder;
+        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+        {
+            bloomDescriptorSetLayoutBuilder.AddBinding(mipLevel, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT); // samplers for mipmaps of g-buffer emission image
+        }
+        m_BloomDescriptorSetLayout = bloomDescriptorSetLayoutBuilder.Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // cubemap
@@ -312,7 +315,8 @@ namespace GfxRenderEngine
         (
             m_RenderPass->GetPostProcessingRenderPass(),
             descriptorSetLayoutsBloom,
-            m_BloomDescriptorSets.data()
+            m_BloomDescriptorSets.data(),
+            m_RenderPass->GetExtent()
         );
 
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
@@ -384,13 +388,35 @@ namespace GfxRenderEngine
         // bloom
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkDescriptorImageInfo imageInfoGBufferEmissionInputAttachment {};
-            imageInfoGBufferEmissionInputAttachment.imageView   = m_RenderPass->GetImageViewGBufferEmission();
-            imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, *m_DescriptorPool);
+            for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+            {
+                VkImageViewCreateInfo viewInfo{};
+                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo.pNext = nullptr;
+                viewInfo.flags = 0;
+                viewInfo.image = m_RenderPass->GetImageEmission();
+                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo.format = m_RenderPass->GetFormatEmission();
+                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo.subresourceRange.baseMipLevel = mipLevel;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
 
-            VK_DescriptorWriter(*m_BloomDescriptorSetLayout, *m_DescriptorPool)
-                .WriteImage(0, imageInfoGBufferEmissionInputAttachment)
-                .Build(m_BloomDescriptorSets[i]);
+                auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_EmissionMipmapViews[mipLevel]);
+                if (result != VK_SUCCESS)
+                {
+                    LOG_CORE_CRITICAL("failed to create texture image view!");
+                }
+
+                VkDescriptorImageInfo descriptorImageInfo {};
+                descriptorImageInfo.imageView   = m_EmissionMipmapViews[mipLevel];
+                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                descriptorWriter.WriteImage(mipLevel, descriptorImageInfo);
+            }
+            descriptorWriter.Build(m_BloomDescriptorSets[i]);
         }
 
         // post processing
@@ -414,6 +440,10 @@ namespace GfxRenderEngine
     VK_Renderer::~VK_Renderer()
     {
         FreeCommandBuffers();
+        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+        {
+            vkDestroyImageView(m_Device->Device(), m_EmissionMipmapViews[mipLevel], nullptr);
+        }
     }
 
     void VK_Renderer::RecreateSwapChain()
