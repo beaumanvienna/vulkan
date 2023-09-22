@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -122,6 +122,8 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // font atlas
                     .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                     .Build();
+        m_GlobalDescriptorSetLayout = globalDescriptorSetLayout->GetDescriptorSetLayout();
+
 
         std::unique_ptr<VK_DescriptorSetLayout> diffuseDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
@@ -155,68 +157,55 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
                     .Build();
 
-        VK_DescriptorSetLayout::Builder bloomDescriptorSetLayoutBuilder;
-        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
-        {
-            bloomDescriptorSetLayoutBuilder.AddBinding(mipLevel, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT); // samplers for mipmaps of g-buffer emission image
-        }
-        m_BloomDescriptorSetLayout = bloomDescriptorSetLayoutBuilder.Build();
-
         std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // cubemap
                     .Build();
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout()
+            m_GlobalDescriptorSetLayout
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             diffuseDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsEmissiveTexture =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             emissiveDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormal =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             diffuseNormalDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalRoughnessMetallic =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             diffuseNormalRoughnessMetallicDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPostProcessing =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             m_PostProcessingDescriptorSetLayout->GetDescriptorSetLayout(),
-        };
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsBloom =
-        {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_BloomDescriptorSetLayout->GetDescriptorSetLayout(),
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap =
         {
-            globalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout,
             cubemapDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
@@ -304,19 +293,13 @@ namespace GfxRenderEngine
             m_ShadowMapDescriptorSets.data()
         );
 
+        CreateRenderSystemBloom();
+
         m_RenderSystemPostProcessing                 = std::make_unique<VK_RenderSystemPostProcessing>
         (
             m_RenderPass->GetPostProcessingRenderPass(),
             descriptorSetLayoutsPostProcessing,
             m_PostProcessingDescriptorSets.data()
-        );
-
-        m_RenderSystemBloom                 = std::make_unique<VK_RenderSystemBloom>
-        (
-            m_RenderPass->GetPostProcessingRenderPass(),
-            descriptorSetLayoutsBloom,
-            m_BloomDescriptorSets.data(),
-            m_RenderPass->GetExtent()
         );
 
         m_RenderSystemDebug                             = std::make_unique<VK_RenderSystemDebug>
@@ -328,6 +311,16 @@ namespace GfxRenderEngine
 
         m_Imgui = Imgui::Create(m_RenderPass->GetGUIRenderPass(), static_cast<uint>(m_SwapChain->ImageCount()));
         return m_ShadersCompiled;
+    }
+
+    void VK_Renderer::CreateRenderSystemBloom()
+    {
+        m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>
+        (
+            *m_RenderPass,
+            m_GlobalDescriptorSetLayout,
+            *m_DescriptorPool
+        );
     }
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
@@ -385,42 +378,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreatePostProcessingDescriptorSets()
     {
-        // bloom
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, *m_DescriptorPool);
-            for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
-            {
-                VkImageViewCreateInfo viewInfo{};
-                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                viewInfo.pNext = nullptr;
-                viewInfo.flags = 0;
-                viewInfo.image = m_RenderPass->GetImageEmission();
-                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = m_RenderPass->GetFormatEmission();
-                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                viewInfo.subresourceRange.baseMipLevel = mipLevel;
-                viewInfo.subresourceRange.levelCount = 1;
-                viewInfo.subresourceRange.baseArrayLayer = 0;
-                viewInfo.subresourceRange.layerCount = 1;
-
-                auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_EmissionMipmapViews[mipLevel]);
-                if (result != VK_SUCCESS)
-                {
-                    LOG_CORE_CRITICAL("failed to create texture image view!");
-                }
-
-                VkDescriptorImageInfo descriptorImageInfo {};
-                descriptorImageInfo.imageView   = m_EmissionMipmapViews[mipLevel];
-                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                descriptorWriter.WriteImage(mipLevel, descriptorImageInfo);
-            }
-            descriptorWriter.Build(m_BloomDescriptorSets[i]);
-        }
-
-        // post processing
-        for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+        for (uint frameIndex = 0; frameIndex < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++)
         {
             VkDescriptorImageInfo imageInfoColorInputAttachment {};
             imageInfoColorInputAttachment.imageView   = m_RenderPass->GetImageViewColorAttachment();
@@ -433,17 +391,13 @@ namespace GfxRenderEngine
             VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout, *m_DescriptorPool)
                 .WriteImage(0, imageInfoColorInputAttachment)
                 .WriteImage(1, imageInfoGBufferEmissionInputAttachment)
-                .Build(m_PostProcessingDescriptorSets[i]);
+                .Build(m_PostProcessingDescriptorSets[frameIndex]);
         }
     }
 
     VK_Renderer::~VK_Renderer()
     {
         FreeCommandBuffers();
-        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
-        {
-            vkDestroyImageView(m_Device->Device(), m_EmissionMipmapViews[mipLevel], nullptr);
-        }
     }
 
     void VK_Renderer::RecreateSwapChain()
@@ -528,10 +482,7 @@ namespace GfxRenderEngine
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            RecreateSwapChain();
-            RecreateRenderpass();
-            CreateLightingDescriptorSets();
-            CreatePostProcessingDescriptorSets();
+            Recreate();
             return nullptr;
         }
 
@@ -569,10 +520,7 @@ namespace GfxRenderEngine
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             m_Window->ResetWindowResizedFlag();
-            RecreateSwapChain();
-            RecreateRenderpass();
-            CreateLightingDescriptorSets();
-            CreatePostProcessingDescriptorSets();
+            Recreate();
         }
         else if (result != VK_SUCCESS)
         {
@@ -580,6 +528,15 @@ namespace GfxRenderEngine
         }
         m_FrameInProgress = false;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
+    }
+
+    void VK_Renderer::Recreate()
+    {
+        RecreateSwapChain();
+        RecreateRenderpass();
+        CreateLightingDescriptorSets();
+        CreateRenderSystemBloom();
+        CreatePostProcessingDescriptorSets();
     }
 
     void VK_Renderer::BeginShadowRenderPass0(VkCommandBuffer commandBuffer)
@@ -970,7 +927,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CompileShaders()
     {
-        
+
         std::thread shaderCompileThread([this]()
         {
             if (!EngineCore::FileExists("bin-int"))
@@ -1019,7 +976,7 @@ namespace GfxRenderEngine
                 "bloomDown.vert",
                 "bloomDown.frag"
             };
-    
+
             for (auto& filename : shaderFilenames)
             {
                 std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");

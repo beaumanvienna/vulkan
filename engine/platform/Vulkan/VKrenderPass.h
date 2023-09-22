@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -100,8 +100,8 @@ namespace GfxRenderEngine
         VkImageView GetImageViewGBufferMaterial() { return m_GBufferMaterialView; }
         VkImageView GetImageViewGBufferEmission() { return m_GBufferEmissionView; }
 
-        VkImage GetImageEmission() { return m_GBufferEmissionImage; }
-        VkFormat GetFormatEmission() { return m_BufferEmissionFormat; }
+        VkImage GetImageEmission() const { return m_GBufferEmissionImage; }
+        VkFormat GetFormatEmission() const { return m_BufferEmissionFormat; }
 
         VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetPostProcessingFrameBuffer(int index) { return m_PostProcessingFramebuffers[index]; }
@@ -111,7 +111,7 @@ namespace GfxRenderEngine
         VkRenderPass GetPostProcessingRenderPass() { return m_PostProcessingRenderPass; }
         VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
 
-        VkExtent2D GetExtent() { return m_RenderPassExtent; }
+        VkExtent2D GetExtent() const { return m_RenderPassExtent; }
 
     private:
 
@@ -158,7 +158,7 @@ namespace GfxRenderEngine
         VkImageView m_GBufferColorView;
         VkImageView m_GBufferMaterialView;
         VkImageView m_GBufferEmissionView;
-    
+
         VkDeviceMemory m_DepthImageMemory;
         VkDeviceMemory m_ColorAttachmentImageMemory;
         VkDeviceMemory m_GBufferPositionImageMemory;

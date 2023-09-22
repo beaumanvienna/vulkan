@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -30,7 +30,7 @@
 
 namespace GfxRenderEngine
 {
-    class VK_RenderPassBuilder
+    class VK_BloomRenderPass
     {
 
     public:
@@ -49,11 +49,11 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderPassBuilder(uint numberOfFramebuffers);
-        ~VK_RenderPassBuilder();
+        VK_BloomRenderPass(uint numberOfFramebuffers);
+        ~VK_BloomRenderPass();
 
-        VK_RenderPassBuilder(const VK_RenderPassBuilder &) = delete;
-        VK_RenderPassBuilder& operator=(const VK_RenderPassBuilder &) = delete;
+        VK_BloomRenderPass(const VK_BloomRenderPass &) = delete;
+        VK_BloomRenderPass& operator=(const VK_BloomRenderPass &) = delete;
 
         VkImageView GetImageView(uint index) const { return m_Attachments[index].m_ImageView; }
         VkFormat GetFormat(uint index) const { return m_Attachments[index].m_Format; }
@@ -61,8 +61,8 @@ namespace GfxRenderEngine
         VkRenderPass GetRenderPass() const { return m_RenderPass; }
         VkExtent2D GetExtent() const { return m_RenderPassExtent; }
 
-        VK_RenderPassBuilder& AddAttachment(Attachment const& attachment);
-        VkRenderPass Build();
+        VK_BloomRenderPass& AddAttachment(Attachment const& attachment);
+        void Build();
 
     private:
 

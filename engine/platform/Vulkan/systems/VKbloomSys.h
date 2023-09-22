@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -35,6 +35,8 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "VKrenderPass.h"
+#include "VKbloomRenderPass.h"
 #include "bloom.h"
 
 namespace GfxRenderEngine
@@ -57,10 +59,9 @@ namespace GfxRenderEngine
 
         VK_RenderSystemBloom
         (
-            VkRenderPass renderPass,
-            std::vector<VkDescriptorSetLayout>& bloomDescriptorSetLayout,
-            const VkDescriptorSet* bloomDescriptorSet,
-            const VkExtent2D& resolution
+            const VK_RenderPass& renderPass3D,
+            VkDescriptorSetLayout& globalDescriptorSetLayout,
+            VK_DescriptorPool& descriptorPool
         );
         ~VK_RenderSystemBloom();
 
@@ -73,21 +74,31 @@ namespace GfxRenderEngine
     private:
 
         void CreateRenderPassesDown();
+        void CreateRenderPassesUp();
         void CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout);
-        void CreateBloomPipelines(VkRenderPass renderPass);
+        void CreateBloomPipelines();
+        void CreateBloomDescriptorSetLayout();
+        void CreateImageViews();
+        void CreateDescriptorSets();
 
     private:
 
+        VK_DescriptorPool& m_DescriptorPool;
+        const VK_RenderPass& m_RenderPass3D;
         VkPipelineLayout m_BloomPipelineLayout;
 
-        std::unique_ptr<VK_Pipeline> m_BloomPipelineUp;
-        std::unique_ptr<VK_Pipeline> m_BloomPipelineDown;
-
-        const VkDescriptorSet* m_BloomDescriptorSets;
         VkExtent2D m_Resolution;
         float m_FilterRadius;
 
-        VkRenderPass m_RenderPassesDown[BLOOM_MIP_LEVELS];
+        std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetLayout;
+        std::vector<VkDescriptorSet> m_BloomDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+
+        VkImageView m_EmissionMipmapViews[VK_SwapChain::MAX_FRAMES_IN_FLIGHT][VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+
+        std::unique_ptr<VK_BloomRenderPass> m_RenderPassesDown[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        std::unique_ptr<VK_BloomRenderPass> m_RenderPassesUp[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        std::unique_ptr<VK_Pipeline> m_BloomPipelineDown[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        std::unique_ptr<VK_Pipeline> m_BloomPipelineUp[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
 
     };
 }

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -27,36 +27,88 @@
 
 #include "systems/VKbloomSys.h"
 #include "VKswapChain.h"
-#include "VKrenderPassBuilder.h"
 
 namespace GfxRenderEngine
 {
     VK_RenderSystemBloom::VK_RenderSystemBloom
     (
-        VkRenderPass renderPass,
-        std::vector<VkDescriptorSetLayout>& bloomDescriptorSetLayout,
-        const VkDescriptorSet* bloomDescriptorSet,
-        const VkExtent2D& resolution
-    ) : m_FilterRadius{0.05}, m_Resolution{resolution}
+        const VK_RenderPass& renderPass3D,
+        VkDescriptorSetLayout& globalDescriptorSetLayout,
+        VK_DescriptorPool& descriptorPool
+    ) :
+        m_RenderPass3D{renderPass3D},
+        m_FilterRadius{0.05},
+        m_DescriptorPool{descriptorPool}
     {
-        CreateBloomPipelinesLayout(bloomDescriptorSetLayout);
-        m_BloomDescriptorSets = bloomDescriptorSet;
-        CreateBloomPipelines(renderPass);
+        m_Resolution = m_RenderPass3D.GetExtent();
+
+        CreateBloomDescriptorSetLayout();
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
+        {
+            globalDescriptorSetLayout,
+            m_BloomDescriptorSetLayout->GetDescriptorSetLayout(),
+        };
+
+        CreateBloomPipelinesLayout(descriptorSetLayouts);
+        CreateImageViews();
+        CreateDescriptorSets();
+        CreateRenderPassesDown();
+        CreateBloomPipelines();
     }
 
     VK_RenderSystemBloom::~VK_RenderSystemBloom()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_BloomPipelineLayout, nullptr);
+
+        for (uint frameIndex = 0; frameIndex < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++)
+        {
+            for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+            {
+                vkDestroyImageView(VK_Core::m_Device->Device(), m_EmissionMipmapViews[frameIndex][mipLevel], nullptr);
+            }
+        }
     }
 
     void VK_RenderSystemBloom::CreateRenderPassesDown()
     {
         for (uint renderPassIndex = 0; renderPassIndex < BLOOM_MIP_LEVELS; ++renderPassIndex)
         {
-            VK_RenderPassBuilder renderPassBuilder(VK_SwapChain::MAX_FRAMES_IN_FLIGHT);
-            VK_RenderPassBuilder::Attachment attachment{};
-            renderPassBuilder.AddAttachment(attachment);
-            m_RenderPassesDown[renderPassIndex] = renderPassBuilder.Build();
+            m_RenderPassesDown[renderPassIndex] = std::make_unique<VK_BloomRenderPass>(VK_SwapChain::MAX_FRAMES_IN_FLIGHT);
+            VK_BloomRenderPass::Attachment attachment
+            {
+                //m_ImageView;         // VkImageView
+                //m_Format;            // VkFormat
+                //m_Extent;            // VkExtent2D
+                //m_LoadOp;            // VkAttachmentLoadOp
+                //m_StoreOp;           // VkAttachmentStoreOp
+                //m_InitialLayout;     // VkImageLayout
+                //m_FinalLayout;       // VkImageLayout
+                //m_SubpassLayout;     // VkImageLayout
+            };
+            m_RenderPassesDown[renderPassIndex]->AddAttachment(attachment)
+                .Build();
+        }
+    }
+
+    void VK_RenderSystemBloom::CreateRenderPassesUp()
+    {
+        for (uint renderPassIndex = 0; renderPassIndex < BLOOM_MIP_LEVELS; ++renderPassIndex)
+        {
+            m_RenderPassesUp[renderPassIndex] = std::make_unique<VK_BloomRenderPass>(VK_SwapChain::MAX_FRAMES_IN_FLIGHT);
+            VK_BloomRenderPass::Attachment attachment
+            {
+                //m_ImageView;         // VkImageView
+                //m_Format;            // VkFormat
+                //m_Extent;            // VkExtent2D
+                //m_LoadOp;            // VkAttachmentLoadOp
+                //m_StoreOp;           // VkAttachmentStoreOp
+                //m_InitialLayout;     // VkImageLayout
+                //m_FinalLayout;       // VkImageLayout
+                //m_SubpassLayout;     // VkImageLayout
+            };
+            m_RenderPassesUp[renderPassIndex]->AddAttachment(attachment)
+                .Build();
         }
     }
 
@@ -80,35 +132,96 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemBloom::CreateBloomPipelines(VkRenderPass renderPass)
+    void VK_RenderSystemBloom::CreateBloomPipelines()
     {
         ASSERT(m_BloomPipelineLayout != nullptr);
 
         PipelineConfigInfo pipelineConfig{};
 
-        VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
-        pipelineConfig.renderPass = renderPass;
-        pipelineConfig.pipelineLayout = m_BloomPipelineLayout;
-        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
-        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPassesPostProcessing::SUBPASS_BLOOM);
-        pipelineConfig.m_BindingDescriptions.clear();   // this pipeline is not using vertices
-        pipelineConfig.m_AttributeDescriptions.clear();
+        for (uint mipLevel = 0; mipLevel < BLOOM_MIP_LEVELS; ++mipLevel)
+        {
+            VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+            pipelineConfig.renderPass = m_RenderPassesDown[mipLevel]->GetRenderPass();
+            pipelineConfig.pipelineLayout = m_BloomPipelineLayout;
+            pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+            pipelineConfig.subpass = 0;
+            pipelineConfig.m_BindingDescriptions.clear();   // this pipeline is not using vertices
+            pipelineConfig.m_AttributeDescriptions.clear();
 
-        // create pipelines
-        m_BloomPipelineUp = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin-int/bloomUp.vert.spv",
-            "bin-int/bloomUp.frag.spv",
-            pipelineConfig
-        );
-        m_BloomPipelineDown = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin-int/bloomDown.vert.spv",
-            "bin-int/bloomDown.frag.spv",
-            pipelineConfig
-        );
+            // down
+            m_BloomPipelineDown[mipLevel] = std::make_unique<VK_Pipeline>
+            (
+                VK_Core::m_Device,
+                "bin-int/bloomDown.vert.spv",
+                "bin-int/bloomDown.frag.spv",
+                pipelineConfig
+            );
+
+            // up
+            pipelineConfig.renderPass = m_RenderPassesUp[mipLevel]->GetRenderPass();
+            m_BloomPipelineUp[mipLevel] = std::make_unique<VK_Pipeline>
+            (
+                VK_Core::m_Device,
+                "bin-int/bloomUp.vert.spv",
+                "bin-int/bloomUp.frag.spv",
+                pipelineConfig
+            );
+        }
+    }
+
+    void VK_RenderSystemBloom::CreateBloomDescriptorSetLayout()
+    {
+        VK_DescriptorSetLayout::Builder descriptorSetLayoutBuilder;
+        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+        {
+            descriptorSetLayoutBuilder.AddBinding(mipLevel, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT); // samplers for mipmaps of g-buffer emission image
+        }
+        m_BloomDescriptorSetLayout = descriptorSetLayoutBuilder.Build();
+    }
+
+    void VK_RenderSystemBloom::CreateImageViews()
+    {
+        for (uint frameIndex = 0; frameIndex < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++)
+        {
+            for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+            {
+                VkImageViewCreateInfo viewInfo{};
+                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo.pNext = nullptr;
+                viewInfo.flags = 0;
+                viewInfo.image = m_RenderPass3D.GetImageEmission();
+                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo.format = m_RenderPass3D.GetFormatEmission();
+                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo.subresourceRange.baseMipLevel = mipLevel;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
+
+                auto result = vkCreateImageView(VK_Core::m_Device->Device(), &viewInfo, nullptr, &m_EmissionMipmapViews[frameIndex][mipLevel]);
+                if (result != VK_SUCCESS)
+                {
+                    LOG_CORE_CRITICAL("failed to create texture image view!");
+                }
+            }
+        }
+    }
+
+    void VK_RenderSystemBloom::CreateDescriptorSets()
+    {
+        for (uint frameIndex = 0; frameIndex < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++)
+        {
+            VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, m_DescriptorPool);
+            for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+            {
+                VkDescriptorImageInfo descriptorImageInfo {};
+                descriptorImageInfo.imageView   = m_EmissionMipmapViews[frameIndex][mipLevel];
+                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                descriptorWriter.WriteImage(mipLevel, descriptorImageInfo);
+            }
+            descriptorWriter.Build(m_BloomDescriptorSets[frameIndex]);
+        }
     }
 
     void VK_RenderSystemBloom::RenderBloom(const VK_FrameInfo& frameInfo)
@@ -133,16 +246,16 @@ namespace GfxRenderEngine
             );
         }
 
-        for (uint mipLevel = 0; mipLevel < NUMBER_OF_MIPMAPS; ++mipLevel)
+        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
         {
             // down
             {
                 VK_PushConstantDataBloom push{};
-            
+
                 push.m_SrcResolution = glm::vec2(m_Resolution.width << mipLevel, m_Resolution.height << mipLevel);
                 push.m_FilterRadius  = m_FilterRadius;
                 push.m_ImageViewID   = mipLevel;
-        
+
                 vkCmdPushConstants(
                     frameInfo.m_CommandBuffer,
                     m_BloomPipelineLayout,
@@ -150,9 +263,9 @@ namespace GfxRenderEngine
                     0,
                     sizeof(VK_PushConstantDataBloom),
                     &push);
-    
-                m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
-    
+
+                m_BloomPipelineDown[mipLevel]->Bind(frameInfo.m_CommandBuffer);
+
                 vkCmdDraw
                 (
                     frameInfo.m_CommandBuffer,
@@ -164,18 +277,18 @@ namespace GfxRenderEngine
             }
 
             // up
-            {
-                m_BloomPipelineUp->Bind(frameInfo.m_CommandBuffer);
-    
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,
-                    3,      // vertexCount
-                    1,      // instanceCount
-                    0,      // firstVertex
-                    0       // firstInstance
-                );
-            }
+            //{
+            //    m_BloomPipelineUp->Bind(frameInfo.m_CommandBuffer);
+            //
+            //    vkCmdDraw
+            //    (
+            //        frameInfo.m_CommandBuffer,
+            //        3,      // vertexCount
+            //        1,      // instanceCount
+            //        0,      // firstVertex
+            //        0       // firstInstance
+            //    );
+            //}
         }
     }
 }

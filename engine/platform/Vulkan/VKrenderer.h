@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -124,6 +124,8 @@ namespace GfxRenderEngine
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
         void CreatePostProcessingDescriptorSets();
+        void CreateRenderSystemBloom();
+        void Recreate();
 
     private:
 
@@ -162,6 +164,7 @@ namespace GfxRenderEngine
 
         std::vector<VkCommandBuffer> m_CommandBuffers;
         VkCommandBuffer m_CurrentCommandBuffer;
+        VkDescriptorSetLayout m_GlobalDescriptorSetLayout;
 
         uint m_CurrentImageIndex;
         int m_CurrentFrameIndex;
@@ -172,7 +175,6 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
-        std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetLayout;
 
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_ShadowDescriptorSets1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
@@ -184,9 +186,6 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
         std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_BloomDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-
-        VkImageView m_EmissionMipmapViews[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

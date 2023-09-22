@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,20 +22,19 @@
 
 #include "engine.h"
 
-#include "VKrenderPassBuilder.h"
+#include "VKbloomRenderPass.h"
 
 namespace GfxRenderEngine
 {
 
-
-    VK_RenderPassBuilder::VK_RenderPassBuilder(uint numberOfFramebuffers)
+    VK_BloomRenderPass::VK_BloomRenderPass(uint numberOfFramebuffers)
         : m_NumberOfFramebuffers{numberOfFramebuffers},
           m_NumberOfSubpasses{1} // just one for now
     {
         m_Device = VK_Core::m_Device;
     }
 
-    VK_RenderPassBuilder::~VK_RenderPassBuilder()
+    VK_BloomRenderPass::~VK_BloomRenderPass()
     {
         for (auto framebuffer : m_Framebuffers)
         {
@@ -44,7 +43,7 @@ namespace GfxRenderEngine
         vkDestroyRenderPass(m_Device->Device(), m_RenderPass, nullptr);
     }
 
-    VK_RenderPassBuilder& VK_RenderPassBuilder::AddAttachment(Attachment const& attachment)
+    VK_BloomRenderPass& VK_BloomRenderPass::AddAttachment(Attachment const& attachment)
     {
         if (!m_Attachments.size()) // first attachment defines extend
         {
@@ -54,7 +53,7 @@ namespace GfxRenderEngine
         return *this;
     }
 
-    void VK_RenderPassBuilder::CreateFramebuffers()
+    void VK_BloomRenderPass::CreateFramebuffers()
     {
         m_Framebuffers.resize(m_NumberOfFramebuffers);
         for (uint framebufferIndex = 0; framebufferIndex < m_NumberOfFramebuffers; ++framebufferIndex)
@@ -88,8 +87,10 @@ namespace GfxRenderEngine
         }
     }
 
-    VkRenderPass VK_RenderPassBuilder::Build()
+    void VK_BloomRenderPass::Build()
     {
+        CreateFramebuffers();
+
         uint numberOfAttachments = m_Attachments.size();
 
         std::vector<VkAttachmentDescription> attachmentDescriptions;
@@ -147,6 +148,5 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("failed to create render pass!");
         }
-        return m_RenderPass;
     }
 }
