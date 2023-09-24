@@ -66,20 +66,23 @@ namespace GfxRenderEngine
         VK_RenderSystemBloom(const VK_RenderSystemBloom&) = delete;
         VK_RenderSystemBloom& operator=(const VK_RenderSystemBloom&) = delete;
 
-        void RenderBloom(const VK_FrameInfo& frameInfo);
+        void RenderBloom(VK_FrameInfo const& frameInfo);
         void SetFilterRadius(float radius) {m_FilterRadius = radius;}
 
     private:
 
         void CreateImageViews();
         void CreateAttachments();
-        void CreateRenderPass();
-        void CreateFrameBuffers();
+        void CreateRenderPasses();
+        void CreateFrameBuffersDown();
+        void CreateFrameBuffersUp();
 
         void CreateDescriptorSet();
         void CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout);
         void CreateBloomPipelines();
         void CreateBloomDescriptorSetLayout();
+
+        void BeginRenderPass(VK_FrameInfo const& frameInfo, VK_BloomRenderPass* renderpass, VK_BloomFrameBuffer* framebuffer);
 
     private:
 
@@ -97,10 +100,13 @@ namespace GfxRenderEngine
 
         VkImageView m_EmissionView;
         VkImageView m_EmissionMipmapViews[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
-        VK_Attachments m_Attachments;
+        VK_Attachments m_AttachmentsDown;
+        VK_Attachments m_AttachmentsUp;
 
-        std::unique_ptr<VK_BloomRenderPass> m_RenderPass;
-        std::unique_ptr<VK_BloomFrameBuffer> m_Framebuffers[VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES];
+        std::unique_ptr<VK_BloomRenderPass> m_RenderPassDown;
+        std::unique_ptr<VK_BloomRenderPass> m_RenderPassUp;
+        std::unique_ptr<VK_BloomFrameBuffer> m_FramebuffersDown[VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES];
+        std::unique_ptr<VK_BloomFrameBuffer> m_FramebuffersUp[VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES];
         std::unique_ptr<VK_Pipeline> m_BloomPipelineDown;
         std::unique_ptr<VK_Pipeline> m_BloomPipelineUp;
 

@@ -44,8 +44,9 @@ namespace GfxRenderEngine
         // render pass and frame buffers
         CreateImageViews();
         CreateAttachments();
-        CreateRenderPass();     // use one render pass
-        CreateFrameBuffers();   // use multiple frame buffers
+        CreateRenderPasses();     // use one render pass
+        CreateFrameBuffersDown(); // use 'NUMBER_OF_MIPMAPS-1' frame buffers for downsampling
+        CreateFrameBuffersUp();   // use 'NUMBER_OF_MIPMAPS-1' frame buffers for upsampling
 
         // pipelines
         CreateBloomDescriptorSetLayout();
@@ -122,54 +123,109 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::CreateAttachments()
     {
+
+        // attachments: targets to render into
+
         VkFormat format = m_RenderPass3D.GetFormatEmission();
         VkExtent2D extent = m_RenderPass3D.GetExtent();
 
-
-        for (uint mipLevel = 0; mipLevel < BLOOM_MIP_LEVELS; ++mipLevel)
+        // iterate from mip 1 (first image to down sample into) to the last mip;
+        // the level 1 mip image and following mip levels have to be cleared
+        //
+        //  --> VK_ATTACHMENT_LOAD_OP_CLEAR
+        //
+        // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 1, 2, 3
+        // so that we downsample mip 0 into mip 1 (== render target), etc.
+        // (the g-buffer level zero image must not be cleared)
+        // before the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        for (uint mipLevel = 1; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
         {
+            VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
 
+            VK_Attachments::Attachment attachment
+            {
+                m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
+                format,                                     // VkFormat            m_Format;
+                extentMipLevel,                             // VkExtent2D          m_Extent;
+                VK_ATTACHMENT_LOAD_OP_CLEAR,                // VkAttachmentLoadOp  m_LoadOp;
+                VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,   // VkImageLayout       m_InitialLayout;
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
+            };
+            m_AttachmentsDown.Add(attachment);
+        }
+
+        // iterate from second last mip to mip 0;
+        // do not clear the images
+        //
+        //  --> VK_ATTACHMENT_LOAD_OP_LOAD
+        //
+        // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 2, 1, 0
+        // so that we upsample the last mip (mip BLOOM_MIP_LEVELS-1) into (mip BLOOM_MIP_LEVELS-2)
+        // before the pass: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        for (uint mipLevel = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS - 2; mipLevel > 0; --mipLevel)
+        {
             // the g-buffer level zero image must not be cleared,
-            // the level 1 mip image and following mip levels do have to be cleared
-            VkAttachmentLoadOp loadOp = 
-                ( (mipLevel == 0) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR);
-
 
             VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
 
             VK_Attachments::Attachment attachment
             {
-                m_EmissionMipmapViews[mipLevel],            // VkImageView
-                format,                                     // VkFormat
-                extentMipLevel,                             // VkExtent2D
-                loadOp,                                     // VkAttachmentLoadOp
-                VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp
-                VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL    // VkImageLayout
+                m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
+                format,                                     // VkFormat            m_Format;
+                extentMipLevel,                             // VkExtent2D          m_Extent;
+                VK_ATTACHMENT_LOAD_OP_LOAD,                 // VkAttachmentLoadOp  m_LoadOp;
+                VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_InitialLayout;
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
             };
-            m_Attachments.Add(attachment);
+            m_AttachmentsUp.Add(attachment);
         }
     }
 
-    void VK_RenderSystemBloom::CreateRenderPass()
+    void VK_RenderSystemBloom::CreateRenderPasses()
     {
-        // use miplevel 1 (rather than miplevel 0) as it has VK_ATTACHMENT_LOAD_OP_CLEAR
-        const uint mipLevelForAttachmentDescription = 1;
-        VK_Attachments::Attachment attachment = m_Attachments.Get(mipLevelForAttachmentDescription); 
-        m_RenderPass = std::make_unique<VK_BloomRenderPass>(attachment);
+        { // down
+            // use any image from m_AttachmentsDown since they all have VK_ATTACHMENT_LOAD_OP_CLEAR,
+            // e.g., m_attachmentsDown[0] -> mip level 1
+            VK_Attachments::Attachment& attachment = m_AttachmentsDown.Get(0); 
+            m_RenderPassDown = std::make_unique<VK_BloomRenderPass>(attachment);
+        }
+        { // up
+            // use any image from m_AttachmentsUp since they all have VK_ATTACHMENT_LOAD_OP_CLEAR,
+            // m_attachmentsUp[0] -> mip level 'NUMBER_OF_MIPMAPS - 2'
+            VK_Attachments::Attachment& attachment = m_AttachmentsUp.Get(0); 
+            m_RenderPassUp = std::make_unique<VK_BloomRenderPass>(attachment);
+        }
     }
-
 
     // this function creates a frame buffer for each downsampled image
     // for example if BLOOM_MIP_LEVELS == 4, then it creates 3 frame buffers
-    void VK_RenderSystemBloom::CreateFrameBuffers()
+    void VK_RenderSystemBloom::CreateFrameBuffersDown()
     {
-        auto renderPass = m_RenderPass->Get();
+        auto renderPass = m_RenderPassDown->Get();
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            auto attachment = m_Attachments[index + 1];  // start with mip level 1 (rather than mip level 0)
-            m_Framebuffers[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
+            auto attachment = m_AttachmentsDown[index]; // m_attachmentsDown[0] -> mip level 1
+            m_FramebuffersDown[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
+        }
+    }
+
+    // this function creates a frame buffer for each upsampled image
+    // for example if BLOOM_MIP_LEVELS == 4, then it creates 3 frame buffers
+    void VK_RenderSystemBloom::CreateFrameBuffersUp()
+    {
+        auto renderPass = m_RenderPassUp->Get();
+        for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
+        {
+            auto attachment = m_AttachmentsDown[index]; // m_attachmentsDown[0] -> mip level [NUMBER_OF_MIPMAPS-2]
+            m_FramebuffersUp[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
         }
     }
 
@@ -246,7 +302,7 @@ namespace GfxRenderEngine
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
-        pipelineConfig.renderPass = m_RenderPass->Get();
+        pipelineConfig.renderPass = m_RenderPassDown->Get();
         pipelineConfig.pipelineLayout = m_BloomPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
         pipelineConfig.subpass = 0;
@@ -272,7 +328,25 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemBloom::RenderBloom(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemBloom::BeginRenderPass(VK_FrameInfo const& frameInfo, VK_BloomRenderPass* renderpass, VK_BloomFrameBuffer* framebuffer)
+    {
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderpass->Get();
+        renderPassInfo.framebuffer = framebuffer->Get();
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = framebuffer->GetExtent();
+
+        VkClearValue clearValue{};
+        clearValue.color = {0.50f, 0.30f, 0.70f, 1.0f};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearValue;
+
+        vkCmdBeginRenderPass(frameInfo.m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    void VK_RenderSystemBloom::RenderBloom(VK_FrameInfo const& frameInfo)
     {
         { // common
             std::vector<VkDescriptorSet> descriptorSets =
@@ -298,24 +372,12 @@ namespace GfxRenderEngine
         m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
 
         // sample from mip level 0 to mip level NUMBER_OF_MIPMAPS - 2
-        // e.g. if NUMBER_OF_MIPMAPS == 4, then sample from 0, 1, and 2
-        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++mipLevel)
+        // render into mip level 1 to mip level NUMBER_OF_MIPMAPS - 1
+        // e.g. if NUMBER_OF_MIPMAPS == 4, then sample from 0, 1, 2 and render into 1, 2, 3
+        uint mipLevel = 0;  // see up loop
+        for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_RenderPass->Get();
-            renderPassInfo.framebuffer = m_Framebuffers[mipLevel]->Get();
-
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = m_Framebuffers[mipLevel]->GetExtent();
-
-            VkClearValue clearValue{};
-            clearValue.color = {0.50f, 0.30f, 0.70f, 1.0f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearValue;
-
-            vkCmdBeginRenderPass(frameInfo.m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            BeginRenderPass(frameInfo, m_RenderPassDown.get(), m_FramebuffersDown[index].get());
 
             VK_PushConstantDataBloom push{};
 
@@ -340,16 +402,44 @@ namespace GfxRenderEngine
                 0       // firstInstance
             );
             vkCmdEndRenderPass(frameInfo.m_CommandBuffer);
+            ++mipLevel;
         }
 
         // up ---------------------------------------------------------------------------------------------------------------
         m_BloomPipelineUp->Bind(frameInfo.m_CommandBuffer);
 
-        // sample from mip level NUMBER_OF_MIPMAPS-1 to mip level 1
-        // e.g. if NUMBER_OF_MIPMAPS == 4, then sample from 3, 2, and 1
-        for (uint mipLevel = VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; mipLevel > 0; --mipLevel)
+        // sample from mip level mip level NUMBER_OF_MIPMAPS - 1 to 1
+        // render into mip level NUMBER_OF_MIPMAPS - 2 to mip level 0
+        // e.g. if NUMBER_OF_MIPMAPS == 4, then sample from 3, 2, 1 and render into 2, 1, 0
+        mipLevel = VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES;
+        for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            
+            BeginRenderPass(frameInfo, m_RenderPassUp.get(), m_FramebuffersUp[index].get());
+
+            VK_PushConstantDataBloom push{};
+
+            push.m_SrcResolution = glm::vec2(m_ExtendMipLevel0.width << mipLevel, m_ExtendMipLevel0.height << mipLevel);
+            push.m_FilterRadius  = m_FilterRadius;
+            push.m_ImageViewID   = mipLevel;
+
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                m_BloomPipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataBloom),
+                &push);
+
+            vkCmdDraw
+            (
+                frameInfo.m_CommandBuffer,
+                3,      // vertexCount
+                1,      // instanceCount
+                0,      // firstVertex
+                0       // firstInstance
+            );
+            vkCmdEndRenderPass(frameInfo.m_CommandBuffer);
+            --mipLevel;
         }
     }
 }
