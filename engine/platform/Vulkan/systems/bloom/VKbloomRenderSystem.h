@@ -36,8 +36,10 @@
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
 #include "VKrenderPass.h"
-#include "VKbloomRenderPass.h"
-#include "bloom.h"
+
+#include "systems/bloom/bloom.h"
+#include "systems/bloom/VKbloomRenderPass.h"
+#include "systems/bloom/VKbloomFrameBuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -53,16 +55,12 @@ namespace GfxRenderEngine
 
     public:
 
-        static constexpr int NUMBER_OF_MIPMAPS = BLOOM_MIP_LEVELS; // number of down-sampled images
+        static constexpr int NUMBER_OF_MIPMAPS = BLOOM_MIP_LEVELS; // number of down-sampled images plus level 0
+        static constexpr int NUMBER_OF_DOWNSAMPLED_IMAGES = NUMBER_OF_MIPMAPS - 1; // number of down-sampled images
 
     public:
 
-        VK_RenderSystemBloom
-        (
-            const VK_RenderPass& renderPass3D,
-            VkDescriptorSetLayout& globalDescriptorSetLayout,
-            VK_DescriptorPool& descriptorPool
-        );
+        VK_RenderSystemBloom(VK_RenderPass const& renderPass3D, VkDescriptorSetLayout& globalDescriptorSetLayout, VK_DescriptorPool& descriptorPool);
         ~VK_RenderSystemBloom();
 
         VK_RenderSystemBloom(const VK_RenderSystemBloom&) = delete;
@@ -73,32 +71,38 @@ namespace GfxRenderEngine
 
     private:
 
-        void CreateRenderPassesDown();
-        void CreateRenderPassesUp();
+        void CreateImageViews();
+        void CreateAttachments();
+        void CreateRenderPass();
+        void CreateFrameBuffers();
+
+        void CreateDescriptorSet();
         void CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout);
         void CreateBloomPipelines();
         void CreateBloomDescriptorSetLayout();
-        void CreateImageViews();
-        void CreateDescriptorSets();
 
     private:
 
         VK_DescriptorPool& m_DescriptorPool;
-        const VK_RenderPass& m_RenderPass3D;
+
+        VK_RenderPass const& m_RenderPass3D; // external 3D pass
         VkPipelineLayout m_BloomPipelineLayout;
 
-        VkExtent2D m_Resolution;
+        VkExtent2D m_ExtendMipLevel0;
         float m_FilterRadius;
 
+        VkSampler m_Sampler;
         std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetLayout;
-        std::vector<VkDescriptorSet> m_BloomDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        VkDescriptorSet m_BloomDescriptorSet;
 
-        VkImageView m_EmissionMipmapViews[VK_SwapChain::MAX_FRAMES_IN_FLIGHT][VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        VkImageView m_EmissionView;
+        VkImageView m_EmissionMipmapViews[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        VK_Attachments m_Attachments;
 
-        std::unique_ptr<VK_BloomRenderPass> m_RenderPassesDown[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
-        std::unique_ptr<VK_BloomRenderPass> m_RenderPassesUp[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
-        std::unique_ptr<VK_Pipeline> m_BloomPipelineDown[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
-        std::unique_ptr<VK_Pipeline> m_BloomPipelineUp[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
+        std::unique_ptr<VK_BloomRenderPass> m_RenderPass;
+        std::unique_ptr<VK_BloomFrameBuffer> m_Framebuffers[VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES];
+        std::unique_ptr<VK_Pipeline> m_BloomPipelineDown;
+        std::unique_ptr<VK_Pipeline> m_BloomPipelineUp;
 
     };
 }

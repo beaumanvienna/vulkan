@@ -23,9 +23,8 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#include "engine/platform/Vulkan/bloom.h"
 
-layout(set = 1, binding = 0) uniform sampler2D emissiveMap[BLOOM_MIP_LEVELS];
+layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
 
 layout(location = 0)  in  vec2  fragUV;
 layout(location = 0) out  vec4  outEmissive;
@@ -74,22 +73,22 @@ void main()
     // - l - m -
     // g - h - i
     // === ('e' is the current texel) ===
-    vec3 a = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x - 2*x, fragUV.y + 2*y)).rgb;
-    vec3 b = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x,       fragUV.y + 2*y)).rgb;
-    vec3 c = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x + 2*x, fragUV.y + 2*y)).rgb;
+    vec3 a = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
+    vec3 b = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y + 2*y),push.m_ImageViewID).rgb;
+    vec3 c = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
 
-    vec3 d = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x - 2*x, fragUV.y)).rgb;
-    vec3 e = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x,       fragUV.y)).rgb;
-    vec3 f = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x + 2*x, fragUV.y)).rgb;
+    vec3 d = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y),push.m_ImageViewID).rgb;
+    vec3 e = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y),push.m_ImageViewID).rgb;
+    vec3 f = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y),push.m_ImageViewID).rgb;
 
-    vec3 g = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x - 2*x, fragUV.y - 2*y)).rgb;
-    vec3 h = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x,       fragUV.y - 2*y)).rgb;
-    vec3 i = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x + 2*x, fragUV.y - 2*y)).rgb;
+    vec3 g = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
+    vec3 h = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y - 2*y),push.m_ImageViewID).rgb;
+    vec3 i = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
 
-    vec3 j = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x - x, fragUV.y + y)).rgb;
-    vec3 k = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x + x, fragUV.y + y)).rgb;
-    vec3 l = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x - x, fragUV.y - y)).rgb;
-    vec3 m = texture(emissiveMap[push.m_ImageViewID], vec2(fragUV.x + x, fragUV.y - y)).rgb;
+    vec3 j = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
+    vec3 k = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
+    vec3 l = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
+    vec3 m = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
 
     outEmissive.rgb = e*0.125;
     outEmissive.rgb += (a+c+g+i)*0.03125;

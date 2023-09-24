@@ -44,9 +44,9 @@
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrEmissiveTextureSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
-#include "systems/VKdeferredShading.h"
+#include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
-#include "systems/VKbloomSys.h"
+#include "systems/VKdeferredShading.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"

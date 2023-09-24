@@ -769,7 +769,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginFrame(Camera* camera)
     {
-        if (m_CurrentCommandBuffer = BeginFrame())
+        m_CurrentCommandBuffer = BeginFrame();
+        if (m_CurrentCommandBuffer)
         {
             m_FrameInfo =
             {
@@ -871,8 +872,8 @@ namespace GfxRenderEngine
         if (m_CurrentCommandBuffer)
         {
             EndRenderPass(m_CurrentCommandBuffer); // end 3D renderpass
-            BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
             m_RenderSystemBloom->RenderBloom(m_FrameInfo);
+            BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
             m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
         }
     }

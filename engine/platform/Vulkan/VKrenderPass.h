@@ -25,7 +25,6 @@
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "VKdevice.h"
 #include "VKcore.h"
 
 namespace GfxRenderEngine

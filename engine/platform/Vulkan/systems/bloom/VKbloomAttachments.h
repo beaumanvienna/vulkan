@@ -22,15 +22,13 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <memory>
 
-#include "engine.h"
-#include "VKdevice.h"
-#include "VKcore.h"
+#include <vulkan/vulkan.h>
 
 namespace GfxRenderEngine
 {
-    class VK_BloomRenderPass
+    class VK_Attachments
     {
 
     public:
@@ -49,36 +47,13 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_BloomRenderPass(uint numberOfFramebuffers);
-        ~VK_BloomRenderPass();
-
-        VK_BloomRenderPass(const VK_BloomRenderPass &) = delete;
-        VK_BloomRenderPass& operator=(const VK_BloomRenderPass &) = delete;
-
-        VkImageView GetImageView(uint index) const { return m_Attachments[index].m_ImageView; }
-        VkFormat GetFormat(uint index) const { return m_Attachments[index].m_Format; }
-        VkFramebuffer GetFramebuffer(uint index) const { return m_Framebuffers[index]; }
-        VkRenderPass GetRenderPass() const { return m_RenderPass; }
-        VkExtent2D GetExtent() const { return m_RenderPassExtent; }
-
-        VK_BloomRenderPass& AddAttachment(Attachment const& attachment);
-        void Build();
+        void Add(Attachment const& attachment);
+        Attachment& Get(uint index) { return m_Attachments[index]; }
+        Attachment& operator[](uint index) { return m_Attachments[index]; }
 
     private:
-
-        void CreateFramebuffers();
-
-    private:
-
-        uint m_NumberOfFramebuffers;
-        uint m_NumberOfSubpasses;
-
-        std::shared_ptr<VK_Device> m_Device;
-        VkExtent2D m_RenderPassExtent;
 
         std::vector<Attachment> m_Attachments;
-        std::vector<VkFramebuffer> m_Framebuffers;
-        VkRenderPass m_RenderPass;
 
     };
 }

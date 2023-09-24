@@ -1,8 +1,6 @@
 /* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
-   Credits: https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
-
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
    (the "Software"), to deal in the Software without restriction,
@@ -20,10 +18,49 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#version 450
+#pragma once
 
-void main()
+#include <vulkan/vulkan.h>
+
+#include "engine.h"
+#include "VKcore.h"
+
+#include "systems/bloom/VKbloomAttachments.h"
+
+namespace GfxRenderEngine
 {
+    class VK_BloomRenderPass
+    {
+
+    public:
+
+        struct Attachment
+        {
+            VkImageView         m_ImageView;
+            VkFormat            m_Format;
+            VkExtent2D          m_Extent;
+            VkAttachmentLoadOp  m_LoadOp;
+            VkAttachmentStoreOp m_StoreOp;
+            VkImageLayout       m_InitialLayout;
+            VkImageLayout       m_FinalLayout;
+            VkImageLayout       m_SubpassLayout;
+        };
+
+    public:
+
+        VK_BloomRenderPass(VK_Attachments::Attachment const& attachment);
+        ~VK_BloomRenderPass();
+
+        VK_BloomRenderPass(const VK_BloomRenderPass &) = delete;
+        VK_BloomRenderPass& operator=(const VK_BloomRenderPass &) = delete;
+
+        VkRenderPass const& Get() const { return m_RenderPass; }
+
+    private:
+
+        VkRenderPass m_RenderPass;
+
+    };
 }

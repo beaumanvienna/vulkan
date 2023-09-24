@@ -28,7 +28,7 @@
 #include "VKswapChain.h"
 #include "VKshadowMap.h"
 #include "VKrenderPass.h"
-#include "systems/VKbloomSys.h"
+#include "systems/bloom/VKbloomRenderSystem.h"
 
 namespace GfxRenderEngine
 {
@@ -393,7 +393,7 @@ namespace GfxRenderEngine
             imageInfo.format = m_BufferEmissionFormat;
             imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
@@ -636,7 +636,7 @@ namespace GfxRenderEngine
 
         VkAttachmentReference gBufferEmissionAttachmentRef = {};
         gBufferEmissionAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_EMISSION);
-        gBufferEmissionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        gBufferEmissionAttachmentRef.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferEmissionInputAttachmentRef = {};
         gBufferEmissionInputAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_EMISSION);
