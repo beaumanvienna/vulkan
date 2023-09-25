@@ -28,8 +28,10 @@
 //gl_VertexIndex 1: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f =  3.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f = -1.000000
 //gl_VertexIndex 2: ((gl_VertexIndex << 1) & 2) * 2.0f - 1.0f = -1.000000, (gl_VertexIndex & 2) * 2.0f - 1.0f =  3.000000
 
+layout(location = 0)  out  vec2  fragUV;
+
 void main() 
 {
-    vec2 outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-    gl_Position = vec4(outUV * 2.0f - 1.0f, 0.0f, 1.0f);
+    fragUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+    gl_Position = vec4(fragUV * 2.0f - 1.0f, 0.0f, 1.0f);
 }

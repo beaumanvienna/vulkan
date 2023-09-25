@@ -224,11 +224,17 @@ namespace GfxRenderEngine
             const VkDescriptorImageInfo& imageInfo
         )
     {
-        ASSERT(m_SetLayout.m_Bindings.count(binding) == 1) // layout does not contain specified binding
+        if (!(m_SetLayout.m_Bindings.count(binding) == 1)) // layout does not contain specified binding
+        {
+            LOG_CORE_CRITICAL("VK_DescriptorWriter::WriteImage: layout does not contain specified binding");
+        }
 
         auto& bindingDescription = m_SetLayout.m_Bindings[binding];
 
-        ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
+        if (!(bindingDescription.descriptorCount == 1)) // binding single descriptor info, but binding expects multiple
+        {
+            LOG_CORE_CRITICAL("VK_DescriptorWriter::WriteImage: binding single descriptor info, but binding expects multiple");
+        }
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -236,6 +242,30 @@ namespace GfxRenderEngine
         write.dstBinding = binding;
         write.pImageInfo = &imageInfo;
         write.descriptorCount = 1;
+
+        m_Writes.push_back(write);
+        return *this;
+    }
+
+    VK_DescriptorWriter& VK_DescriptorWriter::WriteImage
+        (
+            uint binding,
+            const std::vector<VkDescriptorImageInfo>& imageInfoAll
+        )
+    {
+        if (!(m_SetLayout.m_Bindings.count(binding) == 1)) // layout does not contain specified binding
+        {
+            LOG_CORE_CRITICAL("VK_DescriptorWriter::WriteImage: layout does not contain specified binding");
+        }
+
+        auto& bindingDescription = m_SetLayout.m_Bindings[binding];
+
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.descriptorType = bindingDescription.descriptorType;
+        write.dstBinding = binding;
+        write.pImageInfo = imageInfoAll.data();
+        write.descriptorCount = imageInfoAll.size();
 
         m_Writes.push_back(write);
         return *this;

@@ -146,6 +146,7 @@ namespace GfxRenderEngine
 
         VK_DescriptorWriter& WriteBuffer(uint binding, const VkDescriptorBufferInfo& bufferInfo);
         VK_DescriptorWriter& WriteImage(uint binding, const VkDescriptorImageInfo& imageInfo);
+        VK_DescriptorWriter& WriteImage(uint binding, const std::vector<VkDescriptorImageInfo>& imageInfoAll);
 
         bool Build(VkDescriptorSet& set);
         void Overwrite(VkDescriptorSet& set);

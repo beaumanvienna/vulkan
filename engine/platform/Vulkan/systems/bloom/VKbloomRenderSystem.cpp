@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         // render pass and frame buffers
         CreateImageViews();
         CreateAttachments();
-        CreateRenderPasses();     // use one render pass
+        CreateRenderPasses();     // up and down renderpass
         CreateFrameBuffersDown(); // use 'NUMBER_OF_MIPMAPS-1' frame buffers for downsampling
         CreateFrameBuffersUp();   // use 'NUMBER_OF_MIPMAPS-1' frame buffers for upsampling
 
@@ -137,7 +137,7 @@ namespace GfxRenderEngine
         // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 1, 2, 3
         // so that we downsample mip 0 into mip 1 (== render target), etc.
         // (the g-buffer level zero image must not be cleared)
-        // before the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        // before the pass: VK_IMAGE_LAYOUT_UNDEFINED
         // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
         for (uint mipLevel = 1; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
@@ -151,7 +151,7 @@ namespace GfxRenderEngine
                 extentMipLevel,                             // VkExtent2D          m_Extent;
                 VK_ATTACHMENT_LOAD_OP_CLEAR,                // VkAttachmentLoadOp  m_LoadOp;
                 VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,   // VkImageLayout       m_InitialLayout;
+                VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout       m_InitialLayout;
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
             };
@@ -168,7 +168,7 @@ namespace GfxRenderEngine
         // before the pass: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        for (uint mipLevel = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS - 2; mipLevel > 0; --mipLevel)
+        for (int mipLevel = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS - 2; mipLevel >= 0; --mipLevel)
         {
             // the g-buffer level zero image must not be cleared,
 
@@ -224,7 +224,7 @@ namespace GfxRenderEngine
         auto renderPass = m_RenderPassUp->Get();
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            auto attachment = m_AttachmentsDown[index]; // m_attachmentsDown[0] -> mip level [NUMBER_OF_MIPMAPS-2]
+            auto attachment = m_AttachmentsUp[index]; // m_attachmentsUp[0] -> mip level [NUMBER_OF_MIPMAPS-2]
             m_FramebuffersUp[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
         }
     }
@@ -240,23 +240,24 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::CreateDescriptorSet()
     {
-        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, m_DescriptorPool);
-
         VkSamplerCreateInfo samplerCreateInfo{};
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.pNext = nullptr;
+        samplerCreateInfo.flags = 0;
         samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
         samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
-        samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = static_cast<float>(VK_RenderSystemBloom::NUMBER_OF_MIPMAPS);
-        samplerCreateInfo.maxAnisotropy = 4.0;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.anisotropyEnable = VK_TRUE;
-        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        samplerCreateInfo.maxAnisotropy = 16.0;
+        samplerCreateInfo.compareEnable = VK_FALSE;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = 1.0f;
+        samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 
         {
             auto result = vkCreateSampler(VK_Core::m_Device->Device(), &samplerCreateInfo, nullptr, &m_Sampler);
@@ -266,6 +267,8 @@ namespace GfxRenderEngine
             }
         }
         
+        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, m_DescriptorPool);
+
         VkDescriptorImageInfo descriptorImageInfo {};
         descriptorImageInfo.sampler     = m_Sampler;
         descriptorImageInfo.imageView   = m_EmissionView;
@@ -328,6 +331,51 @@ namespace GfxRenderEngine
         );
     }
 
+    void VK_RenderSystemBloom::PutBarrier(const VK_FrameInfo& frameInfo)
+    {
+        VkImageSubresourceRange subresourceRange = {};
+        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        subresourceRange.levelCount = 1;
+        subresourceRange.layerCount = 1;
+        {
+            VkImageMemoryBarrier imageMemoryBarrier{};
+            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageMemoryBarrier.image = m_RenderPass3D.GetImageEmission();
+            imageMemoryBarrier.subresourceRange = subresourceRange;
+            vkCmdPipelineBarrier
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+                0,
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1, 
+                &imageMemoryBarrier
+            );
+        }
+    }
+    
+    void VK_RenderSystemBloom::SetViewPort(const VK_FrameInfo& frameInfo, VkExtent2D const& extent)
+    {
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, extent};
+        vkCmdSetViewport(frameInfo.m_CommandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(frameInfo.m_CommandBuffer, 0, 1, &scissor);
+    }
+
     void VK_RenderSystemBloom::BeginRenderPass(VK_FrameInfo const& frameInfo, VK_BloomRenderPass* renderpass, VK_BloomFrameBuffer* framebuffer)
     {
         VkRenderPassBeginInfo renderPassInfo{};
@@ -348,6 +396,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::RenderBloom(VK_FrameInfo const& frameInfo)
     {
+        PutBarrier(frameInfo);
         { // common
             std::vector<VkDescriptorSet> descriptorSets =
             {
@@ -378,10 +427,11 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassDown.get(), m_FramebuffersDown[index].get());
-
+            VkExtent2D extent{m_ExtendMipLevel0.width >> mipLevel, m_ExtendMipLevel0.height >> mipLevel};
+            SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 
-            push.m_SrcResolution = glm::vec2(m_ExtendMipLevel0.width << mipLevel, m_ExtendMipLevel0.height << mipLevel);
+            push.m_SrcResolution = glm::vec2(extent.width, extent.height);
             push.m_FilterRadius  = m_FilterRadius;
             push.m_ImageViewID   = mipLevel;
 
@@ -415,10 +465,11 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassUp.get(), m_FramebuffersUp[index].get());
-
+            VkExtent2D extent{m_ExtendMipLevel0.width >> mipLevel, m_ExtendMipLevel0.height >> mipLevel};
+            SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 
-            push.m_SrcResolution = glm::vec2(m_ExtendMipLevel0.width << mipLevel, m_ExtendMipLevel0.height << mipLevel);
+            push.m_SrcResolution = glm::vec2(extent.width, extent.height);
             push.m_FilterRadius  = m_FilterRadius;
             push.m_ImageViewID   = mipLevel;
 

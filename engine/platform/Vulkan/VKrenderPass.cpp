@@ -632,7 +632,7 @@ namespace GfxRenderEngine
         gBufferEmissionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gBufferEmissionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         gBufferEmissionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        gBufferEmissionAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        gBufferEmissionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference gBufferEmissionAttachmentRef = {};
         gBufferEmissionAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_GBUFFER_EMISSION);

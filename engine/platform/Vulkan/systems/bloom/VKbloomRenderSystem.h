@@ -83,6 +83,8 @@ namespace GfxRenderEngine
         void CreateBloomDescriptorSetLayout();
 
         void BeginRenderPass(VK_FrameInfo const& frameInfo, VK_BloomRenderPass* renderpass, VK_BloomFrameBuffer* framebuffer);
+        void PutBarrier(const VK_FrameInfo& frameInfo);
+        void SetViewPort(const VK_FrameInfo& frameInfo, VkExtent2D const& extent);
 
     private:
 

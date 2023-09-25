@@ -24,7 +24,7 @@
 
 #version 450
 
-layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
+//layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
 
 layout(location = 0)  in  vec2  fragUV;
 layout(location = 0) out  vec4  outEmissive;
@@ -38,33 +38,35 @@ layout(push_constant) uniform VK_PushConstantDataBloom
 
 void main()
 {
-    float x = push.m_FilterRadius;
-    float y = push.m_FilterRadius;
-
-    // Take 9 samples around current texel:
-    // a - b - c
-    // d - e - f
-    // g - h - i
-    // === ('e' is the current texel) ===
-    vec3 a = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
-    vec3 b = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y + y),push.m_ImageViewID).rgb;
-    vec3 c = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
-
-    vec3 d = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y),push.m_ImageViewID).rgb;
-    vec3 e = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y),push.m_ImageViewID).rgb;
-    vec3 f = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y),push.m_ImageViewID).rgb;
-
-    vec3 g = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
-    vec3 h = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y - y),push.m_ImageViewID).rgb;
-    vec3 i = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
-
-    // Apply weighted distribution, by using a 3x3 tent filter:
-    //  1   | 1 2 1 |
-    // -- * | 2 4 2 |
-    // 16   | 1 2 1 |
-    outEmissive.rgb = e*4.0;
-    outEmissive.rgb += (b+d+f+h)*2.0;
-    outEmissive.rgb += (a+c+g+i);
-    outEmissive.rgb *= 1.0 / 16.0;
-
+    //float x = push.m_FilterRadius;
+    //float y = push.m_FilterRadius;
+    //
+    //// Take 9 samples around current texel:
+    //// a - b - c
+    //// d - e - f
+    //// g - h - i
+    //// === ('e' is the current texel) ===
+    //vec3 a = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
+    //vec3 b = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y + y),push.m_ImageViewID).rgb;
+    //vec3 c = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
+    //
+    //vec3 d = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y),push.m_ImageViewID).rgb;
+    //vec3 e = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y),push.m_ImageViewID).rgb;
+    //vec3 f = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y),push.m_ImageViewID).rgb;
+    //
+    //vec3 g = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
+    //vec3 h = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y - y),push.m_ImageViewID).rgb;
+    //vec3 i = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
+    //
+    //// Apply weighted distribution, by using a 3x3 tent filter:
+    ////  1   | 1 2 1 |
+    //// -- * | 2 4 2 |
+    //// 16   | 1 2 1 |
+    //outEmissive.rgb = e*4.0;
+    //outEmissive.rgb += (b+d+f+h)*2.0;
+    //outEmissive.rgb += (a+c+g+i);
+    //outEmissive.rgb *= 1.0 / 16.0;
+    if (push.m_ImageViewID == 3) outEmissive = vec4(fragUV.x, 0.0, 0.0, 1.0);
+    if (push.m_ImageViewID == 2) outEmissive = vec4(0.0, fragUV.y, 0.0, 1.0);
+    if (push.m_ImageViewID == 1) outEmissive = vec4(0.0, 0.0, fragUV.x, 1.0);
 }

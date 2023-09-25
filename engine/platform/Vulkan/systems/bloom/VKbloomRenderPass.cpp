@@ -58,13 +58,13 @@ namespace GfxRenderEngine
 
         // dependencies
         std::array<VkSubpassDependency, 2> subpassDependencies {};
-        subpassDependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                              // Index of the render pass being depended upon by dstSubpass
-        subpassDependencies[0].dstSubpass      = 0;                                                // The index of the render pass depending on srcSubpass
-        subpassDependencies[0].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;    // What pipeline stage must have completed for the dependency
-        subpassDependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;            // What pipeline stage is waiting on the dependency
-        subpassDependencies[0].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;             // What access scopes influence the dependency
-        subpassDependencies[0].dstAccessMask   = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;              // What access scopes are waiting on the dependency
-        subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                      // Other configuration about the dependency
+        subpassDependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                               // Index of the render pass being depended upon by dstSubpass
+        subpassDependencies[0].dstSubpass      = 0;                                                 // The index of the render pass depending on srcSubpass
+        subpassDependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;             // What pipeline stage must have completed for the dependency
+        subpassDependencies[0].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;     // What pipeline stage is waiting on the dependency
+        subpassDependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                         // What access scopes influence the dependency
+        subpassDependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;              // What access scopes are waiting on the dependency
+        subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                       // Other configuration about the dependency
 
         subpassDependencies[1].srcSubpass      = 0;
         subpassDependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
