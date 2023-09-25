@@ -427,7 +427,7 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassDown.get(), m_FramebuffersDown[index].get());
-            VkExtent2D extent{m_ExtendMipLevel0.width >> mipLevel, m_ExtendMipLevel0.height >> mipLevel};
+            VkExtent2D extent{m_ExtendMipLevel0.width >> (mipLevel+1), m_ExtendMipLevel0.height >> (mipLevel+1)};
             SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 
@@ -465,7 +465,7 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassUp.get(), m_FramebuffersUp[index].get());
-            VkExtent2D extent{m_ExtendMipLevel0.width >> mipLevel, m_ExtendMipLevel0.height >> mipLevel};
+            VkExtent2D extent{m_ExtendMipLevel0.width >> (mipLevel-1), m_ExtendMipLevel0.height >> (mipLevel-1)};
             SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 

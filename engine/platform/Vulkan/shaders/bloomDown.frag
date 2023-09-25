@@ -24,7 +24,7 @@
 
 #version 450
 
-//layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
+layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
 
 layout(location = 0)  in  vec2  fragUV;
 layout(location = 0) out  vec4  outEmissive;
@@ -62,39 +62,41 @@ float KarisAverage(vec3 col)
 
 void main()
 {
-    // vec2 srcTexelSize = 1.0 / push.m_SrcResolution;
-    // float x = srcTexelSize.x;
-    // float y = srcTexelSize.y;
-    // 
-    // // Take 13 samples around current texel:
-    // // a - b - c
-    // // - j - k -
-    // // d - e - f
-    // // - l - m -
-    // // g - h - i
-    // // === ('e' is the current texel) ===
-    // vec3 a = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
-    // vec3 b = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y + 2*y),push.m_ImageViewID).rgb;
-    // vec3 c = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
-    // 
-    // vec3 d = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y),push.m_ImageViewID).rgb;
-    // vec3 e = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y),push.m_ImageViewID).rgb;
-    // vec3 f = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y),push.m_ImageViewID).rgb;
-    // 
-    // vec3 g = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
-    // vec3 h = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y - 2*y),push.m_ImageViewID).rgb;
-    // vec3 i = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
-    // 
-    // vec3 j = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
-    // vec3 k = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
-    // vec3 l = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
-    // vec3 m = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
-    // 
-    // outEmissive.rgb = e*0.125;
-    // outEmissive.rgb += (a+c+g+i)*0.03125;
-    // outEmissive.rgb += (b+d+f+h)*0.0625;
-    // outEmissive.rgb += (j+k+l+m)*0.125;
-    if (push.m_ImageViewID == 0) outEmissive = vec4(fragUV.x, 1.0, 1.0, 1.0);
-    if (push.m_ImageViewID == 1) outEmissive = vec4(fragUV.y, fragUV.y, fragUV.y, 1.0);
-    if (push.m_ImageViewID == 2) outEmissive = vec4(fragUV.x, fragUV.x, fragUV.x, 1.0);
+    vec2 srcTexelSize = 1.0 / push.m_SrcResolution;
+    float x = srcTexelSize.x;
+    float y = srcTexelSize.y;
+    
+    // Take 13 samples around current texel:
+    // a - b - c
+    // - j - k -
+    // d - e - f
+    // - l - m -
+    // g - h - i
+    // === ('e' is the current texel) ===
+    vec3 a = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
+    vec3 b = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y + 2*y),push.m_ImageViewID).rgb;
+    vec3 c = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y + 2*y),push.m_ImageViewID).rgb;
+    
+    vec3 d = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y),push.m_ImageViewID).rgb;
+    vec3 e = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y),push.m_ImageViewID).rgb;
+    vec3 f = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y),push.m_ImageViewID).rgb;
+    
+    vec3 g = textureLod(emissiveMap, vec2(fragUV.x - 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
+    vec3 h = textureLod(emissiveMap, vec2(fragUV.x,       fragUV.y - 2*y),push.m_ImageViewID).rgb;
+    vec3 i = textureLod(emissiveMap, vec2(fragUV.x + 2*x, fragUV.y - 2*y),push.m_ImageViewID).rgb;
+    
+    vec3 j = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
+    vec3 k = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
+    vec3 l = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
+    vec3 m = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
+    
+    outEmissive.rgb = e*0.125;
+    outEmissive.rgb += (a+c+g+i)*0.03125;
+    outEmissive.rgb += (b+d+f+h)*0.0625;
+    outEmissive.rgb += (j+k+l+m)*0.125;
+    outEmissive = vec4(outEmissive.r, outEmissive.g, outEmissive.b, 1.0);
+    //if (push.m_ImageViewID == 0) outEmissive = vec4(fragUV.x, 1.0, 1.0, 1.0);
+    //if (push.m_ImageViewID == 1) outEmissive = vec4(fragUV.y, fragUV.y, fragUV.y, 1.0);
+    //if (push.m_ImageViewID == 2) outEmissive = vec4(fragUV.x, fragUV.x, fragUV.x, 1.0);
+    //outEmissive = textureLod(emissiveMap, fragUV, push.m_ImageViewID);
 }
