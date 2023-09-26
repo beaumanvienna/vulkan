@@ -36,7 +36,7 @@ namespace GfxRenderEngine
         VK_DescriptorPool& descriptorPool
     ) :
         m_RenderPass3D{renderPass3D},
-        m_FilterRadius{0.05},
+        m_FilterRadius{0.001},
         m_DescriptorPool{descriptorPool}
     {
         m_ExtendMipLevel0 = m_RenderPass3D.GetExtent();
@@ -308,6 +308,7 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = m_RenderPassDown->Get();
         pipelineConfig.pipelineLayout = m_BloomPipelineLayout;
         pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+        pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
         pipelineConfig.subpass = 0;
         pipelineConfig.m_BindingDescriptions.clear();   // this pipeline is not using vertices
         pipelineConfig.m_AttributeDescriptions.clear();
@@ -322,6 +323,10 @@ namespace GfxRenderEngine
         );
 
         // up
+        pipelineConfig.colorBlendAttachment.blendEnable = VK_TRUE;
+        pipelineConfig.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        pipelineConfig.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        pipelineConfig.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
         m_BloomPipelineUp = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,

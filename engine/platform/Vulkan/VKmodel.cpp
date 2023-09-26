@@ -234,8 +234,8 @@ namespace GfxRenderEngine
 
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrEmissiveMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveMaterial.m_EmissiveStrength;
+            push.m_NormalMatrix[3].y = 0;
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
@@ -288,11 +288,11 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuse push{};
+            VK_PushConstantDataPbrEmissiveTexture push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveTextureMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrEmissiveTextureMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveTextureMaterial.m_EmissiveStrength;
+            push.m_NormalMatrix[3].y = 0;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,

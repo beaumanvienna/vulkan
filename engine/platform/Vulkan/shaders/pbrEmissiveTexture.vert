@@ -26,6 +26,9 @@
 layout(location = 0) in vec3  position;
 layout(location = 3) in vec2  uv;
 
+layout(location = 0)  out  vec2  fragUV;
+layout(location = 1)  out  float fragEmissiveStrength;
+
 struct PointLight
 {
     vec4 m_Position;  // ignore w
@@ -57,7 +60,6 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0)  out  vec2  fragUV;
 
 void main()
 {
@@ -65,4 +67,5 @@ void main()
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
     fragUV = uv;
+    fragEmissiveStrength = push.m_NormalMatrix[3].x;
 }

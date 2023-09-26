@@ -25,6 +25,7 @@
 layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
 
 layout(location = 0)       in  vec2  fragUV;
+layout(location = 1)       in  float fragEmissiveStrength;
 
 layout(location = 2)       out vec4 outColor;
 layout(location = 4)       out vec4 outEmissive;
@@ -33,5 +34,5 @@ void main()
 {
     vec3 fragColor = texture(emissiveMap, fragUV).rgb;
     if (fragColor == vec3(0,0,0)) discard;
-    outEmissive    = vec4(fragColor, 1.0);
+    outEmissive    = vec4(fragColor, 1.0) * fragEmissiveStrength;
 }
