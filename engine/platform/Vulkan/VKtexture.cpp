@@ -77,7 +77,6 @@ namespace GfxRenderEngine
     bool VK_Texture::Init(const std::string& fileName, bool sRGB, bool flip)
     {
         bool ok = false;
-        int channels_in_file;
         stbi_set_flip_vertically_on_load(flip);
         m_FileName = fileName;
         m_sRGB = sRGB;
@@ -99,7 +98,6 @@ namespace GfxRenderEngine
     bool VK_Texture::Init(const unsigned char* data, int length, bool sRGB)
     {
         bool ok = false;
-        int channels_in_file;
         stbi_set_flip_vertically_on_load(true);
         m_FileName = "file in memory";
         m_sRGB = sRGB;

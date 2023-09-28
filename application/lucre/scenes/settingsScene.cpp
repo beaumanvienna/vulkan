@@ -29,8 +29,6 @@ namespace LucreApp
 
     void SettingsScene::Start()
     {
-        float windowWidth       = static_cast<float>(Engine::m_Engine->GetWindowWidth());
-        float windowHeight      = static_cast<float>(Engine::m_Engine->GetWindowHeight());
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();

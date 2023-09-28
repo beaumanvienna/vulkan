@@ -147,7 +147,6 @@ namespace GfxRenderEngine
             for (auto entity : view)
             {
                 auto& transform  = view.get<TransformComponent>(entity);
-                auto& pointLight = view.get<PointLightComponent>(entity);
 
                 ASSERT(lightIndex < MAX_LIGHTS);
 

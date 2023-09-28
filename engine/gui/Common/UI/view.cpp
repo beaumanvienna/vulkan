@@ -287,7 +287,7 @@ namespace GfxRenderEngine
             SCREEN_UI::EventParams e{};
             e.v = this;
             OnClick.Trigger(e);
-        };
+        }
 
         void Clickable::FocusChanged(int focusFlags)
         {

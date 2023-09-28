@@ -115,13 +115,13 @@ project "engine"
         }
 
     filter { "action:gmake*", "configurations:Debug"}
-        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow" }
+        buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
     filter { "action:gmake*", "configurations:Release"}
-        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
     filter { "action:gmake*", "configurations:Dist"}
-        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow" }
+        buildoptions { "-Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
     filter { "configurations:Debug" }
         defines { "DEBUG" }

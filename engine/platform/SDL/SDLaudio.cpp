@@ -58,7 +58,7 @@ namespace GfxRenderEngine
 
     void SDLAudio::Stop()
     {
-        for( int i = 0; i < SOUND_CHANNELS; i++ )
+        for (uint i = 0; i < SOUND_CHANNELS; i++ )
         {
             Mix_FreeChunk(m_DataBuffer[i]);
         }
@@ -72,7 +72,7 @@ namespace GfxRenderEngine
         memset(m_DataBuffer, 0, sizeof(Mix_Chunk*) * SOUND_CHANNELS);
 
         // load sound file from disk
-        for (int i = 0; i < SOUND_CHANNELS; i++)
+        for (uint i = 0; i < SOUND_CHANNELS; i++)
         {
             m_DataBuffer[i] = Mix_LoadWAV(filename.c_str());
             if (m_DataBuffer[i] == nullptr)
@@ -92,7 +92,7 @@ namespace GfxRenderEngine
         size_t fileSize;
         void* data = (void*)ResourceSystem::GetDataPointer(fileSize, path, resourceID, resourceClass);
 
-        for (int i = 0; i < SOUND_CHANNELS; i++)
+        for (uint i = 0; i < SOUND_CHANNELS; i++)
         {
             SDL_RWops* sdlRWOps = SDL_RWFromMem(data, fileSize);
             if (!sdlRWOps)

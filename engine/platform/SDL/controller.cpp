@@ -64,7 +64,6 @@ namespace GfxRenderEngine
     bool Controller::Start()
     {
         m_Initialzed = false;
-        int i;
 
         m_InternalDB = Engine::m_Engine->GetConfigFilePath() + "internalDB.txt";
 
@@ -159,9 +158,9 @@ namespace GfxRenderEngine
             }
             case SDL_CONTROLLERAXISMOTION:
             {
-                int indexID = m_InstanceToIndex[SDLevent.caxis.which];
-                int axis = SDLevent.caxis.axis;
-                int value = SDLevent.caxis.value;
+                //int indexID = m_InstanceToIndex[SDLevent.caxis.which];
+                //int axis = SDLevent.caxis.axis;
+                //int value = SDLevent.caxis.value;
                 break;
             }
             case SDL_JOYBUTTONDOWN:
@@ -182,16 +181,16 @@ namespace GfxRenderEngine
             }
             case SDL_JOYAXISMOTION:
             {
-                int indexID = m_InstanceToIndex[SDLevent.jaxis.which];
-                int axis = SDLevent.jaxis.axis;
-                int value = SDLevent.jaxis.value;
+                //int indexID = m_InstanceToIndex[SDLevent.jaxis.which];
+                //int axis = SDLevent.jaxis.axis;
+                //int value = SDLevent.jaxis.value;
                 break;
             }
             case SDL_JOYHATMOTION:
             {
-                int indexID = m_InstanceToIndex[SDLevent.jhat.which];
-                int hat = SDLevent.jhat.hat;
-                int value = SDLevent.jhat.value;
+                //int indexID = m_InstanceToIndex[SDLevent.jhat.which];
+                //int hat = SDLevent.jhat.hat;
+                //int value = SDLevent.jhat.value;
                 break;
             }
             case SDL_JOYBALLMOTION:
@@ -304,11 +303,11 @@ namespace GfxRenderEngine
     {
         SDL_Joystick *joy = SDL_JoystickOpen(indexID);
         char guidStr[1024];
-        const char* name = SDL_JoystickName(joy);
-        int num_axes = SDL_JoystickNumAxes(joy);
-        int num_buttons = SDL_JoystickNumButtons(joy);
-        int num_hats = SDL_JoystickNumHats(joy);
-        int num_balls = SDL_JoystickNumBalls(joy);
+        //const char* name = SDL_JoystickName(joy);
+        //int num_axes = SDL_JoystickNumAxes(joy);
+        //int num_buttons = SDL_JoystickNumButtons(joy);
+        //int num_hats = SDL_JoystickNumHats(joy);
+        //int num_balls = SDL_JoystickNumBalls(joy);
         int instance = SDL_JoystickInstanceID(joy);
         char *mapping;
         SDL_GameController *gameCtrl;
@@ -580,7 +579,7 @@ namespace GfxRenderEngine
         else
         {
             internal_db_output_filehandle << entry << + "\n";
-            for (int i = 0; i < internal_db_entries.size(); i++)
+            for (size_t i = 0; i < internal_db_entries.size(); i++)
             {
                 internal_db_output_filehandle << internal_db_entries[i] << + "\n";
             }
@@ -597,7 +596,6 @@ namespace GfxRenderEngine
         // This is why addControllerToInternalDB()
         // is inserting new entries at the beginning.
         std::string line, guidStr;
-        long guid;
         std::vector<std::string> entryVec;
         std::vector<std::string> guidVec;
         std::string filename;
@@ -618,7 +616,7 @@ namespace GfxRenderEngine
                 if (line.find(",") != std::string::npos)
                 {
                     guidStr = line.substr(0,line.find(","));
-                    for (int i = 0;i < guidVec.size();i++)
+                    for (size_t i = 0;i < guidVec.size();i++)
                     {
                         if (guidVec[i]==guidStr)
                         {
@@ -644,7 +642,7 @@ namespace GfxRenderEngine
             }
             else
             {
-                for (int i=0;i < entryVec.size();i++)
+                for (size_t i=0;i < entryVec.size();i++)
                 {
                     internal_db_output_filehandle << entryVec[i] << + "\n";
                 }

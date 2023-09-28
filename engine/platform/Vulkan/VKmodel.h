@@ -83,7 +83,7 @@ namespace GfxRenderEngine
         );
         static void CreateDescriptorSet
         (
-            PbrEmissiveTextureMaterial& pbrEmmissiveTextureMaterial,
+            PbrEmissiveTextureMaterial& pbrEmissiveTextureMaterial,
             const std::shared_ptr<Texture>& emissiveMap
         );
         static void CreateDescriptorSet

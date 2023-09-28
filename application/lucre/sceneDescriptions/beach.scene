@@ -1,11 +1,27 @@
 # Lucre scene description file
 glTF-files:
+  application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+    translation: [0.182440415, 1.87029076, -0.92102474]
+    scale: [0.499999881, 0.499969542, 0.499959618]
+    rotation: [1.5707885, -0.0387133062, 9.63709681e-07]
+  application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+    translation: [0.899999976, 1.62593806, -0.92102474]
+    scale: [0.25, 0.25, 0.25]
+    rotation: [1.57079601, -0, 0]
+  application/lucre/models/emissive/emissiveCube.gltf:
+    translation: [-2.7844615, 2.32601213, -1.66519284]
+    scale: [0.49999997, 0.5, 0.49999997]
+    rotation: [0, 1.57045102, 0]
+  application/lucre/models/emissive/emissiveCubeWithTexture.gltf:
+    translation: [-1.60500836, 2.05293226, -2.25813103]
+    scale: [0.499999911, 0.5, 0.499999911]
+    rotation: [0, 1.57045102, 0]
   application/lucre/models/external_3D_files/dune/dune.gltf:
     translation: [0, 0, 0]
     scale: [1, 1, 1]
     rotation: [0, 0, 0]
   application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf:
-    translation: [3, 4, -1]
+    translation: [2, 3, -1]
     scale: [0.00999999978, 0.00999999978, 0.00999999978]
     rotation: [-0.69813174, -1.57079637, 0]
   application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf:
@@ -36,13 +52,5 @@ glTF-files:
     translation: [-0.899999976, 0.263500631, -3]
     scale: [1, 1, 1]
     rotation: [0, -0, 0]
-  application/lucre/models/emmissive/emissiveCube.gltf:
-    translation: [-2.7844615, 2.32601213, -1.66519284]
-    scale: [0.49999997, 0.5, 0.49999997]
-    rotation: [0, 1.57045102, 0]
-  application/lucre/models/emmissive/emissiveCubeWithTexture.gltf:
-    translation: [-1.60500836, 2.05293226, -2.25813103]
-    scale: [0.499999911, 0.5, 0.499999911]
-    rotation: [0, 1.57045102, 0]
 prefabs:
   - application/lucre/prefabs/duck.prefab

@@ -30,16 +30,16 @@ layout(location = 0) out vec4 outColor;
 void main()
 {
     // retrieve G buffer data
-    vec3 emissiveColor = subpassLoad(emissiveMap).rgb;
+    vec4 emissiveColor = subpassLoad(emissiveMap);
     // retrieve 3D pass main output color attachment
     vec3 inColor = subpassLoad(colorAttachment).rgb;
 
-    if (emissiveColor == vec3(0,0,0))
+    if (emissiveColor.a == 0)
     {
         outColor = vec4(inColor, 1.0);
     }
     else
     {
-        outColor = vec4(inColor + emissiveColor, 1.0);
+        outColor = vec4(inColor + emissiveColor.rgb, 1.0);
     }
 }

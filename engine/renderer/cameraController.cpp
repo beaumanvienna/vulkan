@@ -99,6 +99,10 @@ namespace GfxRenderEngine
                 );
                 break;
             }
+            case Camera::PROJECTION_UNDEFINED:
+            {
+                break;
+            }
         }
     }
 

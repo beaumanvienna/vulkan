@@ -143,6 +143,10 @@ namespace LucreApp
                 }
                 break;
             }
+            case State::MAX_STATES:
+            {
+                break;
+            }
         }
         return GetScene(m_State);
     }

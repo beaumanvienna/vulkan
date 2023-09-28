@@ -191,9 +191,9 @@ namespace LucreApp
     void SplashScene::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
             {
-                switch(event.GetKeyCode())
+                switch(l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_ESCAPE:
                         m_IsRunning = false;
@@ -203,9 +203,9 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event)
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event)
             {
-                switch (event.GetControllerButton())
+                switch (l_Event.GetControllerButton())
                 {
                     case Controller::BUTTON_GUIDE:
                         m_IsRunning = false;

@@ -109,28 +109,28 @@ namespace LucreApp
 
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event) 
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event) 
             {
-                Key(KEY_DOWN, event.GetControllerButton(), DEVICE_ID_PAD_0);
+                Key(KEY_DOWN, l_Event.GetControllerButton(), DEVICE_ID_PAD_0);
                 return false;
             }
         );
 
-        dispatcher.Dispatch<ControllerButtonReleasedEvent>([this](ControllerButtonReleasedEvent event) 
+        dispatcher.Dispatch<ControllerButtonReleasedEvent>([this](ControllerButtonReleasedEvent l_Event) 
             {
-                Key(KEY_UP, event.GetControllerButton(), DEVICE_ID_PAD_0);
+                Key(KEY_UP, l_Event.GetControllerButton(), DEVICE_ID_PAD_0);
                 return false;
             }
         );
 
-        dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent event) 
+        dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent l_Event) 
             {
                 bool clicked = false;
-                if (event.GetButton() == MouseButtonEvent::Left) 
+                if (l_Event.GetButton() == MouseButtonEvent::Left) 
                 {
                     // output context coordinates adjusted for orthographic projection
-                    float contextPositionX = event.GetX();
-                    float contextPositionY = event.GetY();
+                    float contextPositionX = l_Event.GetX();
+                    float contextPositionY = l_Event.GetY();
 
                     int flags = TOUCH_DOWN | TOUCH_MOUSE;
                     float x = contextPositionX;
@@ -142,10 +142,10 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<MouseButtonReleasedEvent>([this](MouseButtonReleasedEvent event) 
+        dispatcher.Dispatch<MouseButtonReleasedEvent>([this](MouseButtonReleasedEvent l_Event) 
             {
                 bool clicked = false;
-                if (event.GetMouseButton() == MouseButtonEvent::Left) 
+                if (l_Event.GetMouseButton() == MouseButtonEvent::Left) 
                 {
                     int flags = TOUCH_UP | TOUCH_MOUSE;
                     float x = 0.0f;
@@ -157,26 +157,26 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent event) 
+        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event) 
             {
                 int flags = TOUCH_WHEEL;
                 float x = 0.0f;
-                float y = event.GetY();
+                float y = l_Event.GetY();
                 int deviceID = 0;
                 return Touch(flags, x, y, deviceID);
             }
         );
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event) 
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event) 
             { 
-                Key(KEY_DOWN, event.GetKeyCode(), DEVICE_ID_KEYBOARD);
+                Key(KEY_DOWN, l_Event.GetKeyCode(), DEVICE_ID_KEYBOARD);
                 return false;
             }
         );
 
-        dispatcher.Dispatch<KeyReleasedEvent>([this](KeyReleasedEvent event) 
+        dispatcher.Dispatch<KeyReleasedEvent>([this](KeyReleasedEvent l_Event) 
             { 
-                Key(KEY_UP, event.GetKeyCode(), DEVICE_ID_KEYBOARD);
+                Key(KEY_UP, l_Event.GetKeyCode(), DEVICE_ID_KEYBOARD);
                 return false;
             }
         );

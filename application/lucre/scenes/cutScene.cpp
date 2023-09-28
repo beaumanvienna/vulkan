@@ -124,7 +124,6 @@ namespace LucreApp
             // calc scale based on original height
             auto beachSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_BEACH));
             float spriteHeight = beachSprite.GetHeight();
-            float spriteWidth  = beachSprite.GetWidth();
             m_Scale = windowHeight / spriteHeight;
 
             m_BeachSprite = beachSprite;
@@ -141,7 +140,6 @@ namespace LucreApp
         }
         // beach
         {
-            float spriteWidth  = m_BeachSprite.GetWidth();
             float spriteHeight = m_BeachSprite.GetHeight();
 
             auto& transform = m_Registry.get<TransformComponent>(m_Beach);
@@ -151,9 +149,6 @@ namespace LucreApp
         
         // clouds
         {
-            float spriteWidth  = m_CloudSprite.GetWidth();
-            float spriteHeight = m_CloudSprite.GetHeight();
-
             for (uint i = 0; i < 2; i++)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Clouds[i]);

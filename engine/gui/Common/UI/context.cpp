@@ -224,13 +224,13 @@ namespace GfxRenderEngine
         Bounds bounds;
         if (scissorStack_.size()) 
         {
-            float scale_x = 1.0f;
-            float scale_y = 1.0f;
+            //float scale_x = 1.0f;
+            //float scale_y = 1.0f;
             bounds = scissorStack_.back();
-            int x = floorf(scale_x * bounds.x);
-            int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));
-            int w = std::max(0.0f, ceilf(scale_x * bounds.w));
-            int h = std::max(0.0f, ceilf(scale_y * bounds.h));
+            //int x = floorf(scale_x * bounds.x);
+            //int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));
+            //int w = std::max(0.0f, ceilf(scale_x * bounds.w));
+            //int h = std::max(0.0f, ceilf(scale_y * bounds.h));
             //RenderCommand::SetScissor(x, y, w, h);
         } 
         else 

@@ -456,7 +456,7 @@ namespace GfxRenderEngine
 
         name = Input::GetControlerName(m_ControllerID);
         int pos;
-        while ((pos = name.find(",")) != std::string::npos)
+        while (static_cast<size_t>(pos = name.find(",")) != std::string::npos)
         {
             name = name.erase(pos,1);
         }

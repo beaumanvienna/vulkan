@@ -1655,7 +1655,7 @@ namespace GfxRenderEngine
             {
                 Choice(choice)->HighlightChanged(true);
             }
-        };
+        }
 
         bool ChoiceStrip::Key(const SCREEN_KeyInput &input)
         {

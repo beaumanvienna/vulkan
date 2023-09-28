@@ -93,7 +93,7 @@ namespace LucreApp
                 { 5.6,   height1,  0.7}
             };
 
-            for (int i = 0; i < lightPositions.size(); i++)
+            for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
                 TransformComponent transform{};
@@ -216,8 +216,6 @@ namespace LucreApp
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);
 
-        auto frameRotation = static_cast<const float>(timestep) * 0.6f;
-
         RotateLights(timestep);
         ApplyDebugSettings();
 
@@ -243,10 +241,10 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent event)
+        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event)
             {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= event.GetY()*0.1f;
+                zoomFactor -= l_Event.GetY()*0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
             }

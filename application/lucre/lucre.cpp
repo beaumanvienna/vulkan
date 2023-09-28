@@ -176,9 +176,9 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent event)
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event)
             {
-                switch (event.GetControllerButton())
+                switch (l_Event.GetControllerButton())
                 {
                     case Controller::BUTTON_GUIDE:
                         Cancel();
@@ -191,9 +191,9 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
             {
-                switch(event.GetKeyCode())
+                switch(l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_M:
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
@@ -207,7 +207,7 @@ namespace LucreApp
             }
         );
 
-        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent event)
+        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent l_Event)
             {
                 OnResize();
                 return true;
@@ -225,27 +225,27 @@ namespace LucreApp
     {
         AppEventDispatcher appDispatcher(event);
 
-        appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent event)
+        appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent l_Event)
             {
                 if (m_GameState.GetState() != GameState::State::CUTSCENE)
                 {
                     // show cut scene only for game levels
-                    if (static_cast<int>(event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
+                    if (static_cast<int>(l_Event.GetScene()) > static_cast<int>(GameState::State::CUTSCENE))
                     {
                         m_GameState.GetScene(GameState::State::CUTSCENE)->ResetTimer();
                         m_GameState.SetState(GameState::State::CUTSCENE);
-                        m_GameState.SetNextState(event.GetScene());
+                        m_GameState.SetNextState(l_Event.GetScene());
                     }
                     else
                     {
-                        m_GameState.SetState(event.GetScene());
+                        m_GameState.SetState(l_Event.GetScene());
                     }
                 }
                 return true;
             }
         );
 
-        appDispatcher.Dispatch<SceneFinishedEvent>([this](SceneFinishedEvent event)
+        appDispatcher.Dispatch<SceneFinishedEvent>([this](SceneFinishedEvent l_Event)
             {
                 m_CurrentScene->Stop();
                 return true;

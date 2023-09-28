@@ -75,7 +75,7 @@ namespace GfxRenderEngine
         }
 
         return m_Transform;
-    };
+    }
 
     glm::vec3 Translation::GetTranslation()
     {

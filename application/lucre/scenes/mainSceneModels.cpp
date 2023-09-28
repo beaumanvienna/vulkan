@@ -233,7 +233,7 @@ namespace LucreApp
                 {1.f, 1.f, 1.f}
             };
 
-            for (int i = 0; i < lightColors.size(); i++)
+            for (size_t i = 0; i < lightColors.size(); i++)
             {
                 m_PointLight[i] = CreatePointLight(0.2f, 0.1f, lightColors[i]);
                 auto rotateLight = glm::rotate

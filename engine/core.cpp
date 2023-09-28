@@ -63,7 +63,6 @@ namespace GfxRenderEngine
         m_DisableMousePointerTimer.SetEventCallback([](uint interval, void* parameters)
             {
                 uint returnValue = 0;
-                int timerID = *((int*)parameters);
                 Engine::m_Engine->DisableMousePointer();
                 return returnValue;
             }
@@ -219,11 +218,11 @@ namespace GfxRenderEngine
         //    }
         //);
 
-        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent event)
+        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent l_Event)
             {
                 //RenderCommand::SetScissor(0, 0, event.GetWidth(), event.GetHeight());
                 //m_WindowScale = GetWindowWidth() / GetContextWidth();
-                if ((event.GetWidth() == 0) || (event.GetHeight() == 0))
+                if ((l_Event.GetWidth() == 0) || (l_Event.GetHeight() == 0))
                 {
                     LOG_CORE_INFO("application paused");
                     m_Paused = true;
@@ -236,9 +235,9 @@ namespace GfxRenderEngine
             }
         );
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent event)
+        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
             {
-                switch(event.GetKeyCode())
+                switch(l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_F:
                         LOG_CORE_INFO("toggle fullscreen at frame {0}", GetRenderer()->GetFrameCounter());
@@ -249,7 +248,7 @@ namespace GfxRenderEngine
             }
         );
 
-        dispatcher.Dispatch<MouseMovedEvent>([this](MouseMovedEvent event)
+        dispatcher.Dispatch<MouseMovedEvent>([this](MouseMovedEvent l_Event)
             {
                 m_Window->EnableMousePointer();
                 m_DisableMousePointerTimer.Stop();

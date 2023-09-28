@@ -69,7 +69,7 @@ namespace LucreApp
         float availableWidth  = UI::m_Common->m_AvailableWidth - 2 * UI::m_Common->m_TabMarginLeftRight;
         float availableHeight = UI::m_Common->m_AvailableHeight;
 
-        float halfIconWidth  = UI::m_Common->m_IconWidth / 2;
+        //float halfIconWidth  = UI::m_Common->m_IconWidth / 2;
         float halfIconHeight = UI::m_Common->m_IconHeight / 2;
 
         // Reset content

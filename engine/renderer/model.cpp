@@ -109,7 +109,7 @@ namespace GfxRenderEngine
                 buffer = (uchar*)imageData.data();
                 uchar* rgba = buffer;
                 uchar* rgb = &glTFImage.image[0];
-                for (uint i = 0; i < glTFImage.width * glTFImage.height; ++i)
+                for (uint j = 0; j < glTFImage.width * glTFImage.height; ++j)
                 {
                     memcpy(rgba, rgb, sizeof(uchar) * 3);
                     rgba += 4;
@@ -133,11 +133,11 @@ namespace GfxRenderEngine
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
 
-            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index == imageIndex)
+            if (static_cast<uint>(glTFMaterial.pbrMetallicRoughness.baseColorTexture.index) == imageIndex)
             {
                 return Texture::USE_SRGB;
             }
-            else if (glTFMaterial.emissiveTexture.index == imageIndex)
+            else if (static_cast<uint>(glTFMaterial.emissiveTexture.index) == imageIndex)
             {
                 return Texture::USE_SRGB;
             }
@@ -145,7 +145,7 @@ namespace GfxRenderEngine
             {
                 int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
                 tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                if (imageIndex == diffuseTexture.source)
+                if (static_cast<uint>(diffuseTexture.source) == imageIndex)
                 {
                     return Texture::USE_SRGB;
                 }
@@ -947,16 +947,16 @@ namespace GfxRenderEngine
         Vertex vertex[4];
 
         // index 0, 0.0f,  1.0f
-        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, amplification, unlit};
+        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f}};
 
         // index 1, 1.0f,  1.0f
-        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, amplification, unlit};
+        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
 
         // index 2, 1.0f,  0.0f
-        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, amplification, unlit};
+        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
 
         // index 3, 0.0f,  0.0f
-        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, amplification, unlit};
+        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
 
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 
@@ -980,16 +980,16 @@ namespace GfxRenderEngine
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/},
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/}
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 

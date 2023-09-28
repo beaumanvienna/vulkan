@@ -754,7 +754,7 @@ namespace GfxRenderEngine
         void SliderSCREEN_PopupScreen::CreatePopupContents(SCREEN_UI::ViewGroup *parent)
         {
             using namespace SCREEN_UI;
-            SCREEN_UIContext &dc = *screenManager()->getUIContext();
+            //SCREEN_UIContext &dc = *screenManager()->getUIContext();
 
             sliderValue_ = *value_;
             if (disabled_ && sliderValue_ < 0)
