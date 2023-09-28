@@ -36,20 +36,6 @@ namespace GfxRenderEngine
 
     public:
 
-        struct Attachment
-        {
-            VkImageView         m_ImageView;
-            VkFormat            m_Format;
-            VkExtent2D          m_Extent;
-            VkAttachmentLoadOp  m_LoadOp;
-            VkAttachmentStoreOp m_StoreOp;
-            VkImageLayout       m_InitialLayout;
-            VkImageLayout       m_FinalLayout;
-            VkImageLayout       m_SubpassLayout;
-        };
-
-    public:
-
         VK_BloomRenderPass(VK_Attachments::Attachment const& attachment);
         ~VK_BloomRenderPass();
 

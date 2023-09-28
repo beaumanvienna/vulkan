@@ -48,7 +48,6 @@ namespace GfxRenderEngine
     public:
 
         void Add(Attachment const& attachment);
-        Attachment& Get(uint index) { return m_Attachments[index]; }
         Attachment& operator[](uint index) { return m_Attachments[index]; }
 
     private:

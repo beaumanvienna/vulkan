@@ -47,7 +47,7 @@ namespace GfxRenderEngine
     {
         glm::vec2 m_SrcResolution;
         float m_FilterRadius;
-        int m_ImageViewID;
+        float m_Padding;
     };
 
     class VK_RenderSystemBloom
@@ -60,7 +60,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderSystemBloom(VK_RenderPass const& renderPass3D, VkDescriptorSetLayout& globalDescriptorSetLayout, VK_DescriptorPool& descriptorPool);
+        VK_RenderSystemBloom(VK_RenderPass const& renderPass3D, VK_DescriptorPool& descriptorPool);
         ~VK_RenderSystemBloom();
 
         VK_RenderSystemBloom(const VK_RenderSystemBloom&) = delete;
@@ -78,12 +78,11 @@ namespace GfxRenderEngine
         void CreateFrameBuffersUp();
 
         void CreateDescriptorSet();
-        void CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout);
+        void CreateBloomPipelinesLayout(VkDescriptorSetLayout const& descriptorSetLayout);
         void CreateBloomPipelines();
         void CreateBloomDescriptorSetLayout();
 
         void BeginRenderPass(VK_FrameInfo const& frameInfo, VK_BloomRenderPass* renderpass, VK_BloomFrameBuffer* framebuffer);
-        void PutBarrier(const VK_FrameInfo& frameInfo);
         void SetViewPort(const VK_FrameInfo& frameInfo, VkExtent2D const& extent);
 
     private:
@@ -97,10 +96,9 @@ namespace GfxRenderEngine
         float m_FilterRadius;
 
         VkSampler m_Sampler;
-        std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetLayout;
-        VkDescriptorSet m_BloomDescriptorSet;
+        std::unique_ptr<VK_DescriptorSetLayout> m_BloomDescriptorSetsLayout;
+        VkDescriptorSet m_BloomDescriptorSets[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
 
-        VkImageView m_EmissionView;
         VkImageView m_EmissionMipmapViews[VK_RenderSystemBloom::NUMBER_OF_MIPMAPS];
         VK_Attachments m_AttachmentsDown;
         VK_Attachments m_AttachmentsUp;

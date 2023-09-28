@@ -24,7 +24,7 @@
 
 #version 450
 
-layout(set = 1, binding = 0) uniform sampler2D emissiveMap;
+layout(set = 0, binding = 0) uniform sampler2D emissiveMap;
 
 layout(location = 0)  in  vec2  fragUV;
 layout(location = 0) out  vec4  outEmissive;
@@ -33,7 +33,7 @@ layout(push_constant) uniform VK_PushConstantDataBloom
 {
     vec2 m_SrcResolution;
     float m_FilterRadius;
-    int m_ImageViewID;
+    float m_Padding;
 } push;
 
 void main()
@@ -46,17 +46,17 @@ void main()
     // d - e - f
     // g - h - i
     // === ('e' is the current texel) ===
-    vec3 a = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y + y),push.m_ImageViewID).rgb;
-    vec3 b = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y + y),push.m_ImageViewID).rgb;
-    vec3 c = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y + y),push.m_ImageViewID).rgb;
+    vec3 a = texture(emissiveMap, vec2(fragUV.x - x, fragUV.y + y)).rgb;
+    vec3 b = texture(emissiveMap, vec2(fragUV.x,     fragUV.y + y)).rgb;
+    vec3 c = texture(emissiveMap, vec2(fragUV.x + x, fragUV.y + y)).rgb;
     
-    vec3 d = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y),push.m_ImageViewID).rgb;
-    vec3 e = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y),push.m_ImageViewID).rgb;
-    vec3 f = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y),push.m_ImageViewID).rgb;
+    vec3 d = texture(emissiveMap, vec2(fragUV.x - x, fragUV.y)).rgb;
+    vec3 e = texture(emissiveMap, vec2(fragUV.x,     fragUV.y)).rgb;
+    vec3 f = texture(emissiveMap, vec2(fragUV.x + x, fragUV.y)).rgb;
     
-    vec3 g = textureLod(emissiveMap, vec2(fragUV.x - x, fragUV.y - y),push.m_ImageViewID).rgb;
-    vec3 h = textureLod(emissiveMap, vec2(fragUV.x,     fragUV.y - y),push.m_ImageViewID).rgb;
-    vec3 i = textureLod(emissiveMap, vec2(fragUV.x + x, fragUV.y - y),push.m_ImageViewID).rgb;
+    vec3 g = texture(emissiveMap, vec2(fragUV.x - x, fragUV.y - y)).rgb;
+    vec3 h = texture(emissiveMap, vec2(fragUV.x,     fragUV.y - y)).rgb;
+    vec3 i = texture(emissiveMap, vec2(fragUV.x + x, fragUV.y - y)).rgb;
     
     // Apply weighted distribution, by using a 3x3 tent filter:
     //  1   | 1 2 1 |
@@ -68,9 +68,4 @@ void main()
     outEmissive.rgb *= 1.0 / 16.0;
     
     outEmissive = vec4(outEmissive.r, outEmissive.g, outEmissive.b, 1.0);
-
-    ///outEmissive = textureLod(emissiveMap, fragUV, push.m_ImageViewID);
-    //if (push.m_ImageViewID == 3) outEmissive = vec4(fragUV.x, 0.0, 0.0, 1.0);
-    //if (push.m_ImageViewID == 2) outEmissive = vec4(0.0, fragUV.y, 0.0, 1.0);
-    //if (push.m_ImageViewID == 1) outEmissive = vec4(0.0, 0.0, fragUV.x, 1.0);
 }

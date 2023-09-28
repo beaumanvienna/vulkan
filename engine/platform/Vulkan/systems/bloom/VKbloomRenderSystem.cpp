@@ -32,7 +32,6 @@ namespace GfxRenderEngine
     VK_RenderSystemBloom::VK_RenderSystemBloom
     (
         VK_RenderPass const& renderPass3D,
-        VkDescriptorSetLayout& globalDescriptorSetLayout,
         VK_DescriptorPool& descriptorPool
     ) :
         m_RenderPass3D{renderPass3D},
@@ -50,15 +49,8 @@ namespace GfxRenderEngine
 
         // pipelines
         CreateBloomDescriptorSetLayout();
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts =
-        {
-            globalDescriptorSetLayout,
-            m_BloomDescriptorSetLayout->GetDescriptorSetLayout(),
-        };
-
         CreateDescriptorSet();  // use one descriptor set
-        CreateBloomPipelinesLayout(descriptorSetLayouts);
+        CreateBloomPipelinesLayout(m_BloomDescriptorSetsLayout->GetDescriptorSetLayout());
         CreateBloomPipelines(); // use two pipelines (up pipeline and down pipeline)
     }
 
@@ -66,7 +58,6 @@ namespace GfxRenderEngine
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_BloomPipelineLayout, nullptr);
 
-        vkDestroyImageView(VK_Core::m_Device->Device(), m_EmissionView, nullptr);
         for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
         {
             vkDestroyImageView(VK_Core::m_Device->Device(), m_EmissionMipmapViews[mipLevel], nullptr);
@@ -77,27 +68,6 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::CreateImageViews()
     {
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_RenderPass3D.GetImageEmission();
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_RenderPass3D.GetFormatEmission();
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(VK_Core::m_Device->Device(), &viewInfo, nullptr, &m_EmissionView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
-
         for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
         {
             VkImageViewCreateInfo viewInfo{};
@@ -129,63 +99,69 @@ namespace GfxRenderEngine
         VkFormat format = m_RenderPass3D.GetFormatEmission();
         VkExtent2D extent = m_RenderPass3D.GetExtent();
 
-        // iterate from mip 1 (first image to down sample into) to the last mip;
-        // the level 1 mip image and following mip levels have to be cleared
-        //
-        //  --> VK_ATTACHMENT_LOAD_OP_CLEAR
-        //
-        // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 1, 2, 3
-        // so that we downsample mip 0 into mip 1 (== render target), etc.
-        // (the g-buffer level zero image must not be cleared)
-        // before the pass: VK_IMAGE_LAYOUT_UNDEFINED
-        // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        for (uint mipLevel = 1; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
-        {
-            VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
-
-            VK_Attachments::Attachment attachment
+        { // down
+            // iterate from mip 1 (first image to down sample into) to the last mip;
+            // the level 1 mip image and following mip levels have to be cleared
+            //
+            //  --> VK_ATTACHMENT_LOAD_OP_CLEAR
+            //
+            // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 1, 2, 3
+            // so that we downsample mip 0 into mip 1 (== render target), etc.
+            // (the g-buffer level zero image must not be cleared)
+            // before the pass: VK_IMAGE_LAYOUT_UNDEFINED
+            // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            uint mipLevel = 1;
+            for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
             {
-                m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
-                format,                                     // VkFormat            m_Format;
-                extentMipLevel,                             // VkExtent2D          m_Extent;
-                VK_ATTACHMENT_LOAD_OP_CLEAR,                // VkAttachmentLoadOp  m_LoadOp;
-                VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
-                VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout       m_InitialLayout;
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
-            };
-            m_AttachmentsDown.Add(attachment);
+                VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
+
+                VK_Attachments::Attachment attachment
+                {
+                    m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
+                    format,                                     // VkFormat            m_Format;
+                    extentMipLevel,                             // VkExtent2D          m_Extent;
+                    VK_ATTACHMENT_LOAD_OP_CLEAR,                // VkAttachmentLoadOp  m_LoadOp;
+                    VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
+                    VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout       m_InitialLayout;
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
+                };
+                m_AttachmentsDown.Add(attachment);
+                ++mipLevel;
+            }
         }
 
-        // iterate from second last mip to mip 0;
-        // do not clear the images
-        //
-        //  --> VK_ATTACHMENT_LOAD_OP_LOAD
-        //
-        // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 2, 1, 0
-        // so that we upsample the last mip (mip BLOOM_MIP_LEVELS-1) into (mip BLOOM_MIP_LEVELS-2)
-        // before the pass: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        for (int mipLevel = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS - 2; mipLevel >= 0; --mipLevel)
-        {
-            // the g-buffer level zero image must not be cleared,
-
-            VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
-
-            VK_Attachments::Attachment attachment
+        { // up
+            // iterate from second last mip to mip 0;
+            // do not clear the images
+            //
+            //  --> VK_ATTACHMENT_LOAD_OP_LOAD
+            //
+            // e.g. if BLOOM_MIP_LEVELS == 4, then use mip level 2, 1, 0
+            // so that we upsample the last mip (mip BLOOM_MIP_LEVELS-1) into (mip BLOOM_MIP_LEVELS-2)
+            // before the pass: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            // after the pass VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            // during the pass: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            uint mipLevel = VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES - 1;
+            for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
             {
-                m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
-                format,                                     // VkFormat            m_Format;
-                extentMipLevel,                             // VkExtent2D          m_Extent;
-                VK_ATTACHMENT_LOAD_OP_LOAD,                 // VkAttachmentLoadOp  m_LoadOp;
-                VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_InitialLayout;
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
-            };
-            m_AttachmentsUp.Add(attachment);
+                VkExtent2D extentMipLevel{extent.width>>mipLevel, extent.height>>mipLevel};
+
+                VK_Attachments::Attachment attachment
+                {
+                    m_EmissionMipmapViews[mipLevel],            // VkImageView         m_ImageView;
+                    format,                                     // VkFormat            m_Format;
+                    extentMipLevel,                             // VkExtent2D          m_Extent;
+                    VK_ATTACHMENT_LOAD_OP_LOAD,                 // VkAttachmentLoadOp  m_LoadOp;
+                    VK_ATTACHMENT_STORE_OP_STORE,               // VkAttachmentStoreOp m_StoreOp;
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_InitialLayout;
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,   // VkImageLayout       m_FinalLayout;
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    // VkImageLayout       m_SubpassLayout;
+                };
+                m_AttachmentsUp.Add(attachment);
+                --mipLevel;
+            }
         }
     }
 
@@ -194,13 +170,13 @@ namespace GfxRenderEngine
         { // down
             // use any image from m_AttachmentsDown since they all have VK_ATTACHMENT_LOAD_OP_CLEAR,
             // e.g., m_attachmentsDown[0] -> mip level 1
-            VK_Attachments::Attachment& attachment = m_AttachmentsDown.Get(0); 
+            VK_Attachments::Attachment& attachment = m_AttachmentsDown[0]; 
             m_RenderPassDown = std::make_unique<VK_BloomRenderPass>(attachment);
         }
         { // up
             // use any image from m_AttachmentsUp since they all have VK_ATTACHMENT_LOAD_OP_CLEAR,
             // m_attachmentsUp[0] -> mip level 'NUMBER_OF_MIPMAPS - 2'
-            VK_Attachments::Attachment& attachment = m_AttachmentsUp.Get(0); 
+            VK_Attachments::Attachment& attachment = m_AttachmentsUp[0]; 
             m_RenderPassUp = std::make_unique<VK_BloomRenderPass>(attachment);
         }
     }
@@ -212,7 +188,7 @@ namespace GfxRenderEngine
         auto renderPass = m_RenderPassDown->Get();
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            auto attachment = m_AttachmentsDown[index]; // m_attachmentsDown[0] -> mip level 1
+            auto& attachment = m_AttachmentsDown[index]; // m_attachmentsDown[0] -> mip level 1
             m_FramebuffersDown[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
         }
     }
@@ -224,7 +200,7 @@ namespace GfxRenderEngine
         auto renderPass = m_RenderPassUp->Get();
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
-            auto attachment = m_AttachmentsUp[index]; // m_attachmentsUp[0] -> mip level [NUMBER_OF_MIPMAPS-2]
+            auto& attachment = m_AttachmentsUp[index]; // m_attachmentsUp[0] -> mip level [NUMBER_OF_MIPMAPS-2]
             m_FramebuffersUp[index] = std::make_unique<VK_BloomFrameBuffer>(attachment, renderPass);
         }
     }
@@ -235,7 +211,7 @@ namespace GfxRenderEngine
         // individual mip level will be accessed with 'textureLOD()'
         VK_DescriptorSetLayout::Builder descriptorSetLayoutBuilder;
         descriptorSetLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT); 
-        m_BloomDescriptorSetLayout = descriptorSetLayoutBuilder.Build();
+        m_BloomDescriptorSetsLayout = descriptorSetLayoutBuilder.Build();
     }
 
     void VK_RenderSystemBloom::CreateDescriptorSet()
@@ -266,20 +242,23 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
-        
-        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetLayout, m_DescriptorPool);
 
-        VkDescriptorImageInfo descriptorImageInfo {};
-        descriptorImageInfo.sampler     = m_Sampler;
-        descriptorImageInfo.imageView   = m_EmissionView;
-        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetsLayout, m_DescriptorPool);
 
-        descriptorWriter.WriteImage(0, descriptorImageInfo);
-        descriptorWriter.Build(m_BloomDescriptorSet);
+        for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
+        {
+            VkDescriptorImageInfo descriptorImageInfo {};
+            descriptorImageInfo.sampler     = m_Sampler;
+            descriptorImageInfo.imageView   = m_EmissionMipmapViews[mipLevel];
+            descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            descriptorWriter.WriteImage(0, descriptorImageInfo);
+            descriptorWriter.Build(m_BloomDescriptorSets[mipLevel]);
+        }
     }
 
     // up & down share the same layout
-    void VK_RenderSystemBloom::CreateBloomPipelinesLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayout)
+    void VK_RenderSystemBloom::CreateBloomPipelinesLayout(VkDescriptorSetLayout const& descriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -288,8 +267,8 @@ namespace GfxRenderEngine
 
         VkPipelineLayoutCreateInfo bloomPipelineLayoutInfo{};
         bloomPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        bloomPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayout.size());
-        bloomPipelineLayoutInfo.pSetLayouts = descriptorSetLayout.data();
+        bloomPipelineLayoutInfo.setLayoutCount = 1;
+        bloomPipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         bloomPipelineLayoutInfo.pushConstantRangeCount = 1;
         bloomPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &bloomPipelineLayoutInfo, nullptr, &m_BloomPipelineLayout) != VK_SUCCESS)
@@ -336,37 +315,6 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemBloom::PutBarrier(const VK_FrameInfo& frameInfo)
-    {
-        VkImageSubresourceRange subresourceRange = {};
-        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange.levelCount = 1;
-        subresourceRange.layerCount = 1;
-        {
-            VkImageMemoryBarrier imageMemoryBarrier{};
-            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageMemoryBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR;
-            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            imageMemoryBarrier.image = m_RenderPass3D.GetImageEmission();
-            imageMemoryBarrier.subresourceRange = subresourceRange;
-            vkCmdPipelineBarrier
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-                0,
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1, 
-                &imageMemoryBarrier
-            );
-        }
-    }
-    
     void VK_RenderSystemBloom::SetViewPort(const VK_FrameInfo& frameInfo, VkExtent2D const& extent)
     {
         VkViewport viewport{};
@@ -401,34 +349,13 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::RenderBloom(VK_FrameInfo const& frameInfo)
     {
-        PutBarrier(frameInfo);
-        { // common
-            std::vector<VkDescriptorSet> descriptorSets =
-            {
-                frameInfo.m_GlobalDescriptorSet,
-                m_BloomDescriptorSet
-            };
-
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_BloomPipelineLayout,      // VkPipelineLayout layout
-                0,                          // uint32_t         firstSet
-                descriptorSets.size(),      // uint32_t         descriptorSetCount
-                descriptorSets.data(),      // VkDescriptorSet* pDescriptorSets
-                0,                          // uint32_t         dynamicOffsetCount
-                nullptr                     // const uint32_t*  pDynamicOffsets
-            );
-        }
-
         // down -------------------------------------------------------------------------------------------------------------
         m_BloomPipelineDown->Bind(frameInfo.m_CommandBuffer);
 
         // sample from mip level 0 to mip level NUMBER_OF_MIPMAPS - 2
         // render into mip level 1 to mip level NUMBER_OF_MIPMAPS - 1
         // e.g. if NUMBER_OF_MIPMAPS == 4, then sample from 0, 1, 2 and render into 1, 2, 3
-        uint mipLevel = 0;  // see up loop
+        uint mipLevel = 0;
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassDown.get(), m_FramebuffersDown[index].get());
@@ -438,7 +365,6 @@ namespace GfxRenderEngine
 
             push.m_SrcResolution = glm::vec2(extent.width, extent.height);
             push.m_FilterRadius  = m_FilterRadius;
-            push.m_ImageViewID   = mipLevel;
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
@@ -447,6 +373,18 @@ namespace GfxRenderEngine
                 0,
                 sizeof(VK_PushConstantDataBloom),
                 &push);
+
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_BloomPipelineLayout,              // VkPipelineLayout layout
+                0,                                  // uint32_t         firstSet
+                1,                                  // uint32_t         descriptorSetCount
+                &m_BloomDescriptorSets[mipLevel],     // VkDescriptorSet* pDescriptorSets
+                0,                                  // uint32_t         dynamicOffsetCount
+                nullptr                             // const uint32_t*  pDynamicOffsets
+            );
 
             vkCmdDraw
             (
@@ -476,7 +414,6 @@ namespace GfxRenderEngine
 
             push.m_SrcResolution = glm::vec2(extent.width, extent.height);
             push.m_FilterRadius  = m_FilterRadius;
-            push.m_ImageViewID   = mipLevel;
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
@@ -485,6 +422,18 @@ namespace GfxRenderEngine
                 0,
                 sizeof(VK_PushConstantDataBloom),
                 &push);
+
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_BloomPipelineLayout,              // VkPipelineLayout layout
+                0,                                  // uint32_t         firstSet
+                1,                                  // uint32_t         descriptorSetCount
+                &m_BloomDescriptorSets[mipLevel],     // VkDescriptorSet* pDescriptorSets
+                0,                                  // uint32_t         dynamicOffsetCount
+                nullptr                             // const uint32_t*  pDynamicOffsets
+            );
 
             vkCmdDraw
             (

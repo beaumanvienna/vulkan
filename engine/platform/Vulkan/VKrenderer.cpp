@@ -318,7 +318,6 @@ namespace GfxRenderEngine
         m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>
         (
             *m_RenderPass,
-            m_GlobalDescriptorSetLayout,
             *m_DescriptorPool
         );
     }
