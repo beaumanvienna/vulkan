@@ -86,7 +86,7 @@ namespace GfxRenderEngine
 
     public:
 
-        VK_RenderPass(VkExtent2D windowExtent, VK_SwapChain* swapChain);
+        VK_RenderPass(VK_SwapChain* swapChain);
         ~VK_RenderPass();
 
         VK_RenderPass(const VK_RenderPass &) = delete;

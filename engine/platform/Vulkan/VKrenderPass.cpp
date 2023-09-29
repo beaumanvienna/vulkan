@@ -33,8 +33,8 @@
 namespace GfxRenderEngine
 {
 
-    VK_RenderPass::VK_RenderPass(VkExtent2D windowExtent, VK_SwapChain* swapChain)
-        : m_RenderPassExtent{windowExtent}, m_SwapChain{swapChain}
+    VK_RenderPass::VK_RenderPass(VK_SwapChain* swapChain)
+        : m_RenderPassExtent{swapChain->GetSwapChainExtent()}, m_SwapChain{swapChain}
     {
         m_Device = VK_Core::m_Device;
 
@@ -93,14 +93,13 @@ namespace GfxRenderEngine
 
     void VK_RenderPass::CreateColorAttachmentResources()
     {
-        VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
         VkFormat format = m_SwapChain->GetSwapChainImageFormat();
 
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = swapChainExtent.width;
-        imageInfo.extent.height = swapChainExtent.height;
+        imageInfo.extent.width = m_RenderPassExtent.width;
+        imageInfo.extent.height = m_RenderPassExtent.height;
         imageInfo.extent.depth = 1;
         imageInfo.mipLevels = 1;
         imageInfo.arrayLayers = 1;
@@ -139,13 +138,12 @@ namespace GfxRenderEngine
     {
         VkFormat depthFormat = m_Device->FindDepthFormat();
         m_DepthFormat = depthFormat;
-        VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
 
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = swapChainExtent.width;
-        imageInfo.extent.height = swapChainExtent.height;
+        imageInfo.extent.width = m_RenderPassExtent.width;
+        imageInfo.extent.height = m_RenderPassExtent.height;
         imageInfo.extent.depth = 1;
         imageInfo.mipLevels = 1;
         imageInfo.arrayLayers = 1;
@@ -196,14 +194,13 @@ namespace GfxRenderEngine
                 m_GBufferEmissionView
             };
 
-            VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_3DRenderPass;
             framebufferInfo.attachmentCount = static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
+            framebufferInfo.width = m_RenderPassExtent.width;
+            framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(
@@ -229,14 +226,13 @@ namespace GfxRenderEngine
                 m_GBufferEmissionView
             };
 
-            VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_PostProcessingRenderPass;
             framebufferInfo.attachmentCount = static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
+            framebufferInfo.width = m_RenderPassExtent.width;
+            framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(
@@ -260,14 +256,13 @@ namespace GfxRenderEngine
                 m_SwapChain->GetImageView(i)
             };
 
-            VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_GUIRenderPass;
             framebufferInfo.attachmentCount = static_cast<uint>(RenderTargetsGUI::NUMBER_OF_ATTACHMENTS);
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
+            framebufferInfo.width = m_RenderPassExtent.width;
+            framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(
@@ -283,14 +278,12 @@ namespace GfxRenderEngine
 
     void VK_RenderPass::CreateGBufferImages()
     {
-        VkExtent2D swapChainExtent = m_SwapChain->GetSwapChainExtent();
-
         {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.width = m_RenderPassExtent.width;
+            imageInfo.extent.height = m_RenderPassExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -313,8 +306,8 @@ namespace GfxRenderEngine
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.width = m_RenderPassExtent.width;
+            imageInfo.extent.height = m_RenderPassExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -337,8 +330,8 @@ namespace GfxRenderEngine
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.width = m_RenderPassExtent.width;
+            imageInfo.extent.height = m_RenderPassExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -361,8 +354,8 @@ namespace GfxRenderEngine
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.width = m_RenderPassExtent.width;
+            imageInfo.extent.height = m_RenderPassExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -385,8 +378,8 @@ namespace GfxRenderEngine
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
+            imageInfo.extent.width = m_RenderPassExtent.width;
+            imageInfo.extent.height = m_RenderPassExtent.height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS;
             imageInfo.arrayLayers = 1;

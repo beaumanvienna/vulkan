@@ -38,7 +38,7 @@ namespace GfxRenderEngine
         m_FilterRadius{0.001},
         m_DescriptorPool{descriptorPool}
     {
-        m_ExtendMipLevel0 = m_RenderPass3D.GetExtent();
+        m_ExtentMipLevel0 = m_RenderPass3D.GetExtent();
 
         // render pass and frame buffers
         CreateImageViews();
@@ -359,7 +359,7 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassDown.get(), m_FramebuffersDown[index].get());
-            VkExtent2D extent{m_ExtendMipLevel0.width >> (mipLevel+1), m_ExtendMipLevel0.height >> (mipLevel+1)};
+            VkExtent2D extent{m_ExtentMipLevel0.width >> (mipLevel+1), m_ExtentMipLevel0.height >> (mipLevel+1)};
             SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 
@@ -408,7 +408,7 @@ namespace GfxRenderEngine
         for (uint index = 0; index < VK_RenderSystemBloom::NUMBER_OF_DOWNSAMPLED_IMAGES; ++index)
         {
             BeginRenderPass(frameInfo, m_RenderPassUp.get(), m_FramebuffersUp[index].get());
-            VkExtent2D extent{m_ExtendMipLevel0.width >> (mipLevel-1), m_ExtendMipLevel0.height >> (mipLevel-1)};
+            VkExtent2D extent{m_ExtentMipLevel0.width >> (mipLevel-1), m_ExtentMipLevel0.height >> (mipLevel-1)};
             SetViewPort(frameInfo, extent);
             VK_PushConstantDataBloom push{};
 

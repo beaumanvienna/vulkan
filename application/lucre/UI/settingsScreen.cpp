@@ -164,7 +164,8 @@ namespace LucreApp
         generalSettings->Add(new ItemHeader(ge->T("General settings for Lucre")));
 
         // -------- toggle fullscreen --------
-        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
+        m_EnableFullscreen = Engine::m_Engine->IsFullscreen();
+        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
         vToggleFullscreen->OnClick.Handle(this, &SettingsScreen::OnFullscreenToggle);
 
         // -------- system sounds --------

@@ -245,6 +245,9 @@ namespace LucreApp
         m_Renderer->NextSubpass();
         m_Renderer->NextSubpass();
 
+        // post processing
+        m_Renderer->PostProcessingRenderpass();
+
         // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
         Draw();

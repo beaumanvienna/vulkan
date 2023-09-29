@@ -80,6 +80,7 @@ namespace LucreApp
         SpriteSheet m_SpritesheetBack;
 
         int  m_GlobalVolume;
+        bool m_EnableFullscreen;
         bool m_GlobalVolumeEnabled;
         std::string m_AudioDevice;
 

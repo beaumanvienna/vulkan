@@ -401,10 +401,10 @@ namespace GfxRenderEngine
 
     void VK_Renderer::RecreateSwapChain()
     {
-        auto extent = m_Window->GetExtend();
+        auto extent = m_Window->GetExtent();
         while (extent.width == 0 || extent.height == 0)
         {
-            extent = m_Window->GetExtend();
+            extent = m_Window->GetExtent();
             glfwWaitEvents();
         }
 
@@ -429,8 +429,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::RecreateRenderpass()
     {
-        auto extent = m_Window->GetExtend();
-        m_RenderPass = std::make_unique<VK_RenderPass>(extent, m_SwapChain.get());
+        m_RenderPass = std::make_unique<VK_RenderPass>(m_SwapChain.get());
     }
 
     void VK_Renderer::RecreateShadowMaps()
@@ -993,11 +992,17 @@ namespace GfxRenderEngine
 
     void VK_Renderer::DrawWithTransform(const Sprite& sprite, const glm::mat4& transform)
     {
-        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, m_GUIViewProjectionMatrix * transform);
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, m_GUIViewProjectionMatrix * transform);
+        }
     }
 
     void VK_Renderer::Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID)
     {
-        m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color, textureID);
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color, textureID);
+        }
     }
 }

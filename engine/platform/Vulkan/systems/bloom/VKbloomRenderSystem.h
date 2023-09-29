@@ -92,7 +92,7 @@ namespace GfxRenderEngine
         VK_RenderPass const& m_RenderPass3D; // external 3D pass
         VkPipelineLayout m_BloomPipelineLayout;
 
-        VkExtent2D m_ExtendMipLevel0;
+        VkExtent2D m_ExtentMipLevel0;
         float m_FilterRadius;
 
         VkSampler m_Sampler;
