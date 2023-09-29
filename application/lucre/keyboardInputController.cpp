@@ -32,7 +32,11 @@ namespace LucreApp
 
     KeyboardInputController::KeyboardInputController(const KeyboardInputControllerSpec& spec)
         : m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
-    {}
+    {
+        m_MomentumX.Set(-1.f , 1.f, 1.f, 2.f);
+        m_MomentumY.Set(-1.f , 1.f, 1.f, 2.f);
+        m_MomentumZ.Set(-1.f , 1.f, 1.f, 2.f);
+    }
 
     void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
     {
@@ -57,14 +61,21 @@ namespace LucreApp
         const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
         const glm::vec3 upDir{0.f, -1.f, 0.f};
 
-        glm::vec3 moveDir{0.f};
-        if (Input::IsKeyPressed(MOVE_FORWARD))  moveDir -= forwardDir;
-        if (Input::IsKeyPressed(MOVE_BACKWARD)) moveDir += forwardDir;
-        if (Input::IsKeyPressed(MOVE_RIGHT))    moveDir += rightDir;
-        if (Input::IsKeyPressed(MOVE_LEFT))     moveDir -= rightDir;
-        if (Input::IsKeyPressed(MOVE_UP))       moveDir -= upDir;
-        if (Input::IsKeyPressed(MOVE_DOWN))     moveDir += upDir;
+        float x = 0.f;
+        float y = 0.f;
+        float z = 0.f;
+        if (Input::IsKeyPressed(MOVE_FORWARD))  z += 1.f;
+        if (Input::IsKeyPressed(MOVE_BACKWARD)) z -= 1.f;
+        if (Input::IsKeyPressed(MOVE_RIGHT))    x += 1.f;
+        if (Input::IsKeyPressed(MOVE_LEFT))     x -= 1.f;
+        if (Input::IsKeyPressed(MOVE_UP))       y += 1.f;
+        if (Input::IsKeyPressed(MOVE_DOWN))     y -= 1.f;
 
+        glm::vec3 moveDir{0.f};
+        moveDir -= (forwardDir * m_MomentumZ.Get(z, timestep));
+        moveDir += (rightDir * m_MomentumX.Get(x, timestep));
+        moveDir -= upDir * m_MomentumY.Get(y, timestep);
+        
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
             transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * (float)timestep * glm::normalize(moveDir));

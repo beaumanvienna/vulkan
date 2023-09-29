@@ -28,6 +28,7 @@
 #include "platform/keyCodes.h"
 #include "scene/scene.h"
 #include "auxiliary/timestep.h"
+#include "momentum.h"
 
 namespace LucreApp
 {
@@ -63,6 +64,9 @@ namespace LucreApp
 
         float m_MoveSpeed;
         float m_LookSpeed;
+        Momentum m_MomentumX;
+        Momentum m_MomentumY;
+        Momentum m_MomentumZ;
 
     };
 }
