@@ -33,9 +33,10 @@ namespace LucreApp
     KeyboardInputController::KeyboardInputController(const KeyboardInputControllerSpec& spec)
         : m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
     {
-        m_MomentumX.Set(-1.f , 1.f, 1.f, 2.f);
-        m_MomentumY.Set(-1.f , 1.f, 1.f, 2.f);
-        m_MomentumZ.Set(-1.f , 1.f, 1.f, 2.f);
+          
+        m_MomentumX.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
+        m_MomentumY.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
+        m_MomentumZ.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
     }
 
     void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
@@ -72,13 +73,13 @@ namespace LucreApp
         if (Input::IsKeyPressed(MOVE_DOWN))     y -= 1.f;
 
         glm::vec3 moveDir{0.f};
-        moveDir -= (forwardDir * m_MomentumZ.Get(z, timestep));
-        moveDir += (rightDir * m_MomentumX.Get(x, timestep));
-        moveDir -= upDir * m_MomentumY.Get(y, timestep);
+        moveDir -= forwardDir * m_MomentumZ.Get(z, timestep);
+        moveDir += rightDir   * m_MomentumX.Get(x, timestep);
+        moveDir -= upDir      * m_MomentumY.Get(y, timestep);
         
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
-            transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * (float)timestep * glm::normalize(moveDir));
+            transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * timestep * moveDir);
         }
     }
 }

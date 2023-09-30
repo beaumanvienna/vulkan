@@ -33,41 +33,56 @@ namespace GfxRenderEngine
     {
     public:
         
-        void Set(float minValue, float maxValue, float attack, float decay)
+        void Set(float absoluteMaxValue, float attackTime, float decayTime, float falloff)
         {
-            m_MinValue = minValue;
-            m_MaxValue = maxValue;
-            m_Attack   = attack;
-            m_Decay    = decay;
+            m_AbsoluteMaxValue          = absoluteMaxValue;
+            m_AttackTime                = attackTime;
+            m_DecayTime                 = decayTime;
+            m_Falloff                   = falloff;
+            
+
+            m_SpeedNormalized           = 0.f; // range [-1.f, 1.f]
+            m_DecayTimeNormalizedActual = 1.f; // range [ 0.f, 1.f] during decay
+            m_FalloffAtOne              = std::exp(-m_Falloff);                   
         }
 
         float Get(float inputValue, Timestep const& timestep)
         {
             if (inputValue == 0.f) 
             {
-                if (m_Momentum > 0.f)
+                const float coastOffset = 0.01f;
+                float speedNormalized = std::exp( -m_Falloff * m_DecayTimeNormalizedActual ) + coastOffset;
+
+                if (m_SpeedNormalized > 0.f)
                 {
-                    m_Momentum = std::max(0.f, m_Momentum - m_Decay * timestep);
+                    m_SpeedNormalized = speedNormalized;
                 }
                 else
                 {
-                    m_Momentum = std::min(0.f, m_Momentum + m_Decay * timestep);
+                    m_SpeedNormalized = -speedNormalized;
                 }
+                if (std::abs(m_SpeedNormalized) <= (coastOffset + m_FalloffAtOne)) m_SpeedNormalized = 0.f;
+                m_DecayTimeNormalizedActual = std::min(1.f, m_DecayTimeNormalizedActual + timestep/(m_DecayTime)); // [0.f, 1.f]
             }
             else
             {
-                m_Momentum = std::clamp(m_Momentum + inputValue * timestep * m_Attack, m_MinValue, m_MaxValue);
+                m_SpeedNormalized = std::clamp(m_SpeedNormalized + inputValue * timestep * m_AttackTime, -1.f, 1.f);
+                m_DecayTimeNormalizedActual = 1.f - std::abs(m_SpeedNormalized);
             }
-            return m_Momentum;
+            
+            float speed = m_SpeedNormalized * m_AbsoluteMaxValue;
+            return speed;
         }
 
     private: 
 
-        float m_MinValue;
-        float m_MaxValue;
-        float m_Attack;
-        float m_Decay;
-    
-        float m_Momentum;
+        float m_AbsoluteMaxValue;
+        float m_AttackTime;
+        float m_DecayTime;
+        float m_Falloff;
+        float m_FalloffAtOne;
+
+        float m_SpeedNormalized;
+        float m_DecayTimeNormalizedActual;
     };
 }
