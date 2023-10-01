@@ -29,6 +29,7 @@
 #include "scenes/mainScene.h"
 #include "scenes/cutScene.h"
 #include "scenes/beachScene.h"
+#include "scenes/nightScene.h"
 #include "scenes/settingsScene.h"
 
 #define MULTI_THREADED
@@ -51,7 +52,7 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        SetNextState(State::BEACH);
+        SetNextState(State::NIGHT);
     }
 
     void GameState::Stop()
@@ -82,6 +83,11 @@ namespace LucreApp
             case State::BEACH:
             {
                 str = "State::BEACH";
+                break;
+            }
+            case State::NIGHT:
+            {
+                str = "State::NIGHT";
                 break;
             }
             case State::SETTINGS:
@@ -127,6 +133,15 @@ namespace LucreApp
                 break;
             }
             case State::BEACH:
+            {
+                if (GetScene()->IsFinished())
+                {
+                    // game over
+                    Engine::m_Engine->Shutdown();
+                }
+                break;
+            }
+            case State::NIGHT:
             {
                 if (GetScene()->IsFinished())
                 {
@@ -244,6 +259,24 @@ namespace LucreApp
                 #ifdef MULTI_THREADED
                 );
                 loadBeachSceneThread.detach();
+                #endif
+                break;
+            }
+            case State::NIGHT:
+            {
+                #ifdef MULTI_THREADED
+                std::thread loadNightSceneThread([=]()
+                #endif
+                {
+                    auto scenePtr = std::make_shared<NightScene>("night.scene", "application/lucre/sceneDescriptions/night.scene");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                }
+                #ifdef MULTI_THREADED
+                );
+                loadNightSceneThread.detach();
                 #endif
                 break;
             }

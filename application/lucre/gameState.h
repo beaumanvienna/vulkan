@@ -44,6 +44,7 @@ namespace LucreApp
             // insert game levels here
             MAIN,
             BEACH,
+            NIGHT,
             MAX_STATES
         };
 

@@ -1,0 +1,60 @@
+# Lucre scene description file
+glTF-files:
+  application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+    translation: [0.776580513, 1.87029123, -0.898012221]
+    scale: [0.499998391, 0.499991238, 0.499978572]
+    rotation: [1.5707885, -0.0387142152, 1.52665041e-06]
+  application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+    translation: [1.60750818, 1.62593806, -0.92102474]
+    scale: [0.25, 0.249997795, 0.249997795]
+    rotation: [1.57079601, -0, 0]
+  application/lucre/models/emissive/emissiveCube.gltf:
+    translation: [-2.7844615, 2.32601213, -1.66519284]
+    scale: [0.49999997, 0.5, 0.49999997]
+    rotation: [0, 1.57045102, 0]
+  application/lucre/models/emissive/emissiveCubeWithTexture.gltf:
+    translation: [-1.60500836, 2.05293226, -2.25813103]
+    scale: [0.499999911, 0.5, 0.499999911]
+    rotation: [0, 1.57045102, 0]
+  application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf:
+    translation: [1.55550098, 4, -4.13538647]
+    scale: [0.00999977719, 0.0100000827, 0.0100000696]
+    rotation: [-0.888631523, -0.571253061, -0.166815549]
+  application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf:
+    translation: [6, 6.26463461, -14.157198]
+    scale: [0.00999933574, 0.00999996718, 0.00999993272]
+    rotation: [-1.11027575, -0.546990991, 0.165967464]
+  application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
+    translation: [-0.765511096, 1.2574358, -3.5]
+    scale: [0.469675392, 0.5, 0.5]
+    rotation: [-1.5706929, 1.54486609, -3.14149141]
+  application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
+    translation: [-0.765511096, 1.2574358, -2.5]
+    scale: [0.521573305, 0.5, 0.5]
+    rotation: [-1.5706929, 1.54486609, -3.14149141]
+  application/lucre/models/external_3D_files/night/dune/dune.gltf:
+    translation: [0, 0, 0]
+    scale: [1, 1, 1]
+    rotation: [0, 0, 0]
+  application/lucre/models/external_3D_files/night/moon.gltf:
+    translation: [6.13224936, 6.75374937, -20.4115868]
+    scale: [0.99982506, 0.00999834295, 0.999930561]
+    rotation: [1.57079768, 2.20537186e-06, 2.27373675e-13]
+  application/lucre/models/external_3D_files/pirateship/pirateship.gltf:
+    translation: [2.74061155, 0.0999100804, -10.5124426]
+    scale: [0.999999821, 1, 0.999999821]
+    rotation: [8.23974844e-08, 1.0256424, 7.82850194e-08]
+  application/lucre/models/external_3D_files/rock01/rock01.gltf:
+    translation: [-18.6503143, -0.0689417124, -18.4104939]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/rock01/rock02.gltf:
+    translation: [18.6503143, -0.0689999983, -18.4104939]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
+  application/lucre/models/surface/surface.gltf:
+    translation: [-0.899999976, 0.263500631, -3]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
+prefabs:
+  - application/lucre/prefabs/duck.prefab
