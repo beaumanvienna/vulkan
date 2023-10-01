@@ -131,31 +131,23 @@ namespace LucreApp
             {
                 bool found = false;
                 {
-                    auto view = registry.view<PbrEmissiveTag>();
-                    for (auto entity : view)
+                    
+                    if (registry.all_of<PbrEmissiveTag>((entt::entity)m_SelectedGameObject))
                     {
-                        if (entity == (entt::entity)m_SelectedGameObject)
-                        {
-                            found = true;
-                            auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(entity);
-                            pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
-                        }
+                        found = true;
+                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>((entt::entity)m_SelectedGameObject);
+                        pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
                 if (!found)
                 {
-                    auto view = registry.view<PbrEmissiveTextureTag>();
-                    for (auto entity : view)
+                    if (registry.all_of<PbrEmissiveTextureTag>((entt::entity)m_SelectedGameObject))
                     {
-                        if (entity == (entt::entity)m_SelectedGameObject)
-                        {
-                            auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(entity);
-                            pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
-                        }
+                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>((entt::entity)m_SelectedGameObject);
+                        pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
             }
-
 
             auto& transform = registry.get<TransformComponent>((entt::entity)m_SelectedGameObject);
             glm::mat4 mat4 = transform.GetMat4();
