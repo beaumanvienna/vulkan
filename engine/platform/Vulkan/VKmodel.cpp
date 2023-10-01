@@ -225,12 +225,17 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& primitive : m_PrimitivesEmissive)
         {
 
             VK_PushConstantDataPbrEmissive push{};
+
+            if (emissiveStrength)
+            {
+                primitive.m_PbrEmissiveMaterial.m_EmissiveStrength = emissiveStrength;
+            }
 
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
@@ -271,7 +276,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& primitive : m_PrimitivesEmissiveTexture)
         {
@@ -288,6 +293,12 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
+
+            if (emissiveStrength)
+            {
+                primitive.m_PbrEmissiveTextureMaterial.m_EmissiveStrength = emissiveStrength;
+            }
+
             VK_PushConstantDataPbrEmissiveTexture push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();

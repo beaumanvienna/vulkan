@@ -116,12 +116,13 @@ namespace GfxRenderEngine
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
+            auto& mesh      = view.get<MeshComponent>(entity);
+            auto& tag       = view.get<PbrEmissiveTag>(entity);
 
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissive(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissive(frameInfo, transform, m_PipelineLayout, tag.m_EmissiveStrength);
             }
         }
     }

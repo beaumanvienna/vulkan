@@ -156,12 +156,12 @@ namespace GfxRenderEngine
 
     struct PbrEmissiveTag
     {
-        uint m_Tag;
+        float m_EmissiveStrength = 0.f;
     };
 
     struct PbrEmissiveTextureTag
     {
-        uint m_Tag;
+        float m_EmissiveStrength = 0.f;
     };
 
     struct PbrNoMapTag

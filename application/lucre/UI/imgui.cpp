@@ -33,7 +33,7 @@
 
 namespace LucreApp
 {
-    int   ImGUI::m_SelectedGameObject;
+    int   ImGUI::m_SelectedGameObject = 0;
     float ImGUI::m_Roughness = 0.1f;
     bool  ImGUI::m_UseRoughness = false;
     float ImGUI::m_Metallic = 0.5f;
@@ -48,6 +48,8 @@ namespace LucreApp
     bool  ImGUI::m_UseRotate = false;
     bool  ImGUI::m_UseTranslate = false;
     bool  ImGUI::m_ShowDebugShadowMap = false;
+    bool  ImGUI::m_UseEmissiveStrength = false;
+    float ImGUI::m_EmissiveStrength = 0.35;
     entt::entity ImGUI::m_MaxGameObjects = (entt::entity)0;
 
     void ImGUI::DebugWindow()
@@ -105,6 +107,11 @@ namespace LucreApp
         ImGui::SameLine();
         ImGui::SliderFloat("ambient light", &m_AmbientLightIntensity, 0.0f, 1.0f);
 
+        // emission strength
+        ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
+        ImGui::SameLine();
+        ImGui::SliderFloat("emissive strength", &m_EmissiveStrength, 0.0f, 1.0f);
+
         // point light intensity
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
 
@@ -119,6 +126,36 @@ namespace LucreApp
 
             auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
             auto& viewMatrix = camera.GetViewMatrix();
+
+            if (m_UseEmissiveStrength)
+            {
+                bool found = false;
+                {
+                    auto view = registry.view<PbrEmissiveTag>();
+                    for (auto entity : view)
+                    {
+                        if (entity == (entt::entity)m_SelectedGameObject)
+                        {
+                            found = true;
+                            auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(entity);
+                            pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
+                        }
+                    }
+                }
+                if (!found)
+                {
+                    auto view = registry.view<PbrEmissiveTextureTag>();
+                    for (auto entity : view)
+                    {
+                        if (entity == (entt::entity)m_SelectedGameObject)
+                        {
+                            auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(entity);
+                            pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
+                        }
+                    }
+                }
+            }
+
 
             auto& transform = registry.get<TransformComponent>((entt::entity)m_SelectedGameObject);
             glm::mat4 mat4 = transform.GetMat4();

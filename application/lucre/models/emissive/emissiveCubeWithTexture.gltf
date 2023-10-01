@@ -15,7 +15,7 @@
     "nodes":[
         {
             "mesh":0,
-            "name":"CubeTexture"
+            "name":"Emissive Cube with Texture"
         }
     ],
     "materials":[

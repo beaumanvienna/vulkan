@@ -18,7 +18,7 @@
     "nodes":[
         {
             "mesh":0,
-            "name":"Cube"
+            "name":"Emissive Cube"
         }
     ],
     "materials":[
