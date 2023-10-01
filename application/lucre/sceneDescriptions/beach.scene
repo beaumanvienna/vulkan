@@ -1,12 +1,12 @@
 # Lucre scene description file
 glTF-files:
   application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
-    translation: [0.182440415, 1.87029076, -0.92102474]
-    scale: [0.499999881, 0.499969542, 0.499959618]
-    rotation: [1.5707885, -0.0387133062, 9.63709681e-07]
+    translation: [0.776580513, 1.87029123, -0.898012221]
+    scale: [0.499998391, 0.499991238, 0.499978572]
+    rotation: [1.5707885, -0.0387142152, 1.52665041e-06]
   application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
-    translation: [0.899999976, 1.62593806, -0.92102474]
-    scale: [0.25, 0.25, 0.25]
+    translation: [1.60750818, 1.62593806, -0.92102474]
+    scale: [0.25, 0.249997795, 0.249997795]
     rotation: [1.57079601, -0, 0]
   application/lucre/models/emissive/emissiveCube.gltf:
     translation: [-2.7844615, 2.32601213, -1.66519284]

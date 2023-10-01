@@ -261,7 +261,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-0.4f, 2.0f, 2.30515f});
+        cameraTransform.SetTranslation({-0.8f, 2.0f, 2.30515f});
         cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
 
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
