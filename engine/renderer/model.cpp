@@ -109,7 +109,7 @@ namespace GfxRenderEngine
                 buffer = (uchar*)imageData.data();
                 uchar* rgba = buffer;
                 uchar* rgb = &glTFImage.image[0];
-                for (uint j = 0; j < glTFImage.width * glTFImage.height; ++j)
+                for (int j = 0; j < glTFImage.width * glTFImage.height; ++j)
                 {
                     memcpy(rgba, rgb, sizeof(uchar) * 3);
                     rgba += 4;
@@ -264,7 +264,10 @@ namespace GfxRenderEngine
             glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             if (glTFPrimitive.material != -1)
             {
-                ASSERT(glTFPrimitive.material < m_Materials.size());
+                if (!(static_cast<size_t>(glTFPrimitive.material) < m_Materials.size()))
+                {
+                    LOG_CORE_CRITICAL("LoadVertexDataGLTF: glTFPrimitive.material must be less than m_Materials.size()");
+                }
                 diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
             }
             // Vertices
@@ -426,7 +429,10 @@ namespace GfxRenderEngine
 
             return;
         }
-        ASSERT(materialIndex < m_Materials.size());
+        if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
+        {
+            LOG_CORE_CRITICAL("LoadVertexDataGLTF: materialIndex must be less than m_Materials.size()");
+        }
         auto& material = m_Materials[materialIndex];
 
         uint pbrFeatures = material.m_Features & (
@@ -614,8 +620,8 @@ namespace GfxRenderEngine
                 //this scene has multiple nodes -> create a group node
                 auto entity = registry.create();
                 if (m_GameObject == entt::null) m_GameObject = entity;
-                TransformComponent transform{};
-                registry.emplace<TransformComponent>(entity, transform);
+                TransformComponent l_transform{};
+                registry.emplace<TransformComponent>(entity, l_transform);
 
                 auto shortName = scene.name + "::root";
                 auto longName = m_Filepath + std::string("::") + scene.name + std::string("::root");
@@ -849,7 +855,7 @@ namespace GfxRenderEngine
             {
                 std::vector<uint> indices;
                 indices.resize(vertexCount);
-                for (int i = 0; i < vertexCount; i++)
+                for (uint i = 0; i < vertexCount; i++)
                 {
                     indices[i] = i;
                 }
@@ -947,16 +953,16 @@ namespace GfxRenderEngine
         Vertex vertex[4];
 
         // index 0, 0.0f,  1.0f
-        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f}};
+        vertex[0] = {/*pos*/ {-1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
 
         // index 1, 1.0f,  1.0f
-        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
+        vertex[1] = {/*pos*/ { 1.0f,  1.0f, 0.0f}, /*col*/ {0.0f, 0.1f, 0.9f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y}, amplification, unlit, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
 
         // index 2, 1.0f,  0.0f
-        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
+        vertex[2] = {/*pos*/ { 1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
 
         // index 3, 0.0f,  0.0f
-        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ {0.0f, 0.0f, 0.0f} };
+        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f}, /*col*/ {0.0f, 0.9f, 0.1f}, /*norm*/ {0.0f, 0.0f, 1.0f}, /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y}, amplification, unlit, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
 
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 
@@ -980,16 +986,16 @@ namespace GfxRenderEngine
         Vertex vertex[4]
         {
             // index 0, 0.0f,  1.0f
-            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
+            {/*pos*/ {-1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)},
 
             // index 1, 1.0f,  1.0f
-            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
+            {/*pos*/ { 1.0f,  1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 1.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)},
 
             // index 2, 1.0f,  0.0f
-            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}},
+            {/*pos*/ { 1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {1.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)},
 
             // index 3, 0.0f,  0.0f
-            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ {0.0f, 0.0f, 0.0f}}
+            {/*pos*/ {-1.0f, -1.0f, 0.0f}, {color.x, color.y, color.z}, /*norm*/ {0.0f, 0.0f, -1.0f}, /*uv*/ {0.0f, 0.0f}, 1.0f /*amplification*/, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)}
         };
         for (int i = 0; i < 4; i++) m_Vertices.push_back(vertex[i]);
 
@@ -1060,7 +1066,7 @@ namespace GfxRenderEngine
         {
             for (uint i = 0; i < VERTEX_COUNT; i++)
             {
-                Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /* amplification */0.0f, 0 /*unlit*/};
+                Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /* amplification */0.0f, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
                 m_Vertices.push_back(vertex);
             }    
         }

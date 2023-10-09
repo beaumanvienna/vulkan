@@ -154,6 +154,7 @@ namespace GfxRenderEngine
         else
         {
             LOG_APP_CRITICAL("unsupported layout transition!");
+            return;
         }
 
         vkCmdPipelineBarrier

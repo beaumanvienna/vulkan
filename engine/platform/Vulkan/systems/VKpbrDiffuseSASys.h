@@ -22,16 +22,50 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    template <typename Type, typename... Rest>
-    void HashCombine(std::size_t& seed, const Type& v, const Rest&... rest)
+    struct VK_PushConstantDataPbrDiffuseSA
     {
-        seed ^= std::hash<Type>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        (HashCombine(seed, rest), ...);
-    }
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
+    };
+
+    class VK_RenderSystemPbrDiffuseSA
+    {
+
+    public:
+
+        VK_RenderSystemPbrDiffuseSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrDiffuseSA();
+
+        VK_RenderSystemPbrDiffuseSA(const VK_RenderSystemPbrDiffuseSA&) = delete;
+        VK_RenderSystemPbrDiffuseSA& operator=(const VK_RenderSystemPbrDiffuseSA&) = delete;
+
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+
+    private:
+
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
+    };
 }

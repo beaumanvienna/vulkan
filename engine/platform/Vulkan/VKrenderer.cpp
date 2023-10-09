@@ -60,7 +60,7 @@ namespace GfxRenderEngine
         {
             m_ShadowUniformBuffers0[i] = std::make_unique<VK_Buffer>
             (
-                *m_Device, sizeof(ShadowUniformBuffer),
+                sizeof(ShadowUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -73,7 +73,7 @@ namespace GfxRenderEngine
         {
             m_ShadowUniformBuffers1[i] = std::make_unique<VK_Buffer>
             (
-                *m_Device, sizeof(ShadowUniformBuffer),
+                sizeof(ShadowUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -86,7 +86,7 @@ namespace GfxRenderEngine
         {
             m_UniformBuffers[i] = std::make_unique<VK_Buffer>
             (
-                *m_Device, sizeof(GlobalUniformBuffer),
+                sizeof(GlobalUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -952,6 +952,8 @@ namespace GfxRenderEngine
                 "pbrNoMap.frag",
                 "pbrDiffuse.vert",
                 "pbrDiffuse.frag",
+                "pbrDiffuseSA.vert",
+                "pbrDiffuseSA.frag",
                 "pbrDiffuseNormal.vert",
                 "pbrDiffuseNormal.frag",
                 "pbrDiffuseNormalRoughnessMetallic.vert",
@@ -973,7 +975,7 @@ namespace GfxRenderEngine
                 "bloomUp.vert",
                 "bloomUp.frag",
                 "bloomDown.vert",
-                "bloomDown.frag"
+                "bloomDown.frag",
             };
 
             for (auto& filename : shaderFilenames)

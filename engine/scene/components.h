@@ -174,6 +174,11 @@ namespace GfxRenderEngine
         uint m_Tag;
     };
 
+    struct PbrDiffuseSATag
+    {
+        uint m_Tag;
+    };
+
     struct PbrDiffuseNormalTag
     {
         uint m_Tag;

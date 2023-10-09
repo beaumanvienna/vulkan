@@ -58,6 +58,8 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
         attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
         attributeDescriptions.push_back({6, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Tangent)});
+        attributeDescriptions.push_back({7, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_BoneIds)});
+        attributeDescriptions.push_back({8, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Weights)});
 
         return attributeDescriptions;
     }
@@ -83,6 +85,7 @@ namespace GfxRenderEngine
 
     VK_Model::~VK_Model() {}
 
+
     void VK_Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
     {
         m_VertexCount = static_cast<uint>(vertices.size());
@@ -92,7 +95,7 @@ namespace GfxRenderEngine
 
         VK_Buffer stagingBuffer
         {
-            *m_Device, vertexSize, m_VertexCount,
+            vertexSize, m_VertexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         };
@@ -101,7 +104,7 @@ namespace GfxRenderEngine
 
         m_VertexBuffer = std::make_unique<VK_Buffer>
         (
-            *m_Device, vertexSize, m_VertexCount,
+            vertexSize, m_VertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
@@ -123,7 +126,7 @@ namespace GfxRenderEngine
 
         VK_Buffer stagingBuffer
         {
-            *m_Device, indexSize, m_IndexCount,
+            indexSize, m_IndexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         };
@@ -132,7 +135,7 @@ namespace GfxRenderEngine
 
         m_IndexBuffer = std::make_unique<VK_Buffer>
         (
-            *m_Device, indexSize, m_IndexCount,
+            indexSize, m_IndexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
@@ -338,6 +341,61 @@ namespace GfxRenderEngine
     }
 
     void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& primitive : m_PrimitivesDiffuseMap)
+        {
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet;
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+            VK_PushConstantDataPbrDiffuse push{};
+            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_NormalMatrix = transform.GetNormalMatrix();
+            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseMaterial.m_Metallic;
+            vkCmdPushConstants(
+                frameInfo.m_CommandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(VK_PushConstantDataPbrDiffuse),
+                &push);
+            if(m_HasIndexBuffer)
+            {
+                vkCmdDrawIndexed
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_IndexCount,     // uint32_t        indexCount
+                    1,                          // uint32_t        instanceCount
+                    primitive.m_FirstIndex,     // uint32_t        firstIndex
+                    primitive.m_FirstVertex,    // int32_t         vertexOffset
+                    0                           // uint32_t        firstInstance
+                );
+            }
+            else
+            {
+                vkCmdDraw
+                (
+                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                    primitive.m_VertexCount,    // uint32_t        vertexCount
+                    1,                          // uint32_t        instanceCount
+                    0,                          // uint32_t        firstVertex
+                    0                           // uint32_t        firstInstance
+                );
+            }
+        }
+    }
+
+    void VK_Model::DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& primitive : m_PrimitivesDiffuseMap)
         {
@@ -618,6 +676,27 @@ namespace GfxRenderEngine
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
             .WriteImage(0, imageInfo)
             .Build(pbrDiffuseMaterial.m_DescriptorSet);
+    }
+
+    void VK_Model::CreateDescriptorSet(PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
+                                       const std::shared_ptr<Texture>& colorMap,
+                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO,
+                                       const SkeletalAnimationShaderData& ubo)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+
+        VkDescriptorBufferInfo bufferInfo = static_cast<VK_Buffer*>(skeletalAnimationUBO.get())->DescriptorInfo();
+
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, imageInfo)
+            .WriteBuffer(1, bufferInfo)
+            .Build(pbrDiffuseSAMaterial.m_DescriptorSet);
+
     }
 
     void VK_Model::CreateDescriptorSet(PbrEmissiveTextureMaterial& pbrEmissiveTextureMaterial,

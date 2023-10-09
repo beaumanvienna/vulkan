@@ -27,6 +27,7 @@
 
 #include "engine.h"
 #include "renderer/model.h"
+#include "renderer/buffer.h"
 #include "scene/material.h"
 #include "scene/scene.h"
 
@@ -67,6 +68,7 @@ namespace GfxRenderEngine
         void Draw(VkCommandBuffer commandBuffer);
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
@@ -80,6 +82,13 @@ namespace GfxRenderEngine
         (
             PbrDiffuseMaterial& pbrDiffuseMaterial,
             const std::shared_ptr<Texture>& colorMap
+        );
+        static void CreateDescriptorSet
+        (
+            PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
+            const std::shared_ptr<Texture>& colorMap,
+            const std::shared_ptr<Buffer>& skeletalAnimationUBO,
+            const SkeletalAnimationShaderData& ubo
         );
         static void CreateDescriptorSet
         (

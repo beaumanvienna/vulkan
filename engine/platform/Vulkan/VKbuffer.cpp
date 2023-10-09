@@ -47,22 +47,22 @@ namespace GfxRenderEngine
       return instanceSize;
     }
 
-    VK_Buffer::VK_Buffer(VK_Device& device, VkDeviceSize instanceSize, uint instanceCount,
+    VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
                 VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                 VkDeviceSize minOffsetAlignment)
-        : m_Device{device}, m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
+        : m_Device(VK_Core::m_Device.get()), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
           m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
     {
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_BufferSize = m_AlignmentSize * m_InstanceCount;
-        device.CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+        m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
     }
 
     VK_Buffer::~VK_Buffer()
     {
         Unmap();
-        vkDestroyBuffer(m_Device.Device(), m_Buffer, nullptr);
-        vkFreeMemory(m_Device.Device(), m_Memory, nullptr);
+        vkDestroyBuffer(m_Device->Device(), m_Buffer, nullptr);
+        vkFreeMemory(m_Device->Device(), m_Memory, nullptr);
     }
 
     /**
@@ -77,7 +77,7 @@ namespace GfxRenderEngine
     VkResult VK_Buffer::Map(VkDeviceSize size, VkDeviceSize offset)
     {
         ASSERT(m_Buffer && m_Memory); //Called map on buffer before create
-        return vkMapMemory(m_Device.Device(), m_Memory, offset, size, 0, &m_Mapped);
+        return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
     }
 
     /**
@@ -89,7 +89,7 @@ namespace GfxRenderEngine
     {
         if (m_Mapped)
         {
-            vkUnmapMemory(m_Device.Device(), m_Memory);
+            vkUnmapMemory(m_Device->Device(), m_Memory);
             m_Mapped = nullptr;
         }
     }
@@ -103,7 +103,7 @@ namespace GfxRenderEngine
      * @param offset (Optional) Byte offset from beginning of m_Mapped region
      *
      */
-    void VK_Buffer::WriteToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset)
+    void VK_Buffer::WriteToBuffer(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
         ASSERT(m_Mapped); // cannot copy to unmapped buffer
 
@@ -137,7 +137,7 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(m_Device.Device(), 1, &mappedRange);
+        return vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
     }
 
     /**
@@ -158,7 +158,7 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(m_Device.Device(), 1, &mappedRange);
+        return vkInvalidateMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
     }
 
     /**

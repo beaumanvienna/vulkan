@@ -22,16 +22,21 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
 
 #include "engine.h"
 
 namespace GfxRenderEngine
 {
-    template <typename Type, typename... Rest>
-    void HashCombine(std::size_t& seed, const Type& v, const Rest&... rest)
+
+    class Buffer
     {
-        seed ^= std::hash<Type>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        (HashCombine(seed, rest), ...);
-    }
+
+    public:
+
+        ~Buffer() {}
+
+        static std::shared_ptr<Buffer> Create(uint size);
+
+    };
 }

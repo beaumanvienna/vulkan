@@ -30,19 +30,33 @@
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/buffer.h"
 
-#include "VKdevice.h"
+#include "VKcore.h"
 
 namespace GfxRenderEngine
 {
-    class VK_Buffer
+    class VK_Buffer: public Buffer
     {
 
     public:
 
-        VK_Buffer(VK_Device& device, VkDeviceSize instanceSize, uint instanceCount,
+        VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
                 VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                 VkDeviceSize minOffsetAlignment = 1);
+
+        VK_Buffer(uint size)
+            : m_Device(VK_Core::m_Device.get())
+        {
+            VK_Buffer(
+                size,
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
+            );
+        }
+
         ~VK_Buffer();
 
         VK_Buffer(const VK_Buffer&) = delete;
@@ -51,7 +65,7 @@ namespace GfxRenderEngine
         VkResult Map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         void Unmap();
 
-        void WriteToBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+        void WriteToBuffer(const void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkResult Flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkDescriptorBufferInfo DescriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkResult Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
@@ -76,7 +90,7 @@ namespace GfxRenderEngine
 
     private:
 
-        VK_Device& m_Device;
+        VK_Device* m_Device;
         void* m_Mapped = nullptr;
         VkBuffer m_Buffer = VK_NULL_HANDLE;
         VkDeviceMemory m_Memory = VK_NULL_HANDLE;

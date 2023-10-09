@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -18,20 +18,19 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
 
 #pragma once
 
-#include <functional>
-
 #include "engine.h"
+
+#include "renderer/skeletalAnimation/skeletalAnimation.h"
 
 namespace GfxRenderEngine
 {
-    template <typename Type, typename... Rest>
-    void HashCombine(std::size_t& seed, const Type& v, const Rest&... rest)
+    struct SkeletalAnimationShaderData
     {
-        seed ^= std::hash<Type>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        (HashCombine(seed, rest), ...);
-    }
+        glm::mat4 finalBonesMatrices[MAX_BONES];
+    };
 }

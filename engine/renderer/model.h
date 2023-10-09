@@ -31,6 +31,7 @@
 #include "scene/treeNode.h"
 #include "scene/components.h"
 #include "scene/dictionary.h"
+#include "renderer/skeletalAnimation/bone.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "sprite/sprite.h"
@@ -41,13 +42,15 @@ namespace GfxRenderEngine
 
     struct Vertex
     {
-        glm::vec3 m_Position;
-        glm::vec3 m_Color;
-        glm::vec3 m_Normal;
-        glm::vec2 m_UV;
-        float m_Amplification;
-        int m_Unlit;
-        glm::vec3 m_Tangent;
+        glm::vec3   m_Position;
+        glm::vec3   m_Color;
+        glm::vec3   m_Normal;
+        glm::vec2   m_UV;
+        float       m_Amplification;
+        int         m_Unlit;
+        glm::vec3   m_Tangent;
+        glm::ivec4  m_BoneIds; 
+        glm::vec4   m_Weights;
 
         bool operator==(const Vertex& other) const;
 
@@ -179,6 +182,8 @@ namespace GfxRenderEngine
 
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
+
+        SkeletalAnimationShaderData m_SkeletalAnimationShaderData;
 
     private:
 

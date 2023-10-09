@@ -20,18 +20,30 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "core.h"
+#include "renderer/rendererAPI.h"
+#include "renderer/buffer.h"
 
-#include <functional>
-
-#include "engine.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
-    template <typename Type, typename... Rest>
-    void HashCombine(std::size_t& seed, const Type& v, const Rest&... rest)
+
+    std::shared_ptr<Buffer> Buffer::Create(uint size)
     {
-        seed ^= std::hash<Type>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        (HashCombine(seed, rest), ...);
+        std::shared_ptr<Buffer> texture;
+
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                texture = std::make_shared<VK_Buffer>(size);
+                break;
+            default:
+                texture = nullptr;
+                break;
+        }
+
+        return texture;
     }
+
 }
