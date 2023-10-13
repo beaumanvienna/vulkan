@@ -33,7 +33,7 @@ layout(location = 0) in vec3  position;
 layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
 layout(location = 6) in vec3  tangent;
-layout(location = 7) in ivec4 boneIds; 
+layout(location = 7) in ivec4 jointIds; 
 layout(location = 8) in vec4  weights;
 
 struct PointLight
@@ -63,7 +63,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 1, binding = 1) uniform SkeletalAnimationShaderData
 {
-    mat4 finalBonesMatrices[MAX_BONES];
+    mat4 finalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
 layout(push_constant) uniform Push
@@ -80,20 +80,20 @@ layout(location = 3)  out  vec3  fragTangent;
 void main()
 {
     vec4 animatedPosition = vec4(0.0f);
-    mat4 boneTransform    = mat4(0.0f);
-    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+    mat4 jointTransform    = mat4(0.0f);
+    for(int i = 0 ; i < MAX_JOINT_INFLUENCE ; i++)
     {
-        if(boneIds[i] == -1) 
+        if(jointIds[i] == -1) 
             continue;
-        if(boneIds[i] >=MAX_BONES) 
+        if(jointIds[i] >=MAX_JOINTS) 
         {
             animatedPosition = vec4(position,1.0f);
-            boneTransform    = mat4(1.0f);
+            jointTransform   = mat4(1.0f);
             break;
         }
-        boneTransform     += skeletalAnimation.finalBonesMatrices[boneIds[i]] * weights[i];
-        vec4 localPosition = skeletalAnimation.finalBonesMatrices[boneIds[i]] * vec4(position,1.0f);
-        animatedPosition  += localPosition * weights[i];
+        jointTransform     += skeletalAnimation.finalJointsMatrices[jointIds[i]] * weights[i];
+        vec4 localPosition  = skeletalAnimation.finalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
+        animatedPosition   += localPosition * weights[i];
     }
 
     // projection * view * model * position
@@ -101,7 +101,7 @@ void main()
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
     fragPosition       = positionWorld.xyz;
 
-    mat3 normalMatrix  = transpose(inverse(mat3(boneTransform)));
+    mat3 normalMatrix  = transpose(inverse(mat3(jointTransform)));
     fragNormal  = normalize(normalMatrix * normal);
     fragTangent = normalize(normalMatrix * tangent);
 

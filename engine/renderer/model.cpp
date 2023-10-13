@@ -611,6 +611,7 @@ namespace GfxRenderEngine
 
         LoadImagesGLTF();
         LoadMaterialsGLTF();
+        LoadSkeletons();
 
         for (auto& scene : m_GltfModel.scenes)
         {

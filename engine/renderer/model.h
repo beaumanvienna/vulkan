@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,7 @@
 #include "scene/treeNode.h"
 #include "scene/components.h"
 #include "scene/dictionary.h"
-#include "renderer/skeletalAnimation/bone.h"
+#include "renderer/skeletalAnimation/skeleton.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "sprite/sprite.h"
@@ -159,6 +159,10 @@ namespace GfxRenderEngine
 
     public:
 
+        static constexpr int GLTF_NOT_USED = -1;
+
+    public:
+
         Builder() {}
         Builder(const std::string& filepath);
 
@@ -208,6 +212,15 @@ namespace GfxRenderEngine
         TransformComponent* m_Transform;
         uint m_ImageOffset;
         entt::entity m_GameObject;
+
+    // skeletal animtion
+    private:
+
+        void LoadSkeletons();
+        void LoadJoint(Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
+
+        std::vector<Skeleton> m_Skeletons;
+
     };
 
     class Model
