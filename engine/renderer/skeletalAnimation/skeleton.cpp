@@ -24,35 +24,37 @@
 
 namespace GfxRenderEngine
 {
-
-    void Skeleton::Traverse()
+    namespace SkeletalAnimation
     {
-        LOG_CORE_WARN("Skeleton: {0}", m_Name);
-        uint indent = 0;
-        std::string indentStr(indent, ' ');
-        auto& joint = m_Joints[0]; // root joint
-        Traverse(joint, indent+1);
-    }
-
-    void Skeleton::Traverse(Joint const& joint, uint indent)
-    {
-        std::string indentStr(indent, ' ');
-        size_t numberOfChildern = joint.m_Children.size();
-        LOG_CORE_INFO
-        (
-                        "{0}m_GlobalGltfNodeIndex: {1}, localIndex: {2}, m_Parent: {3}, m_Children.size(): {4}", 
-                        indentStr,
-                        joint.m_GlobalGltfNodeIndex,
-                        m_GlobalGltfNodeToJointIndex[joint.m_GlobalGltfNodeIndex],
-                        joint.m_ParentJoint,
-                        numberOfChildern
-        );
-        if (numberOfChildern > 0)
+        void Skeleton::Traverse()
         {
-            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            LOG_CORE_WARN("Skeleton: {0}", m_Name);
+            uint indent = 0;
+            std::string indentStr(indent, ' ');
+            auto& joint = m_Joints[0]; // root joint
+            Traverse(joint, indent+1);
+        }
+
+        void Skeleton::Traverse(Joint const& joint, uint indent)
+        {
+            std::string indentStr(indent, ' ');
+            size_t numberOfChildern = joint.m_Children.size();
+            LOG_CORE_INFO
+            (
+                            "{0}m_GlobalGltfNodeIndex: {1}, localIndex: {2}, m_Parent: {3}, m_Children.size(): {4}", 
+                            indentStr,
+                            joint.m_GlobalGltfNodeIndex,
+                            m_GlobalGltfNodeToJointIndex[joint.m_GlobalGltfNodeIndex],
+                            joint.m_ParentJoint,
+                            numberOfChildern
+            );
+            if (numberOfChildern > 0)
             {
-                auto& jointIndex = joint.m_Children[childIndex];
-                Traverse(m_Joints[jointIndex], indent+1);
+                for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+                {
+                    auto& jointIndex = joint.m_Children[childIndex];
+                    Traverse(m_Joints[jointIndex], indent+1);
+                }
             }
         }
     }

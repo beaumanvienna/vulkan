@@ -58,6 +58,26 @@ namespace GfxRenderEngine
         m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
     }
 
+
+    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage)
+            : m_Device(VK_Core::m_Device.get())
+        {
+            if (bufferUsage == Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU)
+            {
+                m_InstanceSize          = size;
+                m_InstanceCount         = 1;
+                m_UsageFlags            = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                m_MemoryPropertyFlags   = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                
+                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+                
+                m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
+                m_BufferSize = m_AlignmentSize * m_InstanceCount;
+                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+            }
+        }
+
+
     VK_Buffer::~VK_Buffer()
     {
         Unmap();
@@ -76,7 +96,7 @@ namespace GfxRenderEngine
      */
     VkResult VK_Buffer::Map(VkDeviceSize size, VkDeviceSize offset)
     {
-        ASSERT(m_Buffer && m_Memory); //Called map on buffer before create
+        if (!(m_Buffer && m_Memory)) LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
         return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
     }
 
@@ -105,7 +125,7 @@ namespace GfxRenderEngine
      */
     void VK_Buffer::WriteToBuffer(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
-        ASSERT(m_Mapped); // cannot copy to unmapped buffer
+        if (!(m_Mapped)) LOG_CORE_CRITICAL("void VK_Buffer::WriteToBuffer(...): cannot copy to unmapped buffer");
 
         if (size == VK_WHOLE_SIZE)
         {

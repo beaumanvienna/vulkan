@@ -63,7 +63,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 1, binding = 1) uniform SkeletalAnimationShaderData
 {
-    mat4 finalJointsMatrices[MAX_JOINTS];
+    mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
 layout(push_constant) uniform Push
@@ -91,8 +91,8 @@ void main()
             jointTransform   = mat4(1.0f);
             break;
         }
-        jointTransform     += skeletalAnimation.finalJointsMatrices[jointIds[i]] * weights[i];
-        vec4 localPosition  = skeletalAnimation.finalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
+        jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
+        vec4 localPosition  = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
         animatedPosition   += localPosition * weights[i];
     }
 

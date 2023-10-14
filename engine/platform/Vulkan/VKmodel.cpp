@@ -68,19 +68,23 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        m_Images = builder.m_Images;
-        m_Cubemaps = builder.m_Cubemaps;
+        m_Images = std::move(builder.m_Images);
+        m_Cubemaps = std::move(builder.m_Cubemaps);
 
-        m_PrimitivesNoMap = builder.m_PrimitivesNoMap;
-        m_PrimitivesEmissive = builder.m_PrimitivesEmissive;
-        m_PrimitivesDiffuseMap = builder.m_PrimitivesDiffuseMap;
-        m_PrimitivesEmissiveTexture = builder.m_PrimitivesEmissiveTexture;
-        m_PrimitivesDiffuseNormalMap = builder.m_PrimitivesDiffuseNormalMap;
-        m_PrimitivesDiffuseNormalRoughnessMetallicMap = builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap;
-        m_PrimitivesCubemap = builder.m_PrimitivesCubemap;
+        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
+        m_PrimitivesEmissive = std::move(builder.m_PrimitivesEmissive);
+        m_PrimitivesDiffuseMap = std::move(builder.m_PrimitivesDiffuseMap);
+        m_PrimitivesDiffuseSAMap = std::move(builder.m_PrimitivesDiffuseSAMap);
+        m_PrimitivesEmissiveTexture = std::move(builder.m_PrimitivesEmissiveTexture);
+        m_PrimitivesDiffuseNormalMap = std::move(builder.m_PrimitivesDiffuseNormalMap);
+        m_PrimitivesDiffuseNormalRoughnessMetallicMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap);
+        m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
 
-        CreateVertexBuffers(builder.m_Vertices);
-        CreateIndexBuffers(builder.m_Indices);
+        m_Skeletons  = std::move(builder.m_Skeletons);
+        m_ShaderData = builder.m_ShaderData;
+
+        CreateVertexBuffers(std::move(builder.m_Vertices));
+        CreateIndexBuffers(std::move(builder.m_Indices));
     }
 
     VK_Model::~VK_Model() {}
@@ -397,9 +401,9 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseMap)
+        for(auto& primitive : m_PrimitivesDiffuseSAMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet;
+            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_DescriptorSet;
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -415,8 +419,8 @@ namespace GfxRenderEngine
             VK_PushConstantDataPbrDiffuse push{};
             push.m_ModelMatrix  = transform.GetMat4();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseSAMaterial.m_Roughness;
+            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseSAMaterial.m_Metallic;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
@@ -424,6 +428,11 @@ namespace GfxRenderEngine
                 0,
                 sizeof(VK_PushConstantDataPbrDiffuse),
                 &push);
+
+            // fill ubo
+            static_cast<VK_Buffer*>(m_ShaderData.get())->WriteToBuffer(m_Skeletons[0].m_InverseBindMatrices.data());
+            static_cast<VK_Buffer*>(m_ShaderData.get())->Flush();
+
             if(m_HasIndexBuffer)
             {
                 vkCmdDrawIndexed
@@ -680,8 +689,7 @@ namespace GfxRenderEngine
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
                                        const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO,
-                                       const SkeletalAnimationShaderData& ubo)
+                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO)
     {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -690,7 +698,9 @@ namespace GfxRenderEngine
 
         const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
 
-        VkDescriptorBufferInfo bufferInfo = static_cast<VK_Buffer*>(skeletalAnimationUBO.get())->DescriptorInfo();
+        auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
+        buffer->Map();
+        VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
 
         VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
             .WriteImage(0, imageInfo)

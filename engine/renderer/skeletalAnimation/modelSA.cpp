@@ -27,10 +27,21 @@
 namespace GfxRenderEngine
 {
 
-    void Builder::LoadSkeletons()
+    void Builder::LoadSkeletons(Material& material)
     {
         size_t numberOfSkeletons = m_GltfModel.skins.size();
+        if (!numberOfSkeletons)
+        {
+            return;
+        }
+
+        // set material flag
+        material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
+
+        // adjust the size of the skeleton std::vector to the number of skeletons
         m_Skeletons.resize(numberOfSkeletons);
+
+        // loop over all skeletons from the glTF model and fill our skeleton std::vector
         for (size_t skeletonIndex = 0; skeletonIndex < numberOfSkeletons; ++skeletonIndex)
         {
             const tinygltf::Skin& glTFSkin = m_GltfModel.skins[skeletonIndex];
@@ -56,9 +67,11 @@ namespace GfxRenderEngine
                 const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
                 // assert # of matrices matches # of joints
                 if (accessor.count != numberOfJoints) LOG_CORE_CRITICAL("accessor.count != numberOfJoints"); 
-                std::vector<glm::mat4> inverseBindMatrices;
+
+                auto& inverseBindMatrices = skeleton.m_InverseBindMatrices;
                 inverseBindMatrices.resize(numberOfJoints);
-                memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
+                int bufferSize = accessor.count * sizeof(glm::mat4); // in bytes
+                memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], bufferSize);
 
                 // loop over all joints from gltf model and fill the skeleton with joints
                 for (size_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
@@ -78,12 +91,18 @@ namespace GfxRenderEngine
                 skeleton.Traverse();
             }
 
+            // create a buffer to be used in the shader for the joint matrices
+            // The gltf model has multiple animations, all applied to the same skeleton
+            // --> all skeletons have the same size (and we can use m_Skeletons[0] to get the number of joints)
+            int numberOfJoints = m_Skeletons[0].m_Joints.size();
+            int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
+            m_ShaderData = Buffer::Create(bufferSize);
         }
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void Builder::LoadJoint(Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint)
+    void Builder::LoadJoint(SkeletalAnimation::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint)
     {
         int currentJoint = skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = skeleton.m_Joints[currentJoint]; // a reference to the current joint

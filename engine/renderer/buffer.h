@@ -34,6 +34,13 @@ namespace GfxRenderEngine
 
     public:
 
+        enum class BufferUsage
+        {
+            SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU
+        };
+
+    public:
+
         ~Buffer() {}
 
         static std::shared_ptr<Buffer> Create(uint size);

@@ -87,8 +87,7 @@ namespace GfxRenderEngine
         (
             PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
             const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Buffer>& skeletalAnimationUBO,
-            const SkeletalAnimationShaderData& ubo
+            const std::shared_ptr<Buffer>& skeletalAnimationUBO
         );
         static void CreateDescriptorSet
         (
@@ -129,10 +128,15 @@ namespace GfxRenderEngine
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
         std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
         std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
+
+        // skeletal animation
+        std::vector<SkeletalAnimation::Skeleton> m_Skeletons;
+        std::shared_ptr<Buffer> m_ShaderData;
 
     };
 }

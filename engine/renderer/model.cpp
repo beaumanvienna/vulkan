@@ -62,6 +62,8 @@ namespace GfxRenderEngine
 
     PrimitiveDiffuseMap::~PrimitiveDiffuseMap() {}
 
+    PrimitiveDiffuseSAMap::~PrimitiveDiffuseSAMap() {}
+
     PrimitiveEmissiveTexture::~PrimitiveEmissiveTexture() {}
 
     PrimitiveDiffuseNormalMap::~PrimitiveDiffuseNormalMap() {}
@@ -233,7 +235,7 @@ namespace GfxRenderEngine
                 material.m_RoughnessMettalicMapIndex = mettalicRoughnessTexture.source;
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
-
+            LoadSkeletons(material);
             m_Materials.push_back(material);
         }
     }
@@ -247,6 +249,7 @@ namespace GfxRenderEngine
         m_PrimitivesNoMap.clear();
         m_PrimitivesEmissive.clear();
         m_PrimitivesDiffuseMap.clear();
+        m_PrimitivesDiffuseSAMap.clear();
         m_PrimitivesEmissiveTexture.clear();
         m_PrimitivesDiffuseNormalMap.clear();
         m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
@@ -436,7 +439,7 @@ namespace GfxRenderEngine
         auto& material = m_Materials[materialIndex];
 
         uint pbrFeatures = material.m_Features & (
-                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP);
+                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
         if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             PrimitiveDiffuseMap primitiveDiffuseMap{};
@@ -453,6 +456,23 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+        }
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
+        {
+            PrimitiveDiffuseSAMap primitiveDiffuseSAMap{};
+            primitiveDiffuseSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseSAMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
+            uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseSAMapIndex;
+            ASSERT(diffuseSAMapIndex < m_Images.size());
+
+            VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
+            primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Roughness = material.m_Roughness;
+            primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Metallic  = material.m_Metallic;
+
+            m_PrimitivesDiffuseSAMap.push_back(primitiveDiffuseSAMap);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
@@ -611,7 +631,6 @@ namespace GfxRenderEngine
 
         LoadImagesGLTF();
         LoadMaterialsGLTF();
-        LoadSkeletons();
 
         for (auto& scene : m_GltfModel.scenes)
         {
@@ -729,6 +748,11 @@ namespace GfxRenderEngine
         {
             PbrDiffuseTag pbrDiffuseTag{};
             registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+        }
+        if (m_PrimitivesDiffuseSAMap.size())
+        {
+            PbrDiffuseSATag pbrDiffuseSATag{};
+            registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
         }
         if (m_PrimitivesDiffuseNormalMap.size())
         {

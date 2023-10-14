@@ -63,12 +63,14 @@ namespace GfxRenderEngine
             HAS_DIFFUSE_MAP             = 0x01 << 0,
             HAS_NORMAL_MAP              = 0x01 << 1,
             HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2,
-            HAS_EMISSIVE_MAP            = 0x01 << 3
+            HAS_EMISSIVE_MAP            = 0x01 << 3,
+            HAS_SKELETAL_ANIMATION      = 0x01 << 4
         };
         glm::vec3 m_DiffuseColor;
         glm::vec3 m_EmissiveFactor;
         float m_EmissiveStrength;
         uint m_DiffuseMapIndex;
+        uint m_DiffuseSAMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMettalicMapIndex;
         uint m_EmissiveMapIndex;
@@ -126,6 +128,16 @@ namespace GfxRenderEngine
         PbrDiffuseMaterial m_PbrDiffuseMaterial;
     };
 
+    struct PrimitiveDiffuseSAMap
+    {
+        ~PrimitiveDiffuseSAMap();
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrDiffuseSAMaterial m_PbrDiffuseSAMaterial;
+    };
+
     struct PrimitiveDiffuseNormalMap
     {
         ~PrimitiveDiffuseNormalMap();
@@ -180,14 +192,13 @@ namespace GfxRenderEngine
         std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
         std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
         std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
+        std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
         std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
 
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
-
-        SkeletalAnimationShaderData m_SkeletalAnimationShaderData;
 
     private:
 
@@ -216,11 +227,13 @@ namespace GfxRenderEngine
     // skeletal animtion
     private:
 
-        void LoadSkeletons();
-        void LoadJoint(Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
+        void LoadSkeletons(Material& material);
+        void LoadJoint(SkeletalAnimation::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
 
-        std::vector<Skeleton> m_Skeletons;
+    public:
 
+        std::vector<SkeletalAnimation::Skeleton> m_Skeletons;
+        std::shared_ptr<Buffer> m_ShaderData;
     };
 
     class Model

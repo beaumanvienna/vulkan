@@ -26,6 +26,7 @@
 #include <map>
 
 #include "engine.h"
+#include "renderer/buffer.h"
 #include "renderer/skeletalAnimation/skeletalAnimation.h"
 
 namespace GfxRenderEngine
@@ -33,33 +34,35 @@ namespace GfxRenderEngine
     namespace SkeletalAnimation
     {
         static constexpr int NO_PARENT = -1;
+
+        struct ShaderData
+        {
+            glm::mat4 m_FinalJointsMatrices[MAX_JOINTS];
+        };
+
+        struct Joint
+        {
+
+            // the joint
+            int m_GlobalGltfNodeIndex;
+            glm::mat4 m_InverseBindMatrix;
+
+            // parents and children for the tree hierachy
+            int m_ParentJoint;
+            std::vector<int> m_Children;
+        };
+
+        struct Skeleton
+        {
+            void Traverse();
+            void Traverse(Joint const& joint, uint indent = 0);
+
+            std::string                 m_Name;
+            std::vector<Joint>          m_Joints;
+            std::vector<glm::mat4>      m_InverseBindMatrices;
+            std::map<int, int>          m_GlobalGltfNodeToJointIndex;
+            ShaderData                  m_ShaderData;
+        };
     }
 
-    struct SkeletalAnimationShaderData
-    {
-        glm::mat4 finalJointsMatrices[MAX_JOINTS];
-    };
-
-    struct Joint
-    {
-
-        // the joint
-        int m_GlobalGltfNodeIndex;
-        glm::mat4 m_InverseBindMatrix;
-
-        // parents and children for the tree hierachy
-        int m_ParentJoint;
-        std::vector<int> m_Children;
-    };
-
-    struct Skeleton
-    {
-        void Traverse();
-        void Traverse(Joint const& joint, uint indent = 0);
-
-        std::string                 m_Name;
-        std::vector<Joint>          m_Joints;
-        std::vector<glm::mat4>      m_InverseBindMatrices;
-        std::map<int, int>          m_GlobalGltfNodeToJointIndex;
-    };
 }

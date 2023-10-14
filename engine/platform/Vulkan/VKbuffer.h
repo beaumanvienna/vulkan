@@ -45,17 +45,7 @@ namespace GfxRenderEngine
                 VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                 VkDeviceSize minOffsetAlignment = 1);
 
-        VK_Buffer(uint size)
-            : m_Device(VK_Core::m_Device.get())
-        {
-            VK_Buffer(
-                size,
-                1,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
-            );
-        }
+        VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU);
 
         ~VK_Buffer();
 
