@@ -33,7 +33,7 @@ layout(location = 0) in vec3  position;
 layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
 layout(location = 6) in vec3  tangent;
-layout(location = 7) in ivec4 jointIds; 
+layout(location = 7) in ivec4 jointIds;
 layout(location = 8) in vec4  weights;
 
 struct PointLight
@@ -81,19 +81,19 @@ void main()
 {
     vec4 animatedPosition = vec4(0.0f);
     mat4 jointTransform    = mat4(0.0f);
-    for(int i = 0 ; i < MAX_JOINT_INFLUENCE ; i++)
+    for (int i = 0 ; i < MAX_JOINT_INFLUENCE ; i++)
     {
-        if(jointIds[i] == -1) 
+        if (weights[i] == 0)
             continue;
-        if(jointIds[i] >=MAX_JOINTS) 
+        if (jointIds[i] >=MAX_JOINTS) 
         {
             animatedPosition = vec4(position,1.0f);
             jointTransform   = mat4(1.0f);
             break;
         }
-        jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
         vec4 localPosition  = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
         animatedPosition   += localPosition * weights[i];
+        jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
     }
 
     // projection * view * model * position

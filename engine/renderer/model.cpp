@@ -69,7 +69,7 @@ namespace GfxRenderEngine
     PrimitiveDiffuseNormalMap::~PrimitiveDiffuseNormalMap() {}
 
     PrimitiveDiffuseNormalRoughnessMetallicMap::~PrimitiveDiffuseNormalRoughnessMetallicMap() {}
-    
+
     PrimitiveCubemap::~PrimitiveCubemap() {}
 
     float Model::m_NormalMapIntensity = 1.0f;
@@ -279,6 +279,10 @@ namespace GfxRenderEngine
                 const float* normalsBuffer   = nullptr;
                 const float* tangentsBuffer  = nullptr;
                 const float* texCoordsBuffer = nullptr;
+                const char*  jointsBuffer    = nullptr;
+                const float* weightsBuffer   = nullptr;
+
+                int jointsBufferDataType;
 
                 // Get buffer data for vertex positions
                 if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
@@ -314,20 +318,58 @@ namespace GfxRenderEngine
                     texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
 
+                // Get buffer data for joints
+                if (glTFPrimitive.attributes.find("JOINTS_0") != glTFPrimitive.attributes.end())
+                {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    jointsBuffer = reinterpret_cast<const char*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    jointsBufferDataType = accessor.componentType;
+                }
+                // Get buffer data for joint weights
+                if (glTFPrimitive.attributes.find("WEIGHTS_0") != glTFPrimitive.attributes.end())
+                {
+                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second];
+                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+                    weightsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                }
                 // Append data to model's vertex buffer
                 for (size_t v = 0; v < vertexCount; v++)
                 {
                     Vertex vertex{};
-                    vertex.m_Amplification      = 1.0f;
-                    auto position = glm::make_vec3(&positionBuffer[v * 3]);
-                    vertex.m_Position = glm::vec4(position.x, position.y, position.z, 1.0f);
-                    vertex.m_Normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vertex.m_Amplification  = 1.0f;
+                    auto position           = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
+                    vertex.m_Position       = glm::vec4(position.x, position.y, position.z, 1.0f);
+                    vertex.m_Normal         = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
 
-                    glm::vec4 t = glm::vec4(tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));
+                    glm::vec4 t             = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
-                    vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                    vertex.m_Color = diffuseColor;
+                    vertex.m_UV             = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    vertex.m_Color          = diffuseColor;
+                    if (jointsBuffer && weightsBuffer)
+                    {
+                        switch (jointsBufferDataType)
+                        {
+                            case GL_BYTE:
+                            case GL_UNSIGNED_BYTE:
+                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int8_t*>(jointsBuffer)[v * 4])));
+                                break;
+                            case GL_SHORT:
+                            case GL_UNSIGNED_SHORT:
+                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int16_t*>(jointsBuffer)[v * 4])));
+                                break;
+                            case GL_INT:
+                            case GL_UNSIGNED_INT:
+                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int32_t*>(jointsBuffer)[v * 4])));
+                                break;
+                            default:
+                                LOG_CORE_CRITICAL("data type of joints buffer not found");
+                                break;
+                        }
+
+                        vertex.m_Weights        = glm::make_vec4(&weightsBuffer[v * 4]);
+                    }
                     m_Vertices.push_back(vertex);
                 }
 
@@ -1040,10 +1082,10 @@ namespace GfxRenderEngine
         m_Vertices.clear();
         m_Indices.clear();
         m_Cubemaps.clear();
-        
+
         glm::vec3 cubemapVertices[VERTEX_COUNT] =
         {
-            // positions          
+            // positions
             {-1.0f,  1.0f, -1.0f},
             {-1.0f, -1.0f, -1.0f},
             { 1.0f, -1.0f, -1.0f},
@@ -1093,7 +1135,7 @@ namespace GfxRenderEngine
             {
                 Vertex vertex = {/*pos*/ cubemapVertices[i], /*col*/ {0.0f, 0.0f, 0.0f}, /*norm*/ {0.0f, 0.0f, 0.0f}, /*uv*/ {0.0f, 0.0f}, /* amplification */0.0f, 0 /*unlit*/, /*tangent*/ glm::vec3(0.0), glm::ivec4(0.0), glm::vec4(0.0)};
                 m_Vertices.push_back(vertex);
-            }    
+            }
         }
 
         // create texture

@@ -22,6 +22,10 @@
 
 #include <memory>
 
+#include "gtc/quaternion.hpp"
+#include "gtx/quaternion.hpp"
+#include "gtc/type_ptr.hpp"
+
 #include "renderer/model.h"
 
 namespace GfxRenderEngine
@@ -56,6 +60,7 @@ namespace GfxRenderEngine
                 size_t numberOfJoints = glTFSkin.joints.size();
                 // resize the joints vector of the skeleton object (to be filled)
                 joints.resize(numberOfJoints);
+                skeleton.m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
 
                 // set up name of skeleton
                 skeleton.m_Name = glTFSkin.name;
@@ -80,7 +85,35 @@ namespace GfxRenderEngine
                     joints[jointIndex].m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
                     joints[jointIndex].m_InverseBindMatrix = inverseBindMatrices[jointIndex];
 
-                    // set up map global node 2 joint index
+                    // set up node transform (either TRS or from directy from "matrix")
+                    // the fields are set to identity matrices in the constructor
+                    // in case it cannot be found in the gltf model
+                    auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
+
+                    if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // length must be 0 or 3
+                    {
+                        glm::vec3 t = glm::make_vec3(gltfNode.translation.data());
+                        joints[jointIndex].m_NodeTranslation = glm::translate(glm::mat4(1.0f), t);
+                    }
+
+                    if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // length must be 0 or 4
+                    {
+                        glm::quat q = glm::make_quat(gltfNode.rotation.data());
+                        joints[jointIndex].m_NodeRotation = glm::toMat4(q);
+                    }
+
+                    if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // length must be 0 or 3
+                    {
+                        glm::vec3 s = glm::make_vec3(gltfNode.scale.data());
+                        joints[jointIndex].m_NodeScale = glm::scale(glm::mat4(1.0f), s);
+                    }
+
+                    if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // length must be 0 or 16
+                    {
+                        joints[jointIndex].m_NodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
+                    }
+
+                    // set up map "global node" to "joint index"
                     skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
                 }
 

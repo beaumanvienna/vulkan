@@ -48,14 +48,48 @@ namespace GfxRenderEngine
                             joint.m_ParentJoint,
                             numberOfChildern
             );
-            if (numberOfChildern > 0)
+            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
             {
-                for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
-                {
-                    auto& jointIndex = joint.m_Children[childIndex];
-                    Traverse(m_Joints[jointIndex], indent+1);
-                }
+                int jointIndex = joint.m_Children[childIndex];
+                Traverse(m_Joints[jointIndex], indent+1);
             }
+        }
+
+        void Skeleton::Update()
+        {
+            UpdateJoints(m_Joints[0]);
+        }
+
+        void Skeleton::UpdateJoints(Joint& joint)
+        {
+            glm::mat4 inverseTransform = glm::inverse(GetNodeMatrix(joint));
+
+            size_t numberOfJoints = m_Joints.size();
+            for (size_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+            {
+                m_ShaderData.m_FinalJointsMatrices[jointIndex] = GetNodeMatrix(m_Joints[jointIndex]) * m_InverseBindMatrices[jointIndex];
+                m_ShaderData.m_FinalJointsMatrices[jointIndex] = inverseTransform * m_ShaderData.m_FinalJointsMatrices[jointIndex];
+            }
+
+            size_t numberOfChildern = joint.m_Children.size();
+            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            {
+                int jointIndex = joint.m_Children[childIndex];
+                UpdateJoints(m_Joints[jointIndex]);
+            }
+        }
+
+        // Traverse skeleton to the root to get the local matrix in world space
+        glm::mat4 Skeleton::GetNodeMatrix(Joint& joint)
+        {
+            glm::mat4 nodeMatrix = joint.m_NodeMatrix;
+            int parentJoint = joint.m_ParentJoint;
+            while (parentJoint != SkeletalAnimation::NO_PARENT)
+            {
+                nodeMatrix    = m_Joints[parentJoint].m_NodeMatrix * nodeMatrix;
+                parentJoint   = m_Joints[parentJoint].m_ParentJoint;
+            }
+            return nodeMatrix;
         }
     }
 }

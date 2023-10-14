@@ -37,15 +37,20 @@ namespace GfxRenderEngine
 
         struct ShaderData
         {
-            glm::mat4 m_FinalJointsMatrices[MAX_JOINTS];
+            std::vector<glm::mat4> m_FinalJointsMatrices;
         };
 
         struct Joint
         {
-
             // the joint
             int m_GlobalGltfNodeIndex;
             glm::mat4 m_InverseBindMatrix;
+
+            // world space transform
+            glm::mat4 m_NodeTranslation{1.0f};
+            glm::mat4 m_NodeRotation{1.0f};
+            glm::mat4 m_NodeScale{1.0f};
+            glm::mat4 m_NodeMatrix{1.0f};
 
             // parents and children for the tree hierachy
             int m_ParentJoint;
@@ -56,6 +61,9 @@ namespace GfxRenderEngine
         {
             void Traverse();
             void Traverse(Joint const& joint, uint indent = 0);
+            void Update();
+            void UpdateJoints(Joint& joint);
+            glm::mat4 GetNodeMatrix(Joint& joint);
 
             std::string                 m_Name;
             std::vector<Joint>          m_Joints;

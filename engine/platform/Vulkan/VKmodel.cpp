@@ -58,8 +58,8 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
         attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
         attributeDescriptions.push_back({6, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Tangent)});
-        attributeDescriptions.push_back({7, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_BoneIds)});
-        attributeDescriptions.push_back({8, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Weights)});
+        attributeDescriptions.push_back({7, 0, VK_FORMAT_R32G32B32A32_SINT, offsetof(Vertex, m_JointIds)});
+        attributeDescriptions.push_back({8, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_Weights)});
 
         return attributeDescriptions;
     }
@@ -429,8 +429,11 @@ namespace GfxRenderEngine
                 sizeof(VK_PushConstantDataPbrDiffuse),
                 &push);
 
-            // fill ubo
-            static_cast<VK_Buffer*>(m_ShaderData.get())->WriteToBuffer(m_Skeletons[0].m_InverseBindMatrices.data());
+            // skeleton
+            m_Skeletons[0].Update();
+
+            // update ubo
+            static_cast<VK_Buffer*>(m_ShaderData.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
             static_cast<VK_Buffer*>(m_ShaderData.get())->Flush();
 
             if(m_HasIndexBuffer)

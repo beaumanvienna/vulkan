@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         float       m_Amplification;
         int         m_Unlit;
         glm::vec3   m_Tangent;
-        glm::ivec4  m_BoneIds; 
+        glm::ivec4  m_JointIds; 
         glm::vec4   m_Weights;
 
         bool operator==(const Vertex& other) const;
