@@ -18,32 +18,7 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#include "core.h"
-#include "renderer/rendererAPI.h"
-#include "renderer/buffer.h"
-
-#include "VKbuffer.h"
-
-namespace GfxRenderEngine
-{
-
-    std::shared_ptr<Buffer> Buffer::Create(uint size)
-    {
-        std::shared_ptr<Buffer> buffer;
-
-        switch(RendererAPI::GetAPI())
-        {
-            case RendererAPI::VULKAN:
-                buffer = std::make_shared<VK_Buffer>(size);
-                break;
-            default:
-                buffer = nullptr;
-                break;
-        }
-
-        return buffer;
-    }
-
-}
+#define MAX_JOINTS 100
+#define MAX_JOINT_INFLUENCE 4

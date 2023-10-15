@@ -39,9 +39,6 @@ namespace GfxRenderEngine
             return;
         }
 
-        // set material flag
-        material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
-
         // adjust the size of the skeleton std::vector to the number of skeletons
         m_Skeletons.resize(numberOfSkeletons);
 
@@ -119,7 +116,7 @@ namespace GfxRenderEngine
 
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
 
-                LoadJoint(skeleton, rootJoint, SkeletalAnimation::NO_PARENT);
+                LoadJoint(skeleton, rootJoint, Armature::NO_PARENT);
 
                 skeleton.Traverse();
             }
@@ -131,11 +128,107 @@ namespace GfxRenderEngine
             int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
             m_ShaderData = Buffer::Create(bufferSize);
         }
+
+        size_t numberOfAnimations = m_GltfModel.animations.size();
+        for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
+        {
+            auto& gltfAnimation = m_GltfModel.animations[animationIndex];
+            std::string name = gltfAnimation.name;
+            std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(name);
+
+            // Samplers
+            size_t numberOfSamplers = gltfAnimation.samplers.size();
+            std::vector<SkeletalAnimation::Sampler> samplers(numberOfSamplers);
+            for (size_t samplerIndex = 0; samplerIndex < numberOfSamplers; ++samplerIndex)
+            {
+                tinygltf::AnimationSampler glTFSampler = gltfAnimation.samplers[samplerIndex];
+                auto& sampler  = samplers[samplerIndex];
+                
+                sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
+                if (glTFSampler.interpolation == "STEP")
+                {
+                    sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::STEP;
+                }
+                else if (glTFSampler.interpolation == "CUBICSPLINE")
+                {
+                    sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::CUBICSPLINE;
+                }
+
+                // get timestamp
+                {
+                    const tinygltf::Accessor&   accessor   = m_GltfModel.accessors[glTFSampler.input];
+                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
+                    int timestampBufferDataType = accessor.componentType;
+
+                    if (timestampBufferDataType == GL_FLOAT)
+                    {
+                        const float* timestampBuffer = reinterpret_cast<const float*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (int index = 0; index < accessor.count; ++index)
+                        {
+                            sampler.m_Timestamp = timestampBuffer[index];
+                        }
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("Builder::LoadSkeletons: cannot handle timestamp format");
+                    }
+                }
+
+                // Read sampler keyframe output translate/rotate/scale values
+                {
+                    const tinygltf::Accessor&   accessor   = m_GltfModel.accessors[glTFSampler.output];
+                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
+
+                    switch (accessor.type)
+                    {
+                        case TINYGLTF_TYPE_VEC3:
+                        {
+                            const glm::vec3* outputBuffer = reinterpret_cast<const glm::vec3*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                            for (size_t index = 0; index < accessor.count; index++)
+                            {
+                                sampler.m_TRSoutputValuesToBeInterpolated = glm::vec4(outputBuffer[index], 0.0f);
+                            }
+                            break;
+                        }
+                        case TINYGLTF_TYPE_VEC4:
+                        {
+                            const glm::vec4* outputBuffer = reinterpret_cast<const glm::vec4*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                            for (size_t index = 0; index < accessor.count; index++)
+                            {
+                                sampler.m_TRSoutputValuesToBeInterpolated = glm::vec4(outputBuffer[index]);
+                            }
+                            break;
+                        }
+                        default: {
+                            LOG_CORE_CRITICAL("void Builder::LoadSkeletons(...): accessor type not found");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Channels
+            //animations[i].channels.resize(gltfAnimation.channels.size());
+            //for (size_t channelIndex = 0; channelIndex < gltfAnimation.channels.size(); ++channelIndex)
+            //{
+            //    tinygltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
+            //    AnimationChannel &         dstChannel  = animations[i].channels[channelIndex];
+            //    dstChannel.path                        = glTFChannel.target_path;
+            //    dstChannel.samplerIndex                = glTFChannel.sampler;
+            //    dstChannel.node                        = nodeFromIndex(glTFChannel.target_node);
+            //}
+
+            m_Animations.Push(animation);
+        }
+        
+        if (m_Animations.Size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void Builder::LoadJoint(SkeletalAnimation::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint)
+    void Builder::LoadJoint(Armature::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint)
     {
         int currentJoint = skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = skeleton.m_Joints[currentJoint]; // a reference to the current joint

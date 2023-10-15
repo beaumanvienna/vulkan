@@ -27,11 +27,11 @@
 
 #include "engine.h"
 #include "renderer/buffer.h"
-#include "renderer/skeletalAnimation/skeletalAnimation.h"
+#include "renderer/skeletalAnimation/joints.h"
 
 namespace GfxRenderEngine
 {
-    namespace SkeletalAnimation
+    namespace Armature
     {
         static constexpr int NO_PARENT = -1;
 

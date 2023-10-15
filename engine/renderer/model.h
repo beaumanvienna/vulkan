@@ -32,6 +32,7 @@
 #include "scene/components.h"
 #include "scene/dictionary.h"
 #include "renderer/skeletalAnimation/skeleton.h"
+#include "renderer/skeletalAnimation/skeletalAnimations.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "sprite/sprite.h"
@@ -228,12 +229,13 @@ namespace GfxRenderEngine
     private:
 
         void LoadSkeletons(Material& material);
-        void LoadJoint(SkeletalAnimation::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
+        void LoadJoint(Armature::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
 
     public:
 
-        std::vector<SkeletalAnimation::Skeleton> m_Skeletons;
+        std::vector<Armature::Skeleton> m_Skeletons;
         std::shared_ptr<Buffer> m_ShaderData;
+        SkeletalAnimations m_Animations;
     };
 
     class Model

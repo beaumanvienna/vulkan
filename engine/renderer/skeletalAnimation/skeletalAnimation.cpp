@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -20,44 +20,45 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "core.h"
 
-#include <vector>
-
-#include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
+#include "renderer/skeletalAnimation/skeletalAnimation.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+
+    SkeletalAnimation::SkeletalAnimation(std::string const& name)
+        : m_Name{name}, m_Repeat{false}
+    {}
+
+    void SkeletalAnimation::Start()
     {
+        m_StartTime = Engine::m_Engine->GetTime();
+        Time endTime = m_Keyframes.back().m_TimeStamp; // last keyframe
+        m_Duration = endTime - m_StartTime;
+    }
 
-    public:
+    bool SkeletalAnimation::IsRunning() const
+    {
+        return (m_Repeat || ((Engine::m_Engine->GetTime() - m_StartTime) < m_Duration));
+    }
 
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period>;
+    void SkeletalAnimation::PushKeyframe(KeyPosition const& position)
+    {
+    }
 
-    public:
+    void SkeletalAnimation::PushKeyframe(KeyRotation const& rotation)
+    {
+    }
 
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite GetSprite();
+    void SkeletalAnimation::PushKeyframe(KeyScale const& scale)
+    {
+    }
 
-    private:
+    glm::mat4 SkeletalAnimation::GetTransform()
+    {
+        glm::mat4 transform{1.0f};
+        return transform;
+    }
 
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
-
-    };
 }

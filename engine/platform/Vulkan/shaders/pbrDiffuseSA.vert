@@ -25,7 +25,7 @@
 
 #version 450
 
-#include "engine/renderer/skeletalAnimation/skeletalAnimation.h"
+#include "engine/renderer/skeletalAnimation/joints.h"
 
 #define MAX_LIGHTS 128
 

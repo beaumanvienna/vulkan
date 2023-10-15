@@ -135,7 +135,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
 
         // skeletal animation
-        std::vector<SkeletalAnimation::Skeleton> m_Skeletons;
+        std::vector<Armature::Skeleton> m_Skeletons;
         std::shared_ptr<Buffer> m_ShaderData;
 
     };

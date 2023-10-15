@@ -24,7 +24,7 @@
 
 namespace GfxRenderEngine
 {
-    namespace SkeletalAnimation
+    namespace Armature
     {
         void Skeleton::Traverse()
         {
@@ -84,7 +84,7 @@ namespace GfxRenderEngine
         {
             glm::mat4 nodeMatrix = joint.m_NodeMatrix;
             int parentJoint = joint.m_ParentJoint;
-            while (parentJoint != SkeletalAnimation::NO_PARENT)
+            while (parentJoint != Armature::NO_PARENT)
             {
                 nodeMatrix    = m_Joints[parentJoint].m_NodeMatrix * nodeMatrix;
                 parentJoint   = m_Joints[parentJoint].m_ParentJoint;

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,42 +22,28 @@
 
 #pragma once
 
-#include <vector>
+#include <map>
+#include <memory>
 
 #include "engine.h"
-#include "sprite/spritesheet.h"
-#include "auxiliary/timestep.h"
+#include "renderer/skeletalAnimation/skeletalAnimation.h"
 
 namespace GfxRenderEngine
 {
-    class SpriteAnimation
+
+    class SkeletalAnimations
     {
 
     public:
 
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period>;
+        SkeletalAnimations();
 
-    public:
-
-        SpriteAnimation() {}
-        SpriteAnimation(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(uint frames, Duration durationPerFrame, SpriteSheet* spritesheet);
-        void Create(Duration durationPerFrame, SpriteSheet* spritesheet);
-        uint GetFrames() const { return m_Frames; }
-        uint GetCurrentFrame() const;
-        bool IsNewFrame();
-        void Start();
-        bool IsRunning() const;
-        Sprite GetSprite();
+        size_t Size() const { return m_Animations.size(); }
+        void Push(std::shared_ptr<SkeletalAnimation> const& animation);
 
     private:
 
-        uint m_Frames;
-        Duration m_Duration;
-        float m_TimeFactor;
-        SpriteSheet* m_Spritesheet;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        uint m_PreviousFrame;
+        std::map<std::string, std::shared_ptr<SkeletalAnimation>> m_Animations;
 
     };
 }
