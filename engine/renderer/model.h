@@ -22,6 +22,20 @@
 
 #pragma once
 
+
+#define GL_BYTE                     0x1400  //5120
+#define GL_UNSIGNED_BYTE            0x1401  //5121
+#define GL_SHORT                    0x1402  //5122
+#define GL_UNSIGNED_SHORT           0x1403  //5123
+#define GL_INT                      0x1404  //5124
+#define GL_UNSIGNED_INT             0x1405  //5125
+#define GL_FLOAT                    0x1406  //5126
+#define GL_2_BYTES                  0x1407  //5127
+#define GL_3_BYTES                  0x1408  //5128
+#define GL_4_BYTES                  0x1409  //5129
+#define GL_DOUBLE                   0x140A  //5130
+
+
 #include <memory>
 
 #include "tinygltf/tiny_gltf.h"

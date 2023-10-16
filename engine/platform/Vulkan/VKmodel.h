@@ -136,7 +136,7 @@ namespace GfxRenderEngine
 
         // skeletal animation
         std::vector<Armature::Skeleton> m_Skeletons;
-        std::shared_ptr<Buffer> m_ShaderData;
+        std::shared_ptr<Buffer> m_ShaderDataUbo;
 
     };
 }

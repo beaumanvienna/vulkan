@@ -23,8 +23,9 @@
 #include <memory>
 
 #include "gtc/quaternion.hpp"
-#include "gtx/quaternion.hpp"
 #include "gtc/type_ptr.hpp"
+#include "gtx/quaternion.hpp"
+#include <gtx/matrix_decompose.hpp>
 
 #include "renderer/model.h"
 
@@ -79,35 +80,45 @@ namespace GfxRenderEngine
                 for (size_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
-                    joints[jointIndex].m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
-                    joints[jointIndex].m_InverseBindMatrix = inverseBindMatrices[jointIndex];
+                    auto& joint = joints[jointIndex]; // just a reference for easier code
+                    joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
+                    joint.m_UndefomedInverseBindMatrix = inverseBindMatrices[jointIndex];
 
                     // set up node transform (either TRS or from directy from "matrix")
-                    // the fields are set to identity matrices in the constructor
-                    // in case it cannot be found in the gltf model
+                    // the fields are set to defaults in the constructor
+                    // in case they cannot be found in the gltf model
                     auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
 
                     if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // length must be 0 or 3
                     {
-                        glm::vec3 t = glm::make_vec3(gltfNode.translation.data());
-                        joints[jointIndex].m_NodeTranslation = glm::translate(glm::mat4(1.0f), t);
+                        joint.m_DeformedNodeTranslation = glm::make_vec3(gltfNode.translation.data());
                     }
 
                     if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // length must be 0 or 4
                     {
-                        glm::quat q = glm::make_quat(gltfNode.rotation.data());
-                        joints[jointIndex].m_NodeRotation = glm::toMat4(q);
+                        joint.m_DeformedNodeRotation = glm::make_quat(gltfNode.rotation.data());
                     }
 
                     if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // length must be 0 or 3
                     {
-                        glm::vec3 s = glm::make_vec3(gltfNode.scale.data());
-                        joints[jointIndex].m_NodeScale = glm::scale(glm::mat4(1.0f), s);
+                        joint.m_DeformedNodeScale = glm::make_vec3(gltfNode.scale.data());
                     }
 
                     if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // length must be 0 or 16
                     {
-                        joints[jointIndex].m_NodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
+                        joint.m_UndefomedNodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
+                        glm::quat rotation;
+                        glm::vec3 skew;
+                        glm::vec4 perspective;
+                        glm::decompose(joint.m_UndefomedNodeMatrix, joint.m_DeformedNodeScale, rotation, joint.m_DeformedNodeTranslation, skew, perspective);
+                        joint.m_DeformedNodeRotation = glm::conjugate(rotation);
+                    }
+                    else
+                    {
+                        joint.m_UndefomedNodeMatrix = 
+                            glm::translate(glm::mat4(1.0f), joint.m_DeformedNodeTranslation) * // T
+                            glm::toMat4(joint.m_DeformedNodeRotation) *                        // R
+                            glm::scale(glm::mat4(1.0f), joint.m_DeformedNodeScale);            // S
                     }
 
                     // set up map "global node" to "joint index"
@@ -164,7 +175,7 @@ namespace GfxRenderEngine
                     if (timestampBufferDataType == GL_FLOAT)
                     {
                         const float* timestampBuffer = reinterpret_cast<const float*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                        for (int index = 0; index < accessor.count; ++index)
+                        for (size_t index = 0; index < accessor.count; ++index)
                         {
                             sampler.m_Timestamp = timestampBuffer[index];
                         }

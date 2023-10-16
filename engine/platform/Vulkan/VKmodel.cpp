@@ -81,7 +81,7 @@ namespace GfxRenderEngine
         m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
 
         m_Skeletons  = std::move(builder.m_Skeletons);
-        m_ShaderData = builder.m_ShaderData;
+        m_ShaderDataUbo = builder.m_ShaderData;
 
         CreateVertexBuffers(std::move(builder.m_Vertices));
         CreateIndexBuffers(std::move(builder.m_Indices));
@@ -433,8 +433,8 @@ namespace GfxRenderEngine
             m_Skeletons[0].Update();
 
             // update ubo
-            static_cast<VK_Buffer*>(m_ShaderData.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
-            static_cast<VK_Buffer*>(m_ShaderData.get())->Flush();
+            static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
+            static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
 
             if(m_HasIndexBuffer)
             {

@@ -25,6 +25,9 @@
 #include <iostream>
 #include <map>
 
+#include "gtc/quaternion.hpp"
+#include "gtx/quaternion.hpp"
+
 #include "engine.h"
 #include "renderer/buffer.h"
 #include "renderer/skeletalAnimation/joints.h"
@@ -34,6 +37,7 @@ namespace GfxRenderEngine
     namespace Armature
     {
         static constexpr int NO_PARENT = -1;
+        static constexpr int ROOT_JOINT = 0;
 
         struct ShaderData
         {
@@ -44,13 +48,30 @@ namespace GfxRenderEngine
         {
             // the joint
             int m_GlobalGltfNodeIndex;
-            glm::mat4 m_InverseBindMatrix;
 
-            // world space transform
-            glm::mat4 m_NodeTranslation{1.0f};
-            glm::mat4 m_NodeRotation{1.0f};
-            glm::mat4 m_NodeScale{1.0f};
-            glm::mat4 m_NodeMatrix{1.0f};
+            // undeformed / initial
+            // transform for world coordinate system
+            glm::mat4 m_UndefomedNodeMatrix{1.0f}; // a.k.a undefomed bind matrix
+            // joint coordinate system
+            glm::mat4 m_UndefomedInverseBindMatrix; // a.k.a undeformed inverse node matrix
+
+            // deformed / animated
+            // to be applied to the node matrix a.k.a bind matrix in the world coordinate system,
+            // controlled by an animation or a single pose (they come out of gltf animation samplers)
+            glm::vec3 m_DeformedNodeTranslation{0.0f};              // T
+            glm::quat m_DeformedNodeRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);   // R
+            glm::vec3 m_DeformedNodeScale{1.0f};                    // S
+
+            glm::mat4 GetDeformedBindMatrix()
+            {
+                // apply scale, rotation, and translation IN THAT ORDER (read from right to the left)
+                // to the original undefomed bind matrix
+                // dynamically called once per frame
+                return glm::translate(glm::mat4(1.0f), m_DeformedNodeTranslation) * // T
+                       glm::toMat4(m_DeformedNodeRotation) *                        // R
+                       glm::scale(glm::mat4(1.0f), m_DeformedNodeScale) *           // S
+                       m_UndefomedNodeMatrix;
+            }
 
             // parents and children for the tree hierachy
             int m_ParentJoint;
@@ -62,9 +83,10 @@ namespace GfxRenderEngine
             void Traverse();
             void Traverse(Joint const& joint, uint indent = 0);
             void Update();
-            void UpdateJoints(Joint& joint);
-            glm::mat4 GetNodeMatrix(Joint& joint);
+            void UpdateJoint(int16_t joint);                        // signed because -1 maybe used for invalid joint
+            void UpdateFinalDeformedBindMatrix(int16_t joint); // 32768 joints is more than enough
 
+            bool                        m_IsAnimated = true;
             std::string                 m_Name;
             std::vector<Joint>          m_Joints;
             std::vector<glm::mat4>      m_InverseBindMatrices;
