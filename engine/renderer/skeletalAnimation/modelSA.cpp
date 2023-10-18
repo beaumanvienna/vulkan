@@ -62,6 +62,7 @@ namespace GfxRenderEngine
 
                 // set up name of skeleton
                 skeleton.m_Name = glTFSkin.name;
+                LOG_CORE_INFO("name of skeleton: {0}", skeleton.m_Name);
 
                 // retrieve array of inverse bind matrices of all joints
                 // --> first, retrieve raw data and copy into a std::vector
@@ -141,19 +142,21 @@ namespace GfxRenderEngine
         }
 
         size_t numberOfAnimations = m_GltfModel.animations.size();
+        m_Animations.resize(numberOfAnimations);
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {
             auto& gltfAnimation = m_GltfModel.animations[animationIndex];
             std::string name = gltfAnimation.name;
+            LOG_CORE_INFO("name of animation: {0}", name);
             std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(name);
 
             // Samplers
             size_t numberOfSamplers = gltfAnimation.samplers.size();
-            std::vector<SkeletalAnimation::Sampler> samplers(numberOfSamplers);
+            animation->m_Samplers.resize(numberOfSamplers);
             for (size_t samplerIndex = 0; samplerIndex < numberOfSamplers; ++samplerIndex)
             {
                 tinygltf::AnimationSampler glTFSampler = gltfAnimation.samplers[samplerIndex];
-                auto& sampler  = samplers[samplerIndex];
+                auto& sampler = animation->m_Samplers[samplerIndex];
                 
                 sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
                 if (glTFSampler.interpolation == "STEP")
@@ -175,9 +178,11 @@ namespace GfxRenderEngine
                     if (timestampBufferDataType == GL_FLOAT)
                     {
                         const float* timestampBuffer = reinterpret_cast<const float*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        sampler.m_Timestamps.resize(accessor.count);
                         for (size_t index = 0; index < accessor.count; ++index)
                         {
-                            sampler.m_Timestamp = timestampBuffer[index];
+                            sampler.m_Timestamps[index] = timestampBuffer[index];
+                            if (index == 0) LOG_CORE_INFO("sampler.m_Timestamps[0]: {0}", sampler.m_Timestamps[index]);
                         }
                     }
                     else
@@ -197,18 +202,20 @@ namespace GfxRenderEngine
                         case TINYGLTF_TYPE_VEC3:
                         {
                             const glm::vec3* outputBuffer = reinterpret_cast<const glm::vec3*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(accessor.count);
                             for (size_t index = 0; index < accessor.count; index++)
                             {
-                                sampler.m_TRSoutputValuesToBeInterpolated = glm::vec4(outputBuffer[index], 0.0f);
+                                sampler.m_TRSoutputValuesToBeInterpolated[index] = glm::vec4(outputBuffer[index], 0.0f);
                             }
                             break;
                         }
                         case TINYGLTF_TYPE_VEC4:
                         {
                             const glm::vec4* outputBuffer = reinterpret_cast<const glm::vec4*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(accessor.count);
                             for (size_t index = 0; index < accessor.count; index++)
                             {
-                                sampler.m_TRSoutputValuesToBeInterpolated = glm::vec4(outputBuffer[index]);
+                                sampler.m_TRSoutputValuesToBeInterpolated[index] = glm::vec4(outputBuffer[index]);
                             }
                             break;
                         }
@@ -220,21 +227,38 @@ namespace GfxRenderEngine
                 }
             }
 
-            // Channels
-            //animations[i].channels.resize(gltfAnimation.channels.size());
-            //for (size_t channelIndex = 0; channelIndex < gltfAnimation.channels.size(); ++channelIndex)
-            //{
-            //    tinygltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
-            //    AnimationChannel &         dstChannel  = animations[i].channels[channelIndex];
-            //    dstChannel.path                        = glTFChannel.target_path;
-            //    dstChannel.samplerIndex                = glTFChannel.sampler;
-            //    dstChannel.node                        = nodeFromIndex(glTFChannel.target_node);
-            //}
+            // Each node of the skeleton has channels that point to samplers
+            size_t numberOfChannels = gltfAnimation.channels.size();
+            animation->m_Channels.resize(numberOfChannels);
+            for (size_t channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex)
+            {
+                tinygltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
+                SkeletalAnimation::Channel& channel    = animation->m_Channels[channelIndex];
+                channel.m_SamplerIndex                 = glTFChannel.sampler;
+                channel.m_Node                         = glTFChannel.target_node;
+                if (glTFChannel.target_path == "translation")
+                {
+                    channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
+                }
+                else if (glTFChannel.target_path == "rotation")
+                {
+                    channel.m_Path = SkeletalAnimation::Path::ROTATION;
+                }
+                else if (glTFChannel.target_path == "scale")
+                {
+                    channel.m_Path = SkeletalAnimation::Path::SCALE;
+                }
+                else
+                {
+                    LOG_CORE_CRITICAL("path not supported");
+                }
+                LOG_CORE_INFO("channel.m_Path: {0}, channel.m_SamplerIndex: {1}, channel.m_Node: {2}", glTFChannel.target_path, channel.m_SamplerIndex, channel.m_Node);
+            }
 
-            m_Animations.Push(animation);
+            m_Animations[animationIndex] = animation;
         }
         
-        if (m_Animations.Size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
+        if (m_Animations.size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)

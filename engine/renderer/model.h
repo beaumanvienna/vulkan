@@ -249,7 +249,7 @@ namespace GfxRenderEngine
 
         std::vector<Armature::Skeleton> m_Skeletons;
         std::shared_ptr<Buffer> m_ShaderData;
-        SkeletalAnimations m_Animations;
+        std::vector<std::shared_ptr<SkeletalAnimation>> m_Animations;
     };
 
     class Model

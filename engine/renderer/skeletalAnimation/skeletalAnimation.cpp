@@ -55,10 +55,60 @@ namespace GfxRenderEngine
     {
     }
 
-    glm::mat4 SkeletalAnimation::GetTransform()
+    void SkeletalAnimation::Update(Armature::Skeleton& skeleton)
     {
-        glm::mat4 transform{1.0f};
-        return transform;
-    }
+        static float currentTime = 0.041f;
+        currentTime += 0.01666;
+        if (currentTime > 2.0f)
+        {
+            currentTime = 0.041f;
+        }
+        for (auto& channel : m_Channels)
+        {
+            auto& sampler = m_Samplers[channel.m_SamplerIndex];
+            glm::vec4& TRSoutputValuesToBeInterpolated = sampler.m_TRSoutputValuesToBeInterpolated[0];
+            int jointIndex = skeleton.m_GlobalGltfNodeToJointIndex[channel.m_Node];
+            auto& joint = skeleton.m_Joints[jointIndex]; // the joint to be animated
 
+            for (size_t i = 0; i < sampler.m_Timestamps.size() - 1; i++)
+            {
+                if ((currentTime >= sampler.m_Timestamps[i]) && (currentTime <= sampler.m_Timestamps[i + 1]))
+                {
+                    float a = (currentTime - sampler.m_Timestamps[i]) / (sampler.m_Timestamps[i + 1] - sampler.m_Timestamps[i]);
+                    switch (channel.m_Path)
+                    {
+                        case Path::TRANSLATION:
+                        {
+                            joint.m_DeformedNodeTranslation = glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i], sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
+                            break;
+                        }
+                        case Path::ROTATION:
+                        {
+                            glm::quat q1;
+                            q1.x = sampler.m_TRSoutputValuesToBeInterpolated[i].x;
+                            q1.y = sampler.m_TRSoutputValuesToBeInterpolated[i].y;
+                            q1.z = sampler.m_TRSoutputValuesToBeInterpolated[i].z;
+                            q1.w = sampler.m_TRSoutputValuesToBeInterpolated[i].w;
+
+                            glm::quat q2;
+                            q2.x = sampler.m_TRSoutputValuesToBeInterpolated[i + 1].x;
+                            q2.y = sampler.m_TRSoutputValuesToBeInterpolated[i + 1].y;
+                            q2.z = sampler.m_TRSoutputValuesToBeInterpolated[i + 1].z;
+                            q2.w = sampler.m_TRSoutputValuesToBeInterpolated[i + 1].w;
+
+                            joint.m_DeformedNodeRotation = glm::normalize(glm::slerp(q1, q2, a));
+                            break;
+                        }
+                        case Path::SCALE:
+                        {
+                            joint.m_DeformedNodeScale = glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i], sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
+                            break;
+                        }
+                        default:
+                            LOG_CORE_CRITICAL("path not found");
+                    }
+                }
+            }
+        }
+    }
 }

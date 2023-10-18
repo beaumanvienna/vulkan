@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "renderer/skeletalAnimation/skeleton.h"
+#include "auxiliary/debug.h"
 
 namespace GfxRenderEngine
 {
@@ -60,16 +61,34 @@ namespace GfxRenderEngine
             // update the final global transform of all joints
             int16_t numberOfJoints = static_cast<int16_t>(m_Joints.size());
 
-            if (!m_IsAnimated) // use for debug to check if model renders in w/o deformation
+            if (!m_IsAnimated) // used for debugging to check if the model renders w/o deformation
             {
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
-                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].m_UndefomedNodeMatrix;
+                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = glm::mat4(1.0f);
                 }
             }
             else
             {
-                UpdateJoint(ROOT_JOINT);  // recursively updates skeleton
+                //UpdateJoint(ROOT_JOINT);  // recursively updates skeleton
+                if(1){
+                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                    {
+                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
+                    }
+                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                    {
+                        int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
+                        if (parentJoint != Armature::NO_PARENT)
+                        {
+                            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
+                        }
+                    }
+                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                    {
+                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
+                    }
+                }
             }
         }
 
@@ -95,22 +114,13 @@ namespace GfxRenderEngine
         // from the parent (must be already final) and from the local deformation transform
         void Skeleton::UpdateFinalDeformedBindMatrix(int16_t jointIndex)
         {
-            auto& currentJoint = m_Joints[jointIndex]; // just a reference for easier code
-            int parentJoint    = currentJoint.m_ParentJoint;
-
-            // compute the defomed bind matrix a.k.a global transform of the joint
-            // recursive definition: globalTransform(joint) = globalTransform(parent) * localTransform(joint)
-            // parent must be already final
-            glm::mat4 deformedBindMatrix;
+            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
+            int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
             if (parentJoint != Armature::NO_PARENT)
             {
-                deformedBindMatrix = m_ShaderData.m_FinalJointsMatrices[parentJoint] * currentJoint.GetDeformedBindMatrix();;
+                m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
             }
-            else
-            {
-                deformedBindMatrix = currentJoint.GetDeformedBindMatrix();
-            }
-            m_ShaderData.m_FinalJointsMatrices[jointIndex] = deformedBindMatrix;
+            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
         }
     }
 }

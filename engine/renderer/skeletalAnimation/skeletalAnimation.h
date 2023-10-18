@@ -26,6 +26,7 @@
 
 #include "engine.h"
 #include "auxiliary/timestep.h"
+#include "renderer/skeletalAnimation/skeleton.h"
 
 namespace GfxRenderEngine
 {
@@ -41,6 +42,13 @@ namespace GfxRenderEngine
 
     public:
 
+        enum class Path
+        {
+            TRANSLATION,
+            ROTATION,
+            SCALE
+        };
+
         enum class InterpolationMethod
         {
             LINEAR,
@@ -50,9 +58,16 @@ namespace GfxRenderEngine
 
         struct Sampler
         {
-            float m_Timestamp;
+            std::vector<float> m_Timestamps;
             InterpolationMethod m_Interpolation;
-            glm::vec4 m_TRSoutputValuesToBeInterpolated;
+            std::vector<glm::vec4> m_TRSoutputValuesToBeInterpolated;
+        };
+
+        struct Channel
+        {
+            Path m_Path;
+            int m_SamplerIndex;
+            int m_Node;
         };
 
         struct KeyPosition
@@ -89,11 +104,14 @@ namespace GfxRenderEngine
         bool IsRunning() const;
         std::string GetName() const { return m_Name; }
         void SetRepeat(bool repeat) { m_Repeat = repeat; }
-        glm::mat4 GetTransform();
+        void Update(Armature::Skeleton& skeleton);
 
         void PushKeyframe(KeyPosition const& position);
         void PushKeyframe(KeyRotation const& rotation);
         void PushKeyframe(KeyScale    const& scale);
+
+        std::vector<SkeletalAnimation::Sampler> m_Samplers;
+        std::vector<SkeletalAnimation::Channel> m_Channels;
 
     private:
 

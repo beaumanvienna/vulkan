@@ -81,6 +81,7 @@ namespace GfxRenderEngine
         m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
 
         m_Skeletons  = std::move(builder.m_Skeletons);
+        m_Animations = std::move(builder.m_Animations);
         m_ShaderDataUbo = builder.m_ShaderData;
 
         CreateVertexBuffers(std::move(builder.m_Vertices));
@@ -429,7 +430,8 @@ namespace GfxRenderEngine
                 sizeof(VK_PushConstantDataPbrDiffuse),
                 &push);
 
-            // skeleton
+            // animation
+            m_Animations[0]->Update(m_Skeletons[0]);
             m_Skeletons[0].Update();
 
             // update ubo
