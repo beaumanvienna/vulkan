@@ -282,7 +282,7 @@ namespace GfxRenderEngine
                 const char*  jointsBuffer    = nullptr;
                 const float* weightsBuffer   = nullptr;
 
-                int jointsBufferDataType;
+                int jointsBufferDataType = 0;
 
                 // Get buffer data for vertex positions
                 if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())

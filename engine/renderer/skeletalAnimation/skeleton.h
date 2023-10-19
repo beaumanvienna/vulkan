@@ -46,8 +46,9 @@ namespace GfxRenderEngine
 
         struct Joint
         {
-            // the joint
+            // node index from the gltf nodes std::vector
             int m_GlobalGltfNodeIndex;
+            std::string m_Name;
 
             // undeformed / initial
             // transform for world coordinate system
@@ -58,9 +59,9 @@ namespace GfxRenderEngine
             // deformed / animated
             // to be applied to the node matrix a.k.a bind matrix in the world coordinate system,
             // controlled by an animation or a single pose (they come out of gltf animation samplers)
-            glm::vec3 m_DeformedNodeTranslation{0.0f};              // T
+            glm::vec3 m_DeformedNodeTranslation{0.0f};                              // T
             glm::quat m_DeformedNodeRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);   // R
-            glm::vec3 m_DeformedNodeScale{1.0f};                    // S
+            glm::vec3 m_DeformedNodeScale{1.0f};                                    // S
 
             glm::mat4 GetDeformedBindMatrix()
             {
@@ -68,7 +69,7 @@ namespace GfxRenderEngine
                 // to the original undefomed bind matrix
                 // dynamically called once per frame
                 return glm::translate(glm::mat4(1.0f), m_DeformedNodeTranslation) * // T
-                       glm::toMat4(m_DeformedNodeRotation) *                        // R
+                       glm::mat4(m_DeformedNodeRotation) *                          // R
                        glm::scale(glm::mat4(1.0f), m_DeformedNodeScale) *           // S
                        m_UndefomedNodeMatrix;
             }
@@ -83,7 +84,7 @@ namespace GfxRenderEngine
             void Traverse();
             void Traverse(Joint const& joint, uint indent = 0);
             void Update();
-            void UpdateJoint(int16_t joint);                        // signed because -1 maybe used for invalid joint
+            void UpdateJoint(int16_t joint);                   // signed because -1 maybe used for invalid joint
             void UpdateFinalDeformedBindMatrix(int16_t joint); // 32768 joints is more than enough
 
             bool                        m_IsAnimated = true;

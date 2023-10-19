@@ -84,42 +84,36 @@ namespace GfxRenderEngine
                     auto& joint = joints[jointIndex]; // just a reference for easier code
                     joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
                     joint.m_UndefomedInverseBindMatrix = inverseBindMatrices[jointIndex];
+                    joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
                     // set up node transform (either TRS or from directy from "matrix")
                     // the fields are set to defaults in the constructor
                     // in case they cannot be found in the gltf model
                     auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
 
-                    if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // length must be 0 or 3
+                    if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // size must be 0 or 3
                     {
                         joint.m_DeformedNodeTranslation = glm::make_vec3(gltfNode.translation.data());
                     }
 
-                    if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // length must be 0 or 4
+                    if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // size must be 0 or 4
                     {
-                        joint.m_DeformedNodeRotation = glm::make_quat(gltfNode.rotation.data());
+                        glm::quat q    = glm::make_quat(gltfNode.rotation.data());
+                        joint.m_DeformedNodeRotation = glm::mat4(q);
                     }
 
-                    if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // length must be 0 or 3
+                    if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // size must be 0 or 3
                     {
                         joint.m_DeformedNodeScale = glm::make_vec3(gltfNode.scale.data());
                     }
 
-                    if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // length must be 0 or 16
+                    if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // size must be 0 or 16
                     {
                         joint.m_UndefomedNodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
-                        glm::quat rotation;
-                        glm::vec3 skew;
-                        glm::vec4 perspective;
-                        glm::decompose(joint.m_UndefomedNodeMatrix, joint.m_DeformedNodeScale, rotation, joint.m_DeformedNodeTranslation, skew, perspective);
-                        joint.m_DeformedNodeRotation = glm::conjugate(rotation);
                     }
                     else
                     {
-                        joint.m_UndefomedNodeMatrix = 
-                            glm::translate(glm::mat4(1.0f), joint.m_DeformedNodeTranslation) * // T
-                            glm::toMat4(joint.m_DeformedNodeRotation) *                        // R
-                            glm::scale(glm::mat4(1.0f), joint.m_DeformedNodeScale);            // S
+                        joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
                     }
 
                     // set up map "global node" to "joint index"
