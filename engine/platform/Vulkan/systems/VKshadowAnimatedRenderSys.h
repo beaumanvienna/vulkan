@@ -24,7 +24,6 @@
 
 #include <memory>
 #include <vector>
-#include <unordered_map>
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
@@ -35,38 +34,51 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataPbrDiffuseSA
+    struct VK_PushConstantDataShadowAnimated
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    class VK_RenderSystemPbrDiffuseSA
+    class VK_RenderSystemShadowAnimated
     {
 
     public:
 
-        VK_RenderSystemPbrDiffuseSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrDiffuseSA();
+        VK_RenderSystemShadowAnimated
+        (
+            VkRenderPass renderPass0,
+            VkRenderPass renderPass1,
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayouts
+        );
+        ~VK_RenderSystemShadowAnimated();
 
-        VK_RenderSystemPbrDiffuseSA(const VK_RenderSystemPbrDiffuseSA&) = delete;
-        VK_RenderSystemPbrDiffuseSA& operator=(const VK_RenderSystemPbrDiffuseSA&) = delete;
+        VK_RenderSystemShadowAnimated(const VK_RenderSystemShadowAnimated&) = delete;
+        VK_RenderSystemShadowAnimated& operator=(const VK_RenderSystemShadowAnimated&) = delete;
 
-        void UpdateAnimations(entt::registry& registry);
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void RenderEntities
+        (
+            const VK_FrameInfo& frameInfo,
+            entt::registry& registry,
+            DirectionalLightComponent* directionalLight,
+            int renderpass,
+            VkDescriptorSet shadowDescriptorSet
+        );
 
     private:
 
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
+        void CreatePipelineLayout( std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass);
 
     private:
 
         VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
+        std::unique_ptr<VK_Pipeline> m_Pipeline0;
+        std::unique_ptr<VK_Pipeline> m_Pipeline1;
 
     };
 }

@@ -20,7 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "systems/VKshadowRenderSys.h"
+#include "systems/VKshadowAnimatedRenderSys.h"
 
 #include "VKcore.h"
 #include "VKmodel.h"
@@ -29,7 +29,7 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemShadow::VK_RenderSystemShadow
+    VK_RenderSystemShadowAnimated::VK_RenderSystemShadowAnimated
     (
         VkRenderPass renderPass0,
         VkRenderPass renderPass1,
@@ -41,17 +41,17 @@ namespace GfxRenderEngine
         CreatePipeline(m_Pipeline1, renderPass1);
     }
 
-    VK_RenderSystemShadow::~VK_RenderSystemShadow()
+    VK_RenderSystemShadowAnimated::~VK_RenderSystemShadowAnimated()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemShadow::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemShadowAnimated::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataShadow);
+        pushConstantRange.size = sizeof(VK_PushConstantDataShadowAnimated);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -65,7 +65,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemShadow::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass)
+    void VK_RenderSystemShadowAnimated::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -85,13 +85,13 @@ namespace GfxRenderEngine
         pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/shadowShader.vert.spv",
-            "bin-int/shadowShader.frag.spv",
+            "bin-int/shadowShaderAnimated.vert.spv",
+            "bin-int/shadowShaderAnimated.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemShadow::RenderEntities
+    void VK_RenderSystemShadowAnimated::RenderEntities
     (
         const VK_FrameInfo& frameInfo,
         entt::registry& registry,
@@ -100,19 +100,7 @@ namespace GfxRenderEngine
         VkDescriptorSet shadowDescriptorSet
     )
     {
-        auto meshView = registry.view<MeshComponent, TransformComponent>();
-
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,            // VkCommandBuffer commandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,      // VkPipelineBindPoint pipelineBindPoint,
-            m_PipelineLayout,                     // VkPipelineLayout layout,
-            0,                                    // uint32_t firstSet,
-            1,                                    // uint32_t descriptorSetCount,
-            &shadowDescriptorSet,                 // const VkDescriptorSet* pDescriptorSets,
-            0,                                    // uint32_t dynamicOffsetCount,
-            nullptr                               // const uint32_t* pDynamicOffsets
-        );
+        auto meshView = registry.view<MeshComponent, TransformComponent, PbrDiffuseSATag>();
 
         if (directionalLight->m_RenderPass == 0)
         {
@@ -126,8 +114,8 @@ namespace GfxRenderEngine
         for (auto entity : meshView)
         {
             auto& transform = meshView.get<TransformComponent>(entity);
-            
-            VK_PushConstantDataShadow push{};
+
+            VK_PushConstantDataShadowAnimated push{};
     
             push.m_ModelMatrix  = transform.GetMat4();
     
@@ -136,14 +124,14 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataShadow),
+                sizeof(VK_PushConstantDataShadowAnimated),
                 &push);
 
             auto& mesh = meshView.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadow(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadowAnimated(frameInfo, transform, m_PipelineLayout, shadowDescriptorSet);
             }
         }
     }

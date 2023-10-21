@@ -160,6 +160,18 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::UpdateAnimation()
+    {
+        size_t lastAnimation = m_Animations.size() - 1;
+
+        m_Animations[lastAnimation]->Update(m_Skeletons[0]);
+        m_Skeletons[0].Update();
+
+        // update ubo
+        static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
+        static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
+    }
+
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
         if (m_HasIndexBuffer)
@@ -431,16 +443,6 @@ namespace GfxRenderEngine
                 sizeof(VK_PushConstantDataPbrDiffuse),
                 &push);
 
-            // animation
-            size_t lastAnimation = m_Animations.size() - 1;
-
-            m_Animations[lastAnimation]->Update(m_Skeletons[0]);
-            m_Skeletons[0].Update();
-
-            // update ubo
-            static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
-            static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
-
             if(m_HasIndexBuffer)
             {
                 vkCmdDrawIndexed
@@ -579,20 +581,48 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawShadowInternal(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, const PrimitiveTmp& primitive)
+    void VK_Model::DrawShadowInternal(const VK_FrameInfo& frameInfo, TransformComponent& transform, const PrimitiveTmp& primitive)
     {
-        VK_PushConstantDataShadow push{};
+        if(m_HasIndexBuffer)
+        {
+            vkCmdDrawIndexed
+            (
+                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                primitive.m_IndexCount,     // uint32_t        indexCount
+                1,                          // uint32_t        instanceCount
+                primitive.m_FirstIndex,     // uint32_t        firstIndex
+                primitive.m_FirstVertex,    // int32_t         vertexOffset
+                0                           // uint32_t        firstInstance
+            );
+        }
+        else
+        {
+            vkCmdDraw
+            (
+                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
+                primitive.m_VertexCount,    // uint32_t        vertexCount
+                1,                          // uint32_t        instanceCount
+                0,                          // uint32_t        firstVertex
+                0                           // uint32_t        firstInstance
+            );
+        }
+    }
 
-        push.m_ModelMatrix  = transform.GetMat4();
-
-        vkCmdPushConstants(
+    void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseSAMap& primitive, VkDescriptorSet shadowDescriptorSet)
+    {
+        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_DescriptorSet;
+        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        vkCmdBindDescriptorSets
+        (
             frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
-            sizeof(VK_PushConstantDataShadow),
-            &push);
-
+            2,
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
         if(m_HasIndexBuffer)
         {
             vkCmdDrawIndexed
@@ -623,32 +653,40 @@ namespace GfxRenderEngine
         for(auto& primitive : m_PrimitivesNoMap)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
         }
         for(auto& primitive : m_PrimitivesEmissive)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
         }
         for(auto& primitive : m_PrimitivesEmissiveTexture)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
         }
         for(auto& primitive : m_PrimitivesDiffuseMap)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
         }
         for(auto& primitive : m_PrimitivesDiffuseNormalMap)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
         }
         for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicMap)
         {
             PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, transform, pipelineLayout, primitiveTmp);
+            DrawShadowInternal(frameInfo, transform, primitiveTmp);
+        }
+    }
+
+    void VK_Model::DrawShadowAnimated(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, VkDescriptorSet shadowDescriptorSet)
+    {
+        for(auto& primitive : m_PrimitivesDiffuseSAMap)
+        {
+            DrawAnimatedShadowInternal(frameInfo, transform, pipelineLayout, primitive, shadowDescriptorSet);
         }
     }
 

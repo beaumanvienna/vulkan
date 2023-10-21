@@ -212,6 +212,7 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->UpdateAnimations(m_Registry);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);

@@ -129,9 +129,14 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> animationDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseSADescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> emissiveDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -225,6 +230,12 @@ namespace GfxRenderEngine
             shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadowAnimated =
+        {
+            shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
+            animationDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug =
         {
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
@@ -278,6 +289,12 @@ namespace GfxRenderEngine
                                                               m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
                                                               m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(),
                                                               descriptorSetLayoutsShadow
+                                                          );
+        m_RenderSystemShadowAnimated                    = std::make_unique<VK_RenderSystemShadowAnimated>
+                                                          (
+                                                              m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
+                                                              m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(),
+                                                              descriptorSetLayoutsShadowAnimated
                                                           );
         m_LightSystem                                   = std::make_unique<VK_LightSystem>(m_Device, m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                    = std::make_unique<VK_RenderSystemSpriteRenderer>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
@@ -646,10 +663,26 @@ namespace GfxRenderEngine
                 0 /* shadow pass 0*/,
                 m_ShadowDescriptorSets0[m_CurrentFrameIndex]
             );
+            m_RenderSystemShadowAnimated->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[0],
+                0 /* shadow pass 0*/,
+                m_ShadowDescriptorSets0[m_CurrentFrameIndex]
+            );
             EndRenderPass(m_CurrentCommandBuffer);
 
             BeginShadowRenderPass1(m_CurrentCommandBuffer);
             m_RenderSystemShadow->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[1],
+                1 /* shadow pass 1*/,
+                m_ShadowDescriptorSets1[m_CurrentFrameIndex]
+            );
+            m_RenderSystemShadowAnimated->RenderEntities
             (
                 m_FrameInfo,
                 registry,
@@ -977,6 +1010,8 @@ namespace GfxRenderEngine
                 "skybox.frag",
                 "shadowShader.vert",
                 "shadowShader.frag",
+                "shadowShaderAnimated.vert",
+                "shadowShaderAnimated.frag",
                 "debug.vert",
                 "debug.frag",
                 "pbrEmissive.vert",

@@ -31,6 +31,7 @@
 #include "platform/Vulkan/imguiEngine/imgui.h"
 
 #include "systems/VKshadowRenderSys.h"
+#include "systems/VKshadowAnimatedRenderSys.h"
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKcubemapRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
@@ -107,6 +108,8 @@ namespace GfxRenderEngine
         virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
 
+        virtual void UpdateAnimations(entt::registry& registry) override { m_RenderSystemPbrDiffuseSA->UpdateAnimations(registry); };
+
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
     public:
@@ -149,6 +152,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuse>                        m_RenderSystemPbrDiffuse;
         std::unique_ptr<VK_RenderSystemPbrEmissive>                       m_RenderSystemPbrEmissive;
         std::unique_ptr<VK_RenderSystemPbrDiffuseSA>                      m_RenderSystemPbrDiffuseSA;
+        std::unique_ptr<VK_RenderSystemShadowAnimated>                    m_RenderSystemShadowAnimated;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                  m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                m_RenderSystemPbrEmissiveTexture;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
