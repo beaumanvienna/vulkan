@@ -417,8 +417,9 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuse push{};
+            VK_PushConstantDataPbrDiffuseSA push{};
             push.m_ModelMatrix  = transform.GetMat4();
+
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseSAMaterial.m_Roughness;
             push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseSAMaterial.m_Metallic;
@@ -431,7 +432,9 @@ namespace GfxRenderEngine
                 &push);
 
             // animation
-            m_Animations[0]->Update(m_Skeletons[0]);
+            size_t lastAnimation = m_Animations.size() - 1;
+
+            m_Animations[lastAnimation]->Update(m_Skeletons[0]);
             m_Skeletons[0].Update();
 
             // update ubo

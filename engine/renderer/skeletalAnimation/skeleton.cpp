@@ -71,23 +71,21 @@ namespace GfxRenderEngine
             else
             {
                 //UpdateJoint(ROOT_JOINT);  // recursively updates skeleton
-                if(1){
-                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                {
+                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
+                }
+                for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                {
+                    int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
+                    if (parentJoint != Armature::NO_PARENT)
                     {
-                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
+                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
                     }
-                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
-                    {
-                        int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
-                        if (parentJoint != Armature::NO_PARENT)
-                        {
-                            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
-                        }
-                    }
-                    for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
-                    {
-                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
-                    }
+                }
+                for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+                {
+                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
                 }
             }
         }

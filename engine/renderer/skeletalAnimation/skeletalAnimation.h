@@ -112,13 +112,21 @@ namespace GfxRenderEngine
 
         std::vector<SkeletalAnimation::Sampler> m_Samplers;
         std::vector<SkeletalAnimation::Channel> m_Channels;
+        
+        void SetFirstKeyFrameTime(float firstKeyFrameTime) { m_FirstKeyFrameTime = firstKeyFrameTime; }
+        void SetLastKeyFrameTime(float lastKeyFrameTime) { m_LastKeyFrameTime = lastKeyFrameTime; }
 
     private:
 
         std::string m_Name; 
         bool m_Repeat;
+        // engine time
         Duration m_Duration;
         Time m_StartTime;
+        // relative animation time
+        float m_FirstKeyFrameTime;
+        float m_LastKeyFrameTime;
+        float m_CurrentKeyFrameTime = 0.0f;
         std::vector<Keyframe> m_Keyframes;
 
     };

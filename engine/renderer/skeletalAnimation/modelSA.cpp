@@ -176,7 +176,6 @@ namespace GfxRenderEngine
                         for (size_t index = 0; index < accessor.count; ++index)
                         {
                             sampler.m_Timestamps[index] = timestampBuffer[index];
-                            if (index == 0) LOG_CORE_INFO("sampler.m_Timestamps[0]: {0}", sampler.m_Timestamps[index]);
                         }
                     }
                     else
@@ -220,7 +219,15 @@ namespace GfxRenderEngine
                     }
                 }
             }
-
+            if (animation->m_Samplers.size()) // at least one sampler found
+            {
+                auto& sampler = animation->m_Samplers[0];
+                if (sampler.m_Timestamps.size() >= 2) // samplers have at least 2 keyframes to interpolate in between
+                {
+                    animation->SetFirstKeyFrameTime(sampler.m_Timestamps[0]);
+                    animation->SetLastKeyFrameTime(sampler.m_Timestamps.back());
+                }
+            }
             // Each node of the skeleton has channels that point to samplers
             size_t numberOfChannels = gltfAnimation.channels.size();
             animation->m_Channels.resize(numberOfChannels);
@@ -246,9 +253,7 @@ namespace GfxRenderEngine
                 {
                     LOG_CORE_CRITICAL("path not supported");
                 }
-                LOG_CORE_INFO("channel.m_Path: {0}, channel.m_SamplerIndex: {1}, channel.m_Node: {2}", glTFChannel.target_path, channel.m_SamplerIndex, channel.m_Node);
             }
-
             m_Animations[animationIndex] = animation;
         }
         
