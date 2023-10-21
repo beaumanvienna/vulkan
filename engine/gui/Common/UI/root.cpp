@@ -317,13 +317,13 @@ namespace GfxRenderEngine
         {
             enum class SCREEN_DirState
             {
-                NONE = 0,
-                POS = 1,
-                NEG = 2,
+                _NONE = 0,
+                _POS = 1,
+                _NEG = 2,
             };
             struct PrevState
             {
-                PrevState() : x(SCREEN_DirState::NONE), y(SCREEN_DirState::NONE)
+                PrevState() : x(SCREEN_DirState::_NONE), y(SCREEN_DirState::_NONE)
                 {
                 }
 
@@ -349,19 +349,19 @@ namespace GfxRenderEngine
                 {
                     return;
                 }
-                if (old == SCREEN_DirState::POS)
+                if (old == SCREEN_DirState::_POS)
                 {
                     KeyEvent(SCREEN_KeyInput{ DEVICE_ID_KEYBOARD, pos_key, KEY_UP }, root);
                 }
-                else if (old == SCREEN_DirState::NEG)
+                else if (old == SCREEN_DirState::_NEG)
                 {
                     KeyEvent(SCREEN_KeyInput{ DEVICE_ID_KEYBOARD, neg_key, KEY_UP }, root);
                 }
-                if (cur == SCREEN_DirState::POS)
+                if (cur == SCREEN_DirState::_POS)
                 {
                     KeyEvent(SCREEN_KeyInput{ DEVICE_ID_KEYBOARD, pos_key, KEY_DOWN }, root);
                 }
-                else if (cur == SCREEN_DirState::NEG)
+                else if (cur == SCREEN_DirState::_NEG)
                 {
                     KeyEvent(SCREEN_KeyInput{ DEVICE_ID_KEYBOARD, neg_key, KEY_DOWN }, root);
                 }
@@ -381,14 +381,14 @@ namespace GfxRenderEngine
                 case DEVICE_ID_X360_3:
                 {
                     PrevState &old = state[stateKey];
-                    SCREEN_DirState dir = SCREEN_DirState::NONE;
+                    SCREEN_DirState dir = SCREEN_DirState::_NONE;
                     if (axis.value < -THRESHOLD)
                     {
-                        dir = SCREEN_DirState::NEG;
+                        dir = SCREEN_DirState::_NEG;
                     }
                     else if (axis.value > THRESHOLD)
                     {
-                        dir = SCREEN_DirState::POS;
+                        dir = SCREEN_DirState::_POS;
                     }
 
                     if (axis.axisId == Controller::RIGHT_STICK_HORIZONTAL)

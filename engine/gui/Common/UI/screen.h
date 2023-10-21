@@ -188,7 +188,7 @@ namespace GfxRenderEngine
         {
             SCREEN_Screen *screen;
             int flags;
-            SCREEN_UI::View *focusedView;  
+            SCREEN_UI::View *focusedView;
         };
 
         std::vector<Layer> stack_;

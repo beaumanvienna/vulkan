@@ -363,7 +363,7 @@ namespace GfxRenderEngine
         float yres = screenManager()->getUIContext()->GetBounds().h;
         float scaleWidth = Engine::m_Engine->GetWindowHeight() / 1080.0f;
         box_ = new LinearLayout(ORIENT_VERTICAL,
-            new AnchorLayoutParams(PopupWidth() * scaleWidth, FillVertical() ? yres - 30.0f : WRAP_CONTENT, dc.GetBounds().centerX(), dc.GetBounds().centerY(), NONE, NONE, true));
+            new AnchorLayoutParams(PopupWidth() * scaleWidth, FillVertical() ? yres - 30.0f : static_cast<float>(WRAP_CONTENT), dc.GetBounds().centerX(), dc.GetBounds().centerY(), NONE, NONE, true));
 
         root_->Add(box_);
         box_->SetBG(dc.theme->popupStyle.background);

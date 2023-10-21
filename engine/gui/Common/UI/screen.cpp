@@ -80,7 +80,7 @@ namespace GfxRenderEngine
             LOG_CORE_WARN("switchToNext: No nextStack_!");
         }
 
-        Layer temp = {nullptr, 0};
+        Layer temp = {nullptr, 0, nullptr};
         if (!stack_.empty())
         {
             temp = stack_.back();
@@ -275,7 +275,7 @@ namespace GfxRenderEngine
         lastFocusView.push(SCREEN_UI::GetFocusedView());
         SCREEN_UI::SetFocusedView(nullptr);
 
-        Layer layer = {screen, layerFlags};
+        Layer layer = {screen, layerFlags, nullptr};
         if (nextStack_.empty())
         {
             stack_.push_back(layer);

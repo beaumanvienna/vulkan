@@ -112,23 +112,23 @@ namespace GfxRenderEngine
         {
             setCurrentThreadName("PathBrowser");
 
-            std::unique_lock<std::mutex> guard(pendingLock_);
+            std::unique_lock<std::mutex> guard2(pendingLock_);
             std::vector<File::FileInfo> results;
             std::string lastPath;
             while (!pendingStop_)
             {
                 while (lastPath == pendingPath_ && !pendingCancel_) 
                 {
-                    pendingCond_.wait(guard);
+                    pendingCond_.wait(guard2);
                 }
                 lastPath = pendingPath_;
                 bool success = false;
                 if (!lastPath.empty())
                 {
-                    guard.unlock();
+                    guard2.unlock();
                     results.clear();
                     success = false;
-                    guard.lock();
+                    guard2.lock();
                 }
 
                 if (pendingPath_ == lastPath)

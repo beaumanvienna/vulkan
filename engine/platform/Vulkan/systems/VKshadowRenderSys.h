@@ -66,7 +66,7 @@ namespace GfxRenderEngine
             entt::registry& registry,
             DirectionalLightComponent* directionalLight,
             int renderpass,
-            VkDescriptorSet shadowDescriptorSet
+            const VkDescriptorSet& shadowDescriptorSet
         );
 
     private:

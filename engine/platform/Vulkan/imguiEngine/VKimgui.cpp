@@ -30,6 +30,12 @@
 
 namespace GfxRenderEngine
 {
+    static void VKCheckResult(VkResult err)
+    {
+        if (err == 0) return;
+        fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+        if (err < 0) abort();
+    }
 
     VK_Imgui::VK_Imgui(VkRenderPass renderPass, uint imageCount)
     {

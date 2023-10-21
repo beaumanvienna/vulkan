@@ -97,7 +97,7 @@ namespace GfxRenderEngine
         entt::registry& registry,
         DirectionalLightComponent* directionalLight,
         int renderpass,
-        VkDescriptorSet shadowDescriptorSet
+        const VkDescriptorSet& shadowDescriptorSet
     )
     {
         auto meshView = registry.view<MeshComponent, TransformComponent, PbrDiffuseSATag>();
@@ -131,7 +131,7 @@ namespace GfxRenderEngine
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadowAnimated(frameInfo, transform, m_PipelineLayout, shadowDescriptorSet);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadowAnimated(frameInfo, m_PipelineLayout, shadowDescriptorSet);
             }
         }
     }

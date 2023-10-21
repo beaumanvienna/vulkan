@@ -40,7 +40,7 @@ namespace LucreApp
 
     void ControllerSetupAnimation::SetActiveController(int activeController)
     {
-        glm::vec3 translation;
+        glm::vec3 translation(0.0f);
         float windowWidthHalf  = Engine::m_Engine->GetWindowWidth() / 2.0f;
         float windowHeight = Engine::m_Engine->GetWindowHeight();
         if (activeController == Controller::FIRST_CONTROLLER)

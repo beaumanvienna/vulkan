@@ -39,13 +39,6 @@
 namespace GfxRenderEngine
 {
 
-    static void VKCheckResult(VkResult err)
-    {
-        if (err == 0) return;
-        fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-        if (err < 0) abort();
-    }
-
     class VK_Imgui : public Imgui
     {
         public:

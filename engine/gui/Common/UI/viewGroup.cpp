@@ -1016,7 +1016,7 @@ namespace GfxRenderEngine
                     {
                         buffer.resize(1);
                         float pos = scrollToTarget_ ? scrollTarget_ : scrollPos_;
-                        buffer[0] = *(int *)&pos;
+                        buffer[0] = static_cast<int>(pos);
                     }
                     break;
 
