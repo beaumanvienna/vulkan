@@ -124,7 +124,7 @@ namespace GfxRenderEngine
 
                 LoadJoint(skeleton, rootJoint, Armature::NO_PARENT);
 
-                skeleton.Traverse();
+                //skeleton.Traverse();
             }
 
             // create a buffer to be used in the shader for the joint matrices

@@ -711,7 +711,7 @@ namespace GfxRenderEngine
     {
         char guidStr[64];
         SDL_JoystickGUID guidSDL;
-        SDL_Joystick *joy;
+        SDL_Joystick *joy = nullptr;
 
         for (auto controller = m_Controllers.begin(); controller != m_Controllers.end(); controller++)
         {

@@ -79,11 +79,11 @@ namespace GfxRenderEngine
     private:
 
         bool m_Dirty{true};
-        glm::vec3 m_Scale;
-        glm::vec3 m_Rotation;
-        glm::vec3 m_Translation;
-        glm::mat4 m_Mat4;
-        glm::mat3 m_NormalMatrix;
+        glm::vec3 m_Scale = glm::vec3{1.0f};
+        glm::vec3 m_Rotation{0.0f};
+        glm::vec3 m_Translation{0.0f};
+        glm::mat4 m_Mat4 = glm::mat4(1.0f);
+        glm::mat3 m_NormalMatrix = glm::mat4(1.0f);
 
     };
 
@@ -97,7 +97,7 @@ namespace GfxRenderEngine
 
         std::string m_Name;
         std::shared_ptr<Model> m_Model;
-        bool m_Enabled;
+        bool m_Enabled{false};
 
     private:
 
@@ -145,52 +145,52 @@ namespace GfxRenderEngine
 
     struct SpriteRendererComponent
     {
-        float m_Roughness;
-        float m_Metallic;
+        float m_Roughness{0.f};
+        float m_Metallic{0.f};
     };
 
     struct SpriteRendererComponent2D
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct PbrEmissiveTag
     {
-        float m_EmissiveStrength = 0.f;
+        float m_EmissiveStrength{0.f};
     };
 
     struct PbrEmissiveTextureTag
     {
-        float m_EmissiveStrength = 0.f;
+        float m_EmissiveStrength{0.f};
     };
 
     struct PbrNoMapTag
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct PbrDiffuseTag
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct PbrDiffuseSATag
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct PbrDiffuseNormalTag
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct PbrDiffuseNormalRoughnessMetallicTag
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 
     struct CubemapComponent
     {
-        uint m_Tag;
+        uint m_Tag{0};
     };
 }
