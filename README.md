@@ -84,7 +84,7 @@ Compile and run release target: make config=release verbose=1 && ./bin/Release/l
 <br/>
 Dependencies: premake5, Visual Studio, Vulkan SDK<br/>
 <br/>
-Download the Vulkan SDK from lunarg.com, install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/Vulkan SDK. The version number is omitted in the path.<br/>
+Download the Vulkan SDK from lunarg.com, install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/VulkanSDK. The version number is omitted in the path.<br/>
 <br/>
 In a terminal, starting from the root folder vulkan, if you have Visual Studio 2019:<br/>
 premake5.exe vs2019<br/>
