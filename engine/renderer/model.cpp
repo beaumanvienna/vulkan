@@ -934,15 +934,15 @@ namespace GfxRenderEngine
     void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
     {
         uint cnt = 0;
-        uint vertexIndex1;
-        uint vertexIndex2;
-        uint vertexIndex3;
-        glm::vec3 position1;
-        glm::vec3 position2;
-        glm::vec3 position3;
-        glm::vec2 uv1;
-        glm::vec2 uv2;
-        glm::vec2 uv3;
+        uint vertexIndex1 = 0;
+        uint vertexIndex2 = 0;
+        uint vertexIndex3 = 0;
+        glm::vec3 position1 = glm::vec3{0.0f};
+        glm::vec3 position2 = glm::vec3{0.0f};
+        glm::vec3 position3 = glm::vec3{0.0f};
+        glm::vec2 uv1 = glm::vec2{0.0f};
+        glm::vec2 uv2 = glm::vec2{0.0f};
+        glm::vec2 uv3 = glm::vec2{0.0f};
 
         for (uint index : indices)
         {

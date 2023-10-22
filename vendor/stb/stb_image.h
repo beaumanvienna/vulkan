@@ -653,6 +653,7 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 
 #ifndef STBI_REALLOC_SIZED
 #define STBI_REALLOC_SIZED(p,oldsz,newsz) STBI_REALLOC(p,newsz)
+#define STBI_REALLOC_SIZED_FIXED(p,newsz) STBI_REALLOC(p,newsz)
 #endif
 
 // x86/x64 detection
@@ -4110,7 +4111,8 @@ stbi_inline static unsigned int stbi__zreceive(stbi__zbuf *z, int n)
 
 static int stbi__zhuffman_decode_slowpath(stbi__zbuf *a, stbi__zhuffman *z)
 {
-   int b,s,k;
+   unsigned int b;
+   int s,k;
    // not resolved by fast table, so compute it the slow way
    // use jpeg approach, which requires MSbits at top
    k = stbi__bit_reverse(a->code_buffer, 16);
@@ -6775,8 +6777,8 @@ static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y,
       stbi_uc *two_back = 0;
       stbi__gif g;
       int stride;
-      int out_size = 0;
-      int delays_size = 0;
+      //int out_size = 0;
+      //int delays_size = 0;
       memset(&g, 0, sizeof(g));
       if (delays) {
          *delays = 0;
@@ -6793,7 +6795,7 @@ static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y,
             stride = g.w * g.h * 4;
 
             if (out) {
-               void *tmp = (stbi_uc*) STBI_REALLOC_SIZED( out, out_size, layers * stride );
+               void *tmp = (stbi_uc*) STBI_REALLOC_SIZED_FIXED( out, layers * stride );
                if (NULL == tmp) {
                   STBI_FREE(g.out);
                   STBI_FREE(g.history);
@@ -6802,19 +6804,19 @@ static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y,
                }
                else {
                    out = (stbi_uc*) tmp;
-                   out_size = layers * stride;
+                   //out_size = layers * stride;
                }
 
                if (delays) {
-                  *delays = (int*) STBI_REALLOC_SIZED( *delays, delays_size, sizeof(int) * layers );
-                  delays_size = layers * sizeof(int);
+                  *delays = (int*) STBI_REALLOC_SIZED_FIXED( *delays, sizeof(int) * layers );
+                  //delays_size = layers * sizeof(int);
                }
             } else {
                out = (stbi_uc*)stbi__malloc( layers * stride );
-               out_size = layers * stride;
+               //out_size = layers * stride;
                if (delays) {
                   *delays = (int*) stbi__malloc( layers * sizeof(int) );
-                  delays_size = layers * sizeof(int);
+                  //delays_size = layers * sizeof(int);
                }
             }
             memcpy( out + ((layers - 1) * stride), u, stride );

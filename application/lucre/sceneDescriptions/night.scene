@@ -1,9 +1,9 @@
 # Lucre scene description file
 glTF-files:
-  application/lucre/models/guybrush_animated_gltf/guybrush_animations.gltf:
-    translation: [0.776580513, 1.262, -0.382]
-    scale: [0.499998391, 0.499991238, 0.499978572]
-    rotation: [0, 0, 0]
+  application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf:
+    translation: [0.259039938, 1.25051808, -1.12131023]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
   application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
     translation: [-8.62298298, 1.87028003, -0.836108804]
     scale: [0.499997199, 0.500018835, 0.500006139]
