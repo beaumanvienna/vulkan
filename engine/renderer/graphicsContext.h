@@ -50,6 +50,7 @@ namespace GfxRenderEngine
 
         virtual uint GetContextWidth() const = 0;
         virtual uint GetContextHeight() const = 0;
+        virtual bool MultiThreadingSupport() const = 0;
 
         static std::shared_ptr<GraphicsContext> Create(void* window);
 

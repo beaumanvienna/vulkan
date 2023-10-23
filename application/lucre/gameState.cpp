@@ -32,8 +32,6 @@
 #include "scenes/nightScene.h"
 #include "scenes/settingsScene.h"
 
-#define MULTI_THREADED
-
 namespace LucreApp
 {
 
@@ -228,56 +226,65 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                #ifdef MULTI_THREADED
-                std::thread loadMainSceneThread([=]()
-                #endif
-                {
+                auto lambda = [=]()
+                {   
                     auto scenePtr = std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
                     SetLoaded(state);
+                };
+                if (Engine::m_Engine->MultiThreadingSupport())
+                {
+                    std::thread loadMainSceneThread(lambda);
+                    loadMainSceneThread.detach();
                 }
-                #ifdef MULTI_THREADED
-                );
-                loadMainSceneThread.detach();
-                #endif
+                else
+                {
+                    lambda();
+                }
                 break;
             }
             case State::BEACH:
             {
-                #ifdef MULTI_THREADED
-                std::thread loadBeachSceneThread([=]()
-                #endif
+                auto lambda = [=]()
                 {
                     auto scenePtr = std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
                     SetLoaded(state);
+                };
+                if (Engine::m_Engine->MultiThreadingSupport())
+                {
+                    std::thread loadBeachSceneThread(lambda);
+                    loadBeachSceneThread.detach();
                 }
-                #ifdef MULTI_THREADED
-                );
-                loadBeachSceneThread.detach();
-                #endif
+                else
+                {
+                    lambda();
+                }
                 break;
             }
             case State::NIGHT:
             {
-                #ifdef MULTI_THREADED
-                std::thread loadNightSceneThread([=]()
-                #endif
+                auto lambda = [=]()
                 {
                     auto scenePtr = std::make_shared<NightScene>("night.scene", "application/lucre/sceneDescriptions/night.scene");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
                     SetLoaded(state);
+                };
+                if (Engine::m_Engine->MultiThreadingSupport())
+                {
+                    std::thread loadNightSceneThread(lambda);
+                    loadNightSceneThread.detach();
                 }
-                #ifdef MULTI_THREADED
-                );
-                loadNightSceneThread.detach();
-                #endif
+                else
+                {
+                    lambda();
+                }
                 break;
             }
             case State::CUTSCENE:

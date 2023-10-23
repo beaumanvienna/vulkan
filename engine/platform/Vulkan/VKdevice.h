@@ -138,6 +138,7 @@ namespace GfxRenderEngine
         VkSampleCountFlagBits m_SampleCountFlagBits;
         
         VkInstance GetInstance() const { return m_Instance; }
+        bool MultiThreadingSupport() const { return m_TransferQueueSupportsGraphics; }
 
     private:
 

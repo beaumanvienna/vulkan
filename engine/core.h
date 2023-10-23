@@ -98,6 +98,7 @@ namespace GfxRenderEngine
         void PlaySound(const char* path, int resourceID, const std::string& resourceClass) { m_Audio->PlaySound(path, resourceID, resourceClass); }
 
         std::shared_ptr<Renderer> GetRenderer() const { return m_GraphicsContext->GetRenderer(); }
+        bool MultiThreadingSupport() const { return m_GraphicsContext->MultiThreadingSupport(); }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
 
         void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }

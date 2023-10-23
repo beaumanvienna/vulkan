@@ -87,4 +87,8 @@ namespace GfxRenderEngine
         return model;
     }
 
+    bool VK_Context::MultiThreadingSupport() const
+    {
+        return VK_Core::m_Device->MultiThreadingSupport(); 
+    }
 }
