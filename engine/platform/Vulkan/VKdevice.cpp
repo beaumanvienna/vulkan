@@ -206,7 +206,7 @@ namespace GfxRenderEngine
         // graphics queue
         queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfos.queueFamilyIndex = spec.m_QueueFamilyIndex;
-        queueCreateInfos.queueCount = 1;
+        queueCreateInfos.queueCount = spec.m_QueueCount;
         queueCreateInfos.pQueuePriorities = &spec.m_QueuePriority;
         return queueCreateInfos;
     }
@@ -214,40 +214,32 @@ namespace GfxRenderEngine
     void VK_Device::CreateLogicalDevice()
     {
         auto& indices = m_QueueFamilyIndices;
-        int numberOfQueues = indices.m_NumberOfQueues; // most likely 2, as praphics and present often share a queue
-                                                       // we need either two queues:
-                                                       //    graphics/present and transfer
-                                                       // or graphics and present and transfer
-        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(numberOfQueues);
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 
-        for (int queueIndex = 0; queueIndex<numberOfQueues; ++queueIndex)
+        for (int familyIndex : indices.m_UniqueFamilyIndices)
         {
-            if (queueIndex == indices.m_GraphicsFamily)
+            int queuesPerFamily = 0;
+            if (familyIndex == indices.m_GraphicsFamily)
             {  // graphics
-                QueueSpec spec =
-                {
-                    indices.m_GraphicsFamily,  // int     m_QueueFamilyIndex;
-                    1.0f                       // float   m_QeuePriority;
-                };
-                queueCreateInfos[indices.m_GraphicsFamily] = CreateQueue(spec);
+                ++queuesPerFamily;
             }
-            else if (queueIndex == indices.m_PresentFamily)
-            { // present
-                QueueSpec spec =
-                {
-                    indices.m_PresentFamily,    // int     m_QueueFamilyIndex;
-                    1.0f                        // float   m_QeuePriority;
-                };
-                queueCreateInfos[indices.m_PresentFamily] = CreateQueue(spec);
+            else if (familyIndex == indices.m_PresentFamily) // present: only create a queue when in different family than graphics
+            { 
+                ++queuesPerFamily;
             }
-            else if (queueIndex == indices.m_TransferFamily)
+            if (familyIndex == indices.m_TransferFamily)
             {  // transfer
-                QueueSpec spec = 
+               ++queuesPerFamily;
+            }
+            if (queuesPerFamily)
+            {  
+                QueueSpec spec =
                 {
-                    indices.m_TransferFamily,   // int     m_QueueFamilyIndex;
-                    1.0f                        // float   m_QeuePriority;
+                    familyIndex,    // int     m_QueueFamilyIndex;
+                    1.0f,           // float   m_QeuePriority;
+                    queuesPerFamily // int     m_QueueCount;
                 };
-                queueCreateInfos[indices.m_TransferFamily] = CreateQueue(spec);
+                queueCreateInfos.push_back(CreateQueue(spec));
             }
         }
 
@@ -257,7 +249,7 @@ namespace GfxRenderEngine
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         
-        createInfo.queueCreateInfoCount = numberOfQueues;
+        createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         
         createInfo.pEnabledFeatures = &deviceFeatures;
@@ -284,6 +276,7 @@ namespace GfxRenderEngine
         vkGetDeviceQueue(m_Device, indices.m_GraphicsFamily, indices.m_QueueIndices[QueueTypes::GRAPHICS], &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.m_PresentFamily,  indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
         vkGetDeviceQueue(m_Device, indices.m_TransferFamily, indices.m_QueueIndices[QueueTypes::TRANSFER], &m_TransfertQueue);
+        m_TransferQueueSupportsGraphics = indices.m_GraphicsFamily == indices.m_TransferFamily;
     }
 
     void VK_Device::CreateCommandPool()
@@ -521,6 +514,7 @@ namespace GfxRenderEngine
         {
             indices.m_UniqueFamilyIndices[index] = NO_ASSIGNED;
         }
+        int numberOfQueues = 0;
         int uniqueIndices = 0;
         int i = 0;
         for (const auto& queueFamily : queueFamilies)
@@ -538,6 +532,7 @@ namespace GfxRenderEngine
                     ++uniqueIndices;
                 }
                 indices.m_GraphicsFamily = i;
+                ++numberOfQueues;
                 --availableQueues;
             }
             // present queue (can be shared with graphics queue, no need to check availableQueues)
@@ -556,6 +551,7 @@ namespace GfxRenderEngine
                         indices.m_UniqueFamilyIndices[uniqueIndices] = i;
                         ++uniqueIndices;
                     }
+                    ++numberOfQueues;
                     --availableQueues;
                 }
             }
@@ -570,12 +566,13 @@ namespace GfxRenderEngine
                     indices.m_UniqueFamilyIndices[uniqueIndices] = i;
                     ++uniqueIndices;
                 }
+                ++numberOfQueues;
                 indices.m_TransferFamily = i;
             }
             
             if (indices.IsComplete())
             {
-                indices.m_NumberOfQueues = i + 1;
+                indices.m_NumberOfQueues = numberOfQueues;
                 break;
             }
 
@@ -723,7 +720,19 @@ namespace GfxRenderEngine
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = type == QueueTypes::TRANSFER ? m_LoadCommandPool : m_GraphicsCommandPool;
+        // single time commands are transfer commands
+        // however, commands like vkCmdBlitImage require graphics support on transfer queues
+        // --> if the transfer queue is of the same queue family as the graphics queue,
+        // the load command pool can be used, multithreading enabled, "type" be ignored
+        // otherwise the graphics queue has to be used, if requested by "type"
+        if (m_TransferQueueSupportsGraphics) 
+        {
+            allocInfo.commandPool = m_LoadCommandPool;
+        }
+        else
+        {
+            allocInfo.commandPool = type == QueueTypes::TRANSFER ? m_LoadCommandPool : m_GraphicsCommandPool;
+        }
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -747,7 +756,8 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        if (type == QueueTypes::TRANSFER)
+        // see BeginSingleTimeCommands
+        if ((type == QueueTypes::TRANSFER) || m_TransferQueueSupportsGraphics)
         {
             vkQueueSubmit(TransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(TransferQueue());

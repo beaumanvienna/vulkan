@@ -147,6 +147,7 @@ namespace GfxRenderEngine
         {
             int     m_QueueFamilyIndex;
             float   m_QueuePriority;
+            int     m_QueueCount;
         };
 
         void CreateInstance();
@@ -185,6 +186,6 @@ namespace GfxRenderEngine
 
         const std::vector<const char *> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
         const std::vector<const char *> m_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
+        bool m_TransferQueueSupportsGraphics = false;
     };
 }
