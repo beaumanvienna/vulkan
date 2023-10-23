@@ -117,7 +117,7 @@ namespace GfxRenderEngine
 
     void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -167,7 +167,7 @@ namespace GfxRenderEngine
             1, &barrier
         );
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
     }
 
     void VK_Texture::CreateImage
@@ -415,7 +415,7 @@ namespace GfxRenderEngine
             return;
         }
 
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -475,7 +475,7 @@ namespace GfxRenderEngine
 
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
 
     }
 }

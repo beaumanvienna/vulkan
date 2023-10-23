@@ -24,7 +24,6 @@
 
 #include <iostream>
 #include <unordered_map>
-#include <vulkan/vulkan.h>
 
 #include "engine.h"
 #include "entt.hpp"
@@ -34,8 +33,6 @@
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
 #include "renderer/camera.h"
-
-#include "engine/platform/Vulkan/VKswapChain.h"
 
 namespace GfxRenderEngine
 {

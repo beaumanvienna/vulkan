@@ -23,6 +23,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "VKswapChain.h"
 
 #include "engine.h"
 #include "VKcore.h"

@@ -104,9 +104,9 @@ namespace GfxRenderEngine
 
         // upload fonts, this is done by recording and submitting a one time use command buffer
         // which can be done easily bye using some existing helper functions on the lve device object
-        auto commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+        auto commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
         ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
 

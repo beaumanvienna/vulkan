@@ -58,7 +58,7 @@ namespace GfxRenderEngine
 
     void VK_Cubemap::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -107,7 +107,7 @@ namespace GfxRenderEngine
             1, &barrier
         );
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
         m_ImageLayout = newLayout;
     }
 

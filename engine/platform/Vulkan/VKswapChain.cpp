@@ -173,10 +173,14 @@ namespace GfxRenderEngine
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = m_Device->FindPhysicalQueueFamilies();
-        uint queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+        QueueFamilyIndices& indices = m_Device->PhysicalQueueFamilies();
+        uint queueFamilyIndices[] = 
+        {
+            static_cast<uint>(indices.m_GraphicsFamily), 
+            static_cast<uint>(indices.m_PresentFamily)
+        };
 
-        if (indices.graphicsFamily != indices.presentFamily)
+        if (indices.m_GraphicsFamily != indices.m_PresentFamily)
         {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;

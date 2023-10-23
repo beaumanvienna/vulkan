@@ -106,10 +106,9 @@ namespace GfxRenderEngine
     
     void VK_Device::Shutdown()
     {
-        for (int i = 0; i < DeviceQueues::NUMBER_OF_QUEUES; i++)
-        {
-            vkQueueWaitIdle(m_DeviceQueues[i]);
-        }
+        vkQueueWaitIdle(m_GraphicsQueue);
+        vkQueueWaitIdle(m_PresentQueue);
+        vkQueueWaitIdle(m_TransfertQueue);
     }
 
     void VK_Device::CreateInstance()
@@ -138,8 +137,8 @@ namespace GfxRenderEngine
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         if (m_EnableValidationLayers)
         {
-            createInfo.enabledLayerCount = static_cast<uint>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint>(m_ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
 
             PopulateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
@@ -170,19 +169,19 @@ namespace GfxRenderEngine
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
-        for (const auto &device : devices)
+        for (auto& device : devices)
         {
             if (IsPreferredDevice(device))
             {
                 m_PhysicalDevice = device;
                 vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
-                LOG_CORE_INFO("found a dedicated graphics card: {0}", m_Properties.deviceName);
+                LOG_CORE_INFO("Found a dedicated graphics card: {0}", m_Properties.deviceName);
                 SetMaxUsableSampleCount();
                 return;
             }
         }
 
-        for (const auto &device : devices)
+        for (auto &device : devices)
         {
             if (IsSuitableDevice(device))
             {
@@ -196,73 +195,102 @@ namespace GfxRenderEngine
         if (m_PhysicalDevice == VK_NULL_HANDLE)
         {
             LOG_CORE_CRITICAL("failed to find a suitable GPU!");
+            exit(1);
         }
+    }
 
+    VkDeviceQueueCreateInfo VK_Device::CreateQueue(const QueueSpec& spec)
+    {
+        VkDeviceQueueCreateInfo queueCreateInfos = {};
 
+        // graphics queue
+        queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfos.queueFamilyIndex = spec.m_QueueFamilyIndex;
+        queueCreateInfos.queueCount = 1;
+        queueCreateInfos.pQueuePriorities = &spec.m_QueuePriority;
+        return queueCreateInfos;
     }
 
     void VK_Device::CreateLogicalDevice()
     {
-        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+        auto& indices = m_QueueFamilyIndices;
+        int numberOfQueues = indices.m_NumberOfQueues; // most likely 2, as praphics and present often share a queue
+                                                       // we need either two queues:
+                                                       //    graphics/present and transfer
+                                                       // or graphics and present and transfer
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(numberOfQueues);
 
-        VkDeviceQueueCreateInfo queueCreateInfos = {};
-        std::set<uint> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
-
-        float queuePriority = 1.0f;
-
-        // graphicsFamily
-        queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfos.queueFamilyIndex = indices.graphicsFamily;
-        queueCreateInfos.queueCount = 2; // DeviceQueues::LOAD_QUEUE, DeviceQueues::GRAPHICS_QUEUE
-        queueCreateInfos.pQueuePriorities = &queuePriority;
+        for (int queueIndex = 0; queueIndex<numberOfQueues; ++queueIndex)
+        {
+            if (queueIndex == indices.m_GraphicsFamily)
+            {  // graphics
+                QueueSpec spec =
+                {
+                    indices.m_GraphicsFamily,  // int     m_QueueFamilyIndex;
+                    1.0f                       // float   m_QeuePriority;
+                };
+                queueCreateInfos[indices.m_GraphicsFamily] = CreateQueue(spec);
+            }
+            else if (queueIndex == indices.m_PresentFamily)
+            { // present
+                QueueSpec spec =
+                {
+                    indices.m_PresentFamily,    // int     m_QueueFamilyIndex;
+                    1.0f                        // float   m_QeuePriority;
+                };
+                queueCreateInfos[indices.m_PresentFamily] = CreateQueue(spec);
+            }
+            else if (queueIndex == indices.m_TransferFamily)
+            {  // transfer
+                QueueSpec spec = 
+                {
+                    indices.m_TransferFamily,   // int     m_QueueFamilyIndex;
+                    1.0f                        // float   m_QeuePriority;
+                };
+                queueCreateInfos[indices.m_TransferFamily] = CreateQueue(spec);
+            }
+        }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
-
+        
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-        createInfo.queueCreateInfoCount = 1;
-        createInfo.pQueueCreateInfos = &queueCreateInfos;
-
+        
+        createInfo.queueCreateInfoCount = numberOfQueues;
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        
         createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint>(deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
+        createInfo.enabledExtensionCount = static_cast<uint>(m_DeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
+        
         // might not really be necessary anymore because device specific validation layers
         // have been deprecated
         if (m_EnableValidationLayers)
         {
-            createInfo.enabledLayerCount = static_cast<uint>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint>(m_ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
         }
         else
         {
             createInfo.enabledLayerCount = 0;
         }
-
+        
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
 
-        for (int i = 0; i < DeviceQueues::NUMBER_OF_QUEUES; i++)
-        {
-            vkGetDeviceQueue(m_Device, indices.graphicsFamily, i, &m_DeviceQueues[i]);
-        }
-        // caution: indices.graphicsFamily and indices.presentFamily are both zero
-        // at least on my Linux machine
-        // m_PresentQueue is a clone of m_DeviceQueues[0]
-        vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
+        vkGetDeviceQueue(m_Device, indices.m_GraphicsFamily, indices.m_QueueIndices[QueueTypes::GRAPHICS], &m_GraphicsQueue);
+        vkGetDeviceQueue(m_Device, indices.m_PresentFamily,  indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
+        vkGetDeviceQueue(m_Device, indices.m_TransferFamily, indices.m_QueueIndices[QueueTypes::TRANSFER], &m_TransfertQueue);
     }
 
     void VK_Device::CreateCommandPool()
     {
-        QueueFamilyIndices queueFamilyIndices = FindPhysicalQueueFamilies();
-
         VkCommandPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+        poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_GraphicsFamily;
         poolInfo.flags =
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
@@ -270,6 +298,8 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("failed to create graphics command pool!");
         }
+
+        poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_TransferFamily;
 
         if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_LoadCommandPool) != VK_SUCCESS)
         {
@@ -282,8 +312,13 @@ namespace GfxRenderEngine
         m_Window->CreateWindowSurface(m_Instance, &m_Surface);
     }
 
-    bool VK_Device::IsPreferredDevice(VkPhysicalDevice device)
+    bool VK_Device::IsPreferredDevice(VkPhysicalDevice& device)
     {
+        {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(device, &properties);
+            LOG_CORE_INFO("checking if '{0}' is a preferred device ...", properties.deviceName);
+        }
         if (!IsSuitableDevice(device))
         {
             return false;
@@ -291,12 +326,27 @@ namespace GfxRenderEngine
 
         auto props = VkPhysicalDeviceProperties{};
         vkGetPhysicalDeviceProperties(device, &props);
-
-        return props.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        bool isPreferred = (props.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+        if (isPreferred)
+        {
+            LOG_CORE_INFO(" ... preferred device found!");
+        }
+        else
+        {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(device, &properties);
+            LOG_CORE_INFO(" ... no luck, ('{0}' is not a prefereed device)", properties.deviceName);
+        }
+        return isPreferred;
     }
 
-    bool VK_Device::IsSuitableDevice(VkPhysicalDevice device)
+    bool VK_Device::IsSuitableDevice(VkPhysicalDevice& device)
     {
+        {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(device, &properties);
+            LOG_CORE_INFO("checking if '{0}' is a suitable device ...", properties.deviceName);
+        }
         // check if blacklisted
         vkGetPhysicalDeviceProperties(device, &m_Properties);
 
@@ -312,9 +362,9 @@ namespace GfxRenderEngine
             return false;
         }
 
-        // check extensions
         QueueFamilyIndices indices = FindQueueFamilies(device);
 
+        // check extensions
         bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
         bool swapChainAdequate = false;
@@ -327,8 +377,16 @@ namespace GfxRenderEngine
         VkPhysicalDeviceFeatures supportedFeatures;
         vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-        return indices.isComplete() && extensionsSupported && swapChainAdequate &&
-            supportedFeatures.samplerAnisotropy;
+        bool suitable = indices.IsComplete() &&
+                        extensionsSupported &&
+                        swapChainAdequate &&
+                        supportedFeatures.samplerAnisotropy;
+        if (suitable)
+        {
+            m_QueueFamilyIndices = indices;
+            LOG_CORE_INFO("suitable device found");
+        }
+        return suitable;
     }
 
     void VK_Device::PopulateDebugMessengerCreateInfo(
@@ -365,7 +423,7 @@ namespace GfxRenderEngine
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (const char *layerName : validationLayers)
+        for (const char *layerName : m_ValidationLayers)
         {
             bool layerFound = false;
 
@@ -410,18 +468,14 @@ namespace GfxRenderEngine
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-        //std::cout << "available extensions:" << std::endl;
         std::unordered_set<std::string> available;
         for (const auto &extension : extensions) {
-            //std::cout << "\t" << extension.extensionName << std::endl;
             available.insert(extension.extensionName);
         }
 
-        //std::cout << "required extensions:" << std::endl;
         auto requiredExtensions = GetRequiredExtensions();
         for (const auto &required : requiredExtensions)
         {
-            //std::cout << "\t" << required << std::endl;
             if (available.find(required) == available.end())
             {
                 LOG_CORE_CRITICAL("Missing required glfw extension");
@@ -441,7 +495,7 @@ namespace GfxRenderEngine
         &extensionCount,
         availableExtensions.data());
 
-        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+        std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
 
         for (const auto &extension : availableExtensions)
         {
@@ -451,8 +505,9 @@ namespace GfxRenderEngine
         return requiredExtensions.empty();
     }
 
-    QueueFamilyIndices VK_Device::FindQueueFamilies(VkPhysicalDevice device)
+    QueueFamilyIndices VK_Device::FindQueueFamilies(VkPhysicalDevice& device)
     {
+        LOG_CORE_INFO("finding queue family indices");
         QueueFamilyIndices indices;
 
         uint queueFamilyCount = 0;
@@ -461,27 +516,88 @@ namespace GfxRenderEngine
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-        int i = 0;
-        for (const auto &queueFamily : queueFamilies)
+        indices.m_UniqueFamilyIndices.resize(queueFamilyCount);
+        for (size_t index = 0; index < queueFamilyCount; ++index)
         {
-            if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            indices.m_UniqueFamilyIndices[index] = NO_ASSIGNED;
+        }
+        int uniqueIndices = 0;
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies)
+        {
+            int availableQueues = queueFamily.queueCount;
+            // graphics queue
+            if ((queueFamily.queueCount > 0) &&
+                    (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && 
+                    (indices.m_GraphicsFamily == NO_ASSIGNED) &&
+                    (availableQueues>0))
             {
-                indices.graphicsFamily = i;
-                indices.graphicsFamilyHasValue = true;
+                if (indices.m_UniqueFamilyIndices[i] != i)
+                {
+                    indices.m_UniqueFamilyIndices[uniqueIndices] = i;
+                    ++uniqueIndices;
+                }
+                indices.m_GraphicsFamily = i;
+                --availableQueues;
             }
+            // present queue (can be shared with graphics queue, no need to check availableQueues)
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
-            if (queueFamily.queueCount > 0 && presentSupport)
+            if ((queueFamily.queueCount > 0) &&
+                    presentSupport && 
+                    (indices.m_PresentFamily == NO_ASSIGNED))
             {
-                indices.presentFamily = i;
-                indices.presentFamilyHasValue = true;
+                indices.m_PresentFamily = i;
+
+                if (indices.m_GraphicsFamily != i) // if it needs a dedicated queue
+                {
+                    if (indices.m_UniqueFamilyIndices[i] != i)
+                    {
+                        indices.m_UniqueFamilyIndices[uniqueIndices] = i;
+                        ++uniqueIndices;
+                    }
+                    --availableQueues;
+                }
             }
-            if (indices.isComplete())
+            // transfer queue
+            if ((queueFamily.queueCount > 0) && 
+                    (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && 
+                    (indices.m_TransferFamily == NO_ASSIGNED) &&
+                    (availableQueues>0))
             {
+                if (indices.m_UniqueFamilyIndices[i] != i)
+                {
+                    indices.m_UniqueFamilyIndices[uniqueIndices] = i;
+                    ++uniqueIndices;
+                }
+                indices.m_TransferFamily = i;
+            }
+            
+            if (indices.IsComplete())
+            {
+                indices.m_NumberOfQueues = i + 1;
                 break;
             }
 
             i++;
+        }
+        if (!indices.IsComplete())
+        {
+            LOG_CORE_INFO("queue family indices incomplete!");
+            QueueFamilyIndices empty;
+            return empty;
+        }
+        LOG_CORE_INFO("all queue family indices found");
+
+        indices.m_QueueIndices[QueueTypes::GRAPHICS] = 0;
+        indices.m_QueueIndices[QueueTypes::PRESENT] = 0; // either shares the same queue with grapics or has a different queue family, in which it will also be queue 0
+        if ( (indices.m_TransferFamily == indices.m_GraphicsFamily) || (indices.m_TransferFamily == indices.m_PresentFamily))
+        {
+            indices.m_QueueIndices[QueueTypes::TRANSFER] = 1;
+        }
+        else
+        {   //transfer has a dedicated queue family 
+            indices.m_QueueIndices[QueueTypes::TRANSFER] = 0;
         }
 
         return indices;
@@ -602,12 +718,12 @@ namespace GfxRenderEngine
         vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
     }
 
-    VkCommandBuffer VK_Device::BeginSingleTimeCommands()
+    VkCommandBuffer VK_Device::BeginSingleTimeCommands(QueueTypes type)
     {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = m_LoadCommandPool;
+        allocInfo.commandPool = type == QueueTypes::TRANSFER ? m_LoadCommandPool : m_GraphicsCommandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -622,7 +738,7 @@ namespace GfxRenderEngine
         return commandBuffer;
     }
 
-    void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+    void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type)
     {
         vkEndCommandBuffer(commandBuffer);
 
@@ -631,15 +747,25 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkQueueSubmit(m_DeviceQueues[DeviceQueues::LOAD_QUEUE], 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(m_DeviceQueues[DeviceQueues::LOAD_QUEUE]);
+        if (type == QueueTypes::TRANSFER)
+        {
+            vkQueueSubmit(TransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(TransferQueue());
+            vkFreeCommandBuffers(m_Device, m_LoadCommandPool, 1, &commandBuffer);
+        }
+        else
+        {
+            vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(GraphicsQueue());
+            vkFreeCommandBuffers(m_Device, m_GraphicsCommandPool, 1, &commandBuffer);
+        }
+        
 
-        vkFreeCommandBuffers(m_Device, m_LoadCommandPool, 1, &commandBuffer);
     }
 
     void VK_Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands(QueueTypes::TRANSFER);
 
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0;  // Optional
@@ -647,13 +773,13 @@ namespace GfxRenderEngine
         copyRegion.size = size;
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-        EndSingleTimeCommands(commandBuffer);
+        EndSingleTimeCommands(commandBuffer, QueueTypes::TRANSFER);
     }
 
     void VK_Device::CopyBufferToImage(
         VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount)
     {
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands(QueueTypes::TRANSFER);
 
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -675,7 +801,7 @@ namespace GfxRenderEngine
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             1,
             &region);
-        EndSingleTimeCommands(commandBuffer);
+        EndSingleTimeCommands(commandBuffer, QueueTypes::TRANSFER);
     }
 
     void VK_Device::CreateImageWithInfo(

@@ -28,8 +28,6 @@
 #include "engine.h"
 #include "renderer/camera.h"
 
-#include "engine/platform/Vulkan/VKswapChain.h"
-
 namespace GfxRenderEngine
 {
     constexpr int MAX_LIGHTS = 128;

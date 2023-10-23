@@ -25,9 +25,9 @@
 #include <string>
 #include <memory>
 
-#include "engine.h"
+#include <vulkan/vulkan.h>
 
-#include "engine/platform/Vulkan/VKswapChain.h"
+#include "engine.h"
 
 namespace GfxRenderEngine
 {
