@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
 
@@ -29,17 +31,23 @@
 
 namespace LucreApp
 {
+    using EnttV = std::vector<entt::entity>;
 
     class ImGUI
     {
 
     public:
 
+
         static void DebugWindow();
+        static void SetupSlider(entt::registry& registry);
 
     public:
 
         static int   m_SelectedGameObject;
+        static int   m_MaxGameObjects;
+        static EnttV m_VisibleGameObjects;
+
         static float m_Roughness;
         static bool  m_UseRoughness;
         static float m_Metallic;
@@ -56,7 +64,6 @@ namespace LucreApp
         static bool  m_ShowDebugShadowMap;
         static bool  m_UseEmissiveStrength;
         static float m_EmissiveStrength;
-        static entt::entity m_MaxGameObjects;
 
     private:
 

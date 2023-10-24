@@ -34,6 +34,9 @@
 namespace LucreApp
 {
     int   ImGUI::m_SelectedGameObject = 0;
+    int   ImGUI::m_MaxGameObjects = 0;
+    EnttV ImGUI::m_VisibleGameObjects;
+
     float ImGUI::m_Roughness = 0.1f;
     bool  ImGUI::m_UseRoughness = false;
     float ImGUI::m_Metallic = 0.5f;
@@ -50,7 +53,6 @@ namespace LucreApp
     bool  ImGUI::m_ShowDebugShadowMap = false;
     bool  ImGUI::m_UseEmissiveStrength = false;
     float ImGUI::m_EmissiveStrength = 0.35;
-    entt::entity ImGUI::m_MaxGameObjects = (entt::entity)0;
 
     void ImGUI::DebugWindow()
     {
@@ -75,13 +77,15 @@ namespace LucreApp
 
         // selected entity
         std::string gameObjectLabel = "Game Object";
-        if (m_SelectedGameObject > 0)
+        entt::entity entity = static_cast<entt::entity>(0);
+        if (m_VisibleGameObjects.size() > 0)
         {
-            auto& label = dictionary.GetShortName((entt::entity)m_SelectedGameObject);
+            entity = m_VisibleGameObjects[m_SelectedGameObject];
+            auto& label = dictionary.GetShortName(entity);
             gameObjectLabel += std::string(" ") + label;
         }
 
-        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, (int)m_MaxGameObjects);
+        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, m_MaxGameObjects);
         // roughness
         ImGui::Checkbox("use###001", &m_UseRoughness);
         ImGui::SameLine();
@@ -116,7 +120,7 @@ namespace LucreApp
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
 
         auto guizmoMode = GetGuizmoMode();
-        if (m_SelectedGameObject > 0)
+        if (m_VisibleGameObjects.size() > 0)
         {
             ImGuizmo::BeginFrame();
             ImGuizmo::SetOrthographic(false);
@@ -132,24 +136,24 @@ namespace LucreApp
                 bool found = false;
                 {
                     
-                    if (registry.all_of<PbrEmissiveTag>((entt::entity)m_SelectedGameObject))
+                    if (registry.all_of<PbrEmissiveTag>(entity))
                     {
                         found = true;
-                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>((entt::entity)m_SelectedGameObject);
+                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(entity);
                         pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
                 if (!found)
                 {
-                    if (registry.all_of<PbrEmissiveTextureTag>((entt::entity)m_SelectedGameObject))
+                    if (registry.all_of<PbrEmissiveTextureTag>(entity))
                     {
-                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>((entt::entity)m_SelectedGameObject);
+                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(entity);
                         pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
             }
 
-            auto& transform = registry.get<TransformComponent>((entt::entity)m_SelectedGameObject);
+            auto& transform = registry.get<TransformComponent>(entity);
             glm::mat4 mat4 = transform.GetMat4();
 
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
@@ -214,5 +218,21 @@ namespace LucreApp
             return ImGuizmo::SCALE;
         }
         return ImGuizmo::TRANSLATE;
+    }
+
+    // set up maxGameObjects, and the std::vector for visibleGameObjects
+    void ImGUI::SetupSlider(entt::registry& registry)
+    {
+        m_SelectedGameObject = 0;
+        auto view = registry.view<MeshComponent, TransformComponent>();
+        m_VisibleGameObjects.resize(view.size_hint());
+
+        m_MaxGameObjects = view.size_hint() - 1;
+        uint index = 0;
+        for(auto& entity : view)
+        {
+            m_VisibleGameObjects[m_MaxGameObjects - index] = entity;
+            ++index;
+        }
     }
 }

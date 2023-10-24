@@ -33,7 +33,7 @@ namespace GfxRenderEngine
     {
     }
 
-    void SceneLoader::Deserialize(entt::entity& maxGameObjects)
+    void SceneLoader::Deserialize()
     {
 
         YAML::Node yamlNode;
@@ -112,7 +112,7 @@ namespace GfxRenderEngine
             for (const auto& prefab : prefabsFileList)
             {
                 auto filename = prefab.as<std::string>();
-                LoadPrefab(filename, maxGameObjects);
+                LoadPrefab(filename);
                 m_PrefabFiles[filename] = entt::null;
             }
         }
@@ -146,7 +146,7 @@ namespace GfxRenderEngine
         return glm::vec3(values[0], values[1], values[2]);
     }
 
-    void SceneLoader::LoadPrefab(const std::string& filepath, entt::entity& maxGameObjects)
+    void SceneLoader::LoadPrefab(const std::string& filepath)
     {
         YAML::Node yamlNode;
 
@@ -170,8 +170,7 @@ namespace GfxRenderEngine
                 {
                     LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
                     Builder builder{gltfFile.as<std::string>()};
-                    auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
-                    if ((entity != entt::null) && (maxGameObjects < entity)) maxGameObjects = entity;
+                    builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
                 }
                 else
                 {
@@ -185,7 +184,7 @@ namespace GfxRenderEngine
             const auto& prefabsFileList = yamlNode["prefabs"];
             for (const auto& prefab : prefabsFileList)
             {
-                LoadPrefab(prefab.as<std::string>(), maxGameObjects);
+                LoadPrefab(prefab.as<std::string>());
             }
         }
 

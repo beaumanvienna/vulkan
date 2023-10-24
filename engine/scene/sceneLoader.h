@@ -38,12 +38,12 @@ namespace GfxRenderEngine
         SceneLoader(Scene& scene);
         ~SceneLoader() {}
 
-        void Deserialize(entt::entity& maxGameObjects);
+        void Deserialize();
         void Serialize();
 
     private:
 
-        void LoadPrefab(const std::string& filepath, entt::entity& maxGameObjects);
+        void LoadPrefab(const std::string& filepath);
         glm::vec3 ConvertToVec3(const YAML::Node& node);
 
     private:

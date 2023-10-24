@@ -189,8 +189,8 @@ namespace LucreApp
 
         InitPhysics();
 
-        ImGUI::m_MaxGameObjects = (entt::entity)0;
-        m_SceneLoader.Deserialize(ImGUI::m_MaxGameObjects);
+        m_SceneLoader.Deserialize();
+        ImGUI::SetupSlider(m_Registry);
 
         LoadModels();
         LoadScripts();
