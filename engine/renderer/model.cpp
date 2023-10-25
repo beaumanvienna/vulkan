@@ -795,6 +795,9 @@ namespace GfxRenderEngine
         {
             PbrDiffuseSATag pbrDiffuseSATag{};
             registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
         }
         if (m_PrimitivesDiffuseNormalMap.size())
         {

@@ -191,4 +191,9 @@ namespace GfxRenderEngine
     {
         uint m_Tag{0};
     };
+
+    struct SkeletalAnimationTag
+    {
+        uint m_Tag{0};
+    };
 }

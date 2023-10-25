@@ -64,6 +64,7 @@ namespace LucreApp
         static bool  m_ShowDebugShadowMap;
         static bool  m_UseEmissiveStrength;
         static float m_EmissiveStrength;
+        static bool  m_UseAnimation;
 
     private:
 

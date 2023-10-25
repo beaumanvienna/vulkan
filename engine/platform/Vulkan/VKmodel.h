@@ -137,10 +137,5 @@ namespace GfxRenderEngine
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
 
-        // skeletal animation
-        std::vector<Armature::Skeleton> m_Skeletons;
-        std::vector<std::shared_ptr<SkeletalAnimation>> m_Animations;
-        std::shared_ptr<Buffer> m_ShaderDataUbo;
-
     };
 }

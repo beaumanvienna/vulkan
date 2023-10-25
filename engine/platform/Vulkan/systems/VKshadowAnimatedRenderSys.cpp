@@ -100,7 +100,7 @@ namespace GfxRenderEngine
         const VkDescriptorSet& shadowDescriptorSet
     )
     {
-        auto meshView = registry.view<MeshComponent, TransformComponent, PbrDiffuseSATag>();
+        auto meshView = registry.view<MeshComponent, TransformComponent, SkeletalAnimationTag>();
 
         if (directionalLight->m_RenderPass == 0)
         {

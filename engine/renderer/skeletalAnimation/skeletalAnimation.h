@@ -102,7 +102,7 @@ namespace GfxRenderEngine
 
         void Start();
         bool IsRunning() const;
-        std::string GetName() const { return m_Name; }
+        std::string& GetName() { return m_Name; }
         void SetRepeat(bool repeat) { m_Repeat = repeat; }
         void Update(Armature::Skeleton& skeleton);
 
@@ -118,7 +118,7 @@ namespace GfxRenderEngine
 
     private:
 
-        std::string m_Name; 
+        std::string m_Name;
         bool m_Repeat;
         // engine time
         Duration m_Duration;

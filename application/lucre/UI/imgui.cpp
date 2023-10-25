@@ -31,6 +31,8 @@
 #include "application/lucre/lucre.h"
 #include "application/lucre/UI/imgui.h"
 
+#include "renderer/model.h"
+
 namespace LucreApp
 {
     int   ImGUI::m_SelectedGameObject = 0;
@@ -53,6 +55,7 @@ namespace LucreApp
     bool  ImGUI::m_ShowDebugShadowMap = false;
     bool  ImGUI::m_UseEmissiveStrength = false;
     float ImGUI::m_EmissiveStrength = 0.35;
+    bool  ImGUI::m_UseAnimation = false;
 
     void ImGUI::DebugWindow()
     {
@@ -119,6 +122,43 @@ namespace LucreApp
         // point light intensity
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
 
+        if (registry.all_of<SkeletalAnimationTag>(entity))
+        {
+            auto& mesh = registry.get<MeshComponent>(entity);
+            auto& animations = mesh.m_Model.get()->GetAnimations();
+            size_t numberOfAnimations = animations.size();
+            std::vector<const char*> items(numberOfAnimations);
+            for (size_t index = 0; index < numberOfAnimations; ++index)
+            {
+                items[index] = animations[index]->GetName().c_str();
+            }
+            static const char* currentItem = nullptr;
+            if (!currentItem)
+            {
+                currentItem = items[0];
+            }
+            ImGui::Checkbox("use###007", &m_UseAnimation);
+            ImGui::SameLine();
+            if (ImGui::BeginCombo("##combo", currentItem)) // The second parameter is the label previewed before opening the combo.
+            {
+                for (size_t index = 0; index < numberOfAnimations; ++index)
+                {
+                    bool isSelected = (currentItem == items[index]); // You can store your selection however you want, outside or inside your objects
+                    if (ImGui::Selectable(items[index], isSelected))
+                    {
+                        currentItem = items[index];
+                    }
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus(); // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::SameLine();
+            ImGui::Text("select animation");
+        }
+
         auto guizmoMode = GetGuizmoMode();
         if (m_VisibleGameObjects.size() > 0)
         {
@@ -135,7 +175,6 @@ namespace LucreApp
             {
                 bool found = false;
                 {
-                    
                     if (registry.all_of<PbrEmissiveTag>(entity))
                     {
                         found = true;
@@ -159,9 +198,9 @@ namespace LucreApp
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
                 guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
 
-            glm::vec3 scale;
-            glm::quat rotation;
             glm::vec3 translation;
+            glm::quat rotation;
+            glm::vec3 scale;
             glm::vec3 skew;
             glm::vec4 perspective;
             glm::decompose(mat4, scale, rotation, translation, skew, perspective);
