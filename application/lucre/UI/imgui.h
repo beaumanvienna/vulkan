@@ -24,14 +24,21 @@
 
 #include <memory>
 
+#include "engine.h"
+
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
-
-#include "engine.h"
+#include "scene/sceneLoader.h"
 
 namespace LucreApp
 {
-    using EnttV = std::vector<entt::entity>;
+    struct SliderEntry
+    {
+        std::string m_Label;
+        entt::entity m_Entity;
+    };
+
+    using EnttV = std::vector<SliderEntry>;
 
     class ImGUI
     {
@@ -40,7 +47,7 @@ namespace LucreApp
 
 
         static void DebugWindow();
-        static void SetupSlider(entt::registry& registry);
+        static void SetupSlider(SceneLoader::GltfFiles& gltfFiles);
 
     public:
 
@@ -67,6 +74,12 @@ namespace LucreApp
         static bool  m_UseAnimation;
 
     private:
+
+        struct SliderEntry
+        {
+            std::string m_Name;
+            entt::entity m_Entity;
+        };
 
         static ImGuizmo::OPERATION GetGuizmoMode();
 

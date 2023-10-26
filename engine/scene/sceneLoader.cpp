@@ -54,7 +54,6 @@ namespace GfxRenderEngine
             return;
         }
 
-        uint nodeCounter = 0;
         for(const auto& gltfFile : yamlNode["glTF-files"])
         {
             std::string filename = gltfFile.first.as<std::string>();
@@ -66,9 +65,7 @@ namespace GfxRenderEngine
 
                 if (entity != entt::null)
                 {
-                    std::string key = filename + std::to_string(nodeCounter++);
-                    m_gltfFiles[key] = entity;
-                    m_gltfFilesKeys.push_back(key);
+                    m_GltfFiles.m_GltfFilesFromScene.push_back({filename, entity});
                 }
 
                 switch (gltfFile.second.Type())
@@ -113,10 +110,9 @@ namespace GfxRenderEngine
             {
                 auto filename = prefab.as<std::string>();
                 LoadPrefab(filename);
-                m_PrefabFiles[filename] = entt::null;
+                m_PrefabFiles.push_back(filename);
             }
         }
-
         if (yamlNode["script-components"])
         {
             const auto& scriptFileList = yamlNode["script-components"];
@@ -166,15 +162,22 @@ namespace GfxRenderEngine
             const auto& gltfFileList = yamlNode["glTF-files"];
             for (const auto& gltfFile : gltfFileList)
             {
-                if (EngineCore::FileExists(gltfFile.as<std::string>()))
+                auto filename = gltfFile.as<std::string>();
+                if (EngineCore::FileExists(filename))
                 {
-                    LOG_CORE_WARN("Scene loader found {0}", gltfFile.as<std::string>());
-                    Builder builder{gltfFile.as<std::string>()};
-                    builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                    LOG_CORE_WARN("Scene loader found {0}", filename);
+                    Builder builder{filename};
+                    auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+
+                    if (entity != entt::null)
+                    {
+                        m_GltfFiles.m_GltfFilesFromPreFabs.push_back({filename, entity});
+                    }
+                    
                 }
                 else
                 {
-                    LOG_CORE_CRITICAL("Scene loader could not find file {0}", gltfFile.as<std::string>());
+                    LOG_CORE_CRITICAL("Scene loader could not find file {0}", filename);
                 }
             }
         }
@@ -218,10 +221,9 @@ namespace GfxRenderEngine
             out << YAML::Key << "glTF-files";
             out << YAML::BeginMap;
  
-            for (const auto& [key, entity] : m_gltfFiles)
+            auto& registry = m_Scene.GetRegistry();
+            for (const auto& [filename, entity] : m_GltfFiles.m_GltfFilesFromScene)
             {
-                std::string filename = key.substr(0,key.rfind(".gltf")+5);
-                auto& registry = m_Scene.GetRegistry();
                 auto& transform = registry.get<TransformComponent>(entity);
                 auto& translation = transform.GetTranslation();
                 auto& scale = transform.GetScale();
@@ -261,7 +263,7 @@ namespace GfxRenderEngine
             out << YAML::Key << "prefabs";
             out << YAML::BeginSeq;
     
-            for (const auto& [filename, entity] : m_PrefabFiles)
+            for (const auto& filename : m_PrefabFiles)
             {
                 out << YAML::Key << filename;
             }    

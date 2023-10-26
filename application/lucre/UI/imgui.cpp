@@ -31,6 +31,7 @@
 #include "application/lucre/lucre.h"
 #include "application/lucre/UI/imgui.h"
 
+#include "auxiliary/file.h"
 #include "renderer/model.h"
 
 namespace LucreApp
@@ -66,7 +67,6 @@ namespace LucreApp
         auto  currentScene = Lucre::m_Application->GetScene();
         auto& camera       = currentScene->GetCamera();
         auto& registry     = currentScene->GetRegistry();
-        auto& dictionary   = currentScene->GetDictionary();
 
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(contextWidth, contextHeight));
@@ -83,8 +83,8 @@ namespace LucreApp
         entt::entity entity = static_cast<entt::entity>(0);
         if (m_VisibleGameObjects.size() > 0)
         {
-            entity = m_VisibleGameObjects[m_SelectedGameObject];
-            auto& label = dictionary.GetShortName(entity);
+            auto& [label, selectedGameObject] = m_VisibleGameObjects[m_SelectedGameObject];
+            entity = selectedGameObject;
             gameObjectLabel += std::string(" ") + label;
         }
 
@@ -260,18 +260,21 @@ namespace LucreApp
     }
 
     // set up maxGameObjects, and the std::vector for visibleGameObjects
-    void ImGUI::SetupSlider(entt::registry& registry)
+    void ImGUI::SetupSlider(SceneLoader::GltfFiles& gltfFiles)
     {
         m_SelectedGameObject = 0;
-        auto view = registry.view<MeshComponent, TransformComponent>();
-        m_VisibleGameObjects.resize(view.size_hint());
 
-        m_MaxGameObjects = view.size_hint() - 1;
-        uint index = 0;
-        for(auto& entity : view)
+        for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromScene)
         {
-            m_VisibleGameObjects[m_MaxGameObjects - index] = entity;
-            ++index;
+            std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
+            m_VisibleGameObjects.push_back({label, entity});
         }
+        for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromPreFabs)
+        {
+            std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
+            m_VisibleGameObjects.push_back({label, entity});
+        }
+
+        m_MaxGameObjects = m_VisibleGameObjects.size()-1;
     }
 }

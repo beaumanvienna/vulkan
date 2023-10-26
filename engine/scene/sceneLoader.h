@@ -35,11 +35,26 @@ namespace GfxRenderEngine
 
     public:
 
+        struct GltfFile
+        {
+            std::string m_Filename;
+            entt::entity m_Entity;
+        };
+
+        struct GltfFiles
+        {
+            std::vector<GltfFile> m_GltfFilesFromScene;
+            std::vector<GltfFile> m_GltfFilesFromPreFabs;
+        };
+
+    public:
+
         SceneLoader(Scene& scene);
         ~SceneLoader() {}
 
         void Deserialize();
         void Serialize();
+        GltfFiles& GetGltfFiles() { return m_GltfFiles; }
 
     private:
 
@@ -49,9 +64,9 @@ namespace GfxRenderEngine
     private:
 
         Scene& m_Scene;
-        std::map<std::string, entt::entity> m_gltfFiles;
-        std::vector<std::string> m_gltfFilesKeys;
-        std::unordered_map<std::string, entt::entity> m_PrefabFiles;
+        
+        std::vector<std::string> m_PrefabFiles;
+        GltfFiles m_GltfFiles;
 
     };
 }
