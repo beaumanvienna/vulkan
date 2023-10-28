@@ -101,8 +101,9 @@ namespace GfxRenderEngine
         SkeletalAnimation(std::string const& name);
 
         void Start();
+        void Stop();
         bool IsRunning() const;
-        std::string& GetName() { return m_Name; }
+        std::string const& GetName() const { return m_Name; }
         void SetRepeat(bool repeat) { m_Repeat = repeat; }
         void Update(Armature::Skeleton& skeleton);
 
@@ -127,7 +128,6 @@ namespace GfxRenderEngine
         float m_FirstKeyFrameTime;
         float m_LastKeyFrameTime;
         float m_CurrentKeyFrameTime = 0.0f;
-        std::vector<Keyframe> m_Keyframes;
 
     };
 }

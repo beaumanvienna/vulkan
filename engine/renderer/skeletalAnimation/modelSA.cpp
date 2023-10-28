@@ -39,30 +39,33 @@ namespace GfxRenderEngine
         {
             return;
         }
-
-        // adjust the size of the skeleton std::vector to the number of skeletons
-        m_Skeletons.resize(numberOfSkeletons);
-
-        // loop over all skeletons from the glTF model and fill our skeleton std::vector
-        for (size_t skeletonIndex = 0; skeletonIndex < numberOfSkeletons; ++skeletonIndex)
+        
+        if (numberOfSkeletons>1)
         {
-            const tinygltf::Skin& glTFSkin = m_GltfModel.skins[skeletonIndex];
+            LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin 0.");
+        }
+
+        m_Animations = std::make_shared<SkeletalAnimations>();
+        m_Skeleton = std::make_shared<Armature::Skeleton>();
+
+        // use skeleton 0 from the glTF model to fill the skeleton
+        {
+            const tinygltf::Skin& glTFSkin = m_GltfModel.skins[0];
 
             // does it have information about joints?
             if (glTFSkin.inverseBindMatrices != GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
             {
-                auto& skeleton = m_Skeletons[skeletonIndex]; // just a reference to the skeleton to be set up (to make code easier)
-                auto& joints = skeleton.m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+                auto& joints = m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
 
                 // set up number of joints
                 size_t numberOfJoints = glTFSkin.joints.size();
                 // resize the joints vector of the skeleton object (to be filled)
                 joints.resize(numberOfJoints);
-                skeleton.m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
+                m_Skeleton->m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
 
                 // set up name of skeleton
-                skeleton.m_Name = glTFSkin.name;
-                LOG_CORE_INFO("name of skeleton: {0}", skeleton.m_Name);
+                m_Skeleton->m_Name = glTFSkin.name;
+                LOG_CORE_INFO("name of skeleton: {0}", m_Skeleton->m_Name);
 
                 // retrieve array of inverse bind matrices of all joints
                 // --> first, retrieve raw data and copy into a std::vector
@@ -72,7 +75,7 @@ namespace GfxRenderEngine
                 // assert # of matrices matches # of joints
                 if (accessor.count != numberOfJoints) LOG_CORE_CRITICAL("accessor.count != numberOfJoints"); 
 
-                auto& inverseBindMatrices = skeleton.m_InverseBindMatrices;
+                auto& inverseBindMatrices = m_Skeleton->m_InverseBindMatrices;
                 inverseBindMatrices.resize(numberOfJoints);
                 int bufferSize = accessor.count * sizeof(glm::mat4); // in bytes
                 memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], bufferSize);
@@ -117,26 +120,24 @@ namespace GfxRenderEngine
                     }
 
                     // set up map "global node" to "joint index"
-                    skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
+                    m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
                 }
 
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
 
-                LoadJoint(skeleton, rootJoint, Armature::NO_PARENT);
+                LoadJoint(rootJoint, Armature::NO_PARENT);
 
-                //skeleton.Traverse();
+                //m_Skeleton->Traverse();
             }
 
             // create a buffer to be used in the shader for the joint matrices
             // The gltf model has multiple animations, all applied to the same skeleton
-            // --> all skeletons have the same size (and we can use m_Skeletons[0] to get the number of joints)
-            int numberOfJoints = m_Skeletons[0].m_Joints.size();
+            int numberOfJoints = m_Skeleton->m_Joints.size();
             int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
             m_ShaderData = Buffer::Create(bufferSize);
         }
-
+        
         size_t numberOfAnimations = m_GltfModel.animations.size();
-        m_Animations.resize(numberOfAnimations);
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {
             auto& gltfAnimation = m_GltfModel.animations[animationIndex];
@@ -254,18 +255,18 @@ namespace GfxRenderEngine
                     LOG_CORE_CRITICAL("path not supported");
                 }
             }
-            m_Animations[animationIndex] = animation;
+            m_Animations->Push(animation);
         }
         
-        if (m_Animations.size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
+        if (m_Animations->Size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void Builder::LoadJoint(Armature::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint)
+    void Builder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
-        int currentJoint = skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
-        auto& joint = skeleton.m_Joints[currentJoint]; // a reference to the current joint
+        int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
+        auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint
 
         joint.m_ParentJoint = parentJoint;
 
@@ -277,9 +278,15 @@ namespace GfxRenderEngine
             for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 uint globalGltfNodeIndexForChild = m_GltfModel.nodes[globalGltfNodeIndex].children[childIndex];
-                joint.m_Children[childIndex] = skeleton.m_GlobalGltfNodeToJointIndex[globalGltfNodeIndexForChild];
-                LoadJoint(skeleton, globalGltfNodeIndexForChild, currentJoint);
+                joint.m_Children[childIndex] = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndexForChild];
+                LoadJoint(globalGltfNodeIndexForChild, currentJoint);
             }
         }
     }
+
+    SkeletalAnimations& Model::GetAnimations()
+    {
+        return *(m_Animations.get());
+    }
+
 }

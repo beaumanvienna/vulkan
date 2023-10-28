@@ -784,24 +784,24 @@ namespace GfxRenderEngine
         // vertex diffuse color, diffuse map, normal map, roughness/metallic map
         if (m_PrimitivesNoMap.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrNoMapTag pbrNoMapTag{};
             registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
         }
         if (m_PrimitivesDiffuseMap.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrDiffuseTag pbrDiffuseTag{};
             registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
         }
         if (m_PrimitivesDiffuseSAMap.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrDiffuseSATag pbrDiffuseSATag{};
             registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
@@ -811,16 +811,16 @@ namespace GfxRenderEngine
         }
         if (m_PrimitivesDiffuseNormalMap.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrDiffuseNormalTag pbrDiffuseNormalTag;
             registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
         }
         if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
             registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
@@ -829,8 +829,8 @@ namespace GfxRenderEngine
         // emissive materials
         if (m_PrimitivesEmissive.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrEmissiveTag pbrEmissiveTag{};
             registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
@@ -838,8 +838,8 @@ namespace GfxRenderEngine
 
         if (m_PrimitivesEmissiveTexture.size())
         {
-            PbrMaterial pbrMaterial{};
-            registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
 
             PbrEmissiveTextureTag pbrEmissiveTextureTag{};
             registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);

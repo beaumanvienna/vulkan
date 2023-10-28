@@ -243,13 +243,13 @@ namespace GfxRenderEngine
     private:
 
         void LoadSkeletons(Material& material);
-        void LoadJoint(Armature::Skeleton& skeleton, int globalGltfNodeIndex, int parentJoint);
+        void LoadJoint(int globalGltfNodeIndex, int parentJoint);
 
     public:
 
-        std::vector<Armature::Skeleton> m_Skeletons;
+        std::shared_ptr<Armature::Skeleton> m_Skeleton;
         std::shared_ptr<Buffer> m_ShaderData;
-        std::vector<std::shared_ptr<SkeletalAnimation>> m_Animations;
+        std::shared_ptr<SkeletalAnimations> m_Animations;
     };
 
     class Model
@@ -266,7 +266,7 @@ namespace GfxRenderEngine
         virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
         virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
 
-        std::vector<std::shared_ptr<SkeletalAnimation>>& GetAnimations() { return m_Animations; }
+        SkeletalAnimations& GetAnimations();
 
         static float m_NormalMapIntensity;
 
@@ -276,8 +276,8 @@ namespace GfxRenderEngine
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
 
         // skeletal animation
-        std::vector<std::shared_ptr<SkeletalAnimation>> m_Animations;
-        std::vector<Armature::Skeleton> m_Skeletons;
+        std::shared_ptr<SkeletalAnimations> m_Animations;
+        std::shared_ptr<Armature::Skeleton> m_Skeleton;
         std::shared_ptr<Buffer> m_ShaderDataUbo;
 
     };

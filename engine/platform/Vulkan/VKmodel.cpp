@@ -80,7 +80,7 @@ namespace GfxRenderEngine
         m_PrimitivesDiffuseNormalRoughnessMetallicMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap);
         m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
 
-        m_Skeletons  = std::move(builder.m_Skeletons);
+        m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
         m_ShaderDataUbo = builder.m_ShaderData;
 
@@ -162,13 +162,12 @@ namespace GfxRenderEngine
 
     void VK_Model::UpdateAnimation()
     {
-        size_t lastAnimation = m_Animations.size() - 1;
 
-        m_Animations[lastAnimation]->Update(m_Skeletons[0]);
-        m_Skeletons[0].Update();
+        m_Animations->Update(*m_Skeleton);
+        m_Skeleton->Update();
 
         // update ubo
-        static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeletons[0].m_ShaderData.m_FinalJointsMatrices.data());
+        static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeleton->m_ShaderData.m_FinalJointsMatrices.data());
         static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
     }
 

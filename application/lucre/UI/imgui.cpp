@@ -125,11 +125,12 @@ namespace LucreApp
         {
             auto& mesh = registry.get<MeshComponent>(static_cast<entt::entity>(m_SelectedGameObject));
             auto& animations = mesh.m_Model.get()->GetAnimations();
-            size_t numberOfAnimations = animations.size();
+            size_t numberOfAnimations = animations.Size();
             std::vector<const char*> items(numberOfAnimations);
-            for (size_t index = 0; index < numberOfAnimations; ++index)
+            uint itemIndex = 0;
+            for (auto& animation : animations)
             {
-                items[index] = animations[index]->GetName().c_str();
+                items[itemIndex++] = animation.GetName().c_str();
             }
             static const char* currentItem = nullptr;
             if (!currentItem)
@@ -138,18 +139,19 @@ namespace LucreApp
             }
             ImGui::Checkbox("use###007", &m_UseAnimation);
             ImGui::SameLine();
-            if (ImGui::BeginCombo("##combo", currentItem)) // The second parameter is the label previewed before opening the combo.
+            if (ImGui::BeginCombo("##combo", currentItem)) // The 2nd parameter is the label previewed before opening the combo
             {
                 for (size_t index = 0; index < numberOfAnimations; ++index)
                 {
-                    bool isSelected = (currentItem == items[index]); // You can store your selection however you want, outside or inside your objects
+                    bool isSelected = (currentItem == items[index]);
                     if (ImGui::Selectable(items[index], isSelected))
                     {
                         currentItem = items[index];
+                        if (m_UseAnimation) animations.Start(currentItem);
                     }
                     if (isSelected)
                     {
-                        ImGui::SetItemDefaultFocus(); // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+                        ImGui::SetItemDefaultFocus(); // set initial focus when opening the combo (scrolling + for keyboard navigation support)
                     }
                 }
                 ImGui::EndCombo();

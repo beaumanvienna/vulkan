@@ -24,11 +24,116 @@
 
 namespace GfxRenderEngine
 {
+
     SkeletalAnimations::SkeletalAnimations()
+        : m_CurrentAnimation{nullptr}
     {}
+
+    // by name
+    SkeletalAnimation& SkeletalAnimations::operator[](std::string const& animation)
+    {
+        return *m_Animations[animation];
+    }
+
+    // by index
+    SkeletalAnimation& SkeletalAnimations::operator[](uint index)
+    {
+        return *m_AnimationsVector[index];
+    }
 
     void SkeletalAnimations::Push(std::shared_ptr<SkeletalAnimation> const& animation)
     {
-        m_Animations[animation->GetName()] = animation;
+        if (animation)
+        {
+            m_Animations[animation->GetName()] = animation;
+            m_AnimationsVector.push_back(animation);
+        }
+        else
+        {
+            LOG_CORE_ERROR("SkeletalAnimations::Push: animation is empty!");
+        }
     }
+
+    void SkeletalAnimations::Start(std::string const& animation)
+    {
+        SkeletalAnimation* currentAnimation = m_Animations[animation].get();
+        if (currentAnimation)
+        {
+            m_CurrentAnimation = currentAnimation;
+            m_CurrentAnimation->Start();
+        }
+    }
+
+    void SkeletalAnimations::Start(size_t index)
+    {
+        if (!(index < m_AnimationsVector.size()))
+        {
+            LOG_CORE_ERROR("SkeletalAnimations::Start(uint index) out of bounds");
+            return;
+        }
+        SkeletalAnimation* currentAnimation = m_AnimationsVector[index].get();
+        if (currentAnimation)
+        {
+            m_CurrentAnimation = currentAnimation;
+            m_CurrentAnimation->Start();
+        }
+    }
+
+    void SkeletalAnimations::Stop()
+    {
+        if (m_CurrentAnimation)
+        {
+            m_CurrentAnimation->Stop();
+        }
+    }
+
+    bool SkeletalAnimations::IsRunning() const
+    {
+        if (m_CurrentAnimation)
+        {
+            return m_CurrentAnimation->IsRunning();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void SkeletalAnimations::Update(Armature::Skeleton& skeleton)
+    {
+        if (m_CurrentAnimation)
+        {
+            m_CurrentAnimation->Update(skeleton);
+        }
+    }
+
+    // range-based for loop auxiliary functions
+    SkeletalAnimations::Iterator SkeletalAnimations::begin()
+    {
+        return Iterator(&(*m_AnimationsVector.begin()));
+    }
+    SkeletalAnimations::Iterator SkeletalAnimations::end()
+    {
+        return Iterator(&(*m_AnimationsVector.end()));
+    }
+
+    // iterator functions
+    SkeletalAnimations::Iterator::Iterator(pSkeletalAnimation* pointer) // constructor
+    {
+        m_Pointer = pointer;
+    }
+    SkeletalAnimations::Iterator& SkeletalAnimations::Iterator::operator++() // pre increment
+    {
+        ++m_Pointer;
+        return *this;
+    }
+    bool SkeletalAnimations::Iterator::operator!=(const Iterator& rightHandSide) // compare
+    {
+        return m_Pointer != rightHandSide.m_Pointer;
+    }
+    SkeletalAnimation& SkeletalAnimations::Iterator::operator*() // dereference
+    {
+        return *(*m_Pointer /*shared_ptr*/);
+    }
+
 }

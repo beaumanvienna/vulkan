@@ -33,14 +33,17 @@ namespace GfxRenderEngine
 
     void SkeletalAnimation::Start()
     {
-        m_StartTime = Engine::m_Engine->GetTime();
-        Time endTime = m_Keyframes.back().m_TimeStamp; // last keyframe
-        m_Duration = endTime - m_StartTime;
+        m_CurrentKeyFrameTime = m_FirstKeyFrameTime;
+    }
+    
+    void SkeletalAnimation::Stop()
+    {
+        m_CurrentKeyFrameTime = m_LastKeyFrameTime + 1.0f;
     }
 
     bool SkeletalAnimation::IsRunning() const
     {
-        return (m_Repeat || ((Engine::m_Engine->GetTime() - m_StartTime) < m_Duration));
+        return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime));
     }
 
     void SkeletalAnimation::PushKeyframe(KeyPosition const& position)
@@ -57,6 +60,7 @@ namespace GfxRenderEngine
 
     void SkeletalAnimation::Update(Armature::Skeleton& skeleton)
     {
+        if (!IsRunning()) return;
         m_CurrentKeyFrameTime += 0.01666;
 
         if ( m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))

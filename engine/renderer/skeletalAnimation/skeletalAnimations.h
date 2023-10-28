@@ -36,14 +36,45 @@ namespace GfxRenderEngine
 
     public:
 
+        using pSkeletalAnimation = std::shared_ptr<SkeletalAnimation>;
+
+        struct Iterator // used for range-based loops to traverse the array elements in m_AnimationsVector
+        {
+            Iterator(pSkeletalAnimation* pointer);                 // iterator points to an array element of m_AnimationsVector
+            Iterator& operator++();                                // pre increment operator (next element)
+            bool operator!=(const Iterator& rightHandSide);        // unequal operator
+            SkeletalAnimation& operator*();                        // dereference operator
+
+        private:
+
+            pSkeletalAnimation* m_Pointer;
+        };
+
+    public:                                                         // iterator functions to traverse Array
+
+        Iterator begin();                                           // see Iterator struct above
+        Iterator end();
+        SkeletalAnimation& operator[](std::string const& animation);
+        SkeletalAnimation& operator[](uint index);
+
+    public:
+
         SkeletalAnimations();
 
         size_t Size() const { return m_Animations.size(); }
         void Push(std::shared_ptr<SkeletalAnimation> const& animation);
 
+        void Start(std::string const& animation); // by name
+        void Start(size_t index); // by index
+        void Stop();
+        bool IsRunning() const;
+        void Update(Armature::Skeleton& skeleton);
+
     private:
 
         std::map<std::string, std::shared_ptr<SkeletalAnimation>> m_Animations;
+        std::vector<std::shared_ptr<SkeletalAnimation>> m_AnimationsVector;
+        SkeletalAnimation* m_CurrentAnimation;
 
     };
 }

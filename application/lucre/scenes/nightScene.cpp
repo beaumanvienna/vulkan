@@ -76,12 +76,13 @@ namespace LucreApp
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::Cesium_Man");
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
-            auto& animations = mesh.m_Model->GetAnimations();
-            for (size_t animationIndex = 0; animationIndex < animations.size(); ++animationIndex)
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            for (auto& animation : animations)
             {
-                animations[animationIndex]->SetRepeat(true);
+                animation.SetRepeat(true);
             }
         }
+        
 
         {
             // place static lights for beach scene
