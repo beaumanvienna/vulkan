@@ -51,9 +51,10 @@ namespace LucreApp
 
     public:
 
+        static int   m_SelectedModel;
+        static int   m_MaxModels;
+        static EnttV m_VisibleModels;
         static int   m_SelectedGameObject;
-        static int   m_MaxGameObjects;
-        static EnttV m_VisibleGameObjects;
 
         static float m_Roughness;
         static bool  m_UseRoughness;
@@ -72,6 +73,11 @@ namespace LucreApp
         static bool  m_UseEmissiveStrength;
         static float m_EmissiveStrength;
         static bool  m_UseAnimation;
+
+    private:
+
+        static void TraverseObjectTree(TreeNode& node, uint maxDepth, uint& objectsFound);
+        static void TraverseObjectTree(TreeNode& node, uint depth, uint maxDepth, uint& objectsFound);
 
     private:
 

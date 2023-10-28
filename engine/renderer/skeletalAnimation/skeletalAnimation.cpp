@@ -59,7 +59,7 @@ namespace GfxRenderEngine
     {
         m_CurrentKeyFrameTime += 0.01666;
 
-        if (m_CurrentKeyFrameTime > m_LastKeyFrameTime)
+        if ( m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))
         {
             m_CurrentKeyFrameTime = m_FirstKeyFrameTime;
         }

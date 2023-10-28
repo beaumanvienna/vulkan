@@ -69,10 +69,9 @@ namespace LucreApp
         }
 
         StartScripts();
-        TreeNode::Traverse(m_SceneHierarchy);
+        TreeNode::TraverseInfo(m_SceneHierarchy);
         m_Dictionary.List();
-        m_Dune = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/dune/dune.gltf::Scene::duneMiddle");
-        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
+        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
 
         {
             // place static lights for beach scene
@@ -283,7 +282,7 @@ namespace LucreApp
     void BeachScene::AnimateHero(const Timestep& timestep)
     {
         auto view = m_Registry.view<TransformComponent>();
-        auto& heroTransform  = view.get<TransformComponent>(m_Hero);
+        auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter);
 
         static float deltaX = 0.5f;
         static float deltaY = 0.5f;

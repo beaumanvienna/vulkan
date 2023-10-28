@@ -127,6 +127,7 @@ namespace GfxRenderEngine
                 m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
             }
         }
+        m_Scene.CreateLinearMap();
     }
 
     glm::vec3 SceneLoader::ConvertToVec3(const YAML::Node& node)

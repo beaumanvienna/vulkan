@@ -49,7 +49,8 @@ namespace GfxRenderEngine
 
     public:
 
-        static void Traverse(TreeNode& node, uint indent = 0);
+        static void TraverseInfo(TreeNode& node, uint indent = 0);
+        static void CreateLinearMap(std::map<entt::entity,TreeNode*>& sceneHierarchyLinear, TreeNode& node);
 
     private:
 

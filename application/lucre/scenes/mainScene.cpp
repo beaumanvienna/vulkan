@@ -74,7 +74,7 @@ namespace LucreApp
         m_HornAnimation.Start();
 
         StartScripts();
-        TreeNode::Traverse(m_SceneHierarchy);
+        TreeNode::TraverseInfo(m_SceneHierarchy);
         m_Dictionary.List();
 
         m_LaunchVolcanoTimer.SetEventCallback

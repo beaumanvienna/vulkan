@@ -85,7 +85,7 @@ namespace LucreApp
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Dune, m_Skybox, m_Hero, m_Lightbulb0, m_Lightbulb1;
+        entt::entity m_Camera, m_Skybox, m_NonPlayableCharacter, m_Hero, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_PointLight[MAX_LIGHTS];

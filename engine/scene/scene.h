@@ -70,6 +70,8 @@ namespace GfxRenderEngine
         void SetRunning() { m_IsRunning = true; }
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
+        void CreateLinearMap();
+        TreeNode* GetTreeNode(entt::entity entity) { return m_SceneHierarchyLinear[entity]; }
 
     protected:
 
@@ -78,6 +80,7 @@ namespace GfxRenderEngine
         std::string m_AlternativeFilepath;
         entt::registry m_Registry;
         TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
+        std::map<entt::entity,TreeNode*> m_SceneHierarchyLinear;
         Dictionary m_Dictionary;
         bool m_IsRunning;
 

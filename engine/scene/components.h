@@ -152,6 +152,11 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
+    struct PbrMaterial
+    {
+        uint m_Tag{0};
+    };
+
     struct PbrEmissiveTag
     {
         float m_EmissiveStrength{0.f};

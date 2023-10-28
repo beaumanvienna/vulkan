@@ -82,4 +82,9 @@ namespace GfxRenderEngine
         m_Registry.emplace<DirectionalLightComponent>(directionlLight, directionlLightComponent);
         return directionlLight;
     }
+
+    void Scene::CreateLinearMap()
+    {
+        TreeNode::CreateLinearMap(m_SceneHierarchyLinear, m_SceneHierarchy);
+    }
 }

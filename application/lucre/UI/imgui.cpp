@@ -36,9 +36,10 @@
 
 namespace LucreApp
 {
+    int   ImGUI::m_SelectedModel = 0;
+    int   ImGUI::m_MaxModels = 0;
+    EnttV ImGUI::m_VisibleModels;
     int   ImGUI::m_SelectedGameObject = 0;
-    int   ImGUI::m_MaxGameObjects = 0;
-    EnttV ImGUI::m_VisibleGameObjects;
 
     float ImGUI::m_Roughness = 0.1f;
     bool  ImGUI::m_UseRoughness = false;
@@ -79,52 +80,50 @@ namespace LucreApp
         ImGui::SameLine();
 
         // selected entity
-        std::string gameObjectLabel = "Game Object";
+        std::string gameObjectLabel = "Model ";
         entt::entity entity = static_cast<entt::entity>(0);
-        if (m_VisibleGameObjects.size() > 0)
+        if (m_VisibleModels.size() > 0)
         {
-            auto& [label, selectedGameObject] = m_VisibleGameObjects[m_SelectedGameObject];
-            entity = selectedGameObject;
-            gameObjectLabel += std::string(" ") + label;
+            auto& [label, selectedModel] = m_VisibleModels[m_SelectedModel];
+            entity = selectedModel;
+            gameObjectLabel += label + std::string(", entity: ") + std::to_string(static_cast<int>(entity));
         }
 
-        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedGameObject, 0, m_MaxGameObjects);
-        // roughness
-        ImGui::Checkbox("use###001", &m_UseRoughness);
-        ImGui::SameLine();
-        ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
+        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
 
-        // metallic
-        ImGui::Checkbox("use###002", &m_UseMetallic);
-        ImGui::SameLine();
-        ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
-
-        // normal map intensity
-        ImGui::Checkbox("use###003", &m_UseNormalMapIntensity);
-        ImGui::SameLine();
-        ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
-
-        // point light intensity
-        ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
-        ImGui::SameLine();
-        ImGui::SliderFloat("point lights", &m_PointLightIntensity, 0.0f, 10.0f);
-
-        // ambient light intensity
-        ImGui::Checkbox("use###005", &m_UseAmbientLightIntensity);
-        ImGui::SameLine();
-        ImGui::SliderFloat("ambient light", &m_AmbientLightIntensity, 0.0f, 1.0f);
-
-        // emission strength
-        ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
-        ImGui::SameLine();
-        ImGui::SliderFloat("emissive strength", &m_EmissiveStrength, 0.0f, 1.0f);
-
-        // point light intensity
-        ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
-
-        if (registry.all_of<SkeletalAnimationTag>(entity))
         {
-            auto& mesh = registry.get<MeshComponent>(entity);
+            auto node = currentScene->GetTreeNode(entity);
+            const uint maxDepth = 5;
+            uint objectsFound = 0;
+            TraverseObjectTree(*node, maxDepth, objectsFound);
+        }
+
+        if (registry.all_of<PbrMaterial>(entity))
+        {
+            // roughness
+            ImGui::Checkbox("use###001", &m_UseRoughness);
+            ImGui::SameLine();
+            ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
+
+            // metallic
+            ImGui::Checkbox("use###002", &m_UseMetallic);
+            ImGui::SameLine();
+            ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
+
+            // normal map intensity
+            ImGui::Checkbox("use###003", &m_UseNormalMapIntensity);
+            ImGui::SameLine();
+            ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
+
+            // emission strength
+            ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
+            ImGui::SameLine();
+            ImGui::SliderFloat("emissive strength", &m_EmissiveStrength, 0.0f, 1.0f);
+        }
+
+        if (registry.all_of<SkeletalAnimationTag>(static_cast<entt::entity>(m_SelectedGameObject)))
+        {
+            auto& mesh = registry.get<MeshComponent>(static_cast<entt::entity>(m_SelectedGameObject));
             auto& animations = mesh.m_Model.get()->GetAnimations();
             size_t numberOfAnimations = animations.size();
             std::vector<const char*> items(numberOfAnimations);
@@ -160,7 +159,7 @@ namespace LucreApp
         }
 
         auto guizmoMode = GetGuizmoMode();
-        if (m_VisibleGameObjects.size() > 0)
+        if (m_VisibleModels.size() > 0)
         {
             ImGuizmo::BeginFrame();
             ImGuizmo::SetOrthographic(false);
@@ -236,6 +235,18 @@ namespace LucreApp
                 transform.SetScale(actualScale);
             }
         }
+        // point light intensity
+        ImGui::Checkbox("use###004", &m_UsePointLightIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("point lights", &m_PointLightIntensity, 0.0f, 10.0f);
+
+        // ambient light intensity
+        ImGui::Checkbox("use###005", &m_UseAmbientLightIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("ambient light", &m_AmbientLightIntensity, 0.0f, 1.0f);
+
+        // shadow map debug window
+        ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
     }
 
     ImGuizmo::OPERATION ImGUI::GetGuizmoMode()
@@ -262,19 +273,55 @@ namespace LucreApp
     // set up maxGameObjects, and the std::vector for visibleGameObjects
     void ImGUI::SetupSlider(SceneLoader::GltfFiles& gltfFiles)
     {
-        m_SelectedGameObject = 0;
+        m_SelectedModel = 0;
 
         for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromScene)
         {
             std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
-            m_VisibleGameObjects.push_back({label, entity});
+            m_VisibleModels.push_back({label, entity});
         }
         for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromPreFabs)
         {
             std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
-            m_VisibleGameObjects.push_back({label, entity});
+            m_VisibleModels.push_back({label, entity});
         }
 
-        m_MaxGameObjects = m_VisibleGameObjects.size()-1;
+        m_MaxModels = m_VisibleModels.size()-1;
+    }
+
+    void ImGUI::TraverseObjectTree(TreeNode& node, uint maxDepth, uint& objectsFound)
+    {
+        TraverseObjectTree(node, 0/*uint depth*/, maxDepth, objectsFound); // start with depth 0
+    }
+
+    void ImGUI::TraverseObjectTree(TreeNode& node, uint depth, uint maxDepth, uint& objectsFound)
+    {
+        if (depth < maxDepth)
+        {
+            ImGui::PushID(static_cast<int>(node.GetGameObject()));
+            uint numberOfChildren = node.Children();
+            if ( (numberOfChildren) && (depth != (maxDepth-1)) )
+            {
+                std::string name = "entity " + std::to_string(static_cast<int>(node.GetGameObject())) + " " +node.GetName();
+                if (ImGui::TreeNodeEx(name.c_str()))
+                {
+                    for (uint index = 0; index < node.Children(); ++index)
+                    {
+                        TraverseObjectTree(node.GetChild(index), depth + 1, maxDepth, objectsFound);
+                    }
+                    ImGui::TreePop();
+                }
+            }
+            else
+            {
+                auto gameObject = static_cast<int>(node.GetGameObject());
+                std::string name = "entity " + std::to_string(gameObject) + " " +node.GetName();
+                ImGui::TreeNodeEx(name.c_str(), /*ImGuiTreeNodeFlags_NoTreePushOnOpen | */ImGuiTreeNodeFlags_Leaf);
+                ImGui::SameLine();
+                if (ImGui::SmallButton("edit")) { m_SelectedGameObject = gameObject; }
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
+        }
     }
 }

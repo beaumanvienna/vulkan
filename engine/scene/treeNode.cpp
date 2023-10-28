@@ -73,13 +73,22 @@ namespace GfxRenderEngine
         m_GameObject = gameObject;
     }
 
-    void TreeNode::Traverse(TreeNode& node, uint indent)
+    void TreeNode::TraverseInfo(TreeNode& node, uint indent)
     {
         std::string indentStr(indent, ' ');
         LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(node.GetGameObject()), node.GetName());
-        for (uint index = 0; index < node.Children(); index++)
+        for (uint index = 0; index < node.Children(); ++index)
         {
-            Traverse(node.GetChild(index), indent + 4);
+            TraverseInfo(node.GetChild(index), indent + 4);
+        }
+    }
+
+    void TreeNode::CreateLinearMap(std::map<entt::entity,TreeNode*>& sceneHierarchyLinear, TreeNode& node)
+    {
+        sceneHierarchyLinear[node.GetGameObject()] = &node;
+        for (uint index = 0; index < node.Children(); ++index)
+        {
+            CreateLinearMap(sceneHierarchyLinear, node.GetChild(index));
         }
     }
 }
