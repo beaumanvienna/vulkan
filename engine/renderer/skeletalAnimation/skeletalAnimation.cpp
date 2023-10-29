@@ -46,18 +46,6 @@ namespace GfxRenderEngine
         return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime));
     }
 
-    void SkeletalAnimation::PushKeyframe(KeyPosition const& position)
-    {
-    }
-
-    void SkeletalAnimation::PushKeyframe(KeyRotation const& rotation)
-    {
-    }
-
-    void SkeletalAnimation::PushKeyframe(KeyScale const& scale)
-    {
-    }
-
     void SkeletalAnimation::Update(Armature::Skeleton& skeleton)
     {
         if (!IsRunning()) return;

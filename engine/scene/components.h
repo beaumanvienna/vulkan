@@ -192,6 +192,11 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
+    struct PbrDiffuseNormalRoughnessMetallicSATag
+    {
+        uint m_Tag{0};
+    };
+
     struct CubemapComponent
     {
         uint m_Tag{0};

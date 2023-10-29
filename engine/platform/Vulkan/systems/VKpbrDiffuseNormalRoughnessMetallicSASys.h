@@ -22,74 +22,51 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
-
+#include <vector>
+#include <unordered_map>
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    struct PbrNoMapMaterial
+    struct VK_PushConstantDataPbrDiffuseNormalRoughnessMetallicSA
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_Color;
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 
-    struct PbrEmissiveMaterial
+    class VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA
     {
-        float m_Roughness;
-        float m_Metallic;
-        glm::vec3 m_EmissiveFactor;
-        float m_EmissiveStrength;
-    };
 
-    struct PbrEmissiveTextureMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-        float m_EmissiveStrength;
-    };
+    public:
 
-    struct PbrDiffuseMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-    };
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA();
 
-    struct PbrDiffuseSAMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-    };
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA&) = delete;
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA& operator=(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA&) = delete;
 
-    struct PbrDiffuseNormalMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-    };
+        void UpdateAnimations(entt::registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
-    struct PbrDiffuseNormalRoughnessMetallicMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_NormalMapIntensity;
-    };
+    private:
 
-    struct PbrDiffuseNormalRoughnessMetallicSAMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
-        float m_NormalMapIntensity;
-    };
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
 
-    struct CubemapMaterial
-    {
-        VkDescriptorSet m_DescriptorSet;
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
     };
 }

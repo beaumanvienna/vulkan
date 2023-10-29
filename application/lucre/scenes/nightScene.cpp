@@ -74,6 +74,7 @@ namespace LucreApp
 
         m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::Cesium_Man");
+        if (m_Hero != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
@@ -82,7 +83,16 @@ namespace LucreApp
                 animation.SetRepeat(true);
             }
         }
-        
+        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
+        if (m_Guybrush != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            for (auto& animation : animations)
+            {
+                animation.SetRepeat(true);
+            }
+        }
 
         {
             // place static lights for beach scene

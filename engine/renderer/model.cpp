@@ -23,6 +23,7 @@
 #include <memory>
 #include <iostream>
 #include <unordered_map>
+#include <limits>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -69,6 +70,8 @@ namespace GfxRenderEngine
     PrimitiveDiffuseNormalMap::~PrimitiveDiffuseNormalMap() {}
 
     PrimitiveDiffuseNormalRoughnessMetallicMap::~PrimitiveDiffuseNormalRoughnessMetallicMap() {}
+    
+    PrimitiveDiffuseNormalRoughnessMetallicSAMap::~PrimitiveDiffuseNormalRoughnessMetallicSAMap() {}
 
     PrimitiveCubemap::~PrimitiveCubemap() {}
 
@@ -158,12 +161,15 @@ namespace GfxRenderEngine
 
     void Builder::LoadMaterialsGLTF()
     {
+        Material materialSA{};
+        LoadSkeletons(materialSA);
         m_Materials.clear();
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
 
             Material material{};
+            material.m_Features = materialSA.m_Features;
             material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
@@ -235,7 +241,7 @@ namespace GfxRenderEngine
                 material.m_RoughnessMettalicMapIndex = mettalicRoughnessTexture.source;
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
-            LoadSkeletons(material);
+
             m_Materials.push_back(material);
         }
     }
@@ -253,6 +259,7 @@ namespace GfxRenderEngine
         m_PrimitivesEmissiveTexture.clear();
         m_PrimitivesDiffuseNormalMap.clear();
         m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
+        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.clear();
 
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
@@ -560,6 +567,31 @@ namespace GfxRenderEngine
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
         }
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
+        {
+            PrimitiveDiffuseNormalRoughnessMetallicSAMap primitiveDiffuseNormalRoughnessMetallicSAMap{};
+            primitiveDiffuseNormalRoughnessMetallicSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseNormalRoughnessMetallicSAMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseNormalRoughnessMetallicSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseNormalRoughnessMetallicSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
+
+            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
+
+            ASSERT(diffuseMapIndex            < m_Images.size());
+            ASSERT(normalMapIndex             < m_Images.size());
+            ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial,
+                                          m_Images[diffuseMapIndex], 
+                                          m_Images[normalMapIndex], 
+                                          m_Images[roughnessMettalicMapIndex],
+                                          m_ShaderData);
+            primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
+
+            m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.push_back(primitiveDiffuseNormalRoughnessMetallicSAMap);
+        }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
             LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
@@ -826,6 +858,18 @@ namespace GfxRenderEngine
             registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
         }
 
+        if (m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.size())
+        {
+            //PbrMaterial pbrMaterial{};
+            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+
+            PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
+            registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+        }
+
         // emissive materials
         if (m_PrimitivesEmissive.size())
         {
@@ -1008,7 +1052,7 @@ namespace GfxRenderEngine
                     float E2z = edge2.z;
 
                     float factor;
-                    if ((dU1 * dV2 - dU2 * dV1) != 0.0f)
+                    if ((dU1 * dV2 - dU2 * dV1) > std::numeric_limits<float>::epsilon())
                     {
                         factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
                     }

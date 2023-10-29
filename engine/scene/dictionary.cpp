@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            LOG_CORE_CRITICAL("Dictionary::Retrieve, game object '{0}' not found", key);
+            LOG_CORE_WARN("Dictionary::Retrieve, game object '{0}' not found", key);
             return entt::null;
         }
     }

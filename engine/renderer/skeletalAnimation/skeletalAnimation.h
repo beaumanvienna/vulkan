@@ -70,32 +70,6 @@ namespace GfxRenderEngine
             int m_Node;
         };
 
-        struct KeyPosition
-        {
-            glm::vec3 m_Position;
-            Sampler m_Sampler;
-        };
-
-        struct KeyRotation
-        {
-            glm::quat m_Rotation;
-            Sampler m_Sampler;
-        };
-
-        struct KeyScale
-        {
-            glm::vec3 m_Scale;
-            Sampler m_Sampler;
-        };
-
-        struct Keyframe
-        {
-            KeyPosition m_KeyPosition;
-            KeyRotation m_KeyRotation;
-            KeyScale m_KeyScale;
-            Time m_TimeStamp;
-        };
-
     public:
 
         SkeletalAnimation(std::string const& name);
@@ -106,10 +80,6 @@ namespace GfxRenderEngine
         std::string const& GetName() const { return m_Name; }
         void SetRepeat(bool repeat) { m_Repeat = repeat; }
         void Update(Armature::Skeleton& skeleton);
-
-        void PushKeyframe(KeyPosition const& position);
-        void PushKeyframe(KeyRotation const& rotation);
-        void PushKeyframe(KeyScale    const& scale);
 
         std::vector<SkeletalAnimation::Sampler> m_Samplers;
         std::vector<SkeletalAnimation::Channel> m_Channels;
