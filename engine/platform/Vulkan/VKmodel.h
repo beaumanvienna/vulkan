@@ -71,6 +71,7 @@ namespace GfxRenderEngine
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
@@ -105,6 +106,13 @@ namespace GfxRenderEngine
         );
         static void CreateDescriptorSet
         (
+            PbrDiffuseNormalSAMaterial& pbrDiffuseNormalSAMaterial,
+            const std::shared_ptr<Texture>& colorMap,
+            const std::shared_ptr<Texture>& normalMap,
+            const std::shared_ptr<Buffer>& skeletalAnimationUBO
+        );
+        static void CreateDescriptorSet
+        (
             PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
             const std::shared_ptr<Texture>& colorMap,
             const std::shared_ptr<Texture>& normalMap, 
@@ -126,6 +134,7 @@ namespace GfxRenderEngine
         void DrawShadowInternal(const VK_FrameInfo& frameInfo, const PrimitiveTmp& primitive);
         void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
         void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalRoughnessMetallicSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
+        void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
 
     private:
 
@@ -144,6 +153,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
         std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
+        std::vector<PrimitiveDiffuseNormalSAMap> m_PrimitivesDiffuseNormalSAMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicSAMap> m_PrimitivesDiffuseNormalRoughnessMetallicSAMap{};
         std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};

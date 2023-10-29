@@ -148,6 +148,12 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalSADescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalRoughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
@@ -205,6 +211,12 @@ namespace GfxRenderEngine
         {
             m_GlobalDescriptorSetLayout,
             diffuseNormalDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalSA =
+        {
+            m_GlobalDescriptorSetLayout,
+            diffuseNormalSADescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalRoughnessMetallic =
@@ -320,6 +332,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuse                            = std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrDiffuseSA                          = std::make_unique<VK_RenderSystemPbrDiffuseSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseSA);
         m_RenderSystemPbrDiffuseNormal                      = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        m_RenderSystemPbrDiffuseNormalSA                    = std::make_unique<VK_RenderSystemPbrDiffuseNormalSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalSA);
         m_RenderSystemPbrEmissiveTexture                    = std::make_unique<VK_RenderSystemPbrEmissiveTexture>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTexture);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic     = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA   = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallicSA);
@@ -895,6 +908,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormalSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA->RenderEntities(m_FrameInfo, registry);
 
@@ -988,6 +1002,7 @@ namespace GfxRenderEngine
     void VK_Renderer::UpdateAnimations(entt::registry& registry)
     { 
         m_RenderSystemPbrDiffuseSA->UpdateAnimations(registry);
+        m_RenderSystemPbrDiffuseNormalSA->UpdateAnimations(registry);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA->UpdateAnimations(registry);
     }
 
@@ -1023,6 +1038,8 @@ namespace GfxRenderEngine
                 "pbrDiffuseSA.frag",
                 "pbrDiffuseNormal.vert",
                 "pbrDiffuseNormal.frag",
+                "pbrDiffuseNormalSA.vert",
+                "pbrDiffuseNormalSA.frag",
                 "pbrDiffuseNormalRoughnessMetallic.vert",
                 "pbrDiffuseNormalRoughnessMetallic.frag",
                 "pbrDiffuseNormalRoughnessMetallicSA.vert",

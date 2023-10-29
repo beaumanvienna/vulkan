@@ -72,7 +72,7 @@ namespace LucreApp
         TreeNode::TraverseInfo(m_SceneHierarchy);
         m_Dictionary.List();
 
-        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
+        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
@@ -82,6 +82,7 @@ namespace LucreApp
             {
                 animation.SetRepeat(true);
             }
+            animations.Start();
         }
         m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
         if (m_Guybrush != entt::null)
@@ -92,6 +93,18 @@ namespace LucreApp
             {
                 animation.SetRepeat(true);
             }
+            animations.Start();
+        }
+        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::Scene::Kaya BrowsAnimGeo");
+        if (m_NonPlayableCharacter2 != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            for (auto& animation : animations)
+            {
+                animation.SetRepeat(true);
+            }
+            animations.Start();
         }
 
         {
@@ -304,7 +317,7 @@ namespace LucreApp
     void NightScene::AnimateHero(const Timestep& timestep)
     {
         auto view = m_Registry.view<TransformComponent>();
-        auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter);
+        auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter1);
 
         static float deltaX = 0.5f;
         static float deltaY = 0.5f;

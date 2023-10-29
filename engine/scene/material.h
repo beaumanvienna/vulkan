@@ -76,6 +76,14 @@ namespace GfxRenderEngine
         float m_NormalMapIntensity;
     };
 
+    struct PbrDiffuseNormalSAMaterial
+    {
+        VkDescriptorSet m_DescriptorSet;
+        float m_Roughness;
+        float m_Metallic;
+        float m_NormalMapIntensity;
+    };
+
     struct PbrDiffuseNormalRoughnessMetallicMaterial
     {
         VkDescriptorSet m_DescriptorSet;

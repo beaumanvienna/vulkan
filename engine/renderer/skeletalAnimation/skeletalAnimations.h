@@ -65,7 +65,8 @@ namespace GfxRenderEngine
         void Push(std::shared_ptr<SkeletalAnimation> const& animation);
 
         void Start(std::string const& animation); // by name
-        void Start(size_t index); // by index
+        void Start(size_t index);                 // by index
+        void Start() { Start(0); };                // start animation 0
         void Stop();
         bool IsRunning() const;
         void Update(Armature::Skeleton& skeleton);

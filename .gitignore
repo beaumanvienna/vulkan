@@ -1,4 +1,5 @@
 application/lucre/models/guybrush_animated_gltf
+application/lucre/models/Kaya
 vendor/VulkanSDK
 *.spv
 bin

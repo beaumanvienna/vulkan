@@ -163,6 +163,16 @@ namespace GfxRenderEngine
         PbrDiffuseNormalMaterial m_PbrDiffuseNormalMaterial;
     };
 
+    struct PrimitiveDiffuseNormalSAMap
+    {
+        ~PrimitiveDiffuseNormalSAMap();
+        uint m_FirstIndex;
+        uint m_FirstVertex;
+        uint m_IndexCount;
+        uint m_VertexCount;
+        PbrDiffuseNormalSAMaterial m_PbrDiffuseNormalSAMaterial;
+    };
+
     struct PrimitiveDiffuseNormalRoughnessMetallicMap
     {
         ~PrimitiveDiffuseNormalRoughnessMetallicMap();
@@ -220,6 +230,7 @@ namespace GfxRenderEngine
         std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
         std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
         std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
+        std::vector<PrimitiveDiffuseNormalSAMap> m_PrimitivesDiffuseNormalSAMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
         std::vector<PrimitiveDiffuseNormalRoughnessMetallicSAMap> m_PrimitivesDiffuseNormalRoughnessMetallicSAMap{};
 
