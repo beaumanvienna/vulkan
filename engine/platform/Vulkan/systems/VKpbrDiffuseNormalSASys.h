@@ -55,7 +55,6 @@ namespace GfxRenderEngine
         VK_RenderSystemPbrDiffuseNormalSA(const VK_RenderSystemPbrDiffuseNormalSA&) = delete;
         VK_RenderSystemPbrDiffuseNormalSA& operator=(const VK_RenderSystemPbrDiffuseNormalSA&) = delete;
 
-        void UpdateAnimations(entt::registry& registry);
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:

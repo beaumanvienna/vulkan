@@ -79,7 +79,7 @@ namespace GfxRenderEngine
         bool IsRunning() const;
         std::string const& GetName() const { return m_Name; }
         void SetRepeat(bool repeat) { m_Repeat = repeat; }
-        void Update(Armature::Skeleton& skeleton);
+        void Update(const Timestep& timestep, Armature::Skeleton& skeleton);
 
         std::vector<SkeletalAnimation::Sampler> m_Samplers;
         std::vector<SkeletalAnimation::Channel> m_Channels;

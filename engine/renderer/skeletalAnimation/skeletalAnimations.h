@@ -68,14 +68,17 @@ namespace GfxRenderEngine
         void Start(size_t index);                 // by index
         void Start() { Start(0); };                // start animation 0
         void Stop();
+        void SetRepeat(bool repeat);
+        void SetRepeatAll(bool repeat);
         bool IsRunning() const;
-        void Update(Armature::Skeleton& skeleton);
+        void Update(const Timestep& timestep, Armature::Skeleton& skeleton, uint frameCounter);
 
     private:
 
         std::map<std::string, std::shared_ptr<SkeletalAnimation>> m_Animations;
         std::vector<std::shared_ptr<SkeletalAnimation>> m_AnimationsVector;
         SkeletalAnimation* m_CurrentAnimation;
+        uint m_FrameCounter;
 
     };
 }

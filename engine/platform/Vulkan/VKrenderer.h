@@ -110,7 +110,7 @@ namespace GfxRenderEngine
         virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
 
-        virtual void UpdateAnimations(entt::registry& registry) override;
+        virtual void UpdateAnimations(entt::registry& registry, const Timestep& timestep) override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 

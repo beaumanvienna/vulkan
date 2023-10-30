@@ -999,11 +999,17 @@ namespace GfxRenderEngine
         return m_CurrentFrameIndex;
     }
 
-    void VK_Renderer::UpdateAnimations(entt::registry& registry)
+    void VK_Renderer::UpdateAnimations(entt::registry& registry, const Timestep& timestep)
     { 
-        m_RenderSystemPbrDiffuseSA->UpdateAnimations(registry);
-        m_RenderSystemPbrDiffuseNormalSA->UpdateAnimations(registry);
-        m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA->UpdateAnimations(registry);
+        auto view = registry.view<MeshComponent, TransformComponent, SkeletalAnimationTag>();
+        for (auto entity : view)
+        {
+            auto& mesh = view.get<MeshComponent>(entity);
+            if (mesh.m_Enabled)
+            {
+                static_cast<VK_Model*>(mesh.m_Model.get())->UpdateAnimation(timestep, m_FrameCounter);
+            }
+        }
     }
 
     void VK_Renderer::CompileShaders()

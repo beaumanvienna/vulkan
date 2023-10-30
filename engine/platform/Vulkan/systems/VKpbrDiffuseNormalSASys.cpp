@@ -92,19 +92,6 @@ namespace GfxRenderEngine
         );
     }
 
-    void VK_RenderSystemPbrDiffuseNormalSA::UpdateAnimations(entt::registry& registry)
-    {
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalSATag>();
-        for (auto entity : view)
-        {
-            auto& mesh = view.get<MeshComponent>(entity);
-            if (mesh.m_Enabled)
-            {
-                static_cast<VK_Model*>(mesh.m_Model.get())->UpdateAnimation();
-            }
-        }
-    }
-
     void VK_RenderSystemPbrDiffuseNormalSA::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);

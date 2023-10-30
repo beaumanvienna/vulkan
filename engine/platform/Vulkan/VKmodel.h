@@ -64,7 +64,7 @@ namespace GfxRenderEngine
         void CreateIndexBuffers(const std::vector<uint>& indices) override;
 
         void Bind(VkCommandBuffer commandBuffer);
-        void UpdateAnimation();
+        void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
         void Draw(VkCommandBuffer commandBuffer);
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);

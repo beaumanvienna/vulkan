@@ -26,7 +26,7 @@ namespace GfxRenderEngine
 {
 
     SkeletalAnimations::SkeletalAnimations()
-        : m_CurrentAnimation{nullptr}
+        : m_CurrentAnimation{nullptr}, m_FrameCounter{1}
     {}
 
     // by name
@@ -87,6 +87,22 @@ namespace GfxRenderEngine
         }
     }
 
+    void SkeletalAnimations::SetRepeat(bool repeat)
+    {
+        if (m_CurrentAnimation)
+        {
+            m_CurrentAnimation->SetRepeat(repeat);
+        }
+    }
+
+    void SkeletalAnimations::SetRepeatAll(bool repeat)
+    {
+        for (auto& animation : m_AnimationsVector)
+        {
+            animation->SetRepeat(repeat);
+        }
+    }
+
     bool SkeletalAnimations::IsRunning() const
     {
         if (m_CurrentAnimation)
@@ -99,11 +115,16 @@ namespace GfxRenderEngine
         }
     }
 
-    void SkeletalAnimations::Update(Armature::Skeleton& skeleton)
+    void SkeletalAnimations::Update(const Timestep& timestep, Armature::Skeleton& skeleton, uint frameCounter)
     {
-        if (m_CurrentAnimation)
+        if (m_FrameCounter != frameCounter)
         {
-            m_CurrentAnimation->Update(skeleton);
+            m_FrameCounter = frameCounter;
+
+            if (m_CurrentAnimation)
+            {
+                m_CurrentAnimation->Update(timestep, skeleton);
+            }
         }
     }
 

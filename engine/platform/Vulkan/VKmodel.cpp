@@ -164,10 +164,10 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::UpdateAnimation()
+    void VK_Model::UpdateAnimation(const Timestep& timestep, uint frameCounter)
     {
 
-        m_Animations->Update(*m_Skeleton);
+        m_Animations->Update(timestep, *m_Skeleton, frameCounter);
         m_Skeleton->Update();
 
         // update ubo

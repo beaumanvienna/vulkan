@@ -62,7 +62,7 @@ namespace GfxRenderEngine
         virtual float GetAmbientLightIntensity() = 0;
 
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) = 0;
-        virtual void UpdateAnimations(entt::registry& registry) = 0;
+        virtual void UpdateAnimations(entt::registry& registry, const Timestep& timestep) = 0;
 
     };
 }

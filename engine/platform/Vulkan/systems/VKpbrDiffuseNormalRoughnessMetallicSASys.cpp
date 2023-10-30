@@ -91,18 +91,6 @@ namespace GfxRenderEngine
             pipelineConfig
         );
     }
-    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA::UpdateAnimations(entt::registry& registry)
-    {
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicSATag>();
-        for (auto entity : view)
-        {
-            auto& mesh = view.get<MeshComponent>(entity);
-            if (mesh.m_Enabled)
-            {
-                static_cast<VK_Model*>(mesh.m_Model.get())->UpdateAnimation();
-            }
-        }
-    }
 
     void VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {

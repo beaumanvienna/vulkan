@@ -32,7 +32,7 @@
 namespace GfxRenderEngine
 {
 
-    void Builder::LoadSkeletons(Material& material)
+    void Builder::LoadSkeletons()
     {
         size_t numberOfSkeletons = m_GltfModel.skins.size();
         if (!numberOfSkeletons)
@@ -258,7 +258,7 @@ namespace GfxRenderEngine
             m_Animations->Push(animation);
         }
         
-        if (m_Animations->Size()) material.m_Features |= Material::HAS_SKELETAL_ANIMATION;
+        if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)

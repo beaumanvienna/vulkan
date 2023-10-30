@@ -78,10 +78,7 @@ namespace LucreApp
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-            for (auto& animation : animations)
-            {
-                animation.SetRepeat(true);
-            }
+            animations.SetRepeatAll(true);
             animations.Start();
         }
         m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
@@ -89,10 +86,7 @@ namespace LucreApp
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-            for (auto& animation : animations)
-            {
-                animation.SetRepeat(true);
-            }
+            animations.SetRepeatAll(true);
             animations.Start();
         }
         m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::Scene::Kaya BrowsAnimGeo");
@@ -100,10 +94,7 @@ namespace LucreApp
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-            for (auto& animation : animations)
-            {
-                animation.SetRepeat(true);
-            }
+            animations.SetRepeatAll(true);
             animations.Start();
         }
 
@@ -245,7 +236,7 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
-        m_Renderer->UpdateAnimations(m_Registry);
+        m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);

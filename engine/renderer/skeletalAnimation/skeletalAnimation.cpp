@@ -46,10 +46,10 @@ namespace GfxRenderEngine
         return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime));
     }
 
-    void SkeletalAnimation::Update(Armature::Skeleton& skeleton)
+    void SkeletalAnimation::Update(const Timestep& timestep, Armature::Skeleton& skeleton)
     {
         if (!IsRunning()) return;
-        m_CurrentKeyFrameTime += 0.01666;
+        m_CurrentKeyFrameTime += timestep;
 
         if ( m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))
         {

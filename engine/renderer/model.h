@@ -85,7 +85,6 @@ namespace GfxRenderEngine
         glm::vec3 m_EmissiveFactor;
         float m_EmissiveStrength;
         uint m_DiffuseMapIndex;
-        uint m_DiffuseSAMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMettalicMapIndex;
         uint m_EmissiveMapIndex;
@@ -264,8 +263,9 @@ namespace GfxRenderEngine
     // skeletal animtion
     private:
 
-        void LoadSkeletons(Material& material);
+        void LoadSkeletons();
         void LoadJoint(int globalGltfNodeIndex, int parentJoint);
+        uint m_SkeletalAnimation;
 
     public:
 

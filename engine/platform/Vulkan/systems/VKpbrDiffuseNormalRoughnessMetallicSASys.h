@@ -55,7 +55,6 @@ namespace GfxRenderEngine
         VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA&) = delete;
         VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA& operator=(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA&) = delete;
 
-        void UpdateAnimations(entt::registry& registry);
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:

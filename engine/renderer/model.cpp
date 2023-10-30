@@ -90,7 +90,7 @@ namespace GfxRenderEngine
     }
 
     Builder::Builder(const std::string& filepath)
-        : m_Filepath(filepath), m_Transform(nullptr)
+        : m_Filepath(filepath), m_Transform(nullptr), m_SkeletalAnimation(0)
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -130,6 +130,9 @@ namespace GfxRenderEngine
             }
             auto texture = Texture::Create();
             texture->Init(glTFImage.width, glTFImage.height, GetImageFormatGLTF(i), buffer);
+            #ifdef DEBUG
+                texture->SetFilename(imageFilepath);
+            #endif
             m_Images.push_back(texture);
         }
     }
@@ -163,15 +166,13 @@ namespace GfxRenderEngine
 
     void Builder::LoadMaterialsGLTF()
     {
-        Material materialSA{};
-        LoadSkeletons(materialSA);
         m_Materials.clear();
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
 
             Material material{};
-            material.m_Features = materialSA.m_Features;
+            material.m_Features = m_SkeletalAnimation;
             material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
@@ -517,7 +518,7 @@ namespace GfxRenderEngine
             primitiveDiffuseSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseSAMapIndex;
+            uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             ASSERT(diffuseSAMapIndex < m_Images.size());
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
@@ -730,6 +731,7 @@ namespace GfxRenderEngine
         }
 
         LoadImagesGLTF();
+        LoadSkeletons();
         LoadMaterialsGLTF();
 
         for (auto& scene : m_GltfModel.scenes)
@@ -882,6 +884,9 @@ namespace GfxRenderEngine
 
             PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
             registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
         }
         if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
         {
