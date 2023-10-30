@@ -85,7 +85,6 @@ namespace GfxRenderEngine
             void Traverse(Joint const& joint, uint indent = 0);
             void Update();
             void UpdateJoint(int16_t joint);                   // signed because -1 maybe used for invalid joint
-            void UpdateFinalDeformedBindMatrix(int16_t joint); // 32768 joints is more than enough
 
             bool                        m_IsAnimated = true;
             std::string                 m_Name;

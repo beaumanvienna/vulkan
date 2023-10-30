@@ -75,14 +75,9 @@ namespace GfxRenderEngine
                 {
                     m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
                 }
-                for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
-                {
-                    int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
-                    if (parentJoint != Armature::NO_PARENT)
-                    {
-                        m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
-                    }
-                }
+
+                UpdateJoint(ROOT_JOINT);
+
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
                     m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
@@ -90,14 +85,18 @@ namespace GfxRenderEngine
             }
         }
 
-        // Update the global bind matrices of all joints
-        // traverses entire skeleton from top (a.k.a root)
+        // Update the final joint matrices of all joints
+        // traverses entire skeleton from top (a.k.a root a.k.a hip bone)
         // This way, it is guaranteed that the global parent transform is already updated
         void Skeleton::UpdateJoint(int16_t jointIndex)
         {
             auto& currentJoint = m_Joints[jointIndex]; // just a reference for easier code
-            // update this node
-            UpdateFinalDeformedBindMatrix(jointIndex);
+
+            int16_t parentJoint = currentJoint.m_ParentJoint;
+            if (parentJoint != Armature::NO_PARENT)
+            {
+                m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
+            }
 
             // update children
             size_t numberOfChildern = currentJoint.m_Children.size();
@@ -106,19 +105,6 @@ namespace GfxRenderEngine
                 int childJoint = currentJoint.m_Children[childIndex];
                 UpdateJoint(childJoint);
             }
-        }
-
-        // update the final deformed bind matrix for a joint 
-        // from the parent (must be already final) and from the local deformation transform
-        void Skeleton::UpdateFinalDeformedBindMatrix(int16_t jointIndex)
-        {
-            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
-            int16_t parentJoint = m_Joints[jointIndex].m_ParentJoint;
-            if (parentJoint != Armature::NO_PARENT)
-            {
-                m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
-            }
-            m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
         }
     }
 }
