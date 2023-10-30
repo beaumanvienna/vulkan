@@ -69,16 +69,28 @@ namespace GfxRenderEngine
 
                 // retrieve array of inverse bind matrices of all joints
                 // --> first, retrieve raw data and copy into a std::vector
-                const tinygltf::Accessor&   accessor   = m_GltfModel.accessors[glTFSkin.inverseBindMatrices];
-                const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
-                // assert # of matrices matches # of joints
-                if (accessor.count != numberOfJoints) LOG_CORE_CRITICAL("accessor.count != numberOfJoints"); 
-
                 auto& inverseBindMatrices = m_Skeleton->m_InverseBindMatrices;
                 inverseBindMatrices.resize(numberOfJoints);
-                int bufferSize = accessor.count * sizeof(glm::mat4); // in bytes
-                memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], bufferSize);
+                {
+                    uint count = 0;
+                    int type = 0;
+                    const glm::mat4* buffer;
+                    auto componentType = LoadAccessor<glm::mat4>
+                    (
+                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices],
+                        buffer,
+                        &count,
+                        &type
+                    );
+                    CORE_ASSERT(type == TINYGLTF_TYPE_MAT4, "unexpected type");
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    // assert # of matrices matches # of joints
+                    CORE_ASSERT(static_cast<size_t>(count) == numberOfJoints, "accessor.count != numberOfJoints");
+
+                    int bufferSize = count * sizeof(glm::mat4); // in bytes
+                    memcpy(inverseBindMatrices.data(), buffer, bufferSize);
+                }
+
 
                 // loop over all joints from gltf model and fill the skeleton with joints
                 for (size_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
@@ -165,39 +177,49 @@ namespace GfxRenderEngine
 
                 // get timestamp
                 {
-                    const tinygltf::Accessor&   accessor   = m_GltfModel.accessors[glTFSampler.input];
-                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
-                    const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
-                    int timestampBufferDataType = accessor.componentType;
+                    uint count = 0;
+                    const float* timestampBuffer;
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFSampler.input],
+                        timestampBuffer,
+                        &count
+                    );
 
-                    if (timestampBufferDataType == GL_FLOAT)
+                    if (componentType == GL_FLOAT)
                     {
-                        const float* timestampBuffer = reinterpret_cast<const float*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                        sampler.m_Timestamps.resize(accessor.count);
-                        for (size_t index = 0; index < accessor.count; ++index)
+                        sampler.m_Timestamps.resize(count);
+                        for (size_t index = 0; index < count; ++index)
                         {
                             sampler.m_Timestamps[index] = timestampBuffer[index];
                         }
                     }
                     else
                     {
-                        LOG_CORE_INFO("Builder::LoadSkeletons: cannot handle timestamp format");
+                        CORE_ASSERT(false, "Builder::LoadSkeletons: cannot handle timestamp format");
                     }
                 }
 
                 // Read sampler keyframe output translate/rotate/scale values
                 {
-                    const tinygltf::Accessor&   accessor   = m_GltfModel.accessors[glTFSampler.output];
-                    const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
-                    const tinygltf::Buffer&     buffer     = m_GltfModel.buffers[bufferView.buffer];
+                    uint count = 0;
+                    int type;
+                    const uint* buffer;
+                    LoadAccessor<uint>
+                    (
+                        m_GltfModel.accessors[glTFSampler.output],
+                        buffer,
+                        &count,
+                        &type
+                    );
 
-                    switch (accessor.type)
+                    switch (type)
                     {
                         case TINYGLTF_TYPE_VEC3:
                         {
-                            const glm::vec3* outputBuffer = reinterpret_cast<const glm::vec3*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                            sampler.m_TRSoutputValuesToBeInterpolated.resize(accessor.count);
-                            for (size_t index = 0; index < accessor.count; index++)
+                            const glm::vec3* outputBuffer = reinterpret_cast<const glm::vec3*>(buffer);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(count);
+                            for (size_t index = 0; index < count; index++)
                             {
                                 sampler.m_TRSoutputValuesToBeInterpolated[index] = glm::vec4(outputBuffer[index], 0.0f);
                             }
@@ -205,16 +227,17 @@ namespace GfxRenderEngine
                         }
                         case TINYGLTF_TYPE_VEC4:
                         {
-                            const glm::vec4* outputBuffer = reinterpret_cast<const glm::vec4*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                            sampler.m_TRSoutputValuesToBeInterpolated.resize(accessor.count);
-                            for (size_t index = 0; index < accessor.count; index++)
+                            const glm::vec4* outputBuffer = reinterpret_cast<const glm::vec4*>(buffer);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(count);
+                            for (size_t index = 0; index < count; index++)
                             {
                                 sampler.m_TRSoutputValuesToBeInterpolated[index] = glm::vec4(outputBuffer[index]);
                             }
                             break;
                         }
-                        default: {
-                            LOG_CORE_CRITICAL("void Builder::LoadSkeletons(...): accessor type not found");
+                        default: 
+                        {
+                            CORE_ASSERT(false, "void Builder::LoadSkeletons(...): accessor type not found");
                             break;
                         }
                     }

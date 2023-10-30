@@ -290,7 +290,7 @@ namespace GfxRenderEngine
                 const float* normalsBuffer   = nullptr;
                 const float* tangentsBuffer  = nullptr;
                 const float* texCoordsBuffer = nullptr;
-                const char*  jointsBuffer    = nullptr;
+                const uint*  jointsBuffer    = nullptr;
                 const float* weightsBuffer   = nullptr;
 
                 int jointsBufferDataType = 0;
@@ -298,51 +298,68 @@ namespace GfxRenderEngine
                 // Get buffer data for vertex positions
                 if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
                 {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    positionBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                    vertexCount = accessor.count;
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second],
+                        positionBuffer,
+                        &vertexCount
+                    );
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
                 if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end())
                 {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    normalsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second],
+                        normalsBuffer
+                    );
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
                 #define USE_TINYGLTF_TANGENTS
                 #ifdef USE_TINYGLTF_TANGENTS
                     // Get buffer data for vertex tangents
                     if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
                     {
-                        const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second];
-                        const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                        tangentsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                        auto componentType = LoadAccessor<float>
+                        (
+                            m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second],
+                            tangentsBuffer
+                        );
+                        CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                     }
                 #endif
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
                 if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
                 {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    texCoordsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second],
+                        texCoordsBuffer
+                    );
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
 
                 // Get buffer data for joints
                 if (glTFPrimitive.attributes.find("JOINTS_0") != glTFPrimitive.attributes.end())
                 {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    jointsBuffer = reinterpret_cast<const char*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-                    jointsBufferDataType = accessor.componentType;
+                    jointsBufferDataType = LoadAccessor<uint>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second],
+                        jointsBuffer
+                    );
+                    CORE_ASSERT((jointsBufferDataType == GL_BYTE) || (jointsBufferDataType == GL_UNSIGNED_BYTE), "unexpected component type");
                 }
                 // Get buffer data for joint weights
                 if (glTFPrimitive.attributes.find("WEIGHTS_0") != glTFPrimitive.attributes.end())
                 {
-                    const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second];
-                    const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-                    weightsBuffer = reinterpret_cast<const float*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second],
+                        weightsBuffer
+                    );
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
                 // Append data to model's vertex buffer
                 for (size_t v = 0; v < vertexCount; v++)
@@ -393,38 +410,52 @@ namespace GfxRenderEngine
             }
             // Indices
             {
-                const tinygltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.indices];
-                const tinygltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer& buffer = m_GltfModel.buffers[bufferView.buffer];
+                const uint32_t* buffer;
+                uint count = 0;
+                auto componentType = LoadAccessor<uint32_t>
+                (
+                    m_GltfModel.accessors[glTFPrimitive.indices],
+                    buffer,
+                    &count
+                );
 
-                indexCount += static_cast<uint32_t>(accessor.count);
+                indexCount += count;
 
                 // glTF supports different component types of indices
-                switch (accessor.componentType) {
-                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
-                    const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                    for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index]);
+                switch (componentType)
+                {
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: 
+                    {
+                        const uint32_t* buf = buffer;
+                        for (size_t index = 0; index < count; index++)
+                        {
+                            m_Indices.push_back(buf[index]);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
-                    const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                    for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index]);
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+                    {
+                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(buffer);
+                        for (size_t index = 0; index < count; index++) 
+                        {
+                            m_Indices.push_back(buf[index]);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
-                    const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                    for (size_t index = 0; index < accessor.count; index++) {
-                        m_Indices.push_back(buf[index]);
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
+                    {
+                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
+                        for (size_t index = 0; index < count; index++)
+                        {
+                            m_Indices.push_back(buf[index]);
+                        }
+                        break;
                     }
-                    break;
-                }
-                default:
-                    std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
-                    return;
+                    default:
+                    {
+                        CORE_ASSERT(false, "unexpected component type, index component type not supported!");
+                        return;
+                    }
                 }
             }
 

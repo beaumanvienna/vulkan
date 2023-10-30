@@ -75,8 +75,8 @@ namespace GfxRenderEngine
         auto vertCode = readFile(filePathVertexShader_SPV);
         auto fragCode = readFile(filePathFragmentShader_SPV);
 
-        LOG_APP_INFO("Vertex Shader Code Size: {0} {1}", vertCode.size(), filePathVertexShader_SPV);
-        LOG_APP_INFO("Fragment Shader Code Size: {0} {1}", fragCode.size(), filePathFragmentShader_SPV);
+        CORE_ASSERT(vertCode.size(), "vertex shader code size is zero");
+        CORE_ASSERT(fragCode.size(), "fragment shader code size is zero");
 
         CreateShaderModule(vertCode, &m_VertShaderModule);
         CreateShaderModule(fragCode, &m_FragShaderModule);

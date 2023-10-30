@@ -60,6 +60,8 @@ int engine(int argc, char* argv[]);
 #define LOG_APP_ERROR(...)      GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
 #define LOG_APP_CRITICAL(...)   GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
 
+#define CORE_ASSERT(x, str) if (!(x)) LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2}", __LINE__, __FILE__, str)
+
 typedef uint8_t  uchar;
 typedef uint16_t  uint16;
 typedef uint32_t uint;

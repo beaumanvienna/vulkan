@@ -251,6 +251,24 @@ namespace GfxRenderEngine
 
     private:
 
+        template<typename T>
+        int LoadAccessor(const tinygltf::Accessor& accessor, const T*& pointer, uint* count = nullptr, int* type = nullptr)
+        {
+            const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
+            pointer = reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+            if (count)
+            {
+                count[0] = static_cast<uint>(accessor.count);
+            }
+            if (type)
+            {
+                type[0] = accessor.type;
+            }
+            return accessor.componentType;
+        }
+        
+    private:
+
         std::string m_Filepath;
         std::string m_Basepath;
         tinygltf::Model m_GltfModel;
