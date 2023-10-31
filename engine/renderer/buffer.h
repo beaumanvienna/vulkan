@@ -42,7 +42,7 @@ namespace GfxRenderEngine
     public:
 
         ~Buffer() {}
-
+        virtual void MapBuffer() = 0;
         static std::shared_ptr<Buffer> Create(uint size);
 
     };

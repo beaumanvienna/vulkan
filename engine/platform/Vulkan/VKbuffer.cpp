@@ -100,6 +100,11 @@ namespace GfxRenderEngine
         return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
     }
 
+    void VK_Buffer::MapBuffer()
+    {
+        Map();
+    }
+
     /**
      * Unmap a mapped memory range
      *

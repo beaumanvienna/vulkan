@@ -725,7 +725,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
     {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_DescriptorSet;
+        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_ShadowDescriptorSet;
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
         vkCmdBindDescriptorSets
         (
@@ -765,7 +765,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
     {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalSAMaterial.m_DescriptorSet;
+        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalSAMaterial.m_ShadowDescriptorSet;
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
         vkCmdBindDescriptorSets
         (
@@ -805,7 +805,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalRoughnessMetallicSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
     {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_DescriptorSet;
+        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_ShadowDescriptorSet;
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
         vkCmdBindDescriptorSets
         (
@@ -942,21 +942,33 @@ namespace GfxRenderEngine
                                        const std::shared_ptr<Texture>& colorMap,
                                        const std::shared_ptr<Buffer>& skeletalAnimationUBO)
     {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-
         auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        buffer->Map();
         VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
 
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo)
-            .WriteBuffer(1, bufferInfo)
-            .Build(pbrDiffuseSAMaterial.m_DescriptorSet);
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
+
+            const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, imageInfo)
+                .WriteBuffer(1, bufferInfo)
+                .Build(pbrDiffuseSAMaterial.m_DescriptorSet);
+        }
+
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteBuffer(0, bufferInfo)
+                .Build(pbrDiffuseSAMaterial.m_ShadowDescriptorSet);
+        }
 
     }
 
@@ -997,24 +1009,35 @@ namespace GfxRenderEngine
                                        const std::shared_ptr<Texture>& normalMap,
                                        const std::shared_ptr<Buffer>& skeletalAnimationUBO)
     {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
 
         auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        buffer->Map();
         VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
 
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo0)
-            .WriteImage(1, imageInfo1)
-            .WriteBuffer(2, bufferInfo)
-            .Build(pbrDiffuseNormalSAMaterial.m_DescriptorSet);
+            auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+            auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, imageInfo0)
+                .WriteImage(1, imageInfo1)
+                .WriteBuffer(2, bufferInfo)
+                .Build(pbrDiffuseNormalSAMaterial.m_DescriptorSet);
+        }
+
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteBuffer(0, bufferInfo)
+                .Build(pbrDiffuseNormalSAMaterial.m_ShadowDescriptorSet);
+        }
     }
 
     void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
@@ -1045,27 +1068,37 @@ namespace GfxRenderEngine
                                        const std::shared_ptr<Texture>& roughnessMetallicMap,
                                        const std::shared_ptr<Buffer>& skeletalAnimationUBO)
     {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
-
         auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        buffer->Map();
         VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
 
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo0)
-            .WriteImage(1, imageInfo1)
-            .WriteImage(2, imageInfo2)
-            .WriteBuffer(3, bufferInfo)
-            .Build(pbrDiffuseNormalRoughnessMetallicSAMaterial.m_DescriptorSet);
+            auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+            auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+            auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteImage(0, imageInfo0)
+                .WriteImage(1, imageInfo1)
+                .WriteImage(2, imageInfo2)
+                .WriteBuffer(3, bufferInfo)
+                .Build(pbrDiffuseNormalRoughnessMetallicSAMaterial.m_DescriptorSet);
+        }
+
+        {
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                        .Build();
+
+            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                .WriteBuffer(0, bufferInfo)
+                .Build(pbrDiffuseNormalRoughnessMetallicSAMaterial.m_ShadowDescriptorSet);
+        }
     }
 
     void VK_Model::CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap)

@@ -64,6 +64,7 @@ namespace GfxRenderEngine
     struct PbrDiffuseSAMaterial
     {
         VkDescriptorSet m_DescriptorSet;
+        VkDescriptorSet m_ShadowDescriptorSet;
         float m_Roughness;
         float m_Metallic;
     };
@@ -79,6 +80,7 @@ namespace GfxRenderEngine
     struct PbrDiffuseNormalSAMaterial
     {
         VkDescriptorSet m_DescriptorSet;
+        VkDescriptorSet m_ShadowDescriptorSet;
         float m_Roughness;
         float m_Metallic;
         float m_NormalMapIntensity;
@@ -93,6 +95,7 @@ namespace GfxRenderEngine
     struct PbrDiffuseNormalRoughnessMetallicSAMaterial
     {
         VkDescriptorSet m_DescriptorSet;
+        VkDescriptorSet m_ShadowDescriptorSet;
         float m_NormalMapIntensity;
     };
 

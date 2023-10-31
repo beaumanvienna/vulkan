@@ -33,7 +33,7 @@ layout(set = 0, binding = 0) uniform ShadowUniformBuffer
     mat4 m_View;
 } ubo;
 
-layout(set = 1, binding = 1) uniform SkeletalAnimationShaderData
+layout(set = 1, binding = 0) uniform SkeletalAnimationShaderData
 {
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;

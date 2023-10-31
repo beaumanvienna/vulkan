@@ -147,6 +147,7 @@ namespace GfxRenderEngine
             int numberOfJoints = m_Skeleton->m_Joints.size();
             int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
             m_ShaderData = Buffer::Create(bufferSize);
+            m_ShaderData->MapBuffer();
         }
         
         size_t numberOfAnimations = m_GltfModel.animations.size();

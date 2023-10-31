@@ -53,6 +53,7 @@ namespace GfxRenderEngine
         VK_Buffer& operator=(const VK_Buffer&) = delete;
 
         VkResult Map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+        virtual void MapBuffer() override;
         void Unmap();
 
         void WriteToBuffer(const void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
