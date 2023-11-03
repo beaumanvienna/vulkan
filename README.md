@@ -128,13 +128,6 @@ git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
 cd vulkan
 ```
 
-Copy VulkanSDK/1.x.y.z/macOS into the vendor folder<br/>
-For example: (VulkanSDK location and version may differ)
-
-```
-cp -r ~/programs/VulkanSDK/1.3.268.1/macOS vendor/VulkanSDK
-```
-
 <br/>
 Create project files for clang:
 

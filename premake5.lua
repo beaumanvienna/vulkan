@@ -166,7 +166,6 @@ project "lucre"
         includedirs 
         {
             "/opt/homebrew/include",
-            "vendor/VulkanSDK/include",
             "/opt/homebrew/Cellar/glib/2.78.1/include/glib-2.0/",
             "/opt/homebrew/Cellar/glib/2.78.1/lib/glib-2.0/include/",
             "/opt/homebrew/include/SDL2/"
@@ -188,8 +187,7 @@ project "lucre"
         }
         libdirs
         {
-            "/opt/homebrew/lib",
-            "vendor/VulkanSDK/lib/"
+            "/opt/homebrew/lib"
         }
         defines
         {
