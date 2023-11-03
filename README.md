@@ -14,6 +14,7 @@ Features:
 - Support for the 3D file formats Obj Wavefront and glTF
 - Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
 - Point lights, directional lights with shadows, and deferred shading
+- Post-processing (Bloom), skeletal animations
 - Scene management with scene descriptions, background loading, scene saving, and attachable scripts
 - Sound support and desktop volume settings (Linux only)
 - Hotplug gamepad support based on SDL2 and a controller database
@@ -46,65 +47,186 @@ Contributions: Please use https://en.wikipedia.org/wiki/Indentation_style#Allman
 <br/>
 
 ## Build Instructions<br/>
+### Ubuntu Build Instructions<br/>
+<br/>
+Open a terminal
+<br/><br/>
+(Info: ppa:beauman/marley provides premake5)
 
-Ubuntu:<br/>
-(Info: ppa:beauman/marley provides premake5)<br/>
-<br/>
-<br/>
-sudo add-apt-repository ppa:beauman/marley<br/>
-sudo add-apt-repository universe<br/>
-sudo apt-get update<br/>
-sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev libpulse-dev libibus-1.0-dev libglib2.0-dev libsamplerate0-dev libasound2-dev libudev-dev <br/>
-<br>
-<br>
+```
+sudo add-apt-repository ppa:beauman/marley
+sudo add-apt-repository universe
+sudo apt-get update
+sudo apt install premake5 git build-essential xorg-dev libxrandr-dev libvulkan-dev libpulse-dev
+sudo apt install libibus-1.0-dev libglib2.0-dev libsamplerate0-dev libasound2-dev libudev-dev
+```
+
 Get the Vulkan SDK from here:<br>
-https://vulkan.lunarg.com/doc/sdk/1.2.198.1/linux/getting_started_ubuntu.html
+https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html
 <br>
 <br>
-Install the source code: <br/>
-git clone --recurse-submodules https://github.com/beaumanvienna/vulkan<br/>
-cd vulkan<br/>
+Install the source code:
+```
+git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
+cd vulkan
+```
+
+Create project files for gcc:
+```
+premake5 gmake2
+```
+
 <br/>
 <br/>
-Create project files for gcc: <br/>
-premake5 gmake2<br/>
+Define the number of CPU cores to be used for compiling<br/>
+e.g. "-j4" <br/>
+To use all available CPU cores, say:
+
+```
+export MAKEFLAGS=-j$(nproc)
+```
+
+You may want to add the `export MAKEFLAGS=-j$(nproc)` command to ~/.bashrc to always use multiple CPU cores for compiling a makefile.
 <br/>
-<br />
-#define the number of CPU cores to be used for compiling<br />
-#e.g. "-j4" <br />
-#To use all available CPU cores, say:<br />
-export MAKEFLAGS=-j$(nproc)<br />
-<br />
-<br />
-Compile and run debug target: make verbose=1 && ./bin/Debug/lucre <br/>
-Compile and run release target: make config=release verbose=1 && ./bin/Release/lucre<br/>
 <br/>
+<br/>
+Compile and run debug target:
+
+```
+make verbose=1 && ./bin/Debug/lucre
+```
+
+Compile and run release target:
+```
+make config=release verbose=1 && ./bin/Release/lucre
+```
+
+<br/>
+
+
+### MacOSX Build Instructions<br/>
+#### Install Dependencies
+
+[Download and install MacOS Vulkan sdk](https://vulkan.lunarg.com/)<br/>
+[Download and install Homebrew](https://brew.sh/)<br/>
+<br/>
+Open a terminal
+<br/><br/>
+To install Xcode, type `git`<br/>
+<br/>
+Install dependencies (note that premake5 is installed as `premake`, but called in the terminal as `premake5`):
+
+```
+brew install premake glib gtk+ sfml sdl2 sdl2_mixer libvorbis libogg glfw
+```
+
+<br/>
+Install the source code:
+
+```
+git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
+cd vulkan
+```
+
+Copy VulkanSDK/1.x.y.z/macOS into the vendor folder<br/>
+For example: (VulkanSDK location and version may differ)
+
+```
+cp -r ~/programs/VulkanSDK/1.3.268.1/macOS vendor/VulkanSDK
+```
+
+<br/>
+Create project files for clang:
+
+```
+premake5 gmake2
+```
+
+<br/>
+<br/>
+Define the number of CPU cores to be used for compiling<br/>
+e.g. "-j8" to use eight CPU cores<br/>
+To use all available CPU cores, say:
+
+```
+export MAKEFLAGS=-j$(sysctl -n hw.ncpu)
+```
+
+To find out, how many cores your Mac has, say:
+
+```
+sysctl -n hw.ncpu
+```
+
+You may want to add the `export MAKEFLAGS=-j8` command to ~/.zshrc to always use multiple CPU cores for compiling a makefile.
+<br/>
+<br/>
+<br/>
+Compile and run debug target:
+
+```
+make verbose=1 && ./bin/Debug/lucre
+```
+
+Compile and run release target:
+```
+make config=release verbose=1 && ./bin/Release/lucre
+```
+
+<br/>
+
+
 
 ### Windows Build Instructions<br/>
 <br/>
-Dependencies: premake5, Visual Studio, Vulkan SDK<br/>
+Dependencies: gitbash, premake5, Visual Studio<br/>
 <br/>
-Download the Vulkan SDK from lunarg.com, install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/VulkanSDK. The version number is omitted in the path.<br/>
+
+Download the Vulkan SDK from [lunarg.com](https://vulkan.lunarg.com/), install it, then copy "C:\VulkanSDK\1.3.204.1" (path and version may differ) to vendor/VulkanSDK. The version number is omitted in the path.<br/>
+<br/><br/>
+Open gitbash
+<br/><br/>
 <br/>
-In a terminal, starting from the root folder vulkan, if you have Visual Studio 2019:<br/>
-premake5.exe vs2019<br/>
+Install the source code:
+
+```
+git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
+cd vulkan
+```
+
+If you have Visual Studio 2019:
+
+```
+premake5.exe vs2019
+```
+
 <br/>
-If you have Visual Studio 2022, use instead:<br/>
-premake5.exe vs2022<br/>
+If you have Visual Studio 2022, use instead:
+
+```
+premake5.exe vs2022
+```
+
 <br/>
 Open the solution for Vulkan, switch to Release, and hit F5<br/>
 <br/>
 
 ### Clean Instruction<br/>
 <br/>
-To clean all temporary files (including the spv-files, engine.cfg, imgui.ini, and the scene files in the top directory), use:<br/>
-<br/>
-premake5 clean<br/>
+To clean all temporary files (including the spv-files, engine.cfg, imgui.ini, and the scene files in the top directory), use:
+
+```
+premake5 clean
+```
+
 <br/>
 
 ### Update Instruction<br/>
 <br/>
-To pull in the latest changes for the repository, use:<br/>
-<br/>
-git pull && git submodule update --init --recursive<br/>
+To pull in the latest changes for the repository, use:
+
+```
+git pull && git submodule update --init --recursive
+```
+
 <br/>

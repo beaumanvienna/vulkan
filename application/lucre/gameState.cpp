@@ -50,7 +50,8 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        SetNextState(State::NIGHT);
+        SetNextState(State::CUTSCENE);
+        //SetNextState(State::NIGHT);
     }
 
     void GameState::Stop()

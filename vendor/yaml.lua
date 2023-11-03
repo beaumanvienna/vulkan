@@ -5,7 +5,6 @@ project "yaml-cpp"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
-    systemversion "latest"
 
     targetdir ("yaml-cpp/build")
     objdir ("yaml-cpp/build")

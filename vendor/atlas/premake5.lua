@@ -70,6 +70,24 @@ project "SpriteSheetGenerator"
             "ws2_32"
         }
 
+    filter "system:macosx"
+        includedirs 
+        { 
+            "/opt/homebrew/Cellar/sfml/2.6.0/include"
+        }
+        libdirs 
+        {
+            "/opt/homebrew/Cellar/sfml/2.6.0/lib"
+        }
+        links
+        {
+            "sfml-graphics",
+            "sfml-window",
+            "sfml-system",
+            "dl",
+            "pthread",
+        }
+
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"

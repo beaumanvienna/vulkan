@@ -25,6 +25,7 @@ project "engine"
         "vendor/imgui/backends/imgui_impl_glfw.cpp",
         "vendor/imgui/backends/imgui_impl_vulkan.cpp",
         "vendor/imgui/*.cpp",
+        "vendor/tinygltf/tiny_gltf.cpp"
     }
 
     includedirs
@@ -39,9 +40,8 @@ project "engine"
         "vendor/imgui",
         "vendor/imGuizmo",
         "vendor/spdlog/include",
-        "vendor/sdl/include",
-        "vendor/sdl_mixer/include",
         "vendor/shaderc/libshaderc/include/shaderc/",
+        "vendor/shaderc/libshaderc/include/",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
@@ -68,21 +68,19 @@ project "engine"
         }
 
         files 
-        { 
-            "resources/gnuEmbeddedResources.cpp"
+        {
         }
+
         includedirs 
         {
             "/usr/include",
             "vendor/pamanager/libpamanager/src",
-
-            -- resource system: glib-2.0
-            -- this should actually be `pkg-config glib-2.0 --cflags`
+            "vendor/sdl/include",
+            "vendor/sdl_mixer/include",
             "/usr/include/glib-2.0",
             "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
             "/usr/lib/glib-2.0/include/",
-            "/usr/lib64/glib-2.0/include/",
-            -- end resource system: glib-2.0
+            "/usr/lib64/glib-2.0/include/"
         }
         links
         {
@@ -114,6 +112,31 @@ project "engine"
         {
         }
 
+    filter "system:macosx"
+
+        linkoptions { "-fno-pie -no-pie" }
+
+        prebuildcommands
+        {
+        }
+
+        includedirs 
+        {
+            "/opt/homebrew/Cellar/glib/2.78.1/include/glib-2.0/",
+            "/opt/homebrew/Cellar/glib/2.78.1/lib/glib-2.0/include/",
+            "/opt/homebrew/include/SDL2/"
+        }
+        links
+        {
+        }
+        libdirs
+        {
+        }
+        defines
+        {
+            "MACOSX",
+        }
+
     filter { "action:gmake*", "configurations:Debug"}
         buildoptions { "-ggdb -Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
@@ -142,8 +165,10 @@ project "engine"
     include "vendor/yaml.lua"
     include "vendor/atlas"
     include "vendor/shaderc.lua"
-    include "vendor/sdl_mixer.lua"
-    include "vendor/sdl.lua"
+    if ((os.host() ~= "macosx")) then
+        include "vendor/sdl_mixer.lua"
+        include "vendor/sdl.lua"
+    end
     include "vendor/box2d"
 
     if os.host() == "linux" then
@@ -152,12 +177,23 @@ project "engine"
 
     end
 
-    if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2") ) then
+    if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2")  or (os.host() == "macosx" and _ACTION == "gmake2")) then
 
         project "resource-system-gnu"
             kind "StaticLib"
             os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.cpp --sourcedir=resources/ --generate-source")
             os.execute("glib-compile-resources resources/gnuEmbeddedResources.xml --target=resources/gnuEmbeddedResources.h   --sourcedir=resources/ --generate-header")
+
+            files 
+            { 
+                "resources/gnuEmbeddedResources.cpp"
+            }
+            includedirs 
+            {
+                "/opt/homebrew/Cellar/glib/2.78.1/include/glib-2.0/",
+                "/opt/homebrew/Cellar/glib/2.78.1/lib/glib-2.0/include/",
+                "/usr/local/include/"
+            }
     end
 
     if os.host() == "windows" then

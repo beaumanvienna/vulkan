@@ -24,8 +24,7 @@ project "lucre"
     files 
     {
         "application/**.h", 
-        "application/**.cpp",
-        "vendor/tinygltf/tiny_gltf.cpp",
+        "application/**.cpp"
     }
 
     includedirs 
@@ -37,7 +36,6 @@ project "lucre"
         "vendor",
         "vendor/imgui",
         "resources",
-        "vendor/sdl/include",
         "vendor/spdlog/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
@@ -60,11 +58,6 @@ project "lucre"
     links
     {
         "engine",
-        "glfw3",
-        "sdl_mixer",
-        "sdl",
-        "libvorbis",
-        "libogg",
         "yaml-cpp",
         "box2d",
         "shaderc",
@@ -75,7 +68,7 @@ project "lucre"
         "OSDependent",
         "GenericCodeGen",
         "OGLCompiler",
-        "SPIRV",
+        "SPIRV"
     }
 
     prebuildcommands
@@ -92,14 +85,11 @@ project "lucre"
         includedirs 
         {
             "vendor/pamanager/libpamanager/src",
-
-            -- resource system: glib-2.0
-            -- this should actually be `pkg-config glib-2.0 --cflags`
             "/usr/include/glib-2.0",
             "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
             "/usr/lib/glib-2.0/include/",
             "/usr/lib64/glib-2.0/include/",
-            -- end resource system: glib-2.0
+            "vendor/sdl/include"
         }
         links
         {
@@ -114,6 +104,12 @@ project "lucre"
             "pulse",
             "glib-2.0",
             "gio-2.0",
+            "sdl_mixer",
+            "sdl",
+            "libvorbis",
+            "libogg",
+            "glfw3",
+            "resource-system-gnu"
         }
         libdirs
         {
@@ -134,6 +130,7 @@ project "lucre"
         includedirs 
         {
             "vendor/VulkanSDK/Include",
+            "vendor/sdl/include"
         }
         links
         {
@@ -150,10 +147,53 @@ project "lucre"
             "uuid",
             "Setupapi",
             "vulkan-1",
+            "sdl_mixer",
+            "sdl",
+            "libvorbis",
+            "libogg",
+            "glfw3"
         }
         libdirs 
         {
             "vendor/VulkanSDK/Lib",
+        }
+
+    filter "system:macosx"
+
+        files 
+        { 
+        }
+        includedirs 
+        {
+            "/opt/homebrew/include",
+            "vendor/VulkanSDK/include",
+            "/opt/homebrew/Cellar/glib/2.78.1/include/glib-2.0/",
+            "/opt/homebrew/Cellar/glib/2.78.1/lib/glib-2.0/include/",
+            "/opt/homebrew/include/SDL2/"
+        }
+        links
+        {
+            "m",
+            "dl", 
+            "vulkan",
+            "pthread",
+            "glib-2.0",
+            "gio-2.0",
+            "SDL2",
+            "SDL2_mixer",
+            "vorbis",
+            "ogg",
+            "glfw",
+            "resource-system-gnu"
+        }
+        libdirs
+        {
+            "/opt/homebrew/lib",
+            "vendor/VulkanSDK/lib/"
+        }
+        defines
+        {
+            "MACOSX",
         }
 
     filter { "configurations:Debug" }

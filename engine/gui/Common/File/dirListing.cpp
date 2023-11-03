@@ -156,6 +156,9 @@ namespace GfxRenderEngine
     #if (defined __ANDROID__) && (__ANDROID_API__ < 21)
             struct stat file_info;
             int result = stat(path.c_str(), &file_info);
+    #elif (MACOSX)
+            struct stat file_info;
+            int result = stat(path.c_str(), &file_info);
     #else
             struct stat64 file_info;
             int result = stat64(path.c_str(), &file_info);

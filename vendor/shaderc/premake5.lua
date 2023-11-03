@@ -267,6 +267,13 @@ project "SPIRV-Tools-opt"
             "SPIRV_WINDOWS",
         }
 
+    filter { "system:macosx"}
+        defines
+        {
+            "SPIRV_MAC",
+            "SPIRV_TIMER_ENABLED"
+        }
+
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-exceptions" }
 
@@ -400,6 +407,13 @@ project "SPIRV-Tools"
             "SPIRV_WINDOWS",
         }
 
+    filter { "system:macosx"}
+        defines
+        {
+            "SPIRV_MAC",
+            "SPIRV_TIMER_ENABLED"
+        }
+
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-rtti -fno-exceptions" }
 
@@ -495,6 +509,12 @@ project "MachineIndependent"
             "GLSLANG_OSINCLUDE_WIN32"
         }
 
+    filter { "system:macosx"}
+        defines
+        {
+            "GLSLANG_OSINCLUDE_UNIX"
+        }
+
     filter "action:gmake*"
         buildoptions { "-fdiagnostics-color=always -fPIC -fno-exceptions -fno-rtti -pthread" }
 
@@ -526,7 +546,7 @@ project "OSDependent"
 
     files
     {
-        "third_party/re2/re2/prefilter.cc"
+        "third_party/re2/re2/prefilter.cc",
     }
 
     includedirs
@@ -534,13 +554,20 @@ project "OSDependent"
         "third_party/re2"
     }
 
+    filter "system:linux"
+        files
+        {
+            "third_party/glslang/glslang/OSDependent/Unix/ossource.cpp"
+        }
+
     filter "system:windows"
         systemversion "latest"
         files
         {
             "third_party/glslang/glslang/OSDependent/Windows/ossource.cpp"
         }
-    filter "system:linux"
+
+    filter "system:macosx"
         files
         {
             "third_party/glslang/glslang/OSDependent/Unix/ossource.cpp"

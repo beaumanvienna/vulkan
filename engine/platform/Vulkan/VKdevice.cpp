@@ -129,6 +129,9 @@ namespace GfxRenderEngine
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
+        #ifdef MACOSX
+          createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        #endif
 
         auto extensions = GetRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint>(extensions.size());
@@ -152,6 +155,7 @@ namespace GfxRenderEngine
         if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create instance!");
+            exit(1);
         }
 
         HasGflwRequiredInstanceExtensions();
@@ -450,6 +454,11 @@ namespace GfxRenderEngine
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
+
+        #ifdef MACOSX
+            extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+            //extensions.push_back("VK_KHR_portability_subset");
+        #endif
 
         return extensions;
     }
