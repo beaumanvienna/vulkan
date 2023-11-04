@@ -743,13 +743,13 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
         std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)> clearValues{};
-        clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
         clearValues[1].depthStencil = {1.0f, 0};
-        clearValues[2].color = {0.1f, 0.1f, 0.1f, 1.0f};
-        clearValues[3].color = {0.5f, 0.5f, 0.1f, 1.0f};
-        clearValues[4].color = {0.5f, 0.1f, 0.5f, 1.0f};
-        clearValues[5].color = {0.5f, 0.7f, 0.2f, 1.0f};
-        clearValues[6].color = {0.0f, 0.0f, 0.0f, 0.0f};
+        clearValues[2].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+        clearValues[3].color = {{0.5f, 0.5f, 0.1f, 1.0f}};
+        clearValues[4].color = {{0.5f, 0.1f, 0.5f, 1.0f}};
+        clearValues[5].color = {{0.5f, 0.7f, 0.2f, 1.0f}};
+        clearValues[6].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -781,7 +781,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
 
         std::array<VkClearValue, static_cast<uint>(VK_RenderPass::RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> clearValues{};
-        clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
+        clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 

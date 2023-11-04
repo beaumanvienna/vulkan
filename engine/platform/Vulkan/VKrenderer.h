@@ -69,7 +69,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Renderer(VK_Window* window);
-        ~VK_Renderer() override;
+        virtual ~VK_Renderer();
 
         VK_Renderer(const VK_Renderer&) = delete;
         VK_Renderer& operator=(const VK_Renderer&) = delete;

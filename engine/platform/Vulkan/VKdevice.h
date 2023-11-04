@@ -186,7 +186,11 @@ namespace GfxRenderEngine
         VkQueue m_TransfertQueue;
 
         const std::vector<const char *> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
-        const std::vector<const char *> m_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        #ifdef MACOSX
+            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+        #else
+            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        #endif
         bool m_TransferQueueSupportsGraphics = false;
     };
 }

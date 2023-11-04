@@ -37,7 +37,7 @@ namespace GfxRenderEngine
     {
     public:
 
-        virtual ~Renderer() {}
+        virtual ~Renderer() = default;
 
         virtual bool Init() =0;
 

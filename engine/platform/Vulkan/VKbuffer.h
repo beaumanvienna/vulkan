@@ -47,7 +47,7 @@ namespace GfxRenderEngine
 
         VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU);
 
-        ~VK_Buffer();
+        virtual ~VK_Buffer();
 
         VK_Buffer(const VK_Buffer&) = delete;
         VK_Buffer& operator=(const VK_Buffer&) = delete;

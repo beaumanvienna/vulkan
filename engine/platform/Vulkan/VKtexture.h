@@ -37,7 +37,7 @@ namespace GfxRenderEngine
     public:
         VK_Texture(bool nearestFilter = false);
         VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
-        ~VK_Texture();
+        virtual ~VK_Texture();
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) override;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;

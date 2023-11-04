@@ -31,6 +31,11 @@
 #include "VKdevice.h"
 #include "VKwindow.h"
 
+#ifdef MACOSX
+    #include <vulkan/vulkan_beta.h>
+    #define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR static_cast<VkStructureType>(1000163000)
+#endif
+
 namespace GfxRenderEngine
 {
 
@@ -257,8 +262,8 @@ namespace GfxRenderEngine
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         
         createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint>(m_DeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
+        createInfo.enabledExtensionCount = static_cast<uint>(m_RequiredDeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = m_RequiredDeviceExtensions.data();
         
         // might not really be necessary anymore because device specific validation layers
         // have been deprecated
@@ -271,7 +276,18 @@ namespace GfxRenderEngine
         {
             createInfo.enabledLayerCount = 0;
         }
-        
+        #ifdef MACOSX
+            VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures = {};
+            {
+                portabilityFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR;
+
+                VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
+                physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+                physicalDeviceFeatures2.pNext = &portabilityFeatures;
+                vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &physicalDeviceFeatures2);
+            }
+            createInfo.pNext=&portabilityFeatures;
+        #endif
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create logical device!");
@@ -491,17 +507,24 @@ namespace GfxRenderEngine
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(
-        device,
-        nullptr,
-        &extensionCount,
-        availableExtensions.data());
+        vkEnumerateDeviceExtensionProperties
+        (
+            device,
+            nullptr,
+            &extensionCount,
+            availableExtensions.data()
+        );
 
-        std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
+        std::set<std::string> requiredExtensions(m_RequiredDeviceExtensions.begin(), m_RequiredDeviceExtensions.end());
 
+        // check if all required extensions are in available extensions
+        // if it finds each required extension, requiredExtensions will be empty
         for (const auto &extension : availableExtensions)
         {
-            requiredExtensions.erase(extension.extensionName);
+            if (requiredExtensions.erase(extension.extensionName))
+            {
+                LOG_CORE_INFO("extension '{0}' is available", extension.extensionName);
+            }
         }
 
         return requiredExtensions.empty();
