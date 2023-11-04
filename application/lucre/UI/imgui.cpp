@@ -91,6 +91,17 @@ namespace LucreApp
 
         ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
 
+        static int selectedModelPrevious = m_SelectedModel;
+        static const char* currentItem = nullptr;
+        if (m_SelectedModel != selectedModelPrevious)
+        {
+            // reset animations drop down
+            selectedModelPrevious = m_SelectedModel;
+            m_SelectedGameObject = 0;
+            m_UseAnimation = false;
+            currentItem = nullptr;
+        }
+
         {
             auto node = currentScene->GetTreeNode(entity);
             const uint maxDepth = 5;
@@ -132,7 +143,7 @@ namespace LucreApp
             {
                 items[itemIndex++] = animation.GetName().c_str();
             }
-            static const char* currentItem = nullptr;
+            
             if (!currentItem)
             {
                 currentItem = items[0];
