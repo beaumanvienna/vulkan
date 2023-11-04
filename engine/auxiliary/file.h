@@ -41,6 +41,8 @@ namespace GfxRenderEngine
         std::string GetPathWithoutFilename(const std::filesystem::path& path);
         std::string GetFilenameWithoutExtension(const std::filesystem::path& path);
         std::string GetFileExtension(const std::filesystem::path& path);
+        std::string GetCurrentWorkingDirectory();
+        void SetCurrentWorkingDirectory(const std::filesystem::path& path);
 
         bool CreateDirectory(const std::string& filename);
         bool CopyFile(const std::string& src, const std::string& dest);

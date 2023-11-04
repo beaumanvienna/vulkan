@@ -117,6 +117,16 @@ namespace GfxRenderEngine
             return ext;
         }
 
+        std::string GetCurrentWorkingDirectory()
+        {
+            return std::filesystem::current_path();
+        }
+
+        void SetCurrentWorkingDirectory(const std::filesystem::path& path)
+        {
+            std::filesystem::current_path(path);
+        }
+
         bool CreateDirectory(const std::string& filename)
         {
             #ifdef _MSC_VER
