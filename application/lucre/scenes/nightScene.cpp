@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     NightScene::NightScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoader{*this}
+            : Scene(filepath, alternativeFilepath), m_SceneLoader{*this}
     {
     }
 
@@ -63,9 +63,6 @@ namespace LucreApp
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
             m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
-
-            GamepadInputControllerSpec gamepadInputControllerSpec{};
-            m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
         }
 
         StartScripts();
@@ -84,10 +81,20 @@ namespace LucreApp
         m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
-            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-            animations.SetRepeatAll(true);
-            animations.Start();
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                animations.SetRepeatAll(true);
+                animations.Start();
+                
+                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, static_cast<entt::entity>(67), animations);
+                m_CharacterAnimation->Start();
+            }
+            else
+            {
+                LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Guybrush));
+            }
         }
         m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::Scene::Kaya BrowsAnimGeo");
         if (m_NonPlayableCharacter2 != entt::null)
@@ -229,6 +236,7 @@ namespace LucreApp
         }
 
         AnimateHero(timestep);
+        m_CharacterAnimation->OnUpdate(timestep);
         SetLightView(m_Lightbulb0, m_LightView0);
         SetLightView(m_Lightbulb1, m_LightView1);
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);

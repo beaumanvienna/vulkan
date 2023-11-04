@@ -35,6 +35,8 @@
 #include "lucre.h"
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
+#include "characterAnimation.h"
+
 
 namespace LucreApp
 {
@@ -91,9 +93,8 @@ namespace LucreApp
         entt::entity m_PointLight[MAX_LIGHTS];
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
 
-        // some game objects can be controlled with a gamepad
-        std::unique_ptr<GamepadInputController> m_GamepadInputController;
-        TransformComponent m_GamepadInput;
+        // animation
+        std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
 
     private:
 
