@@ -69,14 +69,22 @@ namespace LucreApp
         TreeNode::TraverseInfo(m_SceneHierarchy);
         m_Dictionary.List();
 
+        // get characters and start all animations
         m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
-            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-            animations.SetRepeatAll(true);
-            animations.Start();
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                animations.SetRepeatAll(true);
+                animations.Start();
+            }
+            else
+            {
+                LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Hero));
+            }
         }
         m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
         if (m_Guybrush != entt::null)
@@ -87,15 +95,41 @@ namespace LucreApp
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
                 animations.SetRepeatAll(true);
                 animations.Start();
-                
-                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, static_cast<entt::entity>(67), animations);
-                m_CharacterAnimation->Start();
             }
             else
             {
                 LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Guybrush));
             }
         }
+
+        // start gamepad-based control for characters
+        if (m_Guybrush != entt::null)
+        {
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::root");
+
+                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
+                m_CharacterAnimation->Start();
+            }
+        }
+        else
+        {
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::root");
+
+                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
+                m_CharacterAnimation->Start();
+            }
+        }
+
         m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::Scene::Kaya BrowsAnimGeo");
         if (m_NonPlayableCharacter2 != entt::null)
         {
