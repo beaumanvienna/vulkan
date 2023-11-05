@@ -167,6 +167,11 @@ namespace GfxRenderEngine
         SetTranslation(m_Translation + deltaTranslation);
     }
 
+    void TransformComponent::AddTranslationX(const float deltaTranslation)
+    {
+        SetTranslation(m_Translation + glm::vec3(deltaTranslation, 0.0f, 0.0f));
+    }
+
     void TransformComponent::RecalculateMatrices()
     {
         auto scale = glm::scale(glm::mat4(1.0f), m_Scale);

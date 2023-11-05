@@ -32,7 +32,7 @@ namespace LucreApp
     CharacterAnimation::CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
         : m_Registry{registry}, m_GameObject{gameObject}, m_Animations{animations}, m_DirToTheRight{false},
           m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE},
-          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}
+          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f}, m_WaitStartWalk{0.0f}
     {
         m_DurationStartWalk = animations.GetDuration("StartWalk");
         m_DurationStopWalk = animations.GetDuration("StopWalk");
@@ -60,7 +60,7 @@ namespace LucreApp
         m_GamepadInputController->GetTransform(m_Transform);
 
         auto& translation = m_Transform.GetTranslation();
-        float speed = (translation.x - m_PreviousPositionX) / timestep;
+        float controllerInputSpeed = (translation.x - m_PreviousPositionX) / timestep;
         m_PreviousPositionX = translation.x;
 
         auto view = m_Registry.view<TransformComponent>();
@@ -70,24 +70,16 @@ namespace LucreApp
         {
             if (m_MotionState != MotionState::JUMPING)
             {
-                if (m_MotionState == MotionState::START_WALK)
-                {
-                    AdjustTranslationStartWalk(characterTransform);
-                }
-                else if (m_MotionState == MotionState::STOP_WALK)
-                {
-                    AdjustTranslationStopWalk(characterTransform);
-                }
-
                 if ((m_MotionState == MotionState::WALK) || (m_MotionState == MotionState::START_WALK) || (m_MotionState == MotionState::STOP_WALK))
                 {
-                    const float rotationY = m_DirToTheRight ? -TransformComponent::DEGREES_90 : TransformComponent::DEGREES_90;
-                    m_FramesToRotate = m_FramesPerRotation + 1; // plus one because it starts to rotate later (normally it starts to rotate here)
-                    m_RotationPerFrame = rotationY / m_FramesPerRotation;
+                    InitiateRotation
+                    (
+                        -TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,
+                        m_FramesPerRotation + 1 // plus one because it starts to rotate later (normally it starts to rotate here)
+                    );
                 }
 
-                m_MotionState = MotionState::JUMPING;
-                m_Animations.Start(MotionState::JUMPING);
+                SetState(MotionState::JUMPING);
                 return;
             }
         }
@@ -96,46 +88,61 @@ namespace LucreApp
         {
             if (m_Animations.WillExpire(timestep))
             {
-                m_MotionState = MotionState::IDLE;
-                m_Animations.Start(MotionState::IDLE);
+                SetState(MotionState::IDLE);
             }
         }
 
-        if (std::abs(speed) > 0.1f)
+        if (std::abs(controllerInputSpeed) > 0.1f)
         {
             switch (m_MotionState)
             {
                 case MotionState::IDLE:
                 {
-                    m_DirToTheRight = (speed > 0.0f);
-                    const float rotationY = m_DirToTheRight ? TransformComponent::DEGREES_90 : -TransformComponent::DEGREES_90;
-                    m_FramesToRotate = m_FramesPerRotation;
-                    m_RotationPerFrame = rotationY / m_FramesToRotate;
-                    characterTransform.AddRotationY(m_RotationPerFrame);
+                    // set direction for movement
+                    m_DirToTheRight = (controllerInputSpeed > 0.0f);
 
-                    m_MotionState = MotionState::START_WALK;
-                    m_Animations.Start(MotionState::START_WALK);
+                    EliminateRoundingErrorsRotationY(characterTransform);
+
+                    // initiate rotation of the character in the direction of travel
+                    InitiateRotation(TransformComponent::DEGREES_90, -TransformComponent::DEGREES_90, m_FramesPerRotation);
+                    RotateY(characterTransform, m_RotationPerFrame);
+
+                    SetState(MotionState::START_WALK);
+                    m_WaitStartWalk = WAIT_START_WALK;
+                    m_Speed = 0.0f;
                     break;
                 }
                 case MotionState::JUMPING:
                 {
+                    // slow down
+                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 2.0f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+
+                    // move
+                    MoveAtSpeed(timestep, characterTransform);
                     break;
                 }
                 case MotionState::START_WALK:
                 {
-                    if (m_FramesToRotate-1)
+                    PerformRotation(characterTransform); // turn towards walking direction
+
+                    // pick up speed
+                    if (m_WaitStartWalk > 0.0f)
                     {
-                        --m_FramesToRotate;
-                        characterTransform.AddRotationY(m_RotationPerFrame);
+                        m_WaitStartWalk -= timestep;
                     }
+                    else
+                    {
+                        m_Speed = std::max(WALK_SPEED, m_Speed + (WALK_SPEED * timestep * timestep * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                    }
+
+                    // move
+                    MoveAtSpeed(timestep, characterTransform);
 
                     if (m_Animations.WillExpire(timestep))
                     {
-                        m_MotionState = MotionState::WALK;
-                        m_Animations.Start(MotionState::WALK);
+                        SetState(MotionState::WALK);
+                        m_Speed = WALK_SPEED;
                         m_Animations.SetRepeat(true);
-                        const float translationX = m_DirToTheRight ? START_WALK_TRANSLATION : -START_WALK_TRANSLATION;
-                        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
                     }
                     break;
                 }
@@ -145,9 +152,8 @@ namespace LucreApp
                 }
                 case MotionState::WALK:
                 {
-                    const float walkSpeed = WALK_SPEED * timestep;
-                    const float speedX = m_DirToTheRight ? walkSpeed : -walkSpeed;
-                    characterTransform.AddTranslation({speedX, 0.0f, 0.0f});
+                    // move
+                    MoveAtSpeed(timestep, characterTransform);
                     break;
                 }
                 default:
@@ -163,46 +169,45 @@ namespace LucreApp
             {
                 case MotionState::IDLE:
                 {
-                    if (m_FramesToRotate-1)
-                    {
-                        --m_FramesToRotate;
-                        characterTransform.AddRotationY(m_RotationPerFrame);
-                    }
+                    // perform rotation
+                    PerformRotation(characterTransform); // turn towards camera
                     break;
                 }
                 case MotionState::JUMPING:
                 {
+                    // slow down
+                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                    // move
+                    MoveAtSpeed(timestep, characterTransform);
                     break;
                 }
                 case MotionState::START_WALK:
                 {
-                    AdjustTranslationStartWalk(characterTransform);
-
-                    m_MotionState = MotionState::STOP_WALK;
-                    m_Animations.Start(MotionState::STOP_WALK);
+                    SetState(MotionState::STOP_WALK);
                     break;
                 }
                 case MotionState::STOP_WALK:
                 {
+                    // slow down
+                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+
+                    // move
+                    MoveAtSpeed(timestep, characterTransform);
+
                     if (m_Animations.WillExpire(timestep))
                     {
-                        m_MotionState = MotionState::IDLE;
-                        m_Animations.Start(MotionState::IDLE);
+                        // initiate rotation of the character in the direction of travel
+                        InitiateRotation(-TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,m_FramesPerRotation);
+                        RotateY(characterTransform, m_RotationPerFrame);
 
-                        const float rotationY = m_DirToTheRight ? -TransformComponent::DEGREES_90: TransformComponent::DEGREES_90;
-                        m_FramesToRotate = m_FramesPerRotation;
-                        m_RotationPerFrame = rotationY / m_FramesToRotate;
-                        characterTransform.AddRotationY(m_RotationPerFrame);
-
-                        const float translationX = m_DirToTheRight ? STOP_WALK_TRANSLATION : -STOP_WALK_TRANSLATION;
-                        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
+                        SetState(MotionState::IDLE);
                     }
                     break;
                 }
                 case MotionState::WALK:
                 {
-                    m_MotionState = MotionState::STOP_WALK;
-                    m_Animations.Start(MotionState::STOP_WALK);
+                    EliminateRoundingErrorsRotationY(characterTransform);
+                    SetState(MotionState::STOP_WALK);
                     break;
                 }
                 default:
@@ -214,22 +219,81 @@ namespace LucreApp
         }
     }
 
-    void CharacterAnimation::AdjustTranslationStartWalk(TransformComponent& characterTransform)
+    void CharacterAnimation::MoveAtSpeed(const Timestep& timestep, TransformComponent& characterTransform)
     {
-        // adjust for translation of start walk animation
-        float translationX = m_DirToTheRight ? START_WALK_TRANSLATION : -START_WALK_TRANSLATION;
-        float proportionalFactor = (m_Animations.GetCurrentTime() / m_DurationStartWalk);
-        // start walk is not a linear movement
-        translationX = translationX * proportionalFactor * proportionalFactor;
-        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
+        const float moveSpeed = m_Speed * timestep;
+        const float speedX = m_DirToTheRight ? moveSpeed : -moveSpeed;
+        characterTransform.AddTranslationX(speedX);
     }
 
-    void CharacterAnimation::AdjustTranslationStopWalk(TransformComponent& characterTransform)
+    void CharacterAnimation::RotateY(TransformComponent& characterTransform, float deltaRotation)
     {
-        // adjust for translation of stop walk animation
-        float translationX = m_DirToTheRight ? STOP_WALK_TRANSLATION : -STOP_WALK_TRANSLATION;
-        float proportionalFactor = (m_Animations.GetCurrentTime() / m_DurationStopWalk);
-        translationX = translationX * proportionalFactor;
-        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
+        characterTransform.AddRotationY(deltaRotation);
+    }
+
+    void CharacterAnimation::SetState(MotionState state)
+    {
+        m_MotionState = state;
+        m_Animations.Start(state);
+    }
+
+    void CharacterAnimation::PerformRotation(TransformComponent& characterTransform)
+    {
+        if ((m_FramesToRotate-1) > 0)
+        {
+            --m_FramesToRotate;
+            RotateY(characterTransform, m_RotationPerFrame);
+        }
+    }
+
+    void CharacterAnimation::InitiateRotation(float rotateDirRight, float rotateDirLeft, int framesToRotate)
+    {
+        float rotationY = m_DirToTheRight ? rotateDirRight : rotateDirLeft;
+        m_FramesToRotate = framesToRotate; // plus one because it starts to rotate later (normally it starts to rotate here)
+        m_RotationPerFrame = rotationY / m_FramesPerRotation;
+    }
+
+    float CharacterAnimation::ToDegree(float rotation)
+    {
+        return rotation * 180.0f / TransformComponent::DEGREES_180;
+    }
+
+    void CharacterAnimation::EliminateRoundingErrorsRotationY(TransformComponent& characterTransform)
+    {
+
+        float rotationY = 0.0f;
+
+        switch (m_MotionState)
+        {
+            case MotionState::IDLE:
+            {
+                rotationY = TransformComponent::DEGREES_0;
+                break;
+            }
+            case MotionState::JUMPING:
+            {
+                rotationY = TransformComponent::DEGREES_0;
+                break;
+            }
+            case MotionState::START_WALK:
+            {
+                break;
+            }
+            case MotionState::STOP_WALK:
+            {
+                break;
+            }
+            case MotionState::WALK:
+            {
+                rotationY = m_DirToTheRight ? TransformComponent::DEGREES_90 : -TransformComponent::DEGREES_90;
+                break;
+            }
+            default:
+            {
+                LOG_APP_ERROR("CharacterAnimation state machine error (3)");
+                break;
+            }
+        }
+        characterTransform.SetRotationY(rotationY);
     }
 }

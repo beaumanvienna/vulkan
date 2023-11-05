@@ -48,15 +48,10 @@ namespace LucreApp
         void OnUpdate(const Timestep& timestep);
 
     private:
-
-        void AdjustTranslationStartWalk(TransformComponent& characterTransform);
-        void AdjustTranslationStopWalk(TransformComponent& characterTransform);
-
-    private:
     
-        static constexpr float START_WALK_TRANSLATION = 0.75f;
         static constexpr float WALK_SPEED = 0.4f;
-        static constexpr float STOP_WALK_TRANSLATION = 0.5f;
+        static constexpr float TIME_TO_GET_TO_WALK_SPEED = 1.0f;
+        static constexpr float WAIT_START_WALK = 0.8f;
         static constexpr int   FRAMES_PER_ROTATION = 7;
 
         enum MotionState
@@ -68,6 +63,18 @@ namespace LucreApp
           WALK
         };
 
+    private:
+
+        void SetState(MotionState state);
+        void InitiateRotation(float rotateDirRight, float rotateDirLeft, int framesToRotate);
+        void MoveAtSpeed(const Timestep& timestep, TransformComponent& characterTransform);
+        void RotateY(TransformComponent& characterTransform, float deltaRotation);
+        void PerformRotation(TransformComponent& characterTransform);
+        void EliminateRoundingErrorsRotationY(TransformComponent& characterTransform);
+        float ToDegree(float rotation);
+
+    private:
+
         entt::registry& m_Registry;
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         entt::entity m_GameObject;
@@ -77,11 +84,13 @@ namespace LucreApp
         float m_DurationStartWalk;
         float m_DurationStopWalk;
 
+        float m_Speed;
         float m_PreviousPositionX;
         bool m_DirToTheRight;
         int m_FramesPerRotation;
         int m_FramesToRotate;
         float m_RotationPerFrame;
+        float m_WaitStartWalk;
 
         MotionState m_MotionState;
 

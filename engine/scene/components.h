@@ -38,6 +38,7 @@ namespace GfxRenderEngine
 
     public:
 
+        static constexpr float DEGREES_0   = 0.0f;
         static constexpr float DEGREES_90  = glm::pi<float>() / 2.0f;
         static constexpr float DEGREES_180 = glm::pi<float>();
         static constexpr float DEGREES_270 = glm::pi<float>() * 1.5f;
@@ -65,6 +66,7 @@ namespace GfxRenderEngine
         void SetTranslationY(const float translationY);
         void SetTranslationZ(const float translationZ);
         void AddTranslation(const glm::vec3& deltaTranslation);
+        void AddTranslationX(const float deltaTranslation);
 
         void SetMat4(const glm::mat4& mat4) { m_Mat4 = mat4; }
 
