@@ -35,6 +35,13 @@ namespace GfxRenderEngine
 
     class TransformComponent
     {
+
+    public:
+
+        static constexpr float DEGREES_90  = glm::pi<float>() / 2.0f;
+        static constexpr float DEGREES_180 = glm::pi<float>();
+        static constexpr float DEGREES_270 = glm::pi<float>() * 1.5f;
+
     public:
 
         TransformComponent();
@@ -52,6 +59,7 @@ namespace GfxRenderEngine
         void SetRotationY(const float rotationY);
         void SetRotationZ(const float rotationZ);
         void AddRotation(const glm::vec3& deltaRotation);
+        void AddRotationY(const float deltaRotation);
         void SetTranslation(const glm::vec3& translation);
         void SetTranslationX(const float translationX);
         void SetTranslationY(const float translationY);

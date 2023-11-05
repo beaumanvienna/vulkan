@@ -46,9 +46,18 @@ namespace GfxRenderEngine
         return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime));
     }
 
+    bool SkeletalAnimation::WillExpire(const Timestep& timestep) const
+    {
+        return (!m_Repeat && ((m_CurrentKeyFrameTime + timestep) > m_LastKeyFrameTime));
+    }
+
     void SkeletalAnimation::Update(const Timestep& timestep, Armature::Skeleton& skeleton)
     {
-        if (!IsRunning()) return;
+        if (!IsRunning())
+        {
+            LOG_CORE_WARN("Animation '{0}' expired", m_Name);
+            return;
+        }
         m_CurrentKeyFrameTime += timestep;
 
         if ( m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))

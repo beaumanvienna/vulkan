@@ -31,8 +31,12 @@ namespace LucreApp
 
     CharacterAnimation::CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
         : m_Registry{registry}, m_GameObject{gameObject}, m_Animations{animations}, m_DirToTheRight{false},
-          m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE}
+          m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE},
+          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}
     {
+        m_DurationStartWalk = animations.GetDuration("StartWalk");
+        m_DurationStopWalk = animations.GetDuration("StopWalk");
+
         GamepadInputControllerSpec gamepadInputControllerSpec{};
         m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
     }
@@ -66,6 +70,22 @@ namespace LucreApp
         {
             if (m_MotionState != MotionState::JUMPING)
             {
+                if (m_MotionState == MotionState::START_WALK)
+                {
+                    AdjustTranslationStartWalk(characterTransform);
+                }
+                else if (m_MotionState == MotionState::STOP_WALK)
+                {
+                    AdjustTranslationStopWalk(characterTransform);
+                }
+
+                if ((m_MotionState == MotionState::WALK) || (m_MotionState == MotionState::START_WALK) || (m_MotionState == MotionState::STOP_WALK))
+                {
+                    const float rotationY = m_DirToTheRight ? -TransformComponent::DEGREES_90 : TransformComponent::DEGREES_90;
+                    m_FramesToRotate = m_FramesPerRotation + 1; // plus one because it starts to rotate later (normally it starts to rotate here)
+                    m_RotationPerFrame = rotationY / m_FramesPerRotation;
+                }
+
                 m_MotionState = MotionState::JUMPING;
                 m_Animations.Start(MotionState::JUMPING);
                 return;
@@ -74,7 +94,7 @@ namespace LucreApp
 
         if (m_MotionState == MotionState::JUMPING)
         {
-            if (!m_Animations.IsRunning())
+            if (m_Animations.WillExpire(timestep))
             {
                 m_MotionState = MotionState::IDLE;
                 m_Animations.Start(MotionState::IDLE);
@@ -83,16 +103,18 @@ namespace LucreApp
 
         if (std::abs(speed) > 0.1f)
         {
-            const float rotationY = (speed < 0.0f) ? -1.57078826f: 1.57078826f;
-            characterTransform.SetRotationY(rotationY);
-
             switch (m_MotionState)
             {
                 case MotionState::IDLE:
                 {
+                    m_DirToTheRight = (speed > 0.0f);
+                    const float rotationY = m_DirToTheRight ? TransformComponent::DEGREES_90 : -TransformComponent::DEGREES_90;
+                    m_FramesToRotate = m_FramesPerRotation;
+                    m_RotationPerFrame = rotationY / m_FramesToRotate;
+                    characterTransform.AddRotationY(m_RotationPerFrame);
+
                     m_MotionState = MotionState::START_WALK;
                     m_Animations.Start(MotionState::START_WALK);
-                    m_DirToTheRight = (speed > 0.0f);
                     break;
                 }
                 case MotionState::JUMPING:
@@ -101,13 +123,18 @@ namespace LucreApp
                 }
                 case MotionState::START_WALK:
                 {
-                    if (!m_Animations.IsRunning())
+                    if (m_FramesToRotate-1)
+                    {
+                        --m_FramesToRotate;
+                        characterTransform.AddRotationY(m_RotationPerFrame);
+                    }
+
+                    if (m_Animations.WillExpire(timestep))
                     {
                         m_MotionState = MotionState::WALK;
                         m_Animations.Start(MotionState::WALK);
                         m_Animations.SetRepeat(true);
-                        const float startWalkTranslation = 1.0f;
-                        const float translationX = m_DirToTheRight ? startWalkTranslation : -startWalkTranslation;
+                        const float translationX = m_DirToTheRight ? START_WALK_TRANSLATION : -START_WALK_TRANSLATION;
                         characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
                     }
                     break;
@@ -118,9 +145,9 @@ namespace LucreApp
                 }
                 case MotionState::WALK:
                 {
-                    const float walkTranslation = 0.4f * timestep;
-                    const float translationX = m_DirToTheRight ? walkTranslation : -walkTranslation;
-                    characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
+                    const float walkSpeed = WALK_SPEED * timestep;
+                    const float speedX = m_DirToTheRight ? walkSpeed : -walkSpeed;
+                    characterTransform.AddTranslation({speedX, 0.0f, 0.0f});
                     break;
                 }
                 default:
@@ -136,6 +163,11 @@ namespace LucreApp
             {
                 case MotionState::IDLE:
                 {
+                    if (m_FramesToRotate-1)
+                    {
+                        --m_FramesToRotate;
+                        characterTransform.AddRotationY(m_RotationPerFrame);
+                    }
                     break;
                 }
                 case MotionState::JUMPING:
@@ -144,19 +176,25 @@ namespace LucreApp
                 }
                 case MotionState::START_WALK:
                 {
+                    AdjustTranslationStartWalk(characterTransform);
+
                     m_MotionState = MotionState::STOP_WALK;
                     m_Animations.Start(MotionState::STOP_WALK);
                     break;
                 }
                 case MotionState::STOP_WALK:
                 {
-                    if (!m_Animations.IsRunning())
+                    if (m_Animations.WillExpire(timestep))
                     {
                         m_MotionState = MotionState::IDLE;
                         m_Animations.Start(MotionState::IDLE);
-                        characterTransform.SetRotationY(0.0f);
-                        const float stopWalkTranslation = 0.5f;
-                        const float translationX = m_DirToTheRight ? stopWalkTranslation : -stopWalkTranslation;
+
+                        const float rotationY = m_DirToTheRight ? -TransformComponent::DEGREES_90: TransformComponent::DEGREES_90;
+                        m_FramesToRotate = m_FramesPerRotation;
+                        m_RotationPerFrame = rotationY / m_FramesToRotate;
+                        characterTransform.AddRotationY(m_RotationPerFrame);
+
+                        const float translationX = m_DirToTheRight ? STOP_WALK_TRANSLATION : -STOP_WALK_TRANSLATION;
                         characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
                     }
                     break;
@@ -176,11 +214,22 @@ namespace LucreApp
         }
     }
 
-    void CharacterAnimation::OnEvent(Event& event)
+    void CharacterAnimation::AdjustTranslationStartWalk(TransformComponent& characterTransform)
     {
+        // adjust for translation of start walk animation
+        float translationX = m_DirToTheRight ? START_WALK_TRANSLATION : -START_WALK_TRANSLATION;
+        float proportionalFactor = (m_Animations.GetCurrentTime() / m_DurationStartWalk);
+        // start walk is not a linear movement
+        translationX = translationX * proportionalFactor * proportionalFactor;
+        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
     }
 
-    void CharacterAnimation::OnResize()
+    void CharacterAnimation::AdjustTranslationStopWalk(TransformComponent& characterTransform)
     {
+        // adjust for translation of stop walk animation
+        float translationX = m_DirToTheRight ? STOP_WALK_TRANSLATION : -STOP_WALK_TRANSLATION;
+        float proportionalFactor = (m_Animations.GetCurrentTime() / m_DurationStopWalk);
+        translationX = translationX * proportionalFactor;
+        characterTransform.AddTranslation({translationX, 0.0f, 0.0f});
     }
 }

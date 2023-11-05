@@ -133,6 +133,11 @@ namespace GfxRenderEngine
         SetRotation(m_Rotation + deltaRotation);
     }
 
+    void TransformComponent::AddRotationY(const float deltaRotation)
+    {
+        SetRotation(m_Rotation + glm::vec3(0.0f, deltaRotation, 0.0f));
+    }
+
     void TransformComponent::SetTranslation(const glm::vec3& translation)
     {
         m_Translation = translation;

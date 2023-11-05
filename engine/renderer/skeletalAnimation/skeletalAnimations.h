@@ -71,6 +71,10 @@ namespace GfxRenderEngine
         void SetRepeat(bool repeat);
         void SetRepeatAll(bool repeat);
         bool IsRunning() const;
+        bool WillExpire(const Timestep& timestep) const;
+        float GetDuration(std::string const& animation);
+        float GetCurrentTime();
+        std::string GetName();
         void Update(const Timestep& timestep, Armature::Skeleton& skeleton, uint frameCounter);
 
     private:

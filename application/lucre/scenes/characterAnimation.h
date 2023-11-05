@@ -46,10 +46,18 @@ namespace LucreApp
         void Start();
         void Stop();
         void OnUpdate(const Timestep& timestep);
-        void OnEvent(Event& event);
-        void OnResize();
 
     private:
+
+        void AdjustTranslationStartWalk(TransformComponent& characterTransform);
+        void AdjustTranslationStopWalk(TransformComponent& characterTransform);
+
+    private:
+    
+        static constexpr float START_WALK_TRANSLATION = 0.75f;
+        static constexpr float WALK_SPEED = 0.4f;
+        static constexpr float STOP_WALK_TRANSLATION = 0.5f;
+        static constexpr int   FRAMES_PER_ROTATION = 7;
 
         enum MotionState
         {
@@ -65,8 +73,15 @@ namespace LucreApp
         entt::entity m_GameObject;
         SkeletalAnimations& m_Animations;
         TransformComponent m_Transform;
+
+        float m_DurationStartWalk;
+        float m_DurationStopWalk;
+
         float m_PreviousPositionX;
         bool m_DirToTheRight;
+        int m_FramesPerRotation;
+        int m_FramesToRotate;
+        float m_RotationPerFrame;
 
         MotionState m_MotionState;
 

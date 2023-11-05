@@ -63,6 +63,34 @@ namespace GfxRenderEngine
             m_CurrentAnimation->Start();
         }
     }
+    float SkeletalAnimations::GetCurrentTime()
+    {
+        if (m_CurrentAnimation)
+        {
+            return m_CurrentAnimation->GetCurrentTime();
+        }
+        else
+        {
+            return 0.0f;
+        }
+    }
+
+    std::string SkeletalAnimations::GetName()
+    {
+        if (m_CurrentAnimation)
+        {
+            return m_CurrentAnimation->GetName();
+        }
+        else
+        {
+            return std::string("");
+        }
+    }
+
+    float SkeletalAnimations::GetDuration(std::string const& animation)
+    {
+        return m_Animations[animation]->GetDuration();
+    }
 
     void SkeletalAnimations::Start(size_t index)
     {
@@ -108,6 +136,18 @@ namespace GfxRenderEngine
         if (m_CurrentAnimation)
         {
             return m_CurrentAnimation->IsRunning();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool SkeletalAnimations::WillExpire(const Timestep& timestep) const
+    {
+        if (m_CurrentAnimation)
+        {
+            return m_CurrentAnimation->WillExpire(timestep);
         }
         else
         {
