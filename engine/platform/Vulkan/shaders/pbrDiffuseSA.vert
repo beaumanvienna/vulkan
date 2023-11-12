@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
    *
    * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
@@ -84,16 +84,22 @@ void main()
     for (int i = 0 ; i < MAX_JOINT_INFLUENCE ; i++)
     {
         if (weights[i] == 0)
+        {
             continue;
+        }
         if (jointIds[i] >=MAX_JOINTS) 
         {
             animatedPosition = vec4(position,1.0f);
             jointTransform   = mat4(1.0f);
             break;
         }
-        vec4 localPosition  = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
+        
+        // retrieve joint matrix from ubo
+        mat4 jointMatrix    = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]];
+
+        vec4 localPosition  = jointMatrix * vec4(position,1.0f);
         animatedPosition   += localPosition * weights[i];
-        jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
+        jointTransform     += jointMatrix * weights[i];
     }
 
     // projection * view * model * position
@@ -101,7 +107,7 @@ void main()
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
     fragPosition       = positionWorld.xyz;
 
-    mat3 normalMatrix  = transpose(inverse(mat3(jointTransform)));
+    mat3 normalMatrix  = transpose(inverse(mat3(push.m_NormalMatrix) * mat3(jointTransform)));
     fragNormal  = normalize(normalMatrix * normal);
     fragTangent = normalize(normalMatrix * tangent);
 

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -25,7 +25,6 @@
 #include "gtc/quaternion.hpp"
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
-#include <gtx/matrix_decompose.hpp>
 
 #include "renderer/model.h"
 
@@ -69,16 +68,14 @@ namespace GfxRenderEngine
 
                 // retrieve array of inverse bind matrices of all joints
                 // --> first, retrieve raw data and copy into a std::vector
-                auto& inverseBindMatrices = m_Skeleton->m_InverseBindMatrices;
-                inverseBindMatrices.resize(numberOfJoints);
+                const glm::mat4* inverseBindMatrices;
                 {
                     uint count = 0;
                     int type = 0;
-                    const glm::mat4* buffer;
                     auto componentType = LoadAccessor<glm::mat4>
                     (
                         m_GltfModel.accessors[glTFSkin.inverseBindMatrices],
-                        buffer,
+                        inverseBindMatrices,
                         &count,
                         &type
                     );
@@ -86,11 +83,7 @@ namespace GfxRenderEngine
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                     // assert # of matrices matches # of joints
                     CORE_ASSERT(static_cast<size_t>(count) == numberOfJoints, "accessor.count != numberOfJoints");
-
-                    int bufferSize = count * sizeof(glm::mat4); // in bytes
-                    memcpy(inverseBindMatrices.data(), buffer, bufferSize);
                 }
-
 
                 // loop over all joints from gltf model and fill the skeleton with joints
                 for (size_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
@@ -98,7 +91,7 @@ namespace GfxRenderEngine
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
                     joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
-                    joint.m_UndefomedInverseBindMatrix = inverseBindMatrices[jointIndex];
+                    joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
                     // set up node transform (either TRS or from directy from "matrix")
@@ -139,7 +132,6 @@ namespace GfxRenderEngine
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
 
-                //m_Skeleton->Traverse();
             }
 
             // create a buffer to be used in the shader for the joint matrices
@@ -285,6 +277,11 @@ namespace GfxRenderEngine
         if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
+    SkeletalAnimations& Model::GetAnimations()
+    {
+        return *(m_Animations.get());
+    }
+
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
     void Builder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
@@ -307,10 +304,4 @@ namespace GfxRenderEngine
             }
         }
     }
-
-    SkeletalAnimations& Model::GetAnimations()
-    {
-        return *(m_Animations.get());
-    }
-
 }

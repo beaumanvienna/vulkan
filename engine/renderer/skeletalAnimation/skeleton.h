@@ -54,7 +54,7 @@ namespace GfxRenderEngine
             // transform for world coordinate system
             glm::mat4 m_UndefomedNodeMatrix{1.0f}; // a.k.a undefomed bind matrix
             // joint coordinate system
-            glm::mat4 m_UndefomedInverseBindMatrix; // a.k.a undeformed inverse node matrix
+            glm::mat4 m_InverseBindMatrix; // a.k.a undeformed inverse node matrix
 
             // deformed / animated
             // to be applied to the node matrix a.k.a bind matrix in the world coordinate system,
@@ -89,7 +89,6 @@ namespace GfxRenderEngine
             bool                        m_IsAnimated = true;
             std::string                 m_Name;
             std::vector<Joint>          m_Joints;
-            std::vector<glm::mat4>      m_InverseBindMatrices;
             std::map<int, int>          m_GlobalGltfNodeToJointIndex;
             ShaderData                  m_ShaderData;
         };

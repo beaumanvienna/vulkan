@@ -80,7 +80,7 @@ namespace GfxRenderEngine
 
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
-                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_UndefomedInverseBindMatrix;
+                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_InverseBindMatrix;
                 }
             }
         }
