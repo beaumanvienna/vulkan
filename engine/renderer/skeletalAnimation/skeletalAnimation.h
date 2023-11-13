@@ -37,11 +37,6 @@ namespace GfxRenderEngine
 
     public:
 
-        using Duration = std::chrono::duration<float, std::chrono::seconds::period>;
-        using Time = std::chrono::time_point<std::chrono::high_resolution_clock>;
-
-    public:
-
         enum class Path
         {
             TRANSLATION,
@@ -56,18 +51,18 @@ namespace GfxRenderEngine
             CUBICSPLINE
         };
 
-        struct Sampler
-        {
-            std::vector<float> m_Timestamps;
-            InterpolationMethod m_Interpolation;
-            std::vector<glm::vec4> m_TRSoutputValuesToBeInterpolated;
-        };
-
         struct Channel
         {
             Path m_Path;
             int m_SamplerIndex;
             int m_Node;
+        };
+
+        struct Sampler
+        {
+            std::vector<float> m_Timestamps;
+            std::vector<glm::vec4> m_TRSoutputValuesToBeInterpolated;
+            InterpolationMethod m_Interpolation;
         };
 
     public:
@@ -94,9 +89,7 @@ namespace GfxRenderEngine
 
         std::string m_Name;
         bool m_Repeat;
-        // engine time
-        Duration m_Duration;
-        Time m_StartTime;
+
         // relative animation time
         float m_FirstKeyFrameTime;
         float m_LastKeyFrameTime;

@@ -141,7 +141,7 @@ namespace GfxRenderEngine
             m_ShaderData = Buffer::Create(bufferSize);
             m_ShaderData->MapBuffer();
         }
-        
+
         size_t numberOfAnimations = m_GltfModel.animations.size();
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {

@@ -70,14 +70,16 @@ namespace GfxRenderEngine
             }
             else
             {
-                //UpdateJoint(ROOT_JOINT);  // recursively updates skeleton
+                // STEP 1: apply animation results
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
                     m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_Joints[jointIndex].GetDeformedBindMatrix();
                 }
 
+                // STEP 2: recursively update final joint matrices
                 UpdateJoint(ROOT_JOINT);
 
+                // STEP 3: bring back into model space
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
                     m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_InverseBindMatrix;
