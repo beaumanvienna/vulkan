@@ -871,28 +871,26 @@ namespace GfxRenderEngine
         registry.emplace<TransformComponent>(entity, transform);
 
         // material tags (can have multiple tags)
+        bool hasPbrMaterial = false;
 
         // vertex diffuse color, diffuse map, normal map, roughness/metallic map
         if (m_PrimitivesNoMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrNoMapTag pbrNoMapTag{};
             registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
         }
         if (m_PrimitivesDiffuseMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseTag pbrDiffuseTag{};
             registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
         }
         if (m_PrimitivesDiffuseSAMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseSATag pbrDiffuseSATag{};
             registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
@@ -902,16 +900,14 @@ namespace GfxRenderEngine
         }
         if (m_PrimitivesDiffuseNormalMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseNormalTag pbrDiffuseNormalTag;
             registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
         }
         if (m_PrimitivesDiffuseNormalSAMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
             registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
@@ -921,8 +917,7 @@ namespace GfxRenderEngine
         }
         if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
             registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
@@ -930,8 +925,7 @@ namespace GfxRenderEngine
 
         if (m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
             registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
@@ -943,8 +937,7 @@ namespace GfxRenderEngine
         // emissive materials
         if (m_PrimitivesEmissive.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrEmissiveTag pbrEmissiveTag{};
             registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
@@ -952,11 +945,16 @@ namespace GfxRenderEngine
 
         if (m_PrimitivesEmissiveTexture.size())
         {
-            //PbrMaterial pbrMaterial{};
-            //registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            hasPbrMaterial = true;
 
             PbrEmissiveTextureTag pbrEmissiveTextureTag{};
             registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
+        }
+
+        if (hasPbrMaterial)
+        {
+            PbrMaterial pbrMaterial{};
+            registry.emplace<PbrMaterial>(entity, pbrMaterial);
         }
 
         return newNode;
