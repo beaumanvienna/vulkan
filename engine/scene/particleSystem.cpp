@@ -27,9 +27,8 @@
 
 namespace GfxRenderEngine
 {
-    ParticleSystem::ParticleSystem(uint poolSize, float zaxis, SpriteSheet* spritesheet, float amplification, int unlit)
-        : m_ParticlePool{poolSize}, m_PoolIndex{0},
-          m_Spritesheet{spritesheet}, m_Zaxis{zaxis}
+    ParticleSystem::ParticleSystem(uint poolSize, SpriteSheet* spritesheet, float amplification, int unlit)
+        : m_ParticlePool{poolSize}, m_PoolIndex{0}, m_Spritesheet{spritesheet}
     {
         ASSERT(poolSize);
         auto numberOfSprites = m_Spritesheet->GetNumberOfSprites();
@@ -53,12 +52,19 @@ namespace GfxRenderEngine
     {
         Particle& particle = m_ParticlePool[m_PoolIndex];
 
-        particle.m_Velocity          = spec.m_Velocity + variation.m_Velocity.x * EngineCore::RandomPlusMinusOne();
+        glm::vec3 variationVelocity  = glm::vec3
+        {
+            variation.m_Velocity.x * EngineCore::RandomPlusMinusOne(),
+            variation.m_Velocity.y * EngineCore::RandomPlusMinusOne(),
+            variation.m_Velocity.z * EngineCore::RandomPlusMinusOne(),
+        };
+        particle.m_Velocity          = spec.m_Velocity + variationVelocity;
         particle.m_Acceleration      = spec.m_Acceleration;
 
         particle.m_RotationSpeed     = spec.m_RotationSpeed;
 
         particle.m_StartColor        = spec.m_StartColor;
+        particle.m_EndColor          = spec.m_EndColor;
 
         particle.m_StartSize         = spec.m_StartSize;
         particle.m_FinalSize         = spec.m_FinalSize;
@@ -79,11 +85,14 @@ namespace GfxRenderEngine
         m_Registry.emplace<MeshComponent>(particle.m_Entity, mesh);
 
         TransformComponent transform{};
-        static uint cnt = 0;
-        cnt = (cnt + 1) % 100;
-        transform.SetTranslation(glm::vec3{spec.m_Position.x, spec.m_Position.y, m_Zaxis + 0.01f * cnt});
+        transform.SetTranslation(glm::vec3
+        {
+            spec.m_Position.x + variation.m_Position.x * EngineCore::RandomPlusMinusOne(),
+            spec.m_Position.y + variation.m_Position.y * EngineCore::RandomPlusMinusOne(),
+            spec.m_Position.z + variation.m_Position.z * EngineCore::RandomPlusMinusOne(),
+        });
         transform.SetScale(glm::vec3{1.0f} * particle.m_StartSize);
-        transform.SetRotation(glm::vec3{0.0f, 0.0f, spec.m_Rotation + variation.m_Rotation * EngineCore::RandomPlusMinusOne()});
+        transform.SetRotation(glm::vec3{spec.m_Rotation.x, spec.m_Rotation.y, spec.m_Rotation.z + variation.m_Rotation.z * EngineCore::RandomPlusMinusOne()});
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
 
         particle.m_SmokeAnimation.Create(100ms /* per frame */, m_Spritesheet);
@@ -107,10 +116,14 @@ namespace GfxRenderEngine
 
             auto& transform = m_Registry.get<TransformComponent>(particle.m_Entity);
             particle.m_Velocity += particle.m_Acceleration * static_cast<float>(timestep);
+
             transform.SetTranslationX(transform.GetTranslation().x + particle.m_Velocity.x * static_cast<float>(timestep));
             transform.SetTranslationY(transform.GetTranslation().y + particle.m_Velocity.y * static_cast<float>(timestep));
+            transform.SetTranslationZ(transform.GetTranslation().z + particle.m_Velocity.z * static_cast<float>(timestep));
 
-            transform.SetRotationZ(transform.GetRotation().z + particle.m_RotationSpeed * static_cast<float>(timestep));
+            transform.SetRotationX(transform.GetRotation().x + particle.m_RotationSpeed.x * static_cast<float>(timestep));
+            transform.SetRotationY(transform.GetRotation().y + particle.m_RotationSpeed.y * static_cast<float>(timestep));
+            transform.SetRotationZ(transform.GetRotation().z + particle.m_RotationSpeed.z * static_cast<float>(timestep));
             particle.m_RemainingLifeTime -= timestep;
 
             auto remainingLifeTime = static_cast<float>(particle.m_RemainingLifeTime);

@@ -146,14 +146,15 @@ namespace LucreApp
 
             ParticleSystem::Specification spec =
             {
-                { 0.0f, 15.0f}, //glm::vec2 m_Position
-                { 0.0f,  2.5f}, //glm::vec2 m_Velocity
-                { 0.0f,  0.0f}, //glm::vec2 m_Acceleration
+                { 0.0f, 15.0f, -18.0f}, //glm::vec2 m_Position
+                { 0.0f,  2.5f,   0.0f}, //glm::vec2 m_Velocity
+                { 0.0f,  0.0f,   0.0f}, //glm::vec2 m_Acceleration
 
-                {0.0f}, //float m_Rotation
-                {0.0f}, //float m_RotationSpeed
+                {0.0f, 0.0f, 0.0f}, //glm::vec3 m_Rotation
+                {0.0f, 0.0f, 0.0f}, //glm::vec3 m_RotationSpeed
 
                 {1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_StartColor
+                {1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_EndColor
 
                 {0.5f}, //float m_StartSize
                 {7.0f}, //float m_FinalSize
@@ -162,8 +163,8 @@ namespace LucreApp
             };
 
             ParticleSystem::Specification variation{};
-            variation.m_Velocity = { 0.1f, 0.0f };
-            variation.m_Rotation = { 0.5f };
+            variation.m_Velocity = { 0.1f, 0.0f, 0.0f};
+            variation.m_Rotation = { 0.0f, 0.0f, 0.5f};
             m_VolcanoSmoke->Emit(spec, variation);
         }
     }

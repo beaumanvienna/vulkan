@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -28,6 +28,7 @@
 #include "scene/entity.h"
 #include "scene/components.h"
 #include "scene/sceneLoader.h"
+#include "scene/particleSystem.h"
 #include "renderer/cameraController.h"
 #include "renderer/renderer.h"
 #include "renderer/cubemap.h"
@@ -66,6 +67,7 @@ namespace LucreApp
         void ResetScene();
         void RotateLights(const Timestep& timestep);
         void AnimateHero(const Timestep& timestep);
+        void AnimateVulcan(const Timestep& timestep);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
         void SetDirectionalLight
         (
@@ -75,6 +77,7 @@ namespace LucreApp
             int renderpass
         );
         void ApplyDebugSettings();
+        void EmitVolcanoSmoke();
 
     private:
 
@@ -87,11 +90,16 @@ namespace LucreApp
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_NonPlayableCharacter1, m_NonPlayableCharacter2;
+        entt::entity m_Camera, m_Skybox, m_NonPlayableCharacter1, m_NonPlayableCharacter2, m_NonPlayableCharacter3;
         entt::entity m_Hero, m_Lightbulb0, m_Lightbulb1, m_Guybrush;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_PointLight[MAX_LIGHTS];
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
+
+        // volcano
+        Timer m_LaunchVolcanoTimer;
+        std::shared_ptr<ParticleSystem> m_VolcanoSmoke;
+        SpriteSheet m_SpritesheetSmoke;
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;

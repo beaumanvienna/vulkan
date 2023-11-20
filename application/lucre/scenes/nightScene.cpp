@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -39,7 +39,8 @@ namespace LucreApp
 {
 
     NightScene::NightScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_SceneLoader{*this}
+            : Scene(filepath, alternativeFilepath), m_SceneLoader{*this},
+              m_LaunchVolcanoTimer(1500)
     {
     }
 
@@ -139,11 +140,20 @@ namespace LucreApp
             animations.Start();
         }
 
+        m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya2.gltf::Scene::Kaya BrowsAnimGeo");
+        if (m_NonPlayableCharacter3 != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
+
         {
             // place static lights for beach scene
             float intensity = 5.0f;
             float lightRadius = 0.1f;
-            float height1 = 0.4f;
+            float height1 = 1.785f;
             std::vector<glm::vec3> lightPositions =
             {
                 {-0.285, height1, -2.8},
@@ -177,6 +187,30 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
+
+        {
+            m_LaunchVolcanoTimer.SetEventCallback
+            (
+                [](uint in, void* data)
+                {
+                    std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+                    Engine::m_Engine->QueueEvent(event);
+                    return 0u;
+                }
+            );
+            m_LaunchVolcanoTimer.Start();
+
+            // volcano smoke animation
+            int poolSize = 50;
+            m_SpritesheetSmoke.AddSpritesheetTile
+            (
+                Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
+                8, 8, /* rows, columns */
+                0, /* margin */
+                0.01f /* scale) */
+            );
+            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
+        }
     }
 
     void NightScene::Load()
@@ -190,7 +224,7 @@ namespace LucreApp
 
     void NightScene::LoadModels()
     {
-        {
+        { //cube map / skybox
             std::vector<std::string> faces =
             {
                 "application/lucre/models/external_3D_files/night/right.png",
@@ -207,7 +241,7 @@ namespace LucreApp
             auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(20.0f);
         }
-        {
+        { // directional lights
             {
                 m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
                 m_LightView0 = std::make_shared<Camera>();
@@ -276,6 +310,10 @@ namespace LucreApp
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
         SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
+        // volcano
+        EmitVolcanoSmoke();
+        m_VolcanoSmoke->OnUpdate(timestep);
+
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
         m_Renderer->UpdateAnimations(m_Registry, timestep);
@@ -295,7 +333,7 @@ namespace LucreApp
 
         // transparent objects
         m_Renderer->NextSubpass();
-        m_Renderer->TransparencyPass(m_Registry);
+        m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke.get());
 
         // post processing
         m_Renderer->PostProcessingRenderpass();
@@ -328,7 +366,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-0.8f, 2.0f, 2.30515f});
+        cameraTransform.SetTranslation({0.72f, 2.0f, 2.30515f});
         cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
 
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -398,8 +436,50 @@ namespace LucreApp
         directionalLightComponent.m_RenderPass = renderpass;
     }
 
+    void NightScene::EmitVolcanoSmoke()
+    {
+        static auto start = Engine::m_Engine->GetTime();
+        if ((Engine::m_Engine->GetTime() - start) > 1000ms)
+        {
+            start = Engine::m_Engine->GetTime();
+
+            ParticleSystem::Specification spec =
+            {
+                { 2.77f, 2.255f, -1.544f}, //glm::vec3 m_Position
+                { 0.0f,  0.0125f, 0.0f},   //glm::vec3 m_Velocity
+                { 0.0f,  0.0f,    0.0f},   //glm::vec3 m_Acceleration
+
+                {0.0f, TransformComponent::DEGREES_90, 0.0f}, //glm::vec3 m_Rotation
+                {0.0f, 0.0f, 0.0f}, //float m_RotationSpeed
+
+                {1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_StartColor
+                {1.0f, 1.0f, 1.0f, 0.0f}, //glm::vec4 m_EndColor
+
+                {0.005f}, //float m_StartSize
+                {0.07f}, //float m_FinalSize
+
+                {6s}, //Timestep m_LifeTime
+            };
+
+            ParticleSystem::Specification variation{};
+            variation.m_Position = { 0.0001f, 0.0f,   0.0f }; // a little x against z-fighting
+            variation.m_Velocity = { 0.0f,    0.002f, 0.0f };
+            variation.m_Rotation = { 0.0f,    0.5f,   0.0f };
+            m_VolcanoSmoke->Emit(spec, variation);
+        }
+    }
+
     void NightScene::ApplyDebugSettings()
     {
+        if (ImGUI::m_UseNormalMapIntensity)
+        {
+            Model::m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+        }
+        else
+        {
+            Model::m_NormalMapIntensity = 1.0f;
+        }
+
         if (ImGUI::m_UseAmbientLightIntensity)
         {
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);

@@ -39,14 +39,15 @@ namespace GfxRenderEngine
 
         struct Specification
         {
-            glm::vec2 m_Position{0.0f};
-            glm::vec2 m_Velocity{0.0f};
-            glm::vec2 m_Acceleration{0.0f};
+            glm::vec3 m_Position{0.0f};
+            glm::vec3 m_Velocity{0.0f};
+            glm::vec3 m_Acceleration{0.0f};
 
-            float m_Rotation{0.0f};
-            float m_RotationSpeed{0.0f};
+            glm::vec3 m_Rotation{0.0f};
+            glm::vec3 m_RotationSpeed{0.0f};
 
             glm::vec4 m_StartColor{0.0f};
+            glm::vec4 m_EndColor{0.0f};
 
             float m_StartSize{0.0f};
             float m_FinalSize{0.0f};
@@ -56,7 +57,7 @@ namespace GfxRenderEngine
 
     public:
 
-        ParticleSystem(uint poolSize /* = f(emitter rate, lifetime)*/, float zaxis, SpriteSheet* spritesheet, float amplification, int unlit);
+        ParticleSystem(uint poolSize /* = f(emitter rate, lifetime)*/, SpriteSheet* spritesheet, float amplification, int unlit);
 
         void Emit(const ParticleSystem::Specification& spec, const ParticleSystem::Specification& variation);
         void OnUpdate(Timestep timestep);
@@ -65,12 +66,13 @@ namespace GfxRenderEngine
 
         struct Particle
         {
-            glm::vec2 m_Velocity;
-            glm::vec2 m_Acceleration;
+            glm::vec3 m_Velocity;
+            glm::vec3 m_Acceleration;
 
-            float m_RotationSpeed;
+            glm::vec3 m_RotationSpeed;
 
             glm::vec4 m_StartColor;
+            glm::vec4 m_EndColor;
 
             float m_StartSize;
             float m_FinalSize;
@@ -91,7 +93,6 @@ namespace GfxRenderEngine
     private:
 
         uint m_PoolIndex;
-        float m_Zaxis;
 
         std::vector<entt::entity> m_AnimationSprites;
         SpriteSheet* m_Spritesheet;

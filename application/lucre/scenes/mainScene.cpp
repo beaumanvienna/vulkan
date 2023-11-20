@@ -77,28 +77,29 @@ namespace LucreApp
         TreeNode::TraverseInfo(m_SceneHierarchy);
         m_Dictionary.List();
 
-        m_LaunchVolcanoTimer.SetEventCallback
-        (
-            [](uint in, void* data)
-            {
-                std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
-                Engine::m_Engine->QueueEvent(event);
-                return 0u;
-            }
-        );
-        m_LaunchVolcanoTimer.Start();
-
-        // volcano smoke animation
-        int poolSize = 50;
-        float zaxis = -18.0f;
-        m_SpritesheetSmoke.AddSpritesheetTile
-        (
-            Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
-            8, 8, /* rows, columns */
-            0, /* margin */
-            0.01f /* scale) */
-        );
-        m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, zaxis, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
+        {
+            m_LaunchVolcanoTimer.SetEventCallback
+            (
+                [](uint in, void* data)
+                {
+                    std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+                    Engine::m_Engine->QueueEvent(event);
+                    return 0u;
+                }
+            );
+            m_LaunchVolcanoTimer.Start();
+    
+            // volcano smoke animation
+            int poolSize = 50;
+            m_SpritesheetSmoke.AddSpritesheetTile
+            (
+                Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
+                8, 8, /* rows, columns */
+                0, /* margin */
+                0.01f /* scale) */
+            );
+            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
+        }
 
         m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::Scene::barrel");
         m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::Scene::node_damagedHelmet_-6514");
