@@ -32,7 +32,8 @@ namespace LucreApp
     CharacterAnimation::CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
         : m_Registry{registry}, m_GameObject{gameObject}, m_Animations{animations}, m_DirToTheRight{false},
           m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE},
-          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f}, m_WaitStartWalk{0.0f}
+          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f},
+          m_WaitStartWalk{0.0f}, m_WalkSpeedScaled{0.0f}
     {
         m_DurationStartWalk = animations.GetDuration("StartWalk");
         m_DurationStopWalk = animations.GetDuration("StopWalk");
@@ -65,6 +66,7 @@ namespace LucreApp
 
         auto view = m_Registry.view<TransformComponent>();
         auto& characterTransform  = view.get<TransformComponent>(m_GameObject);
+        m_WalkSpeedScaled = WALK_SPEED * characterTransform.GetScale().x;
 
         if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::Controller::BUTTON_A))
         {
@@ -115,7 +117,7 @@ namespace LucreApp
                 case MotionState::JUMPING:
                 {
                     // slow down
-                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 2.0f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                    m_Speed = std::max(0.0f, m_Speed - (m_WalkSpeedScaled * 2.0f * timestep / TIME_TO_GET_TO_WALK_SPEED));
 
                     // move
                     MoveAtSpeed(timestep, characterTransform);
@@ -132,7 +134,7 @@ namespace LucreApp
                     }
                     else
                     {
-                        m_Speed = std::max(WALK_SPEED, m_Speed + (WALK_SPEED * timestep * timestep * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                        m_Speed = std::max(m_WalkSpeedScaled, m_Speed + (m_WalkSpeedScaled * timestep * timestep * timestep / TIME_TO_GET_TO_WALK_SPEED));
                     }
 
                     // move
@@ -141,7 +143,7 @@ namespace LucreApp
                     if (m_Animations.WillExpire(timestep))
                     {
                         SetState(MotionState::WALK);
-                        m_Speed = WALK_SPEED;
+                        m_Speed = m_WalkSpeedScaled;
                         m_Animations.SetRepeat(true);
                     }
                     break;
@@ -176,7 +178,7 @@ namespace LucreApp
                 case MotionState::JUMPING:
                 {
                     // slow down
-                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                    m_Speed = std::max(0.0f, m_Speed - (m_WalkSpeedScaled * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
                     // move
                     MoveAtSpeed(timestep, characterTransform);
                     break;
@@ -189,7 +191,7 @@ namespace LucreApp
                 case MotionState::STOP_WALK:
                 {
                     // slow down
-                    m_Speed = std::max(0.0f, m_Speed - (WALK_SPEED * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                    m_Speed = std::max(0.0f, m_Speed - (m_WalkSpeedScaled * 0.5f * timestep / TIME_TO_GET_TO_WALK_SPEED));
 
                     // move
                     MoveAtSpeed(timestep, characterTransform);

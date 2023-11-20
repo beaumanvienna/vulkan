@@ -91,6 +91,7 @@ namespace LucreApp
         int m_FramesToRotate;
         float m_RotationPerFrame;
         float m_WaitStartWalk;
+        float m_WalkSpeedScaled;
 
         MotionState m_MotionState;
 

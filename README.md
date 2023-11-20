@@ -22,9 +22,9 @@ Features:
 - Particle system
 - Event system for mouse, keyboard, controller, window and game events
 - Settings manager and a message logger
-- An entity component system based on EnTT
+- Entity component system based on EnTT
 - Physics simulator based on Box2D
-- In-game GUI with two themes and debug GUI based on imgui 
+- In-game GUI with two themes and debug GUI based on ImGUI 
 - Sprite sheets, a sprite sheet generator, sprite sheet animations
 - Render-API abstraction and engine/application separation
 - Profiling JSON output file for chrome://tracing<br/>
