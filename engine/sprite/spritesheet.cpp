@@ -246,24 +246,24 @@ namespace GfxRenderEngine
 
         if (rotated)
         {
-            float advanceY             = tileHeightNormalized;
+            float advanceY = tileHeightNormalized;
 
-            float currentY = originalSprite.m_Pos1Y - tileHeightNormalized;
+            float currentY = originalSprite.m_Pos1Y - tileWidthNormalized;
             for (uint row = 0; row < frames; row++)
             {
                 std::string name = originalSprite.GetName() + "_" + std::to_string(row);
                 float u1 = originalSprite.m_Pos1X;
                 float v1 = currentY;
                 float u2 = originalSprite.m_Pos2X;
-                float v2 = currentY + tileHeightNormalized;
+                float v2 = currentY + tileWidthNormalized;
                 Sprite sprite = Sprite
                 (
                     u1,
                     v2,
                     u2,
                     v1,
-                    tileWidth,
                     tileHeight,
+                    tileWidth,
                     m_Texture,
                     name,
                     scaleX,

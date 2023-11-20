@@ -60,11 +60,11 @@ namespace LucreApp
 
     void ControllerSetupAnimation::OnUpdate(const Timestep& timestep)
     {
-            Sprite2D sprite = Sprite2D(m_SpritesheetPointers.GetSprite(m_Frame));
+        Sprite2D sprite = Sprite2D(m_SpritesheetPointers.GetSprite(m_Frame));
 
-            // transformed position
-            glm::mat4 position = m_TranslationMatrix * sprite.GetMat4();
-            m_Renderer->DrawWithTransform(sprite, position);
+        // transformed position
+        glm::mat4 position = m_TranslationMatrix * sprite.GetMat4();
+        m_Renderer->DrawWithTransform(sprite, position);
     }
 
     void ControllerSetupAnimation::OnEvent(Event& event)  {}
