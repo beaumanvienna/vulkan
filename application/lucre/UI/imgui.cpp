@@ -58,6 +58,7 @@ namespace LucreApp
     bool  ImGUI::m_UseEmissiveStrength = false;
     float ImGUI::m_EmissiveStrength = 0.35;
     bool  ImGUI::m_UseAnimation = false;
+    bool  ImGUI::m_RepeatAnimation = false;
 
     void ImGUI::DebugWindow()
     {
@@ -99,6 +100,7 @@ namespace LucreApp
             selectedModelPrevious = m_SelectedModel;
             m_SelectedGameObject = 0;
             m_UseAnimation = false;
+            m_RepeatAnimation = false;
             currentItem = nullptr;
         }
 
@@ -150,6 +152,8 @@ namespace LucreApp
             }
             ImGui::Checkbox("use###007", &m_UseAnimation);
             ImGui::SameLine();
+            ImGui::Checkbox("repeat###001", &m_RepeatAnimation);
+            ImGui::SameLine();
             if (ImGui::BeginCombo("##combo", currentItem)) // The 2nd parameter is the label previewed before opening the combo
             {
                 for (size_t index = 0; index < numberOfAnimations; ++index)
@@ -158,7 +162,11 @@ namespace LucreApp
                     if (ImGui::Selectable(items[index], isSelected))
                     {
                         currentItem = items[index];
-                        if (m_UseAnimation) animations.Start(currentItem);
+                        if (m_UseAnimation)
+                        {
+                            animations.Start(currentItem);
+                            animations.SetRepeat(m_RepeatAnimation);
+                        }
                     }
                     if (isSelected)
                     {

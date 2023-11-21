@@ -73,6 +73,7 @@ namespace LucreApp
         static bool  m_UseEmissiveStrength;
         static float m_EmissiveStrength;
         static bool  m_UseAnimation;
+        static bool  m_RepeatAnimation;
 
     private:
 
