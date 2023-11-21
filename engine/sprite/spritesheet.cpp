@@ -242,11 +242,10 @@ namespace GfxRenderEngine
         int tileHeight             = originalSprite.GetHeight() ;
 
         float tileWidthNormalized  = static_cast<float>(tileWidth)  / m_Texture->GetWidth();
-        float tileHeightNormalized = static_cast<float>(tileHeight) / m_Texture->GetHeight();
 
         if (rotated)
         {
-            float advanceY = tileHeightNormalized;
+            float advanceY = tileWidthNormalized;
 
             float currentY = originalSprite.m_Pos1Y - tileWidthNormalized;
             for (uint row = 0; row < frames; row++)
