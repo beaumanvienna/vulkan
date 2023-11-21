@@ -76,6 +76,7 @@ namespace GfxRenderEngine
         float GetCurrentTime();
         std::string GetName();
         void Update(const Timestep& timestep, Armature::Skeleton& skeleton, uint frameCounter);
+        int GetIndex(std::string const& animation);
 
     private:
 
@@ -83,6 +84,7 @@ namespace GfxRenderEngine
         std::vector<std::shared_ptr<SkeletalAnimation>> m_AnimationsVector;
         SkeletalAnimation* m_CurrentAnimation;
         uint m_FrameCounter;
+        std::map<std::string, int> m_NameToIndex;
 
     };
 }

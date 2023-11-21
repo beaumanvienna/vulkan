@@ -56,12 +56,33 @@ namespace LucreApp
 
         enum MotionState
         {
-          IDLE = 0,
-          JUMPING,
-          START_WALK,
-          STOP_WALK,
-          WALK
+            NO_FOUND = -1,
+            IDLE,
+            JUMPING,
+            START_WALK,
+            STOP_WALK,
+            WALK,
+            JOGGING,
+            JUMPING_DOWN,
+            FALLING_IDLE,
+            PUNCHING,
+            RUNNING,
+            NUMBER_OF_MOTION_STATES
         };
+
+    std::vector<std::string> m_AnimationsNames =
+    {
+        "Idle",
+        "Jumping",
+        "StartWalk",
+        "StopWalk",
+        "Walk",
+        "Jogging",
+        "Jumping Down",
+        "Falling Idle",
+        "Punching",
+        "Running",
+    };
 
     private:
 
@@ -94,6 +115,7 @@ namespace LucreApp
         float m_WalkSpeedScaled;
 
         MotionState m_MotionState;
+        std::vector<int> m_AnimationIndices;
 
     };
 }

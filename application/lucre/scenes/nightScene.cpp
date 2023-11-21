@@ -87,7 +87,7 @@ namespace LucreApp
                 LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Hero));
             }
         }
-        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::guybrush object");
+        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -111,7 +111,7 @@ namespace LucreApp
                 auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush_animation.gltf::Scene::root");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::Scene::Armature");
 
                 m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
                 m_CharacterAnimation->Start();
@@ -366,8 +366,8 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({0.72f, 2.0f, 2.30515f});
-        cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({1.47303f, 3.27545f, 3.30939f});
+        cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
 
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
     }
@@ -445,7 +445,7 @@ namespace LucreApp
 
             ParticleSystem::Specification spec =
             {
-                { 2.77f, 2.255f, -1.544f}, //glm::vec3 m_Position
+                { 4.09f, 2.641f, -1.338f}, //glm::vec3 m_Position
                 { 0.0f,  0.0125f, 0.0f},   //glm::vec3 m_Velocity
                 { 0.0f,  0.0f,    0.0f},   //glm::vec3 m_Acceleration
 

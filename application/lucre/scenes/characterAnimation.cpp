@@ -44,9 +44,18 @@ namespace LucreApp
 
     void CharacterAnimation::Start()
     {
+        {
+            m_AnimationIndices.resize(m_AnimationsNames.size());
+            for (uint index = 0; index<NUMBER_OF_MOTION_STATES; ++index)
+            {
+                std::string name = m_AnimationsNames[index];
+                m_AnimationIndices[index] = m_Animations.GetIndex(name);
+                LOG_APP_INFO("name: {0}, found: {1}", name, (m_AnimationIndices[index] != MotionState::NO_FOUND));
+            }
+        }
         m_Animations.SetRepeatAll(false);
         m_MotionState = MotionState::IDLE;
-        m_Animations.Start(MotionState::IDLE);
+        m_Animations.Start(m_AnimationIndices[MotionState::IDLE]);
         m_Animations.SetRepeat(true);
     }
 
@@ -66,7 +75,8 @@ namespace LucreApp
 
         auto view = m_Registry.view<TransformComponent>();
         auto& characterTransform  = view.get<TransformComponent>(m_GameObject);
-        m_WalkSpeedScaled = WALK_SPEED * characterTransform.GetScale().x;
+        float characterScale = characterTransform.GetScale().x;
+        m_WalkSpeedScaled = WALK_SPEED * characterScale * 100.0f;
 
         if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::Controller::BUTTON_A))
         {
@@ -236,7 +246,7 @@ namespace LucreApp
     void CharacterAnimation::SetState(MotionState state)
     {
         m_MotionState = state;
-        m_Animations.Start(state);
+        m_Animations.Start(m_AnimationIndices[state]);
     }
 
     void CharacterAnimation::PerformRotation(TransformComponent& characterTransform)

@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         {
             m_Animations[animation->GetName()] = animation;
             m_AnimationsVector.push_back(animation);
+            m_NameToIndex[animation->GetName()] = static_cast<int>(m_AnimationsVector.size() - 1);
         }
         else
         {
@@ -197,4 +198,24 @@ namespace GfxRenderEngine
         return *(*m_Pointer /*shared_ptr*/);
     }
 
+    int SkeletalAnimations::GetIndex(std::string const& animation)
+    {
+        bool found = false;
+        for (auto& element : m_AnimationsVector)
+        {
+            if (element->GetName() == animation)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+        {
+            return m_NameToIndex[animation];
+        }
+        else
+        {
+            return -1;
+        }
+    }
 }

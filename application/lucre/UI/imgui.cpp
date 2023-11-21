@@ -233,17 +233,19 @@ namespace LucreApp
             ImGui::InputFloat3("Rotation",    glm::value_ptr(actualRotationEuler));
             ImGui::InputFloat3("Scale",       glm::value_ptr(actualScale));
 
-            if (glm::length(actualTranslation - transform.GetTranslation()) > 0.001f)
+            float minimumChange = 0.000001f;
+
+            if (glm::length(actualTranslation - transform.GetTranslation()) > minimumChange)
             {
                 transform.SetTranslation(actualTranslation);
             }
 
-            if (glm::length(actualRotationEuler - (transform.GetRotation() * 180.0f / glm::pi<float>())) > 0.001f)
+            if (glm::length(actualRotationEuler - (transform.GetRotation() * 180.0f / glm::pi<float>())) > minimumChange)
             {
                 transform.SetRotation(actualRotationEuler * glm::pi<float>() / 180.0f);
             }
 
-            if (glm::length(actualScale - transform.GetScale()) > 0.001f)
+            if (glm::length(actualScale - transform.GetScale()) > minimumChange)
             {
                 transform.SetScale(actualScale);
             }
