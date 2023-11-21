@@ -17,8 +17,8 @@ glTF-files:
     scale: [1, 1, 1]
     rotation: [0, -0, 0]
   application/lucre/models/Kaya/gltf/Kaya2.gltf:
-    translation: [0.449473262, 1.26003885, -1.99651289]
-    scale: [0.00850000046, 0.00849988591, 0.00849988591]
+    translation: [0.449473262, 1.27129853, -1.99651289]
+    scale: [0.00850000046, 0.0084994752, 0.0084994752]
     rotation: [1.57078826, -0, 0]
   application/lucre/models/Kaya/gltf/Kaya.gltf:
     translation: [-0.600000024, 1.94000006, -1.41999996]
@@ -62,7 +62,7 @@ glTF-files:
     rotation: [-1.5706929, 1.54486609, -3.14149141]
   application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
     translation: [-8.81863213, 1.25750136, 9.19549274]
-    scale: [0.530309796, 0.5, 0.5]
+    scale: [0.53423053, 0.5, 0.5]
     rotation: [-1.57068825, 1.544873, -3.14149141]
   application/lucre/models/external_3D_files/night/dune/dune.gltf:
     translation: [0, 0, 0.0553395897]
