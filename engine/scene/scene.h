@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -85,6 +85,7 @@ namespace GfxRenderEngine
         bool m_IsRunning;
 
         friend class SceneLoader;
+        friend class SceneLoaderJSON;
 
     };
 }

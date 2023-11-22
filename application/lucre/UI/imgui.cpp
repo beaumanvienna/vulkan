@@ -294,7 +294,7 @@ namespace LucreApp
     }
 
     // set up maxGameObjects, and the std::vector for visibleGameObjects
-    void ImGUI::SetupSlider(SceneLoader::GltfFiles& gltfFiles)
+    void ImGUI::SetupSlider(Gltf::GltfFiles& gltfFiles)
     {
         m_SelectedModel = 0;
 

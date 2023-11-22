@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     NightScene::NightScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_SceneLoader{*this},
+            : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this},
               m_LaunchVolcanoTimer(1500)
     {
     }
@@ -215,8 +215,8 @@ namespace LucreApp
 
     void NightScene::Load()
     {
-        m_SceneLoader.Deserialize();
-        ImGUI::SetupSlider(m_SceneLoader.GetGltfFiles());
+        m_SceneLoaderJSON.Deserialize();
+        ImGUI::SetupSlider(m_SceneLoaderJSON.GetGltfFiles());
 
         LoadModels();
         LoadScripts();
@@ -289,7 +289,7 @@ namespace LucreApp
     void NightScene::Stop()
     {
         m_IsRunning = false;
-        m_SceneLoader.Serialize();
+        m_SceneLoaderJSON.Serialize();
     }
 
     void NightScene::OnUpdate(const Timestep& timestep)

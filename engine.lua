@@ -25,7 +25,9 @@ project "engine"
         "vendor/imgui/backends/imgui_impl_glfw.cpp",
         "vendor/imgui/backends/imgui_impl_vulkan.cpp",
         "vendor/imgui/*.cpp",
-        "vendor/tinygltf/tiny_gltf.cpp"
+        "vendor/tinygltf/tiny_gltf.cpp",
+        "vendor/simdjson/simdjson.cpp",
+        "vendor/simdjson/simdjson.h",
     }
 
     includedirs
@@ -47,6 +49,7 @@ project "engine"
         "vendor/box2d/include",
         "vendor/entt/include",
         "vendor/tinygltf",
+        "vendor/simdjson",
         "vendor/json",
     }
 

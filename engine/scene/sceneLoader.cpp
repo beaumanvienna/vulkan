@@ -40,12 +40,12 @@ namespace GfxRenderEngine
 
         if (EngineCore::FileExists(m_Scene.m_Filepath))
         {
-            LOG_CORE_WARN("Loading scene {0}", m_Scene.m_Filepath);
+            LOG_CORE_INFO("Loading scene {0}", m_Scene.m_Filepath);
             yamlNode = YAML::LoadFile(m_Scene.m_Filepath);
         }
         else if (EngineCore::FileExists(m_Scene.m_AlternativeFilepath))
         {
-            LOG_CORE_WARN("Loading scene {0}", m_Scene.m_AlternativeFilepath);
+            LOG_CORE_INFO("Loading scene {0}", m_Scene.m_AlternativeFilepath);
             yamlNode = YAML::LoadFile(m_Scene.m_AlternativeFilepath);
         }
         else
@@ -59,7 +59,7 @@ namespace GfxRenderEngine
             std::string filename = gltfFile.first.as<std::string>();
             if (EngineCore::FileExists(filename))
             {
-                LOG_CORE_WARN("Scene loader found {0}", filename);
+                LOG_CORE_INFO("Scene loader found {0}", filename);
                 Builder builder{filename};
                 auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
 
@@ -149,7 +149,7 @@ namespace GfxRenderEngine
 
         if (EngineCore::FileExists(filepath))
         {
-            LOG_CORE_WARN("Scene loader found {0}", filepath);
+            LOG_CORE_INFO("Scene loader found {0}", filepath);
             yamlNode = YAML::LoadFile(filepath);
         }
         else
@@ -166,7 +166,7 @@ namespace GfxRenderEngine
                 auto filename = gltfFile.as<std::string>();
                 if (EngineCore::FileExists(filename))
                 {
-                    LOG_CORE_WARN("Scene loader found {0}", filename);
+                    LOG_CORE_INFO("Scene loader found {0}", filename);
                     Builder builder{filename};
                     auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
 

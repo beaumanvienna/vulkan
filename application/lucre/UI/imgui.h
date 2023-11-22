@@ -29,6 +29,7 @@
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
 #include "scene/sceneLoader.h"
+#include "scene/gltf.h"
 
 namespace LucreApp
 {
@@ -47,7 +48,7 @@ namespace LucreApp
 
 
         static void DebugWindow();
-        static void SetupSlider(SceneLoader::GltfFiles& gltfFiles);
+        static void SetupSlider(Gltf::GltfFiles& gltfFiles);
 
     public:
 

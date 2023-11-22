@@ -274,7 +274,7 @@ namespace LucreApp
             {
                 auto lambda = [=]()
                 {
-                    auto scenePtr = std::make_shared<NightScene>("night.scene", "application/lucre/sceneDescriptions/night.scene");
+                    auto scenePtr = std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();

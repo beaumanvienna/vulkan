@@ -22,22 +22,19 @@
 
 #pragma once
 
-#include <unordered_map>
-
 #include "engine.h"
-#include "scene/gltf.h"
 #include "scene/scene.h"
-#include "yaml-cpp/yaml.h"
+#include "scene/gltf.h"
 
 namespace GfxRenderEngine
 {
-    class SceneLoader
+    class SceneLoaderJSON
     {
 
     public:
 
-        SceneLoader(Scene& scene);
-        ~SceneLoader() {}
+        SceneLoaderJSON(Scene& scene);
+        ~SceneLoaderJSON() {}
 
         void Deserialize();
         void Serialize();
@@ -46,7 +43,7 @@ namespace GfxRenderEngine
     private:
 
         void LoadPrefab(const std::string& filepath);
-        glm::vec3 ConvertToVec3(const YAML::Node& node);
+        glm::vec3 ConvertToVec3();
 
     private:
 

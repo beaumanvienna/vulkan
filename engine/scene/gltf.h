@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,38 +22,25 @@
 
 #pragma once
 
-#include <unordered_map>
+#include <iostream>
+#include "entt.hpp"
 
 #include "engine.h"
-#include "scene/gltf.h"
-#include "scene/scene.h"
-#include "yaml-cpp/yaml.h"
 
 namespace GfxRenderEngine
 {
-    class SceneLoader
+    namespace Gltf
     {
+        struct GltfFile
+        {
+            std::string m_Filename;
+            entt::entity m_Entity;
+        };
 
-    public:
-
-        SceneLoader(Scene& scene);
-        ~SceneLoader() {}
-
-        void Deserialize();
-        void Serialize();
-        Gltf::GltfFiles& GetGltfFiles() { return m_GltfFiles; }
-
-    private:
-
-        void LoadPrefab(const std::string& filepath);
-        glm::vec3 ConvertToVec3(const YAML::Node& node);
-
-    private:
-
-        Scene& m_Scene;
-        
-        std::vector<std::string> m_PrefabFiles;
-        Gltf::GltfFiles m_GltfFiles;
-
-    };
+        struct GltfFiles
+        {
+            std::vector<GltfFile> m_GltfFilesFromScene;
+            std::vector<GltfFile> m_GltfFilesFromPreFabs;
+        };
+    }
 }
