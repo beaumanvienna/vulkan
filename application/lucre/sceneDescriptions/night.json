@@ -1,0 +1,77 @@
+{
+    "scene": "night",
+    "gltf files":
+    [
+        {
+            "filename": "aliqua labore offici",
+            "transform": 
+            {
+                "Scale": 
+                [
+                    0.8963116,
+                    0.7086721,
+                    0.9938951
+                ],
+                "Rotation": 
+                [
+                    0.6146136,
+                    0.7181104,
+                    0.1485208,
+                    0.691462
+                ],
+                "Translation": 
+                [
+                    0.0903476,
+                    0.1895275,
+                    0.3266069
+                ]
+            },
+            "node": 
+            {
+                "name": "velit elit culpa incididunt",
+                "walkSpeed": 0.4499327,
+                "rigidBody": true
+            }
+        },
+        {
+            "filename": "ex id amet ad proide",
+            "transform": 
+            {
+                "Scale": 
+                [
+                    0.3830684,
+                    0.2107726,
+                    0.1600721
+                ],
+                "Rotation": 
+                [
+                    0.1946608,
+                    0.2918367,
+                    0.221474,
+                    0.0888679
+                ],
+                "Translation": 
+                [
+                    0.860663,
+                    0.371241,
+                    0.4448646
+                ]
+            },
+            "node": 
+            {
+                "name": "ipsum mollit proident consecte",
+                "walkSpeed": 0.5694046,
+                "rigidBody": true
+            }
+        }
+    ],
+    "prefabs":
+    [
+        {
+            "filename": "commodo eu commodo n"
+        },
+        {
+            "filename": "ut proident tempor v"
+        }
+    ]
+}
