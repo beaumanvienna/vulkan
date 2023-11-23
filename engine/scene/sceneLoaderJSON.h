@@ -22,6 +22,11 @@
 
 #pragma once
 
+#include <iostream>
+#include "simdjson.h"
+
+using namespace simdjson;
+
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/gltf.h"
@@ -36,14 +41,27 @@ namespace GfxRenderEngine
         SceneLoaderJSON(Scene& scene);
         ~SceneLoaderJSON() {}
 
-        void Deserialize(std::string& filepath, std::string& alternativeFilepath, bool isPrefab = false);
+        void Deserialize(std::string& filepath, std::string& alternativeFilepath);
         void Serialize();
         Gltf::GltfFiles& GetGltfFiles() { return m_GltfFiles; }
 
     private:
 
+        void ParseGltfFileJSON(ondemand::object gltfFileJSON);
+        void ParsePrefabJSON(ondemand::object prefabJSON);
+        void ParseTransformJSON(ondemand::object transformJSON, entt::entity entity);
+        void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename);
+
+        void PrintType(ondemand::value elementJSON);
+        glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
+
+    private:
+
+        static constexpr double SUPPORTED_FILE_FORMAT_MAJOR_VERSION = 1.0;
+
         Scene& m_Scene;
-        
+        bool m_LoadPrefab;
+
         std::vector<std::string> m_PrefabFiles;
         Gltf::GltfFiles m_GltfFiles;
 

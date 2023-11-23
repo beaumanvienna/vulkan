@@ -41,6 +41,7 @@ project "lucre"
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
         "vendor/entt/include",
+        "vendor/simdjson",
         "vendor/json",
         "vendor/glm",
         "vendor/stb",
