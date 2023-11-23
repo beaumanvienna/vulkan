@@ -48,15 +48,15 @@ namespace GfxRenderEngine
         ondemand::parser parser;
         padded_string json;
 
-        if (EngineCore::FileExists(m_Scene.m_Filepath))
+        if (EngineCore::FileExists(filepath))
         {
             json = padded_string::load(filepath);
-            LOG_CORE_INFO("Loading scene {0}", filepath);
+            isPrefab ? LOG_CORE_INFO("Loading prefab {0}", filepath) : LOG_CORE_INFO("Loading scene {0}", filepath);
         }
         else if (EngineCore::FileExists(alternativeFilepath))
         {
             json = padded_string::load(alternativeFilepath);
-            LOG_CORE_INFO("Loading scene {0}", alternativeFilepath);
+            isPrefab ? LOG_CORE_INFO("Loading prefab {0}", alternativeFilepath) : LOG_CORE_INFO("Loading scene {0}", alternativeFilepath);
         }
         else
         {
@@ -90,7 +90,10 @@ namespace GfxRenderEngine
             {
                 CORE_ASSERT( (sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
                 auto gltfFiles = sceneObject.value().get_array();
-                LOG_CORE_INFO("loading {0} gltf files", gltfFiles.count_elements());
+                {
+                    int fileCnt = gltfFiles.count_elements();
+                    fileCnt == 1 ? LOG_CORE_INFO("loading 1 gltf file") : LOG_CORE_INFO("loading {0} gltf files", fileCnt);
+                }
                 for (auto gltfFileJSON : gltfFiles)
                 {
                     CORE_ASSERT( (gltfFileJSON.value().type() == ondemand::json_type::object), "type must be object" );
@@ -111,42 +114,61 @@ namespace GfxRenderEngine
 
                         auto instances = gltfFileJSON.find_field("instances").get_array();
                         int instanceCount = instances.count_elements();
-                        LOG_CORE_INFO("instance count: {0}", instanceCount);
+
                         CORE_ASSERT( (instanceCount > 0), "no instances found");
-                        uint cnt = 0;
-                        for (auto instance : instances)
                         {
-                            // transform
-                            TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
-                            ondemand::object transformJSON = instance.find_field("transform");
-
-                            ondemand::array scaleJSON = transformJSON.find_field("scale");
-                            glm::vec3 scale = JSON::ConvertToVec3(scaleJSON);
-                            transform.SetScale(scale);
-
-                            ondemand::array rotationJSON = transformJSON.find_field("rotation");
-                            glm::vec3 rotation = JSON::ConvertToVec3(rotationJSON);
-                            transform.SetRotation(rotation);
-
-                            ondemand::array translationJSON = transformJSON.find_field("translation");
-                            glm::vec3 translation = JSON::ConvertToVec3(translationJSON);
-                            transform.SetTranslation(translation);
-
-                            // nodes
-                            ondemand::array nodesJSON = instance.find_field("nodes");
-
-                            for (auto nodeJSON : nodesJSON)
+                            uint index = 0;
+                            for (auto instance : instances)
                             {
-                                CORE_ASSERT( (nodeJSON.value().type() == ondemand::json_type::object), "type must be object" );
+                                // transform
+                                TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                                ondemand::object transformJSON = instance.find_field("transform");
 
-                                std::string_view name = nodeJSON.find_field("name");
-                                double walkSpeed = nodeJSON.find_field("walkSpeed");
-                                bool rigidBody = nodeJSON.find_field("rigidBody");
-                                std::string_view scriptComponent = nodeJSON.find_field("script-component");
+                                ondemand::array scaleJSON = transformJSON.find_field("scale");
+                                glm::vec3 scale = JSON::ConvertToVec3(scaleJSON);
+                                transform.SetScale(scale);
+
+                                ondemand::array rotationJSON = transformJSON.find_field("rotation");
+                                glm::vec3 rotation = JSON::ConvertToVec3(rotationJSON);
+                                transform.SetRotation(rotation);
+
+                                ondemand::array translationJSON = transformJSON.find_field("translation");
+                                glm::vec3 translation = JSON::ConvertToVec3(translationJSON);
+                                transform.SetTranslation(translation);
+
+                                // nodes
+                                std::string_view entityName;
+                                std::string_view scriptComponentStringView;
+                                double walkSpeed;
+                                bool rigidBody;
+                                bool scriptComponentFound = true;
+                                try
+                                {
+                                    ondemand::array nodesJSON = instance.find_field("nodes");
+                                    for (auto nodeJSON : nodesJSON)
+                                    {
+                                        CORE_ASSERT( (nodeJSON.value().type() == ondemand::json_type::object), "type must be object" );
+                                        entityName = nodeJSON.find_field("name");
+                                        walkSpeed = nodeJSON.find_field("walkSpeed");
+                                        rigidBody = nodeJSON.find_field("rigidBody");
+                                        scriptComponentStringView = nodeJSON.find_field("script-component");
+                                    }
+                                } catch(simdjson_error& e)
+                                {
+                                    scriptComponentFound = false;
+                                }
+                                if (scriptComponentFound)
+                                {
+                                    std::string fullEntityName = gltfFilename + std::string("::" + std::string(entityName));
+                                    entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(std::string(fullEntityName));
+                                    LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
+
+                                    ScriptComponent scriptComponent(scriptComponentStringView);
+                                    m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+                                }
+                                ++index;
+                                if ( index == 1) break; // only one instance supported right now
                             }
-
-                            ++cnt;
-                            if ( cnt == 1) break; // only one instance supported right now
                         }
                     }
                 }

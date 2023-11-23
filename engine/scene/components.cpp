@@ -204,4 +204,7 @@ namespace GfxRenderEngine
 
     ScriptComponent::ScriptComponent(const std::string& filepath)
         : m_Filepath(filepath) {}
+
+    ScriptComponent::ScriptComponent(const std::string_view filepath)
+        : m_Filepath(std::string(filepath)) {}
 }

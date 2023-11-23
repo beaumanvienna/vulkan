@@ -167,8 +167,7 @@
                         {
                             "name": "guybrush object",
                             "walkSpeed": 0.2,
-                            "rigidBody": false,
-                            "script-component": ""
+                            "rigidBody": false
                         }
                     ]
                 }

@@ -149,6 +149,7 @@ namespace GfxRenderEngine
         std::shared_ptr<NativeScript> m_Script;
 
         ScriptComponent(const std::string& filepath);
+        ScriptComponent(const std::string_view filepath);
     };
 
     struct SpriteRendererComponent
