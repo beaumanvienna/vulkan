@@ -115,7 +115,7 @@ namespace LucreApp
 
     void BeachScene::Load()
     {
-        m_SceneLoader.Deserialize();
+        m_SceneLoader.Deserialize();  // loads YAML
         ImGUI::SetupSlider(m_SceneLoader.GetGltfFiles());
 
         LoadModels();

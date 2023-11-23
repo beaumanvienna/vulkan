@@ -215,7 +215,7 @@ namespace LucreApp
 
     void NightScene::Load()
     {
-        m_SceneLoaderJSON.Deserialize();
+        m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(m_SceneLoaderJSON.GetGltfFiles());
 
         LoadModels();

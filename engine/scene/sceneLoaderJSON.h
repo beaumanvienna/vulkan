@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -36,14 +36,9 @@ namespace GfxRenderEngine
         SceneLoaderJSON(Scene& scene);
         ~SceneLoaderJSON() {}
 
-        void Deserialize();
+        void Deserialize(std::string& filepath, std::string& alternativeFilepath, bool isPrefab = false);
         void Serialize();
         Gltf::GltfFiles& GetGltfFiles() { return m_GltfFiles; }
-
-    private:
-
-        void LoadPrefab(const std::string& filepath);
-        glm::vec3 ConvertToVec3();
 
     private:
 

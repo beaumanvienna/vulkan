@@ -4,6 +4,31 @@
     "valueType": "object",
     "children": [
         {
+            "id": "daef47e-42eb-203c-46b3-64228d226a3c",
+            "type": "value",
+            "valueType": "number",
+            "children": [],
+            "repeatCount": [
+                "1",
+                "100"
+            ],
+            "fieldName": "file format identifier",
+            "valueOptions": {
+                "min": {
+                    "number": "1",
+                    "checked": true
+                },
+                "max": {
+                    "number": "1",
+                    "checked": true
+                },
+                "decimals": "0",
+                "multipleOf": "0"
+            },
+            "nullValue": "0",
+            "selectedDependencies": {}
+        },
+        {
             "id": "4b78a88-42f-643-bc5e-5f8f36a68011",
             "type": "value",
             "valueType": "string",
@@ -12,11 +37,29 @@
                 "1",
                 "100"
             ],
-            "fieldName": "scene",
+            "fieldName": "description",
             "valueOptions": {
                 "minLength": "20",
                 "maxLength": "20",
                 "unit": "character"
+            },
+            "nullValue": "0",
+            "selectedDependencies": {}
+        },
+        {
+            "id": "77548b-30b3-3521-3b5d-6fd3caebb05",
+            "type": "value",
+            "valueType": "string",
+            "children": [],
+            "repeatCount": [
+                "1",
+                "100"
+            ],
+            "fieldName": "author",
+            "valueOptions": {
+                "minLength": 0,
+                "maxLength": 20,
+                "unit": "word"
             },
             "nullValue": "0",
             "selectedDependencies": {}
@@ -50,301 +93,413 @@
                             "selectedDependencies": {}
                         },
                         {
-                            "id": "e3d026-0477-5fb4-2dbc-3b4258b587e0",
-                            "type": "object",
-                            "valueType": "object",
+                            "id": "8c41d6-be56-a76-38f7-61e7cee2d0",
+                            "type": "array",
+                            "valueType": "array",
                             "children": [
                                 {
-                                    "id": "3f538df-eb-e34-df27-efffa518db",
-                                    "type": "array",
-                                    "valueType": "array",
+                                    "id": "ad717-c6f-1dac-be0-88bc0ca230a",
+                                    "type": "object",
+                                    "valueType": "object",
                                     "children": [
                                         {
-                                            "id": "872f866-d01f-7758-b4c-ce7a8f1c3c2",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
+                                            "id": "e3d026-0477-5fb4-2dbc-3b4258b587e0",
+                                            "type": "object",
+                                            "valueType": "object",
+                                            "children": [
+                                                {
+                                                    "id": "3f538df-eb-e34-df27-efffa518db",
+                                                    "type": "array",
+                                                    "valueType": "array",
+                                                    "children": [
+                                                        {
+                                                            "id": "872f866-d01f-7758-b4c-ce7a8f1c3c2",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "35052a6-5de-acaf-ebad-365f7fc0cc6",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "af6076a-6de0-edc3-641a-8c504d2bfb45",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        }
+                                                    ],
+                                                    "repeatCount": [
+                                                        "3",
+                                                        "3"
+                                                    ],
+                                                    "fieldName": "scale",
+                                                    "valueOptions": {},
+                                                    "nullValue": "0",
+                                                    "selectedDependencies": {}
+                                                },
+                                                {
+                                                    "id": "165dfd-b507-337b-3a2d-a5e50ddab8b",
+                                                    "type": "array",
+                                                    "valueType": "array",
+                                                    "children": [
+                                                        {
+                                                            "id": "3538bb-f3ce-3222-c56-8ac8fd056",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "87dc1dd-38-13f8-5fd4-88d0c44413be",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "7f81b7f-4284-f80f-65a6-0e7acb666865",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        }
+                                                    ],
+                                                    "repeatCount": [
+                                                        "4",
+                                                        "4"
+                                                    ],
+                                                    "fieldName": "rotation",
+                                                    "valueOptions": {},
+                                                    "nullValue": "0",
+                                                    "selectedDependencies": {}
+                                                },
+                                                {
+                                                    "id": "7064af4-8b2b-1b42-f462-673be8fd1e87",
+                                                    "type": "array",
+                                                    "valueType": "array",
+                                                    "children": [
+                                                        {
+                                                            "id": "f140d-5cd-fdfb-fd10-11d440bc37",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "4565483-dbe-01ed-e4-3b57ad7e53e",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "0830eb8-a40f-d1c1-df2-74a24d615371",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        }
+                                                    ],
+                                                    "repeatCount": [
+                                                        "3",
+                                                        "3"
+                                                    ],
+                                                    "fieldName": "translation",
+                                                    "valueOptions": {},
+                                                    "nullValue": "0",
+                                                    "selectedDependencies": {}
+                                                }
+                                            ],
                                             "repeatCount": [
                                                 "1",
                                                 "100"
                                             ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
+                                            "fieldName": "transform",
+                                            "valueOptions": {},
                                             "nullValue": "0",
                                             "selectedDependencies": {}
                                         },
                                         {
-                                            "id": "35052a6-5de-acaf-ebad-365f7fc0cc6",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
+                                            "id": "f5f0b1-86f6-533-52ca-f8db2cb3d",
+                                            "type": "array",
+                                            "valueType": "array",
+                                            "children": [
+                                                {
+                                                    "id": "47f5a7b-7bfa-8e67-87-bba8b258756",
+                                                    "type": "object",
+                                                    "valueType": "object",
+                                                    "children": [
+                                                        {
+                                                            "id": "51c2308-7f5-6331-8a5d-84e464f1777",
+                                                            "type": "value",
+                                                            "valueType": "string",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "name",
+                                                            "valueOptions": {
+                                                                "minLength": "20",
+                                                                "maxLength": "20",
+                                                                "unit": "character"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "6ee476-1a50-56ac-4f81-da2e8bcacb",
+                                                            "type": "value",
+                                                            "valueType": "number",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "walkSpeed",
+                                                            "valueOptions": {
+                                                                "min": {
+                                                                    "number": "0.2",
+                                                                    "checked": true
+                                                                },
+                                                                "max": {
+                                                                    "number": "1",
+                                                                    "checked": true
+                                                                },
+                                                                "decimals": "7",
+                                                                "multipleOf": "0"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "21ef5-a4c7-d784-372a-dfe87821d6ed",
+                                                            "type": "value",
+                                                            "valueType": "bool",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "rigidBody",
+                                                            "valueOptions": {
+                                                                "trueRatio": "100"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        },
+                                                        {
+                                                            "id": "a6c5075-b085-af0d-d7c6-bd0c534020",
+                                                            "type": "value",
+                                                            "valueType": "string",
+                                                            "children": [],
+                                                            "repeatCount": [
+                                                                "1",
+                                                                "100"
+                                                            ],
+                                                            "fieldName": "script-component",
+                                                            "valueOptions": {
+                                                                "minLength": "20",
+                                                                "maxLength": 20,
+                                                                "unit": "character"
+                                                            },
+                                                            "nullValue": "0",
+                                                            "selectedDependencies": {}
+                                                        }
+                                                    ],
+                                                    "repeatCount": [
+                                                        "1",
+                                                        "100"
+                                                    ],
+                                                    "fieldName": "node",
+                                                    "valueOptions": {},
+                                                    "nullValue": "0",
+                                                    "selectedDependencies": {}
+                                                }
+                                            ],
                                             "repeatCount": [
                                                 "1",
-                                                "100"
+                                                "1"
                                             ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "af6076a-6de0-edc3-641a-8c504d2bfb45",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
+                                            "fieldName": "nodes",
+                                            "valueOptions": {},
                                             "nullValue": "0",
                                             "selectedDependencies": {}
                                         }
                                     ],
                                     "repeatCount": [
-                                        "3",
-                                        "3"
+                                        "1",
+                                        "100"
                                     ],
-                                    "fieldName": "Scale",
-                                    "valueOptions": {},
-                                    "nullValue": "0",
-                                    "selectedDependencies": {}
-                                },
-                                {
-                                    "id": "165dfd-b507-337b-3a2d-a5e50ddab8b",
-                                    "type": "array",
-                                    "valueType": "array",
-                                    "children": [
-                                        {
-                                            "id": "3538bb-f3ce-3222-c56-8ac8fd056",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "87dc1dd-38-13f8-5fd4-88d0c44413be",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "7f81b7f-4284-f80f-65a6-0e7acb666865",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "f585dd8-d3b1-12f2-4e72-d2fcd26252b",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        }
-                                    ],
-                                    "repeatCount": [
-                                        "4",
-                                        "4"
-                                    ],
-                                    "fieldName": "Rotation",
-                                    "valueOptions": {},
-                                    "nullValue": "0",
-                                    "selectedDependencies": {}
-                                },
-                                {
-                                    "id": "7064af4-8b2b-1b42-f462-673be8fd1e87",
-                                    "type": "array",
-                                    "valueType": "array",
-                                    "children": [
-                                        {
-                                            "id": "f140d-5cd-fdfb-fd10-11d440bc37",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "4565483-dbe-01ed-e4-3b57ad7e53e",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        },
-                                        {
-                                            "id": "0830eb8-a40f-d1c1-df2-74a24d615371",
-                                            "type": "value",
-                                            "valueType": "number",
-                                            "children": [],
-                                            "repeatCount": [
-                                                "1",
-                                                "100"
-                                            ],
-                                            "fieldName": "",
-                                            "valueOptions": {
-                                                "min": {
-                                                    "number": "0",
-                                                    "checked": true
-                                                },
-                                                "max": {
-                                                    "number": "1",
-                                                    "checked": true
-                                                },
-                                                "decimals": "7",
-                                                "multipleOf": "0"
-                                            },
-                                            "nullValue": "0",
-                                            "selectedDependencies": {}
-                                        }
-                                    ],
-                                    "repeatCount": [
-                                        "3",
-                                        "3"
-                                    ],
-                                    "fieldName": "Translation",
+                                    "fieldName": "",
                                     "valueOptions": {},
                                     "nullValue": "0",
                                     "selectedDependencies": {}
@@ -352,83 +507,9 @@
                             ],
                             "repeatCount": [
                                 "1",
-                                "100"
+                                "1"
                             ],
-                            "fieldName": "transform",
-                            "valueOptions": {},
-                            "nullValue": "0",
-                            "selectedDependencies": {}
-                        },
-                        {
-                            "id": "47f5a7b-7bfa-8e67-87-bba8b258756",
-                            "type": "object",
-                            "valueType": "object",
-                            "children": [
-                                {
-                                    "id": "51c2308-7f5-6331-8a5d-84e464f1777",
-                                    "type": "value",
-                                    "valueType": "string",
-                                    "children": [],
-                                    "repeatCount": [
-                                        "1",
-                                        "100"
-                                    ],
-                                    "fieldName": "name",
-                                    "valueOptions": {
-                                        "minLength": "30",
-                                        "maxLength": "20",
-                                        "unit": "character"
-                                    },
-                                    "nullValue": "0",
-                                    "selectedDependencies": {}
-                                },
-                                {
-                                    "id": "6ee476-1a50-56ac-4f81-da2e8bcacb",
-                                    "type": "value",
-                                    "valueType": "number",
-                                    "children": [],
-                                    "repeatCount": [
-                                        "1",
-                                        "100"
-                                    ],
-                                    "fieldName": "walkSpeed",
-                                    "valueOptions": {
-                                        "min": {
-                                            "number": "0.2",
-                                            "checked": true
-                                        },
-                                        "max": {
-                                            "number": "1",
-                                            "checked": true
-                                        },
-                                        "decimals": "7",
-                                        "multipleOf": "0"
-                                    },
-                                    "nullValue": "0",
-                                    "selectedDependencies": {}
-                                },
-                                {
-                                    "id": "21ef5-a4c7-d784-372a-dfe87821d6ed",
-                                    "type": "value",
-                                    "valueType": "bool",
-                                    "children": [],
-                                    "repeatCount": [
-                                        "1",
-                                        "100"
-                                    ],
-                                    "fieldName": "rigidBody",
-                                    "valueOptions": {
-                                        "trueRatio": "100"
-                                    },
-                                    "nullValue": "0",
-                                    "selectedDependencies": {}
-                                }
-                            ],
-                            "repeatCount": [
-                                "1",
-                                "100"
-                            ],
-                            "fieldName": "node",
+                            "fieldName": "instances",
                             "valueOptions": {},
                             "nullValue": "0",
                             "selectedDependencies": {}

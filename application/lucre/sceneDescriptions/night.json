@@ -1,415 +1,523 @@
 {
-    "project": "Lucre",
-    "scene": "night",
+    "file format identifier": 1,
+    "description": "night scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
     "gltf files":
     [
         {
             "filename": "application/lucre/models/external_3D_files/diorama/car.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    0.367000014, 1.30799997, -1.32938254
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.367000014, 1.30799997, -1.32938254
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/diorama/car2.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    0.622137666, 1.30763841, -1.32197952
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.622137666, 1.30763841, -1.32197952
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    -0.200000003, 2.48799992, -2.06699991
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.200000003, 2.48799992, -2.06699991
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    3.99505782, 2.4749999, -2.08504772
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.99505782, 2.4749999, -2.08504772
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/Kaya/gltf/Kaya2.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.00850000046, 0.0084994752, 0.0084994752
-                ],
-                "Rotation": 
-                [
-                    1.57078826, -0, 0
-                ],
-                "Translation": 
-                [
-                    0.449473262, 1.27129853, -1.99651289
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00850000046, 0.0084994752, 0.0084994752
+                        ],
+                        "rotation":
+                        [
+                            1.57078826, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.449473262, 1.27129853, -1.99651289
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.000699999975, 0.000699999975, 0.000699999975
-                ],
-                "Rotation": 
-                [
-                    1.57078826, -0, 0
-                ],
-                "Translation": 
-                [
-                    -0.600000024, 1.94000006, -1.41999996
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.000699999975, 0.000699999975, 0.000699999975
+                        ],
+                        "rotation":
+                        [
+                            1.57078826, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.600000024, 1.94000006, -1.41999996
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1.57079637, -2.98023224e-08, 0
-                ],
-                "Rotation": 
-                [
-                    0.00200000009, 0.00200000009, 0.00200000009
-                ],
-                "Translation": 
-                [
-                    0.943948507, 1.94000006, -1.29999995
-                ]
-            },
-            "node": 
-            {
-                "name": "guybrush object",
-                "walkSpeed": 0.2,
-                "rigidBody": false
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00200000009, 0.00200000009, 0.00200000009
+                        ],
+                        "rotation":
+                        [
+                            1.57079637, -2.98023224e-08, 0
+                        ],
+                        "translation":
+                        [
+                            0.943948507, 1.94000006, -1.29999995
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false,
+                            "script-component": ""
+                        }
+                    ]
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.200000003, 0.200000003, 0.200000003
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    -0.799869597, 1.94000006, -1.41999996
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.200000003, 0.200000003, 0.200000003
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.799869597, 1.94000006, -1.41999996
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.499997199, 0.500018835, 0.500006139
-                ],
-                "Rotation": 
-                [
-                    1.57078826, -0.038714841, 2.2275301e-06
-                ],
-                "Translation": 
-                [
-                    -8.94685268, 1.87034822, 7.5252862
-                ]
-            }
-        },
-        {
-            "filename": "application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.25, 0.249984667, 0.249984667
-                ],
-                "Rotation": 
-                [
-                    1.57079601, -0, 0
-                ],
-                "Translation": 
-                [
-                    -7.36664104, 1.62594068, 7.46354151
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.499997199, 0.500018835, 0.500006139
+                        ],
+                        "rotation":
+                        [
+                            1.57078826, -0.038714841, 2.2275301e-06
+                        ],
+                        "translation":
+                        [
+                            -8.94685268, 1.87034822, 7.5252862
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.25, 0.249984667, 0.249984667
+                        ],
+                        "rotation":
+                        [
+                            1.57079601, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -7.36664104, 1.62594068, 7.46354151
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/emissive/emissiveCube.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.183265179, 0.0245177764, 0.950180233
-                ],
-                "Rotation": 
-                [
-                    0, 1.57045102, 0
-                ],
-                "Translation": 
-                [
-                    0.45173189, 1.91400003, -1.33399999
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.183265179, 0.0245177764, 0.950180233
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045102, 0
+                        ],
+                        "translation":
+                        [
+                            0.45173189, 1.91400003, -1.33399999
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/emissive/emissiveCubeWithTexture.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, 1.57045102, 0
-                ],
-                "Translation": 
-                [
-                    -11.6534739, 0.534526646, 6.69544125
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045102, 0
+                        ],
+                        "translation":
+                        [
+                            -11.6534739, 0.534526646, 6.69544125
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.00999977719, 0.0100000827, 0.0100000696
-                ],
-                "Rotation": 
-                [
-                    -0.888631523, -0.571253061, -0.166815549
-                ],
-                "Translation": 
-                [
-                    1.55550098, 4, -4.13538647
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00999977719, 0.0100000827, 0.0100000696
+                        ],
+                        "rotation":
+                        [
+                            -0.888631523, -0.571253061, -0.166815549
+                        ],
+                        "translation":
+                        [
+                            1.55550098, 4, -4.13538647
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.00999933574, 0.00999996718, 0.00999993272
-                ],
-                "Rotation": 
-                [
-                    -1.11027575, -0.546990991, 0.165967464
-                ],
-                "Translation": 
-                [
-                    6, 6.26463461, -14.157198
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00999933574, 0.00999996718, 0.00999993272
+                        ],
+                        "rotation":
+                        [
+                            -1.11027575, -0.546990991, 0.165967464
+                        ],
+                        "translation":
+                        [
+                            6, 6.26463461, -14.157198
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.469694763, 0.500019372, 0.500019372
-                ],
-                "Rotation": 
-                [
-                    -1.5706929, 1.54486609, -3.14149141
-                ],
-                "Translation": 
-                [
-                    -8.49650669, 1.25748098, 9.84617615
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.469694763, 0.500019372, 0.500019372
+                        ],
+                        "rotation":
+                        [
+                            -1.5706929, 1.54486609, -3.14149141
+                        ],
+                        "translation":
+                        [
+                            -8.49650669, 1.25748098, 9.84617615
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.53423053, 0.5, 0.5
-                ],
-                "Rotation": 
-                [
-                    -1.57068825, 1.544873, -3.14149141
-                ],
-                "Translation": 
-                [
-                    -8.81863213, 1.25750136, 9.19549274
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.53423053, 0.5, 0.5
+                        ],
+                        "rotation":
+                        [
+                            -1.57068825, 1.544873, -3.14149141
+                        ],
+                        "translation":
+                        [
+                            -8.81863213, 1.25750136, 9.19549274
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/night/dune/dune.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 2
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    0, 0, 0.0553395897
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 2
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0, 0, 0.0553395897
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/night/moon.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.99982506, 0.00999834295, 0.999930561
-                ],
-                "Rotation": 
-                [
-                    1.57079768, 2.20537186e-06, 2.27373675e-13
-                ],
-                "Translation": 
-                [
-                    6.13224936, 6.75374937, -20.4115868
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.99982506, 0.00999834295, 0.999930561
+                        ],
+                        "rotation":
+                        [
+                            1.57079768, 2.20537186e-06, 2.27373675e-13
+                        ],
+                        "translation":
+                        [
+                            6.13224936, 6.75374937, -20.4115868
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/pirateship/pirateship.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    0.999999821, 1, 0.999999821
-                ],
-                "Rotation": 
-                [
-                    8.23974844e-08, 1.0256424, 7.82850194e-08
-                ],
-                "Translation": 
-                [
-                    2.74061155, 0.0999100804, -10.5124426
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.999999821, 1, 0.999999821
+                        ],
+                        "rotation":
+                        [
+                            8.23974844e-08, 1.0256424, 7.82850194e-08
+                        ],
+                        "translation":
+                        [
+                            2.74061155, 0.0999100804, -10.5124426
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/rock01/rock01.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    -18.6503143, -0.0689417124, -18.4104939
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -18.6503143, -0.0689417124, -18.4104939
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/external_3D_files/rock01/rock02.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 1, 1
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    18.6503143, -0.0689999983, -18.4104939
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            18.6503143, -0.0689999983, -18.4104939
+                        ]
+                    }
+                }
+            ]
         },
         {
             "filename": "application/lucre/models/surface/surface.gltf",
-            "transform": 
-            {
-                "Scale": 
-                [
-                    1, 0.100000001, 0.0960688666
-                ],
-                "Rotation": 
-                [
-                    0, -0, 0
-                ],
-                "Translation": 
-                [
-                    -6.05985022, 1.82431483, 3.99388671
-                ]
-            }
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -6, 2, 4
+                        ]
+                    }
+                }
+            ]
         }
     ],
     "prefabs":
     [
         {
-            "filename": "application/lucre/prefabs/duck.prefab"
+            "filename": "application/lucre/prefabs/duck.json"
         }
     ]
 }
