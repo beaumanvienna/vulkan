@@ -107,6 +107,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("unrecognized scene object");
             }
         }
+        m_Scene.CreateLinearMap();
     }
 
     void SceneLoaderJSON::ParseGltfFileJSON(ondemand::object gltfFileJSON)
