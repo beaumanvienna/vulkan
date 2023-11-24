@@ -92,7 +92,7 @@ namespace GfxRenderEngine
             else if (sceneObjectKey == "gltf files")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
-                auto gltfFiles = sceneObject.value().get_array();
+                ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
                     gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file") : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
@@ -115,7 +115,9 @@ namespace GfxRenderEngine
     {
         std::string gltfFilename;
         entt::entity entity = entt::null;
-        std::vector<Gltf::GltfFile>* gltfFiles = nullptr;
+
+        std::vector<Gltf::GltfFile>& gltfFilesFromScene = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
+        bool loadSuccessful = false;
 
         for (auto gltfFileObject : gltfFileJSON)
         {
@@ -134,10 +136,14 @@ namespace GfxRenderEngine
 
                     if (entity != entt::null)
                     {
+                        loadSuccessful = true;
                         Gltf::GltfFile gltfFile(gltfFilename);
-                        gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
-
-                        gltfFiles->push_back(gltfFile);
+                        gltfFilesFromScene.push_back(gltfFile);
+                    }
+                    else
+                    {
+                        LOG_CORE_ERROR("gltf file did not load properly: {0}", gltfFilename);
+                        return;
                     }
                 }
                 else
@@ -148,48 +154,53 @@ namespace GfxRenderEngine
             }
             else if (gltfFileObjectKey == "instances")
             {
-                if (!gltfFiles)
+                if (!loadSuccessful)
                 {
-                    LOG_CORE_CRITICAL("ParseGltfFileJSON(...): gltf file '{0}' is not valid", gltfFilename);
+                    LOG_CORE_ERROR("gltf file not found (json file broken): {0}", gltfFilename);
                     return;
                 }
+
+                // get array of gltf file instances
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
-                CORE_ASSERT((instanceCount > 0), "no instances found");
+                if (!instanceCount)
+                {
+                    LOG_CORE_ERROR("no instances found (json file broken): {0}", gltfFilename);
+                    return;
+                }
 
-                std::vector<Gltf::Instance>& gltfFileInstances = gltfFiles->back().m_Instances;
+                std::vector<Gltf::Instance>& gltfFileInstances = gltfFilesFromScene.back().m_Instances;
                 gltfFileInstances.resize(instanceCount);
 
-                uint index = 0;
-                for (auto instance : instances)
                 {
-                    Gltf::Instance& gltfFileInstance = gltfFileInstances[index];
-                    if (entity != entt::null)
+                    uint index = 0;
+                    for (auto instance : instances)
                     {
+                        Gltf::Instance& gltfFileInstance = gltfFileInstances[index];
                         gltfFileInstance = entity;
+                        ondemand::object instanceObjects = instance.value();
+                        for (auto instanceObject : instanceObjects)
+                        {
+                            std::string_view instanceObjectKey = instanceObject.unescaped_key();
+    
+                            if (instanceObjectKey == "transform")
+                            {
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
+                                ParseTransformJSON(instanceObject.value(), entity);
+                            }
+                            else if (instanceObjectKey == "nodes")
+                            {
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
+                                ParseNodesJSON(instanceObject.value(), gltfFilename, gltfFileInstance);
+                            }
+                            else
+                            {
+                                LOG_CORE_CRITICAL("unrecognized gltf instance object");
+                            }
+                        }
+                        ++index;
+                        if ( index == 1) break; // only one instance supported right now
                     }
-                    ondemand::object instanceObjects = instance.value();
-                    for (auto instanceObject : instanceObjects)
-                    {
-                        std::string_view instanceObjectKey = instanceObject.unescaped_key();
-
-                        if (instanceObjectKey == "transform")
-                        {
-                            CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
-                            ParseTransformJSON(instanceObject.value(), entity);
-                        }
-                        else if (instanceObjectKey == "nodes")
-                        {
-                            CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
-                            ParseNodesJSON(instanceObject.value(), gltfFilename, gltfFileInstance);
-                        }
-                        else
-                        {
-                            LOG_CORE_CRITICAL("unrecognized gltf instance object");
-                        }
-                    }
-                    ++index;
-                    if ( index == 1) break; // only one instance supported right now
                 }
             }
             else
@@ -324,53 +335,10 @@ namespace GfxRenderEngine
         return returnVec3;
     }
 
-    void SceneLoaderJSON::PrintType(ondemand::value elementJSON)
-    {
-        switch (elementJSON.type())
-        {
-            case ondemand::json_type::array:
-            {
-                LOG_APP_INFO("array");
-                break;
-            }
-            case ondemand::json_type::object:
-            {
-                LOG_APP_INFO("object");
-                break;
-            }
-            case ondemand::json_type::number:
-            {
-                LOG_APP_INFO("number");
-                break;
-            }
-            case ondemand::json_type::string:
-            {
-                LOG_APP_INFO("string");
-                break;
-            }
-            case ondemand::json_type::boolean:
-            {
-                LOG_APP_INFO("boolean");
-                break;
-            }
-            case ondemand::json_type::null:
-            {
-                LOG_APP_INFO("null");
-                break;
-            }
-            default:
-            {
-                LOG_APP_INFO("type not found");
-                break;
-            }
-        }
-    }
-
     void SceneLoaderJSON::Serialize()
     {
         m_OutputFile.open(m_Scene.m_Filepath);
-        SerializeScene(0);
-        m_OutputFile << "\n";
+        SerializeScene(NO_INDENT);
         m_OutputFile.close();
     }
 
@@ -383,7 +351,7 @@ namespace GfxRenderEngine
         SerializeString(indent, "description", m_SceneDescriptionFile.m_Description);
         SerializeString(indent, "author", m_SceneDescriptionFile.m_Author);
         SerializeGltfFiles(indent);
-        m_OutputFile << indentStr << "}";
+        m_OutputFile << indentStr << "}\n";
     }
 
     void SceneLoaderJSON::SerializeString(int indent, std::string const& key, std::string const& value, bool noComma)
@@ -398,10 +366,10 @@ namespace GfxRenderEngine
         m_OutputFile << indentStr << "\"" << key << "\": " << (value ? "true" : "false") << (noComma ? "" : ",") << "\n";
     }
 
-    void SceneLoaderJSON::SerializeNumber(int indent, std::string const& key, double const value)
+    void SceneLoaderJSON::SerializeNumber(int indent, std::string const& key, double const value, bool noComma)
     {
         std::string indentStr(indent, ' ');
-        m_OutputFile << indentStr << "\"" << key << "\": " << value << ",\n";
+        m_OutputFile << indentStr << "\"" << key << "\": " << value  << (noComma ? "" : ",") << "\n";
     }
 
     void SceneLoaderJSON::SerializeGltfFiles(int indent)

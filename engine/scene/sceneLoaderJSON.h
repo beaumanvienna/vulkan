@@ -64,17 +64,17 @@ namespace GfxRenderEngine
         void ParseTransformJSON(ondemand::object transformJSON, entt::entity entity);
         void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
 
-        void PrintType(ondemand::value elementJSON);
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
     private:
 
         static constexpr bool NO_COMMA = true;
+        static constexpr int NO_INDENT = 0;
 
         void SerializeScene(int indent);
         void SerializeString(int indent, std::string const& key, std::string const& value, bool noComma = false);
         void SerializeBool(int indent, std::string const& key, bool value, bool noComma = false);
-        void SerializeNumber(int indent, std::string const& key, double const value);
+        void SerializeNumber(int indent, std::string const& key, double const value, bool noComma = false);
         void SerializeGltfFiles(int indent);
         void SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances);
