@@ -55,7 +55,6 @@ namespace std
 
 namespace GfxRenderEngine
 {
-    Model::~Model() {}
 
     PrimitiveNoMap::~PrimitiveNoMap() {}
 

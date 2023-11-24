@@ -39,7 +39,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Context(VK_Window* window);
-        ~VK_Context() override {}
+        virtual ~VK_Context() override {}
 
         virtual bool Init() override;
         virtual void SetVSync(int interval) override;

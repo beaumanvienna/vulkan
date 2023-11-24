@@ -32,7 +32,7 @@ namespace GfxRenderEngine
     {
     public:
 
-        ~Cursor() {}
+        virtual ~Cursor() = default;
 
         virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) = 0;
         virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) = 0;

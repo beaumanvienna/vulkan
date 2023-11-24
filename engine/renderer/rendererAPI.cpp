@@ -30,8 +30,4 @@
 namespace GfxRenderEngine
 {
     RendererAPI::API RendererAPI::s_API = RendererAPI::API::VULKAN;
-
-    /// void RendererAPI::Create()
-    /// {
-    /// }
 }

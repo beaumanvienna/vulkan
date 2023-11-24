@@ -45,7 +45,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Window(const WindowProperties& props);
-        ~VK_Window() override;
+        virtual ~VK_Window() override;
 
         VK_Window(const VK_Window&) = delete;
         VK_Window& operator=(const VK_Window&) = delete;

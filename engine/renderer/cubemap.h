@@ -38,7 +38,7 @@ namespace GfxRenderEngine
 
     public:
 
-        ~Cubemap() {}
+        virtual ~Cubemap() = default;
 
         virtual bool Init(const std::vector<std::string>& fileNames, bool sRGB, bool flip = false) = 0;
         virtual int  GetWidth() const = 0;

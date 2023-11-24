@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Cursor();
-        ~VK_Cursor();
+        virtual ~VK_Cursor();
 
         virtual bool SetCursor(const unsigned char* data, int length, uint xHot, uint yHot) override;
         virtual bool SetCursor(const std::string& fileName, uint xHot, uint yHot) override;

@@ -37,7 +37,7 @@ namespace GfxRenderEngine
 
     public:
 
-        virtual ~GraphicsContext() {}
+        virtual ~GraphicsContext() = default;
 
         virtual bool Init() = 0;
         virtual void SetVSync(int interval) = 0;

@@ -298,7 +298,7 @@ namespace GfxRenderEngine
     public:
 
         Model() {}
-        virtual ~Model();
+        virtual ~Model() = default;
 
         Model(const Model&) = delete;
         Model& operator=(const Model&) = delete;

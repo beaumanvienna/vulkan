@@ -55,13 +55,13 @@ namespace GfxRenderEngine
     public:
 
         VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
-        ~VK_Model() override;
+        virtual ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;
         VK_Model& operator=(const VK_Model&) = delete;
 
-        void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
-        void CreateIndexBuffers(const std::vector<uint>& indices) override;
+        virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) override;
+        virtual void CreateIndexBuffers(const std::vector<uint>& indices) override;
 
         void Bind(VkCommandBuffer commandBuffer);
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
