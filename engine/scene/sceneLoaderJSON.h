@@ -23,6 +23,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include "simdjson.h"
 
 using namespace simdjson;
@@ -49,17 +50,17 @@ namespace GfxRenderEngine
 
         struct SceneDescriptionFile
         {
-            std::string m_FileFormatIdentifier;
+            double m_FileFormatIdentifier;
             std::string m_Description;
             std::string m_Author;
             Gltf::GltfFiles m_GltfFiles;
-            std::vector<SceneDescriptionFile> m_Prefabs;
         };
 
     private:
 
+        void Deserialize(std::string& filepath);
+
         void ParseGltfFileJSON(ondemand::object gltfFileJSON);
-        void ParsePrefabJSON(ondemand::object prefabJSON);
         void ParseTransformJSON(ondemand::object transformJSON, entt::entity entity);
         void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
 
@@ -68,12 +69,28 @@ namespace GfxRenderEngine
 
     private:
 
+        static constexpr bool NO_COMMA = true;
+
+        void SerializeScene(int indent);
+        void SerializeString(int indent, std::string const& key, std::string const& value, bool noComma = false);
+        void SerializeBool(int indent, std::string const& key, bool value, bool noComma = false);
+        void SerializeNumber(int indent, std::string const& key, double const value);
+        void SerializeGltfFiles(int indent);
+        void SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma);
+        void SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances);
+        void SerializeInstance(int indent, Gltf::Instance const& instance, bool noComma);
+        void SerializeTransform(int indent, entt::entity const& entity, bool noComma = false);
+        void SerializeNodes(int indent, std::vector<Gltf::Node> const& nodes);
+        void SerializeNode(int indent, Gltf::Node const& node, bool noComma);
+        void SerializeVec3(int indent, std::string name, glm::vec3 const& vec3, bool noComma = false);
+
+    private:
+
+        std::ofstream m_OutputFile;
         static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
         Scene& m_Scene;
-        bool m_LoadPrefab;
 
-        std::vector<std::string> m_PrefabFiles;
         SceneDescriptionFile m_SceneDescriptionFile;
 
     };

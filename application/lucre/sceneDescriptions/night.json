@@ -511,12 +511,36 @@
                     }
                 }
             ]
-        }
-    ],
-    "prefabs":
-    [
+        },
         {
-            "filename": "application/lucre/prefabs/duck.json"
+            "filename": "application/lucre/models/duck/duck.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale": 
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation": 
+                        [
+                            0, 0, 0
+                        ],
+                        "translation": 
+                        [
+                            0, 0, 0
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "SceneWithDuck::duck",
+                            "script-component": "application/lucre/scripts/duck/duck.cpp"
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

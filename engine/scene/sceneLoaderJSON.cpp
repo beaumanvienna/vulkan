@@ -28,30 +28,33 @@ namespace GfxRenderEngine
 {
 
     SceneLoaderJSON::SceneLoaderJSON(Scene& scene)
-        : m_Scene(scene), m_LoadPrefab{false}
+        : m_Scene(scene)
     {
     }
 
     void SceneLoaderJSON::Deserialize(std::string& filepath, std::string& alternativeFilepath)
     {
-        ondemand::parser parser;
-        padded_string json;
-
         if (EngineCore::FileExists(filepath))
         {
-            json = padded_string::load(filepath);
-            m_LoadPrefab ? LOG_CORE_INFO("Loading prefab {0}", filepath) : LOG_CORE_INFO("Loading scene {0}", filepath);
+            LOG_CORE_INFO("Loading scene {0}", filepath);
+            Deserialize(filepath);
         }
         else if (EngineCore::FileExists(alternativeFilepath))
         {
-            json = padded_string::load(alternativeFilepath);
-            m_LoadPrefab ? LOG_CORE_INFO("Loading prefab {0}", alternativeFilepath) : LOG_CORE_INFO("Loading scene {0}", alternativeFilepath);
+            LOG_CORE_INFO("Loading scene {0}", alternativeFilepath);
+            Deserialize(alternativeFilepath);
         }
         else
         {
             LOG_CORE_CRITICAL("Scene loader could neither find file {0} nor file {1}", filepath, alternativeFilepath);
             return;
         }
+    }
+
+    void SceneLoaderJSON::Deserialize(std::string& filepath)
+    {
+        ondemand::parser parser;
+        padded_string json = padded_string::load(filepath);
 
         ondemand::document sceneDocument = parser.iterate(json);
         ondemand::object sceneObjects = sceneDocument.get_object();
@@ -64,10 +67,13 @@ namespace GfxRenderEngine
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number" );
 
-                // only check the major version of "file format identifier"
-                double fileFormatIdentifier = sceneObject.value().get_double();
-                CORE_ASSERT((std::trunc(fileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)), "The scene description major version does not match" );
-                m_SceneDescriptionFile.m_FileFormatIdentifier = SUPPORTED_FILE_FORMAT_VERSION;
+                // only check major version of "file format identifier"
+                m_SceneDescriptionFile.m_FileFormatIdentifier = sceneObject.value().get_double();
+                CORE_ASSERT
+                (
+                    (std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
+                    "The scene description major version does not match"
+                );
             }
             else if (sceneObjectKey == "description")
             {
@@ -95,16 +101,6 @@ namespace GfxRenderEngine
                 for (auto gltfFileJSON : gltfFiles)
                 {
                     ParseGltfFileJSON(gltfFileJSON);
-                }
-            }
-            else if (sceneObjectKey == "prefabs")
-            {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
-                m_LoadPrefab = true;
-                auto prefabsJSON = sceneObject.value().get_array();
-                for (auto prefabJSON : prefabsJSON)
-                {
-                    ParsePrefabJSON(prefabJSON);
                 }
             }
             else
@@ -139,14 +135,8 @@ namespace GfxRenderEngine
                     if (entity != entt::null)
                     {
                         Gltf::GltfFile gltfFile(gltfFilename);
-                        if (m_LoadPrefab)
-                        {
-                            gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromPreFabs;
-                        }
-                        else
-                        {
-                            gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
-                        }
+                        gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
+
                         gltfFiles->push_back(gltfFile);
                     }
                 }
@@ -174,7 +164,7 @@ namespace GfxRenderEngine
                 for (auto instance : instances)
                 {
                     Gltf::Instance& gltfFileInstance = gltfFileInstances[index];
-                    if ((entity != entt::null) && (!m_LoadPrefab))
+                    if (entity != entt::null)
                     {
                         gltfFileInstance = entity;
                     }
@@ -205,31 +195,6 @@ namespace GfxRenderEngine
             else
             {
                 LOG_CORE_CRITICAL("unrecognized gltf file object");
-            }
-        }
-    }
-
-    void SceneLoaderJSON::ParsePrefabJSON(ondemand::object prefabJSON)
-    {
-        std::string prefabFilename;
-        for (auto prefabObject : prefabJSON)
-        {
-            std::string_view prefabObjectKey = prefabObject.unescaped_key();
-            if (prefabObjectKey == "filename")
-            {
-                std::string_view prefabFilenameStringView = prefabObject.value().get_string();
-                prefabFilename = std::string(prefabFilenameStringView);
-
-                if (EngineCore::FileExists(prefabFilename))
-                {
-                    LOG_CORE_INFO("Scene loader found prefab {0}", prefabFilename);
-                    Deserialize(prefabFilename, prefabFilename);
-                    m_PrefabFiles.push_back(prefabFilename);
-                }
-            }
-            else
-            {
-                LOG_CORE_CRITICAL("unrecognized prefab object");
             }
         }
     }
@@ -325,11 +290,6 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::Serialize()
-    {
-        //auto& filepath = m_Scene.m_Filepath;
-    }
-
     glm::vec3 SceneLoaderJSON::ConvertToVec3(ondemand::array arrayJSON)
     {
         glm::vec3 returnVec3{0.0f};
@@ -404,5 +364,165 @@ namespace GfxRenderEngine
                 break;
             }
         }
+    }
+
+    void SceneLoaderJSON::Serialize()
+    {
+        m_OutputFile.open(m_Scene.m_Filepath);
+        SerializeScene(0);
+        m_OutputFile << "\n";
+        m_OutputFile.close();
+    }
+
+    void SceneLoaderJSON::SerializeScene(int indent)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "{\n";
+        indent += 4;
+        SerializeNumber(indent, "file format identifier", SUPPORTED_FILE_FORMAT_VERSION);
+        SerializeString(indent, "description", m_SceneDescriptionFile.m_Description);
+        SerializeString(indent, "author", m_SceneDescriptionFile.m_Author);
+        SerializeGltfFiles(indent);
+        m_OutputFile << indentStr << "}";
+    }
+
+    void SceneLoaderJSON::SerializeString(int indent, std::string const& key, std::string const& value, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"" << key << "\": \"" << value << "\"" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeBool(int indent, std::string const& key, bool value, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"" << key << "\": " << (value ? "true" : "false") << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeNumber(int indent, std::string const& key, double const value)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"" << key << "\": " << value << ",\n";
+    }
+
+    void SceneLoaderJSON::SerializeGltfFiles(int indent)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"gltf files\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
+        size_t index = 0;
+        for (auto& gltfFile : m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene)
+        {
+            bool noComma = ((index+1) == gltfFileCount);
+            SerializeGltfFile(indent, gltfFile, noComma);
+            ++index;
+        }
+        m_OutputFile << indentStr << "]\n";
+    }
+
+    void SceneLoaderJSON::SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "{\n";
+        indent += 4;
+        SerializeString(indent, "filename", gltfFile.m_Filename);
+        SerializeInstances(indent, gltfFile.m_Instances);
+        m_OutputFile << indentStr << "}" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"instances\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t instanceCount = instances.size();
+        size_t index = 0;
+        for (auto& instance : instances)
+        {
+            bool noComma = ((index+1) == instanceCount);
+            SerializeInstance(indent, instance, noComma);
+            ++index;
+        }
+        m_OutputFile << indentStr << "]\n";
+    }
+
+    void SceneLoaderJSON::SerializeInstance(int indent, Gltf::Instance const& instance, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "{\n";
+        indent += 4;
+        if (instance.m_Nodes.size())
+        {
+            SerializeTransform(indent, instance.m_Entity);
+            SerializeNodes(indent, instance.m_Nodes);
+        }
+        else
+        {
+            SerializeTransform(indent, instance.m_Entity, NO_COMMA);
+        }
+        m_OutputFile << indentStr << "}" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeTransform(int indent, entt::entity const& entity, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"transform\":\n";
+        m_OutputFile << indentStr << "{\n";
+        indent += 4;
+        TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+        glm::vec3 scale = transform.GetScale();
+        glm::vec3 rotation = transform.GetRotation();
+        glm::vec3 translation = transform.GetTranslation();
+        SerializeVec3(indent, "scale", scale);
+        SerializeVec3(indent, "rotation", rotation);
+        SerializeVec3(indent, "translation", translation, NO_COMMA);
+        m_OutputFile << indentStr << "}" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeNodes(int indent, std::vector<Gltf::Node> const& nodes)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"nodes\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t nodeCount = nodes.size();
+        size_t index = 0;
+        for (auto& node : nodes)
+        {
+            bool noComma = ((index+1) == nodeCount);
+            SerializeNode(indent, node, noComma);
+            ++index;
+        }
+        m_OutputFile << indentStr << "]\n";
+    }
+
+    void SceneLoaderJSON::SerializeNode(int indent, Gltf::Node const& node, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "{\n";
+        indent += 4;
+        SerializeString(indent, "name", node.m_Name);
+        SerializeNumber(indent, "walkSpeed", node.m_WalkSpeed);
+        if (node.m_ScriptComponent.length())
+        {
+            SerializeBool(indent, "rigidBody", node.m_RigidBody);
+            SerializeString(indent, "script-component", node.m_ScriptComponent, NO_COMMA);
+        }
+        else
+        {
+            SerializeBool(indent, "rigidBody", node.m_RigidBody, NO_COMMA);
+        }
+        m_OutputFile << indentStr << "}" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeVec3(int indent, std::string name, glm::vec3 const& vec3, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"" << name << "\":\n";
+        m_OutputFile << indentStr << "[\n";
+        m_OutputFile << indentStr << "    " << vec3.x << ", " << vec3.y << ", " << vec3.z << "\n";
+        m_OutputFile << indentStr << "]" << (noComma ? "" : ",") << "\n";
     }
 }
