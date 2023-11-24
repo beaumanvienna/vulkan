@@ -31,10 +31,30 @@ namespace GfxRenderEngine
 {
     namespace Gltf
     {
+        struct Node
+        {
+            std::string m_Name;
+            float m_WalkSpeed{0.0f};
+            bool m_RigidBody{false};
+            std::string m_ScriptComponent;
+        };
+
+        struct Instance
+        {
+            entt::entity m_Entity;
+            std::vector<Node> m_Nodes;
+
+            Instance() = default;
+            Instance(entt::entity entity) : m_Entity{entity} {}
+        };
+
         struct GltfFile
         {
             std::string m_Filename;
-            entt::entity m_Entity;
+            std::vector<Instance> m_Instances;
+
+            GltfFile() = default;
+            GltfFile(std::string& filename) : m_Filename{filename} {}
         };
 
         struct GltfFiles

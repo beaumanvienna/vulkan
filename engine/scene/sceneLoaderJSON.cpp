@@ -66,25 +66,30 @@ namespace GfxRenderEngine
 
                 // only check the major version of "file format identifier"
                 double fileFormatIdentifier = sceneObject.value().get_double();
-                CORE_ASSERT((std::trunc(fileFormatIdentifier) == SUPPORTED_FILE_FORMAT_MAJOR_VERSION), "The scene description version must be 1" );
+                CORE_ASSERT((std::trunc(fileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)), "The scene description major version does not match" );
+                m_SceneDescriptionFile.m_FileFormatIdentifier = SUPPORTED_FILE_FORMAT_VERSION;
             }
             else if (sceneObjectKey == "description")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string" );
-                LOG_CORE_INFO("description: {0}", sceneObject.value().get_string());
+                std::string_view sceneDescription = sceneObject.value().get_string();
+                m_SceneDescriptionFile.m_Description = std::string(sceneDescription);
+                LOG_CORE_INFO("description: {0}", m_SceneDescriptionFile.m_Description);
             }
             else if (sceneObjectKey == "author")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string" );
-                LOG_CORE_INFO("author: {0}", sceneObject.value().get_string());
+                std::string_view sceneAuthor = sceneObject.value().get_string();
+                m_SceneDescriptionFile.m_Author = std::string(sceneAuthor);
+                LOG_CORE_INFO("author: {0}", m_SceneDescriptionFile.m_Author);
             }
             else if (sceneObjectKey == "gltf files")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
                 auto gltfFiles = sceneObject.value().get_array();
                 {
-                    int gltffileCount = gltfFiles.count_elements();
-                    gltffileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file") : LOG_CORE_INFO("loading {0} gltf files", gltffileCount);
+                    int gltfFileCount = gltfFiles.count_elements();
+                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file") : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
                 }
 
                 for (auto gltfFileJSON : gltfFiles)
@@ -114,6 +119,8 @@ namespace GfxRenderEngine
     {
         std::string gltfFilename;
         entt::entity entity = entt::null;
+        std::vector<Gltf::GltfFile>* gltfFiles = nullptr;
+
         for (auto gltfFileObject : gltfFileJSON)
         {
             std::string_view gltfFileObjectKey = gltfFileObject.unescaped_key();
@@ -129,45 +136,70 @@ namespace GfxRenderEngine
                     Builder builder{gltfFilename};
                     entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
 
-                    if ((entity != entt::null) && (!m_LoadPrefab))
+                    if (entity != entt::null)
                     {
-                        m_GltfFiles.m_GltfFilesFromScene.push_back({gltfFilename, entity});
+                        Gltf::GltfFile gltfFile(gltfFilename);
+                        if (m_LoadPrefab)
+                        {
+                            gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromPreFabs;
+                        }
+                        else
+                        {
+                            gltfFiles = &m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
+                        }
+                        gltfFiles->push_back(gltfFile);
                     }
+                }
+                else
+                {
+                    LOG_CORE_ERROR("gltf file not found: {0}", gltfFilename);
+                    return;
                 }
             }
             else if (gltfFileObjectKey == "instances")
             {
+                if (!gltfFiles)
+                {
+                    LOG_CORE_CRITICAL("ParseGltfFileJSON(...): gltf file '{0}' is not valid", gltfFilename);
+                    return;
+                }
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
-
                 CORE_ASSERT((instanceCount > 0), "no instances found");
-                {
-                    uint index = 0;
-                    for (auto instance : instances)
-                    {
-                        ondemand::object instanceObjects = instance.value();
-                        for (auto instanceObject : instanceObjects)
-                        {
-                            std::string_view instanceObjectKey = instanceObject.unescaped_key();
 
-                            if (instanceObjectKey == "transform")
-                            {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
-                                ParseTransformJSON(instanceObject.value(), entity);
-                            }
-                            else if (instanceObjectKey == "nodes")
-                            {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
-                                ParseNodesJSON(instanceObject.value(), gltfFilename);
-                            }
-                            else
-                            {
-                                LOG_CORE_CRITICAL("unrecognized gltf instance object");
-                            }
-                        }
-                        ++index;
-                        if ( index == 1) break; // only one instance supported right now
+                std::vector<Gltf::Instance>& gltfFileInstances = gltfFiles->back().m_Instances;
+                gltfFileInstances.resize(instanceCount);
+
+                uint index = 0;
+                for (auto instance : instances)
+                {
+                    Gltf::Instance& gltfFileInstance = gltfFileInstances[index];
+                    if ((entity != entt::null) && (!m_LoadPrefab))
+                    {
+                        gltfFileInstance = entity;
                     }
+                    ondemand::object instanceObjects = instance.value();
+                    for (auto instanceObject : instanceObjects)
+                    {
+                        std::string_view instanceObjectKey = instanceObject.unescaped_key();
+
+                        if (instanceObjectKey == "transform")
+                        {
+                            CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
+                            ParseTransformJSON(instanceObject.value(), entity);
+                        }
+                        else if (instanceObjectKey == "nodes")
+                        {
+                            CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
+                            ParseNodesJSON(instanceObject.value(), gltfFilename, gltfFileInstance);
+                        }
+                        else
+                        {
+                            LOG_CORE_CRITICAL("unrecognized gltf instance object");
+                        }
+                    }
+                    ++index;
+                    if ( index == 1) break; // only one instance supported right now
                 }
             }
             else
@@ -239,36 +271,45 @@ namespace GfxRenderEngine
         transform.SetTranslation(translation);
     }
 
-    void SceneLoaderJSON::ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename)
+    void SceneLoaderJSON::ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
     {
-        std::string entityName;
-        double walkSpeed = 0.0;
-        bool rigidBody = false;
+        uint nodeCount = nodesJSON.count_elements();
+        if (!nodeCount) return;
 
+        gltfFileInstance.m_Nodes.resize(nodeCount);
+
+        uint index = 0;
         for (auto nodeJSON : nodesJSON)
         {
             CORE_ASSERT((nodeJSON.value().type() == ondemand::json_type::object), "type must be object" );
             ondemand::object nodeObjects = nodeJSON.value();
+
+            Gltf::Node& gltfNode = gltfFileInstance.m_Nodes[index];
+            gltfNode.m_WalkSpeed = 0.0;
+            gltfNode.m_RigidBody = false;
+
             for (auto nodeObject : nodeObjects)
             {
                 std::string_view nodeObjectKey = nodeObject.unescaped_key();
                 if (nodeObjectKey == "name")
                 {
                     std::string_view nodeObjectStringView = nodeObject.value().get_string();
-                    entityName = std::string(nodeObjectStringView);
+                    gltfNode.m_Name = std::string(nodeObjectStringView);
                 }
                 else if (nodeObjectKey == "walkSpeed")
                 {
-                    walkSpeed = nodeObject.value().get_double();
+                    gltfNode.m_WalkSpeed = nodeObject.value().get_double();
                 }
                 else if (nodeObjectKey == "rigidBody")
                 {
-                    rigidBody = nodeObject.value().get_bool();
+                    gltfNode.m_RigidBody = nodeObject.value().get_bool();
                 }
                 else if (nodeObjectKey == "script-component")
                 {
                     std::string_view scriptComponentStringView = nodeObject.value().get_string();
-                    std::string fullEntityName = gltfFilename + std::string("::" + entityName);
+                    gltfNode.m_ScriptComponent = std::string(scriptComponentStringView);
+
+                    std::string fullEntityName = gltfFilename + std::string("::" + gltfNode.m_Name);
                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                     LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
 
@@ -280,6 +321,7 @@ namespace GfxRenderEngine
                     LOG_CORE_CRITICAL("unrecognized node component");
                 }
             }
+            ++index;
         }
     }
 

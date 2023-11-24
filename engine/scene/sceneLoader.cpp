@@ -65,7 +65,10 @@ namespace GfxRenderEngine
 
                 if (entity != entt::null)
                 {
-                    m_GltfFiles.m_GltfFilesFromScene.push_back({filename, entity});
+                    Gltf::GltfFile gltfFileFromScene(filename);
+                    Gltf::Instance gltfFileInstance(entity);
+                    gltfFileFromScene.m_Instances.push_back(gltfFileInstance);
+                    m_GltfFiles.m_GltfFilesFromScene.push_back(gltfFileFromScene);
                 }
 
                 switch (gltfFile.second.Type())
@@ -172,7 +175,10 @@ namespace GfxRenderEngine
 
                     if (entity != entt::null)
                     {
-                        m_GltfFiles.m_GltfFilesFromPreFabs.push_back({filename, entity});
+                        Gltf::GltfFile gltfFileFromScene(filename);
+                        Gltf::Instance gltfFileInstance(entity);
+                        gltfFileFromScene.m_Instances.push_back(gltfFileInstance);
+                        m_GltfFiles.m_GltfFilesFromPreFabs.push_back(gltfFileFromScene);
                     }
                     
                 }
@@ -223,8 +229,11 @@ namespace GfxRenderEngine
             out << YAML::BeginMap;
  
             auto& registry = m_Scene.GetRegistry();
-            for (const auto& [filename, entity] : m_GltfFiles.m_GltfFilesFromScene)
+            for (const auto& gltfFile : m_GltfFiles.m_GltfFilesFromScene)
             {
+                auto& filename = gltfFile.m_Filename;
+                auto& entity = gltfFile.m_Instances[0].m_Entity;
+
                 auto& transform = registry.get<TransformComponent>(entity);
                 auto& translation = transform.GetTranslation();
                 auto& scale = transform.GetScale();

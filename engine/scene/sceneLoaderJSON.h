@@ -43,27 +43,38 @@ namespace GfxRenderEngine
 
         void Deserialize(std::string& filepath, std::string& alternativeFilepath);
         void Serialize();
-        Gltf::GltfFiles& GetGltfFiles() { return m_GltfFiles; }
+        Gltf::GltfFiles& GetGltfFiles() { return m_SceneDescriptionFile.m_GltfFiles; }
+
+    private:
+
+        struct SceneDescriptionFile
+        {
+            std::string m_FileFormatIdentifier;
+            std::string m_Description;
+            std::string m_Author;
+            Gltf::GltfFiles m_GltfFiles;
+            std::vector<SceneDescriptionFile> m_Prefabs;
+        };
 
     private:
 
         void ParseGltfFileJSON(ondemand::object gltfFileJSON);
         void ParsePrefabJSON(ondemand::object prefabJSON);
         void ParseTransformJSON(ondemand::object transformJSON, entt::entity entity);
-        void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename);
+        void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
 
         void PrintType(ondemand::value elementJSON);
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
     private:
 
-        static constexpr double SUPPORTED_FILE_FORMAT_MAJOR_VERSION = 1.0;
+        static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
         Scene& m_Scene;
         bool m_LoadPrefab;
 
         std::vector<std::string> m_PrefabFiles;
-        Gltf::GltfFiles m_GltfFiles;
+        SceneDescriptionFile m_SceneDescriptionFile;
 
     };
 }

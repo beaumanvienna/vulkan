@@ -298,13 +298,19 @@ namespace LucreApp
     {
         m_SelectedModel = 0;
 
-        for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromScene)
+        for (const auto& gltfFile: gltfFiles.m_GltfFilesFromScene)
         {
+            auto& filename = gltfFile.m_Filename;
+            auto& entity = gltfFile.m_Instances[0].m_Entity;
+
             std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
             m_VisibleModels.push_back({label, entity});
         }
-        for (const auto& [filename, entity]: gltfFiles.m_GltfFilesFromPreFabs)
+        for (const auto& gltfFile: gltfFiles.m_GltfFilesFromPreFabs)
         {
+            auto& filename = gltfFile.m_Filename;
+            auto& entity = gltfFile.m_Instances[0].m_Entity;
+
             std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
             m_VisibleModels.push_back({label, entity});
         }
