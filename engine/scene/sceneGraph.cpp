@@ -20,7 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "scene/treeNode.h"
+#include "scene/sceneGraph.h"
 
 namespace GfxRenderEngine
 {
@@ -55,17 +55,15 @@ namespace GfxRenderEngine
         return m_Children.size();
     }
 
-    TreeNode& TreeNode::GetChild(uint index)
+    uint TreeNode::GetChild(uint const childIndex)
     {
-        return m_Children[index];
+        return m_Children[childIndex];
     }
 
-    TreeNode* TreeNode::AddChild(const TreeNode& node, Dictionary& dictionary)
+    uint TreeNode::AddChild(uint const nodeIndex)
     {
-        dictionary.InsertShort(node.GetName(), node.GetGameObject());
-        dictionary.InsertLong(node.GetLongName(), node.GetGameObject());
-        m_Children.push_back(node);
-        return &m_Children.back();
+        m_Children.push_back(nodeIndex);
+        return m_Children.size()-1;
     }
 
     void TreeNode::SetGameObject(entt::entity gameObject)
@@ -73,22 +71,52 @@ namespace GfxRenderEngine
         m_GameObject = gameObject;
     }
 
-    void TreeNode::TraverseInfo(TreeNode& node, uint indent)
+    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName, Dictionary& dictionary)
+    {
+        uint nodeIndex = m_Nodes.size();
+        m_Nodes.push_back({gameObject, name, longName});
+        dictionary.InsertShort(name, gameObject);
+        dictionary.InsertLong(longName, gameObject);
+        m_MapFromGameObjectToNode[gameObject] = nodeIndex;
+        return nodeIndex;
+    }
+
+    void SceneGraph::TraverseLog(uint nodeIndex, uint indent)
     {
         std::string indentStr(indent, ' ');
-        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(node.GetGameObject()), node.GetName());
-        for (uint index = 0; index < node.Children(); ++index)
+        TreeNode& treeNode = m_Nodes[nodeIndex];
+        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(treeNode.GetGameObject()), treeNode.GetName());
+        for (uint childIndex = 0; childIndex < treeNode.Children(); ++childIndex)
         {
-            TraverseInfo(node.GetChild(index), indent + 4);
+            TraverseLog(treeNode.GetChild(childIndex), indent + 4);
         }
     }
 
-    void TreeNode::CreateLinearMap(std::map<entt::entity,TreeNode*>& sceneHierarchyLinear, TreeNode& node)
+    TreeNode& SceneGraph::GetNode(uint const nodeIndex)
     {
-        sceneHierarchyLinear[node.GetGameObject()] = &node;
-        for (uint index = 0; index < node.Children(); ++index)
+        return m_Nodes[nodeIndex];
+    }
+
+    TreeNode& SceneGraph::GetNodeByGameObject(entt::entity const gameObject)
+    {
+        uint nodeIndex = m_MapFromGameObjectToNode[gameObject];
+        return m_Nodes[nodeIndex];
+    }
+
+    TreeNode& SceneGraph::GetRoot()
+    {
+        CORE_ASSERT(m_Nodes.size(), "SceneGraph::GetRoot(): scene graph is empty");
+        return m_Nodes[SceneGraph::ROOT_NODE];
+    }
+
+    uint SceneGraph::GetTreeNodeIndex(entt::entity const gameObject)
+    {
+        uint returnValue = NODE_INVALID;
+        
+        if (m_MapFromGameObjectToNode.find(gameObject) != m_MapFromGameObjectToNode.end())
         {
-            CreateLinearMap(sceneHierarchyLinear, node.GetChild(index));
+            returnValue = m_MapFromGameObjectToNode[gameObject];
         }
+        return returnValue;
     }
 }

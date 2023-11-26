@@ -29,7 +29,7 @@
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
 #include "scene/sceneLoader.h"
-#include "scene/gltf.h"
+#include "renderer/gltf.h"
 
 namespace LucreApp
 {
@@ -78,8 +78,8 @@ namespace LucreApp
 
     private:
 
-        static void TraverseObjectTree(TreeNode& node, uint maxDepth, uint& objectsFound);
-        static void TraverseObjectTree(TreeNode& node, uint depth, uint maxDepth, uint& objectsFound);
+        static void TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const maxDepth);
+        static void TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const depth, uint const maxDepth);
 
     private:
 

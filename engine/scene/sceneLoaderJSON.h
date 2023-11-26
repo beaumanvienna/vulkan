@@ -30,7 +30,7 @@ using namespace simdjson;
 
 #include "engine.h"
 #include "scene/scene.h"
-#include "scene/gltf.h"
+#include "renderer/gltf.h"
 
 namespace GfxRenderEngine
 {
@@ -60,9 +60,9 @@ namespace GfxRenderEngine
 
         void Deserialize(std::string& filepath);
 
-        void ParseGltfFileJSON(ondemand::object gltfFileJSON);
-        void ParseTransformJSON(ondemand::object transformJSON, entt::entity entity);
-        void ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
+        void ParseGltfFile(ondemand::object gltfFileJSON);
+        void ParseTransform(ondemand::object transformJSON, entt::entity entity);
+        void ParseNodes(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 

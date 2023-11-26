@@ -26,12 +26,12 @@
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
 
-#include "renderer/model.h"
+#include "renderer/builder/gltfBuilder.h"
 
 namespace GfxRenderEngine
 {
 
-    void Builder::LoadSkeletons()
+    void GltfBuilder::LoadSkeletonsGltf()
     {
         size_t numberOfSkeletons = m_GltfModel.skins.size();
         if (!numberOfSkeletons)
@@ -52,7 +52,7 @@ namespace GfxRenderEngine
             const tinygltf::Skin& glTFSkin = m_GltfModel.skins[0];
 
             // does it have information about joints?
-            if (glTFSkin.inverseBindMatrices != GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
+            if (glTFSkin.inverseBindMatrices != Gltf::GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
             {
                 auto& joints = m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
 
@@ -189,7 +189,7 @@ namespace GfxRenderEngine
                     }
                     else
                     {
-                        CORE_ASSERT(false, "Builder::LoadSkeletons: cannot handle timestamp format");
+                        CORE_ASSERT(false, "GltfBuilder::LoadSkeletonsGltf: cannot handle timestamp format");
                     }
                 }
 
@@ -230,7 +230,7 @@ namespace GfxRenderEngine
                         }
                         default: 
                         {
-                            CORE_ASSERT(false, "void Builder::LoadSkeletons(...): accessor type not found");
+                            CORE_ASSERT(false, "void GltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
                             break;
                         }
                     }
@@ -284,7 +284,7 @@ namespace GfxRenderEngine
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void Builder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
+    void GltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
         int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint

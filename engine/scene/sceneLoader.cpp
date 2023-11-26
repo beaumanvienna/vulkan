@@ -22,9 +22,10 @@
 
 #include <fstream>
 
+#include "scene/sceneLoader.h"
 #include "auxiliary/file.h"
 #include "scene/components.h"
-#include "scene/sceneLoader.h"
+#include "renderer/builder/gltfBuilder.h"
 
 namespace GfxRenderEngine
 {
@@ -57,47 +58,50 @@ namespace GfxRenderEngine
         for(const auto& gltfFile : yamlNode["glTF-files"])
         {
             std::string filename = gltfFile.first.as<std::string>();
+            bool sucessful = false;
             if (EngineCore::FileExists(filename))
             {
                 LOG_CORE_INFO("Scene loader found {0}", filename);
-                Builder builder{filename};
-                auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
+                GltfBuilder builder(filename, m_Scene);
+                sucessful = builder.LoadGltf();
 
-                if (entity != entt::null)
+                if (sucessful)
                 {
+                    std::string entityName = filename + std::string("::0::root");
+                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
                     Gltf::GltfFile gltfFileFromScene(filename);
                     Gltf::Instance gltfFileInstance(entity);
                     gltfFileFromScene.m_Instances.push_back(gltfFileInstance);
                     m_GltfFiles.m_GltfFilesFromScene.push_back(gltfFileFromScene);
-                }
 
-                switch (gltfFile.second.Type())
-                {
-                    case YAML::NodeType::Map:
+                    switch (gltfFile.second.Type())
                     {
-                        auto& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
-                        for(const auto& attribute : gltfFile.second)
+                        case YAML::NodeType::Map:
                         {
-                            if (attribute.first.as<std::string>() == "translation")
+                            auto& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                            for(const auto& attribute : gltfFile.second)
                             {
-                                auto translation = ConvertToVec3(attribute.second);
-                                transform.SetTranslation(translation);
+                                if (attribute.first.as<std::string>() == "translation")
+                                {
+                                    auto translation = ConvertToVec3(attribute.second);
+                                    transform.SetTranslation(translation);
+                                }
+                                else if (attribute.first.as<std::string>() == "scale")
+                                {
+                                    auto scale = ConvertToVec3(attribute.second);
+                                    transform.SetScale(scale);
+                                }
+                                else if (attribute.first.as<std::string>() == "rotation")
+                                {
+                                    auto rotation = ConvertToVec3(attribute.second);
+                                    transform.SetRotation(rotation);
+                                } 
                             }
-                            else if (attribute.first.as<std::string>() == "scale")
-                            {
-                                auto scale = ConvertToVec3(attribute.second);
-                                transform.SetScale(scale);
-                            }
-                            else if (attribute.first.as<std::string>() == "rotation")
-                            {
-                                auto rotation = ConvertToVec3(attribute.second);
-                                transform.SetRotation(rotation);
-                            } 
+                            break;
                         }
-                        break;
+                        default:
+                            break;
                     }
-                    default:
-                        break;
                 }
             }
             else
@@ -130,7 +134,6 @@ namespace GfxRenderEngine
                 m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
             }
         }
-        m_Scene.CreateLinearMap();
     }
 
     glm::vec3 SceneLoader::ConvertToVec3(const YAML::Node& node)
@@ -167,24 +170,26 @@ namespace GfxRenderEngine
             for (const auto& gltfFile : gltfFileList)
             {
                 auto filename = gltfFile.as<std::string>();
+                bool sucessful = false;
                 if (EngineCore::FileExists(filename))
                 {
                     LOG_CORE_INFO("Scene loader found {0}", filename);
-                    Builder builder{filename};
-                    auto entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
-
-                    if (entity != entt::null)
-                    {
-                        Gltf::GltfFile gltfFileFromScene(filename);
-                        Gltf::Instance gltfFileInstance(entity);
-                        gltfFileFromScene.m_Instances.push_back(gltfFileInstance);
-                        m_GltfFiles.m_GltfFilesFromPreFabs.push_back(gltfFileFromScene);
-                    }
-                    
+                    GltfBuilder builder(filename, m_Scene);
+                    sucessful = builder.LoadGltf();
                 }
                 else
                 {
                     LOG_CORE_CRITICAL("Scene loader could not find file {0}", filename);
+                }
+
+                if (sucessful)
+                {
+                    std::string entityName = filename + std::string("::0::root");
+                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
+                    Gltf::GltfFile gltfFileFromScene(filename);
+                    Gltf::Instance gltfFileInstance(entity);
+                    gltfFileFromScene.m_Instances.push_back(gltfFileInstance);
+                    m_GltfFiles.m_GltfFilesFromPreFabs.push_back(gltfFileFromScene);
                 }
             }
         }

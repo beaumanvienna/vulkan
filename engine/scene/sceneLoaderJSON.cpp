@@ -100,7 +100,7 @@ namespace GfxRenderEngine
 
                 for (auto gltfFileJSON : gltfFiles)
                 {
-                    ParseGltfFileJSON(gltfFileJSON);
+                    ParseGltfFile(gltfFileJSON);
                 }
             }
             else
@@ -108,13 +108,11 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("unrecognized scene object");
             }
         }
-        m_Scene.CreateLinearMap();
     }
 
-    void SceneLoaderJSON::ParseGltfFileJSON(ondemand::object gltfFileJSON)
+    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON)
     {
         std::string gltfFilename;
-        entt::entity entity = entt::null;
 
         std::vector<Gltf::GltfFile>& gltfFilesFromScene = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
         bool loadSuccessful = false;
@@ -130,21 +128,6 @@ namespace GfxRenderEngine
                 if (EngineCore::FileExists(gltfFilename))
                 {
                     LOG_CORE_INFO("Scene loader found {0}", gltfFilename);
-
-                    Builder builder{gltfFilename};
-                    entity = builder.LoadGLTF(m_Scene.m_Registry, m_Scene.m_SceneHierarchy, m_Scene.m_Dictionary);
-
-                    if (entity != entt::null)
-                    {
-                        loadSuccessful = true;
-                        Gltf::GltfFile gltfFile(gltfFilename);
-                        gltfFilesFromScene.push_back(gltfFile);
-                    }
-                    else
-                    {
-                        LOG_CORE_ERROR("gltf file did not load properly: {0}", gltfFilename);
-                        return;
-                    }
                 }
                 else
                 {
@@ -154,15 +137,23 @@ namespace GfxRenderEngine
             }
             else if (gltfFileObjectKey == "instances")
             {
-                if (!loadSuccessful)
-                {
-                    LOG_CORE_ERROR("gltf file not found (json file broken): {0}", gltfFilename);
-                    return;
-                }
-
                 // get array of gltf file instances
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
+
+                GltfBuilder builder(gltfFilename, m_Scene);
+                loadSuccessful = builder.LoadGltf(instanceCount);
+                if (loadSuccessful)
+                {
+                    Gltf::GltfFile gltfFile(gltfFilename);
+                    gltfFilesFromScene.push_back(gltfFile);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("gltf file did not load properly: {0}", gltfFilename);
+                    return;
+                }
+
                 if (!instanceCount)
                 {
                     LOG_CORE_ERROR("no instances found (json file broken): {0}", gltfFilename);
@@ -173,11 +164,13 @@ namespace GfxRenderEngine
                 gltfFileInstances.resize(instanceCount);
 
                 {
-                    uint index = 0;
+                    uint instanceIndex = 0;
                     for (auto instance : instances)
                     {
-                        Gltf::Instance& gltfFileInstance = gltfFileInstances[index];
-                        gltfFileInstance = entity;
+                        std::string fullEntityName = gltfFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
+                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                        Gltf::Instance& gltfFileInstance = gltfFileInstances[instanceIndex];
+                        gltfFileInstance.m_Entity = entity;
                         ondemand::object instanceObjects = instance.value();
                         for (auto instanceObject : instanceObjects)
                         {
@@ -186,20 +179,19 @@ namespace GfxRenderEngine
                             if (instanceObjectKey == "transform")
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
-                                ParseTransformJSON(instanceObject.value(), entity);
+                                ParseTransform(instanceObject.value(), entity);
                             }
                             else if (instanceObjectKey == "nodes")
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
-                                ParseNodesJSON(instanceObject.value(), gltfFilename, gltfFileInstance);
+                                ParseNodes(instanceObject.value(), gltfFilename, gltfFileInstance);
                             }
                             else
                             {
                                 LOG_CORE_CRITICAL("unrecognized gltf instance object");
                             }
                         }
-                        ++index;
-                        if ( index == 1) break; // only one instance supported right now
+                        ++instanceIndex;
                     }
                 }
             }
@@ -210,7 +202,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::ParseTransformJSON(ondemand::object transformJSON, entt::entity entity)
+    void SceneLoaderJSON::ParseTransform(ondemand::object transformJSON, entt::entity entity)
     {
         // transform
         TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
@@ -247,20 +239,20 @@ namespace GfxRenderEngine
         transform.SetTranslation(translation);
     }
 
-    void SceneLoaderJSON::ParseNodesJSON(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
+    void SceneLoaderJSON::ParseNodes(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount) return;
 
         gltfFileInstance.m_Nodes.resize(nodeCount);
 
-        uint index = 0;
+        uint nodeIndex = 0;
         for (auto nodeJSON : nodesJSON)
         {
             CORE_ASSERT((nodeJSON.value().type() == ondemand::json_type::object), "type must be object" );
             ondemand::object nodeObjects = nodeJSON.value();
 
-            Gltf::Node& gltfNode = gltfFileInstance.m_Nodes[index];
+            Gltf::Node& gltfNode = gltfFileInstance.m_Nodes[nodeIndex];
             gltfNode.m_WalkSpeed = 0.0;
             gltfNode.m_RigidBody = false;
 
@@ -297,17 +289,17 @@ namespace GfxRenderEngine
                     LOG_CORE_CRITICAL("unrecognized node component");
                 }
             }
-            ++index;
+            ++nodeIndex;
         }
     }
 
     glm::vec3 SceneLoaderJSON::ConvertToVec3(ondemand::array arrayJSON)
     {
         glm::vec3 returnVec3{0.0f};
-        uint index = 0;
+        uint componentIndex = 0;
         for (auto component : arrayJSON)
         {
-            switch (index)
+            switch (componentIndex)
             {
                 case 0:
                 {
@@ -330,7 +322,7 @@ namespace GfxRenderEngine
                     break;
                 }
             }
-            ++index;
+            ++componentIndex;
         }
         return returnVec3;
     }
@@ -379,12 +371,12 @@ namespace GfxRenderEngine
         m_OutputFile << indentStr << "[\n";
         indent += 4;
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
-        size_t index = 0;
+        size_t gltfFileIndex = 0;
         for (auto& gltfFile : m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene)
         {
-            bool noComma = ((index+1) == gltfFileCount);
+            bool noComma = ((gltfFileIndex+1) == gltfFileCount);
             SerializeGltfFile(indent, gltfFile, noComma);
-            ++index;
+            ++gltfFileIndex;
         }
         m_OutputFile << indentStr << "]\n";
     }
@@ -406,12 +398,12 @@ namespace GfxRenderEngine
         m_OutputFile << indentStr << "[\n";
         indent += 4;
         size_t instanceCount = instances.size();
-        size_t index = 0;
+        size_t instanceIndex = 0;
         for (auto& instance : instances)
         {
-            bool noComma = ((index+1) == instanceCount);
+            bool noComma = ((instanceIndex+1) == instanceCount);
             SerializeInstance(indent, instance, noComma);
-            ++index;
+            ++instanceIndex;
         }
         m_OutputFile << indentStr << "]\n";
     }
@@ -456,12 +448,12 @@ namespace GfxRenderEngine
         m_OutputFile << indentStr << "[\n";
         indent += 4;
         size_t nodeCount = nodes.size();
-        size_t index = 0;
+        size_t nodeIndex = 0;
         for (auto& node : nodes)
         {
-            bool noComma = ((index+1) == nodeCount);
+            bool noComma = ((nodeIndex+1) == nodeCount);
             SerializeNode(indent, node, noComma);
-            ++index;
+            ++nodeIndex;
         }
         m_OutputFile << indentStr << "]\n";
     }

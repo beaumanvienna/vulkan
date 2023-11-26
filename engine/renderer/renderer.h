@@ -27,7 +27,7 @@
 
 #include "engine.h"
 #include "scene/entity.h"
-#include "scene/treeNode.h"
+#include "scene/sceneGraph.h"
 #include "scene/particleSystem.h"
 #include "renderer/camera.h"
 
@@ -42,7 +42,7 @@ namespace GfxRenderEngine
         virtual bool Init() =0;
 
         virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;
-        virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) = 0;
+        virtual void Submit(Scene& scene) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
         virtual void PostProcessingRenderpass() = 0;

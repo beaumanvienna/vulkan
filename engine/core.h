@@ -87,6 +87,7 @@ namespace GfxRenderEngine
         float GetDesktopHeight() const { return static_cast<float>(m_Window->GetDesktopHeight()); }
 
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }

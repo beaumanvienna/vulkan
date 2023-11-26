@@ -29,6 +29,8 @@
 
 #include "engine.h"
 #include "renderer/renderer.h"
+#include "renderer/builder/builder.h"
+#include "renderer/builder/gltfBuilder.h"
 
 namespace GfxRenderEngine
 {
@@ -46,6 +48,7 @@ namespace GfxRenderEngine
 
         virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
+        virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
 
         virtual uint GetContextWidth() const = 0;

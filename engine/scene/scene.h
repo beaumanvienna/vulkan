@@ -29,7 +29,7 @@
 #include "entt.hpp"
 #include "events/event.h"
 #include "scene/entity.h"
-#include "scene/treeNode.h"
+#include "scene/sceneGraph.h"
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
 #include "renderer/camera.h"
@@ -70,8 +70,10 @@ namespace GfxRenderEngine
         void SetRunning() { m_IsRunning = true; }
         entt::registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
-        void CreateLinearMap();
-        TreeNode* GetTreeNode(entt::entity entity) { return m_SceneHierarchyLinear[entity]; }
+        SceneGraph& GetSceneGraph() { return m_SceneGraph; }
+        TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
+        TreeNode& GetTreeNode(uint nodeIndex) { return m_SceneGraph.GetNode(nodeIndex); }
+        uint GetTreeNodeIndex(entt::entity entity) { return m_SceneGraph.GetTreeNodeIndex(entity); }
 
     protected:
 
@@ -79,9 +81,8 @@ namespace GfxRenderEngine
         std::string m_Filepath;
         std::string m_AlternativeFilepath;
         entt::registry m_Registry;
-        TreeNode m_SceneHierarchy{(entt::entity)-1, "root", "sceneRoot"};
-        std::map<entt::entity,TreeNode*> m_SceneHierarchyLinear;
         Dictionary m_Dictionary;
+        SceneGraph m_SceneGraph;
         bool m_IsRunning;
 
         friend class SceneLoader;

@@ -105,10 +105,9 @@ namespace LucreApp
         }
 
         {
-            auto node = currentScene->GetTreeNode(entity);
+            uint node = currentScene->GetTreeNodeIndex(entity);
             const uint maxDepth = 5;
-            uint objectsFound = 0;
-            TraverseObjectTree(*node, maxDepth, objectsFound);
+            TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
         if (registry.all_of<PbrMaterial>(entity))
@@ -318,34 +317,35 @@ namespace LucreApp
         m_MaxModels = m_VisibleModels.size()-1;
     }
 
-    void ImGUI::TraverseObjectTree(TreeNode& node, uint maxDepth, uint& objectsFound)
+    void ImGUI::TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const maxDepth)
     {
-        TraverseObjectTree(node, 0/*uint depth*/, maxDepth, objectsFound); // start with depth 0
+        TraverseObjectTree(scene, nodeIndex, 0/*uint depth*/, maxDepth); // start with depth 0
     }
 
-    void ImGUI::TraverseObjectTree(TreeNode& node, uint depth, uint maxDepth, uint& objectsFound)
+    void ImGUI::TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const depth, uint const maxDepth)
     {
         if (depth < maxDepth)
         {
-            ImGui::PushID(static_cast<int>(node.GetGameObject()));
+            TreeNode& node = scene.GetTreeNode(nodeIndex);
+            int gameObject = static_cast<int>(node.GetGameObject());
+            ImGui::PushID(gameObject);
+            std::string label = "entity " + std::to_string(gameObject) + " " + node.GetName();
+
             uint numberOfChildren = node.Children();
-            if ( (numberOfChildren) && (depth != (maxDepth-1)) )
+            if ((numberOfChildren) && (depth != (maxDepth-1)))
             {
-                std::string name = "entity " + std::to_string(static_cast<int>(node.GetGameObject())) + " " +node.GetName();
-                if (ImGui::TreeNodeEx(name.c_str()))
+                if (ImGui::TreeNodeEx(label.c_str()))
                 {
                     for (uint index = 0; index < node.Children(); ++index)
                     {
-                        TraverseObjectTree(node.GetChild(index), depth + 1, maxDepth, objectsFound);
+                        TraverseObjectTree(scene, node.GetChild(index), depth + 1, maxDepth);
                     }
                     ImGui::TreePop();
                 }
             }
             else
             {
-                auto gameObject = static_cast<int>(node.GetGameObject());
-                std::string name = "entity " + std::to_string(gameObject) + " " +node.GetName();
-                ImGui::TreeNodeEx(name.c_str(), /*ImGuiTreeNodeFlags_NoTreePushOnOpen | */ImGuiTreeNodeFlags_Leaf);
+                ImGui::TreeNodeEx(label.c_str(), /*ImGuiTreeNodeFlags_NoTreePushOnOpen | */ImGuiTreeNodeFlags_Leaf);
                 ImGui::SameLine();
                 if (ImGui::SmallButton("edit")) { m_SelectedGameObject = gameObject; }
                 ImGui::TreePop();

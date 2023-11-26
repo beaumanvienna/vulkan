@@ -124,7 +124,7 @@ namespace LucreApp
             Builder builder{};
             m_Ground = CreateEntity();
 
-            builder.LoadModel("application/lucre/models/colored_cube.obj");
+            builder.LoadModelObjWavefront("application/lucre/models/colored_cube.obj");
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"ground", model};
             m_Registry.emplace<MeshComponent>(m_Ground, mesh);
@@ -142,7 +142,7 @@ namespace LucreApp
             Builder builder{};
             m_Vase0 = CreateEntity();
 
-            builder.LoadModel("application/lucre/models/flat_vase.obj");
+            builder.LoadModelObjWavefront("application/lucre/models/flat_vase.obj");
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"polygon vase", model};
             m_Registry.emplace<MeshComponent>(m_Vase0, mesh);
@@ -159,7 +159,7 @@ namespace LucreApp
             Builder builder{};
             m_Vase1 = CreateEntity();
 
-            builder.LoadModel("application/lucre/models/smooth_vase.obj");
+            builder.LoadModelObjWavefront("application/lucre/models/smooth_vase.obj");
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"smooth vase", model};
             m_Registry.emplace<MeshComponent>(m_Vase1, mesh);
@@ -175,7 +175,7 @@ namespace LucreApp
 
         {
             Builder builder{};
-            builder.LoadModel("application/lucre/models/banana.obj");
+            builder.LoadModelObjWavefront("application/lucre/models/banana.obj");
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"banana", model};
 

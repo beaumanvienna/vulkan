@@ -95,7 +95,7 @@ namespace GfxRenderEngine
         virtual void BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(entt::registry& registry) override;
         virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
-        virtual void Submit(entt::registry& registry, TreeNode& sceneHierarchy) override;
+        virtual void Submit(Scene& scene) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
         virtual void PostProcessingRenderpass() override;
@@ -126,7 +126,7 @@ namespace GfxRenderEngine
         void RecreateRenderpass();
         void RecreateShadowMaps();
         void CompileShaders();
-        void UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag);
+        void UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4, bool parentDirtyFlag);
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
         void CreatePostProcessingDescriptorSets();

@@ -22,45 +22,36 @@
 
 #pragma once
 
-#include <iostream>
-#include "entt.hpp"
-
-#include "engine.h"
+#include "renderer/model.h"
 
 namespace GfxRenderEngine
 {
-    namespace Gltf
+    class Builder
     {
-        struct Node
-        {
-            std::string m_Name;
-            float m_WalkSpeed{0.0f};
-            bool m_RigidBody{false};
-            std::string m_ScriptComponent;
-        };
 
-        struct Instance
-        {
-            entt::entity m_Entity;
-            std::vector<Node> m_Nodes;
+    public:
 
-            Instance() = default;
-            Instance(entt::entity entity) : m_Entity{entity} {}
-        };
+        Builder() = default;
 
-        struct GltfFile
-        {
-            std::string m_Filename;
-            std::vector<Instance> m_Instances;
+        void LoadModelObjWavefront(const std::string& filepath, int fragAmplification = 1.0);
+        void LoadParticle(const glm::vec4& color);
+        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0, glm::vec4 const& color = glm::vec4(1.0f));
+        entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);
 
-            GltfFile() = default;
-            GltfFile(std::string& filename) : m_Filename{filename} {}
-        };
+    private:
 
-        struct GltfFiles
-        {
-            std::vector<GltfFile> m_GltfFilesFromScene;
-            std::vector<GltfFile> m_GltfFilesFromPreFabs;
-        };
-    }
+        void CalculateTangents();
+        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
+
+    public:
+
+        std::vector<uint> m_Indices{};
+        std::vector<Vertex> m_Vertices{};
+        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+
+        // cubemap
+        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
+        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
+
+    };
 }

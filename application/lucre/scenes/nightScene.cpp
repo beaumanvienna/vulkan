@@ -67,12 +67,12 @@ namespace LucreApp
         }
 
         StartScripts();
-        TreeNode::TraverseInfo(m_SceneHierarchy);
+        m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
 
         // get characters and start all animations
-        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
-        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::Cesium_Man");
+        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::Scene::monkey");
+        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
@@ -87,7 +87,7 @@ namespace LucreApp
                 LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Hero));
             }
         }
-        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::Scene::guybrush object");
+        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -111,7 +111,7 @@ namespace LucreApp
                 auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::Scene::Armature");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::Armature");
 
                 m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
                 m_CharacterAnimation->Start();
@@ -119,19 +119,19 @@ namespace LucreApp
         }
         else
         {
-            if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
+            if ((m_Hero != entt::null) && m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
             {
                 auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::Scene::root");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::root");
 
                 m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
                 m_CharacterAnimation->Start();
             }
         }
 
-        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::Scene::Kaya BrowsAnimGeo");
+        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::0::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter2 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
@@ -140,7 +140,7 @@ namespace LucreApp
             animations.Start();
         }
 
-        m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya2.gltf::Scene::Kaya BrowsAnimGeo");
+        m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter3 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
@@ -243,7 +243,18 @@ namespace LucreApp
         }
         { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::lightbulb");
+                if (m_Lightbulb0 == entt::null)
+                {
+                    m_Lightbulb0 = m_Registry.create();
+                    TransformComponent transform{};
+
+                    transform.SetScale({0.00999978, 0.0100001, 0.0100001});
+                    transform.SetRotation({-0.888632, -0.571253, -0.166816});
+                    transform.SetTranslation({1.5555, 4, -4.13539});
+
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
+                }
                 m_LightView0 = std::make_shared<Camera>();
                 float left   =  -4.0f;
                 float right  =   4.0f;
@@ -256,7 +267,18 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::Scene::arrow");
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::arrow");
+                if (m_Lightbulb1 == entt::null)
+                {
+                    m_Lightbulb1 = m_Registry.create();
+                    TransformComponent transform{};
+                            
+                    transform.SetScale({0.00999934, 0.00999997, 0.00999993});
+                    transform.SetRotation({-1.11028, -0.546991, 0.165967});
+                    transform.SetTranslation({6, 6.26463, -14.1572});
+
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
+                }
                 m_LightView1 = std::make_shared<Camera>();
                 float left   = -20.0f;
                 float right  =  20.0f;
@@ -276,7 +298,7 @@ namespace LucreApp
 
     void NightScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
@@ -304,7 +326,7 @@ namespace LucreApp
         }
 
         AnimateHero(timestep);
-        m_CharacterAnimation->OnUpdate(timestep);
+        if (m_CharacterAnimation) m_CharacterAnimation->OnUpdate(timestep);
         SetLightView(m_Lightbulb0, m_LightView0);
         SetLightView(m_Lightbulb1, m_LightView1);
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
@@ -325,7 +347,7 @@ namespace LucreApp
         ApplyDebugSettings();
 
         // opaque objects
-        m_Renderer->Submit(m_Registry, m_SceneHierarchy);
+        m_Renderer->Submit(*this);
 
         // light opaque objects
         m_Renderer->NextSubpass();
@@ -387,6 +409,7 @@ namespace LucreApp
 
     void NightScene::AnimateHero(const Timestep& timestep)
     {
+        if (m_NonPlayableCharacter1 == entt::null) return;
         auto view = m_Registry.view<TransformComponent>();
         auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter1);
 

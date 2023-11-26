@@ -869,10 +869,11 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::UpdateTransformCache(entt::registry& registry, TreeNode& node, const glm::mat4& parentMat4, bool parentDirtyFlag)
+    void VK_Renderer::UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4, bool parentDirtyFlag)
     {
+        TreeNode& node = scene.GetTreeNode(nodeIndex);
         entt::entity gameObject = node.GetGameObject();
-        auto& transform = registry.get<TransformComponent>(gameObject);
+        auto& transform = scene.GetRegistry().get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
 
         if (dirtyFlag)
@@ -883,7 +884,7 @@ namespace GfxRenderEngine
             transform.SetMat4(cleanMat4);
             for (uint index = 0; index < node.Children(); index++)
             {
-                UpdateTransformCache(registry, node.GetChild(index), cleanMat4, true);
+                UpdateTransformCache(scene, node.GetChild(index), cleanMat4, true);
             }
         }
         else
@@ -891,16 +892,18 @@ namespace GfxRenderEngine
             auto& mat4 = transform.GetMat4();
             for (uint index = 0; index < node.Children(); index++)
             {
-                UpdateTransformCache(registry, node.GetChild(index), mat4, false);
+                UpdateTransformCache(scene, node.GetChild(index), mat4, false);
             }
         }
     }
 
-    void VK_Renderer::Submit(entt::registry& registry, TreeNode& sceneHierarchy)
+    void VK_Renderer::Submit(Scene& scene)
     {
         if (m_CurrentCommandBuffer)
         {
-            UpdateTransformCache(registry, sceneHierarchy, glm::mat4(1.0f), false);
+            UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+
+            auto& registry = scene.GetRegistry();
 
             // 3D objects
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);

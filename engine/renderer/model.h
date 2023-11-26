@@ -22,7 +22,6 @@
 
 #pragma once
 
-
 #define GL_BYTE                     0x1400  //5120
 #define GL_UNSIGNED_BYTE            0x1401  //5121
 #define GL_SHORT                    0x1402  //5122
@@ -42,7 +41,7 @@
 
 #include "engine.h"
 #include "scene/material.h"
-#include "scene/treeNode.h"
+#include "scene/sceneGraph.h"
 #include "scene/components.h"
 #include "scene/dictionary.h"
 #include "renderer/skeletalAnimation/skeleton.h"
@@ -68,7 +67,6 @@ namespace GfxRenderEngine
         glm::vec4   m_Weights;
 
         bool operator==(const Vertex& other) const;
-
     };
 
     struct Material
@@ -198,98 +196,6 @@ namespace GfxRenderEngine
         uint m_FirstVertex;
         uint m_VertexCount;
         CubemapMaterial m_CubemapMaterial;
-    };
-
-    class Builder
-    {
-
-    public:
-
-        static constexpr int GLTF_NOT_USED = -1;
-
-    public:
-
-        Builder() {}
-        Builder(const std::string& filepath);
-
-        void LoadModel(const std::string& filepath, int fragAmplification = 1.0);
-        entt::entity LoadGLTF(entt::registry& registry, TreeNode& sceneHierarchy, Dictionary& dictionary, TransformComponent* transform = nullptr);
-        void LoadSprite(const Sprite& sprite, float amplification = 0.0f, int unlit = 0, const glm::vec4& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);
-        void LoadParticle(const glm::vec4& color);
-
-    public:
-
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Images;
-        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
-        std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
-        std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
-        std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
-        std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
-        std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
-        std::vector<PrimitiveDiffuseNormalSAMap> m_PrimitivesDiffuseNormalSAMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicSAMap> m_PrimitivesDiffuseNormalRoughnessMetallicSAMap{};
-
-        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
-
-    private:
-
-        void LoadImagesGLTF();
-        void LoadMaterialsGLTF();
-        void LoadVertexDataGLTF(uint meshIndex);
-        bool GetImageFormatGLTF(uint imageIndex);
-        void LoadTransformationMatrix(TransformComponent& transform, int nodeIndex);
-        void AssignMaterial(const PrimitiveTmp& primitiveTmp, int materialIndex);
-        void ProcessNode(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
-        TreeNode* CreateGameObject(tinygltf::Scene& scene, uint nodeIndex, entt::registry& registry, Dictionary& dictionary, TreeNode* currentNode);
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
-
-    private:
-
-        template<typename T>
-        int LoadAccessor(const tinygltf::Accessor& accessor, const T*& pointer, uint* count = nullptr, int* type = nullptr)
-        {
-            const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-            pointer = reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-            if (count)
-            {
-                count[0] = static_cast<uint>(accessor.count);
-            }
-            if (type)
-            {
-                type[0] = accessor.type;
-            }
-            return accessor.componentType;
-        }
-        
-    private:
-
-        std::string m_Filepath;
-        std::string m_Basepath;
-        tinygltf::Model m_GltfModel;
-        tinygltf::TinyGLTF m_GltfLoader;
-        std::vector<Material> m_Materials;
-        TransformComponent* m_Transform;
-        uint m_ImageOffset;
-        entt::entity m_GameObject;
-
-    // skeletal animtion
-    private:
-
-        void LoadSkeletons();
-        void LoadJoint(int globalGltfNodeIndex, int parentJoint);
-        uint m_SkeletalAnimation;
-
-    public:
-
-        std::shared_ptr<Armature::Skeleton> m_Skeleton;
-        std::shared_ptr<Buffer> m_ShaderData;
-        std::shared_ptr<SkeletalAnimations> m_Animations;
     };
 
     class Model

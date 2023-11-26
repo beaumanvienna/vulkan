@@ -28,6 +28,8 @@
 #include "engine.h"
 #include "renderer/model.h"
 #include "renderer/buffer.h"
+#include "renderer/builder/builder.h"
+#include "renderer/builder/gltfBuilder.h"
 #include "scene/material.h"
 #include "scene/scene.h"
 
@@ -55,6 +57,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
+        VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder);
         virtual ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;

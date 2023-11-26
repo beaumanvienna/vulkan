@@ -43,9 +43,8 @@ namespace GfxRenderEngine
         // has a transform, however, it should never be used
         TransformComponent transform{};
         m_Registry.emplace<TransformComponent>(entity, transform);
-        m_SceneHierarchy.SetGameObject(entity);
 
-        m_Dictionary.InsertShort("root", entity);
+        m_SceneGraph.CreateNode(entity, "root", m_Name + "::sceneRoot", m_Dictionary);
     }
 
     Scene::~Scene()
@@ -81,10 +80,5 @@ namespace GfxRenderEngine
         DirectionalLightComponent directionlLightComponent{intensity, color};
         m_Registry.emplace<DirectionalLightComponent>(directionlLight, directionlLightComponent);
         return directionlLight;
-    }
-
-    void Scene::CreateLinearMap()
-    {
-        TreeNode::CreateLinearMap(m_SceneHierarchyLinear, m_SceneHierarchy);
     }
 }

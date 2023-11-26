@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -30,12 +30,13 @@
 
 namespace GfxRenderEngine
 {
+
+
     class TreeNode
     {
 
     public:
 
-        TreeNode() = delete;
         TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName);
         ~TreeNode();
 
@@ -43,21 +44,41 @@ namespace GfxRenderEngine
         const std::string& GetName() const;
         const std::string& GetLongName() const;
         uint Children() const;
-        TreeNode& GetChild(uint index);
-        TreeNode* AddChild(const TreeNode& node, Dictionary& dictionary);
+        uint GetChild(uint const childIndex);
+        uint AddChild(uint const nodeIndex);
         void SetGameObject(entt::entity gameObject);
-
-    public:
-
-        static void TraverseInfo(TreeNode& node, uint indent = 0);
-        static void CreateLinearMap(std::map<entt::entity,TreeNode*>& sceneHierarchyLinear, TreeNode& node);
 
     private:
 
+        entt::entity m_GameObject;
         std::string m_Name;
         std::string m_LongName;
-        entt::entity m_GameObject;
-        std::vector<TreeNode> m_Children;
+        std::vector<uint> m_Children;
+
+    };
+
+    class SceneGraph
+    {
+
+    public:
+    
+        static constexpr uint ROOT_NODE = 0;
+        static constexpr uint NODE_INVALID = -1;
+
+    public:
+
+        uint CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName, Dictionary& dictionary);
+        TreeNode& GetNode(uint const nodeIndex);
+        TreeNode& GetNodeByGameObject(entt::entity const gameObject);
+        TreeNode& GetRoot();
+
+        uint GetTreeNodeIndex(entt::entity const gameObject);
+        void TraverseLog(uint nodeIndex, uint indent = 0);
+
+    private:
+
+        std::vector<TreeNode> m_Nodes;
+        std::map<entt::entity,uint> m_MapFromGameObjectToNode;
 
     };
 }

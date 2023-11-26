@@ -69,9 +69,9 @@ namespace LucreApp
         }
 
         StartScripts();
-        TreeNode::TraverseInfo(m_SceneHierarchy);
+        m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
-        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::Scene::1");
+        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::Scene::monkey");
 
         {
             // place static lights for beach scene
@@ -143,7 +143,18 @@ namespace LucreApp
         }
         {
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::Scene::lightbulb");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::lightbulb");
+                if (m_Lightbulb0 == entt::null)
+                {
+                    m_Lightbulb0 = m_Registry.create();
+                    TransformComponent transform{};
+
+                    transform.SetScale({0.00999978, 0.0100001, 0.0100001});
+                    transform.SetRotation({-0.888632, -0.571253, -0.166816});
+                    transform.SetTranslation({1.5555, 4, -4.13539});
+
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
+                }
                 m_LightView0 = std::make_shared<Camera>();
                 float left   =  -4.0f;
                 float right  =   4.0f;
@@ -156,7 +167,18 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::Scene::arrow");
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::arrow");
+                if (m_Lightbulb1 == entt::null)
+                {
+                    m_Lightbulb1 = m_Registry.create();
+                    TransformComponent transform{};
+                            
+                    transform.SetScale({0.00999934, 0.00999997, 0.00999993});
+                    transform.SetRotation({-1.11028, -0.546991, 0.165967});
+                    transform.SetTranslation({6, 6.26463, -14.1572});
+
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
+                }
                 m_LightView1 = std::make_shared<Camera>();
                 float left   = -20.0f;
                 float right  =  20.0f;
@@ -176,7 +198,7 @@ namespace LucreApp
 
     void BeachScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
@@ -219,7 +241,7 @@ namespace LucreApp
         ApplyDebugSettings();
 
         // opaque objects
-        m_Renderer->Submit(m_Registry, m_SceneHierarchy);
+        m_Renderer->Submit(*this);
 
         // light opaque objects
         m_Renderer->NextSubpass();
@@ -281,6 +303,7 @@ namespace LucreApp
 
     void BeachScene::AnimateHero(const Timestep& timestep)
     {
+        if (m_NonPlayableCharacter == entt::null) return;
         auto view = m_Registry.view<TransformComponent>();
         auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter);
 
