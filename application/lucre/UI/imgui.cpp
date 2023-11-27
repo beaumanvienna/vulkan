@@ -293,24 +293,25 @@ namespace LucreApp
     }
 
     // set up maxGameObjects, and the std::vector for visibleGameObjects
-    void ImGUI::SetupSlider(Gltf::GltfFiles& gltfFiles)
+    void ImGUI::SetupSlider(Scene* scene)
     {
         m_SelectedModel = 0;
+        TreeNode& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
 
-        for (const auto& gltfFile: gltfFiles.m_GltfFilesFromScene)
-        {
-            auto& filename = gltfFile.m_Filename;
-            auto& entity = gltfFile.m_Instances[0].m_Entity;
+        { // insert root
+            auto& label = rootNode.GetName();
+            auto entity = rootNode.GetGameObject();
 
-            std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
             m_VisibleModels.push_back({label, entity});
         }
-        for (const auto& gltfFile: gltfFiles.m_GltfFilesFromPreFabs)
-        {
-            auto& filename = gltfFile.m_Filename;
-            auto& entity = gltfFile.m_Instances[0].m_Entity;
 
-            std::string label = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(filename));
+        // insert gltf files
+        for (uint nodeIndex : rootNode.GetChildren())
+        {
+            TreeNode& node = scene->GetTreeNode(nodeIndex);
+            auto& label = node.GetName();
+            auto entity = node.GetGameObject();
+
             m_VisibleModels.push_back({label, entity});
         }
 

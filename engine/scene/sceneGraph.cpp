@@ -62,8 +62,9 @@ namespace GfxRenderEngine
 
     uint TreeNode::AddChild(uint const nodeIndex)
     {
+        uint childIndex = m_Children.size();
         m_Children.push_back(nodeIndex);
-        return m_Children.size()-1;
+        return childIndex;
     }
 
     void TreeNode::SetGameObject(entt::entity gameObject)

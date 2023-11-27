@@ -71,7 +71,7 @@ namespace LucreApp
         m_Dictionary.List();
 
         // get characters and start all animations
-        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::Scene::monkey");
+        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
@@ -216,7 +216,7 @@ namespace LucreApp
     void NightScene::Load()
     {
         m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
-        ImGUI::SetupSlider(m_SceneLoaderJSON.GetGltfFiles());
+        ImGUI::SetupSlider(this);
 
         LoadModels();
         LoadScripts();
@@ -243,7 +243,7 @@ namespace LucreApp
         }
         { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::lightbulb");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     m_Lightbulb0 = m_Registry.create();
@@ -267,7 +267,7 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::arrow");
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     m_Lightbulb1 = m_Registry.create();
@@ -299,7 +299,7 @@ namespace LucreApp
     void NightScene::StartScripts()
     {
         auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
-        if (duck != entt::null)
+        if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
 
@@ -410,8 +410,8 @@ namespace LucreApp
     void NightScene::AnimateHero(const Timestep& timestep)
     {
         if (m_NonPlayableCharacter1 == entt::null) return;
-        auto view = m_Registry.view<TransformComponent>();
-        auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter1);
+
+        auto& heroTransform  = m_Registry.get<TransformComponent>(m_NonPlayableCharacter1);
 
         static float deltaX = 0.5f;
         static float deltaY = 0.5f;

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -101,8 +101,8 @@ namespace LucreApp
             m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
         }
 
-        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::0::Scene::barrel");
-        m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::0::Scene::node_damagedHelmet_-6514");
+        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::0::root");
+        m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::0::root");
         m_ToyCar = m_Dictionary.Retrieve("application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::0::root");
         m_Sponza = m_Dictionary.Retrieve("application/lucre/models/assets/Sponza/glTF/Sponza.gltf::0::root");
         if (m_Sponza != entt::null)
@@ -191,7 +191,7 @@ namespace LucreApp
         InitPhysics();
 
         m_SceneLoader.Deserialize();  // loads YAML
-        ImGUI::SetupSlider(m_SceneLoader.GetGltfFiles());
+        ImGUI::SetupSlider(this);
 
         LoadModels();
         LoadScripts();

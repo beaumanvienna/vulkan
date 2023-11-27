@@ -49,7 +49,7 @@ namespace LucreApp
 
     private:
     
-        static constexpr float WALK_SPEED = 0.4f;
+        static constexpr float WALK_SPEED = 1.0f;
         static constexpr float TIME_TO_GET_TO_WALK_SPEED = 1.0f;
         static constexpr float WAIT_START_WALK = 0.8f;
         static constexpr int   FRAMES_PER_ROTATION = 7;

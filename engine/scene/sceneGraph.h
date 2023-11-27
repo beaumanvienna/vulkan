@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         uint GetChild(uint const childIndex);
         uint AddChild(uint const nodeIndex);
         void SetGameObject(entt::entity gameObject);
+        std::vector<uint>& GetChildren() { return m_Children; }
 
     private:
 

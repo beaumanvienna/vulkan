@@ -62,15 +62,13 @@ namespace GfxRenderEngine
         bool GetImageFormatGltf(uint const imageIndex);
         void AssignMaterial(const PrimitiveTmp& primitiveTmp, int const materialIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
-        uint CreateGameObject(tinygltf::Scene& scene, uint const gltfNodeIndex, uint const currentNode);
-        void ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const currentNode);
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
-        void ProcessScene(tinygltf::Scene& scene);
-        bool MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex, std::vector<bool>& hasMesh, int& hasMeshArrayIndex);
-        void ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, std::vector<bool>& hasMesh, int& hasMeshArrayIndex);
-        void CreateGameObject(tinygltf::Scene& scene, uint const gltfNodeIndex);
+        bool MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex);
+        void ProcessScene(tinygltf::Scene& scene, uint const parentNode);
+        void ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        uint CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
 
     private:
 
@@ -101,8 +99,10 @@ namespace GfxRenderEngine
         uint m_ImageOffset;
 
         // scene graph
+        uint m_InstanceCount;
+        uint m_InstanceIndex;
+        std::vector<bool> m_HasMesh;
         entt::entity m_GameObject;
-        std::vector<size_t> m_CurrentNodes;
 
         entt::registry& m_Registry;
         SceneGraph& m_SceneGraph;

@@ -76,7 +76,7 @@ namespace LucreApp
         auto view = m_Registry.view<TransformComponent>();
         auto& characterTransform  = view.get<TransformComponent>(m_GameObject);
         //float characterScale = characterTransform.GetScale().x;
-        m_WalkSpeedScaled = WALK_SPEED * 0.2f;  // character scale does not work as models can also be scaled on the vertex level :-(
+        m_WalkSpeedScaled = WALK_SPEED;  // character scale does not work as models can also be scaled on the vertex level :-(
 
         if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::Controller::BUTTON_A))
         {

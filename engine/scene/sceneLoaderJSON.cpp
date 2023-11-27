@@ -279,10 +279,17 @@ namespace GfxRenderEngine
 
                     std::string fullEntityName = gltfFilename + std::string("::" + gltfNode.m_Name);
                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
-                    LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
+                    if (gameObject != entt::null)
+                    {
+                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
 
-                    ScriptComponent scriptComponent(scriptComponentStringView);
-                    m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+                        ScriptComponent scriptComponent(scriptComponentStringView);
+                        m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+                    }
+                    else
+                    {
+                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
+                    }
                 }
                 else
                 {

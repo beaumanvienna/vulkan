@@ -34,7 +34,8 @@ namespace GfxRenderEngine
 
     GltfBuilder::GltfBuilder(const std::string& filepath, Scene& scene)
         : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()},
-          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}
+          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
+          m_InstanceCount{0}, m_InstanceIndex{0}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -58,50 +59,97 @@ namespace GfxRenderEngine
             return Gltf::GLTF_LOAD_FAILURE;
         }
 
-        LoadImagesGltf();
-        LoadSkeletonsGltf();
-        LoadMaterialsGltf();
-
-        // create group game object(s) for all scenes/meshes
-        m_CurrentNodes.resize(instanceCount);
-        for(uint instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
-        {
-            auto entity = m_Registry.create();
-            TransformComponent transform{};
-            m_Registry.emplace<TransformComponent>(entity, transform);
-
-            std::string name = EngineCore::GetFilenameWithoutPath(EngineCore::GetFilenameWithoutExtension(m_Filepath));
-            auto shortName = name + "::" + std::to_string(instanceIndex) + "::root";
-            auto longName = m_Filepath + "::" + std::to_string(instanceIndex) + "::root";
-            m_CurrentNodes[instanceIndex] = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(m_CurrentNodes[instanceIndex]);
-        }
-
-        // a scene ID was provided
-        if (sceneID > Gltf::GLTF_NOT_USED)
+        if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
         {
             // check if valid
-            if (static_cast<size_t>(sceneID) < m_GltfModel.scenes.size())
-            {
-                ProcessScene(m_GltfModel.scenes[sceneID]);
-            }
-            else
+            if ((m_GltfModel.scenes.size()-1) < static_cast<size_t>(sceneID))
             {
                 LOG_CORE_CRITICAL("LoadGltf: scene not found in {0}", m_Filepath);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
         }
-        else //no scene was provided --> use all scenes
+
+        LoadImagesGltf();
+        LoadSkeletonsGltf();
+        LoadMaterialsGltf();
+
+        // PASS 1
+        // mark gltf nodes to receive a game object ID if they have a mesh or any child has
+        // --> create array of flags for all nodes of the gltf file
+        m_HasMesh.resize(m_GltfModel.nodes.size(), false);
+        if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
+        {
+            auto& scene = m_GltfModel.scenes[sceneID];
+            size_t nodeCount = scene.nodes.size();
+            for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+            {
+                MarkNode(scene, scene.nodes[nodeIndex]);
+            }
+        }
+        else //no scene ID was provided --> use all scenes
         {
             for (auto& scene : m_GltfModel.scenes)
             {
-                ProcessScene(scene);
+                size_t nodeCount = scene.nodes.size();
+                for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+                {
+                    MarkNode(scene, scene.nodes[nodeIndex]);
+                }
+            }
+        }
+
+        // PASS 2 (for all instances)
+        m_InstanceCount = instanceCount;
+        for(m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
+        {
+            // create group game object(s) for all instances to apply transform from JSON file to
+            auto entity = m_Registry.create();
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(entity, transform);
+
+            std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
+            auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
+            auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+            uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(groupNode);
+
+            // a scene ID was provided
+            if (sceneID > Gltf::GLTF_NOT_USED)
+            {
+                ProcessScene(m_GltfModel.scenes[sceneID], groupNode);
+            }
+            else //no scene ID was provided --> use all scenes
+            {
+                for (auto& scene : m_GltfModel.scenes)
+                {
+                    ProcessScene(scene, groupNode);
+                }
             }
         }
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
-    void GltfBuilder::ProcessScene(tinygltf::Scene& scene)
+    bool GltfBuilder::MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex)
+    {
+        // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
+        auto& node = m_GltfModel.nodes[gltfNodeIndex];
+
+        // does this gltf node have a mesh?
+        bool localHasMesh = (node.mesh != Gltf::GLTF_NOT_USED);
+
+        // do any of the child nodes have a mesh?
+        size_t childNodeCount = node.children.size();
+        for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
+        {
+            int gltfChildNodeIndex = node.children[childNodeIndex];
+            bool childHasMesh = MarkNode(scene, gltfChildNodeIndex);
+            localHasMesh = localHasMesh || childHasMesh;
+        }
+        m_HasMesh[gltfNodeIndex] = localHasMesh;
+        return localHasMesh;
+    }
+
+    void GltfBuilder::ProcessScene(tinygltf::Scene& scene, uint const parentNode)
     {
         size_t nodeCount = scene.nodes.size();
         if (!nodeCount)
@@ -110,69 +158,39 @@ namespace GfxRenderEngine
             return;
         }
 
-        std::vector<bool> hasMesh(nodeCount, false);
-        int hasMeshArrayIndex = -1;
         for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
         {
-            MarkNode(scene, scene.nodes[nodeIndex], hasMesh, hasMeshArrayIndex);
-        }
-        hasMeshArrayIndex = -1;
-        for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-        {
-            ProcessNode(scene, scene.nodes[nodeIndex], hasMesh, hasMeshArrayIndex);
+            ProcessNode(scene, scene.nodes[nodeIndex], parentNode);
         }
     }
 
-    bool GltfBuilder::MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex, std::vector<bool>& hasMesh, int& hasMeshArrayIndex)
-    {
-        auto& node = m_GltfModel.nodes[gltfNodeIndex];
-
-        // each recursive call of this function marks a node in "hasMesh" if itself or a child has a mesh
-        ++hasMeshArrayIndex;
-        int localHasMeshArrayIndex = hasMeshArrayIndex; // remember array index into hasMesh
-
-        // does this gltf node have a mesh?
-        bool localHasMesh = node.mesh != Gltf::GLTF_NOT_USED;
-
-        // do any of the child nodes have a mesh?
-        size_t childNodeCount = node.children.size();
-        for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
-        {
-            int gltfChildNodeIndex = node.children[childNodeIndex];
-            localHasMesh = localHasMesh || MarkNode(scene, gltfChildNodeIndex, hasMesh, hasMeshArrayIndex);
-        }
-        hasMesh[localHasMeshArrayIndex] = localHasMesh;
-        return localHasMesh;
-    }
-
-    void GltfBuilder::ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, std::vector<bool>& hasMesh, int& hasMeshArrayIndex)
+    void GltfBuilder::ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         auto& nodeName = node.name;
         auto meshIndex = node.mesh;
 
-        ++hasMeshArrayIndex;
+        uint currentNode = parentNode;
 
-        if (hasMesh[hasMeshArrayIndex]) 
+        if (m_HasMesh[gltfNodeIndex]) 
         {
             if (meshIndex > Gltf::GLTF_NOT_USED)
             {
-                CreateGameObject(scene, gltfNodeIndex);
+                currentNode = CreateGameObject(scene, gltfNodeIndex, parentNode);
             }
             else // one or more children have a mesh, but not this one --> create group node
             {
-                for (uint instanceIndex = 0; instanceIndex < m_CurrentNodes.size(); ++instanceIndex)
-                {
-                    auto entity = m_Registry.create();
-                    TransformComponent transform{};
-                    LoadTransformationMatrix(transform, gltfNodeIndex);
-                    m_Registry.emplace<TransformComponent>(entity, transform);
-                    auto shortName = "::" + std::to_string(instanceIndex) + "::" + scene.name + "::" + nodeName;
-                    auto longName = m_Filepath + "::" + std::to_string(instanceIndex) + "::" + scene.name + "::" + nodeName;
-                    uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-                    m_SceneGraph.GetNode(m_CurrentNodes[instanceIndex]).AddChild(newNode);
-                    m_CurrentNodes[instanceIndex] = newNode;
-                }
+                // create game object and transform component
+                auto entity = m_Registry.create();
+                TransformComponent transform{};
+                LoadTransformationMatrix(transform, gltfNodeIndex);
+                m_Registry.emplace<TransformComponent>(entity, transform);
+
+                // create scene graph node and add to parent
+                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+                auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+                currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+                m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
             }
         }
 
@@ -180,11 +198,11 @@ namespace GfxRenderEngine
         for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
         {
             int gltfChildNodeIndex = node.children[childNodeIndex];
-            ProcessNode(scene, gltfChildNodeIndex, hasMesh, hasMeshArrayIndex);
+            ProcessNode(scene, gltfChildNodeIndex, currentNode);
         }
     }
 
-    void GltfBuilder::CreateGameObject(tinygltf::Scene& scene, uint const gltfNodeIndex)
+    uint GltfBuilder::CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         auto& nodeName = node.name;
@@ -194,112 +212,109 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
 
         auto model = Engine::m_Engine->LoadModel(*this);
-        for (uint instanceIndex = 0; instanceIndex < m_CurrentNodes.size(); ++instanceIndex)
+        auto entity = m_Registry.create();
+        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+        auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+
+        uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+        m_SceneGraph.GetNode(parentNode).AddChild(newNode);
+
+        // mesh
+        MeshComponent mesh{nodeName, model};
+        m_Registry.emplace<MeshComponent>(entity, mesh);
+
+        // transform
+        TransformComponent transform{};
+        LoadTransformationMatrix(transform, gltfNodeIndex);
+        m_Registry.emplace<TransformComponent>(entity, transform);
+
+        // material tags (can have multiple tags)
+        bool hasPbrMaterial = false;
+
+        // vertex diffuse color, diffuse map, normal map, roughness/metallic map
+        if (m_PrimitivesNoMap.size())
         {
-            auto entity = m_Registry.create();
-            auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(instanceIndex) + "::" + scene.name + "::" + nodeName;
-            auto longName = m_Filepath + "::" + std::to_string(instanceIndex) + "::" + scene.name + "::" + nodeName;
+            hasPbrMaterial = true;
 
-            uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-            m_SceneGraph.GetNode(m_CurrentNodes[instanceIndex]).AddChild(newNode);
-            m_CurrentNodes[instanceIndex] = newNode;
-
-            // mesh
-            MeshComponent mesh{nodeName, model};
-            m_Registry.emplace<MeshComponent>(entity, mesh);
-
-            // transform
-            TransformComponent transform{};
-            LoadTransformationMatrix(transform, gltfNodeIndex);
-            m_Registry.emplace<TransformComponent>(entity, transform);
-
-            // material tags (can have multiple tags)
-            bool hasPbrMaterial = false;
-
-            // vertex diffuse color, diffuse map, normal map, roughness/metallic map
-            if (m_PrimitivesNoMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrNoMapTag pbrNoMapTag{};
-                m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
-            }
-            if (m_PrimitivesDiffuseMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseTag pbrDiffuseTag{};
-                m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
-            }
-            if (m_PrimitivesDiffuseSAMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseSATag pbrDiffuseSATag{};
-                m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-            }
-            if (m_PrimitivesDiffuseNormalMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseNormalTag pbrDiffuseNormalTag;
-                m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
-            }
-            if (m_PrimitivesDiffuseNormalSAMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
-                m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-            }
-            if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
-                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
-            }
-
-            if (m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
-                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-            }
-
-            // emissive materials
-            if (m_PrimitivesEmissive.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrEmissiveTag pbrEmissiveTag{};
-                m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
-            }
-
-            if (m_PrimitivesEmissiveTexture.size())
-            {
-                hasPbrMaterial = true;
-
-                PbrEmissiveTextureTag pbrEmissiveTextureTag{};
-                m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
-            }
-
-            if (hasPbrMaterial)
-            {
-                PbrMaterial pbrMaterial{};
-                m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
-            }
+            PbrNoMapTag pbrNoMapTag{};
+            m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
         }
+        if (m_PrimitivesDiffuseMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseTag pbrDiffuseTag{};
+            m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+        }
+        if (m_PrimitivesDiffuseSAMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseSATag pbrDiffuseSATag{};
+            m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+        }
+        if (m_PrimitivesDiffuseNormalMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseNormalTag pbrDiffuseNormalTag;
+            m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
+        }
+        if (m_PrimitivesDiffuseNormalSAMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
+            m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+        }
+        if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
+            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
+        }
+
+        if (m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
+            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
+
+            SkeletalAnimationTag skeletalAnimationTag{};
+            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+        }
+
+        // emissive materials
+        if (m_PrimitivesEmissive.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrEmissiveTag pbrEmissiveTag{};
+            m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
+        }
+
+        if (m_PrimitivesEmissiveTexture.size())
+        {
+            hasPbrMaterial = true;
+
+            PbrEmissiveTextureTag pbrEmissiveTextureTag{};
+            m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
+        }
+
+        if (hasPbrMaterial)
+        {
+            PbrMaterial pbrMaterial{};
+            m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
+        }
+        return newNode;
     }
 
     void GltfBuilder::LoadImagesGltf()

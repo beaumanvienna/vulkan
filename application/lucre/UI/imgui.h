@@ -48,7 +48,7 @@ namespace LucreApp
 
 
         static void DebugWindow();
-        static void SetupSlider(Gltf::GltfFiles& gltfFiles);
+        static void SetupSlider(Scene* scene);
 
     public:
 
