@@ -246,6 +246,7 @@ namespace LucreApp
                 m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::root");
                 if (m_Lightbulb0 == entt::null)
                 {
+                    LOG_APP_CRITICAL("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
@@ -270,6 +271,7 @@ namespace LucreApp
                 m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::root");
                 if (m_Lightbulb1 == entt::null)
                 {
+                    LOG_APP_CRITICAL("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
                             
@@ -298,7 +300,7 @@ namespace LucreApp
 
     void NightScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);

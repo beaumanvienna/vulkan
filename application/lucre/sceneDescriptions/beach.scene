@@ -3,16 +3,16 @@ glTF-files:
   application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
     translation: [0.776580513, 1.87029123, -0.898012221]
     scale: [0.499998391, 0.499991238, 0.499978572]
-    rotation: [1.5707885, -0.0387142152, 1.52665041e-06]
+    rotation: [0, -0.0387142152, 1.52665041e-06]
   application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
     translation: [1.60750818, 1.62593806, -0.92102474]
     scale: [0.25, 0.249997795, 0.249997795]
-    rotation: [1.57079601, -0, 0]
-  application/lucre/models/emissive/emissiveCube.gltf:
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/emissive/emissiveCube.gltf:
     translation: [-2.7844615, 2.32601213, -1.66519284]
     scale: [0.49999997, 0.5, 0.49999997]
     rotation: [0, 1.57045102, 0]
-  application/lucre/models/emissive/emissiveCubeWithTexture.gltf:
+  application/lucre/models/external_3D_files/emissive/emissiveCubeWithTexture.gltf:
     translation: [-1.60500836, 2.05293226, -2.25813103]
     scale: [0.499999911, 0.5, 0.499999911]
     rotation: [0, 1.57045102, 0]
@@ -31,11 +31,11 @@ glTF-files:
   application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
     translation: [-0.765511096, 1.2574358, -3.5]
     scale: [0.469675392, 0.5, 0.5]
-    rotation: [-1.5706929, 1.54486609, -3.14149141]
+    rotation: [0, 1.54486609, 0]
   application/lucre/models/external_3D_files/monkey01/monkey01.gltf:
     translation: [-0.765511096, 1.2574358, -2.5]
     scale: [0.469675392, 0.5, 0.5]
-    rotation: [-1.5706929, 1.54486609, -3.14149141]
+    rotation: [0, 1.54486609, 0]
   application/lucre/models/external_3D_files/pirateship/pirateship.gltf:
     translation: [2.74061155, 0.0999100804, -10.5124426]
     scale: [0.999999821, 1, 0.999999821]
@@ -48,7 +48,7 @@ glTF-files:
     translation: [18.6503143, -0.0689999983, -18.4104939]
     scale: [1, 1, 1]
     rotation: [0, -0, 0]
-  application/lucre/models/surface/surface.gltf:
+  application/lucre/models/external_3D_files/surface/surface.gltf:
     translation: [-0.899999976, 0.263500631, -3]
     scale: [1, 1, 1]
     rotation: [0, -0, 0]

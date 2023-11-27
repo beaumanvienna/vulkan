@@ -296,6 +296,7 @@ namespace LucreApp
     void ImGUI::SetupSlider(Scene* scene)
     {
         m_SelectedModel = 0;
+        m_VisibleModels.clear();
         TreeNode& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
 
         { // insert root

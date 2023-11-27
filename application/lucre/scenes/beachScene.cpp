@@ -71,7 +71,7 @@ namespace LucreApp
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
-        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::Scene::monkey");
+        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
 
         {
             // place static lights for beach scene
@@ -143,7 +143,7 @@ namespace LucreApp
         }
         {
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::Scene::lightbulb");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     m_Lightbulb0 = m_Registry.create();
@@ -167,7 +167,7 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::Scene::arrow");
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     m_Lightbulb1 = m_Registry.create();
@@ -198,7 +198,7 @@ namespace LucreApp
 
     void BeachScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);

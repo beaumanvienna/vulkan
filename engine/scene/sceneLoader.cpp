@@ -106,7 +106,7 @@ namespace GfxRenderEngine
             }
             else
             {
-                LOG_CORE_CRITICAL("Scene loader could not find file");
+                LOG_CORE_CRITICAL("Scene loader could not find file {0}", filename);
             }
         }
 

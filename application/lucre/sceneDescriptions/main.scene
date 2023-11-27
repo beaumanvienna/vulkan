@@ -6,7 +6,7 @@ glTF-files :
         translation:    [-1.046,  0.094,  0.000]
         scale:          [ 5.000,  5.000,  5.000]
     application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf:
-    application/lucre/models/barrel/barrel.gltf:
+    application/lucre/models/external_3D_files/barrel/barrel.gltf:
         translation:    [ 1.900,  0.294,  0.000]
     application/lucre/models/assets/Sponza/glTF/Sponza.gltf:
         translation:    [ 0.229,  -0.009,  0.000]

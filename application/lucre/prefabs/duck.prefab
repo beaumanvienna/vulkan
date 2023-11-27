@@ -2,7 +2,7 @@
 ---
 
 glTF-files:
-  - application/lucre/models/duck/duck.gltf
+  - application/lucre/models/external_3D_files/duck/duck.gltf
 
 script-components:
-  application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck: application/lucre/scripts/duck/duck.cpp
+  application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck: application/lucre/scripts/duck/duck.cpp

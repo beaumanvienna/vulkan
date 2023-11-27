@@ -101,7 +101,7 @@ namespace LucreApp
             m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
         }
 
-        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/barrel/barrel.gltf::0::root");
+        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/barrel/barrel.gltf::0::root");
         m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::0::root");
         m_ToyCar = m_Dictionary.Retrieve("application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::0::root");
         m_Sponza = m_Dictionary.Retrieve("application/lucre/models/assets/Sponza/glTF/Sponza.gltf::0::root");
@@ -199,7 +199,7 @@ namespace LucreApp
 
     void MainScene::LoadScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);

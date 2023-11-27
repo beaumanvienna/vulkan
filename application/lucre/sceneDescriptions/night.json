@@ -231,7 +231,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/emissive/emissiveCube.gltf",
+            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCube.gltf",
             "instances":
             [
                 {
@@ -254,7 +254,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/emissive/emissiveCubeWithTexture.gltf",
+            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCubeWithTexture.gltf",
             "instances":
             [
                 {
@@ -478,7 +478,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/surface/surface.gltf",
+            "filename": "application/lucre/models/external_3D_files/surface/surface.gltf",
             "instances":
             [
                 {
@@ -501,7 +501,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/duck/duck.gltf",
+            "filename": "application/lucre/models/external_3D_files/duck/duck.gltf",
             "instances":
             [
                 {
