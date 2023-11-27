@@ -124,10 +124,13 @@ namespace LucreApp
                 auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::root");
-
-                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
-                m_CharacterAnimation->Start();
+                //entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::Cesium_Man");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::root");
+                if (model != entt::null)
+                {
+                    m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
+                    m_CharacterAnimation->Start();
+                }
             }
         }
 
