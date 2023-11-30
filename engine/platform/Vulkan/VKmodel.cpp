@@ -93,6 +93,7 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
+        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
         m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
         m_Cubemaps = std::move(builder.m_Cubemaps);
 

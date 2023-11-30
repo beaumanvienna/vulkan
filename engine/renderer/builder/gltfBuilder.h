@@ -69,6 +69,8 @@ namespace GfxRenderEngine
         void ProcessScene(tinygltf::Scene& scene, uint const parentNode);
         void ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
         uint CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        int GetMinFilter(uint index);
+        int GetMagFilter(uint index);
 
     private:
 
@@ -109,7 +111,7 @@ namespace GfxRenderEngine
         Dictionary& m_Dictionary;
 
 
-    // skeletal animtion
+    // skeletal animation
     private:
 
         void LoadSkeletonsGltf();

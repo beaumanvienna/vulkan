@@ -34,9 +34,11 @@ namespace GfxRenderEngine
     VK_Texture::VK_Texture(bool nearestFilter)
         : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0),
           m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_MipLevels(0), m_NearestFilter(nearestFilter),
-          m_sRGB(false)
+          m_DataFormat(0), m_MipLevels(0), m_sRGB(false)
     {
+        nearestFilter ? m_MinFilter = VK_FILTER_NEAREST : m_MinFilter = VK_FILTER_LINEAR;
+        nearestFilter ? m_MagFilter = VK_FILTER_NEAREST : m_MagFilter = VK_FILTER_LINEAR;
+        m_MinFilterMip = VK_FILTER_LINEAR;
     }
 
     VK_Texture::~VK_Texture()
@@ -56,12 +58,15 @@ namespace GfxRenderEngine
     }
 
     // create texture from raw memory
-    bool VK_Texture::Init(const uint width, const uint height, bool sRGB, const void* data)
+    bool VK_Texture::Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter, int magFilter)
     {
         bool ok = false;
         m_FileName = "raw memory";
         m_sRGB = sRGB;
         m_LocalBuffer = (uchar*)data;
+        m_MinFilter = SetFilter(minFilter);
+        m_MagFilter = SetFilter(magFilter);
+        m_MinFilterMip = SetFilterMip(minFilter);
 
         if(m_LocalBuffer)
         {
@@ -322,16 +327,8 @@ namespace GfxRenderEngine
         // Note: Similar to the samplers available with OpenGL 3.3
         VkSamplerCreateInfo samplerCreateInfo{};
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        if (m_NearestFilter)
-        {
-            samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-            samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-        }
-        else
-        {
-            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        }
+        samplerCreateInfo.magFilter = m_MagFilter;
+        samplerCreateInfo.minFilter = m_MinFilter;
         samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -454,7 +451,7 @@ namespace GfxRenderEngine
             blit.dstSubresource.baseArrayLayer = 0;
             blit.dstSubresource.layerCount = 1;
 
-            vkCmdBlitImage(commandBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+            vkCmdBlitImage(commandBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, m_MinFilterMip);
 
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -477,5 +474,37 @@ namespace GfxRenderEngine
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
 
+    }
+    
+    VkFilter VK_Texture::SetFilter(int minMagFilter)
+    {
+        VkFilter filter = VK_FILTER_LINEAR;
+        switch (minMagFilter)
+        {
+            case TEXTURE_FILTER_NEAREST:
+            case TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+            case TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+            {
+                filter = VK_FILTER_NEAREST;
+                break;
+            }
+        }
+        return filter;
+    }
+
+    VkFilter VK_Texture::SetFilterMip(int minFilter)
+    {
+        VkFilter filter = VK_FILTER_LINEAR;
+        switch (minFilter)
+        {
+            case TEXTURE_FILTER_NEAREST:
+            case TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
+            case TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
+            {
+                filter = VK_FILTER_NEAREST;
+                break;
+            }
+        }
+        return filter;
     }
 }

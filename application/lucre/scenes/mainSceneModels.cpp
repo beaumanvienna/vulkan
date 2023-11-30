@@ -36,59 +36,22 @@ namespace LucreApp
 {
     void MainScene::LoadModels()
     {
-        // --- sprites from the built-in texture atlas ---
         {
-            Builder builder{};
-
-            auto sprite = Lucre::m_Spritesheet->GetSprite(I_BLOOD_ISLAND);
-
-            builder.LoadSprite(sprite, 4.0f/*amplification*/);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"volcano", model};
-
-            bool flip = false;
-            float size = 10.0f;
-            float scale = size / sprite.GetWidth();
-            for (uint i =0; i < 3; i++)
+            std::vector<std::string> faces =
             {
-                flip = !flip;
-                m_Volcano[i] = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Volcano[i], mesh);
+                "application/lucre/models/assets/Skybox/right.png",
+                "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",
+                "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/front.png",
+                "application/lucre/models/assets/Skybox/back.png"
+            };
 
-                sprite.SetScale(scale, flip ? scale : -scale);
-                TransformComponent transform = TransformComponent(sprite.GetMat4());
-                transform.SetTranslation({-size * 2.0f + i * 2.0f * size, 10.0f, -20.0f});
-
-                m_Registry.emplace<TransformComponent>(m_Volcano[i], transform);
-
-                SpriteRendererComponent spriteRendererComponent{0.1f, 0.1f};
-                m_Registry.emplace<SpriteRendererComponent>(m_Volcano[i], spriteRendererComponent);
-            }
-        }
-        {
-            Builder builder{};
-
-            auto sprite = Lucre::m_Spritesheet->GetSprite(I_WALKWAY);
-            float size = 4.0f / sprite.GetWidth();
-            sprite.SetScale(size);
-
-            builder.LoadSprite(sprite, 0.1f/*amplification*/);
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"walkway", model};
-
-            for (uint i =0; i < 1; i++)
-            {
-                m_Walkway[i] = CreateEntity();
-                m_Registry.emplace<MeshComponent>(m_Walkway[i], mesh);
-
-                TransformComponent transform = TransformComponent(sprite.GetMat4());
-                transform.SetRotation({-glm::half_pi<float>(), glm::half_pi<float>(), 0.0f});
-                transform.SetTranslation({0.5*i, -0.024f, -0.1f});
-                m_Registry.emplace<TransformComponent>(m_Walkway[i], transform);
-
-                SpriteRendererComponent spriteRendererComponent{};
-                m_Registry.emplace<SpriteRendererComponent>(m_Walkway[i], spriteRendererComponent);
-            }
+            Builder builder;
+            m_Skybox = builder.LoadCubemap(faces, m_Registry);
+            auto view = m_Registry.view<TransformComponent>();
+            auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
+            skyboxTransform.SetScale(20.0f);
         }
         {
             float scaleHero   = 0.0038f;
@@ -118,72 +81,15 @@ namespace LucreApp
                 m_Registry.emplace<SpriteRendererComponent>(m_Guybrush[i], spriteRendererComponent);
             }
         }
-        // --- Obj files ---
-        // --- Note: It is recommended to use the glTF file format for assets rather than Obj Wavefront ---
         {
-            Builder builder{};
-            m_Ground = CreateEntity();
-
-            builder.LoadModelObjWavefront("application/lucre/models/external_3D_files/colored_cube.obj");
+            GltfBuilder builder("application/lucre/models/external_3D_files/banana/banana.gltf", *this);
+            builder.LoadGltf(MAX_B /*instance(s)*/);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"ground", model};
-            m_Registry.emplace<MeshComponent>(m_Ground, mesh);
-
-            TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.0f, 0.0f, 0.0f});
-            transform.SetScale(glm::vec3{0.01f, 1.6f, 1.4f});
-            transform.SetRotation(glm::vec3{0.0f, glm::pi<float>(), glm::half_pi<float>()});
-            m_Registry.emplace<TransformComponent>(m_Ground, transform);
-
-            PbrNoMapTag pbrNoMapTag{};
-            m_Registry.emplace<PbrNoMapTag>(m_Ground, pbrNoMapTag);
-        }
-        {
-            Builder builder{};
-            m_Vase0 = CreateEntity();
-
-            builder.LoadModelObjWavefront("application/lucre/models/external_3D_files/flat_vase.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"polygon vase", model};
-            m_Registry.emplace<MeshComponent>(m_Vase0, mesh);
-
-            TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{-0.8f, 0.8f, 0.0f});
-            transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
-            m_Registry.emplace<TransformComponent>(m_Vase0, transform);
-
-            PbrNoMapTag pbrNoMapTag{};
-            m_Registry.emplace<PbrNoMapTag>(m_Vase0, pbrNoMapTag);
-        }
-        {
-            Builder builder{};
-            m_Vase1 = CreateEntity();
-
-            builder.LoadModelObjWavefront("application/lucre/models/external_3D_files/smooth_vase.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"smooth vase", model};
-            m_Registry.emplace<MeshComponent>(m_Vase1, mesh);
-
-            TransformComponent transform{};
-            transform.SetTranslation(glm::vec3{0.8f, 0.8f, 0.0f});
-            transform.SetScale(glm::vec3{2.0f, 2.0f, 2.0f});
-            m_Registry.emplace<TransformComponent>(m_Vase1, transform);
-
-            PbrNoMapTag pbrNoMapTag{};
-            m_Registry.emplace<PbrNoMapTag>(m_Vase1, pbrNoMapTag);
-        }
-
-        {
-            Builder builder{};
-            builder.LoadModelObjWavefront("application/lucre/models/external_3D_files/banana.obj");
-            auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"banana", model};
+            
 
             for (uint i = 0; i < MAX_B; i++)
             {
-                m_Banana[i] = CreateEntity();
-
-                m_Registry.emplace<MeshComponent>(m_Banana[i], mesh);
+                m_Banana[i] = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/banana/banana.gltf::" + std::to_string(i) + "::root");
 
                 TransformComponent transform{};
                 if (i < 12)
@@ -194,14 +100,7 @@ namespace LucreApp
                 {
                     transform.SetTranslation(glm::vec3{-3.0f + 0.5 * (i-12), 0.5f, 0.3f});
                 }
-                transform.SetScale(glm::vec3{0.02f});
-                transform.SetRotation(glm::vec3{0.0f, 0.0f, 0.0f});
-                m_Registry.emplace<TransformComponent>(m_Banana[i], transform);
-
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
-
-                PbrNoMapTag pbrNoMapTag{};
-                m_Registry.emplace<PbrNoMapTag>(m_Banana[i], pbrNoMapTag);
 
                 b2BodyDef bodyDef;
                 bodyDef.type = b2_dynamicBody;
@@ -235,7 +134,7 @@ namespace LucreApp
 
             for (size_t i = 0; i < lightColors.size(); i++)
             {
-                m_PointLight[i] = CreatePointLight(0.2f, 0.1f, lightColors[i]);
+                m_PointLight[i] = CreatePointLight(POINT_LIGHT_INTENSITY, 0.1f, lightColors[i]);
                 auto rotateLight = glm::rotate
                 (
                     glm::mat4(1.0f),
@@ -248,14 +147,6 @@ namespace LucreApp
                 m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
                 m_Registry.emplace<Group1>(m_PointLight[i], true);
             }
-        }
-        {
-            // light the volcano
-            m_PointLightVolcano = CreatePointLight(10.0f, 0.0f, {1.0f, 0.0f, 0.0f});
-            TransformComponent transform{};
-            transform.SetTranslation(glm::vec3(0.0f, 14.0f, -19.0f));
-            m_Registry.emplace<TransformComponent>(m_PointLightVolcano, transform);
-            m_Registry.emplace<Group2>(m_PointLightVolcano, true);
         }
     }
 }

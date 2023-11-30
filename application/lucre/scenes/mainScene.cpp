@@ -27,7 +27,7 @@
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
-#include "resources/resources.h"
+    #include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
 #include "auxiliary/math.h"
 
@@ -40,7 +40,7 @@ namespace LucreApp
 
     MainScene::MainScene(const std::string& filepath, const std::string& alternativeFilepath)
             : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false},
-          m_LaunchVolcanoTimer(1500), m_SceneLoader{*this}
+              m_StartTimer{true}, m_LaunchVolcanoTimer(1000), m_SceneLoader{*this}
     {
     }
 
@@ -77,28 +77,19 @@ namespace LucreApp
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
 
+        m_LaunchVolcanoTimer.SetEventCallback
+        (
+            [](uint in, void* data)
+            {
+                std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+                Engine::m_Engine->QueueEvent(event);
+                return 0u;
+            }
+        );
+
         {
-            m_LaunchVolcanoTimer.SetEventCallback
-            (
-                [](uint in, void* data)
-                {
-                    std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
-                    Engine::m_Engine->QueueEvent(event);
-                    return 0u;
-                }
-            );
-            m_LaunchVolcanoTimer.Start();
-    
-            // volcano smoke animation
-            int poolSize = 50;
-            m_SpritesheetSmoke.AddSpritesheetTile
-            (
-                Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
-                8, 8, /* rows, columns */
-                0, /* margin */
-                0.01f /* scale) */
-            );
-            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
+            std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+            Engine::m_Engine->QueueEvent(event);
         }
 
         m_Barrel = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/barrel/barrel.gltf::0::root");
@@ -112,7 +103,6 @@ namespace LucreApp
             transform.SetTranslationX(0.229f);
 
             // place static lights for sponza scene
-            float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 0.2f;
             float height2 = 1.3f;
@@ -167,7 +157,7 @@ namespace LucreApp
 
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
-                auto entity = CreatePointLight(intensity, lightRadius);
+                auto entity = CreatePointLight(POINT_LIGHT_INTENSITY, lightRadius);
                 TransformComponent lightTransform{};
                 lightTransform.SetTranslation(lightPositions[i]);
                 m_Registry.emplace<TransformComponent>(entity, lightTransform);
@@ -248,6 +238,12 @@ namespace LucreApp
             }
         }
 
+        if (m_StartTimer)
+        {
+            m_StartTimer = false;
+            m_LaunchVolcanoTimer.Start();
+        }
+
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
@@ -265,13 +261,9 @@ namespace LucreApp
         ApplyDebugSettings();
 
         RotateLights(timestep);
-        AnimateVulcan(timestep);
 
         SimulatePhysics(timestep);
         UpdateBananas(timestep);
-
-        EmitVolcanoSmoke();
-        m_VolcanoSmoke->OnUpdate(timestep);
 
         // opaque objects
         m_Renderer->Submit(*this);
@@ -282,7 +274,7 @@ namespace LucreApp
 
         // transparent objects
         m_Renderer->NextSubpass();
-        m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke.get());
+        m_Renderer->TransparencyPass(m_Registry);
 
         // post processing
         m_Renderer->PostProcessingRenderpass();

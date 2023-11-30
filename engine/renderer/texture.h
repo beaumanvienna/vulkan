@@ -31,6 +31,7 @@ namespace GfxRenderEngine
 
     class Texture
     {
+
     public:
 
         static constexpr bool USE_SRGB = true;
@@ -40,7 +41,7 @@ namespace GfxRenderEngine
 
         virtual ~Texture() = default;
 
-        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) = 0;
+        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter, int magFilter) = 0;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) = 0;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) = 0;
         virtual int  GetWidth() const = 0;

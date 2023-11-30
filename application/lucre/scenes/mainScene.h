@@ -30,8 +30,10 @@
 #include "scene/sceneLoader.h"
 #include "scene/particleSystem.h"
 #include "sprite/spriteAnimation.h"
-#include "renderer/texture.h"
 #include "renderer/renderer.h"
+#include "renderer/cubemap.h"
+#include "renderer/texture.h"
+
 #include "renderer/cameraController.h"
 #include "platform/SDL/timer.h"
 
@@ -70,14 +72,14 @@ namespace LucreApp
         void InitPhysics();
         void FireVolcano();
         void ResetBananas();
-        void EmitVolcanoSmoke();
         void RotateLights(const Timestep& timestep);
         void UpdateBananas(const Timestep& timestep);
-        void AnimateVulcan(const Timestep& timestep);
         void SimulatePhysics(const Timestep& timestep);
         void ApplyDebugSettings();
 
     private:
+
+        static constexpr float POINT_LIGHT_INTENSITY = 2.7f;
 
         std::shared_ptr<Renderer> m_Renderer;
         SceneLoader m_SceneLoader;
@@ -87,9 +89,9 @@ namespace LucreApp
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Ground, m_Vase0, m_Vase1, m_PointLightVolcano, m_Barrel, m_Sponza;
-        entt::entity m_PointLight[MAX_LIGHTS], m_Volcano[3], m_Walkway[3], m_Duck, m_BarramundiFish;
-        entt::entity m_GoldenDuck, m_Helmet, m_ToyCar;
+        entt::entity m_Camera, m_Barrel, m_Sponza;
+        entt::entity m_PointLight[MAX_LIGHTS], m_Duck, m_BarramundiFish;
+        entt::entity m_GoldenDuck, m_Helmet, m_ToyCar, m_Skybox;
 
         static constexpr uint MAX_B = 24;
         entt::entity m_Banana[MAX_B];
@@ -101,10 +103,8 @@ namespace LucreApp
         const b2Vec2 GRAVITY{0.0f, -9.81f};
         std::unique_ptr<b2World> m_World;
         b2Body* m_GroundBody;
-        bool m_Fire;
+        bool m_Fire, m_StartTimer;
         Timer m_LaunchVolcanoTimer;
-
-        std::shared_ptr<ParticleSystem> m_VolcanoSmoke;
 
         static constexpr uint HORN_ANIMATION_SPRITES = 25;
         entt::entity m_Guybrush[HORN_ANIMATION_SPRITES];

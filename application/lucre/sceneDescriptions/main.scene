@@ -1,18 +1,40 @@
 # Lucre scene description file
----
-
-glTF-files :
-    application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf:
-        translation:    [-1.046,  0.094,  0.000]
-        scale:          [ 5.000,  5.000,  5.000]
-    application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf:
-    application/lucre/models/external_3D_files/barrel/barrel.gltf:
-        translation:    [ 1.900,  0.294,  0.000]
-    application/lucre/models/assets/Sponza/glTF/Sponza.gltf:
-        translation:    [ 0.229,  -0.009,  0.000]
-    application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
-        translation:    [ 1.414,  0.465,  0.000]
-        scale:          [ 0.100,  0.100,  0.100]
-
+glTF-files:
+  application/lucre/models/external_3D_files/walkWay/walkWay.gltf:
+    translation: [-0.331143975, -0.0268657506, -0.186507374]
+    scale: [0.699999988, 2, 0.699999988]
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/vase/smooth vase.gltf:
+    translation: [0.801863611, 0.771672785, 0]
+    scale: [2, 2, 2]
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/vase/flat vase.gltf:
+    translation: [-0.801863611, 0.771672785, 0]
+    scale: [2, 2, 2]
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/coloredCube/coloredCube.gltf:
+    translation: [0, -0.0289999992, -0.162457436]
+    scale: [1.60000002, 0.5, 1.22410858]
+    rotation: [0, -0, 0]
+  application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf:
+    translation: [-1.046, 0.0939999968, 0]
+    scale: [5, 5, 5]
+    rotation: [0, 0, 0]
+  application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf:
+    translation: [0.0880621523, -0.0706406236, -0.257486284]
+    scale: [0.800000012, 0.800000012, 0.800000012]
+    rotation: [0, -0, 0]
+  application/lucre/models/external_3D_files/barrel/barrel.gltf:
+    translation: [1.89999998, 0.294, 0]
+    scale: [1, 1, 1]
+    rotation: [0, 0, 0]
+  application/lucre/models/assets/Sponza/glTF/Sponza.gltf:
+    translation: [0.229000002, -0.00899999961, 0.116380259]
+    scale: [1, 1, 1]
+    rotation: [0, -0, 0]
+  application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf:
+    translation: [1.41400003, 0.465000004, 0]
+    scale: [0.100000001, 0.100000001, 0.100000001]
+    rotation: [0, 0, 0]
 prefabs:
   - application/lucre/prefabs/duck.prefab

@@ -317,6 +317,65 @@ namespace GfxRenderEngine
         return newNode;
     }
 
+    int GltfBuilder::GetMinFilter(uint index)
+    {
+        int sampler = m_GltfModel.textures[index].sampler;
+        int filter = m_GltfModel.samplers[sampler].minFilter;
+        std::string& name = m_GltfModel.images[index].name;
+        switch (filter)
+        {
+            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
+            case Gltf::GLTF_NOT_USED:
+            {
+                // use default filter
+                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+                break;
+            }
+            default:
+            {
+                // use default filter
+                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+                LOG_CORE_ERROR("minFilter: filter {0} not found, name = {1}", filter, name);
+                break;
+            }
+        }
+        return filter;
+    }
+
+    int GltfBuilder::GetMagFilter(uint index)
+    {
+        int sampler = m_GltfModel.textures[index].sampler;
+        int filter = m_GltfModel.samplers[sampler].magFilter;
+        std::string& name = m_GltfModel.images[index].name;
+        switch (filter)
+        {
+            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
+            case Gltf::GLTF_NOT_USED:
+            {
+                // use default filter
+                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+                break;
+            }
+            default:
+            {
+                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+                LOG_CORE_ERROR("magFilter: filter {0} not found, name = {1}", filter, name);
+                break;
+            }
+        }
+        return filter;
+    }
+
     void GltfBuilder::LoadImagesGltf()
     {
         m_ImageOffset = m_Images.size();
@@ -350,8 +409,12 @@ namespace GfxRenderEngine
                 buffer = &glTFImage.image[0];
                 bufferSize = glTFImage.image.size();
             }
+
             auto texture = Texture::Create();
-            texture->Init(glTFImage.width, glTFImage.height, GetImageFormatGltf(i), buffer);
+            int minFilter = GetMinFilter(i);
+            int magFilter = GetMinFilter(i);
+            bool imageFormat = GetImageFormatGltf(i);
+            texture->Init(glTFImage.width, glTFImage.height, imageFormat, buffer, minFilter, magFilter);
             #ifdef DEBUG
                 texture->SetFilename(imageFilepath);
             #endif

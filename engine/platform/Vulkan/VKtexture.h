@@ -39,7 +39,7 @@ namespace GfxRenderEngine
         VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
         virtual ~VK_Texture();
 
-        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data) override;
+        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter, int magFilter) override;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) override;
         virtual int  GetWidth() const override { return m_Width; }
@@ -62,6 +62,9 @@ namespace GfxRenderEngine
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
         void GenerateMipmaps();
 
+        VkFilter SetFilter(int minMagFilter);
+        VkFilter SetFilterMip(int minFilter);
+
     private:
 
         std::string m_FileName;
@@ -71,7 +74,10 @@ namespace GfxRenderEngine
         uint m_MipLevels;
 
         int m_InternalFormat, m_DataFormat;
-        bool m_NearestFilter, m_sRGB;
+        bool m_sRGB;
+        VkFilter m_MinFilter;
+        VkFilter m_MagFilter;
+        VkFilter m_MinFilterMip;
         int m_Type;
 
         VkFormat m_ImageFormat;
@@ -82,5 +88,15 @@ namespace GfxRenderEngine
         VkSampler m_Sampler;
 
         VkDescriptorImageInfo m_DescriptorImageInfo;
+
+    private:
+
+        static constexpr int TEXTURE_FILTER_NEAREST = 9728;
+        static constexpr int TEXTURE_FILTER_LINEAR = 9729;
+        static constexpr int TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 9984;
+        static constexpr int TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST = 9985;
+        static constexpr int TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR = 9986;
+        static constexpr int TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR = 9987;
+
     };
 }

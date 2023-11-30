@@ -36,7 +36,8 @@ namespace GfxRenderEngine
     struct PointLightPushConstants
     {
         glm::vec4 m_Position;
-        glm::vec4 m_Color;
+        glm::vec3 m_Color;
+        float m_LightIntensity;
         float m_Radius;
     };
 
@@ -120,7 +121,8 @@ namespace GfxRenderEngine
 
             PointLightPushConstants push{};
             push.m_Position = glm::vec4(transform.GetTranslation(), 1.f);
-            push.m_Color = glm::vec4(pointLight.m_Color, pointLight.m_LightIntensity);
+            push.m_Color = glm::vec3(pointLight.m_Color);
+            push.m_LightIntensity = pointLight.m_LightIntensity;
             push.m_Radius = pointLight.m_Radius;
 
             vkCmdPushConstants
