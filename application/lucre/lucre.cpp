@@ -40,7 +40,8 @@ namespace LucreApp
     SpriteSheet* Lucre::m_Spritesheet;
 
     Lucre::Lucre()
-        : m_CurrentScene{nullptr}, m_GUIisRunning{false}
+        : m_CurrentScene{nullptr}, m_InGameGuiIsRunning{false},
+          m_DebugWindowIsRunning{false}
     {
     }
 
@@ -94,7 +95,7 @@ namespace LucreApp
         m_UIControllerIcon->OnUpdate(timestep);
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_UIControllerIcon->m_Registry);
         // gui
-        if (m_GUIisRunning)
+        if (m_InGameGuiIsRunning)
         {
             m_UI->OnUpdate(timestep);  // direct submits
         }
@@ -166,9 +167,9 @@ namespace LucreApp
     // cancels gameplay or cancels the GUI
     void Lucre::Cancel()
     {
-        if (m_GameState.GetState() != GameState::State::SPLASH)
+        if ((m_GameState.GetState() != GameState::State::SPLASH) && (!m_DebugWindowIsRunning))
         {
-            m_GUIisRunning = !m_GUIisRunning;
+            m_InGameGuiIsRunning = !m_InGameGuiIsRunning;
         }
     }
 
@@ -197,7 +198,18 @@ namespace LucreApp
                 {
                     case ENGINE_KEY_M:
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
-                        ShowCursor();
+
+                        m_DebugWindowIsRunning = !m_DebugWindowIsRunning;
+                        if (m_DebugWindowIsRunning)
+                        {
+                            HideCursor();
+                            m_InGameGuiIsRunning = false;
+                        }
+                        else
+                        {
+                            ShowCursor();
+                        }
+
                         break;
                     case ENGINE_KEY_ESCAPE:
                         Cancel();

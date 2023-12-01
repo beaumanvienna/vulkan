@@ -107,6 +107,16 @@ namespace LucreApp
             return;
         }
 
+        if (Lucre::m_Application->DebugWindowIsRunning())
+        {
+            return;
+        }
+
+        if (!Lucre::m_Application->InGameGuiIsRunning())
+        {
+            return;
+        }
+
         EventDispatcher dispatcher(event);
 
         dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event) 

@@ -49,7 +49,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
-        ImGUI::m_AmbientLightIntensity = 0.35;
+        ImGUI::m_AmbientLightIntensity = 0.12;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         {

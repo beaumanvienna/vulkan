@@ -60,7 +60,9 @@ namespace LucreApp
         UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
         Scene* GetScene() override { return m_GameState.GetScene(); }
         GameState::State GetState() const { return m_GameState.GetState(); }
-        bool KeyboardInputIsReleased() const { return !m_GUIisRunning; }
+        bool KeyboardInputIsReleased() const { return !m_InGameGuiIsRunning; }
+        bool DebugWindowIsRunning() const { return m_DebugWindowIsRunning; }
+        bool InGameGuiIsRunning() const { return m_InGameGuiIsRunning; }
 
     public:
 
@@ -91,7 +93,8 @@ namespace LucreApp
         std::shared_ptr<CameraController> m_CameraController;
 
         SpriteSheet m_Atlas;
-        bool m_GUIisRunning;
+        bool m_InGameGuiIsRunning;
+        bool m_DebugWindowIsRunning;
 
     };
 }
