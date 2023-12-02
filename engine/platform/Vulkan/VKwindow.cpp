@@ -109,9 +109,9 @@ namespace GfxRenderEngine
 
     void VK_Window::ToggleFullscreen()
     { 
-        int count;
-        GLFWmonitor** monitors = glfwGetMonitors(&count);
-        const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+        const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
         if (m_IsFullscreen)
         {
             m_WindowProperties.m_Width  = m_WindowedWidth;
@@ -127,7 +127,7 @@ namespace GfxRenderEngine
             m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowProperties.m_Width) / static_cast<float>(m_WindowProperties.m_Height);
             glfwGetWindowPos(m_Window, &m_WindowPositionX, &m_WindowPositionY);
 
-            glfwSetWindowMonitor(m_Window, monitors[0], 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
+            glfwSetWindowMonitor(m_Window, monitor, 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
         }
         m_IsFullscreen = !m_IsFullscreen;
     }
@@ -325,9 +325,8 @@ namespace GfxRenderEngine
 
     void VK_Window::CreateWindow()
     {
-        int count;
-        GLFWmonitor** monitors = glfwGetMonitors(&count);
-        const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[0]);
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
         m_RefreshRate = videoMode->refreshRate;
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -337,7 +336,7 @@ namespace GfxRenderEngine
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         int monitorX, monitorY;
-        glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
+        glfwGetMonitorPos(monitor, &monitorX, &monitorY);
         m_DesktopWidth = videoMode->width;
         m_DesktopHeight = videoMode->height;
         m_WindowedWidth = videoMode->width / 2.5f;
@@ -355,7 +354,7 @@ namespace GfxRenderEngine
                     m_WindowProperties.m_Width,
                     m_WindowProperties.m_Height,
                     m_WindowProperties.m_Title.c_str(),
-                    monitors[0], nullptr);
+                    monitor, nullptr);
                 m_IsFullscreen = true;
             #else
                 // go to windowed mode first and then toggle to fullscreen in 'window focused' callback
