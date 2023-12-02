@@ -38,16 +38,18 @@ namespace GfxRenderEngine
 
     VK_Window::VK_Window(const WindowProperties& props)
         : m_OK(false), m_IsFullscreen(false),
-        m_AllowCursor(false)
+          m_AllowCursor(false)
     {
         m_WindowProperties.m_Title    = props.m_Title;
         m_WindowProperties.m_Width    = props.m_Width;
         m_WindowProperties.m_Height   = props.m_Height;
         m_WindowProperties.m_AspectRatio = static_cast<float>(props.m_Width) / static_cast<float>(props.m_Height);
-        //m_WindowProperties.m_VSync    = props.m_VSync;
+
         m_WindowProperties.m_MousePosX= 0.0f;
         m_WindowProperties.m_MousePosY= 0.0f;
         m_WindowProperties.m_FramebufferResized = false;
+        m_WindowProperties.m_ToggleCmd = false;
+        m_WindowProperties.m_Window = this;
 
         if (!m_GLFWIsInitialized)
         {
@@ -117,7 +119,6 @@ namespace GfxRenderEngine
             m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
 
             glfwSetWindowMonitor(m_Window, nullptr, m_WindowPositionX, m_WindowPositionY, m_WindowedWidth, m_WindowedHeight, videoMode->refreshRate);
-            glfwSetWindowPos(m_Window, m_WindowPositionX, m_WindowPositionY);
         }
         else
         {
@@ -180,15 +181,16 @@ namespace GfxRenderEngine
             }
         );
 
-        //glfwSetWindowCloseCallback(m_Window,[](GLFWwindow* window)
-        //    {
-        //        WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
-        //        EventCallbackFunction OnEvent = windowProperties.m_EventCallback;
-        //
-        //        WindowCloseEvent event;
-        //        OnEvent(event);
-        //    }
-        //);
+        glfwSetWindowFocusCallback(m_Window,[](GLFWwindow* window, int focused)
+            {
+                WindowData& windowProperties = *(WindowData*)glfwGetWindowUserPointer(window);
+                if (windowProperties.m_ToggleCmd)
+                {
+                    windowProperties.m_ToggleCmd = false;
+                    windowProperties.m_Window->ToggleFullscreen();
+                }
+            }
+        );
 
         glfwSetFramebufferSizeCallback(m_Window,[](GLFWwindow* window, int width, int height)
             {
@@ -339,7 +341,7 @@ namespace GfxRenderEngine
         m_DesktopWidth = videoMode->width;
         m_DesktopHeight = videoMode->height;
         m_WindowedWidth = videoMode->width / 2.5f;
-        m_WindowedHeight = m_WindowedWidth;// / 16 * 9;
+        m_WindowedHeight = m_WindowedWidth;
         m_WindowPositionX = (videoMode->width - m_WindowedWidth) / 2;
         m_WindowPositionY = (videoMode->height - m_WindowedHeight) / 2;
 
@@ -356,21 +358,19 @@ namespace GfxRenderEngine
                     monitors[0], nullptr);
                 m_IsFullscreen = true;
             #else
+                // go to windowed mode first and then toggle to fullscreen in 'window focused' callback
+                m_IsFullscreen = false;
                 m_WindowProperties.m_Width  = m_WindowedWidth;
                 m_WindowProperties.m_Height = m_WindowedHeight;
                 m_WindowProperties.m_AspectRatio = static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
+                m_WindowProperties.m_ToggleCmd = CoreSettings::m_EnableFullscreen;
 
                 m_Window = glfwCreateWindow(
-                    m_WindowProperties.m_Width,
-                    m_WindowProperties.m_Height,
-                    m_WindowProperties.m_Title.c_str(),
-                    nullptr, nullptr);
-                // center window
-                glfwSetWindowPos(m_Window,
-                    monitorX + m_WindowPositionX,
-                    monitorY + m_WindowPositionY);
-                m_IsFullscreen = false;
-                ToggleFullscreen();
+                            m_WindowProperties.m_Width, 
+                            m_WindowProperties.m_Height, 
+                            m_WindowProperties.m_Title.c_str(),
+                            nullptr,
+                            nullptr);
             #endif
         }
         else

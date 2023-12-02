@@ -100,6 +100,8 @@ namespace GfxRenderEngine
             double m_MousePosX;
             double m_MousePosY;
             bool m_FramebufferResized;
+            bool m_ToggleCmd;
+            VK_Window* m_Window;
         };
 
         static bool m_GLFWIsInitialized;
