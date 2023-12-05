@@ -103,6 +103,20 @@ namespace GfxRenderEngine
                     ParseGltfFile(gltfFileJSON);
                 }
             }
+            else if (sceneObjectKey == "fbx files")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
+                ondemand::array fbxFiles = sceneObject.value().get_array();
+                {
+                    int fbxFileCount = fbxFiles.count_elements();
+                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file") : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                }
+
+                for (auto fbxFileJSON : fbxFiles)
+                {
+                    ParseFbxFile(fbxFileJSON);
+                }
+            }
             else
             {
                 LOG_CORE_CRITICAL("unrecognized scene object");
@@ -184,7 +198,7 @@ namespace GfxRenderEngine
                             else if (instanceObjectKey == "nodes")
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
-                                ParseNodes(instanceObject.value(), gltfFilename, gltfFileInstance);
+                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
                             }
                             else
                             {
@@ -198,6 +212,93 @@ namespace GfxRenderEngine
             else
             {
                 LOG_CORE_CRITICAL("unrecognized gltf file object");
+            }
+        }
+    }
+
+    void SceneLoaderJSON::ParseFbxFile(ondemand::object fbxFileJSON)
+    {
+        std::string fbxFilename;
+
+        std::vector<Fbx::FbxFile>& fbxFilesFromScene = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene;
+        bool loadSuccessful = false;
+
+        for (auto fbxFileObject : fbxFileJSON)
+        {
+            std::string_view fbxFileObjectKey = fbxFileObject.unescaped_key();
+
+            if (fbxFileObjectKey == "filename")
+            {
+                std::string_view fbxFilenameStringView = fbxFileObject.value().get_string();
+                fbxFilename = std::string(fbxFilenameStringView);
+                if (EngineCore::FileExists(fbxFilename))
+                {
+                    LOG_CORE_INFO("Scene loader found {0}", fbxFilename);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("fbx file not found: {0}", fbxFilename);
+                    return;
+                }
+            }
+            else if (fbxFileObjectKey == "instances")
+            {
+                // get array of fbx file instances
+                ondemand::array instances = fbxFileObject.value();
+                int instanceCount = instances.count_elements();
+
+                FbxBuilder builder(fbxFilename, m_Scene);
+                loadSuccessful = builder.LoadFbx(instanceCount);
+                if (loadSuccessful)
+                {
+                    Fbx::FbxFile fbxFile(fbxFilename);
+                    fbxFilesFromScene.push_back(fbxFile);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("fbx file did not load properly: {0}", fbxFilename);
+                    return;
+                }
+
+                if (!instanceCount)
+                {
+                    LOG_CORE_ERROR("no instances found (json file broken): {0}", fbxFilename);
+                    return;
+                }
+
+                std::vector<Fbx::Instance>& fbxFileInstances = fbxFilesFromScene.back().m_Instances;
+                fbxFileInstances.resize(instanceCount);
+
+                {
+                    uint instanceIndex = 0;
+                    for (auto instance : instances)
+                    {
+                        std::string fullEntityName = fbxFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
+                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                        Fbx::Instance& fbxFileInstance = fbxFileInstances[instanceIndex];
+                        fbxFileInstance.m_Entity = entity;
+                        ondemand::object instanceObjects = instance.value();
+                        for (auto instanceObject : instanceObjects)
+                        {
+                            std::string_view instanceObjectKey = instanceObject.unescaped_key();
+    
+                            if (instanceObjectKey == "transform")
+                            {
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
+                                ParseTransform(instanceObject.value(), entity);
+                            }
+                            else
+                            {
+                                LOG_CORE_CRITICAL("unrecognized fbx instance object");
+                            }
+                        }
+                        ++instanceIndex;
+                    }
+                }
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("unrecognized fbx file object");
             }
         }
     }
@@ -239,7 +340,7 @@ namespace GfxRenderEngine
         transform.SetTranslation(translation);
     }
 
-    void SceneLoaderJSON::ParseNodes(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
+    void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount) return;

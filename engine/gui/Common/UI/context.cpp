@@ -29,7 +29,6 @@
 #include "gui/Common/UI/context.h"
 #include "gui/Common/Render/drawBuffer.h"
 #include "gui/Render/textureAtlas.h"
-#include "renderer/renderCommand.h"
 
 namespace GfxRenderEngine
 {

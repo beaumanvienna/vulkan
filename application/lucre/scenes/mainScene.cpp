@@ -54,8 +54,6 @@ namespace LucreApp
 
         {
             m_CameraController = std::make_shared<CameraController>();
-            m_CameraController->SetTranslationSpeed(400.0f);
-            m_CameraController->SetRotationSpeed(0.5f);
 
             m_Camera = CreateEntity();
             TransformComponent cameraTransform{};

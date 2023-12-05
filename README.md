@@ -11,7 +11,7 @@ A Vulkan Render Engine<br/>
 Features:
 
 - A Vulkan renderer with support for 2D and 3D scenes
-- Support for the 3D file formats Obj Wavefront and glTF
+- Support for 3D file formats Obj Wavefront, glTF, and FBX
 - Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
 - Point lights, directional lights with shadows, and deferred shading
 - Post-processing (Bloom), skeletal animations

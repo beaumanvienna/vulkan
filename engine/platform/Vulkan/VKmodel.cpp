@@ -90,6 +90,29 @@ namespace GfxRenderEngine
         CreateIndexBuffers(std::move(builder.m_Indices));
     }
 
+    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder)
+        : m_Device(device), m_HasIndexBuffer{false}
+    {
+        m_Images = std::move(builder.m_Images);
+
+        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
+        m_PrimitivesEmissive = std::move(builder.m_PrimitivesEmissive);
+        m_PrimitivesDiffuseMap = std::move(builder.m_PrimitivesDiffuseMap);
+        m_PrimitivesDiffuseSAMap = std::move(builder.m_PrimitivesDiffuseSAMap);
+        m_PrimitivesEmissiveTexture = std::move(builder.m_PrimitivesEmissiveTexture);
+        m_PrimitivesDiffuseNormalMap = std::move(builder.m_PrimitivesDiffuseNormalMap);
+        m_PrimitivesDiffuseNormalSAMap = std::move(builder.m_PrimitivesDiffuseNormalSAMap);
+        m_PrimitivesDiffuseNormalRoughnessMetallicMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap);
+        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicSAMap);
+
+        m_Skeleton = std::move(builder.m_Skeleton);
+        m_Animations = std::move(builder.m_Animations);
+        m_ShaderDataUbo = builder.m_ShaderData;
+
+        CreateVertexBuffers(std::move(builder.m_Vertices));
+        CreateIndexBuffers(std::move(builder.m_Indices));
+    }
+
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {

@@ -38,6 +38,7 @@ project "lucre"
         "resources",
         "vendor/spdlog/include",
         "vendor/yaml-cpp/include",
+        "vendor/assetImporter/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
         "vendor/entt/include",
@@ -69,7 +70,9 @@ project "lucre"
         "OSDependent",
         "GenericCodeGen",
         "OGLCompiler",
-        "SPIRV"
+        "SPIRV",
+        "assetImporter",
+        "zlibstatic"
     }
 
     prebuildcommands
@@ -239,9 +242,12 @@ project "lucre"
         os.remove("./vendor/box2d/Makefile")
         os.remove("./profiling (open with chrome tracing).json")
         os.rmdir("./vendor/atlas/bin/")
-        os.remove("./vendor/atlas/MakefileMakefile")
+        os.remove("./vendor/atlas/Makefile")
         os.rmdir("./vendor/box2d/bin")
         os.rmdir("./vendor/box2d/bin-int")
+        os.rmdir("./vendor/assetImporter/bin")
+        os.rmdir("./vendor/assetImporter/bin-int")
+        os.remove("./vendor/assetImporter/Makefile")
         os.rmdir("./vendor/glfw/build")
         os.rmdir("./vendor/pamanager/libpamanager/bin")
         os.rmdir("./vendor/pamanager/libpamanager/obj")

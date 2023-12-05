@@ -532,5 +532,69 @@
                 }
             ]
         }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/Wooden Crate/Wooden Crate.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2319877,
+                            0.6641344,
+                            0.8380313
+                        ],
+                        "rotation":
+                        [
+                            0.4073901,
+                            0.2200121,
+                            0.4955465
+                        ],
+                        "translation":
+                        [
+                            0.5539874,
+                            0.5340241,
+                            0.3204228
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "obj files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/banana/banana.obj",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "rotation":
+                        [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "translation":
+                        [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                }
+            ]
+        }
     ]
 }

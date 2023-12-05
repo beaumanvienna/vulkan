@@ -59,7 +59,7 @@
       "valueOptions": {
         "minLength": 0,
         "maxLength": 20,
-        "unit": "word"
+        "unit": "character"
       },
       "nullValue": "0",
       "selectedDependencies": {}
@@ -513,6 +513,31 @@
               "valueOptions": {},
               "nullValue": "0",
               "selectedDependencies": {}
+            },
+            {
+              "id": "761454-85da-2bb0-ac24-673c868eea8",
+              "type": "value",
+              "valueType": "number",
+              "children": [],
+              "repeatCount": [
+                "1",
+                "100"
+              ],
+              "fieldName": "sceneID",
+              "valueOptions": {
+                "min": {
+                  "number": "2",
+                  "checked": true
+                },
+                "max": {
+                  "number": "2",
+                  "checked": true
+                },
+                "decimals": "0",
+                "multipleOf": "0"
+              },
+              "nullValue": "0",
+              "selectedDependencies": {}
             }
           ],
           "repeatCount": [
@@ -530,6 +555,732 @@
         "2"
       ],
       "fieldName": "gltf files",
+      "valueOptions": {},
+      "nullValue": "0",
+      "selectedDependencies": {}
+    },
+    {
+      "id": "57884d1-bbba-77ae-b1ad-b8fb443d0b7",
+      "type": "array",
+      "valueType": "array",
+      "children": [
+        {
+          "id": "f16d23-4fe-dcc7-e685-e2a4aa70e7f",
+          "type": "object",
+          "valueType": "object",
+          "children": [
+            {
+              "id": "0ee5d1-8e54-ce2d-708-eb70e84fdc8d",
+              "type": "value",
+              "valueType": "string",
+              "children": [],
+              "repeatCount": [
+                "1",
+                "100"
+              ],
+              "fieldName": "filename",
+              "valueOptions": {
+                "minLength": "20",
+                "maxLength": 20,
+                "unit": "character"
+              },
+              "nullValue": "0",
+              "selectedDependencies": {}
+            },
+            {
+              "id": "7a6c44b-2c4-a607-bb3d-dd1aee3abbb",
+              "type": "array",
+              "valueType": "array",
+              "children": [
+                {
+                  "id": "2cc2ffb-d6c-6a56-464f-8d524c3ea8b5",
+                  "type": "object",
+                  "valueType": "object",
+                  "children": [
+                    {
+                      "id": "d8c4c24-745b-a8b-b51-2a4d88eec2e7",
+                      "type": "object",
+                      "valueType": "object",
+                      "children": [
+                        {
+                          "id": "7025186-1b81-db35-1e28-261d26cd34d",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "b235254-b54-0f4-a335-bca3c071e85",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "1db6733-b2ea-678-f4-5fb668a275f6",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "c84e77-7a8-ff5b-357c-0304a5063b04",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "scale",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        },
+                        {
+                          "id": "cac5f2c-576a-4781-863b-863b836385f4",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "6a457e-b6b-33ef-7fd1-5f0b112843dd",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "3f0d5-d305-ed35-adaa-8d680e40d0",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "fefb58f-6de8-7ec8-50d5-01880b6bb43",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "rotation",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        },
+                        {
+                          "id": "ce4352d-1f62-1edd-48d-00657b12ed8",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "8c8724a-b886-7c6-7fce-0d68b3b84d82",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "bd613-0e0c-f44f-71c2-47b3d662553",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "512111-a47c-3603-2311-f74704dec2a7",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "translation",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        }
+                      ],
+                      "repeatCount": [
+                        "1",
+                        "100"
+                      ],
+                      "fieldName": "transform",
+                      "valueOptions": {},
+                      "nullValue": "0",
+                      "selectedDependencies": {}
+                    }
+                  ],
+                  "repeatCount": [
+                    "1",
+                    "100"
+                  ],
+                  "fieldName": "",
+                  "valueOptions": {},
+                  "nullValue": "0",
+                  "selectedDependencies": {}
+                }
+              ],
+              "repeatCount": [
+                "1",
+                "1"
+              ],
+              "fieldName": "instances",
+              "valueOptions": {},
+              "nullValue": "0",
+              "selectedDependencies": {}
+            }
+          ],
+          "repeatCount": [
+            "1",
+            "100"
+          ],
+          "fieldName": "",
+          "valueOptions": {},
+          "nullValue": "0",
+          "selectedDependencies": {}
+        }
+      ],
+      "repeatCount": [
+        "2",
+        "2"
+      ],
+      "fieldName": "fbx files",
+      "valueOptions": {},
+      "nullValue": "0",
+      "selectedDependencies": {}
+    },
+    {
+      "id": "fe405be-837-a3c-1b2-c5fec24e727",
+      "type": "array",
+      "valueType": "array",
+      "children": [
+        {
+          "id": "bb8c061-721-f1dc-3b81-6cc081260d",
+          "type": "object",
+          "valueType": "object",
+          "children": [
+            {
+              "id": "ca46da0-882b-ff-2e71-2b02f031bfbe",
+              "type": "value",
+              "valueType": "string",
+              "children": [],
+              "repeatCount": [
+                "1",
+                "100"
+              ],
+              "fieldName": "filename",
+              "valueOptions": {
+                "minLength": "20",
+                "maxLength": 20,
+                "unit": "character"
+              },
+              "nullValue": "0",
+              "selectedDependencies": {}
+            },
+            {
+              "id": "103a0-e4-7680-3133-fcdd101f5",
+              "type": "array",
+              "valueType": "array",
+              "children": [
+                {
+                  "id": "f42337-6828-8d01-d07-8b3ddcc70",
+                  "type": "object",
+                  "valueType": "object",
+                  "children": [
+                    {
+                      "id": "e5fcede-0bf-73f1-8865-d2aff8f7751",
+                      "type": "object",
+                      "valueType": "object",
+                      "children": [
+                        {
+                          "id": "8782633-820d-68b-42d3-2a1cdb6bf6",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "eba021f-463f-0745-516-0ac13e6ddb0",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "f6d8af-e6e5-23ea-a35b-cf1b05625561",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "45132f8-8acd-bad5-1e0a-1f12c58f426",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "scale",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        },
+                        {
+                          "id": "53266b-18a0-cfc2-6a12-f6f0ca322710",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "51125a6-d5f4-f1e8-d02d-ca383b14cd6",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "3c46f5-5d1-eda8-fb4f-f2ff8e0780af",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "7b2dba6-7a7f-f537-585f-3feb45fab62",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "rotation",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        },
+                        {
+                          "id": "4e63cb5-3b12-0d2f-cf80-61eef8304562",
+                          "type": "array",
+                          "valueType": "array",
+                          "children": [
+                            {
+                              "id": "a007725-2a60-1c83-1c0f-da6af4438040",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "fb1a20a-623a-5a2f-cfa0-c62e80f1ab",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            },
+                            {
+                              "id": "0c55c-1a7-c560-031-b6db1c73745",
+                              "type": "value",
+                              "valueType": "number",
+                              "children": [],
+                              "repeatCount": [
+                                "1",
+                                "100"
+                              ],
+                              "fieldName": "",
+                              "valueOptions": {
+                                "min": {
+                                  "number": "0",
+                                  "checked": true
+                                },
+                                "max": {
+                                  "number": "1",
+                                  "checked": true
+                                },
+                                "decimals": "7",
+                                "multipleOf": "0"
+                              },
+                              "nullValue": "0",
+                              "selectedDependencies": {}
+                            }
+                          ],
+                          "repeatCount": [
+                            "3",
+                            "3"
+                          ],
+                          "fieldName": "translation",
+                          "valueOptions": {},
+                          "nullValue": "0",
+                          "selectedDependencies": {}
+                        }
+                      ],
+                      "repeatCount": [
+                        "1",
+                        "100"
+                      ],
+                      "fieldName": "transform",
+                      "valueOptions": {},
+                      "nullValue": "0",
+                      "selectedDependencies": {}
+                    }
+                  ],
+                  "repeatCount": [
+                    "1",
+                    "100"
+                  ],
+                  "fieldName": "",
+                  "valueOptions": {},
+                  "nullValue": "0",
+                  "selectedDependencies": {}
+                }
+              ],
+              "repeatCount": [
+                "1",
+                "1"
+              ],
+              "fieldName": "instances",
+              "valueOptions": {},
+              "nullValue": "0",
+              "selectedDependencies": {}
+            }
+          ],
+          "repeatCount": [
+            "1",
+            "100"
+          ],
+          "fieldName": "",
+          "valueOptions": {},
+          "nullValue": "0",
+          "selectedDependencies": {}
+        }
+      ],
+      "repeatCount": [
+        "2",
+        "2"
+      ],
+      "fieldName": "obj files",
       "valueOptions": {},
       "nullValue": "0",
       "selectedDependencies": {}

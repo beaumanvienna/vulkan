@@ -54,6 +54,7 @@ namespace GfxRenderEngine
             std::string m_Description;
             std::string m_Author;
             Gltf::GltfFiles m_GltfFiles;
+            Fbx::FbxFiles m_FbxFiles;
         };
 
     private:
@@ -61,8 +62,11 @@ namespace GfxRenderEngine
         void Deserialize(std::string& filepath);
 
         void ParseGltfFile(ondemand::object gltfFileJSON);
+        void ParseFbxFile(ondemand::object fbxFileJSON);
+        void ParseObjFile(ondemand::object objFileJSON);
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
-        void ParseNodes(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
+        void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
+
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 

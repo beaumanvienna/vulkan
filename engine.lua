@@ -44,6 +44,7 @@ project "engine"
         "vendor/spdlog/include",
         "vendor/shaderc/libshaderc/include/shaderc/",
         "vendor/shaderc/libshaderc/include/",
+        "vendor/assetImporter/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
@@ -173,6 +174,7 @@ project "engine"
         include "vendor/sdl.lua"
     end
     include "vendor/box2d"
+    include "vendor/assetImporter"
 
     if os.host() == "linux" then
 
