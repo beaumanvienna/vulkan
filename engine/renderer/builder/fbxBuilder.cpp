@@ -68,10 +68,9 @@ namespace GfxRenderEngine
         {
             LOG_CORE_WARN("LoadFbx: scene ID for fbx not supported (in file {0})", m_Filepath);
         }
-        
-        //LoadImagesFbx();
+
         LoadSkeletonsFbx();
-        //LoadMaterialsFbx();
+        LoadMaterialsFbx();
         
         // PASS 1
         // mark Fbx nodes to receive a game object ID if they have a mesh or any child has
@@ -103,7 +102,23 @@ namespace GfxRenderEngine
         // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
         
         // does this Fbx node have a mesh?
-        bool localHasMesh = (fbxNodePtr->mNumMeshes != 0);
+        bool localHasMesh = false;
+
+        // check if at least one mesh is usable, i.e. is a triangle mesh
+        for (uint nodeMeshIndex = 0; nodeMeshIndex < fbxNodePtr->mNumMeshes; ++nodeMeshIndex)
+        {
+            // retrieve index for global/scene mesh array
+            uint sceneMeshIndex = fbxNodePtr->mMeshes[nodeMeshIndex];
+            aiMesh* mesh = m_FbxScene->mMeshes[sceneMeshIndex];
+
+            // check if triangle mesh
+            if (mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE)
+            {
+                localHasMesh = true;
+                break;
+            }
+        }
+
         int hasMeshIndex = m_HasMesh.size();
         m_HasMesh.push_back(localHasMesh); //reserve space in m_HasMesh, so that ProcessNode can find it
         
@@ -170,13 +185,17 @@ namespace GfxRenderEngine
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
         
         // mesh
-        MeshComponent mesh{nodeName, model};
-        m_Registry.emplace<MeshComponent>(entity, mesh);
-        
+        {
+            MeshComponent mesh{nodeName, model};
+            m_Registry.emplace<MeshComponent>(entity, mesh);
+        }
+
         // transform
-        TransformComponent transform{};
-        LoadTransformationMatrix(transform, fbxNodePtr);
-        m_Registry.emplace<TransformComponent>(entity, transform);
+        {
+            TransformComponent transform{};
+            LoadTransformationMatrix(transform, fbxNodePtr);
+            m_Registry.emplace<TransformComponent>(entity, transform);
+        }
         
         // material tags (can have multiple tags)
         bool hasPbrMaterial = false;
@@ -328,52 +347,6 @@ namespace GfxRenderEngine
         return 0;
     }
 
-    void FbxBuilder::LoadImagesFbx()
-    {
-        //m_ImageOffset = m_Images.size();
-        //// retrieve all images from the Fbx file
-        //for (uint i = 0; i < m_FbxModel.images.size(); i++)
-        //{
-        //    std::string imageFilepath = m_Basepath + m_FbxModel.images[i].uri;
-        //    Fbx::Image& FbxImage = m_FbxModel.images[i];
-        //
-        //    // FbxImage.component - the number of channels in each pixel
-        //    // three channels per pixel need to be converted to four channels per pixel
-        //    uchar* buffer;
-        //    uint64 bufferSize;
-        //    if (FbxImage.component == 3)
-        //    {
-        //        bufferSize = FbxImage.width * FbxImage.height * 4;
-        //        std::vector<uchar> imageData(bufferSize, 0x00);
-        //
-        //        buffer = (uchar*)imageData.data();
-        //        uchar* rgba = buffer;
-        //        uchar* rgb = &FbxImage.image[0];
-        //        for (int j = 0; j < FbxImage.width * FbxImage.height; ++j)
-        //        {
-        //            memcpy(rgba, rgb, sizeof(uchar) * 3);
-        //            rgba += 4;
-        //            rgb += 3;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        buffer = &FbxImage.image[0];
-        //        bufferSize = FbxImage.image.size();
-        //    }
-        //
-        //    auto texture = Texture::Create();
-        //    int minFilter = GetMinFilter(i);
-        //    int magFilter = GetMinFilter(i);
-        //    bool imageFormat = GetImageFormatFbx(i);
-        //    texture->Init(FbxImage.width, FbxImage.height, imageFormat, buffer, minFilter, magFilter);
-        //    #ifdef DEBUG
-        //        texture->SetFilename(imageFilepath);
-        //    #endif
-        //    m_Images.push_back(texture);
-        //}
-    }
-
     bool FbxBuilder::GetImageFormatFbx(uint const imageIndex)
     {
         //for (uint i = 0; i < m_FbxModel.materials.size(); i++)
@@ -402,113 +375,148 @@ namespace GfxRenderEngine
         return false;
     }
 
+    bool FbxBuilder::LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB)
+    {
+        bool loadSucess = false;
+        if (EngineCore::FileExists(filepath))
+        {
+            //uint width, height;
+            //int minFilter = Fbx_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+            //int magFilter = Fbx_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+
+            auto texture = Texture::Create();
+            loadSucess = texture->Init(filepath, useSRGB);
+            //texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+            if (loadSucess)
+            {
+                #ifdef DEBUG
+                    texture->SetFilename(filepath);
+                #endif
+                mapIndex = m_Images.size();
+                m_Images.push_back(texture);
+            }
+        }
+        return loadSucess;
+    }
+
     void FbxBuilder::LoadMaterialsFbx()
     {
         m_Materials.clear();
-        //for (uint i = 0; i < m_FbxModel.materials.size(); i++)
-        //{
-        //    Fbx::Material FbxMaterial = m_FbxModel.materials[i];
-        //
-        //    Material material{};
-        //    material.m_Features = m_SkeletalAnimation;
-        //    material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
-        //    material.m_Roughness = FbxMaterial.pbrMetallicRoughness.roughnessFactor;
-        //    material.m_Metallic  = FbxMaterial.pbrMetallicRoughness.metallicFactor;
-        //    material.m_NormalMapIntensity = FbxMaterial.normalTexture.scale;
-        //    material.m_EmissiveStrength = 0;
-        //    if (FbxMaterial.emissiveFactor.size() == 3)
-        //    {
-        //        glm::vec3 emissiveFactor = glm::make_vec3(FbxMaterial.emissiveFactor.data());
-        //        if (emissiveFactor != glm::vec3(0,0,0))
-        //        {
-        //            material.m_EmissiveFactor = emissiveFactor;
-        //            material.m_EmissiveStrength = 1;
-        //        }
-        //    }
-        //    if (FbxMaterial.emissiveTexture.index != Fbx::Fbx_NOT_USED)
-        //    {
-        //        int emissiveTextureIndex = FbxMaterial.emissiveTexture.index;
-        //        Fbx::Texture& emissiveTexture = m_FbxModel.textures[emissiveTextureIndex];
-        //        material.m_EmissiveMapIndex = emissiveTexture.source;
-        //        material.m_Features |= Material::HAS_EMISSIVE_MAP;
-        //        material.m_EmissiveStrength = 1;
-        //    }
-        //    {
-        //        auto it = FbxMaterial.extensions.find("KHR_materials_emissive_strength");
-        //        if (it != FbxMaterial.extensions.end())
-        //        {
-        //            auto extension = it->second;
-        //            if (extension.IsObject())
-        //            {
-        //                auto emissiveStrength = extension.Get("emissiveStrength");
-        //                if (emissiveStrength.IsReal())
-        //                {
-        //                    material.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
-        //                }
-        //            }
-        //        }
-        //    }
-        //
-        //    if (FbxMaterial.values.find("baseColorFactor") != FbxMaterial.values.end())
-        //    {
-        //        material.m_DiffuseColor = glm::make_vec3(FbxMaterial.values["baseColorFactor"].ColorFactor().data());
-        //    }
-        //    if (FbxMaterial.pbrMetallicRoughness.baseColorTexture.index != Fbx::Fbx_NOT_USED)
-        //    {
-        //        int diffuseTextureIndex = FbxMaterial.pbrMetallicRoughness.baseColorTexture.index;
-        //        Fbx::Texture& diffuseTexture = m_FbxModel.textures[diffuseTextureIndex];
-        //        material.m_DiffuseMapIndex = diffuseTexture.source;
-        //        material.m_Features |= Material::HAS_DIFFUSE_MAP;
-        //    }
-        //    else if (FbxMaterial.values.find("baseColorTexture") != FbxMaterial.values.end())
-        //    {
-        //        LOG_CORE_WARN("using legacy field values/baseColorTexture");
-        //        int diffuseTextureIndex = FbxMaterial.values["baseColorTexture"].TextureIndex();
-        //        Fbx::Texture& diffuseTexture = m_FbxModel.textures[diffuseTextureIndex];
-        //        material.m_DiffuseMapIndex = diffuseTexture.source;
-        //        material.m_Features |= Material::HAS_DIFFUSE_MAP;
-        //    }
-        //    if (FbxMaterial.normalTexture.index != Fbx::Fbx_NOT_USED)
-        //    {
-        //        int normalTextureIndex = FbxMaterial.normalTexture.index;
-        //        Fbx::Texture& normalTexture = m_FbxModel.textures[normalTextureIndex];
-        //        material.m_NormalMapIndex = normalTexture.source;
-        //        material.m_Features |= Material::HAS_NORMAL_MAP;
-        //    }
-        //    if (FbxMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != Fbx::Fbx_NOT_USED)
-        //    {
-        //        int mettalicRoughnessTextureIndex = FbxMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
-        //        Fbx::Texture& mettalicRoughnessTexture = m_FbxModel.textures[mettalicRoughnessTextureIndex];
-        //        material.m_RoughnessMettalicMapIndex = mettalicRoughnessTexture.source;
-        //        material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
-        //    }
-        //
-        //    m_Materials.push_back(material);
-        //}
+        for (uint fbxMaterialIndex = 0; fbxMaterialIndex < m_FbxScene->mNumMaterials; ++fbxMaterialIndex)
+        {
+            const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
+            m_ImageOffset = m_Images.size();
+
+            Material material{};
+            material.m_Features = m_SkeletalAnimation;
+
+            material.m_Roughness = 0.1f;
+            material.m_Metallic  = 0.1f;
+            material.m_NormalMapIntensity = 1.0f;
+
+            { // diffuse
+                uint textureCountDiffuse = fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE);
+                if (textureCountDiffuse)
+                {
+                    aiString aiFilepath;
+                    auto getTexture = fbxMaterial->GetTexture(aiTextureType_DIFFUSE, 0 /* first diffuse map*/, &aiFilepath);
+                    std::string fbxFilepath(aiFilepath.C_Str());
+                    std::string filepath(m_Basepath + fbxFilepath);
+
+                    if (getTexture == aiReturn_SUCCESS)
+                    {
+                        if (LoadImageFbx(filepath, material.m_DiffuseMapIndex, Texture::USE_SRGB))
+                        {
+                            material.m_Features |= Material::HAS_DIFFUSE_MAP;
+                        }
+                    }
+                }
+                else
+                {
+                    material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+                }
+            }
+
+            { // normal
+                uint textureCountNormal = fbxMaterial->GetTextureCount(aiTextureType_NORMALS);
+                if (textureCountNormal)
+                {
+                    aiString aiFilepath;
+                    auto getTexture = fbxMaterial->GetTexture(aiTextureType_NORMALS, 0 /* first normal map*/, &aiFilepath);
+                    std::string fbxFilepath(aiFilepath.C_Str());
+                    std::string filepath(m_Basepath + fbxFilepath);
+
+                    if (getTexture == aiReturn_SUCCESS)
+                    {
+                        if (LoadImageFbx(filepath, material.m_NormalMapIndex, Texture::USE_UNORM))
+                        {
+                            material.m_Features |= Material::HAS_NORMAL_MAP;
+                        }
+                    }
+                }
+            }
+
+            { // emissive
+                uint textureCountEmissive = fbxMaterial->GetTextureCount(aiTextureType_EMISSIVE);
+                if (textureCountEmissive)
+                {
+                    aiString aiFilepath;
+                    auto getTexture = fbxMaterial->GetTexture(aiTextureType_EMISSIVE, 0 /* first emissive map*/, &aiFilepath);
+                    std::string fbxFilepath(aiFilepath.C_Str());
+                    std::string filepath(m_Basepath + fbxFilepath);
+
+                    if (getTexture == aiReturn_SUCCESS)
+                    {
+                        if (LoadImageFbx(filepath, material.m_EmissiveMapIndex, Texture::USE_SRGB))
+                        {
+                            material.m_Features |= Material::HAS_EMISSIVE_MAP;
+                        }
+                    }
+                }
+                else
+                {
+                    material.m_EmissiveStrength = 0.0f;
+                }
+            }
+
+            m_Materials.push_back(material);
+        }
     }
 
     void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
     {
         // handle vertex data
 
-        aiMesh* mesh = m_FbxScene->mMeshes[meshIndex];
+        const aiMesh* mesh = m_FbxScene->mMeshes[meshIndex];
+
+        // only triangle mesh supported
+        if (!(mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
+        {
+            LOG_CORE_CRITICAL("FbxBuilder::LoadVertexDataFbx: only triangle meshes are supported");
+            return;
+        }
 
         const uint numVertices = mesh->mNumVertices;
+        const uint numFaces = mesh->mNumFaces;
+        const uint numIndices = numFaces * 3; // 3 indices per triangle a.k.a face
+
         size_t numVerticesBefore = m_Vertices.size();
+        size_t numIndicesBefore = m_Indices.size();
         m_Vertices.resize(numVerticesBefore + numVertices);
+        m_Indices.resize(numIndicesBefore + numIndices);
 
         PrimitiveTmp primitiveTmp;
-        primitiveTmp.m_FirstVertex = 0;
-        primitiveTmp.m_FirstIndex  = 0;
+        primitiveTmp.m_FirstVertex = numVerticesBefore;
+        primitiveTmp.m_FirstIndex  = numIndicesBefore;
         primitiveTmp.m_VertexCount = numVertices;
-        primitiveTmp.m_IndexCount  = 0;
+        primitiveTmp.m_IndexCount  = numIndices;
 
         bool hasPosition = mesh->HasPositions(); 
         bool hasNormals = mesh->HasNormals();
         bool hasTangents = mesh->HasTangentsAndBitangents();
         bool hasUVs = mesh->HasTextureCoords(uvSet);
         bool hasColors = mesh->HasVertexColors(vertexColorSet);
-        
+
         for (uint vertexIndex = numVerticesBefore; vertexIndex < numVertices; ++vertexIndex)
         {
             Vertex& vertex = m_Vertices[vertexIndex];
@@ -548,6 +556,20 @@ namespace GfxRenderEngine
                 vertex.m_Color = glm::vec3(0.5f, 0.5f, 1.0f);
             }
         }
+
+        // Indices
+        {
+            uint index = numIndicesBefore;
+            for (uint faceIndex = 0; faceIndex < numFaces; ++faceIndex)
+            {
+                const aiFace& face = mesh->mFaces[faceIndex];
+                m_Indices[index + 0] = face.mIndices[0];
+                m_Indices[index + 1] = face.mIndices[1];
+                m_Indices[index + 2] = face.mIndices[2];
+                index += 3;
+            }
+        }
+
         AssignMaterial(primitiveTmp, mesh->mMaterialIndex);
     }
 
@@ -559,6 +581,8 @@ namespace GfxRenderEngine
 
     void FbxBuilder::AssignMaterial(const PrimitiveTmp& primitiveTmp, uint const materialIndex)
     {
+        
+        if (!m_FbxScene->mNumMaterials)
         {
             PrimitiveNoMap primitiveNoMap{};
             primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -575,49 +599,32 @@ namespace GfxRenderEngine
             return;
         }
 
-        //if (materialIndex == Fbx::Fbx_NOT_USED)
-        //{
-        //    PrimitiveNoMap primitiveNoMap{};
-        //    primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-        //    primitiveNoMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-        //    primitiveNoMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-        //    primitiveNoMap.m_VertexCount = primitiveTmp.m_VertexCount;
-        //
-        //    primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = 0.5f;
-        //    primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = 0.1f;
-        //    primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
-        //
-        //    m_PrimitivesNoMap.push_back(primitiveNoMap);
-        //
-        //    return;
-        //}
-        //
-        //if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
-        //{
-        //    LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
-        //}
-        //
-        //auto& material = m_Materials[materialIndex];
-        //
-        //uint pbrFeatures = material.m_Features & (
-        //        Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
-        //if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
-        //{
-        //    PrimitiveDiffuseMap primitiveDiffuseMap{};
-        //    primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-        //    primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-        //    primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-        //    primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
-        //
-        //    uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-        //    ASSERT(diffuseMapIndex < m_Images.size());
-        //
-        //    VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
-        //    primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
-        //    primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
-        //
-        //    m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
-        //}
+        if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
+        {
+            LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
+        }
+        
+        auto& material = m_Materials[materialIndex];
+        
+        uint pbrFeatures = material.m_Features & (
+                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
+        if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
+        {
+            PrimitiveDiffuseMap primitiveDiffuseMap{};
+            primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
+        
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+        
+            VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
+            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
+        
+            m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+        }
         //else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         //{
         //    PrimitiveDiffuseSAMap primitiveDiffuseSAMap{};
@@ -627,7 +634,7 @@ namespace GfxRenderEngine
         //    primitiveDiffuseSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
         //
         //    uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-        //    ASSERT(diffuseSAMapIndex < m_Images.size());
+        //    CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
         //    primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Roughness = material.m_Roughness;
@@ -635,26 +642,26 @@ namespace GfxRenderEngine
         //
         //    m_PrimitivesDiffuseSAMap.push_back(primitiveDiffuseSAMap);
         //}
-        //else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
-        //{
-        //    PrimitiveDiffuseNormalMap primitiveDiffuseNormalMap{};
-        //    primitiveDiffuseNormalMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-        //    primitiveDiffuseNormalMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-        //    primitiveDiffuseNormalMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-        //    primitiveDiffuseNormalMap.m_VertexCount = primitiveTmp.m_VertexCount;
-        //
-        //    uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-        //    uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
-        //    ASSERT(diffuseMapIndex < m_Images.size());
-        //    ASSERT(normalMapIndex < m_Images.size());
-        //
-        //    VK_Model::CreateDescriptorSet(primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial, m_Images[diffuseMapIndex], m_Images[normalMapIndex]);
-        //    primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Roughness          = material.m_Roughness;
-        //    primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Metallic           = material.m_Metallic;
-        //    primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
-        //
-        //    m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
-        //}
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
+        {
+            PrimitiveDiffuseNormalMap primitiveDiffuseNormalMap{};
+            primitiveDiffuseNormalMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
+            primitiveDiffuseNormalMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
+            primitiveDiffuseNormalMap.m_IndexCount  = primitiveTmp.m_IndexCount;
+            primitiveDiffuseNormalMap.m_VertexCount = primitiveTmp.m_VertexCount;
+        
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+            CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+        
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial, m_Images[diffuseMapIndex], m_Images[normalMapIndex]);
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Roughness          = material.m_Roughness;
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Metallic           = material.m_Metallic;
+            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
+        
+            m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
+        }
         //else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         //{
         //    PrimitiveDiffuseNormalSAMap primitiveDiffuseNormalSAMap{};
@@ -665,8 +672,8 @@ namespace GfxRenderEngine
         //
         //    uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
         //    uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
-        //    ASSERT(diffuseMapIndex < m_Images.size());
-        //    ASSERT(normalMapIndex < m_Images.size());
+        //    CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+        //    CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial,
         //                                  m_Images[diffuseMapIndex],
@@ -690,9 +697,9 @@ namespace GfxRenderEngine
         //    uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
         //    uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
         //
-        //    ASSERT(diffuseMapIndex            < m_Images.size());
-        //    ASSERT(normalMapIndex             < m_Images.size());
-        //    ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+        //    CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+        //    CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+        //    CORE_ASSERT(roughnessMettalicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMettalicMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
         //                                  m_Images[diffuseMapIndex], 
@@ -714,9 +721,9 @@ namespace GfxRenderEngine
         //    uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
         //    uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
         //
-        //    ASSERT(diffuseMapIndex            < m_Images.size());
-        //    ASSERT(normalMapIndex             < m_Images.size());
-        //    ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+        //    CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+        //    CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+        //    CORE_ASSERT(roughnessMettalicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMettalicMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial,
         //                                  m_Images[diffuseMapIndex], 
@@ -742,9 +749,9 @@ namespace GfxRenderEngine
         //    uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
         //    uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
         //    uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
-        //    ASSERT(diffuseMapIndex            < m_Images.size());
-        //    ASSERT(normalMapIndex             < m_Images.size());
-        //    ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+        //    CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+        //    CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+        //    CORE_ASSERT(roughnessMettalicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMettalicMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial, 
         //                                    m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMettalicMapIndex]);
@@ -761,7 +768,7 @@ namespace GfxRenderEngine
         //    primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
         //
         //    uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-        //    ASSERT(diffuseMapIndex < m_Images.size());
+        //    CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
         //
         //    VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
         //    primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
@@ -797,7 +804,7 @@ namespace GfxRenderEngine
         //        primitiveEmissiveTexture.m_VertexCount = primitiveTmp.m_VertexCount;
         //
         //        uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
-        //        ASSERT(emissiveMapIndex < m_Images.size());
+        //        CORE_ASSERT(emissiveMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
         //
         //        VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);
         //
