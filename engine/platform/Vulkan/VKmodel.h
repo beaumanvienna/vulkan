@@ -131,6 +131,14 @@ namespace GfxRenderEngine
             const std::shared_ptr<Texture>& roughnessMetallicMap,
             const std::shared_ptr<Buffer>& skeletalAnimationUBO
         );
+        static void CreateDescriptorSet
+        (
+            PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicSAMaterial,
+            const std::shared_ptr<Texture>& colorMap,
+            const std::shared_ptr<Texture>& normalMap, 
+            const std::shared_ptr<Texture>& roughnessMap,
+            const std::shared_ptr<Texture>& metallicMap
+        );
 
         static void CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap);
 

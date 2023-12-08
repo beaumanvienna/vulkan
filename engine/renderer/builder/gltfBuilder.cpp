@@ -524,9 +524,9 @@ namespace GfxRenderEngine
             }
             if (glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != Gltf::GLTF_NOT_USED)
             {
-                int mettalicRoughnessTextureIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
-                tinygltf::Texture& mettalicRoughnessTexture = m_GltfModel.textures[mettalicRoughnessTextureIndex];
-                material.m_RoughnessMettalicMapIndex = mettalicRoughnessTexture.source;
+                int MetallicRoughnessTextureIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
+                tinygltf::Texture& MetallicRoughnessTexture = m_GltfModel.textures[MetallicRoughnessTextureIndex];
+                material.m_RoughnessMetallicMapIndex = MetallicRoughnessTexture.source;
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
@@ -897,16 +897,16 @@ namespace GfxRenderEngine
 
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
+            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
 
             ASSERT(diffuseMapIndex            < m_Images.size());
             ASSERT(normalMapIndex             < m_Images.size());
-            ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+            ASSERT(roughnessMetallicMapIndex  < m_Images.size());
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
                                           m_Images[diffuseMapIndex], 
                                           m_Images[normalMapIndex], 
-                                          m_Images[roughnessMettalicMapIndex]);
+                                          m_Images[roughnessMetallicMapIndex]);
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
@@ -921,16 +921,16 @@ namespace GfxRenderEngine
 
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
+            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
 
             ASSERT(diffuseMapIndex            < m_Images.size());
             ASSERT(normalMapIndex             < m_Images.size());
-            ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+            ASSERT(roughnessMetallicMapIndex  < m_Images.size());
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial,
                                           m_Images[diffuseMapIndex], 
                                           m_Images[normalMapIndex], 
-                                          m_Images[roughnessMettalicMapIndex],
+                                          m_Images[roughnessMetallicMapIndex],
                                           m_ShaderData);
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
@@ -950,13 +950,13 @@ namespace GfxRenderEngine
 
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMettalicMapIndex = m_ImageOffset + material.m_RoughnessMettalicMapIndex;
+            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
             ASSERT(diffuseMapIndex            < m_Images.size());
             ASSERT(normalMapIndex             < m_Images.size());
-            ASSERT(roughnessMettalicMapIndex  < m_Images.size());
+            ASSERT(roughnessMetallicMapIndex  < m_Images.size());
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial, 
-                                            m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMettalicMapIndex]);
+                                            m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]);
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);

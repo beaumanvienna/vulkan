@@ -75,16 +75,20 @@ namespace GfxRenderEngine
         {
             HAS_DIFFUSE_MAP             = 0x01 << 0,
             HAS_NORMAL_MAP              = 0x01 << 1,
-            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 2,
-            HAS_EMISSIVE_MAP            = 0x01 << 3,
-            HAS_SKELETAL_ANIMATION      = 0x01 << 4
+            HAS_ROUGHNESS_MAP           = 0x01 << 2,
+            HAS_METALLIC_MAP            = 0x01 << 3,
+            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 4,
+            HAS_EMISSIVE_MAP            = 0x01 << 5,
+            HAS_SKELETAL_ANIMATION      = 0x01 << 6
         };
         glm::vec3 m_DiffuseColor;
         glm::vec3 m_EmissiveFactor;
         float m_EmissiveStrength;
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
-        uint m_RoughnessMettalicMapIndex;
+        uint m_RoughnessMapIndex;
+        uint m_MetallicMapIndex;
+        uint m_RoughnessMetallicMapIndex;
         uint m_EmissiveMapIndex;
         uint m_Features;
         float m_Roughness;

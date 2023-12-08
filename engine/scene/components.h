@@ -208,6 +208,11 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
+    struct PbrDiffuseNormalRoughnessMetallic2Tag
+    {
+        uint m_Tag{0};
+    };
+
     struct PbrDiffuseNormalRoughnessMetallicSATag
     {
         uint m_Tag{0};

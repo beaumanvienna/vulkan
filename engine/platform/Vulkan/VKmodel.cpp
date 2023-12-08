@@ -1133,6 +1133,32 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
+                                       const std::shared_ptr<Texture>& colorMap,
+                                       const std::shared_ptr<Texture>& normalMap, 
+                                       const std::shared_ptr<Texture>& roughnessMap,
+                                       const std::shared_ptr<Texture>& metallicMap)
+    {
+        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                    .Build();
+
+        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
+        auto& imageInfo3 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
+
+        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+            .WriteImage(0, imageInfo0)
+            .WriteImage(1, imageInfo1)
+            .WriteImage(2, imageInfo2)
+            .WriteImage(3, imageInfo3)
+            .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet);
+    }
+
     void VK_Model::CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap)
     {
         std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
