@@ -95,5 +95,5 @@ void main()
         discard;
     }
     outColor    = col;
-    outMaterial = vec4(texture(metallicMap, fragUV).r, 1-texture(roughnessMap, fragUV).g, 0, 0);
+    outMaterial = vec4(texture(metallicMap, fragUV).r, texture(roughnessMap, fragUV).g, 0, 0);
 }

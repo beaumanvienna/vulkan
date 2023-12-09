@@ -151,7 +151,7 @@ void main()
     vec4 material     = subpassLoad(roughnessMetallicMap);
 
     float roughness           = material.g;
-    float metallic            = material.r;
+    float metallic            = material.b;
     vec3  ambientLightColor   = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
     vec3 camPos = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
