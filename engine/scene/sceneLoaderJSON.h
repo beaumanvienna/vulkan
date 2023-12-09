@@ -31,6 +31,8 @@ using namespace simdjson;
 #include "engine.h"
 #include "scene/scene.h"
 #include "renderer/gltf.h"
+#include "renderer/fbx.h"
+#include "renderer/obj.h"
 
 namespace GfxRenderEngine
 {
@@ -55,6 +57,7 @@ namespace GfxRenderEngine
             std::string m_Author;
             Gltf::GltfFiles m_GltfFiles;
             Fbx::FbxFiles m_FbxFiles;
+            Obj::ObjFiles m_ObjFiles;
         };
 
     private:
@@ -79,7 +82,7 @@ namespace GfxRenderEngine
         void SerializeString(int indent, std::string const& key, std::string const& value, bool noComma = false);
         void SerializeBool(int indent, std::string const& key, bool value, bool noComma = false);
         void SerializeNumber(int indent, std::string const& key, double const value, bool noComma = false);
-        void SerializeGltfFiles(int indent);
+        void SerializeGltfFiles(int indent, bool noComma);
         void SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances);
         void SerializeInstance(int indent, Gltf::Instance const& instance, bool noComma);
@@ -87,6 +90,16 @@ namespace GfxRenderEngine
         void SerializeNodes(int indent, std::vector<Gltf::Node> const& nodes);
         void SerializeNode(int indent, Gltf::Node const& node, bool noComma);
         void SerializeVec3(int indent, std::string name, glm::vec3 const& vec3, bool noComma = false);
+
+        void SerializeFbxFiles(int indent, bool noComma);
+        void SerializeFbxFile(int indent, Fbx::FbxFile const& fbxFile, bool noComma);
+        void SerializeInstances(int indent, std::vector<Fbx::Instance> const& instances);
+        void SerializeInstance(int indent, Fbx::Instance const& instance, bool noComma);
+
+        void SerializeObjFiles(int indent);
+        void SerializeObjFile(int indent, Obj::ObjFile const& objFile, bool noComma);
+        void SerializeInstances(int indent, std::vector<Obj::Instance> const& instances);
+        void SerializeInstance(int indent, Obj::Instance const& instance, bool noComma);
 
     private:
 

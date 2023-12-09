@@ -233,6 +233,7 @@ project "lucre"
         os.remove("./engine.cfg")
         os.remove("./imgui.ini")
         os.remove("./*.scene")
+        os.remove("./*.json")
         os.remove("./resources/gnuEmbeddedResources.cpp")
         os.remove("./resources/gnuEmbeddedResources.h")
         os.remove("./**.make")

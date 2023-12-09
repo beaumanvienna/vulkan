@@ -25,44 +25,11 @@
 #include "assimp/scene.h"
 
 #include "renderer/model.h"
+#include "renderer/fbx.h"
 #include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
-    class Fbx
-    {
-        public:
-
-        static constexpr int FBX_NOT_USED = -1;
-        static constexpr bool FBX_LOAD_SUCCESS = true;
-        static constexpr bool FBX_LOAD_FAILURE = false;
-        static constexpr int FBX_ROOT_NODE = 0;
-
-        struct Scene
-        {
-            std::string m_Name;
-        };
-        struct Instance
-        {
-            entt::entity m_Entity;
-
-            Instance() = default;
-            Instance(entt::entity entity) : m_Entity{entity} {}
-        };
-        struct FbxFile
-        {
-            std::string m_Filename;
-            std::vector<Instance> m_Instances;
-
-            FbxFile() = default;
-            FbxFile(std::string& filename) : m_Filename{filename} {}
-        };
-        struct FbxFiles
-        {
-            std::vector<FbxFile> m_FbxFilesFromScene;
-            std::vector<FbxFile> m_FbxFilesFromPreFabs;
-        };
-    };
 
     class FbxBuilder
     {
@@ -124,7 +91,6 @@ namespace GfxRenderEngine
         entt::registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
-
 
     // skeletal animation
     private:
