@@ -84,5 +84,5 @@ void main()
 
     vec4 col    = vec4(fragColor, 1.0);
     outColor    = col;
-    outMaterial = vec4(metallic, roughness, normalMapIntensity, 0.0);
+    outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 }

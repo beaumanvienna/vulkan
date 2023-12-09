@@ -379,11 +379,14 @@ namespace GfxRenderEngine
     void GltfBuilder::LoadImagesGltf()
     {
         m_ImageOffset = m_Images.size();
+        size_t numImages = m_GltfModel.images.size();
+        m_Images.resize(m_ImageOffset + numImages);
+
         // retrieve all images from the glTF file
-        for (uint i = 0; i < m_GltfModel.images.size(); i++)
+        for (uint imageIndex = 0; imageIndex < numImages; ++imageIndex)
         {
-            std::string imageFilepath = m_Basepath + m_GltfModel.images[i].uri;
-            tinygltf::Image& glTFImage = m_GltfModel.images[i];
+            std::string imageFilepath = m_Basepath + m_GltfModel.images[imageIndex].uri;
+            tinygltf::Image& glTFImage = m_GltfModel.images[imageIndex];
 
             // glTFImage.component - the number of channels in each pixel
             // three channels per pixel need to be converted to four channels per pixel
@@ -411,14 +414,14 @@ namespace GfxRenderEngine
             }
 
             auto texture = Texture::Create();
-            int minFilter = GetMinFilter(i);
-            int magFilter = GetMinFilter(i);
-            bool imageFormat = GetImageFormatGltf(i);
+            int minFilter = GetMinFilter(imageIndex);
+            int magFilter = GetMinFilter(imageIndex);
+            bool imageFormat = GetImageFormatGltf(imageIndex);
             texture->Init(glTFImage.width, glTFImage.height, imageFormat, buffer, minFilter, magFilter);
             #ifdef DEBUG
                 texture->SetFilename(imageFilepath);
             #endif
-            m_Images.push_back(texture);
+            m_Images[imageIndex] = texture;
         }
     }
 
@@ -451,10 +454,11 @@ namespace GfxRenderEngine
 
     void GltfBuilder::LoadMaterialsGltf()
     {
-        m_Materials.clear();
-        for (uint i = 0; i < m_GltfModel.materials.size(); i++)
+        size_t numMaterials = m_GltfModel.materials.size();
+        m_Materials.resize(numMaterials);
+        for (uint materialIndex = 0; materialIndex < numMaterials; ++materialIndex)
         {
-            tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
+            tinygltf::Material glTFMaterial = m_GltfModel.materials[materialIndex];
 
             Material material{};
             material.m_Features = m_SkeletalAnimation;
@@ -463,6 +467,7 @@ namespace GfxRenderEngine
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
             material.m_EmissiveStrength = 0;
+
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
                 glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
@@ -530,7 +535,7 @@ namespace GfxRenderEngine
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
-            m_Materials.push_back(material);
+            m_Materials[materialIndex] = material;
         }
     }
 

@@ -95,5 +95,5 @@ void main()
         discard;
     }
     outColor    = col;
-    outMaterial = vec4(metallic, roughness, 0.0, 0.0);
+    outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 }
