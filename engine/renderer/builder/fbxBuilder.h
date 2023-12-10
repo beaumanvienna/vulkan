@@ -61,12 +61,13 @@ namespace GfxRenderEngine
         bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
         bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
         void LoadMaterialsFbx();
+        void LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
         void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet = 0, uint uvSet = 0);
         void AssignMaterial(const PrimitiveTmp& primitiveTmp, uint const materialIndex);
-        void LoadTransformationMatrix(TransformComponent& transform, const aiNode* fbxNodePtr);
+        glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
 
         bool MarkNode(const aiNode* fbxNodePtr);
-        void ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, int hasMeshIndex);
+        void ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, uint& hasMeshIndex);
         uint CreateGameObject(const aiNode* fbxNodePtr, uint const parentNode);
         
     private:
@@ -75,8 +76,6 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
-
-        uint m_ImageOffset;
 
         // scene graph
         uint m_InstanceCount;

@@ -92,7 +92,8 @@ namespace GfxRenderEngine
             uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(groupNode);
 
-            ProcessNode(m_FbxScene->mRootNode, groupNode, Fbx::FBX_ROOT_NODE);
+            uint hasMeshIndex = Fbx::FBX_ROOT_NODE;
+            ProcessNode(m_FbxScene->mRootNode, groupNode, hasMeshIndex);
         }
         return Fbx::FBX_LOAD_SUCCESS;
     }
@@ -100,7 +101,7 @@ namespace GfxRenderEngine
     bool FbxBuilder::MarkNode(const aiNode* fbxNodePtr)
     {
         // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
-        
+
         // does this Fbx node have a mesh?
         bool localHasMesh = false;
 
@@ -133,11 +134,11 @@ namespace GfxRenderEngine
         return localHasMesh;
     }
 
-    void FbxBuilder::ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, int hasMeshIndex)
+    void FbxBuilder::ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, uint& hasMeshIndex)
     {
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
         uint currentNode = parentNode;
-        
+
         if (m_HasMesh[hasMeshIndex]) 
         {
             if (fbxNodePtr->mNumMeshes)
@@ -148,8 +149,7 @@ namespace GfxRenderEngine
             {
                 // create game object and transform component
                 auto entity = m_Registry.create();
-                TransformComponent transform{};
-                LoadTransformationMatrix(transform, fbxNodePtr);
+                TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
                 m_Registry.emplace<TransformComponent>(entity, transform);
 
                 // create scene graph node and add to parent
@@ -159,21 +159,20 @@ namespace GfxRenderEngine
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
             }
         }
+        ++hasMeshIndex;
 
         uint childNodeCount = fbxNodePtr->mNumChildren;
         for (uint childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
         {
-            ProcessNode(fbxNodePtr->mChildren[childNodeIndex], currentNode, hasMeshIndex+1+childNodeIndex);
+            ProcessNode(fbxNodePtr->mChildren[childNodeIndex], currentNode, hasMeshIndex);
         }
     }
 
     uint FbxBuilder::CreateGameObject(const aiNode* fbxNodePtr, uint const parentNode)
     {
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
-        for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
-        {
-            LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex]);
-        }
+        LoadVertexDataFbx(fbxNodePtr);
+        
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
         
         auto model = Engine::m_Engine->LoadModel(*this);
@@ -192,8 +191,7 @@ namespace GfxRenderEngine
 
         // transform
         {
-            TransformComponent transform{};
-            LoadTransformationMatrix(transform, fbxNodePtr);
+            TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
             m_Registry.emplace<TransformComponent>(entity, transform);
         }
         
@@ -291,13 +289,10 @@ namespace GfxRenderEngine
         bool loadSucess = false;
         if (EngineCore::FileExists(filepath))
         {
-            //uint width, height;
-            //int minFilter = Fbx_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-            //int magFilter = Fbx_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
 
             auto texture = Texture::Create();
             loadSucess = texture->Init(filepath, useSRGB);
-            //texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
             if (loadSucess)
             {
                 #ifdef DEBUG
@@ -306,6 +301,10 @@ namespace GfxRenderEngine
                 mapIndex = m_Images.size();
                 m_Images.push_back(texture);
             }
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("bool FbxBuilder::LoadImageFbx(): file '{0}' not found", filepath);
         }
         return loadSucess;
     }
@@ -406,7 +405,6 @@ namespace GfxRenderEngine
         for (uint fbxMaterialIndex = 0; fbxMaterialIndex < m_FbxScene->mNumMaterials; ++fbxMaterialIndex)
         {
             const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
-            m_ImageOffset = m_Images.size();
 
             Material engineMaterial{};
             engineMaterial.m_Features = m_SkeletalAnimation;
@@ -438,10 +436,30 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
+    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
     {
         // handle vertex data
+        m_Vertices.clear();
+        m_Indices.clear();
 
+        m_PrimitivesNoMap.clear();
+        m_PrimitivesEmissive.clear();
+        m_PrimitivesDiffuseMap.clear();
+        m_PrimitivesDiffuseSAMap.clear();
+        m_PrimitivesEmissiveTexture.clear();
+        m_PrimitivesDiffuseNormalMap.clear();
+        m_PrimitivesDiffuseNormalSAMap.clear();
+        m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
+        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.clear();
+
+        for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
+        {
+            LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
+        }
+    }
+
+    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
+    {
         const aiMesh* mesh = m_FbxScene->mMeshes[meshIndex];
 
         // only triangle mesh supported
@@ -528,10 +546,17 @@ namespace GfxRenderEngine
         AssignMaterial(primitiveTmp, mesh->mMaterialIndex);
     }
 
-    void FbxBuilder::LoadTransformationMatrix(TransformComponent& transform, const aiNode* fbxNodePtr)
+    glm::mat4 FbxBuilder::LoadTransformationMatrix(const aiNode* fbxNodePtr)
     {
-        aiMatrix4x4 transformFbx = fbxNodePtr->mTransformation;
-        transform.SetMat4(glm::make_mat4x4(reinterpret_cast<float*>(&transformFbx)));
+        aiMatrix4x4 t = fbxNodePtr->mTransformation;
+        glm::mat4 m;
+
+        m[0][0] = (float)t.a1; m[0][1] = (float)t.b1;  m[0][2] = (float)t.c1; m[0][3] = (float)t.d1;
+        m[1][0] = (float)t.a2; m[1][1] = (float)t.b2;  m[1][2] = (float)t.c2; m[1][3] = (float)t.d2;
+        m[2][0] = (float)t.a3; m[2][1] = (float)t.b3;  m[2][2] = (float)t.c3; m[2][3] = (float)t.d3;
+        m[3][0] = (float)t.a4; m[3][1] = (float)t.b4;  m[3][2] = (float)t.c4; m[3][3] = (float)t.d4;
+
+        return m;
     }
 
     void FbxBuilder::AssignMaterial(const PrimitiveTmp& primitiveTmp, uint const materialIndex)
@@ -573,7 +598,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
         
             VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
@@ -590,7 +615,7 @@ namespace GfxRenderEngine
             primitiveDiffuseSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
         
             VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
@@ -607,8 +632,8 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex  = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
         
@@ -627,8 +652,8 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex  = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
         
@@ -650,10 +675,10 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            uint diffuseMapIndex   = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex    = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMapIndex = m_ImageOffset + material.m_RoughnessMapIndex;
-            uint metallicMapIndex  = m_ImageOffset + material.m_MetallicMapIndex;
+            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
+            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint roughnessMapIndex = material.m_RoughnessMapIndex;
+            uint metallicMapIndex  = material.m_MetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
@@ -677,9 +702,9 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
         
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
@@ -706,9 +731,9 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMetallicMapIndex < m_Images.size()");
@@ -727,7 +752,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
         
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
         
             VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
@@ -763,7 +788,7 @@ namespace GfxRenderEngine
                 primitiveEmissiveTexture.m_IndexCount  = primitiveTmp.m_IndexCount;
                 primitiveEmissiveTexture.m_VertexCount = primitiveTmp.m_VertexCount;
         
-                uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
+                uint emissiveMapIndex = material.m_EmissiveMapIndex;
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
         
                 VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);

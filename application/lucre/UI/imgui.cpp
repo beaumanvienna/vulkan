@@ -106,7 +106,7 @@ namespace LucreApp
 
         {
             uint node = currentScene->GetTreeNodeIndex(entity);
-            const uint maxDepth = 5;
+            const uint maxDepth = 6;
             TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
