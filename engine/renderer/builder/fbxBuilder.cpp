@@ -286,25 +286,31 @@ namespace GfxRenderEngine
 
     bool FbxBuilder::LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB)
     {
+        std::shared_ptr<Texture> texture;
         bool loadSucess = false;
-        if (EngineCore::FileExists(filepath))
+
+        if (EngineCore::FileExists(filepath) && !EngineCore::IsDirectory(filepath))
         {
-
-            auto texture = Texture::Create();
+            texture = Texture::Create();
             loadSucess = texture->Init(filepath, useSRGB);
-
-            if (loadSucess)
-            {
-                #ifdef DEBUG
-                    texture->SetFilename(filepath);
-                #endif
-                mapIndex = m_Images.size();
-                m_Images.push_back(texture);
-            }
+        }
+        else if (EngineCore::FileExists(m_Basepath+filepath) && !EngineCore::IsDirectory(m_Basepath+filepath))
+        {
+            texture = Texture::Create();
+            loadSucess = texture->Init(m_Basepath+filepath, useSRGB);
         }
         else
         {
             LOG_CORE_CRITICAL("bool FbxBuilder::LoadImageFbx(): file '{0}' not found", filepath);
+        }
+
+        if (loadSucess)
+        {
+            #ifdef DEBUG
+                texture->SetFilename(filepath);
+            #endif
+            mapIndex = m_Images.size();
+            m_Images.push_back(texture);
         }
         return loadSucess;
     }
@@ -318,7 +324,7 @@ namespace GfxRenderEngine
             aiString aiFilepath;
             auto getTexture = fbxMaterial->GetTexture(textureType, 0 /* first map*/, &aiFilepath);
             std::string fbxFilepath(aiFilepath.C_Str());
-            std::string filepath(m_Basepath + fbxFilepath);
+            std::string filepath(fbxFilepath);
 
             if (getTexture == aiReturn_SUCCESS)
             {
@@ -398,27 +404,67 @@ namespace GfxRenderEngine
         return loadedSuccessfully;
     }
 
+    void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial)
+    {
+        {  // diffuse
+            aiColor3D diffuseColor;
+            if (fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == aiReturn_SUCCESS)
+            {
+                engineMaterial.m_DiffuseColor.r  = diffuseColor.r;
+                engineMaterial.m_DiffuseColor.g  = diffuseColor.g;
+                engineMaterial.m_DiffuseColor.b  = diffuseColor.b;
+            }
+            else
+            {
+                engineMaterial.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+            }
+        }
+        {  // roughness
+            float roughnessFactor;
+            if (fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == aiReturn_SUCCESS)
+            {
+                engineMaterial.m_Roughness  = roughnessFactor;
+            }
+            else
+            {
+                engineMaterial.m_Roughness = 0.1f;
+            }
+        }
+
+        {  // metallic
+            float metallicFactor;
+            if (fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, metallicFactor) == aiReturn_SUCCESS)
+            {
+                engineMaterial.m_Metallic  = metallicFactor;
+            }
+            else if (fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
+            {
+                engineMaterial.m_Metallic  = metallicFactor;
+            }
+            else
+            {
+                engineMaterial.m_Metallic  = 0.886f;
+            }
+        }
+
+        engineMaterial.m_NormalMapIntensity = 1.0f;
+    }
 
     void FbxBuilder::LoadMaterialsFbx()
     {
         m_Materials.clear();
-        for (uint fbxMaterialIndex = 0; fbxMaterialIndex < m_FbxScene->mNumMaterials; ++fbxMaterialIndex)
+        uint numMaterials = m_FbxScene->mNumMaterials;
+        for (uint fbxMaterialIndex = 0; fbxMaterialIndex < numMaterials; ++fbxMaterialIndex)
         {
             const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
+            PrintMaps(fbxMaterial);
 
             Material engineMaterial{};
             engineMaterial.m_Features = m_SkeletalAnimation;
 
-            engineMaterial.m_Roughness = 0.1f;
-            engineMaterial.m_Metallic  = 0.1f;
-            engineMaterial.m_NormalMapIntensity = 1.0f;
+            LoadProperties(fbxMaterial, engineMaterial);
 
-            // diffuse
-            if (!LoadMap(fbxMaterial, aiTextureType_DIFFUSE, engineMaterial))
-            {
-                engineMaterial.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
-            }
-
+            LoadMap(fbxMaterial, aiTextureType_DIFFUSE, engineMaterial);
             LoadMap(fbxMaterial, aiTextureType_NORMALS, engineMaterial);
             LoadMap(fbxMaterial, aiTextureType_SHININESS, engineMaterial);
             LoadMap(fbxMaterial, aiTextureType_METALNESS, engineMaterial);
@@ -456,6 +502,7 @@ namespace GfxRenderEngine
         {
             LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
         }
+        CalculateTangents();
     }
 
     void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
@@ -526,7 +573,8 @@ namespace GfxRenderEngine
             }
             else
             {
-                vertex.m_Color = glm::vec3(0.5f, 0.5f, 1.0f);
+                uint materialIndex = mesh->mMaterialIndex;
+                vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
             }
         }
 
@@ -575,6 +623,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap", materialIndex);
         
             return;
         }
@@ -606,6 +655,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
         
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -623,6 +673,7 @@ namespace GfxRenderEngine
             primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Metallic  = material.m_Metallic;
         
             m_PrimitivesDiffuseSAMap.push_back(primitiveDiffuseSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
@@ -643,6 +694,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
         
             m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -666,6 +718,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
         
             m_PrimitivesDiffuseNormalSAMap.push_back(primitiveDiffuseNormalSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
@@ -693,6 +746,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -718,6 +772,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
         
             m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.push_back(primitiveDiffuseNormalRoughnessMetallicSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
@@ -743,6 +798,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
         
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -760,6 +816,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
         
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else
         {
@@ -774,6 +831,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
         
             m_PrimitivesNoMap.push_back(primitiveNoMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
         }
  
         // emissive materials
@@ -798,6 +856,7 @@ namespace GfxRenderEngine
                 primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
         
                 m_PrimitivesEmissiveTexture.push_back(primitiveEmissiveTexture);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
             }
             else // emissive vertex color
             {
@@ -813,7 +872,107 @@ namespace GfxRenderEngine
                 primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
         
                 m_PrimitivesEmissive.push_back(primitiveEmissive);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
+        }
+    }
+
+    void FbxBuilder::CalculateTangents()
+    {
+        if (m_Indices.size())
+        {
+            CalculateTangentsFromIndexBuffer(m_Indices);
+        }
+        else
+        {
+            uint vertexCount = m_Vertices.size();
+            if (vertexCount)
+            {
+                std::vector<uint> indices;
+                indices.resize(vertexCount);
+                for (uint i = 0; i < vertexCount; i++)
+                {
+                    indices[i] = i;
+                }
+                CalculateTangentsFromIndexBuffer(indices);
+            }
+        }
+    }
+
+    void FbxBuilder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
+    {
+        uint cnt = 0;
+        uint vertexIndex1 = 0;
+        uint vertexIndex2 = 0;
+        uint vertexIndex3 = 0;
+        glm::vec3 position1 = glm::vec3{0.0f};
+        glm::vec3 position2 = glm::vec3{0.0f};
+        glm::vec3 position3 = glm::vec3{0.0f};
+        glm::vec2 uv1 = glm::vec2{0.0f};
+        glm::vec2 uv2 = glm::vec2{0.0f};
+        glm::vec2 uv3 = glm::vec2{0.0f};
+
+        for (uint index : indices)
+        {
+            auto& vertex = m_Vertices[index];
+
+            switch (cnt)
+            {
+                case 0:
+                    position1 = vertex.m_Position;
+                    uv1  = vertex.m_UV;
+                    vertexIndex1 = index;
+                    break;
+                case 1:
+                    position2 = vertex.m_Position;
+                    uv2  = vertex.m_UV;
+                    vertexIndex2 = index;
+                    break;
+                case 2:
+                    position3 = vertex.m_Position;
+                    uv3  = vertex.m_UV;
+                    vertexIndex3 = index;
+
+                    glm::vec3 edge1 = position2 - position1;
+                    glm::vec3 edge2 = position3 - position1;
+                    glm::vec2 deltaUV1 = uv2 - uv1;
+                    glm::vec2 deltaUV2 = uv3 - uv1;
+
+                    float dU1 = deltaUV1.x;
+                    float dU2 = deltaUV2.x;
+                    float dV1 = deltaUV1.y;
+                    float dV2 = deltaUV2.y;
+                    float E1x = edge1.x;
+                    float E2x = edge2.x;
+                    float E1y = edge1.y;
+                    float E2y = edge2.y;
+                    float E1z = edge1.z;
+                    float E2z = edge2.z;
+
+                    float factor;
+                    if ((dU1 * dV2 - dU2 * dV1) > std::numeric_limits<float>::epsilon())
+                    {
+                        factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
+                    }
+                    else
+                    {
+                        factor = 100000.0f;
+                    }
+
+                    glm::vec3 tangent;
+
+                    tangent.x = factor * (dV2 * E1x - dV1 * E2x);
+                    tangent.y = factor * (dV2 * E1y - dV1 * E2y);
+                    tangent.z = factor * (dV2 * E1z - dV1 * E2z);
+                    if (tangent.x==0.0f && tangent.y==0.0f && tangent.z==0.0f) tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+
+                    m_Vertices[vertexIndex1].m_Tangent = tangent;
+                    m_Vertices[vertexIndex2].m_Tangent = tangent;
+                    m_Vertices[vertexIndex3].m_Tangent = tangent;
+
+                    break;
+            }
+            cnt = (cnt + 1) % 3;
         }
     }
 
@@ -825,5 +984,52 @@ namespace GfxRenderEngine
     void FbxBuilder::LoadJoint(int globalFbxNodeIndex, int parentJoint)
     {
         // to be implemented
+    }
+
+    void FbxBuilder::PrintMaps(const aiMaterial* fbxMaterial)
+    {
+        auto materialName = fbxMaterial->GetName();
+        LOG_CORE_ERROR("material name: {0}", std::string(materialName.C_Str()));
+        LOG_CORE_CRITICAL("aiTextureType_NONE                  = {0}", fbxMaterial->GetTextureCount(aiTextureType_NONE             ));
+        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE               = {0}", fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE          ));
+        LOG_CORE_CRITICAL("aiTextureType_SPECULAR              = {0}", fbxMaterial->GetTextureCount(aiTextureType_SPECULAR         ));
+        LOG_CORE_CRITICAL("aiTextureType_AMBIENT               = {0}", fbxMaterial->GetTextureCount(aiTextureType_AMBIENT          ));
+        LOG_CORE_CRITICAL("aiTextureType_EMISSIVE              = {0}", fbxMaterial->GetTextureCount(aiTextureType_EMISSIVE         ));
+        LOG_CORE_CRITICAL("aiTextureType_HEIGHT                = {0}", fbxMaterial->GetTextureCount(aiTextureType_HEIGHT           ));
+        LOG_CORE_CRITICAL("aiTextureType_NORMALS               = {0}", fbxMaterial->GetTextureCount(aiTextureType_NORMALS          ));
+        LOG_CORE_CRITICAL("aiTextureType_SHININESS             = {0}", fbxMaterial->GetTextureCount(aiTextureType_SHININESS        ));
+        LOG_CORE_CRITICAL("aiTextureType_OPACITY               = {0}", fbxMaterial->GetTextureCount(aiTextureType_OPACITY          ));
+        LOG_CORE_CRITICAL("aiTextureType_DISPLACEMENT          = {0}", fbxMaterial->GetTextureCount(aiTextureType_DISPLACEMENT     ));
+        LOG_CORE_CRITICAL("aiTextureType_LIGHTMAP              = {0}", fbxMaterial->GetTextureCount(aiTextureType_LIGHTMAP         ));
+        LOG_CORE_CRITICAL("aiTextureType_REFLECTION            = {0}", fbxMaterial->GetTextureCount(aiTextureType_REFLECTION       ));
+        LOG_CORE_CRITICAL("aiTextureType_BASE_COLOR            = {0}", fbxMaterial->GetTextureCount(aiTextureType_BASE_COLOR       ));
+        LOG_CORE_CRITICAL("aiTextureType_NORMAL_CAMERA         = {0}", fbxMaterial->GetTextureCount(aiTextureType_NORMAL_CAMERA    ));
+        LOG_CORE_CRITICAL("aiTextureType_EMISSION_COLOR        = {0}", fbxMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR   ));
+        LOG_CORE_CRITICAL("aiTextureType_METALNESS             = {0}", fbxMaterial->GetTextureCount(aiTextureType_METALNESS        ));
+        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE_ROUGHNESS     = {0}", fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS));
+        LOG_CORE_CRITICAL("aiTextureType_AMBIENT_OCCLUSION     = {0}", fbxMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION));
+        LOG_CORE_CRITICAL("aiTextureType_SHEEN                 = {0}", fbxMaterial->GetTextureCount(aiTextureType_SHEEN            ));
+        LOG_CORE_CRITICAL("aiTextureType_CLEARCOAT             = {0}", fbxMaterial->GetTextureCount(aiTextureType_CLEARCOAT        ));
+        LOG_CORE_CRITICAL("aiTextureType_TRANSMISSION          = {0}", fbxMaterial->GetTextureCount(aiTextureType_TRANSMISSION     ));
+        LOG_CORE_CRITICAL("aiTextureType_UNKNOWN               = {0}", fbxMaterial->GetTextureCount(aiTextureType_UNKNOWN          ));
+
+        float factor;
+        LOG_CORE_CRITICAL("AI_MATKEY_BASE_COLOR                = {0}", fbxMaterial->Get(AI_MATKEY_BASE_COLOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_ROUGHNESS_FACTOR          = {0}", fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_METALLIC_FACTOR           = {0}", fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_DIFFUSE             = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_EMISSIVE            = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_USE_EMISSIVE_MAP          = {0}", fbxMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_EMISSIVE_INTENSITY        = {0}", fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_SPECULAR            = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_SPECULAR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_REFLECTIVITY              = {0}", fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, factor) == aiReturn_SUCCESS);
+
+        uint numProperties = fbxMaterial->mNumProperties;
+        for (uint propertyIndex = 0; propertyIndex < numProperties; ++propertyIndex)
+        {
+            aiMaterialProperty* materialProperty = fbxMaterial->mProperties[propertyIndex];
+            std::string key = std::string(materialProperty->mKey.C_Str());
+            LOG_CORE_CRITICAL("key: {0}", key);
+        }
     }
 }

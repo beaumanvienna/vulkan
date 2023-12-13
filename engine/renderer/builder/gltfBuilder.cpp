@@ -651,7 +651,11 @@ namespace GfxRenderEngine
                     );
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
+
                 // Append data to model's vertex buffer
+                uint numVerticesBefore = m_Vertices.size();
+                m_Vertices.resize(numVerticesBefore+vertexCount);
+                uint vertexIndex = numVerticesBefore;
                 for (size_t v = 0; v < vertexCount; v++)
                 {
                     Vertex vertex{};
@@ -685,10 +689,10 @@ namespace GfxRenderEngine
                                 LOG_CORE_CRITICAL("data type of joints buffer not found");
                                 break;
                         }
-
                         vertex.m_Weights        = glm::make_vec4(&weightsBuffer[v * 4]);
                     }
-                    m_Vertices.push_back(vertex);
+                    m_Vertices[vertexIndex] = vertex;
+                    ++vertexIndex;
                 }
 
                 // calculate tangents
@@ -802,6 +806,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap", materialIndex);
 
             return;
         }
@@ -831,6 +836,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -848,6 +854,7 @@ namespace GfxRenderEngine
             primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Metallic  = material.m_Metallic;
 
             m_PrimitivesDiffuseSAMap.push_back(primitiveDiffuseSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
@@ -868,6 +875,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -891,6 +899,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalSAMap.push_back(primitiveDiffuseNormalSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
@@ -915,6 +924,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -940,6 +950,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.push_back(primitiveDiffuseNormalRoughnessMetallicSAMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
@@ -965,6 +976,7 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -982,6 +994,7 @@ namespace GfxRenderEngine
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
             m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else
         {
@@ -996,6 +1009,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
         }
 
         // emissive materials
@@ -1020,6 +1034,7 @@ namespace GfxRenderEngine
                 primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
 
                 m_PrimitivesEmissiveTexture.push_back(primitiveEmissiveTexture);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
             }
             else // emissive vertex color
             {
@@ -1035,6 +1050,7 @@ namespace GfxRenderEngine
                 primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
 
                 m_PrimitivesEmissive.push_back(primitiveEmissive);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
         }
     }

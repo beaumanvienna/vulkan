@@ -58,18 +58,24 @@ namespace GfxRenderEngine
 
     private:
 
-        bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
-        bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
-        void LoadMaterialsFbx();
         void LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
         void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet = 0, uint uvSet = 0);
+
+        void LoadMaterialsFbx();
+        bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
+        void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
+        bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
         void AssignMaterial(const PrimitiveTmp& primitiveTmp, uint const materialIndex);
         glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
+        void PrintMaps(const aiMaterial* fbxMaterial);
 
         bool MarkNode(const aiNode* fbxNodePtr);
         void ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, uint& hasMeshIndex);
         uint CreateGameObject(const aiNode* fbxNodePtr, uint const parentNode);
-        
+
+        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
+        void CalculateTangents();
+
     private:
 
         std::string m_Filepath;
