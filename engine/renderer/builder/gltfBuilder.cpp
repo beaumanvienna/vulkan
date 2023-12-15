@@ -219,14 +219,16 @@ namespace GfxRenderEngine
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
 
-        // mesh
-        MeshComponent mesh{nodeName, model};
-        m_Registry.emplace<MeshComponent>(entity, mesh);
+        { // mesh
+            MeshComponent mesh{nodeName, model};
+            m_Registry.emplace<MeshComponent>(entity, mesh);
+        }
 
-        // transform
-        TransformComponent transform{};
-        LoadTransformationMatrix(transform, gltfNodeIndex);
-        m_Registry.emplace<TransformComponent>(entity, transform);
+        { // transform
+            TransformComponent transform{};
+            LoadTransformationMatrix(transform, gltfNodeIndex);
+            m_Registry.emplace<TransformComponent>(entity, transform);
+        }
 
         // material tags (can have multiple tags)
         bool hasPbrMaterial = false;
@@ -661,7 +663,7 @@ namespace GfxRenderEngine
                     Vertex vertex{};
                     vertex.m_Amplification  = 1.0f;
                     auto position           = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
-                    vertex.m_Position       = glm::vec4(position.x, position.y, position.z, 1.0f);
+                    vertex.m_Position       = glm::vec3(position.x, position.y, position.z);
                     vertex.m_Normal         = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
 
                     glm::vec4 t             = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);

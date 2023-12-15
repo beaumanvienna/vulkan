@@ -89,7 +89,7 @@ namespace GfxRenderEngine
             }
             return accessor.componentType;
         }
-        
+
     private:
 
         std::string m_Filepath;
