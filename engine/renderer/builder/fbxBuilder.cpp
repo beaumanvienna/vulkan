@@ -37,7 +37,8 @@ namespace GfxRenderEngine
     FbxBuilder::FbxBuilder(const std::string& filepath, Scene& scene)
         : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()},
           m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
-          m_InstanceCount{0}, m_InstanceIndex{0}, m_FbxScene{nullptr}
+          m_InstanceCount{0}, m_InstanceIndex{0}, m_FbxScene{nullptr},
+          m_FbxNoBuiltInTangents{false}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -83,14 +84,17 @@ namespace GfxRenderEngine
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.create();
-            TransformComponent transform{};
-            m_Registry.emplace<TransformComponent>(entity, transform);
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
             auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
             auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
             uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(groupNode);
+
+            {
+                TransformComponent transform{};
+                m_Registry.emplace<TransformComponent>(entity, transform);
+            }
 
             uint hasMeshIndex = Fbx::FBX_ROOT_NODE;
             ProcessNode(m_FbxScene->mRootNode, groupNode, hasMeshIndex);
@@ -149,8 +153,17 @@ namespace GfxRenderEngine
             {
                 // create game object and transform component
                 auto entity = m_Registry.create();
-                TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
-                m_Registry.emplace<TransformComponent>(entity, transform);
+                {
+                    TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
+                    if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
+                    {
+                        auto scale = transform.GetScale();
+                        transform.SetScale({scale.x/100.0f, scale.y/100.0f, scale.z/100.0f});
+                        auto translation = transform.GetTranslation();
+                        transform.SetTranslation({translation.x/100.0f, translation.y/100.0f, translation.z/100.0f});
+                    }
+                    m_Registry.emplace<TransformComponent>(entity, transform);
+                }
 
                 // create scene graph node and add to parent
                 auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
@@ -183,17 +196,20 @@ namespace GfxRenderEngine
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
 
-        
         { // mesh
             MeshComponent mesh{nodeName, model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
         }
 
-        
         { // transform
             TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
-            auto scale = transform.GetScale();
-            transform.SetScale({scale.x/100.0f, scale.y/100.0f, scale.z/100.0f});
+            if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
+            {
+                auto scale = transform.GetScale();
+                transform.SetScale({scale.x/100.0f, scale.y/100.0f, scale.z/100.0f});
+                auto translation = transform.GetTranslation();
+                transform.SetTranslation({translation.x/100.0f, translation.y/100.0f, translation.z/100.0f});
+            }
             m_Registry.emplace<TransformComponent>(entity, transform);
         }
 
@@ -330,33 +346,32 @@ namespace GfxRenderEngine
 
             if (getTexture == aiReturn_SUCCESS)
             {
-                bool useSRGB = (textureType & (aiTextureType_DIFFUSE | aiTextureType_EMISSIVE)) ? Texture::USE_SRGB : Texture::USE_UNORM;
                 bool loadImageFbx = false;
                 switch (textureType)
                 {
                     case aiTextureType_DIFFUSE:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_DiffuseMapIndex, useSRGB);
+                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_DiffuseMapIndex, Texture::USE_SRGB);
                         break;
                     }
                     case aiTextureType_NORMALS:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_NormalMapIndex, useSRGB);
+                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_NormalMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_SHININESS: // assimp XD
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_RoughnessMapIndex, useSRGB);
+                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_RoughnessMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_METALNESS:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_MetallicMapIndex, useSRGB);
+                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_MetallicMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_EMISSIVE:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_EmissiveMapIndex, useSRGB);
+                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_EmissiveMapIndex, Texture::USE_SRGB);
                         break;
                     }
                     default:
@@ -459,7 +474,7 @@ namespace GfxRenderEngine
         for (uint fbxMaterialIndex = 0; fbxMaterialIndex < numMaterials; ++fbxMaterialIndex)
         {
             const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
-            PrintMaps(fbxMaterial);
+            //PrintMaps(fbxMaterial);
 
             Material engineMaterial{};
             engineMaterial.m_Features = m_SkeletalAnimation;
@@ -500,11 +515,20 @@ namespace GfxRenderEngine
         m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
         m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.clear();
 
-        for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
+        m_FbxNoBuiltInTangents = false;
+        uint numMeshes = fbxNodePtr->mNumMeshes;
+        if (numMeshes)
         {
-            LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
+            for (uint meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
+            {
+                LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
+            }
+            if (m_FbxNoBuiltInTangents) // at least one mesh did not have tangents
+            {
+                LOG_CORE_CRITICAL("no tangents in fbx file found, calculating tangents manually");
+                CalculateTangents();
+            }
         }
-        CalculateTangents();
     }
 
     void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
@@ -539,6 +563,8 @@ namespace GfxRenderEngine
         bool hasUVs = mesh->HasTextureCoords(uvSet);
         bool hasColors = mesh->HasVertexColors(vertexColorSet);
 
+        m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
+
         for (uint vertexIndex = numVerticesBefore; vertexIndex < numVertices; ++vertexIndex)
         {
             Vertex& vertex = m_Vertices[vertexIndex];
@@ -553,13 +579,13 @@ namespace GfxRenderEngine
             if (hasNormals) // normals
             {
                 aiVector3D& normalFbx = mesh->mNormals[vertexIndex];
-                vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
+                vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.z, -normalFbx.y));
             }
 
             if (hasTangents) // tangents
             {
                 aiVector3D& tangentFbx = mesh->mTangents[vertexIndex];
-                vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
+                vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.z, -tangentFbx.y);
             }
 
             if (hasUVs) // uv coordinates
@@ -625,7 +651,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap", materialIndex);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (no material found)", materialIndex);
 
             return;
         }
@@ -833,7 +859,7 @@ namespace GfxRenderEngine
             primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
 
             m_PrimitivesNoMap.push_back(primitiveNoMap);
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap, features: 0x{1:x}", materialIndex, material.m_Features);
         }
  
         // emissive materials

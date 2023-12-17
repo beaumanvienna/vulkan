@@ -104,14 +104,17 @@ namespace GfxRenderEngine
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.create();
-            TransformComponent transform{};
-            m_Registry.emplace<TransformComponent>(entity, transform);
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
             auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
             auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
             uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(groupNode);
+
+            {
+                TransformComponent transform{};
+                m_Registry.emplace<TransformComponent>(entity, transform);
+            }
 
             // a scene ID was provided
             if (sceneID > Gltf::GLTF_NOT_USED)
@@ -182,15 +185,18 @@ namespace GfxRenderEngine
             {
                 // create game object and transform component
                 auto entity = m_Registry.create();
-                TransformComponent transform{};
-                LoadTransformationMatrix(transform, gltfNodeIndex);
-                m_Registry.emplace<TransformComponent>(entity, transform);
 
                 // create scene graph node and add to parent
                 auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
                 auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+
+                {
+                    TransformComponent transform{};
+                    LoadTransformationMatrix(transform, gltfNodeIndex);
+                    m_Registry.emplace<TransformComponent>(entity, transform);
+                }
             }
         }
 
@@ -700,6 +706,7 @@ namespace GfxRenderEngine
                 // calculate tangents
                 if (!tangentsBuffer)
                 {
+                    LOG_CORE_CRITICAL("no tangents in gltf file found, calculating tangents manually");
                     CalculateTangents();
                 }
 

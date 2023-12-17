@@ -51,14 +51,20 @@ namespace GfxRenderEngine
           m_Translation(glm::vec3(0.0)), m_Dirty(true)
     {}
 
-    TransformComponent::TransformComponent(const glm::mat4& transform)
-        : m_Mat4(transform), m_Dirty(false)
+    TransformComponent::TransformComponent(const glm::mat4& mat4)
     {
+        glm::vec3 translation;
         glm::quat rotation;
+        glm::vec3 scale;
         glm::vec3 skew;
         glm::vec4 perspective;
-        glm::decompose(transform, m_Scale, rotation, m_Translation, skew, perspective);
-        m_Rotation = glm::eulerAngles(rotation);
+        glm::decompose(mat4, scale, rotation, translation, skew, perspective);
+        glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+
+        SetTranslation(translation);
+        SetRotation(rotationEuler);
+        SetScale(scale);
+
     }
 
     void TransformComponent::SetScale(const glm::vec3& scale)

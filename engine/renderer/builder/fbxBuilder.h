@@ -82,6 +82,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
+        bool m_FbxNoBuiltInTangents;
 
         // scene graph
         uint m_InstanceCount;
