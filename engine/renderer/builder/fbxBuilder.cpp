@@ -579,13 +579,13 @@ namespace GfxRenderEngine
             if (hasNormals) // normals
             {
                 aiVector3D& normalFbx = mesh->mNormals[vertexIndex];
-                vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.z, -normalFbx.y));
+                vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
             }
 
             if (hasTangents) // tangents
             {
                 aiVector3D& tangentFbx = mesh->mTangents[vertexIndex];
-                vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.z, -tangentFbx.y);
+                vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
             }
 
             if (hasUVs) // uv coordinates
