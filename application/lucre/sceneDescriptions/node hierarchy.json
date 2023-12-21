@@ -1,0 +1,57 @@
+{
+    "file format identifier": 1.2,
+    "description": "night scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/simple2/gltf/simple2.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            1.09537, 1.75, -1.54444
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/simple2/fbx/simple2.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.80008, 1.8, -1.5
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

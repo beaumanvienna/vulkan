@@ -464,6 +464,15 @@ namespace GfxRenderEngine
             }
         }
 
+        {  // emissive
+            aiColor3D emission;
+            auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
+            if (result == aiReturn_SUCCESS && (emission.r > 0 || emission.g > 0 || emission.b > 0))
+            {
+                engineMaterial.m_EmissiveStrength = (emission.r + emission.g + emission.b) / 3.0f;
+            }
+        }
+
         engineMaterial.m_NormalMapIntensity = 1.0f;
     }
 
@@ -479,7 +488,6 @@ namespace GfxRenderEngine
             Material engineMaterial{};
             engineMaterial.m_Features = m_SkeletalAnimation;
 
-            LoadProperties(fbxMaterial, engineMaterial);
 
             LoadMap(fbxMaterial, aiTextureType_DIFFUSE, engineMaterial);
             LoadMap(fbxMaterial, aiTextureType_NORMALS, engineMaterial);
@@ -494,6 +502,8 @@ namespace GfxRenderEngine
             {
                 engineMaterial.m_EmissiveStrength = 0.0f;
             }
+
+            LoadProperties(fbxMaterial, engineMaterial);
 
             m_Materials.push_back(engineMaterial);
         }
@@ -565,38 +575,39 @@ namespace GfxRenderEngine
 
         m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
 
-        for (uint vertexIndex = numVerticesBefore; vertexIndex < numVertices; ++vertexIndex)
+        uint vertexIndex = numVerticesBefore;
+        for (uint fbxVertexIndex = 0; fbxVertexIndex < numVertices; ++fbxVertexIndex)
         {
             Vertex& vertex = m_Vertices[vertexIndex];
             vertex.m_Amplification  = 1.0f;
 
             if (hasPosition)
             { // position (guaranteed to always be there)
-                aiVector3D& positionFbx = mesh->mVertices[vertexIndex];
+                aiVector3D& positionFbx = mesh->mVertices[fbxVertexIndex];
                 vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
             }
 
             if (hasNormals) // normals
             {
-                aiVector3D& normalFbx = mesh->mNormals[vertexIndex];
+                aiVector3D& normalFbx = mesh->mNormals[fbxVertexIndex];
                 vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
             }
 
             if (hasTangents) // tangents
             {
-                aiVector3D& tangentFbx = mesh->mTangents[vertexIndex];
+                aiVector3D& tangentFbx = mesh->mTangents[fbxVertexIndex];
                 vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
             }
 
             if (hasUVs) // uv coordinates
             {
-                aiVector3D& uvFbx = mesh->mTextureCoords[uvSet][vertexIndex];
+                aiVector3D& uvFbx = mesh->mTextureCoords[uvSet][fbxVertexIndex];
                 vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
             }
 
             if (hasColors) // vertex colors
             {
-                aiColor4D& colorFbx = mesh->mColors[vertexColorSet][vertexIndex];
+                aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
                 vertex.m_Color = glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b);
             }
             else
@@ -604,6 +615,7 @@ namespace GfxRenderEngine
                 uint materialIndex = mesh->mMaterialIndex;
                 vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
             }
+            ++vertexIndex;
         }
 
         // Indices

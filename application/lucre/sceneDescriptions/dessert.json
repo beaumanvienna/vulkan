@@ -1,0 +1,154 @@
+{
+    "file format identifier": 1.2,
+    "description": "night scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/gltf/node hierarchy.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            2.27202, 1.37049, 1.19253
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/node hierarchy/asphalt/gltf/asphalt.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.22, 0.22, 0.22
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            1.097, 1.60085, 0.956
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.22, 0.22, 0.22
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            -23.6821, 1.601, 0.956344
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.22, 0.22, 0.22
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            25.88, 1.601, 0.956
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/node hierarchy/sand/gltf/sand.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.52626, 0.255595, 0.52626
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            -0.830656, 0.377707, 22.4015
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.499994, 0.499994, 0.499917
+                        ],
+                        "rotation":
+                        [
+                            1.57081, -1.50099, -1.5708
+                        ],
+                        "translation":
+                        [
+                            -0.238747, 0.55387, -19.3649
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/fbx/node hierarchy.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443, 0.443, 0.443
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.65687, 1.34285, 1.23523
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

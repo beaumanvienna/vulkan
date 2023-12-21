@@ -106,7 +106,7 @@ namespace LucreApp
 
         {
             uint node = currentScene->GetTreeNodeIndex(entity);
-            const uint maxDepth = 6;
+            const uint maxDepth = 20; // maximum depth of the tree hierarchy
             TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
@@ -121,11 +121,6 @@ namespace LucreApp
             ImGui::Checkbox("use###002", &m_UseMetallic);
             ImGui::SameLine();
             ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
-
-            // normal map intensity
-            ImGui::Checkbox("use###003", &m_UseNormalMapIntensity);
-            ImGui::SameLine();
-            ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 1.0f);
 
             // emission strength
             ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
@@ -181,6 +176,8 @@ namespace LucreApp
         auto guizmoMode = GetGuizmoMode();
         if (m_VisibleModels.size() > 0)
         {
+            entt::entity gameObject = m_SelectedGameObject ? static_cast<entt::entity>(m_SelectedGameObject):entity;
+
             ImGuizmo::BeginFrame();
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
@@ -189,29 +186,30 @@ namespace LucreApp
 
             auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
             auto& viewMatrix = camera.GetViewMatrix();
+            
 
             if (m_UseEmissiveStrength)
             {
                 bool found = false;
                 {
-                    if (registry.all_of<PbrEmissiveTag>(entity))
+                    if (registry.all_of<PbrEmissiveTag>(gameObject))
                     {
                         found = true;
-                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(entity);
+                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(gameObject);
                         pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
                 if (!found)
                 {
-                    if (registry.all_of<PbrEmissiveTextureTag>(entity))
+                    if (registry.all_of<PbrEmissiveTextureTag>(gameObject))
                     {
-                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(entity);
+                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(gameObject);
                         pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
                     }
                 }
             }
 
-            auto& transform = registry.get<TransformComponent>(entity);
+            auto& transform = registry.get<TransformComponent>(gameObject);
             glm::mat4 mat4 = transform.GetMat4();
 
             ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
@@ -266,6 +264,11 @@ namespace LucreApp
         ImGui::Checkbox("use###005", &m_UseAmbientLightIntensity);
         ImGui::SameLine();
         ImGui::SliderFloat("ambient light", &m_AmbientLightIntensity, 0.0f, 1.0f);
+
+        // normal map intensity
+        ImGui::Checkbox("use###003", &m_UseNormalMapIntensity);
+        ImGui::SameLine();
+        ImGui::SliderFloat("normal map", &m_NormalMapIntensity, 0.0f, 2.0f);
 
         // shadow map debug window
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
@@ -338,6 +341,8 @@ namespace LucreApp
             {
                 if (ImGui::TreeNodeEx(label.c_str()))
                 {
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("edit")) { m_SelectedGameObject = gameObject; }
                     for (uint index = 0; index < node.Children(); ++index)
                     {
                         TraverseObjectTree(scene, node.GetChild(index), depth + 1, maxDepth);

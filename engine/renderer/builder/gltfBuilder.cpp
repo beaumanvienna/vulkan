@@ -482,7 +482,7 @@ namespace GfxRenderEngine
                 if (emissiveFactor != glm::vec3(0,0,0))
                 {
                     material.m_EmissiveFactor = emissiveFactor;
-                    material.m_EmissiveStrength = 1;
+                    material.m_EmissiveStrength = emissiveFactor.r;
                 }
             }
             if (glTFMaterial.emissiveTexture.index != Gltf::GLTF_NOT_USED)
@@ -491,7 +491,7 @@ namespace GfxRenderEngine
                 tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
                 material.m_EmissiveMapIndex = emissiveTexture.source;
                 material.m_Features |= Material::HAS_EMISSIVE_MAP;
-                material.m_EmissiveStrength = 1;
+                if (!material.m_EmissiveStrength) material.m_EmissiveStrength = 1;
             }
             {
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
@@ -709,7 +709,6 @@ namespace GfxRenderEngine
                     LOG_CORE_CRITICAL("no tangents in gltf file found, calculating tangents manually");
                     CalculateTangents();
                 }
-
             }
             // Indices
             {
