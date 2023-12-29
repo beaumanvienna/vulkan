@@ -92,7 +92,7 @@ namespace GfxRenderEngine
 
             VK_PushConstantDataCubemap push{};
 
-            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_ModelMatrix  = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
 
             vkCmdPushConstants(

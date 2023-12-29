@@ -259,25 +259,25 @@ namespace LucreApp
         // cloud 0
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[0]);
-            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4());
+            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4Local());
         }
 
         // cloud 1
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
-            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4());
+            m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4Local());
         }
         
         // beach
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Beach);
-            m_Renderer->DrawWithTransform(m_BeachSprite, transform.GetMat4());
+            m_Renderer->DrawWithTransform(m_BeachSprite, transform.GetMat4Local());
         }
         
         // hero
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[0]);
-            m_Renderer->DrawWithTransform(Sprite2D(m_WalkAnimation.GetSprite()), transform.GetMat4());
+            m_Renderer->DrawWithTransform(Sprite2D(m_WalkAnimation.GetSprite()), transform.GetMat4Local());
         }
     }
 

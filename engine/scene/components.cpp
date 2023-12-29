@@ -53,6 +53,11 @@ namespace GfxRenderEngine
 
     TransformComponent::TransformComponent(const glm::mat4& mat4)
     {
+        SetMat4Local(mat4);
+    }
+
+    void TransformComponent::SetMat4Local(const glm::mat4& mat4)
+    {
         glm::vec3 translation;
         glm::quat rotation;
         glm::vec3 scale;
@@ -64,7 +69,16 @@ namespace GfxRenderEngine
         SetTranslation(translation);
         SetRotation(rotationEuler);
         SetScale(scale);
+    }
 
+    void TransformComponent::SetDirtyFlag()
+    {
+        m_Dirty = true;
+    }
+
+    bool TransformComponent::GetDirtyFlag() const
+    {
+        return m_Dirty;
     }
 
     void TransformComponent::SetScale(const glm::vec3& scale)
@@ -184,28 +198,40 @@ namespace GfxRenderEngine
         auto rotation = glm::toMat4(glm::quat(m_Rotation));
         auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, m_Translation.y, m_Translation.z});
 
-        m_Mat4 = translation * rotation * scale;
-        m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4)));
+        m_Mat4Local = translation * rotation * scale;
+
+        m_Dirty = false;
     }
 
-    const glm::mat4& TransformComponent::GetMat4()
+    const glm::mat4& TransformComponent::GetMat4Local()
     {
         if (m_Dirty)
         {
-            m_Dirty = false;
             RecalculateMatrices();
         }
-        return m_Mat4;
+        return m_Mat4Local;
+    }
+
+    void TransformComponent::SetMat4Global(const glm::mat4& parent)
+    {
+        m_Mat4Global = parent * GetMat4Local();
+        m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
+        m_Parent = parent;
+    }
+
+    const glm::mat4& TransformComponent::GetMat4Global()
+    {
+        return m_Mat4Global;
     }
 
     const glm::mat3& TransformComponent::GetNormalMatrix()
     {
-        if (m_Dirty)
-        {
-            m_Dirty = false;
-            RecalculateMatrices();
-        }
         return m_NormalMatrix;
+    }
+
+    const glm::mat4& TransformComponent::GetParent()
+    {
+        return m_Parent;
     }
 
     ScriptComponent::ScriptComponent(const std::string& filepath)

@@ -774,7 +774,7 @@ namespace GfxRenderEngine
 
         if (node.matrix.size() == 16)
         {
-            transform.SetMat4(glm::make_mat4x4(node.matrix.data()));
+            transform.SetMat4Local(glm::make_mat4x4(node.matrix.data()));
         }
         else
         {

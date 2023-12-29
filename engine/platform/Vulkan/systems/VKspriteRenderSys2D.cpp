@@ -102,7 +102,7 @@ namespace GfxRenderEngine
         {
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataSpriteRenderer2D push{};
-            push.m_MVP  = camera->GetProjectionMatrix() * camera->GetViewMatrix() * transform.GetMat4();
+            push.m_MVP  = camera->GetProjectionMatrix() * camera->GetViewMatrix() * transform.GetMat4Local();
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,

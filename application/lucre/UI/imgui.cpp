@@ -62,6 +62,10 @@ namespace LucreApp
 
     void ImGUI::DebugWindow()
     {
+
+        if (!m_VisibleModels.size()) return;
+
+        entt::entity entity = static_cast<entt::entity>(0);
         ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
         uint contextWidth  = Engine::m_Engine->GetWindowWidth();
         uint contextHeight = Engine::m_Engine->GetWindowHeight();
@@ -80,17 +84,14 @@ namespace LucreApp
         ImGui::Checkbox("scale", &m_UseScale);
         ImGui::SameLine();
 
-        // selected entity
-        std::string gameObjectLabel = "Model ";
-        entt::entity entity = static_cast<entt::entity>(0);
-        if (m_VisibleModels.size() > 0)
         {
+            // selected entity
+            std::string gameObjectLabel = "Model ";
             auto& [label, selectedModel] = m_VisibleModels[m_SelectedModel];
             entity = selectedModel;
             gameObjectLabel += label + std::string(", entity: ") + std::to_string(static_cast<int>(entity));
+            ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
         }
-
-        ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
 
         static int selectedModelPrevious = m_SelectedModel;
         static const char* currentItem = nullptr;
@@ -110,18 +111,8 @@ namespace LucreApp
             TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
-        if (registry.all_of<PbrMaterial>(entity))
+        if (registry.all_of<PbrMaterial>(static_cast<entt::entity>(m_SelectedGameObject)))
         {
-            // roughness
-            ImGui::Checkbox("use###001", &m_UseRoughness);
-            ImGui::SameLine();
-            ImGui::SliderFloat("roughness", &m_Roughness, 0.0f, 1.0f);
-
-            // metallic
-            ImGui::Checkbox("use###002", &m_UseMetallic);
-            ImGui::SameLine();
-            ImGui::SliderFloat("metallic", &m_Metallic, 0.0f, 1.0f);
-
             // emission strength
             ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
             ImGui::SameLine();
@@ -144,10 +135,12 @@ namespace LucreApp
             {
                 currentItem = items[0];
             }
+
             ImGui::Checkbox("use###007", &m_UseAnimation);
             ImGui::SameLine();
             ImGui::Checkbox("repeat###001", &m_RepeatAnimation);
             ImGui::SameLine();
+
             if (ImGui::BeginCombo("##combo", currentItem)) // The 2nd parameter is the label previewed before opening the combo
             {
                 for (size_t index = 0; index < numberOfAnimations; ++index)
@@ -169,24 +162,16 @@ namespace LucreApp
                 }
                 ImGui::EndCombo();
             }
+
             ImGui::SameLine();
             ImGui::Text("select animation");
+
         }
 
         auto guizmoMode = GetGuizmoMode();
-        if (m_VisibleModels.size() > 0)
+        
         {
-            entt::entity gameObject = m_SelectedGameObject ? static_cast<entt::entity>(m_SelectedGameObject):entity;
-
-            ImGuizmo::BeginFrame();
-            ImGuizmo::SetOrthographic(false);
-            ImGuizmo::SetDrawlist();
-
-            ImGuizmo::SetRect(0, 0, contextWidth, contextHeight);
-
-            auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
-            auto& viewMatrix = camera.GetViewMatrix();
-            
+            entt::entity gameObject = m_SelectedGameObject ? static_cast<entt::entity>(m_SelectedGameObject) : entity;
 
             if (m_UseEmissiveStrength)
             {
@@ -209,25 +194,43 @@ namespace LucreApp
                 }
             }
 
+            ImGuizmo::BeginFrame();
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+            ImGuizmo::SetRect(0, 0, contextWidth, contextHeight);
+
+            auto projectionMatrix = glm::scale(glm::mat4(1.0f), {1.0f, -1.0f, 1.0f}) * camera.GetProjectionMatrix();
+            auto& viewMatrix = camera.GetViewMatrix();
+
             auto& transform = registry.get<TransformComponent>(gameObject);
-            glm::mat4 mat4 = transform.GetMat4();
 
-            ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
-                guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
+            { // guizmo
 
-            glm::vec3 translation;
-            glm::quat rotation;
-            glm::vec3 scale;
-            glm::vec3 skew;
-            glm::vec4 perspective;
-            glm::decompose(mat4, scale, rotation, translation, skew, perspective);
-            glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+                glm::mat4 mat4 = transform.GetMat4Global();
 
-            if (ImGuizmo::IsUsing())
-            {
-                transform.SetTranslation(translation);
-                transform.SetRotation(rotationEuler);
-                transform.SetScale(scale);
+                ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
+                     guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
+
+                // global = parent * local
+                // local = inv_parent * global
+                auto mat4Local = glm::inverse(transform.GetParent()) * mat4;
+
+                glm::vec3 translation;
+                glm::quat rotation;
+                glm::vec3 scale;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(mat4Local, scale, rotation, translation, skew, perspective);
+                glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+
+     
+                if (ImGuizmo::IsUsing())
+                {
+                    transform.SetTranslation(translation);
+                    transform.SetRotation(rotationEuler);
+                    transform.SetScale(scale);
+                }
             }
 
             glm::vec3 actualTranslation   = transform.GetTranslation();
@@ -282,14 +285,20 @@ namespace LucreApp
         }
         else if (m_UseTranslate)
         {
+            m_UseRotate = false;
+            m_UseScale = false;
             return ImGuizmo::TRANSLATE;
         }
         else if (m_UseRotate)
         {
+            m_UseTranslate = false;
+            m_UseScale = false;
             return ImGuizmo::ROTATE;
         }
         else if (m_UseScale)
         {
+            m_UseTranslate = false;
+            m_UseRotate = false;
             return ImGuizmo::SCALE;
         }
         return ImGuizmo::TRANSLATE;

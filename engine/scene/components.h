@@ -68,17 +68,21 @@ namespace GfxRenderEngine
         void AddTranslation(const glm::vec3& deltaTranslation);
         void AddTranslationX(const float deltaTranslation);
 
-        void SetMat4(const glm::mat4& mat4) { m_Mat4 = mat4; }
 
         // the getters must be const; only the setters have write access
         const glm::vec3& GetScale() { return m_Scale; }
         const glm::vec3& GetRotation() { return m_Rotation; }
         const glm::vec3& GetTranslation() { return m_Translation; }
 
-        const glm::mat4& GetMat4();
+        void SetMat4Local(const glm::mat4& mat4);
+        void SetMat4Global(const glm::mat4& parent);
+
+        const glm::mat4& GetMat4Local();
+        const glm::mat4& GetMat4Global();
         const glm::mat3& GetNormalMatrix();
-        void  SetDirtyFlag() { m_Dirty = true; }
-        bool  GetDirtyFlag() const { return m_Dirty; }
+        const glm::mat4& GetParent();
+        void  SetDirtyFlag();
+        bool  GetDirtyFlag() const;
 
     private:
 
@@ -87,11 +91,17 @@ namespace GfxRenderEngine
     private:
 
         bool m_Dirty{true};
+
+        // local
         glm::vec3 m_Scale = glm::vec3{1.0f};
         glm::vec3 m_Rotation{0.0f};
         glm::vec3 m_Translation{0.0f};
-        glm::mat4 m_Mat4 = glm::mat4(1.0f);
+        glm::mat4 m_Mat4Local = glm::mat4(1.0f);
+
+        // global
+        glm::mat4 m_Mat4Global = glm::mat4(1.0f);
         glm::mat3 m_NormalMatrix = glm::mat4(1.0f);
+        glm::mat4 m_Parent = glm::mat4(1.0f);
 
     };
 

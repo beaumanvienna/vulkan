@@ -892,21 +892,19 @@ namespace GfxRenderEngine
 
         if (dirtyFlag)
         {
-            transform.SetDirtyFlag();
-            auto& mat4 = transform.GetMat4();
-            glm::mat4 cleanMat4 = parentMat4*mat4;
-            transform.SetMat4(cleanMat4);
+            transform.SetMat4Global(parentMat4);
+            const glm::mat4& mat4Global = transform.GetMat4Global();
             for (uint index = 0; index < node.Children(); index++)
             {
-                UpdateTransformCache(scene, node.GetChild(index), cleanMat4, true);
+                UpdateTransformCache(scene, node.GetChild(index), mat4Global, true);
             }
         }
         else
         {
-            auto& mat4 = transform.GetMat4();
-            for (uint index = 0; index < node.Children(); index++)
+            const glm::mat4& mat4Global = transform.GetMat4Global();
+            for (uint index = 0; index < node.Children(); ++index)
             {
-                UpdateTransformCache(scene, node.GetChild(index), mat4, false);
+                UpdateTransformCache(scene, node.GetChild(index), mat4Global, false);
             }
         }
     }

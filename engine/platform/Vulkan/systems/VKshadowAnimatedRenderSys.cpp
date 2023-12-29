@@ -117,7 +117,7 @@ namespace GfxRenderEngine
 
             VK_PushConstantDataShadowAnimated push{};
     
-            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_ModelMatrix  = transform.GetMat4Global();
     
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,

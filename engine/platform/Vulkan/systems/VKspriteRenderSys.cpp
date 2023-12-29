@@ -101,7 +101,7 @@ namespace GfxRenderEngine
             auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataSpriteRenderer push{};
-            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_ModelMatrix  = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
             push.m_NormalMatrix[3].y = spriteRendererComponent.m_Metallic;
@@ -147,7 +147,7 @@ namespace GfxRenderEngine
 
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
             VK_PushConstantDataSpriteRenderer push{};
-            push.m_ModelMatrix  = transform.GetMat4();
+            push.m_ModelMatrix  = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
