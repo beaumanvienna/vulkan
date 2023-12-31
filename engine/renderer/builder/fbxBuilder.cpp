@@ -27,6 +27,7 @@
 
 #include "core.h"
 #include "renderer/builder/fbxBuilder.h"
+#include "renderer/materialDescriptor.h"
 #include "auxiliary/file.h"
 
 #include "VKmodel.h"
@@ -691,6 +692,10 @@ namespace GfxRenderEngine
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseMap, textures);
+            }
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
@@ -709,6 +714,11 @@ namespace GfxRenderEngine
             CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseSAMap, textures, buffers);
+            }
             primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Roughness = material.m_Roughness;
             primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Metallic  = material.m_Metallic;
 
@@ -729,6 +739,10 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial, m_Images[diffuseMapIndex], m_Images[normalMapIndex]);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalMap, textures);
+            }
             primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Roughness          = material.m_Roughness;
             primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Metallic           = material.m_Metallic;
             primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
@@ -753,6 +767,11 @@ namespace GfxRenderEngine
                                           m_Images[diffuseMapIndex],
                                           m_Images[normalMapIndex],
                                           m_ShaderData);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalSAMap, textures, buffers);
+            }
             primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_Roughness          = material.m_Roughness;
             primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_Metallic           = material.m_Metallic;
             primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
@@ -783,12 +802,16 @@ namespace GfxRenderEngine
                                           m_Images[normalMapIndex], 
                                           m_Images[roughnessMapIndex],
                                           m_Images[metallicMapIndex]);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicMap, textures);
+            }
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             PrimitiveDiffuseNormalRoughnessMetallicSAMap primitiveDiffuseNormalRoughnessMetallicSAMap{};
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -796,29 +819,31 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-            uint normalMapIndex            = material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
+            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint roughnessMapIndex = material.m_RoughnessMapIndex;
+            uint metallicMapIndex  = material.m_MetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMetallicMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(metallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial,
-                                          m_Images[diffuseMapIndex], 
-                                          m_Images[normalMapIndex], 
-                                          m_Images[roughnessMetallicMapIndex],
-                                          m_ShaderData);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicSA2Map, textures, buffers);
+            }
             primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.push_back(primitiveDiffuseNormalRoughnessMetallicSAMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
             LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
         }
-        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
             PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
             primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
@@ -826,15 +851,26 @@ namespace GfxRenderEngine
             primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
             primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
 
-            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
-            uint normalMapIndex            = material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
+            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint roughnessMapIndex = material.m_RoughnessMapIndex;
+            uint metallicMapIndex  = material.m_MetallicMapIndex;
+
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMetallicMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(metallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial, 
-                                            m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]);
+            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
+                                          m_Images[diffuseMapIndex], 
+                                          m_Images[normalMapIndex], 
+                                          m_Images[roughnessMapIndex],
+                                          m_Images[metallicMapIndex]);
+
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicMap, textures);
+            }
             primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
             m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
@@ -852,6 +888,10 @@ namespace GfxRenderEngine
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
             VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseMap, textures);
+            }
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
             primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
@@ -890,6 +930,10 @@ namespace GfxRenderEngine
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
                 VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);
+                {
+                    std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrEmissiveTexture, textures);
+                }
 
                 primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Roughness = material.m_Roughness;
                 primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Metallic  = material.m_Metallic;

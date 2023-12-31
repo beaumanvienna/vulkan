@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -33,8 +33,26 @@
 
 namespace GfxRenderEngine
 {
+
+    enum class MaterialType
+    {
+        PbrNoMap,
+        PbrEmissive,
+        PbrDiffuseMap,
+        PbrDiffuseSAMap,
+        PbrEmissiveTexture,
+        PbrDiffuseNormalMap,
+        PbrDiffuseNormalSAMap,
+        PbrDiffuseNormalRoughnessMetallicMap,
+        PbrDiffuseNormalRoughnessMetallic2Map,
+        PbrDiffuseNormalRoughnessMetallicSAMap,
+        PbrDiffuseNormalRoughnessMetallicSA2Map,
+        Cubemap
+    };
+
     class Renderer
     {
+
     public:
 
         virtual ~Renderer() = default;

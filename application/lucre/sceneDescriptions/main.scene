@@ -18,7 +18,7 @@ glTF-files:
     rotation: [0, -0, 0]
   application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf:
     translation: [-1.046, 0.0939999968, 0]
-    scale: [0.5, 0.5, 0.5]
+    scale: [1, 1, 1]
     rotation: [0, 0, 0]
   application/lucre/models/external_3D_files/multipleObjects/multipleObjects.gltf:
     translation: [0.0880621523, -0.0706406236, -0.257486284]

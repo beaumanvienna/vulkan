@@ -93,7 +93,7 @@ namespace GfxRenderEngine
             VK_NULL_HANDLE,
             imageIndex);
 
-    return result;
+        return result;
     }
 
     VkResult VK_SwapChain::SubmitCommandBuffers(
