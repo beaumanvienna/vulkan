@@ -109,9 +109,9 @@ namespace GfxRenderEngine
 
     VK_Model::~VK_Model() {}
 
-    VK_Submesh::VK_Submesh(ModelSubmesh const& modelSubmesh)
+    VK_Submesh::VK_Submesh(ModelSubmesh const& modelSubmesh, uint materialDescriptorIndex)
         : Submesh{modelSubmesh.m_FirstIndex, modelSubmesh.m_FirstVertex, modelSubmesh.m_IndexCount, modelSubmesh.m_VertexCount, modelSubmesh.m_MaterialProperties},
-          m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(modelSubmesh.m_MaterialDescriptor.get())))
+          m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(modelSubmesh.m_MaterialDescriptors[materialDescriptorIndex].get())))
     {
     }
 
@@ -119,76 +119,80 @@ namespace GfxRenderEngine
     {
         for (auto& modelSubmesh : modelSubmeshes)
         {
-            VK_Submesh vkSubmesh(modelSubmesh);
-            
-
-            MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
-            switch (materialType)
+            uint numMaterialDescriptors = modelSubmesh.m_MaterialDescriptors.size();
+            for (uint materialDescriptorIndex = 0; materialDescriptorIndex < numMaterialDescriptors; ++materialDescriptorIndex)
             {
-                case MaterialDescriptor::MtPbrNoMap:
+                VK_Submesh vkSubmesh(modelSubmesh, materialDescriptorIndex);
+                
+                MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+
+                switch (materialType)
                 {
-                    m_SubmeshesPbrNoMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrEmissive:
-                {
-                    m_SubmeshesPbrEmissive.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseMap:
-                {
-                    m_SubmeshesPbrDiffuseMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseSAMap:
-                {
-                    m_SubmeshesPbrDiffuseSAMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrEmissiveTexture:
-                {
-                    m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalMap:
-                {
-                    m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalSAMap:
-                {
-                    m_SubmeshesPbrDiffuseNormalSAMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap:
-                {
-                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
-                {
-                    m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
-                {
-                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map:
-                {
-                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map.push_back(vkSubmesh);
-                    break;
-                }
-                case MaterialDescriptor::MtCubemap:
-                {
-                    m_SubmeshesCubemap.push_back(vkSubmesh);
-                    break;
-                }
-                default:
-                {
-                    CORE_ASSERT(false, "unkown material type");
-                    break;
+                    case MaterialDescriptor::MtPbrNoMap:
+                    {
+                        m_SubmeshesPbrNoMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrEmissive:
+                    {
+                        m_SubmeshesPbrEmissive.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseMap:
+                    {
+                        m_SubmeshesPbrDiffuseMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseSAMap:
+                    {
+                        m_SubmeshesPbrDiffuseSAMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrEmissiveTexture:
+                    {
+                        m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalMap:
+                    {
+                        m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalSAMap:
+                    {
+                        m_SubmeshesPbrDiffuseNormalSAMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtCubemap:
+                    {
+                        m_SubmeshesCubemap.push_back(vkSubmesh);
+                        break;
+                    }
+                    default:
+                    {
+                        CORE_ASSERT(false, "unkown material type");
+                        break;
+                    }
                 }
             }
         }
@@ -630,24 +634,28 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& submesh : m_SubmeshesPbrNoMap)
+        for (auto& submesh : m_SubmeshesPbrNoMap)
         {
-            // shadow
-            auto& shadowDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
-            auto& descriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, descriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissive)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseMap)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
+        {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }

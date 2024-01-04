@@ -195,7 +195,8 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = VERTEX_COUNT;
 
             { // create material descriptor
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_Submeshes.push_back(submesh);
         }
@@ -293,7 +294,8 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = m_Vertices.size();
 
             { // create material descriptor
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
             submesh.m_MaterialProperties.m_Metallic  = 0.1f;

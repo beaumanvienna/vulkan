@@ -776,7 +776,8 @@ namespace GfxRenderEngine
         if (materialIndex == Gltf::GLTF_NOT_USED)
         {
             { // create material descriptor
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
@@ -807,7 +808,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
 
@@ -821,7 +823,8 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMap, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMap, textures, buffers);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
             }
 
@@ -836,7 +839,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
             }
 
@@ -852,7 +856,8 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMap, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMap, textures, buffers);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
             }
 
@@ -870,7 +875,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
 
@@ -889,7 +895,8 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap;
             }
 
@@ -910,7 +917,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
 
@@ -923,7 +931,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
 
@@ -932,7 +941,8 @@ namespace GfxRenderEngine
         else
         {
             { // create material descriptor
-                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
 
@@ -950,7 +960,8 @@ namespace GfxRenderEngine
 
                 {
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
-                    submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
+                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                     m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
                 }
 
@@ -959,7 +970,8 @@ namespace GfxRenderEngine
             else // emissive vertex color
             {
                 { // create material descriptor
-                    submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
+                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                     m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
                 }
 

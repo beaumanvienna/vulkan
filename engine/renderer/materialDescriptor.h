@@ -40,18 +40,18 @@ namespace GfxRenderEngine
 
         enum MaterialType
         {
-            MtPbrNoMap                                        = 0x1 << 0x00,
-            MtPbrEmissive                                     = 0x1 << 0x01,
-            MtPbrDiffuseMap                                   = 0x1 << 0x02,
-            MtPbrDiffuseSAMap                                 = 0x1 << 0x03,
-            MtPbrEmissiveTexture                              = 0x1 << 0x04,
-            MtPbrDiffuseNormalMap                             = 0x1 << 0x05,
-            MtPbrDiffuseNormalSAMap                           = 0x1 << 0x06,
-            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x07,
-            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x08,
-            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x09,
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0a,
-            MtCubemap                                         = 0x1 << 0x0b
+            MtPbrNoMap                                        = 0x1 << 0x00, // 1
+            MtPbrEmissive                                     = 0x1 << 0x01, // 2
+            MtPbrDiffuseMap                                   = 0x1 << 0x02, // 4
+            MtPbrDiffuseSAMap                                 = 0x1 << 0x03, // 8
+            MtPbrEmissiveTexture                              = 0x1 << 0x04, // 16
+            MtPbrDiffuseNormalMap                             = 0x1 << 0x05, // 32
+            MtPbrDiffuseNormalSAMap                           = 0x1 << 0x06, // 64
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x07, // 128
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x08, // 256
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x09, // 512
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0a, // 1024
+            MtCubemap                                         = 0x1 << 0x0b  // 2048
         };
 
         static constexpr uint ALL_PBR_MATERIALS = 

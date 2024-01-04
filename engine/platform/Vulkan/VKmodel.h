@@ -47,7 +47,7 @@ namespace GfxRenderEngine
 
     struct VK_Submesh : public Submesh
     {
-        VK_Submesh(ModelSubmesh const& modelSubmesh);
+        VK_Submesh(ModelSubmesh const& modelSubmesh, uint materialDescriptorIndex);
         VK_MaterialDescriptor m_MaterialDescriptor;
     };
 

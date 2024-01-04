@@ -116,7 +116,7 @@ namespace GfxRenderEngine
 
     struct ModelSubmesh : public Submesh
     {
-        std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
+        std::vector<std::shared_ptr<MaterialDescriptor>> m_MaterialDescriptors;
     };
 
     class Model
