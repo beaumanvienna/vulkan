@@ -40,9 +40,16 @@
 #include "VKframeInfo.h"
 #include "VKtexture.h"
 #include "VKcubemap.h"
+#include "VKmaterialDescriptor.h"
 
 namespace GfxRenderEngine
 {
+
+    struct VK_Submesh : public Submesh
+    {
+        VK_Submesh(ModelSubmesh const& modelSubmesh);
+        VK_MaterialDescriptor m_MaterialDescriptor;
+    };
 
     class VK_Model : public Model
     {
@@ -72,6 +79,7 @@ namespace GfxRenderEngine
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
         void Draw(VkCommandBuffer commandBuffer);
+        void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh, uint instanceCount = 1);
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
@@ -81,73 +89,14 @@ namespace GfxRenderEngine
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet);
+        void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-
-    public:
-
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseMaterial& pbrDiffuseMaterial,
-            const std::shared_ptr<Texture>& colorMap
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Buffer>& skeletalAnimationUBO
-        );
-        static void CreateDescriptorSet
-        (
-            PbrEmissiveTextureMaterial& pbrEmissiveTextureMaterial,
-            const std::shared_ptr<Texture>& emissiveMap
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Texture>& normalMap
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseNormalSAMaterial& pbrDiffuseNormalSAMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Texture>& normalMap,
-            const std::shared_ptr<Buffer>& skeletalAnimationUBO
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Texture>& normalMap, 
-            const std::shared_ptr<Texture>& roughnessMetallicMap
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseNormalRoughnessMetallicSAMaterial& pbrDiffuseNormalRoughnessMetallicSAMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Texture>& normalMap, 
-            const std::shared_ptr<Texture>& roughnessMetallicMap,
-            const std::shared_ptr<Buffer>& skeletalAnimationUBO
-        );
-        static void CreateDescriptorSet
-        (
-            PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicSAMaterial,
-            const std::shared_ptr<Texture>& colorMap,
-            const std::shared_ptr<Texture>& normalMap, 
-            const std::shared_ptr<Texture>& roughnessMap,
-            const std::shared_ptr<Texture>& metallicMap
-        );
-
-        static void CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap);
 
     private:
 
-        void DrawShadowInternal(const VK_FrameInfo& frameInfo, const PrimitiveTmp& primitive);
-        void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
-        void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalRoughnessMetallicSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
-        void DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet);
+        void CopySubmeshes(std::vector<ModelSubmesh> const& modelSubmeshes);
 
     private:
 
@@ -160,16 +109,18 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
         uint m_IndexCount;
 
-        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
-        std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
-        std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
-        std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
-        std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
-        std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
-        std::vector<PrimitiveDiffuseNormalSAMap> m_PrimitivesDiffuseNormalSAMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicSAMap> m_PrimitivesDiffuseNormalRoughnessMetallicSAMap{};
-        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrNoMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrEmissive{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseMap {};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseSAMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrEmissiveTexture{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalSAMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map{};
+        std::vector<VK_Submesh> m_SubmeshesCubemap{};
 
     };
 }

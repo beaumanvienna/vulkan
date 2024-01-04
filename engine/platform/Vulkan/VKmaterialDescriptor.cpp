@@ -29,18 +29,32 @@
 
 namespace GfxRenderEngine
 {
+
+    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialType materialType)
+        : m_MaterialType{materialType}
+    {
+        switch(materialType)
+        {
+            case MaterialType::MtPbrNoMap:
+            case MaterialType::MtPbrEmissive:
+            {
+                // nothing to be done
+                break;
+            }
+            default:
+            {
+                CORE_ASSERT(false, "unsupported material type");
+                break;
+            }
+        }
+    }
+
     VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures)
         : m_MaterialType{materialType}
     {
         switch(materialType)
         {
-            case MaterialType::PbrNoMap:
-            case MaterialType::PbrEmissive:
-            {
-                // nothing to be done
-                break;
-            }
-            case MaterialType::PbrDiffuseMap:
+            case MaterialType::MtPbrDiffuseMap:
             {
                 std::shared_ptr<Texture>& diffuseMap = textures[0];
 
@@ -55,7 +69,7 @@ namespace GfxRenderEngine
                     .Build(m_DescriptorSet);
                 break;
             }
-            case MaterialType::PbrDiffuseNormalMap:
+            case MaterialType::MtPbrDiffuseNormalMap:
             {
                 std::shared_ptr<Texture>& diffuseMap = textures[0];
                 std::shared_ptr<Texture>& normalMap  = textures[1];
@@ -74,7 +88,7 @@ namespace GfxRenderEngine
                     .Build(m_DescriptorSet);
                 break;
             }
-            case MaterialType::PbrEmissiveTexture:
+            case MaterialType::MtPbrEmissiveTexture:
             {
                 std::shared_ptr<Texture>& emissiveMap = textures[0];
 
@@ -89,7 +103,7 @@ namespace GfxRenderEngine
                     .Build(m_DescriptorSet);
                 break;
             }
-            case MaterialType::PbrDiffuseNormalRoughnessMetallicMap: // gltf files have 3 textures
+            case MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap: // gltf files have 3 textures
             {
                 std::shared_ptr<Texture>& diffuseMap            = textures[0];
                 std::shared_ptr<Texture>& normalMap             = textures[1];
@@ -112,7 +126,7 @@ namespace GfxRenderEngine
                     .Build(m_DescriptorSet);
                 break;
             }
-            case MaterialType::PbrDiffuseNormalRoughnessMetallic2Map: // fbx files have 4 textures (grey scale images for metallic and roughness textures)
+            case MaterialType::MtPbrDiffuseNormalRoughnessMetallic2Map: // fbx files have 4 textures (grey scale images for metallic and roughness textures)
             {
                 std::shared_ptr<Texture>& diffuseMap   = textures[0];
                 std::shared_ptr<Texture>& normalMap    = textures[1];
@@ -139,6 +153,8 @@ namespace GfxRenderEngine
                     .Build(m_DescriptorSet);
                 break;
             }
+            case MaterialType::MtPbrNoMap:     // use the other constructor without textures
+            case MaterialType::MtPbrEmissive:  // use the other constructor without textures
             default:
             {
                 CORE_ASSERT(false, "unsupported material type");
@@ -152,7 +168,7 @@ namespace GfxRenderEngine
     {
         switch(materialType)
         {
-            case MaterialType::PbrDiffuseSAMap:
+            case MaterialType::MtPbrDiffuseSAMap:
             {
                 std::shared_ptr<Texture>& diffuseMap           = textures[0];
                 std::shared_ptr<Buffer>& skeletalAnimationUBO  = buffers[0];
@@ -186,7 +202,7 @@ namespace GfxRenderEngine
 
                 break;
             }
-            case MaterialType::PbrDiffuseNormalSAMap:
+            case MaterialType::MtPbrDiffuseNormalSAMap:
             {
                 std::shared_ptr<Texture>& diffuseMap           = textures[0];
                 std::shared_ptr<Texture>& normalMap            = textures[1];
@@ -222,7 +238,7 @@ namespace GfxRenderEngine
                 }
                 break;
             }
-            case MaterialType::PbrDiffuseNormalRoughnessMetallicSAMap:
+            case MaterialType::MtPbrDiffuseNormalRoughnessMetallicSAMap:
             {
                 std::shared_ptr<Texture>& diffuseMap           = textures[0];
                 std::shared_ptr<Texture>& normalMap            = textures[1];
@@ -275,7 +291,7 @@ namespace GfxRenderEngine
     {
         switch(materialType)
         {
-            case MaterialType::Cubemap:
+            case MaterialType::MtCubemap:
             {
                 std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                             .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -296,22 +312,29 @@ namespace GfxRenderEngine
         }
     }
 
+    VK_MaterialDescriptor::VK_MaterialDescriptor(VK_MaterialDescriptor const& other)
+    {
+        m_MaterialType = other.m_MaterialType;
+        m_DescriptorSet = other.m_DescriptorSet;
+        m_ShadowDescriptorSet = other.m_ShadowDescriptorSet;
+    }
+
     VK_MaterialDescriptor::~VK_MaterialDescriptor()
     {
 
     }
 
-    MaterialType VK_MaterialDescriptor::GetMaterialType() const
+    MaterialDescriptor::MaterialType VK_MaterialDescriptor::GetMaterialType() const
     {
         return m_MaterialType;
     }
 
-    VkDescriptorSet VK_MaterialDescriptor::GetDescriptorSet() const
+    const VkDescriptorSet& VK_MaterialDescriptor::GetDescriptorSet() const
     {
         return m_DescriptorSet;
     }
 
-    VkDescriptorSet VK_MaterialDescriptor::GetShadowDescriptorSet() const
+    const VkDescriptorSet& VK_MaterialDescriptor::GetShadowDescriptorSet() const
     {
         return m_ShadowDescriptorSet;
     }

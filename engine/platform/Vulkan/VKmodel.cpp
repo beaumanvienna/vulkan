@@ -23,6 +23,7 @@
 #include "core.h"
 #include "VKmodel.h"
 #include "VKdescriptor.h"
+#include "VKmaterialDescriptor.h"
 #include "VKrenderer.h"
 
 #include "systems/VKpbrNoMapSys.h"
@@ -34,6 +35,7 @@
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
 #include "systems/VKshadowRenderSys.h"
+#include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
@@ -70,17 +72,8 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
+        CopySubmeshes(builder.m_Submeshes);
         m_Images = std::move(builder.m_Images);
-
-        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
-        m_PrimitivesEmissive = std::move(builder.m_PrimitivesEmissive);
-        m_PrimitivesDiffuseMap = std::move(builder.m_PrimitivesDiffuseMap);
-        m_PrimitivesDiffuseSAMap = std::move(builder.m_PrimitivesDiffuseSAMap);
-        m_PrimitivesEmissiveTexture = std::move(builder.m_PrimitivesEmissiveTexture);
-        m_PrimitivesDiffuseNormalMap = std::move(builder.m_PrimitivesDiffuseNormalMap);
-        m_PrimitivesDiffuseNormalSAMap = std::move(builder.m_PrimitivesDiffuseNormalSAMap);
-        m_PrimitivesDiffuseNormalRoughnessMetallicMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap);
-        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicSAMap);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
@@ -93,17 +86,8 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
+        CopySubmeshes(builder.m_Submeshes);
         m_Images = std::move(builder.m_Images);
-
-        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
-        m_PrimitivesEmissive = std::move(builder.m_PrimitivesEmissive);
-        m_PrimitivesDiffuseMap = std::move(builder.m_PrimitivesDiffuseMap);
-        m_PrimitivesDiffuseSAMap = std::move(builder.m_PrimitivesDiffuseSAMap);
-        m_PrimitivesEmissiveTexture = std::move(builder.m_PrimitivesEmissiveTexture);
-        m_PrimitivesDiffuseNormalMap = std::move(builder.m_PrimitivesDiffuseNormalMap);
-        m_PrimitivesDiffuseNormalSAMap = std::move(builder.m_PrimitivesDiffuseNormalSAMap);
-        m_PrimitivesDiffuseNormalRoughnessMetallicMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicMap);
-        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap = std::move(builder.m_PrimitivesDiffuseNormalRoughnessMetallicSAMap);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
@@ -116,8 +100,7 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        m_PrimitivesNoMap = std::move(builder.m_PrimitivesNoMap);
-        m_PrimitivesCubemap = std::move(builder.m_PrimitivesCubemap);
+        CopySubmeshes(builder.m_Submeshes);
         m_Cubemaps = std::move(builder.m_Cubemaps);
 
         CreateVertexBuffers(std::move(builder.m_Vertices));
@@ -126,6 +109,90 @@ namespace GfxRenderEngine
 
     VK_Model::~VK_Model() {}
 
+    VK_Submesh::VK_Submesh(ModelSubmesh const& modelSubmesh)
+        : Submesh{modelSubmesh.m_FirstIndex, modelSubmesh.m_FirstVertex, modelSubmesh.m_IndexCount, modelSubmesh.m_VertexCount, modelSubmesh.m_MaterialProperties},
+          m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(modelSubmesh.m_MaterialDescriptor.get())))
+    {
+    }
+
+    void VK_Model::CopySubmeshes(std::vector<ModelSubmesh> const& modelSubmeshes)
+    {
+        for (auto& modelSubmesh : modelSubmeshes)
+        {
+            VK_Submesh vkSubmesh(modelSubmesh);
+            
+
+            MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+            switch (materialType)
+            {
+                case MaterialDescriptor::MtPbrNoMap:
+                {
+                    m_SubmeshesPbrNoMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrEmissive:
+                {
+                    m_SubmeshesPbrEmissive.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseMap:
+                {
+                    m_SubmeshesPbrDiffuseMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseSAMap:
+                {
+                    m_SubmeshesPbrDiffuseSAMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrEmissiveTexture:
+                {
+                    m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalMap:
+                {
+                    m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalSAMap:
+                {
+                    m_SubmeshesPbrDiffuseNormalSAMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap:
+                {
+                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
+                {
+                    m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
+                {
+                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map:
+                {
+                    m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MtCubemap:
+                {
+                    m_SubmeshesCubemap.push_back(vkSubmesh);
+                    break;
+                }
+                default:
+                {
+                    CORE_ASSERT(false, "unkown material type");
+                    break;
+                }
+            }
+        }
+    }
 
     void VK_Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
     {
@@ -234,67 +301,72 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh, uint instanceCount/* = 1*/)
+    {
+        if(m_HasIndexBuffer)
+        {
+            vkCmdDrawIndexed
+            (
+                commandBuffer,              // VkCommandBuffer commandBuffer
+                submesh.m_IndexCount,       // uint32_t        indexCount
+                instanceCount,              // uint32_t        instanceCount
+                submesh.m_FirstIndex,       // uint32_t        firstIndex
+                submesh.m_FirstVertex,      // int32_t         vertexOffset
+                0                           // uint32_t        firstInstance
+            );
+        }
+        else
+        {
+            vkCmdDraw
+            (
+                commandBuffer,              // VkCommandBuffer commandBuffer
+                submesh.m_VertexCount,      // uint32_t        vertexCount
+                instanceCount,              // uint32_t        instanceCount
+                submesh.m_FirstVertex,      // uint32_t        firstVertex
+                0                           // uint32_t        firstInstance
+            );
+        }
+    }
+
     void VK_Model::DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesNoMap)
+        for(auto& submesh : m_SubmeshesPbrNoMap)
         {
 
-            VK_PushConstantDataPbrNoMap push{};
+            VK_PushConstantDataGeneric push{};
 
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrNoMapMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrNoMapMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
 
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrNoMap),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
-        for(auto& primitive : m_PrimitivesEmissive)
+        for(auto& submesh : m_SubmeshesPbrEmissive)
         {
 
-            VK_PushConstantDataPbrEmissive push{};
+            VK_PushConstantDataGeneric push{};
 
             if (emissiveStrength)
             {
-                primitive.m_PbrEmissiveMaterial.m_EmissiveStrength = emissiveStrength;
+                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
 
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveMaterial.m_EmissiveStrength;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_EmissiveStrength;
             push.m_NormalMatrix[3].y = 0;
 
             vkCmdPushConstants(
@@ -302,40 +374,18 @@ namespace GfxRenderEngine
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrEmissive),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
-        for(auto& primitive : m_PrimitivesEmissiveTexture)
+        for(auto& submesh : m_SubmeshesPbrEmissiveTexture)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrEmissiveTextureMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -351,52 +401,31 @@ namespace GfxRenderEngine
 
             if (emissiveStrength)
             {
-                primitive.m_PbrEmissiveTextureMaterial.m_EmissiveStrength = emissiveStrength;
+                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
 
-            VK_PushConstantDataPbrEmissiveTexture push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrEmissiveTextureMaterial.m_EmissiveStrength;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_EmissiveStrength;
             push.m_NormalMatrix[3].y = 0;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrEmissiveTexture),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -409,49 +438,28 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuse push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuse),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseSAMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -464,51 +472,29 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuseSA push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
 
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseSAMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseSAMaterial.m_Metallic;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuse),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseNormalMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -521,51 +507,29 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuseNormal push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseNormalMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseNormalMaterial.m_Metallic;
-            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
+            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuseNormal),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseNormalSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalSAMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -578,63 +542,41 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            VK_PushConstantDataPbrDiffuseNormalSA push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = primitive.m_PbrDiffuseNormalSAMaterial.m_Roughness;
-            push.m_NormalMatrix[3].y = primitive.m_PbrDiffuseNormalSAMaterial.m_Metallic;
-            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
+            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
+            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuseNormalSA),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {
-            VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
+            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuseNormalRoughnessMetallic),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -647,49 +589,28 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
+
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
         {
-            VK_PushConstantDataPbrDiffuseNormalRoughnessMetallicSA push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Global();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = m_NormalMapIntensity;
+            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
             vkCmdPushConstants(
                 frameInfo.m_CommandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataPbrDiffuseNormalRoughnessMetallicSA),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
-            VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -702,236 +623,77 @@ namespace GfxRenderEngine
                 0,
                 nullptr
             );
-            if(m_HasIndexBuffer)
-            {
-                vkCmdDrawIndexed
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_IndexCount,     // uint32_t        indexCount
-                    1,                          // uint32_t        instanceCount
-                    primitive.m_FirstIndex,     // uint32_t        firstIndex
-                    primitive.m_FirstVertex,    // int32_t         vertexOffset
-                    0                           // uint32_t        firstInstance
-                );
-            }
-            else
-            {
-                vkCmdDraw
-                (
-                    frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                    primitive.m_VertexCount,    // uint32_t        vertexCount
-                    1,                          // uint32_t        instanceCount
-                    0,                          // uint32_t        firstVertex
-                    0                           // uint32_t        firstInstance
-                );
-            }
-        }
-    }
 
-    void VK_Model::DrawShadowInternal(const VK_FrameInfo& frameInfo, const PrimitiveTmp& primitive)
-    {
-        if(m_HasIndexBuffer)
-        {
-            vkCmdDrawIndexed
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_IndexCount,     // uint32_t        indexCount
-                1,                          // uint32_t        instanceCount
-                primitive.m_FirstIndex,     // uint32_t        firstIndex
-                primitive.m_FirstVertex,    // int32_t         vertexOffset
-                0                           // uint32_t        firstInstance
-            );
-        }
-        else
-        {
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_VertexCount,    // uint32_t        vertexCount
-                1,                          // uint32_t        instanceCount
-                0,                          // uint32_t        firstVertex
-                0                           // uint32_t        firstInstance
-            );
-        }
-    }
-
-    void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
-    {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseSAMaterial.m_ShadowDescriptorSet;
-        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipelineLayout,
-            0,
-            2,
-            descriptorSets.data(),
-            0,
-            nullptr
-        );
-        if(m_HasIndexBuffer)
-        {
-            vkCmdDrawIndexed
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_IndexCount,     // uint32_t        indexCount
-                1,                          // uint32_t        instanceCount
-                primitive.m_FirstIndex,     // uint32_t        firstIndex
-                primitive.m_FirstVertex,    // int32_t         vertexOffset
-                0                           // uint32_t        firstInstance
-            );
-        }
-        else
-        {
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_VertexCount,    // uint32_t        vertexCount
-                1,                          // uint32_t        instanceCount
-                0,                          // uint32_t        firstVertex
-                0                           // uint32_t        firstInstance
-            );
-        }
-    }
-
-    void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
-    {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalSAMaterial.m_ShadowDescriptorSet;
-        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipelineLayout,
-            0,
-            2,
-            descriptorSets.data(),
-            0,
-            nullptr
-        );
-        if(m_HasIndexBuffer)
-        {
-            vkCmdDrawIndexed
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_IndexCount,     // uint32_t        indexCount
-                1,                          // uint32_t        instanceCount
-                primitive.m_FirstIndex,     // uint32_t        firstIndex
-                primitive.m_FirstVertex,    // int32_t         vertexOffset
-                0                           // uint32_t        firstInstance
-            );
-        }
-        else
-        {
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_VertexCount,    // uint32_t        vertexCount
-                1,                          // uint32_t        instanceCount
-                0,                          // uint32_t        firstVertex
-                0                           // uint32_t        firstInstance
-            );
-        }
-    }
-
-    void VK_Model::DrawAnimatedShadowInternal(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const PrimitiveDiffuseNormalRoughnessMetallicSAMap& primitive, const VkDescriptorSet& shadowDescriptorSet)
-    {
-        VkDescriptorSet localDescriptorSet = primitive.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_ShadowDescriptorSet;
-        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipelineLayout,
-            0,
-            2,
-            descriptorSets.data(),
-            0,
-            nullptr
-        );
-        if(m_HasIndexBuffer)
-        {
-            vkCmdDrawIndexed
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_IndexCount,     // uint32_t        indexCount
-                1,                          // uint32_t        instanceCount
-                primitive.m_FirstIndex,     // uint32_t        firstIndex
-                primitive.m_FirstVertex,    // int32_t         vertexOffset
-                0                           // uint32_t        firstInstance
-            );
-        }
-        else
-        {
-            vkCmdDraw
-            (
-                frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_VertexCount,    // uint32_t        vertexCount
-                1,                          // uint32_t        instanceCount
-                0,                          // uint32_t        firstVertex
-                0                           // uint32_t        firstInstance
-            );
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesNoMap)
+        for(auto& submesh : m_SubmeshesPbrNoMap)
         {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
-        }
-        for(auto& primitive : m_PrimitivesEmissive)
-        {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
-        }
-        for(auto& primitive : m_PrimitivesEmissiveTexture)
-        {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
-        }
-        for(auto& primitive : m_PrimitivesDiffuseMap)
-        {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
-        }
-        for(auto& primitive : m_PrimitivesDiffuseNormalMap)
-        {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
-        }
-        for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicMap)
-        {
-            PrimitiveTmp primitiveTmp {primitive.m_FirstIndex, primitive.m_FirstVertex, primitive.m_IndexCount, primitive.m_VertexCount};
-            DrawShadowInternal(frameInfo, primitiveTmp);
+            // shadow
+            auto& shadowDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
+            auto& descriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
+            std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, descriptorSet};
+            vkCmdBindDescriptorSets
+            (
+                frameInfo.m_CommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                2,
+                descriptorSets.data(),
+                0,
+                nullptr
+            );
+
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
     void VK_Model::DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet)
     {
-        for(auto& primitive : m_PrimitivesDiffuseSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseSAMap)
         {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, primitive, shadowDescriptorSet);
+            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
 
-        for(auto& primitive : m_PrimitivesDiffuseNormalRoughnessMetallicSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
         {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, primitive, shadowDescriptorSet);
+            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
 
-        for(auto& primitive : m_PrimitivesDiffuseNormalSAMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
         {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, primitive, shadowDescriptorSet);
+            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
+    }
+
+    void VK_Model::DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
+    {
+        VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,
+            2,
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+
+        DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
     }
 
     void VK_Model::DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& primitive : m_PrimitivesCubemap)
+        for(auto& submesh : m_SubmeshesCubemap)
         {
-            VkDescriptorSet localDescriptorSet = primitive.m_CubemapMaterial.m_DescriptorSet;
+            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
             std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
             vkCmdBindDescriptorSets
             (
@@ -948,227 +710,11 @@ namespace GfxRenderEngine
             vkCmdDraw
             (
                 frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
-                primitive.m_VertexCount,    // uint32_t        vertexCount
+                submesh.m_VertexCount,      // uint32_t        vertexCount
                 1,                          // uint32_t        instanceCount
-                primitive.m_FirstVertex,    // uint32_t        firstVertex
+                submesh.m_FirstVertex,      // uint32_t        firstVertex
                 0                           // uint32_t        firstInstance
             );
         }
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseMaterial& pbrDiffuseMaterial,
-                                       const std::shared_ptr<Texture>& colorMap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo)
-            .Build(pbrDiffuseMaterial.m_DescriptorSet);
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseSAMaterial& pbrDiffuseSAMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO)
-    {
-        auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
-
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            const auto& imageInfo = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, imageInfo)
-                .WriteBuffer(1, bufferInfo)
-                .Build(pbrDiffuseSAMaterial.m_DescriptorSet);
-        }
-
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteBuffer(0, bufferInfo)
-                .Build(pbrDiffuseSAMaterial.m_ShadowDescriptorSet);
-        }
-
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrEmissiveTextureMaterial& pbrEmissiveTextureMaterial,
-                                       const std::shared_ptr<Texture>& emissiveMap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        const auto& imageInfo = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo)
-            .Build(pbrEmissiveTextureMaterial.m_DescriptorSet);
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalMaterial& pbrDiffuseNormalMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Texture>& normalMap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo0)
-            .WriteImage(1, imageInfo1)
-            .Build(pbrDiffuseNormalMaterial.m_DescriptorSet);
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalSAMaterial& pbrDiffuseNormalSAMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Texture>& normalMap,
-                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO)
-    {
-
-        auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-            auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, imageInfo0)
-                .WriteImage(1, imageInfo1)
-                .WriteBuffer(2, bufferInfo)
-                .Build(pbrDiffuseNormalSAMaterial.m_DescriptorSet);
-        }
-
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteBuffer(0, bufferInfo)
-                .Build(pbrDiffuseNormalSAMaterial.m_ShadowDescriptorSet);
-        }
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Texture>& normalMap, 
-                                       const std::shared_ptr<Texture>& roughnessMetallicMap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo0)
-            .WriteImage(1, imageInfo1)
-            .WriteImage(2, imageInfo2)
-            .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet);
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicSAMaterial& pbrDiffuseNormalRoughnessMetallicSAMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Texture>& normalMap, 
-                                       const std::shared_ptr<Texture>& roughnessMetallicMap,
-                                       const std::shared_ptr<Buffer>& skeletalAnimationUBO)
-    {
-        auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-        VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-            auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-            auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteImage(0, imageInfo0)
-                .WriteImage(1, imageInfo1)
-                .WriteImage(2, imageInfo2)
-                .WriteBuffer(3, bufferInfo)
-                .Build(pbrDiffuseNormalRoughnessMetallicSAMaterial.m_DescriptorSet);
-        }
-
-        {
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                        .Build();
-
-            VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                .WriteBuffer(0, bufferInfo)
-                .Build(pbrDiffuseNormalRoughnessMetallicSAMaterial.m_ShadowDescriptorSet);
-        }
-    }
-
-    void VK_Model::CreateDescriptorSet(PbrDiffuseNormalRoughnessMetallicMaterial& pbrDiffuseNormalRoughnessMetallicMaterial,
-                                       const std::shared_ptr<Texture>& colorMap,
-                                       const std::shared_ptr<Texture>& normalMap, 
-                                       const std::shared_ptr<Texture>& roughnessMap,
-                                       const std::shared_ptr<Texture>& metallicMap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        auto& imageInfo0 = static_cast<VK_Texture*>(colorMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
-        auto& imageInfo3 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, imageInfo0)
-            .WriteImage(1, imageInfo1)
-            .WriteImage(2, imageInfo2)
-            .WriteImage(3, imageInfo3)
-            .Build(pbrDiffuseNormalRoughnessMetallicMaterial.m_DescriptorSet);
-    }
-
-    void VK_Model::CreateDescriptorSet(CubemapMaterial& cubemapMaterial, const std::shared_ptr<Cubemap>& cubemap)
-    {
-        std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
-                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                    .Build();
-
-        VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
-
-        VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-            .WriteImage(0, cubemapInfo)
-            .Build(cubemapMaterial.m_DescriptorSet);
     }
 }

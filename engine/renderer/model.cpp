@@ -52,26 +52,6 @@ namespace std
 namespace GfxRenderEngine
 {
 
-    PrimitiveNoMap::~PrimitiveNoMap() {}
-
-    PrimitiveEmissive::~PrimitiveEmissive() {}
-
-    PrimitiveDiffuseMap::~PrimitiveDiffuseMap() {}
-
-    PrimitiveDiffuseSAMap::~PrimitiveDiffuseSAMap() {}
-
-    PrimitiveEmissiveTexture::~PrimitiveEmissiveTexture() {}
-
-    PrimitiveDiffuseNormalMap::~PrimitiveDiffuseNormalMap() {}
-
-    PrimitiveDiffuseNormalSAMap::~PrimitiveDiffuseNormalSAMap() {}
-
-    PrimitiveDiffuseNormalRoughnessMetallicMap::~PrimitiveDiffuseNormalRoughnessMetallicMap() {}
-    
-    PrimitiveDiffuseNormalRoughnessMetallicSAMap::~PrimitiveDiffuseNormalRoughnessMetallicSAMap() {}
-
-    PrimitiveCubemap::~PrimitiveCubemap() {}
-
     float Model::m_NormalMapIntensity = 1.0f;
 
     bool Vertex::operator==(const Vertex& other) const

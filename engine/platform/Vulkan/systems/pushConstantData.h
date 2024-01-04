@@ -22,44 +22,13 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
-
 #include "engine.h"
-#include "renderer/camera.h"
-#include "scene/scene.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    class VK_RenderSystemPbrDiffuseNormal
+    struct VK_PushConstantDataGeneric
     {
-
-    public:
-
-        VK_RenderSystemPbrDiffuseNormal(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrDiffuseNormal();
-
-        VK_RenderSystemPbrDiffuseNormal(const VK_RenderSystemPbrDiffuseNormal&) = delete;
-        VK_RenderSystemPbrDiffuseNormal& operator=(const VK_RenderSystemPbrDiffuseNormal&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
-
-    private:
-
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-
+        glm::mat4 m_ModelMatrix{1.0f};
+        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
     };
 }

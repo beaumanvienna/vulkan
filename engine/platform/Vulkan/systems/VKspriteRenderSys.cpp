@@ -26,6 +26,7 @@
 #include "VKmodel.h"
 
 #include "systems/VKspriteRenderSys.h"
+#include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
@@ -45,7 +46,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataSpriteRenderer);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -100,7 +101,7 @@ namespace GfxRenderEngine
         {
             auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataSpriteRenderer push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
@@ -110,7 +111,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataSpriteRenderer),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
@@ -146,7 +147,7 @@ namespace GfxRenderEngine
             }
 
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
-            VK_PushConstantDataSpriteRenderer push{};
+            VK_PushConstantDataGeneric push{};
             push.m_ModelMatrix  = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             vkCmdPushConstants(
@@ -154,7 +155,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataSpriteRenderer),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
             auto& mesh = particleSystem->m_Registry.get<MeshComponent>(particle.m_SpriteEntity);

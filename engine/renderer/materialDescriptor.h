@@ -28,7 +28,7 @@
 #include "renderer/buffer.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
-#include "renderer/renderer.h"
+//#include "renderer/renderer.h"
 
 namespace GfxRenderEngine
 {
@@ -38,8 +38,40 @@ namespace GfxRenderEngine
 
     public:
 
+        enum MaterialType
+        {
+            MtPbrNoMap                                        = 0x1 << 0x00,
+            MtPbrEmissive                                     = 0x1 << 0x01,
+            MtPbrDiffuseMap                                   = 0x1 << 0x02,
+            MtPbrDiffuseSAMap                                 = 0x1 << 0x03,
+            MtPbrEmissiveTexture                              = 0x1 << 0x04,
+            MtPbrDiffuseNormalMap                             = 0x1 << 0x05,
+            MtPbrDiffuseNormalSAMap                           = 0x1 << 0x06,
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x07,
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x08,
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x09,
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0a,
+            MtCubemap                                         = 0x1 << 0x0b
+        };
+
+        static constexpr uint ALL_PBR_MATERIALS = 
+            MaterialType::MtPbrNoMap +
+            MaterialType::MtPbrEmissive +
+            MaterialType::MtPbrDiffuseMap +
+            MaterialType::MtPbrDiffuseSAMap +
+            MaterialType::MtPbrEmissiveTexture +
+            MaterialType::MtPbrDiffuseNormalMap +
+            MaterialType::MtPbrDiffuseNormalSAMap +
+            MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap +
+            MaterialType::MtPbrDiffuseNormalRoughnessMetallic2Map +
+            MaterialType::MtPbrDiffuseNormalRoughnessMetallicSAMap +
+            MaterialType::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
+
+    public:
+
         virtual ~MaterialDescriptor() = default;
 
+        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType);
         static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures);
         static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures, std::vector<std::shared_ptr<Buffer>>& buffers);
         static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);

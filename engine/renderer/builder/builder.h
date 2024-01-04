@@ -47,11 +47,11 @@ namespace GfxRenderEngine
 
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
+        std::vector<ModelSubmesh> m_Submeshes{};
 
         // cubemap
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<PrimitiveCubemap> m_PrimitivesCubemap{};
+        std::vector<Submesh> m_CubemapSubmeshes{};
 
     };
 }

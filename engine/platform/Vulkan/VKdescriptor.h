@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -121,10 +121,10 @@ namespace GfxRenderEngine
         VK_DescriptorPool(uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
                         const std::vector<VkDescriptorPoolSize>& poolSizes);
         ~VK_DescriptorPool();
-    
+
         VK_DescriptorPool(const VK_DescriptorPool&) = delete;
         VK_DescriptorPool& operator=(const VK_DescriptorPool&) = delete;
-    
+
         bool AllocateDescriptorSet(const VkDescriptorSetLayout descriptorSetLayout,
                                 VkDescriptorSet& descriptor) const;
         void FreeDescriptors(std::vector<VkDescriptorSet>& descriptors) const;

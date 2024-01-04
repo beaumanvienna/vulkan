@@ -189,14 +189,15 @@ namespace GfxRenderEngine
             }
         }
 
-        // create descriptor set
         {
-            PrimitiveCubemap primitiveCubemap{};
-            primitiveCubemap.m_FirstVertex = 0;
-            primitiveCubemap.m_VertexCount = VERTEX_COUNT;
+            ModelSubmesh submesh{};
+            submesh.m_FirstVertex = 0;
+            submesh.m_VertexCount = VERTEX_COUNT;
 
-            VK_Model::CreateDescriptorSet(primitiveCubemap.m_CubemapMaterial, m_Cubemaps[0]);
-            m_PrimitivesCubemap.push_back(primitiveCubemap);
+            { // create material descriptor
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
+            }
+            m_Submeshes.push_back(submesh);
         }
 
         // create game object
@@ -213,8 +214,6 @@ namespace GfxRenderEngine
 
         return entity;
     }
-
-    
 
     void Builder::LoadModelObjWavefront(const std::string &filepath, int fragAmplification)
     {
@@ -286,17 +285,21 @@ namespace GfxRenderEngine
             }
         }
 
-        PrimitiveNoMap primitiveNoMap{};
-        primitiveNoMap.m_FirstIndex  = 0;
-        primitiveNoMap.m_FirstVertex = 0;
-        primitiveNoMap.m_IndexCount  = m_Indices.size();
-        primitiveNoMap.m_VertexCount = m_Vertices.size();
+        {
+            ModelSubmesh submesh{};
+            submesh.m_FirstIndex  = 0;
+            submesh.m_FirstVertex = 0;
+            submesh.m_IndexCount  = m_Indices.size();
+            submesh.m_VertexCount = m_Vertices.size();
 
-        primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = 0.5f;
-        primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = 0.1f;
-        primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
+            { // create material descriptor
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+            }
+            submesh.m_MaterialProperties.m_Roughness = 0.5f;
+            submesh.m_MaterialProperties.m_Metallic  = 0.1f;
 
-        m_PrimitivesNoMap.push_back(primitiveNoMap);
+            m_Submeshes.push_back(submesh);
+        }
 
         // calculate tangents
         CalculateTangents();

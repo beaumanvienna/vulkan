@@ -34,22 +34,6 @@
 namespace GfxRenderEngine
 {
 
-    enum class MaterialType
-    {
-        PbrNoMap,
-        PbrEmissive,
-        PbrDiffuseMap,
-        PbrDiffuseSAMap,
-        PbrEmissiveTexture,
-        PbrDiffuseNormalMap,
-        PbrDiffuseNormalSAMap,
-        PbrDiffuseNormalRoughnessMetallicMap,
-        PbrDiffuseNormalRoughnessMetallic2Map,
-        PbrDiffuseNormalRoughnessMetallicSAMap,
-        PbrDiffuseNormalRoughnessMetallicSA2Map,
-        Cubemap
-    };
-
     class Renderer
     {
 

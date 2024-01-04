@@ -25,6 +25,7 @@
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
+#include "systems/pushConstantData.h"
 #include "systems/VKpostprocessingSys.h"
 #include "VKswapChain.h"
 
@@ -52,7 +53,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataPostProcessing);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
 
         VkPipelineLayoutCreateInfo postProcessingPipelineLayoutInfo{};
         postProcessingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

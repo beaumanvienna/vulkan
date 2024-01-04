@@ -46,6 +46,7 @@
 #include "scene/dictionary.h"
 #include "renderer/skeletalAnimation/skeleton.h"
 #include "renderer/skeletalAnimation/skeletalAnimations.h"
+#include "renderer/materialDescriptor.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "sprite/sprite.h"
@@ -73,17 +74,16 @@ namespace GfxRenderEngine
     {
         enum Bitfield
         {
-            HAS_DIFFUSE_MAP             = 0x01 << 0,
-            HAS_NORMAL_MAP              = 0x01 << 1,
-            HAS_ROUGHNESS_MAP           = 0x01 << 2,
-            HAS_METALLIC_MAP            = 0x01 << 3,
-            HAS_ROUGHNESS_METALLIC_MAP  = 0x01 << 4,
-            HAS_EMISSIVE_MAP            = 0x01 << 5,
-            HAS_SKELETAL_ANIMATION      = 0x01 << 6
+            HAS_DIFFUSE_MAP            = 0x1 << 0x0,
+            HAS_NORMAL_MAP             = 0x1 << 0x1,
+            HAS_ROUGHNESS_MAP          = 0x1 << 0x2,
+            HAS_METALLIC_MAP           = 0x1 << 0x3,
+            HAS_ROUGHNESS_METALLIC_MAP = 0x1 << 0x4,
+            HAS_EMISSIVE_MAP           = 0x1 << 0x5,
+            HAS_SKELETAL_ANIMATION     = 0x1 << 0x6
         };
         glm::vec3 m_DiffuseColor;
         glm::vec3 m_EmissiveFactor;
-        float m_EmissiveStrength;
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMapIndex;
@@ -91,115 +91,32 @@ namespace GfxRenderEngine
         uint m_RoughnessMetallicMapIndex;
         uint m_EmissiveMapIndex;
         uint m_Features;
+        float m_NormalMapIntensity;
         float m_Roughness;
         float m_Metallic;
+        float m_EmissiveStrength;
+    };
+
+    struct MaterialProperties
+    {
         float m_NormalMapIntensity;
+        float m_Roughness;
+        float m_Metallic;
+        float m_EmissiveStrength;
     };
 
-    struct PrimitiveTmp
+    struct Submesh
     {
         uint m_FirstIndex;
         uint m_FirstVertex;
         uint m_IndexCount;
         uint m_VertexCount;
+        MaterialProperties m_MaterialProperties;
     };
 
-    struct PrimitiveNoMap
+    struct ModelSubmesh : public Submesh
     {
-        ~PrimitiveNoMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrNoMapMaterial m_PbrNoMapMaterial{};
-    };
-
-    struct PrimitiveEmissive
-    {
-        ~PrimitiveEmissive();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrEmissiveMaterial m_PbrEmissiveMaterial{};
-    };
-
-    struct PrimitiveEmissiveTexture
-    {
-        ~PrimitiveEmissiveTexture();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrEmissiveTextureMaterial m_PbrEmissiveTextureMaterial{};
-    };
-
-    struct PrimitiveDiffuseMap
-    {
-        ~PrimitiveDiffuseMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseMaterial m_PbrDiffuseMaterial;
-    };
-
-    struct PrimitiveDiffuseSAMap
-    {
-        ~PrimitiveDiffuseSAMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseSAMaterial m_PbrDiffuseSAMaterial;
-    };
-
-    struct PrimitiveDiffuseNormalMap
-    {
-        ~PrimitiveDiffuseNormalMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseNormalMaterial m_PbrDiffuseNormalMaterial;
-    };
-
-    struct PrimitiveDiffuseNormalSAMap
-    {
-        ~PrimitiveDiffuseNormalSAMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseNormalSAMaterial m_PbrDiffuseNormalSAMaterial;
-    };
-
-    struct PrimitiveDiffuseNormalRoughnessMetallicMap
-    {
-        ~PrimitiveDiffuseNormalRoughnessMetallicMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseNormalRoughnessMetallicMaterial m_PbrDiffuseNormalRoughnessMetallicMaterial;
-    };
-
-    struct PrimitiveDiffuseNormalRoughnessMetallicSAMap
-    {
-        ~PrimitiveDiffuseNormalRoughnessMetallicSAMap();
-        uint m_FirstIndex;
-        uint m_FirstVertex;
-        uint m_IndexCount;
-        uint m_VertexCount;
-        PbrDiffuseNormalRoughnessMetallicSAMaterial m_PbrDiffuseNormalRoughnessMetallicSAMaterial;
-    };
-
-    struct PrimitiveCubemap
-    {
-        ~PrimitiveCubemap();
-        uint m_FirstVertex;
-        uint m_VertexCount;
-        CubemapMaterial m_CubemapMaterial;
+        std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
     };
 
     class Model

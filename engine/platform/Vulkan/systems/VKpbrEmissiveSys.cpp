@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -26,6 +26,7 @@
 #include "VKmodel.h"
 
 #include "systems/VKpbrEmissiveSys.h"
+#include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
@@ -45,7 +46,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataPbrEmissive);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 

@@ -20,12 +20,14 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "systems/VKshadowRenderSys.h"
 
 #include "VKcore.h"
 #include "VKmodel.h"
 #include "VKswapChain.h"
 #include "VKshadowMap.h"
+
+#include "systems/VKshadowRenderSys.h"
+#include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
@@ -51,7 +53,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataShadow);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -127,7 +129,7 @@ namespace GfxRenderEngine
         {
             auto& transform = meshView.get<TransformComponent>(entity);
             
-            VK_PushConstantDataShadow push{};
+            VK_PushConstantDataGeneric push{};
     
             push.m_ModelMatrix  = transform.GetMat4Global();
     
@@ -136,7 +138,7 @@ namespace GfxRenderEngine
                 m_PipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                sizeof(VK_PushConstantDataShadow),
+                sizeof(VK_PushConstantDataGeneric),
                 &push);
 
             auto& mesh = meshView.get<MeshComponent>(entity);

@@ -26,6 +26,7 @@
 #include "VKmodel.h"
 
 #include "systems/VKpbrNoMapSys.h"
+#include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
@@ -45,7 +46,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataPbrNoMap);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
 

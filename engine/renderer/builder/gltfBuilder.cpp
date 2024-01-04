@@ -36,7 +36,7 @@ namespace GfxRenderEngine
     GltfBuilder::GltfBuilder(const std::string& filepath, Scene& scene)
         : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()},
           m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
-          m_InstanceCount{0}, m_InstanceIndex{0}
+          m_InstanceCount{0}, m_InstanceIndex{0}, m_MaterialFeatures{0}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -238,62 +238,45 @@ namespace GfxRenderEngine
         }
 
         // material tags (can have multiple tags)
-        bool hasPbrMaterial = false;
 
-        // vertex diffuse color, diffuse map, normal map, roughness/metallic map
-        if (m_PrimitivesNoMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
         {
-            hasPbrMaterial = true;
-
             PbrNoMapTag pbrNoMapTag{};
             m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
         }
-        if (m_PrimitivesDiffuseMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseTag pbrDiffuseTag{};
             m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
         }
-        if (m_PrimitivesDiffuseSAMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseSATag pbrDiffuseSATag{};
             m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
 
             SkeletalAnimationTag skeletalAnimationTag{};
             m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
         }
-        if (m_PrimitivesDiffuseNormalMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseNormalTag pbrDiffuseNormalTag;
             m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
         }
-        if (m_PrimitivesDiffuseNormalSAMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
             m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
 
             SkeletalAnimationTag skeletalAnimationTag{};
             m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
         }
-        if (m_PrimitivesDiffuseNormalRoughnessMetallicMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
             m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
         }
-
-        if (m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
         {
-            hasPbrMaterial = true;
-
             PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
             m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
 
@@ -302,23 +285,18 @@ namespace GfxRenderEngine
         }
 
         // emissive materials
-        if (m_PrimitivesEmissive.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
         {
-            hasPbrMaterial = true;
-
             PbrEmissiveTag pbrEmissiveTag{};
             m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
         }
-
-        if (m_PrimitivesEmissiveTexture.size())
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
         {
-            hasPbrMaterial = true;
-
             PbrEmissiveTextureTag pbrEmissiveTextureTag{};
             m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
         }
 
-        if (hasPbrMaterial)
+        if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
         {
             PbrMaterial pbrMaterial{};
             m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
@@ -471,7 +449,6 @@ namespace GfxRenderEngine
 
             Material material{};
             material.m_Features = m_SkeletalAnimation;
-            material.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
@@ -553,23 +530,18 @@ namespace GfxRenderEngine
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
+        m_Submeshes.clear();
+        m_MaterialFeatures = 0;
 
-        m_PrimitivesNoMap.clear();
-        m_PrimitivesEmissive.clear();
-        m_PrimitivesDiffuseMap.clear();
-        m_PrimitivesDiffuseSAMap.clear();
-        m_PrimitivesEmissiveTexture.clear();
-        m_PrimitivesDiffuseNormalMap.clear();
-        m_PrimitivesDiffuseNormalSAMap.clear();
-        m_PrimitivesDiffuseNormalRoughnessMetallicMap.clear();
-        m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.clear();
-
+        uint numPrimitives = m_GltfModel.meshes[meshIndex].primitives.size();
+        m_Submeshes.resize(numPrimitives);
+        uint primitiveIndex = 0;
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
+            ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
 
-            PrimitiveTmp primitiveTmp;
-            primitiveTmp.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
-            primitiveTmp.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+            submesh.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
+            submesh.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
 
             uint vertexCount = 0;
             uint indexCount  = 0;
@@ -762,10 +734,9 @@ namespace GfxRenderEngine
                 }
             }
 
-            primitiveTmp.m_VertexCount = vertexCount;
-            primitiveTmp.m_IndexCount  = indexCount;
-
-            AssignMaterial(primitiveTmp, glTFPrimitive.material);
+            submesh.m_VertexCount = vertexCount;
+            submesh.m_IndexCount  = indexCount;
+            AssignMaterial(submesh, glTFPrimitive.material);
         }
     }
 
@@ -800,23 +771,18 @@ namespace GfxRenderEngine
         }
     }
 
-    void GltfBuilder::AssignMaterial(const PrimitiveTmp& primitiveTmp, int const materialIndex)
+    void GltfBuilder::AssignMaterial(ModelSubmesh& submesh, int const materialIndex)
     {
         if (materialIndex == Gltf::GLTF_NOT_USED)
         {
-            PrimitiveNoMap primitiveNoMap{};
-            primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveNoMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveNoMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveNoMap.m_VertexCount = primitiveTmp.m_VertexCount;
+            { // create material descriptor
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
+            }
+            submesh.m_MaterialProperties.m_Roughness = 0.5f;
+            submesh.m_MaterialProperties.m_Metallic  = 0.1f;
 
-            primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = 0.5f;
-            primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = 0.1f;
-            primitiveNoMap.m_PbrNoMapMaterial.m_Color     = glm::vec3(0.5f, 0.5f, 1.0f);
-
-            m_PrimitivesNoMap.push_back(primitiveNoMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap", materialIndex);
-
             return;
         }
 
@@ -826,116 +792,74 @@ namespace GfxRenderEngine
         }
 
         auto& material = m_Materials[materialIndex];
+        // assign only those material features that are actually needed in the renderer
+        submesh.m_MaterialProperties.m_NormalMapIntensity = material.m_NormalMapIntensity;
+        submesh.m_MaterialProperties.m_Roughness          = material.m_Roughness;
+        submesh.m_MaterialProperties.m_Metallic           = material.m_Metallic;
+        submesh.m_MaterialProperties.m_EmissiveStrength   = material.m_EmissiveStrength;
 
         uint pbrFeatures = material.m_Features & (
                 Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
         if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
-            PrimitiveDiffuseMap primitiveDiffuseMap{};
-            primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseMap, textures);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
-            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
-            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
-            m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            PrimitiveDiffuseSAMap primitiveDiffuseSAMap{};
-            primitiveDiffuseSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseSAMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial, m_Images[diffuseSAMapIndex], m_ShaderData);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseSAMap, textures, buffers);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMap, textures, buffers);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
             }
-            primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Roughness = material.m_Roughness;
-            primitiveDiffuseSAMap.m_PbrDiffuseSAMaterial.m_Metallic  = material.m_Metallic;
 
-            m_PrimitivesDiffuseSAMap.push_back(primitiveDiffuseSAMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
-            PrimitiveDiffuseNormalMap primitiveDiffuseNormalMap{};
-            primitiveDiffuseNormalMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseNormalMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseNormalMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseNormalMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial, m_Images[diffuseMapIndex], m_Images[normalMapIndex]);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalMap, textures);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
             }
-            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Roughness          = material.m_Roughness;
-            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_Metallic           = material.m_Metallic;
-            primitiveDiffuseNormalMap.m_PbrDiffuseNormalMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            m_PrimitivesDiffuseNormalMap.push_back(primitiveDiffuseNormalMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            PrimitiveDiffuseNormalSAMap primitiveDiffuseNormalSAMap{};
-            primitiveDiffuseNormalSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseNormalSAMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseNormalSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseNormalSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial,
-                                          m_Images[diffuseMapIndex],
-                                          m_Images[normalMapIndex],
-                                          m_ShaderData);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalSAMap, textures, buffers);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMap, textures, buffers);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
             }
-            primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_Roughness          = material.m_Roughness;
-            primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_Metallic           = material.m_Metallic;
-            primitiveDiffuseNormalSAMap.m_PbrDiffuseNormalSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            m_PrimitivesDiffuseNormalSAMap.push_back(primitiveDiffuseNormalSAMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
-            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
@@ -944,27 +868,16 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial,
-                                          m_Images[diffuseMapIndex], 
-                                          m_Images[normalMapIndex], 
-                                          m_Images[roughnessMetallicMapIndex]);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicMap, textures);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
-            primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            PrimitiveDiffuseNormalRoughnessMetallicSAMap primitiveDiffuseNormalRoughnessMetallicSAMap{};
-            primitiveDiffuseNormalRoughnessMetallicSAMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseNormalRoughnessMetallicSAMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseNormalRoughnessMetallicSAMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseNormalRoughnessMetallicSAMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
@@ -973,19 +886,13 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial,
-                                          m_Images[diffuseMapIndex], 
-                                          m_Images[normalMapIndex], 
-                                          m_Images[roughnessMetallicMapIndex],
-                                          m_ShaderData);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap;
             }
-            primitiveDiffuseNormalRoughnessMetallicSAMap.m_PbrDiffuseNormalRoughnessMetallicSAMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            m_PrimitivesDiffuseNormalRoughnessMetallicSAMap.push_back(primitiveDiffuseNormalRoughnessMetallicSAMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
@@ -994,12 +901,6 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            PrimitiveDiffuseNormalRoughnessMetallicMap primitiveDiffuseNormalRoughnessMetallicMap{};
-            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseNormalRoughnessMetallicMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
             uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
@@ -1007,52 +908,34 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial, 
-                                            m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseNormalRoughnessMetallicMap, textures);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
-            primitiveDiffuseNormalRoughnessMetallicMap.m_PbrDiffuseNormalRoughnessMetallicMaterial.m_NormalMapIntensity = material.m_NormalMapIntensity;
 
-            m_PrimitivesDiffuseNormalRoughnessMetallicMap.push_back(primitiveDiffuseNormalRoughnessMetallicMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
-            PrimitiveDiffuseMap primitiveDiffuseMap{};
-            primitiveDiffuseMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveDiffuseMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveDiffuseMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveDiffuseMap.m_VertexCount = primitiveTmp.m_VertexCount;
-
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
-            VK_Model::CreateDescriptorSet(primitiveDiffuseMap.m_PbrDiffuseMaterial, m_Images[diffuseMapIndex]);
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrDiffuseMap, textures);
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
-            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Roughness = material.m_Roughness;
-            primitiveDiffuseMap.m_PbrDiffuseMaterial.m_Metallic  = material.m_Metallic;
 
-            m_PrimitivesDiffuseMap.push_back(primitiveDiffuseMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else
         {
-            PrimitiveNoMap primitiveNoMap{};
-            primitiveNoMap.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-            primitiveNoMap.m_FirstVertex = primitiveTmp.m_FirstVertex;
-            primitiveNoMap.m_IndexCount  = primitiveTmp.m_IndexCount;
-            primitiveNoMap.m_VertexCount = primitiveTmp.m_VertexCount;
+            { // create material descriptor
+                submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
+            }
 
-            primitiveNoMap.m_PbrNoMapMaterial.m_Roughness = material.m_Roughness;
-            primitiveNoMap.m_PbrNoMapMaterial.m_Metallic  = material.m_Metallic;
-            primitiveNoMap.m_PbrNoMapMaterial.m_Color     = material.m_DiffuseColor;
-
-            m_PrimitivesNoMap.push_back(primitiveNoMap);
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
         }
 
@@ -1062,42 +945,24 @@ namespace GfxRenderEngine
             // emissive texture
             if (material.m_Features & Material::HAS_EMISSIVE_MAP)
             {
-                PrimitiveEmissiveTexture primitiveEmissiveTexture{};
-                primitiveEmissiveTexture.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-                primitiveEmissiveTexture.m_FirstVertex = primitiveTmp.m_FirstVertex;
-                primitiveEmissiveTexture.m_IndexCount  = primitiveTmp.m_IndexCount;
-                primitiveEmissiveTexture.m_VertexCount = primitiveTmp.m_VertexCount;
-
                 uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
-                VK_Model::CreateDescriptorSet(primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial, m_Images[emissiveMapIndex]);
                 {
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialType::PbrEmissiveTexture, textures);
+                    submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
+                    m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
                 }
 
-                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Roughness = material.m_Roughness;
-                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_Metallic  = material.m_Metallic;
-                primitiveEmissiveTexture.m_PbrEmissiveTextureMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
-
-                m_PrimitivesEmissiveTexture.push_back(primitiveEmissiveTexture);
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
             }
             else // emissive vertex color
             {
-                PrimitiveEmissive primitiveEmissive{};
-                primitiveEmissive.m_FirstIndex  = primitiveTmp.m_FirstIndex;
-                primitiveEmissive.m_FirstVertex = primitiveTmp.m_FirstVertex;
-                primitiveEmissive.m_IndexCount  = primitiveTmp.m_IndexCount;
-                primitiveEmissive.m_VertexCount = primitiveTmp.m_VertexCount;
+                { // create material descriptor
+                    submesh.m_MaterialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
+                    m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
+                }
 
-                primitiveEmissive.m_PbrEmissiveMaterial.m_Roughness = material.m_Roughness;
-                primitiveEmissive.m_PbrEmissiveMaterial.m_Metallic  = material.m_Metallic;
-                primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveFactor = material.m_EmissiveFactor;
-                primitiveEmissive.m_PbrEmissiveMaterial.m_EmissiveStrength  = material.m_EmissiveStrength;
-
-                m_PrimitivesEmissive.push_back(primitiveEmissive);
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
         }

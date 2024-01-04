@@ -46,15 +46,7 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Images;
-        std::vector<PrimitiveNoMap> m_PrimitivesNoMap{};
-        std::vector<PrimitiveEmissive> m_PrimitivesEmissive{};
-        std::vector<PrimitiveDiffuseMap> m_PrimitivesDiffuseMap{};
-        std::vector<PrimitiveDiffuseSAMap> m_PrimitivesDiffuseSAMap{};
-        std::vector<PrimitiveEmissiveTexture> m_PrimitivesEmissiveTexture{};
-        std::vector<PrimitiveDiffuseNormalMap> m_PrimitivesDiffuseNormalMap{};
-        std::vector<PrimitiveDiffuseNormalSAMap> m_PrimitivesDiffuseNormalSAMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicMap> m_PrimitivesDiffuseNormalRoughnessMetallicMap{};
-        std::vector<PrimitiveDiffuseNormalRoughnessMetallicSAMap> m_PrimitivesDiffuseNormalRoughnessMetallicSAMap{};
+        std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
 
@@ -65,7 +57,7 @@ namespace GfxRenderEngine
         bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
         void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
         bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
-        void AssignMaterial(const PrimitiveTmp& primitiveTmp, uint const materialIndex);
+        void AssignMaterial(ModelSubmesh& submesh, uint const materialIndex);
         glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
         void PrintMaps(const aiMaterial* fbxMaterial);
 
@@ -82,6 +74,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
+        uint m_MaterialFeatures;
         bool m_FbxNoBuiltInTangents;
 
         // scene graph

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,12 +38,6 @@
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataShadowAnimated
-    {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-    };
-
     class VK_RenderSystemShadowAnimated
     {
 
@@ -71,7 +65,7 @@ namespace GfxRenderEngine
 
     private:
 
-        void CreatePipelineLayout( std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass);
 
     private:

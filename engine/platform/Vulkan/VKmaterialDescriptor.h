@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #include "renderer/materialDescriptor.h"
 
 namespace GfxRenderEngine
@@ -31,21 +33,24 @@ namespace GfxRenderEngine
 
     public:
 
+        VK_MaterialDescriptor(MaterialType materialType);
         VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures);
         VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures, std::vector<std::shared_ptr<Buffer>>& buffers);
         VK_MaterialDescriptor(MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
+
+        VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
 
         virtual ~VK_MaterialDescriptor();
 
     public:
 
-        virtual MaterialType GetMaterialType() const override;
-        VkDescriptorSet GetDescriptorSet() const;
-        VkDescriptorSet GetShadowDescriptorSet() const;
+        virtual MaterialDescriptor::MaterialType GetMaterialType() const override;
+        const VkDescriptorSet& GetDescriptorSet() const;
+        const VkDescriptorSet& GetShadowDescriptorSet() const;
 
     private:
 
-        MaterialType m_MaterialType;
+        MaterialDescriptor::MaterialType m_MaterialType;
         VkDescriptorSet m_DescriptorSet;
         VkDescriptorSet m_ShadowDescriptorSet;
     };
