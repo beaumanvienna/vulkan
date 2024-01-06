@@ -68,5 +68,5 @@ void main()
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);
 
     fragColor = color;
-    fragEmissiveStrength = push.m_NormalMatrix[3].x;
+    fragEmissiveStrength = push.m_NormalMatrix[3].w;
 }

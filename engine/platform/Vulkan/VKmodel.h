@@ -91,6 +91,8 @@ namespace GfxRenderEngine
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
+        void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
         void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet);
         void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);

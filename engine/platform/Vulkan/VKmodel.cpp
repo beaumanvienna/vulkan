@@ -278,6 +278,43 @@ namespace GfxRenderEngine
         static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
     }
 
+    void VK_Model::BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)
+    {
+        auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,
+            2,
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+    }
+
+    void VK_Model::PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)
+    {
+        VK_PushConstantDataGeneric push{};
+        push.m_ModelMatrix  = transform.GetMat4Global();
+        push.m_NormalMatrix = transform.GetNormalMatrix();
+
+        push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+        push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
+        push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
+        push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
+
+        vkCmdPushConstants(
+            frameInfo.m_CommandBuffer,
+            pipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_PushConstantDataGeneric),
+            &push);
+    }
+
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
         if (m_HasIndexBuffer)
@@ -336,22 +373,7 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrNoMap)
         {
-
-            VK_PushConstantDataGeneric push{};
-
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -361,26 +383,12 @@ namespace GfxRenderEngine
         for(auto& submesh : m_SubmeshesPbrEmissive)
         {
 
-            VK_PushConstantDataGeneric push{};
-
             if (emissiveStrength)
             {
                 submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
 
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_EmissiveStrength;
-            push.m_NormalMatrix[3].y = 0;
-
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -389,38 +397,13 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrEmissiveTexture)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
             if (emissiveStrength)
             {
                 submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
 
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_EmissiveStrength;
-            push.m_NormalMatrix[3].y = 0;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -429,32 +412,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseMap)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -463,33 +422,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseSAMap)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -498,33 +432,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -533,33 +442,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-            push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -568,32 +452,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -602,32 +462,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
         {
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -636,32 +472,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map)
         {
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -670,32 +482,8 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
         {
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Global();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -770,20 +558,7 @@ namespace GfxRenderEngine
     {
         for(auto& submesh : m_SubmeshesCubemap)
         {
-            auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-            vkCmdBindDescriptorSets
-            (
-                frameInfo.m_CommandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                0,
-                2,
-                descriptorSets.data(),
-                0,
-                nullptr
-            );
-
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
             vkCmdDraw
             (
                 frameInfo.m_CommandBuffer,  // VkCommandBuffer commandBuffer
