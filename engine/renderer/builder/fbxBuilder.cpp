@@ -247,16 +247,16 @@ namespace GfxRenderEngine
             SkeletalAnimationTag skeletalAnimationTag{};
             m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
         }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map)
         {
             PbrDiffuseNormalRoughnessMetallic2Tag pbrDiffuseNormalRoughnessMetallic2Tag;
             m_Registry.emplace<PbrDiffuseNormalRoughnessMetallic2Tag>(entity, pbrDiffuseNormalRoughnessMetallic2Tag);
         }
 
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
+        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map)
         {
-            PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
-            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
+            PbrDiffuseNormalRoughnessMetallicSA2Tag pbrDiffuseNormalRoughnessMetallicSA2Tag;
+            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSA2Tag>(entity, pbrDiffuseNormalRoughnessMetallicSA2Tag);
 
             SkeletalAnimationTag skeletalAnimationTag{};
             m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
@@ -505,7 +505,7 @@ namespace GfxRenderEngine
             m_Submeshes.resize(numMeshes);
             for (uint meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
             {
-                LoadVertexDataFbx(fbxNodePtr, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
+                LoadVertexDataFbx(fbxNodePtr, meshIndex, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
             }
             if (m_FbxNoBuiltInTangents) // at least one mesh did not have tangents
             {
@@ -515,9 +515,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet, uint uvSet)
+    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex, int vertexColorSet, uint uvSet)
     {
-        const aiMesh* mesh = m_FbxScene->mMeshes[meshIndex];
+        const aiMesh* mesh = m_FbxScene->mMeshes[fbxMeshIndex];
 
         // only triangle mesh supported
         if (!(mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
@@ -729,12 +729,12 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
@@ -756,7 +756,7 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
@@ -776,12 +776,12 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}", materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -807,7 +807,7 @@ namespace GfxRenderEngine
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap, features: 0x{1:x}", materialIndex, material.m_Features);
         }
- 
+
         // emissive materials
         if (material.m_EmissiveStrength != 0)
         {

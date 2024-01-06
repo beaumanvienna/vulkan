@@ -51,7 +51,7 @@ namespace GfxRenderEngine
     private:
 
         void LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
-        void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, int vertexColorSet = 0, uint uvSet = 0);
+        void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex, int vertexColorSet = 0, uint uvSet = 0);
 
         void LoadMaterialsFbx();
         bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
