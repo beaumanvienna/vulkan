@@ -130,6 +130,7 @@ namespace GfxRenderEngine
                 }
             }
         }
+
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
@@ -162,6 +163,7 @@ namespace GfxRenderEngine
             return;
         }
 
+        m_RenderObject = 0;
         for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
         {
             ProcessNode(scene, scene.nodes[nodeIndex], parentNode);
@@ -226,16 +228,39 @@ namespace GfxRenderEngine
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
 
-        { // mesh
-            MeshComponent mesh{nodeName, model};
-            m_Registry.emplace<MeshComponent>(entity, mesh);
-        }
-
         { // transform
             TransformComponent transform{};
             LoadTransformationMatrix(transform, gltfNodeIndex);
             m_Registry.emplace<TransformComponent>(entity, transform);
         }
+
+        // *** Instancing ***
+        // create instance tag for first game object;
+        // and collect further instances in it.
+        // The renderer can loop over all instance tags 
+        //to retrieve the corresponding game objects.
+        if (m_InstanceCount > 1) 
+        {
+            if (!m_InstanceIndex)
+            {
+                InstanceTag instanceTag;
+                instanceTag.m_Instances.push_back(entity);
+                m_Registry.emplace<InstanceTag>(entity, instanceTag);
+                m_InstancedObjects.push_back(entity);
+            }
+            else
+            {
+                entt::entity instance = m_InstancedObjects[m_RenderObject++];
+                InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
+                instanceTag.m_Instances.push_back(entity);
+            }
+        }
+
+        { // mesh
+            MeshComponent mesh{nodeName, model};
+            m_Registry.emplace<MeshComponent>(entity, mesh);
+        }
+
 
         // material tags (can have multiple tags)
 

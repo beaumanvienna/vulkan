@@ -97,15 +97,35 @@ namespace GfxRenderEngine
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag>();
-        for (auto entity : view)
-        {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
-            if (mesh.m_Enabled)
+        { // non-instanced
+            auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag>(entt::exclude<InstanceTag>);
+            for (auto entity : view)
             {
-                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_PipelineLayout);
+                auto& transform = view.get<TransformComponent>(entity);
+                auto& mesh = view.get<MeshComponent>(entity);
+                if (mesh.m_Enabled)
+                {
+                    static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                    static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_PipelineLayout);
+                }
+            }
+        }
+        
+        { // instanced
+            auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag, InstanceTag>();
+            for (auto entity : view)
+            {
+                auto& instanced = view.get<InstanceTag>(entity);
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = view.get<TransformComponent>(instance);
+                    auto& mesh = view.get<MeshComponent>(instance);
+                    if (mesh.m_Enabled)
+                    {
+                        static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                        static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_PipelineLayout);
+                    }
+                }
             }
         }
     }

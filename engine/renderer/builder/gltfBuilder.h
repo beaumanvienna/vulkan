@@ -99,6 +99,9 @@ namespace GfxRenderEngine
         std::vector<bool> m_HasMesh;
         entt::entity m_GameObject;
 
+        std::vector<entt::entity> m_InstancedObjects;
+        uint m_RenderObject;
+
         entt::registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;

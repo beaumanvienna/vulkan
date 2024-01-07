@@ -25,6 +25,8 @@
 #include <string>
 #include <memory>
 
+#include "entt.hpp"
+
 #include "engine.h"
 #include "renderer/camera.h"
 
@@ -176,6 +178,11 @@ namespace GfxRenderEngine
     struct PbrMaterial
     {
         uint m_Tag{0};
+    };
+
+    struct InstanceTag
+    {
+        std::vector<entt::entity> m_Instances;
     };
 
     struct PbrEmissiveTag
