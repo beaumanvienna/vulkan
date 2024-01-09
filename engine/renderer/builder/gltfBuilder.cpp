@@ -228,11 +228,9 @@ namespace GfxRenderEngine
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
 
-        { // transform
-            TransformComponent transform{};
-            LoadTransformationMatrix(transform, gltfNodeIndex);
-            m_Registry.emplace<TransformComponent>(entity, transform);
-        }
+        TransformComponent transform{};
+        LoadTransformationMatrix(transform, gltfNodeIndex);
+        m_Registry.emplace<TransformComponent>(entity, transform);
 
         // *** Instancing ***
         // create instance tag for first game object;
@@ -245,6 +243,8 @@ namespace GfxRenderEngine
             {
                 InstanceTag instanceTag;
                 instanceTag.m_Instances.push_back(entity);
+                instanceTag.m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
+                instanceTag.m_InstanceBuffer.SetInstanceTransform(0, transform);
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
                 m_InstancedObjects.push_back(entity);
             }
@@ -261,9 +261,7 @@ namespace GfxRenderEngine
             m_Registry.emplace<MeshComponent>(entity, mesh);
         }
 
-
         // material tags (can have multiple tags)
-
         if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
         {
             PbrNoMapTag pbrNoMapTag{};

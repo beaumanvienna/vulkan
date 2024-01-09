@@ -29,6 +29,7 @@
 
 #include "engine.h"
 #include "renderer/camera.h"
+#include "renderer/instanceBuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -183,6 +184,7 @@ namespace GfxRenderEngine
     struct InstanceTag
     {
         std::vector<entt::entity> m_Instances;
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
     };
 
     struct PbrEmissiveTag
