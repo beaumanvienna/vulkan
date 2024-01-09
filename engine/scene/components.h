@@ -86,6 +86,8 @@ namespace GfxRenderEngine
         const glm::mat4& GetParent();
         void  SetDirtyFlag();
         bool  GetDirtyFlag() const;
+        bool  GetDirtyFlagInstanced() const;
+        void  ResetDirtyFlagInstanced();
 
     private:
 
@@ -94,6 +96,7 @@ namespace GfxRenderEngine
     private:
 
         bool m_Dirty{true};
+        bool m_DirtyInstanced{true};
 
         // local
         glm::vec3 m_Scale = glm::vec3{1.0f};

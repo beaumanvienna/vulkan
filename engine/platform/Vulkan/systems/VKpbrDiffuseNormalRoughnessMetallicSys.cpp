@@ -22,6 +22,7 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
@@ -113,18 +114,27 @@ namespace GfxRenderEngine
         
         { // instanced
             auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallicTag, InstanceTag>();
-            for (auto entity : view)
+            for (auto mainInstance : view)
             {
-                auto& instanced = view.get<InstanceTag>(entity);
-                for (auto& instance : instanced.m_Instances)
+                auto& mesh = view.get<MeshComponent>(mainInstance);
+                if (mesh.m_Enabled)
                 {
-                    auto& transform = view.get<TransformComponent>(instance);
-                    auto& mesh = view.get<MeshComponent>(instance);
-                    if (mesh.m_Enabled)
+                    InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                    VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                    uint instanceIndex = 0;
+                    for (auto& instance : instanced.m_Instances)
                     {
-                        static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                        static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMap(frameInfo, transform, m_PipelineLayout);
+                        auto& transform = view.get<TransformComponent>(instance);
+                        if (transform.GetDirtyFlagInstanced())
+                        {
+                            transform.ResetDirtyFlagInstanced();
+                            instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                        }
+                        ++instanceIndex;
                     }
+                    instanceBuffer->Update();
+                    static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                    static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallicMapInstanced(frameInfo, m_PipelineLayout);
                 }
             }
         }

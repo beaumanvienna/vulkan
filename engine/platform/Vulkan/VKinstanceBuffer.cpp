@@ -31,18 +31,22 @@ namespace GfxRenderEngine
 {
     VK_InstanceBuffer::VK_InstanceBuffer(uint numInstances)
       : m_NumInstances(numInstances), m_Dirty{true},
-        m_UBO(numInstances * sizeof(glm::mat4))
+        m_UBO(numInstances * sizeof(InstanceData))
     {
         m_UBO.MapBuffer();
-        m_Transforms.resize(numInstances);
+        m_DataInstances.resize(numInstances);
     }
 
-    void SetInstanceTransform(uint index, TransformComponent const& transform)
+    VK_InstanceBuffer::~VK_InstanceBuffer()
+    {
+    }
+
+    void VK_InstanceBuffer::SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix)
     {
         CORE_ASSERT(index < m_NumInstances, "out of bounds");
 
-        m_Transforms[index] = transform.GetMat4Global();
-        m_NormalMatrices[index] = transform.GetNormalMatrix();
+        m_DataInstances[index].m_Transform = mat4Global;
+        m_DataInstances[index].m_Transform = normalMatrix;
 
         m_Dirty = true;
     }
@@ -52,7 +56,7 @@ namespace GfxRenderEngine
         if (m_Dirty)
         {
             // update ubo
-            m_UBO.WriteToBuffer(m_Transforms.data());
+            m_UBO.WriteToBuffer(m_DataInstances.data());
             m_UBO.Flush();
             m_Dirty = false;
         }

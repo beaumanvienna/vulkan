@@ -47,14 +47,20 @@ namespace GfxRenderEngine
         VK_InstanceBuffer(const VK_InstanceBuffer&) = delete;
         VK_InstanceBuffer& operator=(const VK_InstanceBuffer&) = delete;
 
-        virtual void Update() override;
-        virtual void SetInstanceTransform(uint index, TransformComponent const& transform) override;
+        virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) override;
+        void Update();
 
     private:
 
+        struct InstanceData
+        {
+            glm::mat4 m_Transform;
+            glm::mat4 m_NormalMatrix;
+        };
+
         uint m_NumInstances;
         bool m_Dirty;
-        std::vector<glm::mat4> m_Transforms;
+        std::vector<InstanceData> m_DataInstances;
         VK_Buffer m_UBO;
 
     };

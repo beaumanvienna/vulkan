@@ -43,7 +43,7 @@ namespace GfxRenderEngine
 
         virtual ~Buffer() = default;
         virtual void MapBuffer() = 0;
-        static std::shared_ptr<Buffer> Create(uint size);
+        static std::shared_ptr<Buffer> Create(uint size /*in bytes*/);
 
     };
 }

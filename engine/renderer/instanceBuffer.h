@@ -37,8 +37,7 @@ namespace GfxRenderEngine
         
         virtual ~InstanceBuffer() = default;
 
-        virtual void Update() = 0;
-        virtual void SetInstanceTransform(uint index, TransformComponent const& transform) = 0;
+        virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) = 0;
 
         static std::shared_ptr<InstanceBuffer> Create(uint numInstances);
 

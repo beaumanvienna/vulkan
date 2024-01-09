@@ -48,7 +48,7 @@ namespace GfxRenderEngine
 
     TransformComponent::TransformComponent()
         : m_Scale(glm::vec3(1.0)), m_Rotation(glm::vec3(0.0)),
-          m_Translation(glm::vec3(0.0)), m_Dirty(true)
+          m_Translation(glm::vec3(0.0)), m_Dirty(true), m_DirtyInstanced(true)
     {}
 
     TransformComponent::TransformComponent(const glm::mat4& mat4)
@@ -81,34 +81,49 @@ namespace GfxRenderEngine
         return m_Dirty;
     }
 
+    bool TransformComponent::GetDirtyFlagInstanced() const
+    {
+        return m_DirtyInstanced;
+    }
+
+    void TransformComponent::ResetDirtyFlagInstanced()
+    {
+        m_DirtyInstanced = false;
+    }
+
     void TransformComponent::SetScale(const glm::vec3& scale)
     {
         m_Scale = scale;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScale(const float scale)
     {
         m_Scale = glm::vec3{scale};
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleX(const float scaleX)
     {
         m_Scale.x = scaleX;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleY(const float scaleY)
     {
         m_Scale.y = scaleY;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleZ(const float scaleZ)
     {
         m_Scale.z = scaleZ;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddScale(const glm::vec3& deltaScale)
@@ -120,6 +135,7 @@ namespace GfxRenderEngine
     {
         m_Rotation = rotation;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotation(const glm::quat& quaternion)
@@ -128,24 +144,28 @@ namespace GfxRenderEngine
         // ZYX - model in Blender
         SetRotation(glm::vec3{convert.x, convert.y, convert.z});
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationX(const float rotationX)
     {
         m_Rotation.x = rotationX;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationY(const float rotationY)
     {
         m_Rotation.y = rotationY;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationZ(const float rotationZ)
     {
         m_Rotation.z = rotationZ;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddRotation(const glm::vec3& deltaRotation)
@@ -162,24 +182,28 @@ namespace GfxRenderEngine
     {
         m_Translation = translation;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationX(const float translationX)
     {
         m_Translation.x = translationX;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationY(const float translationY)
     {
         m_Translation.y = translationY;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationZ(const float translationZ)
     {
         m_Translation.z = translationZ;
         m_Dirty = true;
+        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddTranslation(const glm::vec3& deltaTranslation)

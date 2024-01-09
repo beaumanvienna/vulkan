@@ -244,7 +244,7 @@ namespace GfxRenderEngine
                 InstanceTag instanceTag;
                 instanceTag.m_Instances.push_back(entity);
                 instanceTag.m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
-                instanceTag.m_InstanceBuffer.SetInstanceTransform(0, transform);
+                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
                 m_InstancedObjects.push_back(entity);
             }
@@ -253,6 +253,7 @@ namespace GfxRenderEngine
                 entt::entity instance = m_InstancedObjects[m_RenderObject++];
                 InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
                 instanceTag.m_Instances.push_back(entity);
+                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
             }
         }
 
