@@ -458,12 +458,12 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
         }
     }
 

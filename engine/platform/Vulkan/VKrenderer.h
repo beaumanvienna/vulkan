@@ -49,6 +49,7 @@
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSysInstanced.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
@@ -150,27 +151,28 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderPass> m_RenderPass;
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
-        std::unique_ptr<VK_RenderSystemShadow>                              m_RenderSystemShadow;
-        std::unique_ptr<VK_RenderSystemPbrNoMap>                            m_RenderSystemPbrNoMap;
-        std::unique_ptr<VK_RenderSystemPbrDiffuse>                          m_RenderSystemPbrDiffuse;
-        std::unique_ptr<VK_RenderSystemPbrEmissive>                         m_RenderSystemPbrEmissive;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseSA>                        m_RenderSystemPbrDiffuseSA;
-        std::unique_ptr<VK_RenderSystemShadowAnimated>                      m_RenderSystemShadowAnimated;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                    m_RenderSystemPbrDiffuseNormal;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA>                  m_RenderSystemPbrDiffuseNormalSA;
-        std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                  m_RenderSystemPbrEmissiveTexture;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>   m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>   m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA> m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
-        std::unique_ptr<VK_RenderSystemDeferredShading>                     m_RenderSystemDeferredShading;
-        std::unique_ptr<VK_RenderSystemPostProcessing>                      m_RenderSystemPostProcessing;
-        std::unique_ptr<VK_RenderSystemBloom>                               m_RenderSystemBloom;
-        std::unique_ptr<VK_RenderSystemCubemap>                             m_RenderSystemCubemap;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer>                      m_RenderSystemSpriteRenderer;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                    m_RenderSystemSpriteRenderer2D;
-        std::unique_ptr<VK_RenderSystemGUIRenderer>                         m_RenderSystemGUIRenderer;
-        std::unique_ptr<VK_RenderSystemDebug>                               m_RenderSystemDebug;
-        std::unique_ptr<VK_LightSystem>                                     m_LightSystem;
+        std::unique_ptr<VK_RenderSystemShadow>                                      m_RenderSystemShadow;
+        std::unique_ptr<VK_RenderSystemPbrNoMap>                                    m_RenderSystemPbrNoMap;
+        std::unique_ptr<VK_RenderSystemPbrDiffuse>                                  m_RenderSystemPbrDiffuse;
+        std::unique_ptr<VK_RenderSystemPbrEmissive>                                 m_RenderSystemPbrEmissive;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseSA>                                m_RenderSystemPbrDiffuseSA;
+        std::unique_ptr<VK_RenderSystemShadowAnimated>                              m_RenderSystemShadowAnimated;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                            m_RenderSystemPbrDiffuseNormal;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA>                          m_RenderSystemPbrDiffuseNormalSA;
+        std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                          m_RenderSystemPbrEmissiveTexture;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>           m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>          m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced>  m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced;
+        std::unique_ptr<VK_RenderSystemDeferredShading>                             m_RenderSystemDeferredShading;
+        std::unique_ptr<VK_RenderSystemPostProcessing>                              m_RenderSystemPostProcessing;
+        std::unique_ptr<VK_RenderSystemBloom>                                       m_RenderSystemBloom;
+        std::unique_ptr<VK_RenderSystemCubemap>                                     m_RenderSystemCubemap;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer>                              m_RenderSystemSpriteRenderer;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                            m_RenderSystemSpriteRenderer2D;
+        std::unique_ptr<VK_RenderSystemGUIRenderer>                                 m_RenderSystemGUIRenderer;
+        std::unique_ptr<VK_RenderSystemDebug>                                       m_RenderSystemDebug;
+        std::unique_ptr<VK_LightSystem>                                             m_LightSystem;
 
         std::shared_ptr<Imgui> m_Imgui;
 

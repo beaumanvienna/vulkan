@@ -897,12 +897,17 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
-            { // create material descriptor
+            if (m_InstanceCount == 1)
+            { // create material descriptor single instance
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
+            else
+            {
+                //skipping material assignment because insatnce buffer is not yet created
+            }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
