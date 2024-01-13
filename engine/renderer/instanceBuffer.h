@@ -38,6 +38,7 @@ namespace GfxRenderEngine
         virtual ~InstanceBuffer() = default;
 
         virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) = 0;
+        virtual std::shared_ptr<Buffer> GetUbo() = 0;
 
         static std::shared_ptr<InstanceBuffer> Create(uint numInstances);
 

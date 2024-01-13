@@ -220,7 +220,6 @@ namespace GfxRenderEngine
         LoadVertexDataGltf(meshIndex);
         LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
 
-        auto model = Engine::m_Engine->LoadModel(*this);
         auto entity = m_Registry.create();
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
@@ -243,7 +242,8 @@ namespace GfxRenderEngine
             {
                 InstanceTag instanceTag;
                 instanceTag.m_Instances.push_back(entity);
-                instanceTag.m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
+                m_InstanceUbo = InstanceBuffer::Create(m_InstanceCount);
+                instanceTag.m_InstanceBuffer = m_InstanceUbo;
                 instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
                 m_InstancedObjects.push_back(entity);
@@ -257,6 +257,16 @@ namespace GfxRenderEngine
             }
         }
 
+        { // assign material
+            uint primitiveIndex = 0;
+            for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+            {
+                ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
+                AssignMaterial(submesh, glTFPrimitive.material);
+            }
+        }
+
+        auto model = Engine::m_Engine->LoadModel(*this);
         { // mesh
             MeshComponent mesh{nodeName, model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
@@ -760,7 +770,6 @@ namespace GfxRenderEngine
 
             submesh.m_VertexCount = vertexCount;
             submesh.m_IndexCount  = indexCount;
-            AssignMaterial(submesh, glTFPrimitive.material);
         }
     }
 
@@ -897,15 +906,19 @@ namespace GfxRenderEngine
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
-            if (m_InstanceCount == 1)
-            { // create material descriptor single instance
+            { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                std::shared_ptr<MaterialDescriptor> materialDescriptor;
+                if (m_InstanceCount == 1) // single instance
+                { 
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                }
+                else // multiple instances
+                {
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
+                }
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-            }
-            else
-            {
-                //skipping material assignment because insatnce buffer is not yet created
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
 

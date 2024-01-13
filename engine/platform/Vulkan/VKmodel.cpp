@@ -168,6 +168,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
                     {
                         m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
@@ -460,7 +465,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
     {
-        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
@@ -523,6 +528,11 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
+        {
+//LOG_APP_CRITICAL("m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced shadow");
+//            DrawSubmesh(frameInfo.m_CommandBuffer, submesh/*, submesh.m_InstanceCount*/);
         }
     }
 

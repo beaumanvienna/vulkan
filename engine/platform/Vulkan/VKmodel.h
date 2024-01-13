@@ -125,6 +125,7 @@ namespace GfxRenderEngine
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced{};
         std::vector<VK_Submesh> m_SubmeshesCubemap{};
 
     };

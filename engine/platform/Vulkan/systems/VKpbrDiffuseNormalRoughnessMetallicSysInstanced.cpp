@@ -109,7 +109,7 @@ namespace GfxRenderEngine
                 uint instanceIndex = 0;
                 for (auto& instance : instanced.m_Instances)
                 {
-                    auto& transform = view.get<TransformComponent>(instance);
+                    auto& transform = registry.get<TransformComponent>(instance);
                     if (transform.GetDirtyFlagInstanced())
                     {
                         transform.ResetDirtyFlagInstanced();

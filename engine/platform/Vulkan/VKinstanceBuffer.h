@@ -20,10 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-   Encapsulates a vulkan buffer
-   Based on https://github.com/blurrypiano/littleVulkanEngine/blob/main/src/lve_buffer.cpp
-   Initially based off VulkanBuffer by Sascha Willems -
-   https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h */
+   Encapsulates a vulkan buffer to hold the model and normal matrix for instanced rendering
+*/
 
 #pragma once
 
@@ -48,6 +46,7 @@ namespace GfxRenderEngine
         VK_InstanceBuffer& operator=(const VK_InstanceBuffer&) = delete;
 
         virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) override;
+        virtual std::shared_ptr<Buffer> GetUbo() override;
         void Update();
 
     private:
@@ -61,7 +60,7 @@ namespace GfxRenderEngine
         uint m_NumInstances;
         bool m_Dirty;
         std::vector<InstanceData> m_DataInstances;
-        VK_Buffer m_UBO;
+        std::shared_ptr<VK_Buffer> m_Ubo;
 
     };
 }

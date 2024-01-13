@@ -30,10 +30,10 @@
 namespace GfxRenderEngine
 {
     VK_InstanceBuffer::VK_InstanceBuffer(uint numInstances)
-      : m_NumInstances(numInstances), m_Dirty{true},
-        m_UBO(numInstances * sizeof(InstanceData))
+      : m_NumInstances(numInstances), m_Dirty{true}
     {
-        m_UBO.MapBuffer();
+        m_Ubo = std::make_shared<VK_Buffer>(numInstances * sizeof(InstanceData));
+        m_Ubo->MapBuffer();
         m_DataInstances.resize(numInstances);
     }
 
@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         CORE_ASSERT(index < m_NumInstances, "out of bounds");
 
         m_DataInstances[index].m_Transform = mat4Global;
-        m_DataInstances[index].m_Transform = normalMatrix;
+        m_DataInstances[index].m_NormalMatrix = normalMatrix;
 
         m_Dirty = true;
     }
@@ -56,9 +56,14 @@ namespace GfxRenderEngine
         if (m_Dirty)
         {
             // update ubo
-            m_UBO.WriteToBuffer(m_DataInstances.data());
-            m_UBO.Flush();
+            m_Ubo->WriteToBuffer(m_DataInstances.data());
+            m_Ubo->Flush();
             m_Dirty = false;
         }
+    }
+
+    std::shared_ptr<Buffer> VK_InstanceBuffer::GetUbo()
+    {
+        return m_Ubo;
     }
 }
