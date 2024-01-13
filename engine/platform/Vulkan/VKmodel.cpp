@@ -110,7 +110,8 @@ namespace GfxRenderEngine
     VK_Model::~VK_Model() {}
 
     VK_Submesh::VK_Submesh(ModelSubmesh const& modelSubmesh, uint materialDescriptorIndex)
-        : Submesh{modelSubmesh.m_FirstIndex, modelSubmesh.m_FirstVertex, modelSubmesh.m_IndexCount, modelSubmesh.m_VertexCount, modelSubmesh.m_MaterialProperties},
+        : Submesh{modelSubmesh.m_FirstIndex, modelSubmesh.m_FirstVertex, modelSubmesh.m_IndexCount, modelSubmesh.m_VertexCount, 
+                  modelSubmesh.m_InstanceCount, modelSubmesh.m_MaterialProperties},
           m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(modelSubmesh.m_MaterialDescriptors[materialDescriptorIndex].get())))
     {
     }
@@ -531,8 +532,7 @@ namespace GfxRenderEngine
         }
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
         {
-//LOG_APP_CRITICAL("m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced shadow");
-//            DrawSubmesh(frameInfo.m_CommandBuffer, submesh/*, submesh.m_InstanceCount*/);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
     }
 

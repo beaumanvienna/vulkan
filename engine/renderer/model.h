@@ -111,6 +111,7 @@ namespace GfxRenderEngine
         uint m_FirstVertex;
         uint m_IndexCount;
         uint m_VertexCount;
+        uint m_InstanceCount;
         MaterialProperties m_MaterialProperties;
     };
 

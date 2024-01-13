@@ -241,6 +241,7 @@ namespace GfxRenderEngine
         m_Mat4Global = parent * GetMat4Local();
         m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
         m_Parent = parent;
+        m_DirtyInstanced = true; // instance data needs to be updated
     }
 
     const glm::mat4& TransformComponent::GetMat4Global()

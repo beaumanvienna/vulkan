@@ -576,6 +576,7 @@ namespace GfxRenderEngine
 
             submesh.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
             submesh.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+            submesh.m_InstanceCount = m_InstanceCount;
 
             uint vertexCount = 0;
             uint indexCount  = 0;
