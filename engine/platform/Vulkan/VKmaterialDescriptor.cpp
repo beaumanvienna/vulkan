@@ -278,6 +278,32 @@ namespace GfxRenderEngine
                 }
                 break;
             }
+            case MaterialType::MtPbrDiffuseNormalMapInstanced:
+            {
+                std::shared_ptr<Texture>& diffuseMap           = textures[0];
+                std::shared_ptr<Texture>& normalMap            = textures[1];
+                std::shared_ptr<Buffer>& ubo                   = buffers[0];
+
+                auto buffer = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteImage(0, imageInfo0)
+                        .WriteImage(1, imageInfo1)
+                        .WriteBuffer(2, bufferInfo)
+                        .Build(m_DescriptorSet);
+                }
+                break;
+            }
             case MaterialType::MtPbrDiffuseNormalRoughnessMetallicMapInstanced:
             {
                 std::shared_ptr<Texture>& diffuseMap           = textures[0];

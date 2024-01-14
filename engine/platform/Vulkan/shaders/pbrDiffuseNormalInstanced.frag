@@ -28,7 +28,6 @@
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
-layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap;
 
 layout(location = 0)       in  vec3  fragPosition;
 layout(location = 1)       in  vec2  fragUV;
@@ -75,7 +74,9 @@ layout(push_constant) uniform Push
 
 void main()
 {
-    // --------
+    float roughness           = push.m_Roughness;
+    float metallic            = push.m_Metallic;
+
     outPosition = vec4(fragPosition, 1.0);
 
     vec3 N = normalize(fragNormal);
@@ -96,7 +97,5 @@ void main()
         discard;
     }
     outColor    = col;
-    float metallic = texture(roughnessMetallicMap, fragUV).b;
-    float roughness = texture(roughnessMetallicMap, fragUV).g;
     outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 }

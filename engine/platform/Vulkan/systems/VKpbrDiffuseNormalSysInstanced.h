@@ -22,22 +22,44 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
+
 #include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    struct VK_PushConstantDataGeneric
+    class VK_RenderSystemPbrDiffuseNormalInstanced
     {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-    };
 
-    struct VK_PushConstantDataGenericInstanced
-    {
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-        float m_EmissiveStrength;
-    };
+    public:
 
+        VK_RenderSystemPbrDiffuseNormalInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrDiffuseNormalInstanced();
+
+        VK_RenderSystemPbrDiffuseNormalInstanced(const VK_RenderSystemPbrDiffuseNormalInstanced&) = delete;
+        VK_RenderSystemPbrDiffuseNormalInstanced& operator=(const VK_RenderSystemPbrDiffuseNormalInstanced&) = delete;
+
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+
+    private:
+
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
+    };
 }

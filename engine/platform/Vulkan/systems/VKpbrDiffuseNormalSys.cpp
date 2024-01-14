@@ -97,7 +97,7 @@ namespace GfxRenderEngine
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalTag>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalTag>(entt::exclude<InstanceTag>);
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);

@@ -159,6 +159,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrDiffuseNormalMapInstanced:
+                    {
+                        m_SubmeshesPbrDiffuseNormalMapInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrDiffuseNormalSAMap:
                     {
                         m_SubmeshesPbrDiffuseNormalSAMap.push_back(vkSubmesh);
@@ -301,6 +306,7 @@ namespace GfxRenderEngine
         );
     }
 
+    // single-instance
     void VK_Model::PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)
     {
         VK_PushConstantDataGeneric push{};
@@ -318,6 +324,25 @@ namespace GfxRenderEngine
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
             sizeof(VK_PushConstantDataGeneric),
+            &push);
+    }
+
+    // multi-instance
+    void VK_Model::PushConstants(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)
+    {
+        VK_PushConstantDataGenericInstanced push{};
+
+        push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
+        push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
+        push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity;
+        push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
+
+        vkCmdPushConstants(
+            frameInfo.m_CommandBuffer,
+            pipelineLayout,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(VK_PushConstantDataGenericInstanced),
             &push);
     }
 
@@ -444,6 +469,16 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+        }
+    }
+
     void VK_Model::DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
@@ -469,6 +504,7 @@ namespace GfxRenderEngine
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
         }
     }
@@ -525,6 +561,10 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {

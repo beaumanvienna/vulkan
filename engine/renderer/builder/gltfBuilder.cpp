@@ -254,8 +254,13 @@ namespace GfxRenderEngine
                 InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
                 instanceTag.m_Instances.push_back(entity);
                 instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                return newNode;
             }
         }
+
+        // from here on out
+        // only single-instance models
+        // and the 1st of multi-instance model
 
         { // assign material
             uint primitiveIndex = 0;
@@ -812,8 +817,8 @@ namespace GfxRenderEngine
             { // create material descriptor
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
             submesh.m_MaterialProperties.m_Metallic  = 0.1f;
 
@@ -844,8 +849,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -859,8 +864,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -873,10 +878,19 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
+                std::shared_ptr<MaterialDescriptor> materialDescriptor;
+                if (m_InstanceCount == 1) // single instance
+                { 
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
+                }
+                else // multiple instances
+                {
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
+                }
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -892,8 +906,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -940,8 +954,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -962,8 +976,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -976,8 +990,8 @@ namespace GfxRenderEngine
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -986,8 +1000,8 @@ namespace GfxRenderEngine
             { // create material descriptor
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
         }
@@ -1005,8 +1019,8 @@ namespace GfxRenderEngine
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
                     auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                    m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
                 }
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
 
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
             }
@@ -1015,8 +1029,8 @@ namespace GfxRenderEngine
                 { // create material descriptor
                     auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                    m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
                 }
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
 
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
