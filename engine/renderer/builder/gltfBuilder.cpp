@@ -847,7 +847,16 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                std::shared_ptr<MaterialDescriptor> materialDescriptor;
+                if (m_InstanceCount == 1) // single instance
+                { 
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                }
+                else // multiple instances
+                {
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
+                }
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;

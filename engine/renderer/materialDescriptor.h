@@ -47,13 +47,14 @@ namespace GfxRenderEngine
             MtPbrEmissiveTexture                              = 0x1 << 0x04, // 16
             MtPbrDiffuseNormalMap                             = 0x1 << 0x05, // 32
             MtPbrDiffuseNormalSAMap                           = 0x1 << 0x06, // 64
-            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x07, // 128
-            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x08, // 256
-            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x09, // 512
-            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0a, // 1024
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0b, // 2048
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x0c, // 4096
-            MtCubemap                                         = 0x1 << 0x0d  // 8192
+            MtPbrDiffuseMapInstanced                          = 0x1 << 0x07, // 128
+            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x08, // 256
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x09, // 512
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0a, // 1024
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0b, // 2048
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0c, // 4096
+            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x0d, // 8192
+            MtCubemap                                         = 0x1 << 0x0e  // 16384
         };
 
         static constexpr uint ALL_PBR_MATERIALS = 
@@ -64,6 +65,7 @@ namespace GfxRenderEngine
             MaterialType::MtPbrEmissiveTexture +
             MaterialType::MtPbrDiffuseNormalMap +
             MaterialType::MtPbrDiffuseNormalSAMap +
+            MaterialType::MtPbrDiffuseMapInstanced +
             MaterialType::MtPbrDiffuseNormalMapInstanced +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallic2Map +

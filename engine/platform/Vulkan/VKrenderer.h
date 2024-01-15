@@ -46,6 +46,7 @@
 #include "systems/VKpbrDiffuseNormalSys.h"
 #include "systems/VKpbrDiffuseNormalSASys.h"
 #include "systems/VKpbrEmissiveTextureSys.h"
+#include "systems/VKpbrDiffuseSysInstanced.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
@@ -161,6 +162,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                            m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA>                          m_RenderSystemPbrDiffuseNormalSA;
         std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                          m_RenderSystemPbrEmissiveTexture;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseInstanced>                         m_RenderSystemPbrDiffuseInstanced;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>           m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>          m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
