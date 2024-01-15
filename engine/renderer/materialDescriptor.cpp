@@ -44,6 +44,23 @@ namespace GfxRenderEngine
         return materialDescriptor;
     }
 
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::vector<std::shared_ptr<Buffer>>& buffers)
+    {
+        std::shared_ptr<MaterialDescriptor> materialDescriptor;
+
+        switch(RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, buffers);
+                break;
+            default:
+                materialDescriptor = nullptr;
+                break;
+        }
+
+        return materialDescriptor;
+    }
+
     std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;

@@ -134,6 +134,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrNoMap.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrNoMapInstanced:
+                    {
+                        m_SubmeshesPbrNoMapInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrEmissive:
                     {
                         m_SubmeshesPbrEmissive.push_back(vkSubmesh);
@@ -414,6 +419,16 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawNoMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& submesh : m_SubmeshesPbrNoMapInstanced)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+        }
+    }
+
     void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& submesh : m_SubmeshesPbrEmissive)
@@ -560,6 +575,10 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrNoMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrEmissive)
         {

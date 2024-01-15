@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2023 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,37 +22,44 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <unordered_map>
 #include <vulkan/vulkan.h>
 
-#include "renderer/materialDescriptor.h"
+#include "engine.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    class VK_MaterialDescriptor: public MaterialDescriptor
+    class VK_RenderSystemPbrNoMapInstanced
     {
 
     public:
 
-        VK_MaterialDescriptor(MaterialType materialType);
-        VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Buffer>>& buffers);
-        VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures);
-        VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures, std::vector<std::shared_ptr<Buffer>>& buffers);
-        VK_MaterialDescriptor(MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
+        VK_RenderSystemPbrNoMapInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrNoMapInstanced();
 
-        VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
+        VK_RenderSystemPbrNoMapInstanced(const VK_RenderSystemPbrNoMapInstanced&) = delete;
+        VK_RenderSystemPbrNoMapInstanced& operator=(const VK_RenderSystemPbrNoMapInstanced&) = delete;
 
-        virtual ~VK_MaterialDescriptor();
-
-    public:
-
-        virtual MaterialDescriptor::MaterialType GetMaterialType() const override;
-        const VkDescriptorSet& GetDescriptorSet() const;
-        const VkDescriptorSet& GetShadowDescriptorSet() const;
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 
     private:
 
-        MaterialDescriptor::MaterialType m_MaterialType;
-        VkDescriptorSet m_DescriptorSet;
-        VkDescriptorSet m_ShadowDescriptorSet;
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
+
     };
 }

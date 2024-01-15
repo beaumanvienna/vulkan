@@ -22,33 +22,32 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrNoMapSys.h"
+#include "systems/VKpbrNoMapSysInstanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrNoMap::VK_RenderSystemPbrNoMap(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
+    VK_RenderSystemPbrNoMapInstanced::VK_RenderSystemPbrNoMapInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
+        CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrNoMap::~VK_RenderSystemPbrNoMap()
+    VK_RenderSystemPbrNoMapInstanced::~VK_RenderSystemPbrNoMapInstanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrNoMap::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_RenderSystemPbrNoMapInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
+        pushConstantRange.size = sizeof(VK_PushConstantDataGenericInstanced);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -62,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrNoMap::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrNoMapInstanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -89,13 +88,13 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrNoMap.vert.spv",
-            "bin-int/pbrNoMap.frag.spv",
+            "bin-int/pbrNoMapInstanced.vert.spv",
+            "bin-int/pbrNoMapInstanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrNoMap::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrNoMapInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         vkCmdBindDescriptorSets
         (
@@ -110,16 +109,28 @@ namespace GfxRenderEngine
         );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapTag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapTag, InstanceTag>();
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
-
+            auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                uint instanceIndex = 0;
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = registry.get<TransformComponent>(instance);
+                    if (transform.GetDirtyFlagInstanced())
+                    {
+                        transform.ResetDirtyFlagInstanced();
+                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                    }
+                    ++instanceIndex;
+                }
+                instanceBuffer->Update();
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawNoMap(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawNoMapInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout);
             }
         }
     }

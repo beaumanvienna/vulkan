@@ -74,6 +74,7 @@ namespace GfxRenderEngine
     {
         enum Bitfield
         {
+            NO_MAP                     = 0x0,
             HAS_DIFFUSE_MAP            = 0x1 << 0x0,
             HAS_NORMAL_MAP             = 0x1 << 0x1,
             HAS_ROUGHNESS_MAP          = 0x1 << 0x2,

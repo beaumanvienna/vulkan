@@ -173,6 +173,10 @@ namespace GfxRenderEngine
                     .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> noMapInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
@@ -265,6 +269,12 @@ namespace GfxRenderEngine
         {
             m_GlobalDescriptorSetLayout,
             diffuseInstancedDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsNoMapInstanced =
+        {
+            m_GlobalDescriptorSetLayout,
+            noMapInstancedDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalInstanced =
@@ -380,6 +390,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuse                                 = std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrDiffuseSA                               = std::make_unique<VK_RenderSystemPbrDiffuseSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseSA);
         m_RenderSystemPbrDiffuseNormal                           = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormal);
+        m_RenderSystemPbrNoMapInstanced                          = std::make_unique<VK_RenderSystemPbrNoMapInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsNoMapInstanced);
         m_RenderSystemPbrDiffuseNormalSA                         = std::make_unique<VK_RenderSystemPbrDiffuseNormalSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalSA);
         m_RenderSystemPbrEmissiveTexture                         = std::make_unique<VK_RenderSystemPbrEmissiveTexture>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTexture);
         m_RenderSystemPbrDiffuseInstanced                        = std::make_unique<VK_RenderSystemPbrDiffuseInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseInstanced);
@@ -961,6 +972,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormal->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrNoMapInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalInstanced->RenderEntities(m_FrameInfo, registry);
@@ -1101,6 +1113,8 @@ namespace GfxRenderEngine
                 "pbrDiffuseSA.frag",
                 "pbrDiffuseNormal.vert",
                 "pbrDiffuseNormal.frag",
+                "pbrNoMapInstanced.vert",
+                "pbrNoMapInstanced.frag",
                 "pbrDiffuseNormalSA.vert",
                 "pbrDiffuseNormalSA.frag",
                 "pbrDiffuseInstanced.vert",

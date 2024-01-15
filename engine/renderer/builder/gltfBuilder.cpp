@@ -822,7 +822,7 @@ namespace GfxRenderEngine
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
             submesh.m_MaterialProperties.m_Metallic  = 0.1f;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap", materialIndex);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (1)", materialIndex);
             return;
         }
 
@@ -840,7 +840,22 @@ namespace GfxRenderEngine
 
         uint pbrFeatures = material.m_Features & (
                 Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
-        if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
+
+        if (pbrFeatures == Material::NO_MAP)
+        {
+            { // create material descriptor
+                if (m_InstanceCount > 1) // multiple instances
+                { 
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, instanceUbo);
+                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+                }
+            }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
+
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
+        }
+        else if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
@@ -1012,7 +1027,7 @@ namespace GfxRenderEngine
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (3), features: 0x{1:x}", materialIndex, material.m_Features);
         }
 
         // emissive materials

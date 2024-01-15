@@ -49,6 +49,36 @@ namespace GfxRenderEngine
         }
     }
 
+    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Buffer>>& buffers)
+        : m_MaterialType{materialType}
+    {
+        switch(materialType)
+        {
+            case MaterialType::MtPbrNoMapInstanced:
+            {
+                std::shared_ptr<Buffer>& ubo                   = buffers[0];
+
+                auto buffer = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_DescriptorSet);
+                }
+                break;
+            }
+            default:
+            {
+                CORE_ASSERT(false, "unsupported material type");
+                break;
+            }
+        }
+    }
+
     VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures)
         : m_MaterialType{materialType}
     {
