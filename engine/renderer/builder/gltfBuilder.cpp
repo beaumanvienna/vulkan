@@ -1039,9 +1039,18 @@ namespace GfxRenderEngine
                 uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
-                {
+                {  // create material descriptor
+                    std::shared_ptr<MaterialDescriptor> materialDescriptor;
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
+                    if (m_InstanceCount == 1) // single instance
+                    {
+                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
+                    }
+                    else // multiple instances
+                    {
+                        std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
+                    }
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;

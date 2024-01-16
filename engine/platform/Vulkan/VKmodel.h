@@ -96,6 +96,7 @@ namespace GfxRenderEngine
         void DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+        void DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
@@ -133,6 +134,7 @@ namespace GfxRenderEngine
         std::vector<VK_Submesh> m_SubmeshesPbrEmissiveInstanced{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalSAMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseMapInstanced{};
+        std::vector<VK_Submesh> m_SubmeshesPbrEmissiveTextureInstanced{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalMapInstanced{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map{};

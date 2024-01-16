@@ -146,6 +146,11 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // emissive map
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> emissiveTextureInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // emissive map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
@@ -243,6 +248,12 @@ namespace GfxRenderEngine
         {
             m_GlobalDescriptorSetLayout,
             emissiveTextureDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsEmissiveTextureInstanced =
+        {
+            m_GlobalDescriptorSetLayout,
+            emissiveTextureInstancedDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormal =
@@ -406,6 +417,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrDiffuseInstanced                        = std::make_unique<VK_RenderSystemPbrDiffuseInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseInstanced);
         m_RenderSystemPbrEmissiveInstanced                       = std::make_unique<VK_RenderSystemPbrEmissiveInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveInstanced);
         m_RenderSystemPbrDiffuseNormalInstanced                  = std::make_unique<VK_RenderSystemPbrDiffuseNormalInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalInstanced);
+        m_RenderSystemPbrEmissiveTextureInstanced                = std::make_unique<VK_RenderSystemPbrEmissiveTextureInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTextureInstanced);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic          = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic2         = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic2);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA        = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallicSA);
@@ -997,6 +1009,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbrEmissive->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrEmissiveTexture->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrEmissiveInstanced->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrEmissiveTextureInstanced->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -1141,6 +1154,14 @@ namespace GfxRenderEngine
                 "pbrDiffuseNormalRoughnessMetallicSA.frag",
                 "pbrDiffuseNormalRoughnessMetallicInstanced.vert",
                 "pbrDiffuseNormalRoughnessMetallicInstanced.frag",
+                "pbrEmissive.vert",
+                "pbrEmissive.frag",
+                "pbrEmissiveInstanced.vert",
+                "pbrEmissiveInstanced.frag",
+                "pbrEmissiveTexture.vert",
+                "pbrEmissiveTexture.frag",
+                "pbrEmissiveTextureInstanced.vert",
+                "pbrEmissiveTextureInstanced.frag",
                 "deferredShading.vert",
                 "deferredShading.frag",
                 "skybox.vert",
@@ -1151,12 +1172,6 @@ namespace GfxRenderEngine
                 "shadowShaderAnimated.frag",
                 "debug.vert",
                 "debug.frag",
-                "pbrEmissive.vert",
-                "pbrEmissive.frag",
-                "pbrEmissiveInstanaced.vert",
-                "pbrEmissiveInstanaced.frag",
-                "pbrEmissiveTexture.vert",
-                "pbrEmissiveTexture.frag",
                 "postprocessing.vert",
                 "postprocessing.frag",
                 "bloomUp.vert",

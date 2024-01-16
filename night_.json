@@ -1,0 +1,133 @@
+{
+    "file format identifier": 1.2,
+    "description": "night scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/gltf/node hierarchy.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            2.27202, 1.37049, 1.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            1, 1.37049, 1.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.6, 1.37049, -5.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            4.8, 1.37049, 1.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            6, 1.37049, 1.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.2, 1.37049, 1.19253
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443232, 0.443232, 0.443232
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -2.27202, 1.37049, 1.19253
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

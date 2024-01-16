@@ -169,6 +169,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrEmissiveTextureInstanced:
+                    {
+                        m_SubmeshesPbrEmissiveTextureInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrDiffuseNormalMap:
                     {
                         m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
@@ -479,6 +484,21 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
+    {
+        for(auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
+        {
+            if (emissiveStrength)
+            {
+                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
+            }
+
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+        }
+    }
+
     void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseMap)
@@ -610,6 +630,10 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrDiffuseMap)
         {

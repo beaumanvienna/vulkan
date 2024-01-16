@@ -57,7 +57,7 @@ namespace GfxRenderEngine
             case MaterialType::MtPbrNoMapInstanced:
             case MaterialType::MtPbrEmissiveInstanced:
             {
-                std::shared_ptr<Buffer>& ubo                   = buffers[0];
+                std::shared_ptr<Buffer>& ubo = buffers[0];
 
                 auto buffer = static_cast<VK_Buffer*>(ubo.get());
                 VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
@@ -306,6 +306,28 @@ namespace GfxRenderEngine
                     VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                         .WriteBuffer(0, bufferInfo)
                         .Build(m_ShadowDescriptorSet);
+                }
+                break;
+            }
+            case MaterialType::MtPbrEmissiveTextureInstanced:
+            {
+                std::shared_ptr<Texture>& emissiveMap           = textures[0];
+                std::shared_ptr<Buffer>& ubo                    = buffers[0];
+
+                auto buffer = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                const auto& imageInfo = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
+
+                VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                    .WriteImage(0, imageInfo)
+                    .WriteBuffer(1, bufferInfo)
+                    .Build(m_DescriptorSet);
                 }
                 break;
             }

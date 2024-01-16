@@ -22,31 +22,32 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrEmissiveTextureSys.h"
+#include "systems/VKpbrEmissiveTextureSysInstanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrEmissiveTexture::VK_RenderSystemPbrEmissiveTexture(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrEmissiveTextureInstanced::VK_RenderSystemPbrEmissiveTextureInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrEmissiveTexture::~VK_RenderSystemPbrEmissiveTexture()
+    VK_RenderSystemPbrEmissiveTextureInstanced::~VK_RenderSystemPbrEmissiveTextureInstanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrEmissiveTexture::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrEmissiveTextureInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGenericInstanced);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -60,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrEmissiveTexture::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrEmissiveTextureInstanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -90,26 +91,39 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrEmissiveTexture.vert.spv",
-            "bin-int/pbrEmissiveTexture.frag.spv",
+            "bin-int/pbrEmissiveTextureInstanced.vert.spv",
+            "bin-int/pbrEmissiveTextureInstanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrEmissiveTexture::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrEmissiveTextureInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrEmissiveTextureTag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrEmissiveTextureTag, InstanceTag>();
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh      = view.get<MeshComponent>(entity);
-            auto& tag       = view.get<PbrEmissiveTextureTag>(entity);
+            auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                uint instanceIndex = 0;
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = registry.get<TransformComponent>(instance);
+                    if (transform.GetDirtyFlagInstanced())
+                    {
+                        transform.ResetDirtyFlagInstanced();
+                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                    }
+                    ++instanceIndex;
+                }
+                instanceBuffer->Update();
+                auto& tag       = view.get<PbrEmissiveTextureTag>(mainInstance);
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissiveTexture(frameInfo, transform, m_PipelineLayout, tag.m_EmissiveStrength);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissiveTextureInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout, tag.m_EmissiveStrength);
             }
         }
     }
