@@ -47,15 +47,16 @@ namespace GfxRenderEngine
             MtPbrNoMapInstanced                               = 0x1 << 0x04, // 16
             MtPbrEmissiveTexture                              = 0x1 << 0x05, // 32
             MtPbrDiffuseNormalMap                             = 0x1 << 0x06, // 64
-            MtPbrDiffuseNormalSAMap                           = 0x1 << 0x07, // 128
-            MtPbrDiffuseMapInstanced                          = 0x1 << 0x08, // 256
-            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x09, // 512
-            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0a, // 1024
-            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0b, // 2048
-            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0c, // 4096
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0d, // 8192
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x0e, // 16384
-            MtCubemap                                         = 0x1 << 0x0f, // 32768
+            MtPbrEmissiveInstanced                            = 0x1 << 0x07, // 128         
+            MtPbrDiffuseNormalSAMap                           = 0x1 << 0x08, // 256
+            MtPbrDiffuseMapInstanced                          = 0x1 << 0x09, // 512
+            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x0a, // 1024
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0b, // 2048
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0c, // 4096
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0d, // 8192
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0e, // 16384
+            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x0f, // 32768
+            MtCubemap                                         = 0x1 << 0x10, // 65536
         };
 
         static constexpr uint ALL_PBR_MATERIALS = 
@@ -66,6 +67,7 @@ namespace GfxRenderEngine
             MaterialType::MtPbrNoMapInstanced +
             MaterialType::MtPbrEmissiveTexture +
             MaterialType::MtPbrDiffuseNormalMap +
+            MaterialType::MtPbrEmissiveInstanced +
             MaterialType::MtPbrDiffuseNormalSAMap +
             MaterialType::MtPbrDiffuseMapInstanced +
             MaterialType::MtPbrDiffuseNormalMapInstanced +

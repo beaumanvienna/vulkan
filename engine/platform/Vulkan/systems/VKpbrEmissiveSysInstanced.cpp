@@ -22,33 +22,32 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrEmissiveSys.h"
+#include "systems/VKpbrEmissiveSysInstanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrEmissive::VK_RenderSystemPbrEmissive(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout)
+    VK_RenderSystemPbrEmissiveInstanced::VK_RenderSystemPbrEmissiveInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
+        CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrEmissive::~VK_RenderSystemPbrEmissive()
+    VK_RenderSystemPbrEmissiveInstanced::~VK_RenderSystemPbrEmissiveInstanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrEmissive::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_RenderSystemPbrEmissiveInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
+        pushConstantRange.size = sizeof(VK_PushConstantDataGenericInstanced);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -62,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrEmissive::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrEmissiveInstanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -92,38 +91,39 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrEmissive.vert.spv",
-            "bin-int/pbrEmissive.frag.spv",
+            "bin-int/pbrEmissiveInstanced.vert.spv",
+            "bin-int/pbrEmissiveInstanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrEmissive::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrEmissiveInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrEmissiveTag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrEmissiveTag, InstanceTag>();
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh      = view.get<MeshComponent>(entity);
-            auto& tag       = view.get<PbrEmissiveTag>(entity);
-
+            auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                uint instanceIndex = 0;
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = registry.get<TransformComponent>(instance);
+                    if (transform.GetDirtyFlagInstanced())
+                    {
+                        transform.ResetDirtyFlagInstanced();
+                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                    }
+                    ++instanceIndex;
+                }
+                instanceBuffer->Update();
+                auto& tag = view.get<PbrEmissiveTag>(mainInstance);
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissive(frameInfo, transform, m_PipelineLayout, tag.m_EmissiveStrength);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissiveInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout, tag.m_EmissiveStrength);
             }
         }
     }

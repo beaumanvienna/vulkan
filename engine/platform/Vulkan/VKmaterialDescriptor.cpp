@@ -55,6 +55,7 @@ namespace GfxRenderEngine
         switch(materialType)
         {
             case MaterialType::MtPbrNoMapInstanced:
+            case MaterialType::MtPbrEmissiveInstanced:
             {
                 std::shared_ptr<Buffer>& ubo                   = buffers[0];
 

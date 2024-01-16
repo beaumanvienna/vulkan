@@ -138,7 +138,11 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> emissiveDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+        std::unique_ptr<VK_DescriptorSetLayout> emissiveInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
+        std::unique_ptr<VK_DescriptorSetLayout> emissiveTextureDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // emissive map
                     .Build();
 
@@ -229,10 +233,16 @@ namespace GfxRenderEngine
             diffuseSADescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsEmissiveInstanced =
+        {
+            m_GlobalDescriptorSetLayout,
+            emissiveInstancedDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsEmissiveTexture =
         {
             m_GlobalDescriptorSetLayout,
-            emissiveDescriptorSetLayout->GetDescriptorSetLayout()
+            emissiveTextureDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormal =
@@ -386,14 +396,15 @@ namespace GfxRenderEngine
         m_RenderSystemCubemap                                    = std::make_unique<VK_RenderSystemCubemap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsCubemap);
 
         m_RenderSystemPbrNoMap                                   = std::make_unique<VK_RenderSystemPbrNoMap>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
-        m_RenderSystemPbrEmissive                                = std::make_unique<VK_RenderSystemPbrEmissive>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuse                                 = std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
+        m_RenderSystemPbrEmissive                                = std::make_unique<VK_RenderSystemPbrEmissive>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemPbrDiffuseSA                               = std::make_unique<VK_RenderSystemPbrDiffuseSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseSA);
         m_RenderSystemPbrDiffuseNormal                           = std::make_unique<VK_RenderSystemPbrDiffuseNormal>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormal);
         m_RenderSystemPbrNoMapInstanced                          = std::make_unique<VK_RenderSystemPbrNoMapInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsNoMapInstanced);
         m_RenderSystemPbrDiffuseNormalSA                         = std::make_unique<VK_RenderSystemPbrDiffuseNormalSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalSA);
         m_RenderSystemPbrEmissiveTexture                         = std::make_unique<VK_RenderSystemPbrEmissiveTexture>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTexture);
         m_RenderSystemPbrDiffuseInstanced                        = std::make_unique<VK_RenderSystemPbrDiffuseInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseInstanced);
+        m_RenderSystemPbrEmissiveInstanced                       = std::make_unique<VK_RenderSystemPbrEmissiveInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveInstanced);
         m_RenderSystemPbrDiffuseNormalInstanced                  = std::make_unique<VK_RenderSystemPbrDiffuseNormalInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalInstanced);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic          = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic2         = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic2);
@@ -982,9 +993,10 @@ namespace GfxRenderEngine
             m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced->RenderEntities(m_FrameInfo, registry);
 
             // the emissive pipelines need to go last
-            // their do not write to the depth buffer
+            // they do not write to the depth buffer
             m_RenderSystemPbrEmissive->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrEmissiveTexture->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrEmissiveInstanced->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -1141,6 +1153,8 @@ namespace GfxRenderEngine
                 "debug.frag",
                 "pbrEmissive.vert",
                 "pbrEmissive.frag",
+                "pbrEmissiveInstanaced.vert",
+                "pbrEmissiveInstanaced.frag",
                 "pbrEmissiveTexture.vert",
                 "pbrEmissiveTexture.frag",
                 "postprocessing.vert",

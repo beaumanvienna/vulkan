@@ -1051,7 +1051,17 @@ namespace GfxRenderEngine
             else // emissive vertex color
             {
                 { // create material descriptor
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
+
+                    std::shared_ptr<MaterialDescriptor> materialDescriptor;
+                    if (m_InstanceCount == 1) // single instance
+                    { 
+                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
+                    }
+                    else // multiple instances
+                    {
+                        std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
+                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
+                    }
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;

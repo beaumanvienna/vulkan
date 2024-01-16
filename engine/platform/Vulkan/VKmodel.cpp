@@ -144,6 +144,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrEmissive.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrEmissiveInstanced:
+                    {
+                        m_SubmeshesPbrEmissiveInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrDiffuseMap:
                     {
                         m_SubmeshesPbrDiffuseMap.push_back(vkSubmesh);
@@ -444,6 +449,21 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
+    {
+        for(auto& submesh : m_SubmeshesPbrEmissiveInstanced)
+        {
+            if (emissiveStrength)
+            {
+                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
+            }
+
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+        }
+    }
+
     void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& submesh : m_SubmeshesPbrEmissiveTexture)
@@ -569,7 +589,6 @@ namespace GfxRenderEngine
         }
     }
 
-
     void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for (auto& submesh : m_SubmeshesPbrNoMap)
@@ -583,6 +602,10 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrEmissive)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissiveInstanced)
+        {
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
         {
