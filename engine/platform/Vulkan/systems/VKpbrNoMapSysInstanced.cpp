@@ -96,6 +96,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemPbrNoMapInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
+        m_Pipeline->Bind(frameInfo.m_CommandBuffer);
         auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapTag, InstanceTag>();
         for (auto mainInstance : view)
         {
