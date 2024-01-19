@@ -844,12 +844,17 @@ namespace GfxRenderEngine
         if (pbrFeatures == Material::NO_MAP)
         {
             { // create material descriptor
+                std::shared_ptr<MaterialDescriptor> materialDescriptor;
                 if (m_InstanceCount > 1) // multiple instances
                 { 
                     std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, instanceUbo);
-                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, instanceUbo);
                 }
+                else // multiple instances
+                {
+                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                }
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
 
