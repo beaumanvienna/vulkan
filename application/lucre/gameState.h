@@ -45,6 +45,7 @@ namespace LucreApp
             MAIN,
             BEACH,
             NIGHT,
+            DESSERT,
             MAX_STATES
         };
 

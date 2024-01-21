@@ -30,6 +30,7 @@
 #include "scenes/cutScene.h"
 #include "scenes/beachScene.h"
 #include "scenes/nightScene.h"
+#include "scenes/dessertScene.h"
 #include "scenes/settingsScene.h"
 
 namespace LucreApp
@@ -53,7 +54,7 @@ namespace LucreApp
         #ifdef MACOSX
             SetNextState(State::CUTSCENE);
         #else
-            SetNextState(State::NIGHT);
+            SetNextState(State::DESSERT);
         #endif
     }
 
@@ -90,6 +91,11 @@ namespace LucreApp
             case State::NIGHT:
             {
                 str = "State::NIGHT";
+                break;
+            }
+            case State::DESSERT:
+            {
+                str = "State::DESSERT";
                 break;
             }
             case State::SETTINGS:
@@ -144,6 +150,15 @@ namespace LucreApp
                 break;
             }
             case State::NIGHT:
+            {
+                if (GetScene()->IsFinished())
+                {
+                    // game over
+                    Engine::m_Engine->Shutdown();
+                }
+                break;
+            }
+            case State::DESSERT:
             {
                 if (GetScene()->IsFinished())
                 {
@@ -284,6 +299,27 @@ namespace LucreApp
                 {
                     std::thread loadNightSceneThread(lambda);
                     loadNightSceneThread.detach();
+                }
+                else
+                {
+                    lambda();
+                }
+                break;
+            }
+            case State::DESSERT:
+            {
+                auto lambda = [=]()
+                {
+                    auto scenePtr = std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                if (Engine::m_Engine->MultiThreadingSupport())
+                {
+                    std::thread loadDessertSceneThread(lambda);
+                    loadDessertSceneThread.detach();
                 }
                 else
                 {
