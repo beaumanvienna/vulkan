@@ -70,6 +70,16 @@ namespace GfxRenderEngine
                         .WriteBuffer(0, bufferInfo)
                         .Build(m_DescriptorSet);
                 }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
+                }
                 break;
             }
             default:
@@ -322,12 +332,22 @@ namespace GfxRenderEngine
                                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                                 .Build();
 
-                const auto& imageInfo = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
+                    const auto& imageInfo = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
 
-                VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                    .WriteImage(0, imageInfo)
-                    .WriteBuffer(1, bufferInfo)
-                    .Build(m_DescriptorSet);
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteImage(0, imageInfo)
+                        .WriteBuffer(1, bufferInfo)
+                        .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
                 }
                 break;
             }
@@ -350,6 +370,16 @@ namespace GfxRenderEngine
                         .WriteImage(0, imageInfo0)
                         .WriteBuffer(1, bufferInfo)
                         .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
                 }
                 break;
             }
@@ -376,6 +406,16 @@ namespace GfxRenderEngine
                         .WriteImage(1, imageInfo1)
                         .WriteBuffer(2, bufferInfo)
                         .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
                 }
                 break;
             }
@@ -406,6 +446,16 @@ namespace GfxRenderEngine
                         .WriteImage(2, imageInfo2)
                         .WriteBuffer(3, bufferInfo)
                         .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
                 }
                 break;
             }

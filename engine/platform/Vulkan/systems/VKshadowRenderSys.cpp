@@ -102,7 +102,6 @@ namespace GfxRenderEngine
         const VkDescriptorSet& shadowDescriptorSet
     )
     {
-        auto meshView = registry.view<MeshComponent, TransformComponent>();
 
         vkCmdBindDescriptorSets
         (
@@ -125,6 +124,7 @@ namespace GfxRenderEngine
             m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
         }
 
+        auto meshView = registry.view<MeshComponent, TransformComponent>(entt::exclude<InstanceTag,SkeletalAnimationTag>);
         for (auto entity : meshView)
         {
             auto& transform = meshView.get<TransformComponent>(entity);

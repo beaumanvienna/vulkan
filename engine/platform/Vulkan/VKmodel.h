@@ -104,9 +104,11 @@ namespace GfxRenderEngine
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
 
-        void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet);
-        void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& descriptorSet);
+        void DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
 
     private:

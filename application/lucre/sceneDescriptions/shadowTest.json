@@ -1,0 +1,143 @@
+{
+    "file format identifier": 1.2,
+    "description": "night scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00999981, 0.00999996, 0.01
+                        ],
+                        "rotation":
+                        [
+                            -0.88089, -0.524816, -0.053102
+                        ],
+                        "translation":
+                        [
+                            3.47671, 4.72346, -1.40854
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00999932, 0.00999996, 0.00999989
+                        ],
+                        "rotation":
+                        [
+                            -1.11451, -0.532677, 0.174203
+                        ],
+                        "translation":
+                        [
+                            6.35849, 6.32772, -13.9426
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/node hierarchy/gltf/node hierarchy.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.4, 0.4, 0.4
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            1.097, 1.4, 0.956
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.4, 0.4, 0.4
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            2, 1.4, 0.956
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/whitePlane/whitePlane.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.867649, 1.68094, 0
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/node hierarchy/fbx/node hierarchy.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443, 0.443, 0.443
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.95027, 1.47275, 1.23523
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

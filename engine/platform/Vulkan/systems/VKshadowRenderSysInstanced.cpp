@@ -26,12 +26,12 @@
 #include "VKswapChain.h"
 #include "VKshadowMap.h"
 
-#include "systems/VKshadowAnimatedRenderSys.h"
+#include "systems/VKshadowRenderSysInstanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemShadowAnimated::VK_RenderSystemShadowAnimated
+    VK_RenderSystemShadowInstanced::VK_RenderSystemShadowInstanced
     (
         VkRenderPass renderPass0,
         VkRenderPass renderPass1,
@@ -43,31 +43,24 @@ namespace GfxRenderEngine
         CreatePipeline(m_Pipeline1, renderPass1);
     }
 
-    VK_RenderSystemShadowAnimated::~VK_RenderSystemShadowAnimated()
+    VK_RenderSystemShadowInstanced::~VK_RenderSystemShadowInstanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemShadowAnimated::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemShadowInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
-
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }
 
-    void VK_RenderSystemShadowAnimated::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass)
+    void VK_RenderSystemShadowInstanced::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline, VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -87,13 +80,13 @@ namespace GfxRenderEngine
         pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/shadowShaderAnimated.vert.spv",
-            "bin-int/shadowShaderAnimated.frag.spv",
+            "bin-int/shadowShaderInstanced.vert.spv",
+            "bin-int/shadowShaderInstanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemShadowAnimated::RenderEntities
+    void VK_RenderSystemShadowInstanced::RenderEntities
     (
         const VK_FrameInfo& frameInfo,
         entt::registry& registry,
@@ -112,28 +105,14 @@ namespace GfxRenderEngine
             m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
         }
 
-        auto meshView = registry.view<MeshComponent, TransformComponent, SkeletalAnimationTag>(entt::exclude<InstanceTag>);
+        auto meshView = registry.view<MeshComponent, TransformComponent, InstanceTag>(entt::exclude<SkeletalAnimationTag>);
         for (auto entity : meshView)
         {
-            auto& transform = meshView.get<TransformComponent>(entity);
-
-            VK_PushConstantDataGeneric push{};
-    
-            push.m_ModelMatrix  = transform.GetMat4Global();
-    
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
-
             auto& mesh = meshView.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadowAnimated(frameInfo, m_PipelineLayout, shadowDescriptorSet);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawShadowInstanced(frameInfo, m_PipelineLayout, shadowDescriptorSet);
             }
         }
     }

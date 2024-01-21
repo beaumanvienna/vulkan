@@ -615,49 +615,25 @@ namespace GfxRenderEngine
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
-        for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
-        }
         for (auto& submesh : m_SubmeshesPbrEmissive)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrEmissiveInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
-        for (auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
-        }
         for (auto& submesh : m_SubmeshesPbrDiffuseMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseMapInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
-        }
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
         {
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
         }
     }
 
@@ -667,15 +643,41 @@ namespace GfxRenderEngine
         {
             DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
-
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
         {
             DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
-
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
         {
             DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+    }
+
+    void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet)
+    {
+        for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissiveInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseMapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
     }
 
@@ -696,6 +698,25 @@ namespace GfxRenderEngine
         );
 
         DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+    }
+
+    void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
+    {
+        VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,
+            2,
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+
+        DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
     }
 
     void VK_Model::DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)

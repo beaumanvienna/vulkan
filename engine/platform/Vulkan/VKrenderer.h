@@ -32,6 +32,7 @@
 
 #include "systems/VKshadowRenderSys.h"
 #include "systems/VKshadowAnimatedRenderSys.h"
+#include "systems/VKshadowRenderSysInstanced.h"
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKcubemapRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
@@ -162,6 +163,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrEmissive>                                 m_RenderSystemPbrEmissive;
         std::unique_ptr<VK_RenderSystemPbrDiffuseSA>                                m_RenderSystemPbrDiffuseSA;
         std::unique_ptr<VK_RenderSystemShadowAnimated>                              m_RenderSystemShadowAnimated;
+        std::unique_ptr<VK_RenderSystemShadowInstanced>                             m_RenderSystemShadowInstanced;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                            m_RenderSystemPbrDiffuseNormal;
         std::unique_ptr<VK_RenderSystemPbrNoMapInstanced>                           m_RenderSystemPbrNoMapInstanced;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA>                          m_RenderSystemPbrDiffuseNormalSA;
