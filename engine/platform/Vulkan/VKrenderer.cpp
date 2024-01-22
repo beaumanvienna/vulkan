@@ -171,6 +171,13 @@ namespace GfxRenderEngine
                     .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalSAInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                    .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalRoughnessMetallicDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // normal map
@@ -281,6 +288,12 @@ namespace GfxRenderEngine
         {
             m_GlobalDescriptorSetLayout,
             diffuseNormalSADescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalSAInstanced =
+        {
+            m_GlobalDescriptorSetLayout,
+            diffuseNormalSAInstancedDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalRoughnessMetallic =
@@ -445,6 +458,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrEmissiveInstanced                       = std::make_unique<VK_RenderSystemPbrEmissiveInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveInstanced);
         m_RenderSystemPbrDiffuseSAInstanced                      = std::make_unique<VK_RenderSystemPbrDiffuseSAInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseSAInstanced);
         m_RenderSystemPbrDiffuseNormalInstanced                  = std::make_unique<VK_RenderSystemPbrDiffuseNormalInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalInstanced);
+        m_RenderSystemPbrDiffuseNormalSAInstanced                = std::make_unique<VK_RenderSystemPbrDiffuseNormalSAInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalSAInstanced);
         m_RenderSystemPbrEmissiveTextureInstanced                = std::make_unique<VK_RenderSystemPbrEmissiveTextureInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTextureInstanced);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic          = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic2         = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic2);
@@ -1044,6 +1058,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbrDiffuseInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseSAInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalInstanced->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseNormalSAInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic2->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA->RenderEntities(m_FrameInfo, registry);
@@ -1193,6 +1208,8 @@ namespace GfxRenderEngine
                 "pbrDiffuseSAInstanced.frag",
                 "pbrDiffuseNormalInstanced.vert",
                 "pbrDiffuseNormalInstanced.frag",
+                "pbrDiffuseNormalSAInstanced.vert",
+                "pbrDiffuseNormalSAInstanced.frag",
                 "pbrDiffuseNormalRoughnessMetallic.vert",
                 "pbrDiffuseNormalRoughnessMetallic.frag",
                 "pbrDiffuseNormalRoughnessMetallic2.vert",

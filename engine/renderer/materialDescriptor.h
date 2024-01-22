@@ -53,12 +53,13 @@ namespace GfxRenderEngine
             MtPbrDiffuseSAMapInstanced                        = 0x1 << 0x0a, // 1024
             MtPbrEmissiveTextureInstanced                     = 0x1 << 0x0b, // 2048
             MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x0c, // 4096
-            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0d, // 8192
-            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0e, // 16384
-            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0f, // 32768
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x10, // 65536
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x11, // 131072
-            MtCubemap                                         = 0x1 << 0x12  // 262144
+            MtPbrDiffuseNormalSAMapInstanced                  = 0x1 << 0x0d, // 8192
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0e, // 16384
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0f, // 32768
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x10, // 65536
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x11, // 131072
+            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x12, // 262144
+            MtCubemap                                         = 0x1 << 0x13  // 524288
         };
 
         static constexpr uint ALL_PBR_MATERIALS = 
@@ -75,6 +76,7 @@ namespace GfxRenderEngine
             MaterialType::MtPbrDiffuseSAMapInstanced +
             MaterialType::MtPbrEmissiveTextureInstanced +
             MaterialType::MtPbrDiffuseNormalMapInstanced +
+            MaterialType::MtPbrDiffuseNormalSAMapInstanced +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallic2Map +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallicSAMap +
