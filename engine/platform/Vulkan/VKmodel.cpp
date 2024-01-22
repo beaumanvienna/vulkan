@@ -164,6 +164,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrDiffuseSAMap.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrDiffuseSAMapInstanced:
+                    {
+                        m_SubmeshesPbrDiffuseSAMapInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrEmissiveTexture:
                     {
                         m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
@@ -526,6 +531,16 @@ namespace GfxRenderEngine
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, transform, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
+    void VK_Model::DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& submesh : m_SubmeshesPbrDiffuseSAMapInstanced)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
         }
     }
 

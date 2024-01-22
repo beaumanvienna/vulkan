@@ -141,6 +141,12 @@ namespace GfxRenderEngine
                     .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> diffuseSAInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                    .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> emissiveInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
                     .Build();
@@ -239,6 +245,12 @@ namespace GfxRenderEngine
         {
             m_GlobalDescriptorSetLayout,
             diffuseSADescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseSAInstanced =
+        {
+            m_GlobalDescriptorSetLayout,
+            diffuseSAInstancedDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsEmissiveInstanced =
@@ -431,6 +443,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbrEmissiveTexture                         = std::make_unique<VK_RenderSystemPbrEmissiveTexture>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTexture);
         m_RenderSystemPbrDiffuseInstanced                        = std::make_unique<VK_RenderSystemPbrDiffuseInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseInstanced);
         m_RenderSystemPbrEmissiveInstanced                       = std::make_unique<VK_RenderSystemPbrEmissiveInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveInstanced);
+        m_RenderSystemPbrDiffuseSAInstanced                      = std::make_unique<VK_RenderSystemPbrDiffuseSAInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseSAInstanced);
         m_RenderSystemPbrDiffuseNormalInstanced                  = std::make_unique<VK_RenderSystemPbrDiffuseNormalInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalInstanced);
         m_RenderSystemPbrEmissiveTextureInstanced                = std::make_unique<VK_RenderSystemPbrEmissiveTextureInstanced>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsEmissiveTextureInstanced);
         m_RenderSystemPbrDiffuseNormalRoughnessMetallic          = std::make_unique<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuseNormalRoughnessMetallic);
@@ -1029,6 +1042,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbrNoMapInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseInstanced->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrDiffuseSAInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalInstanced->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseNormalRoughnessMetallic2->RenderEntities(m_FrameInfo, registry);
@@ -1175,6 +1189,8 @@ namespace GfxRenderEngine
                 "pbrDiffuseNormalSA.frag",
                 "pbrDiffuseInstanced.vert",
                 "pbrDiffuseInstanced.frag",
+                "pbrDiffuseSAInstanced.vert",
+                "pbrDiffuseSAInstanced.frag",
                 "pbrDiffuseNormalInstanced.vert",
                 "pbrDiffuseNormalInstanced.frag",
                 "pbrDiffuseNormalRoughnessMetallic.vert",

@@ -22,31 +22,32 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrDiffuseSASys.h"
+#include "systems/VKpbrDiffuseSASysInstanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrDiffuseSA::VK_RenderSystemPbrDiffuseSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrDiffuseSAInstanced::VK_RenderSystemPbrDiffuseSAInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrDiffuseSA::~VK_RenderSystemPbrDiffuseSA()
+    VK_RenderSystemPbrDiffuseSAInstanced::~VK_RenderSystemPbrDiffuseSAInstanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrDiffuseSA::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrDiffuseSAInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGenericInstanced);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -60,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrDiffuseSA::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrDiffuseSAInstanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -87,25 +88,38 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrDiffuseSA.vert.spv",
-            "bin-int/pbrDiffuseSA.frag.spv",
+            "bin-int/pbrDiffuseSAInstanced.vert.spv",
+            "bin-int/pbrDiffuseSAInstanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrDiffuseSA::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrDiffuseSAInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseSATag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseSATag, InstanceTag>();
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
+            auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                uint instanceIndex = 0;
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = registry.get<TransformComponent>(instance);
+                    if (transform.GetDirtyFlagInstanced())
+                    {
+                        transform.ResetDirtyFlagInstanced();
+                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                    }
+                    ++instanceIndex;
+                }
+                instanceBuffer->Update();
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseSAMap(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseSAMapInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout);
             }
         }
     }

@@ -243,6 +243,47 @@ namespace GfxRenderEngine
 
                 break;
             }
+            case MaterialType::MtPbrDiffuseSAMapInstanced:
+            {
+                std::shared_ptr<Texture>& diffuseMap           = textures[0];
+                std::shared_ptr<Buffer>& skeletalAnimationUBO  = buffers[0];
+                std::shared_ptr<Buffer>& ubo                   = buffers[1];
+
+                auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
+                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                auto bufferInstanced = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfoInstanced = bufferInstanced->DescriptorInfo();
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    const auto& imageInfo = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteImage(0, imageInfo)
+                        .WriteBuffer(1, bufferInfo)
+                        .WriteBuffer(2, bufferInfoInstanced)
+                        .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .WriteBuffer(1, bufferInfoInstanced)
+                        .Build(m_ShadowDescriptorSet);
+                }
+
+                break;
+            }
             case MaterialType::MtPbrDiffuseNormalSAMap:
             {
                 std::shared_ptr<Texture>& diffuseMap           = textures[0];

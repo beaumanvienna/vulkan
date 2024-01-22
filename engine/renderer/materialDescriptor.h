@@ -47,17 +47,18 @@ namespace GfxRenderEngine
             MtPbrNoMapInstanced                               = 0x1 << 0x04, // 16
             MtPbrEmissiveTexture                              = 0x1 << 0x05, // 32
             MtPbrDiffuseNormalMap                             = 0x1 << 0x06, // 64
-            MtPbrEmissiveInstanced                            = 0x1 << 0x07, // 128         
+            MtPbrEmissiveInstanced                            = 0x1 << 0x07, // 128
             MtPbrDiffuseNormalSAMap                           = 0x1 << 0x08, // 256
             MtPbrDiffuseMapInstanced                          = 0x1 << 0x09, // 512
-            MtPbrEmissiveTextureInstanced                     = 0x1 << 0x0a, // 1024
-            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x0b, // 2048
-            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0c, // 4096
-            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0d, // 8192
-            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0e, // 16384
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x0f, // 32768
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x10, // 65536
-            MtCubemap                                         = 0x1 << 0x11  // 131072
+            MtPbrDiffuseSAMapInstanced                        = 0x1 << 0x0a, // 1024
+            MtPbrEmissiveTextureInstanced                     = 0x1 << 0x0b, // 2048
+            MtPbrDiffuseNormalMapInstanced                    = 0x1 << 0x0c, // 4096
+            MtPbrDiffuseNormalRoughnessMetallicMap            = 0x1 << 0x0d, // 8192
+            MtPbrDiffuseNormalRoughnessMetallic2Map           = 0x1 << 0x0e, // 16384
+            MtPbrDiffuseNormalRoughnessMetallicSAMap          = 0x1 << 0x0f, // 32768
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map         = 0x1 << 0x10, // 65536
+            MtPbrDiffuseNormalRoughnessMetallicMapInstanced   = 0x1 << 0x11, // 131072
+            MtCubemap                                         = 0x1 << 0x12  // 262144
         };
 
         static constexpr uint ALL_PBR_MATERIALS = 
@@ -71,6 +72,7 @@ namespace GfxRenderEngine
             MaterialType::MtPbrEmissiveInstanced +
             MaterialType::MtPbrDiffuseNormalSAMap +
             MaterialType::MtPbrDiffuseMapInstanced +
+            MaterialType::MtPbrDiffuseSAMapInstanced +
             MaterialType::MtPbrEmissiveTextureInstanced +
             MaterialType::MtPbrDiffuseNormalMapInstanced +
             MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap +
