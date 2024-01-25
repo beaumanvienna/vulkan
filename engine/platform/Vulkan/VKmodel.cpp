@@ -683,6 +683,18 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet)
+    {
+        for(auto& submesh : m_SubmeshesPbrDiffuseSAMapInstanced)
+        {
+            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMapInstanced)
+        {
+            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+    }
+
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet)
     {
         for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
@@ -728,6 +740,25 @@ namespace GfxRenderEngine
         );
 
         DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+    }
+
+    void VK_Model::DrawAnimatedShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
+    {
+        VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        vkCmdBindDescriptorSets
+        (
+            frameInfo.m_CommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,
+            2,
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+
+        DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
     }
 
     void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)

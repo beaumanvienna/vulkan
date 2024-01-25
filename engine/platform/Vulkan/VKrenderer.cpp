@@ -132,6 +132,11 @@ namespace GfxRenderEngine
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
                     .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> animationInstancedDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
+                    .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                    .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
+                    .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> instanceDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                     .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
                     .Build();
@@ -374,6 +379,12 @@ namespace GfxRenderEngine
             animationDescriptorSetLayout->GetDescriptorSetLayout()
         };
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadowAnimatedInstanced =
+        {
+            shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
+            animationInstancedDescriptorSetLayout->GetDescriptorSetLayout()
+        };
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug =
         {
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()
@@ -439,6 +450,12 @@ namespace GfxRenderEngine
                                                               m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
                                                               m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(),
                                                               descriptorSetLayoutsShadowAnimated
+                                                          );
+        m_RenderSystemShadowAnimatedInstanced           = std::make_unique<VK_RenderSystemShadowAnimatedInstanced>
+                                                          (
+                                                              m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
+                                                              m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(),
+                                                              descriptorSetLayoutsShadowAnimatedInstanced
                                                           );
         m_LightSystem                                            = std::make_unique<VK_LightSystem>(m_Device, m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer                             = std::make_unique<VK_RenderSystemSpriteRenderer>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
@@ -834,6 +851,14 @@ namespace GfxRenderEngine
                 0 /* shadow pass 0*/,
                 m_ShadowDescriptorSets0[m_CurrentFrameIndex]
             );
+            m_RenderSystemShadowAnimatedInstanced->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[0],
+                0 /* shadow pass 0*/,
+                m_ShadowDescriptorSets0[m_CurrentFrameIndex]
+            );
             EndRenderPass(m_CurrentCommandBuffer);
 
             BeginShadowRenderPass1(m_CurrentCommandBuffer);
@@ -854,6 +879,14 @@ namespace GfxRenderEngine
                 m_ShadowDescriptorSets1[m_CurrentFrameIndex]
             );
             m_RenderSystemShadowAnimated->RenderEntities
+            (
+                m_FrameInfo,
+                registry,
+                directionalLights[1],
+                1 /* shadow pass 1*/,
+                m_ShadowDescriptorSets1[m_CurrentFrameIndex]
+            );
+            m_RenderSystemShadowAnimatedInstanced->RenderEntities
             (
                 m_FrameInfo,
                 registry,
@@ -1234,6 +1267,8 @@ namespace GfxRenderEngine
                 "shadowShader.frag",
                 "shadowShaderAnimated.vert",
                 "shadowShaderAnimated.frag",
+                "shadowShaderAnimatedInstanced.vert",
+                "shadowShaderAnimatedInstanced.frag",
                 "shadowShaderInstanced.vert",
                 "shadowShaderInstanced.frag",
                 "debug.vert",
