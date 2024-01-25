@@ -130,8 +130,16 @@ namespace GfxRenderEngine
 
     void Sprite::SetScale(const float scaleX, const float scaleY)
     {
-        m_ScaleX = scaleX;
-        m_ScaleY = scaleY;
+        if (m_Rotated)
+        {
+            m_ScaleX = scaleY;
+            m_ScaleY = scaleX;
+        }
+        else
+        {
+            m_ScaleX = scaleX;
+            m_ScaleY = scaleY;
+        }
         SetTransform();
     }
 

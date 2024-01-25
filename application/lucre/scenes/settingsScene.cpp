@@ -71,7 +71,7 @@ namespace LucreApp
             Sprite2D backGroundSprite = Sprite2D(Lucre::m_Spritesheet->GetSprite(I_SETTINGS_BG));
             builder.LoadSprite(backGroundSprite);
             auto model = Engine::m_Engine->LoadModel(builder);
-            MeshComponent mesh{"logo", model};
+            MeshComponent mesh{"background", model};
             mesh.m_Enabled = true;
 
             m_BackGround = CreateEntity();
