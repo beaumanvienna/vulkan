@@ -254,7 +254,6 @@ namespace GfxRenderEngine
                 InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
                 instanceTag.m_Instances.push_back(entity);
                 instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
-                return newNode;
             }
         }
 
@@ -275,6 +274,11 @@ namespace GfxRenderEngine
         { // mesh
             MeshComponent mesh{nodeName, model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
+        }
+
+        if ((m_InstanceCount > 1) && m_InstanceIndex)
+        {
+            return newNode;
         }
 
         // material tags (can have multiple tags)

@@ -140,14 +140,14 @@ namespace LucreApp
             animations.Start();
         }
 
-        //m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
-        //if (m_NonPlayableCharacter3 != entt::null)
-        //{
-        //    auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
-        //    SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-        //    animations.SetRepeatAll(true);
-        //    animations.Start();
-        //}
+        m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
+        if (m_NonPlayableCharacter3 != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
 
         {
             // place static lights for beach scene

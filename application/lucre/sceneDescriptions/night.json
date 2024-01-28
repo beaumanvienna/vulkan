@@ -164,6 +164,31 @@
                             "rigidBody": false
                         }
                     ]
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.08, 0.08, 0.08
+                        ],
+                        "rotation":
+                        [
+                            0, -2.98023e-08, 0
+                        ],
+                        "translation":
+                        [
+                            1.2, 1.93899, -1.35632
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false
+                        }
+                    ]
                 }
             ]
         },
