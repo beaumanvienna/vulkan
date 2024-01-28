@@ -227,7 +227,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/node hierarchy/gltf/node hierarchy.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.gltf",
             "instances":
             [
                 {
@@ -794,7 +794,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/node hierarchy/asphalt/gltf/asphalt.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/asphalt/gltf/asphalt.gltf",
             "instances":
             [
                 {
@@ -851,7 +851,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/node hierarchy/sand/gltf/sand.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/sand/gltf/sand.gltf",
             "instances":
             [
                 {
@@ -894,7 +894,7 @@
     "fbx files":
     [
         {
-            "filename": "application/lucre/models/node hierarchy/fbx/node hierarchy.fbx",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
             "instances":
             [
                 {

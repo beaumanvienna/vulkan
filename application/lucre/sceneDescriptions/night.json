@@ -558,7 +558,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/Wooden Crate/Wooden Crate.gltf",
+            "filename": "application/lucre/models/external_3D_files/Wooden Crate/Wooden Crate.gltf",
             "instances":
             [
                 {
@@ -590,7 +590,7 @@
     "fbx files":
     [
         {
-            "filename": "application/lucre/models/Wooden Crate/Wooden Crate.fbx",
+            "filename": "application/lucre/models/external_3D_files/Wooden Crate/Wooden Crate.fbx",
             "instances":
             [
                 {
