@@ -49,7 +49,7 @@ Contributions: Please use https://en.wikipedia.org/wiki/Indentation_style#Allman
 ## How to clone the repository<br/>
 <br/>
 The repository contains larger 3D files and git may abort its download. If you experience this problem, follow <a href="https://stackoverflow.com/questions/66366582/github-unexpected-disconnect-while-reading-sideband-packet">these</a> instructions.  <br/><br/>
-In particular, add these lines to your global git configuration file, which is .gitconfig in $USER_HOME, in order to fix this problem:<br/>
+In particular, add these lines to your global git configuration file, which is .gitconfig in your user home directory (~/.gitconfig), in order to fix this problem:<br/>
 
 ```
 [core] 
