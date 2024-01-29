@@ -52,6 +52,8 @@ project "engine"
         "vendor/tinygltf",
         "vendor/simdjson",
         "vendor/json",
+        "vendor/sdl/include",
+        "vendor/sdl_mixer/include",
     }
 
     libdirs
@@ -79,8 +81,6 @@ project "engine"
         {
             "/usr/include",
             "vendor/pamanager/libpamanager/src",
-            "vendor/sdl/include",
-            "vendor/sdl_mixer/include",
             "/usr/include/glib-2.0",
             "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
             "/usr/lib/glib-2.0/include/",

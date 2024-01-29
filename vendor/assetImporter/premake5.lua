@@ -110,6 +110,7 @@ project "assetImporter"
         "contrib",
         "contrib/rapidjson/include",
         "contrib/unzip/",
+        "contrib/zlib/",
     }
 
     flags
