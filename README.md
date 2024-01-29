@@ -46,6 +46,27 @@ To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 Contributions: Please use https://en.wikipedia.org/wiki/Indentation_style#Allman_style and four spaces to indent.<br/>
 <br/>
 
+## How to clone the repository<br/>
+<br/>
+The repository contains larger 3D files and git may abort its download. If you experience this problem, follow <a href="https://stackoverflow.com/questions/66366582/github-unexpected-disconnect-while-reading-sideband-packet">these</a> instructions.  <br/><br/>
+In particular, add these lines to your global git configuration file, which is .gitconfig in $USER_HOME, in order to fix this problem:<br/>
+
+```
+[core] 
+    packedGitLimit = 512m 
+    packedGitWindowSize = 512m 
+[pack] 
+    deltaCacheSize = 2047m 
+    packSizeLimit = 2047m 
+    windowMemory = 2047m
+```
+
+Then run:<br/>
+
+```
+git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
+```
+
 ## Build Instructions<br/>
 ### Ubuntu Build Instructions<br/>
 <br/>
