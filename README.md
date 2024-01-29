@@ -208,10 +208,10 @@ git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
 cd vulkan
 ```
 
-If you have Visual Studio 2019:
+If you have Visual Studio 2022:
 
 ```
-premake5.exe vs2019
+premake5.exe vs2022
 ```
 
 <br/>
