@@ -13,14 +13,14 @@ Features:
 - A Vulkan renderer with support for 2D and 3D scenes
 - Support for 3D file formats Obj Wavefront, glTF, and FBX
 - Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
-- Point lights, directional lights with shadows, and deferred shading
+- Point lights, directional lights with shadows, and deferred shading, instancing of models on the GPU
 - Post-processing (Bloom), skeletal animations
 - Scene management with scene descriptions, background loading, scene saving, and attachable scripts
 - Sound support and desktop volume settings (Linux only)
 - Hotplug gamepad support based on SDL2 and a controller database
 - Cross-platform resource system (Windows/Linux)
 - Particle system
-- Event system for mouse, keyboard, controller, window and game events
+- Event system for mouse, keyboard, controller, window, and game events
 - Settings manager and a message logger
 - Entity component system based on EnTT
 - Physics simulator based on Box2D
