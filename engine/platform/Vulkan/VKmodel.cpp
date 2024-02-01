@@ -214,6 +214,11 @@ namespace GfxRenderEngine
                         m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
                         break;
                     }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
                     {
                         m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap.push_back(vkSubmesh);
@@ -629,6 +634,16 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+        }
+    }
+
     void VK_Model::DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
@@ -718,6 +733,10 @@ namespace GfxRenderEngine
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
         {
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }

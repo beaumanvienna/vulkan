@@ -1,6 +1,6 @@
 {
     "file format identifier": 1.2,
-    "description": "night scene",
+    "description": "dessert scene",
     "author": "Copyright (c) 2023 Engine Development Team",
     "gltf files":
     [
@@ -910,7 +910,24 @@
                         ],
                         "translation":
                         [
-                            6.45879, 1.43187, 1.23523
+                            6.5, 1.43187, 1.23523
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.443, 0.443, 0.443
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.5, 1.43187, 1.23523
                         ]
                     }
                 }

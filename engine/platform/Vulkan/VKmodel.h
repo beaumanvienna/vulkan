@@ -104,6 +104,7 @@ namespace GfxRenderEngine
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
 
         void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
@@ -149,6 +150,7 @@ namespace GfxRenderEngine
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced{};
+        std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced{};
         std::vector<VK_Submesh> m_SubmeshesCubemap{};
 
     };

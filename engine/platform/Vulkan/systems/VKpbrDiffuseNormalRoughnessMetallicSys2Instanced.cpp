@@ -22,31 +22,32 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2Instanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2::VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2::~VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2()
+    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::~VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
+        pushConstantRange.size = sizeof(VK_PushConstantDataGenericInstanced);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -60,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -87,25 +88,38 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrDiffuseNormalRoughnessMetallic2.vert.spv",
-            "bin-int/pbrDiffuseNormalRoughnessMetallic2.frag.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic2Instanced.vert.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic2Instanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallic2Tag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallic2Tag, InstanceTag>();
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
+            auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                uint instanceIndex = 0;
+                for (auto& instance : instanced.m_Instances)
+                {
+                    auto& transform = registry.get<TransformComponent>(instance);
+                    if (transform.GetDirtyFlagInstanced())
+                    {
+                        transform.ResetDirtyFlagInstanced();
+                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                    }
+                    ++instanceIndex;
+                }
+                instanceBuffer->Update();
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallic2Map(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallic2MapInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout);
             }
         }
     }

@@ -88,6 +88,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;
+        std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
 

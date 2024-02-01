@@ -58,6 +58,7 @@
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSysInstanced.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2Instanced.h"
 #include "systems/VKpbrDiffuseNormalSysInstanced.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
@@ -181,6 +182,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>          m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced>  m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced> m_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalInstanced>                   m_RenderSystemPbrDiffuseNormalInstanced;
         std::unique_ptr<VK_RenderSystemDeferredShading>                             m_RenderSystemDeferredShading;
         std::unique_ptr<VK_RenderSystemPostProcessing>                              m_RenderSystemPostProcessing;

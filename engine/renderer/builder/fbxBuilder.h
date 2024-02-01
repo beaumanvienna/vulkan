@@ -76,6 +76,10 @@ namespace GfxRenderEngine
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
         bool m_FbxNoBuiltInTangents;
+        std::shared_ptr<Model> m_Model;
+        std::shared_ptr<InstanceBuffer> m_InstanceUbo;
+        std::vector<entt::entity> m_InstancedObjects;
+        uint m_RenderObject;
 
         // scene graph
         uint m_InstanceCount;
