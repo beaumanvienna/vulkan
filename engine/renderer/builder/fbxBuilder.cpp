@@ -221,6 +221,79 @@ namespace GfxRenderEngine
             instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
             m_Registry.emplace<InstanceTag>(entity, instanceTag);
             m_InstancedObjects.push_back(entity);
+
+            for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
+            {
+                uint fbxMeshIndex = fbxNodePtr->mMeshes[meshIndex];
+                AssignMaterial(m_Submeshes[meshIndex], m_FbxScene->mMeshes[fbxMeshIndex]->mMaterialIndex);
+            }
+            m_Model = Engine::m_Engine->LoadModel(*this);
+
+                        // material tags (can have multiple tags)
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
+            {
+                PbrNoMapTag pbrNoMapTag{};
+                m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
+            {
+                PbrDiffuseTag pbrDiffuseTag{};
+                m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
+            {
+                PbrDiffuseSATag pbrDiffuseSATag{};
+                m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
+            {
+                PbrDiffuseNormalTag pbrDiffuseNormalTag;
+                m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
+            {
+                PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
+                m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map)
+            {
+                PbrDiffuseNormalRoughnessMetallic2Tag pbrDiffuseNormalRoughnessMetallic2Tag;
+                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallic2Tag>(entity, pbrDiffuseNormalRoughnessMetallic2Tag);
+            }
+
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map)
+            {
+                PbrDiffuseNormalRoughnessMetallicSA2Tag pbrDiffuseNormalRoughnessMetallicSA2Tag;
+                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSA2Tag>(entity, pbrDiffuseNormalRoughnessMetallicSA2Tag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+
+            // emissive materials
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
+            {
+                PbrEmissiveTag pbrEmissiveTag{};
+                m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
+            }
+
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
+            {
+                PbrEmissiveTextureTag pbrEmissiveTextureTag{};
+                m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
+            }
+
+            if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
+            {
+                PbrMaterial pbrMaterial{};
+                m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            }
         }
         else
         {
@@ -230,93 +303,11 @@ namespace GfxRenderEngine
             instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
         }
 
-        for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
-        {
-            uint fbxMeshIndex = fbxNodePtr->mMeshes[meshIndex];
-            AssignMaterial(m_Submeshes[meshIndex], m_FbxScene->mMeshes[fbxMeshIndex]->mMaterialIndex);
-        }
-
-        if (!m_InstanceIndex) /// create model for 1st instance
-        {
-            m_Model = Engine::m_Engine->LoadModel(*this);
-        }
-
         { // add mesh component to all instances
             MeshComponent mesh{nodeName, m_Model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
         }
 
-        // from here on out only the 1st of possibly multiple instances
-        if (m_InstanceIndex)
-        {
-            return newNode;
-        }
-
-        // material tags (can have multiple tags)
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
-        {
-            PbrNoMapTag pbrNoMapTag{};
-            m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
-        {
-            PbrDiffuseTag pbrDiffuseTag{};
-            m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
-        {
-            PbrDiffuseSATag pbrDiffuseSATag{};
-            m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
-        {
-            PbrDiffuseNormalTag pbrDiffuseNormalTag;
-            m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
-        {
-            PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
-            m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map)
-        {
-            PbrDiffuseNormalRoughnessMetallic2Tag pbrDiffuseNormalRoughnessMetallic2Tag;
-            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallic2Tag>(entity, pbrDiffuseNormalRoughnessMetallic2Tag);
-        }
-
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map)
-        {
-            PbrDiffuseNormalRoughnessMetallicSA2Tag pbrDiffuseNormalRoughnessMetallicSA2Tag;
-            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSA2Tag>(entity, pbrDiffuseNormalRoughnessMetallicSA2Tag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-
-        // emissive materials
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
-        {
-            PbrEmissiveTag pbrEmissiveTag{};
-            m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
-        }
-
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
-        {
-            PbrEmissiveTextureTag pbrEmissiveTextureTag{};
-            m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
-        }
-
-        if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
-        {
-            PbrMaterial pbrMaterial{};
-            m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
-        }
         return newNode;
     }
 
