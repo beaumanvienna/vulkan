@@ -185,9 +185,6 @@ namespace GfxRenderEngine
     uint FbxBuilder::CreateGameObject(const aiNode* fbxNodePtr, uint const parentNode)
     {
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
-        LoadVertexDataFbx(fbxNodePtr);
-
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
 
         auto entity = m_Registry.create();
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
@@ -222,6 +219,9 @@ namespace GfxRenderEngine
             m_Registry.emplace<InstanceTag>(entity, instanceTag);
             m_InstancedObjects.push_back(entity);
 
+            // create model for 1st instance
+            LoadVertexDataFbx(fbxNodePtr);
+            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
             for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
             {
                 uint fbxMeshIndex = fbxNodePtr->mMeshes[meshIndex];
@@ -229,7 +229,7 @@ namespace GfxRenderEngine
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
 
-                        // material tags (can have multiple tags)
+            // material tags (can have multiple tags)
             if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
             {
                 PbrNoMapTag pbrNoMapTag{};
