@@ -104,22 +104,13 @@ namespace GfxRenderEngine
             auto& mesh = view.get<MeshComponent>(mainInstance);
             if (mesh.m_Enabled)
             {
-                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
-                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
-                uint instanceIndex = 0;
-                for (auto& instance : instanced.m_Instances)
-                {
-                    auto& transform = registry.get<TransformComponent>(instance);
-                    if (transform.GetDirtyFlagInstanced())
-                    {
-                        transform.ResetDirtyFlagInstanced();
-                        instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
-                    }
-                    ++instanceIndex;
+                { // update instance buffer on the GPU
+                    InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                    VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                    instanceBuffer->Update();
                 }
-                instanceBuffer->Update();
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallic2MapInstanced(frameInfo, instanced.m_Instances.size(), m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallic2MapInstanced(frameInfo, m_PipelineLayout);
             }
         }
     }

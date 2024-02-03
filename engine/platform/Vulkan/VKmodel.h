@@ -83,29 +83,30 @@ namespace GfxRenderEngine
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
 
         void Draw(VkCommandBuffer commandBuffer);
-        void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh, uint instanceCount = 1);
+        void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);
 
         // draw pbr materials
-        void DrawNoMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
+        void DrawNoMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+        void DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
-        void DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout);
 
         void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& descriptorSet);

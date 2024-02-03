@@ -39,8 +39,7 @@ namespace LucreApp
 {
 
     DessertScene::DessertScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this},
-              m_LaunchVolcanoTimer(1500)
+            : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
     {
     }
 
@@ -187,30 +186,6 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
-
-        {
-            m_LaunchVolcanoTimer.SetEventCallback
-            (
-                [](uint in, void* data)
-                {
-                    std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
-                    Engine::m_Engine->QueueEvent(event);
-                    return 0u;
-                }
-            );
-            m_LaunchVolcanoTimer.Start();
-
-            // volcano smoke animation
-            int poolSize = 50;
-            m_SpritesheetSmoke.AddSpritesheetTile
-            (
-                Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
-                8, 8, /* rows, columns */
-                0, /* margin */
-                0.01f /* scale) */
-            );
-            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1/*unlit*/);
-        }
     }
 
     void DessertScene::Load()
@@ -274,7 +249,7 @@ namespace LucreApp
                     LOG_APP_CRITICAL("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
-                            
+
                     transform.SetScale({0.00999934, 0.00999997, 0.00999993});
                     transform.SetRotation({-1.11028, -0.546991, 0.165967});
                     transform.SetTranslation({6, 6.26463, -14.1572});
@@ -334,10 +309,6 @@ namespace LucreApp
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
         SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
-        // volcano
-        EmitVolcanoSmoke();
-        m_VolcanoSmoke->OnUpdate(timestep);
-
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
         m_Renderer->UpdateAnimations(m_Registry, timestep);
@@ -357,7 +328,7 @@ namespace LucreApp
 
         // transparent objects
         m_Renderer->NextSubpass();
-        m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke.get());
+        m_Renderer->TransparencyPass(m_Registry);
 
         // post processing
         m_Renderer->PostProcessingRenderpass();
@@ -421,7 +392,7 @@ namespace LucreApp
 
         constexpr float DEFORM_X_SPEED = 0.2f;
         static float deformX = DEFORM_X_SPEED;
-        
+
         if (deltaX > 0.55f)
         {
             deformX = -DEFORM_X_SPEED;
@@ -459,39 +430,6 @@ namespace LucreApp
         directionalLightComponent.m_Direction  = lightbulbTransform.GetRotation();
         directionalLightComponent.m_LightView  = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
-    }
-
-    void DessertScene::EmitVolcanoSmoke()
-    {
-        static auto start = Engine::m_Engine->GetTime();
-        if ((Engine::m_Engine->GetTime() - start) > 1000ms)
-        {
-            start = Engine::m_Engine->GetTime();
-
-            ParticleSystem::Specification spec =
-            {
-                { 4.09f, 2.641f, -1.338f}, //glm::vec3 m_Position
-                { 0.0f,  0.0125f, 0.0f},   //glm::vec3 m_Velocity
-                { 0.0f,  0.0f,    0.0f},   //glm::vec3 m_Acceleration
-
-                {0.0f, TransformComponent::DEGREES_90, 0.0f}, //glm::vec3 m_Rotation
-                {0.0f, 0.0f, 0.0f}, //float m_RotationSpeed
-
-                {1.0f, 1.0f, 1.0f, 1.0f}, //glm::vec4 m_StartColor
-                {1.0f, 1.0f, 1.0f, 0.0f}, //glm::vec4 m_EndColor
-
-                {0.005f}, //float m_StartSize
-                {0.07f}, //float m_FinalSize
-
-                {6s}, //Timestep m_LifeTime
-            };
-
-            ParticleSystem::Specification variation{};
-            variation.m_Position = { 0.0001f, 0.0f,   0.0f }; // a little x against z-fighting
-            variation.m_Velocity = { 0.0f,    0.002f, 0.0f };
-            variation.m_Rotation = { 0.0f,    0.5f,   0.0f };
-            m_VolcanoSmoke->Emit(spec, variation);
-        }
     }
 
     void DessertScene::ApplyDebugSettings()

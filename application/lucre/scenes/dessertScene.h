@@ -77,7 +77,6 @@ namespace LucreApp
             int renderpass
         );
         void ApplyDebugSettings();
-        void EmitVolcanoSmoke();
 
     private:
 
@@ -95,11 +94,6 @@ namespace LucreApp
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_PointLight[MAX_LIGHTS];
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
-
-        // volcano
-        Timer m_LaunchVolcanoTimer;
-        std::shared_ptr<ParticleSystem> m_VolcanoSmoke;
-        SpriteSheet m_SpritesheetSmoke;
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;

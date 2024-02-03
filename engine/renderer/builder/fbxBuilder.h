@@ -77,7 +77,7 @@ namespace GfxRenderEngine
         uint m_MaterialFeatures;
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;
-        std::shared_ptr<InstanceBuffer> m_InstanceUbo;
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
         std::vector<entt::entity> m_InstancedObjects;
         uint m_RenderObject;
 

@@ -48,7 +48,7 @@ namespace GfxRenderEngine
 
     TransformComponent::TransformComponent()
         : m_Scale(glm::vec3(1.0)), m_Rotation(glm::vec3(0.0)),
-          m_Translation(glm::vec3(0.0)), m_Dirty(true), m_DirtyInstanced(true)
+          m_Translation(glm::vec3(0.0)), m_Dirty(true)
     {}
 
     TransformComponent::TransformComponent(const glm::mat4& mat4)
@@ -81,49 +81,34 @@ namespace GfxRenderEngine
         return m_Dirty;
     }
 
-    bool TransformComponent::GetDirtyFlagInstanced() const
-    {
-        return m_DirtyInstanced;
-    }
-
-    void TransformComponent::ResetDirtyFlagInstanced()
-    {
-        m_DirtyInstanced = false;
-    }
-
     void TransformComponent::SetScale(const glm::vec3& scale)
     {
         m_Scale = scale;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScale(const float scale)
     {
         m_Scale = glm::vec3{scale};
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleX(const float scaleX)
     {
         m_Scale.x = scaleX;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleY(const float scaleY)
     {
         m_Scale.y = scaleY;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetScaleZ(const float scaleZ)
     {
         m_Scale.z = scaleZ;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddScale(const glm::vec3& deltaScale)
@@ -135,7 +120,6 @@ namespace GfxRenderEngine
     {
         m_Rotation = rotation;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotation(const glm::quat& quaternion)
@@ -144,28 +128,24 @@ namespace GfxRenderEngine
         // ZYX - model in Blender
         SetRotation(glm::vec3{convert.x, convert.y, convert.z});
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationX(const float rotationX)
     {
         m_Rotation.x = rotationX;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationY(const float rotationY)
     {
         m_Rotation.y = rotationY;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetRotationZ(const float rotationZ)
     {
         m_Rotation.z = rotationZ;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddRotation(const glm::vec3& deltaRotation)
@@ -182,28 +162,24 @@ namespace GfxRenderEngine
     {
         m_Translation = translation;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationX(const float translationX)
     {
         m_Translation.x = translationX;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationY(const float translationY)
     {
         m_Translation.y = translationY;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::SetTranslationZ(const float translationZ)
     {
         m_Translation.z = translationZ;
         m_Dirty = true;
-        m_DirtyInstanced = true;
     }
 
     void TransformComponent::AddTranslation(const glm::vec3& deltaTranslation)
@@ -238,20 +214,48 @@ namespace GfxRenderEngine
 
     void TransformComponent::SetMat4Global(const glm::mat4& parent)
     {
-        m_Mat4Global = parent * GetMat4Local();
-        m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
+        if (m_InstanceBuffer)
+        {
+            auto mat4Global = parent * GetMat4Local();
+            auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(mat4Global)));
+            m_InstanceBuffer->SetInstanceData(m_InstanceIndex, mat4Global, normalMatrix);
+        }
+        else
+        {
+            m_Mat4Global = parent * GetMat4Local();
+            m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
+        }
         m_Parent = parent;
-        m_DirtyInstanced = true; // instance data needs to be updated
+    }
+
+    void TransformComponent::SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex)
+    {
+        m_InstanceIndex = instanceIndex;
+        m_InstanceBuffer = instanceBuffer;
     }
 
     const glm::mat4& TransformComponent::GetMat4Global()
     {
-        return m_Mat4Global;
+        if (m_InstanceBuffer)
+        {
+            return m_InstanceBuffer->GetModelMatrix(m_InstanceIndex);
+        }
+        else
+        {
+            return m_Mat4Global;
+        }
     }
 
-    const glm::mat3& TransformComponent::GetNormalMatrix()
+    const glm::mat4& TransformComponent::GetNormalMatrix()
     {
-        return m_NormalMatrix;
+        if (m_InstanceBuffer)
+        {
+            return m_InstanceBuffer->GetNormalMatrix(m_InstanceIndex);
+        }
+        else
+        {
+            return m_NormalMatrix;
+        }
     }
 
     const glm::mat4& TransformComponent::GetParent()

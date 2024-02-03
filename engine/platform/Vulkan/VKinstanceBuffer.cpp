@@ -45,7 +45,7 @@ namespace GfxRenderEngine
     {
         CORE_ASSERT(index < m_NumInstances, "out of bounds");
 
-        m_DataInstances[index].m_Transform = mat4Global;
+        m_DataInstances[index].m_ModelMatrix = mat4Global;
         m_DataInstances[index].m_NormalMatrix = normalMatrix;
 
         m_Dirty = true;
@@ -62,8 +62,18 @@ namespace GfxRenderEngine
         }
     }
 
-    std::shared_ptr<Buffer> VK_InstanceBuffer::GetUbo()
+    std::shared_ptr<Buffer> VK_InstanceBuffer::GetBuffer()
     {
         return m_Ubo;
+    }
+
+    const glm::mat4& VK_InstanceBuffer::GetModelMatrix(uint index)
+    {
+        return m_DataInstances[index].m_ModelMatrix;
+    }
+
+    const glm::mat4& VK_InstanceBuffer::GetNormalMatrix(uint index)
+    {
+        return m_DataInstances[index].m_NormalMatrix;
     }
 }

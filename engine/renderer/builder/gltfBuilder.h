@@ -101,7 +101,7 @@ namespace GfxRenderEngine
         entt::entity m_GameObject;
 
         std::vector<entt::entity> m_InstancedObjects;
-        std::shared_ptr<InstanceBuffer> m_InstanceUbo;
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
         uint m_RenderObject;
 
         entt::registry& m_Registry;

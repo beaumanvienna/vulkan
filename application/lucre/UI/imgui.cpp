@@ -223,7 +223,6 @@ namespace LucreApp
                 glm::vec4 perspective;
                 glm::decompose(mat4Local, scale, rotation, translation, skew, perspective);
                 glm::vec3 rotationEuler = glm::eulerAngles(rotation);
-
      
                 if (ImGuizmo::IsUsing())
                 {

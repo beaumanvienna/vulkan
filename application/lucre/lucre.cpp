@@ -88,7 +88,7 @@ namespace LucreApp
         m_CurrentScene->OnUpdate(timestep);
 
         // update/render layer stack
-        // helath bar
+        // health bar
         if (static_cast<int>(m_GameState.GetState()) > static_cast<int>(GameState::State::CUTSCENE)) m_UI->Health(90.0f);
         // controller icons
         m_UIControllerIcon->Indent(m_GameState.GetState() == GameState::State::SETTINGS);
