@@ -28,7 +28,8 @@
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
-layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap;
+layout(set = 1, binding = 2) uniform sampler2D roughnessMap;
+layout(set = 1, binding = 3) uniform sampler2D metallicMap;
 
 layout(location = 0)       in  vec3  fragPosition;
 layout(location = 1)       in  vec2  fragUV;
@@ -96,7 +97,8 @@ void main()
         discard;
     }
     outColor    = col;
-    float metallic = texture(roughnessMetallicMap, fragUV).b;
-    float roughness = texture(roughnessMetallicMap, fragUV).g;
+
+    float metallic = texture(metallicMap, fragUV).b;
+    float roughness = texture(roughnessMap, fragUV).g;
     outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 }

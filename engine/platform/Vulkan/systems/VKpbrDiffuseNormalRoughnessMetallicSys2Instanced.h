@@ -23,26 +23,43 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "buffer.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-
-    class InstanceBuffer
+    class VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced
     {
 
     public:
 
-        virtual ~InstanceBuffer() = default;
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced();
 
-        virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) = 0;
-        virtual const glm::mat4& GetModelMatrix(uint index) = 0;
-        virtual const glm::mat4& GetNormalMatrix(uint index) = 0;
-        virtual std::shared_ptr<Buffer> GetBuffer() = 0;
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced&) = delete;
+        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced& operator=(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced&) = delete;
 
-        static std::shared_ptr<InstanceBuffer> Create(uint numInstances);
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+
+    private:
+
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
 
     };
 }

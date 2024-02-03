@@ -124,7 +124,7 @@ namespace GfxRenderEngine
             for (uint materialDescriptorIndex = 0; materialDescriptorIndex < numMaterialDescriptors; ++materialDescriptorIndex)
             {
                 VK_Submesh vkSubmesh(modelSubmesh, materialDescriptorIndex);
-                
+
                 MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
 
                 switch (materialType)
@@ -212,6 +212,11 @@ namespace GfxRenderEngine
                     case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
                     {
                         m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
+                        break;
+                    }
+                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced:
+                    {
+                        m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced.push_back(vkSubmesh);
                         break;
                     }
                     case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
@@ -403,7 +408,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh, uint instanceCount/* = 1*/)
+    void VK_Model::DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh)
     {
         if(m_HasIndexBuffer)
         {
@@ -411,7 +416,7 @@ namespace GfxRenderEngine
             (
                 commandBuffer,              // VkCommandBuffer commandBuffer
                 submesh.m_IndexCount,       // uint32_t        indexCount
-                instanceCount,              // uint32_t        instanceCount
+                submesh.m_InstanceCount,    // uint32_t        instanceCount
                 submesh.m_FirstIndex,       // uint32_t        firstIndex
                 submesh.m_FirstVertex,      // int32_t         vertexOffset
                 0                           // uint32_t        firstInstance
@@ -423,7 +428,7 @@ namespace GfxRenderEngine
             (
                 commandBuffer,              // VkCommandBuffer commandBuffer
                 submesh.m_VertexCount,      // uint32_t        vertexCount
-                instanceCount,              // uint32_t        instanceCount
+                submesh.m_InstanceCount,    // uint32_t        instanceCount
                 submesh.m_FirstVertex,      // uint32_t        firstVertex
                 0                           // uint32_t        firstInstance
             );
@@ -439,13 +444,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawNoMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawNoMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrNoMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -464,7 +469,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
+    void VK_Model::DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& submesh : m_SubmeshesPbrEmissiveInstanced)
         {
@@ -475,7 +480,7 @@ namespace GfxRenderEngine
 
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -494,7 +499,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
+    void VK_Model::DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength)
     {
         for(auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
         {
@@ -505,7 +510,7 @@ namespace GfxRenderEngine
 
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -519,13 +524,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -539,13 +544,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseSAMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -559,13 +564,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -579,13 +584,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalSAMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -599,13 +604,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, uint instanceCount, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh, instanceCount);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
@@ -625,6 +630,16 @@ namespace GfxRenderEngine
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, transform, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
+    void VK_Model::DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for(auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -721,6 +736,10 @@ namespace GfxRenderEngine
         {
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
+        {
+            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
     }
 
     void VK_Model::DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
@@ -758,7 +777,7 @@ namespace GfxRenderEngine
             nullptr
         );
 
-        DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
+        DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
     }
 
     void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
@@ -777,7 +796,7 @@ namespace GfxRenderEngine
             nullptr
         );
 
-        DrawSubmesh(frameInfo.m_CommandBuffer, submesh, submesh.m_InstanceCount);
+        DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
     }
 
     void VK_Model::DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)

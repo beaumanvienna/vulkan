@@ -26,23 +26,23 @@
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrDiffuseNormalSysInstanced.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2Instanced.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrDiffuseNormalInstanced::VK_RenderSystemPbrDiffuseNormalInstanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrDiffuseNormalInstanced::~VK_RenderSystemPbrDiffuseNormalInstanced()
+    VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::~VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrDiffuseNormalInstanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -61,7 +61,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrDiffuseNormalInstanced::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::CreatePipeline(VkRenderPass renderPass)
     {
         ASSERT(m_PipelineLayout != nullptr);
 
@@ -74,7 +74,7 @@ namespace GfxRenderEngine
 
         // g buffer position, g buffer normal, g buffer color, g buffer material, g buffer emission
         // no blending
-        auto attachmentCount = (int)VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS; 
+        auto attachmentCount = (int)VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS;
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
         std::array<VkPipelineColorBlendAttachmentState, static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)> blAttachments;
@@ -88,17 +88,17 @@ namespace GfxRenderEngine
         m_Pipeline = std::make_unique<VK_Pipeline>
         (
             VK_Core::m_Device,
-            "bin-int/pbrDiffuseNormalInstanced.vert.spv",
-            "bin-int/pbrDiffuseNormalInstanced.frag.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic2Instanced.vert.spv",
+            "bin-int/pbrDiffuseNormalRoughnessMetallic2Instanced.frag.spv",
             pipelineConfig
         );
     }
 
-    void VK_RenderSystemPbrDiffuseNormalInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalTag, InstanceTag>();
+        auto view = registry.view<MeshComponent, TransformComponent, PbrDiffuseNormalRoughnessMetallic2Tag, InstanceTag>();
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
@@ -110,7 +110,7 @@ namespace GfxRenderEngine
                     instanceBuffer->Update();
                 }
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalMapInstanced(frameInfo, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawDiffuseNormalRoughnessMetallic2MapInstanced(frameInfo, m_PipelineLayout);
             }
         }
     }

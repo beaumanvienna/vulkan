@@ -82,12 +82,11 @@ namespace GfxRenderEngine
 
         const glm::mat4& GetMat4Local();
         const glm::mat4& GetMat4Global();
-        const glm::mat3& GetNormalMatrix();
+        const glm::mat4& GetNormalMatrix();
         const glm::mat4& GetParent();
         void  SetDirtyFlag();
         bool  GetDirtyFlag() const;
-        bool  GetDirtyFlagInstanced() const;
-        void  ResetDirtyFlagInstanced();
+        void  SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex);
 
     private:
 
@@ -96,7 +95,6 @@ namespace GfxRenderEngine
     private:
 
         bool m_Dirty{true};
-        bool m_DirtyInstanced{true};
 
         // local
         glm::vec3 m_Scale = glm::vec3{1.0f};
@@ -106,9 +104,11 @@ namespace GfxRenderEngine
 
         // global
         glm::mat4 m_Mat4Global = glm::mat4(1.0f);
-        glm::mat3 m_NormalMatrix = glm::mat4(1.0f);
+        glm::mat4 m_NormalMatrix = glm::mat4(1.0f);
         glm::mat4 m_Parent = glm::mat4(1.0f);
 
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
+        uint m_InstanceIndex;
     };
 
     class MeshComponent

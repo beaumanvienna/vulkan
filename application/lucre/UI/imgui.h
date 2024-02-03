@@ -53,9 +53,11 @@ namespace LucreApp
     public:
 
         static int   m_SelectedModel;
+        static int   m_SelectedModelPrevious;
         static int   m_MaxModels;
         static EnttV m_VisibleModels;
         static int   m_SelectedGameObject;
+        static const char* m_CurrentItem;
 
         static float m_Roughness;
         static bool  m_UseRoughness;

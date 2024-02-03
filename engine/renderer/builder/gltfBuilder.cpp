@@ -217,9 +217,6 @@ namespace GfxRenderEngine
         auto& nodeName = node.name;
         uint meshIndex = node.mesh;
 
-        LoadVertexDataGltf(meshIndex);
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
-
         auto entity = m_Registry.create();
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
@@ -229,121 +226,116 @@ namespace GfxRenderEngine
 
         TransformComponent transform{};
         LoadTransformationMatrix(transform, gltfNodeIndex);
-        m_Registry.emplace<TransformComponent>(entity, transform);
 
         // *** Instancing ***
         // create instance tag for first game object;
         // and collect further instances in it.
         // The renderer can loop over all instance tags 
-        //to retrieve the corresponding game objects.
-        if (m_InstanceCount > 1) 
+        // to retrieve the corresponding game objects.
+
+        if (!m_InstanceIndex)
         {
-            if (!m_InstanceIndex)
-            {
-                InstanceTag instanceTag;
-                instanceTag.m_Instances.push_back(entity);
-                m_InstanceUbo = InstanceBuffer::Create(m_InstanceCount);
-                instanceTag.m_InstanceBuffer = m_InstanceUbo;
-                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
-                m_Registry.emplace<InstanceTag>(entity, instanceTag);
-                m_InstancedObjects.push_back(entity);
+            InstanceTag instanceTag;
+            instanceTag.m_Instances.push_back(entity);
+            m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
+            instanceTag.m_InstanceBuffer = m_InstanceBuffer;
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            m_Registry.emplace<InstanceTag>(entity, instanceTag);
+            transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
+            m_InstancedObjects.push_back(entity);
+
+            // create model for 1st instance
+            LoadVertexDataGltf(meshIndex);
+            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
+            { // assign material
+                uint primitiveIndex = 0;
+                for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+                {
+                    ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
+                    AssignMaterial(submesh, glTFPrimitive.material);
+                }
             }
-            else
+            m_Model = Engine::m_Engine->LoadModel(*this);
+
+            // material tags (can have multiple tags)
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
             {
-                entt::entity instance = m_InstancedObjects[m_RenderObject++];
-                InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
-                instanceTag.m_Instances.push_back(entity);
-                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                PbrNoMapTag pbrNoMapTag{};
+                m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
+            {
+                PbrDiffuseTag pbrDiffuseTag{};
+                m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
+            {
+                PbrDiffuseSATag pbrDiffuseSATag{};
+                m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
+            {
+                PbrDiffuseNormalTag pbrDiffuseNormalTag;
+                m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
+            {
+                PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
+                m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
+            {
+                PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
+                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
+            {
+                PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
+                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
+
+                SkeletalAnimationTag skeletalAnimationTag{};
+                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+            }
+
+            // emissive materials
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
+            {
+                PbrEmissiveTag pbrEmissiveTag{};
+                m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
+            }
+            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
+            {
+                PbrEmissiveTextureTag pbrEmissiveTextureTag{};
+                m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
+            }
+
+            if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
+            {
+                PbrMaterial pbrMaterial{};
+                m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
             }
         }
-
-        // from here on out
-        // only single-instance models
-        // and the 1st of multi-instance model
-
-        { // assign material
-            uint primitiveIndex = 0;
-            for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
-            {
-                ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
-                AssignMaterial(submesh, glTFPrimitive.material);
-            }
+        else
+        {
+            entt::entity instance = m_InstancedObjects[m_RenderObject++];
+            InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
+            instanceTag.m_Instances.push_back(entity);
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
         }
 
-        auto model = Engine::m_Engine->LoadModel(*this);
-        { // mesh
-            MeshComponent mesh{nodeName, model};
+        { // add mesh and transform components to all instances
+            MeshComponent mesh{nodeName, m_Model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
+            m_Registry.emplace<TransformComponent>(entity, transform);
         }
 
-        if ((m_InstanceCount > 1) && m_InstanceIndex)
-        {
-            return newNode;
-        }
-
-        // material tags (can have multiple tags)
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
-        {
-            PbrNoMapTag pbrNoMapTag{};
-            m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
-        {
-            PbrDiffuseTag pbrDiffuseTag{};
-            m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
-        {
-            PbrDiffuseSATag pbrDiffuseSATag{};
-            m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
-        {
-            PbrDiffuseNormalTag pbrDiffuseNormalTag;
-            m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
-        {
-            PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
-            m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
-        {
-            PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
-            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
-        {
-            PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
-            m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
-
-            SkeletalAnimationTag skeletalAnimationTag{};
-            m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-        }
-
-        // emissive materials
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
-        {
-            PbrEmissiveTag pbrEmissiveTag{};
-            m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
-        }
-        if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
-        {
-            PbrEmissiveTextureTag pbrEmissiveTextureTag{};
-            m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
-        }
-
-        if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
-        {
-            PbrMaterial pbrMaterial{};
-            m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
-        }
         return newNode;
     }
 
@@ -819,7 +811,8 @@ namespace GfxRenderEngine
         if (materialIndex == Gltf::GLTF_NOT_USED)
         {
             { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
@@ -848,16 +841,8 @@ namespace GfxRenderEngine
         if (pbrFeatures == Material::NO_MAP)
         {
             { // create material descriptor
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount > 1) // multiple instances
-                { 
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, instanceUbo);
-                }
-                else // multiple instances
-                {
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
-                }
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
@@ -871,16 +856,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount == 1) // single instance
-                { 
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
-                }
-                else // multiple instances
-                {
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
-                }
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
@@ -894,17 +871,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount == 1) // single instance
-                { 
-                    std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMap, textures, buffers);
-                }
-                else // multiple instances
-                {
-                    std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
-                }
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
@@ -920,16 +888,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount == 1) // single instance
-                { 
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMap, textures);
-                }
-                else // multiple instances
-                {
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
-                }
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
@@ -945,17 +905,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount == 1) // single instance
-                {
-                    std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMap, textures, buffers);
-                }
-                else // multiple instances
-                {
-                    std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
-                }
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
@@ -974,16 +925,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                if (m_InstanceCount == 1) // single instance
-                { 
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
-                }
-                else // multiple instances
-                {
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                    materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
-                }
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
@@ -1002,7 +945,7 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData};
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
@@ -1025,7 +968,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures);
+                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
@@ -1039,7 +983,8 @@ namespace GfxRenderEngine
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures);
+                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
@@ -1049,7 +994,8 @@ namespace GfxRenderEngine
         else
         {
             { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
@@ -1067,17 +1013,9 @@ namespace GfxRenderEngine
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
                 {  // create material descriptor
-                    std::shared_ptr<MaterialDescriptor> materialDescriptor;
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
-                    if (m_InstanceCount == 1) // single instance
-                    {
-                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTexture, textures);
-                    }
-                    else // multiple instances
-                    {
-                        std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
-                    }
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
@@ -1088,16 +1026,8 @@ namespace GfxRenderEngine
             {
                 { // create material descriptor
 
-                    std::shared_ptr<MaterialDescriptor> materialDescriptor;
-                    if (m_InstanceCount == 1) // single instance
-                    { 
-                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissive);
-                    }
-                    else // multiple instances
-                    {
-                        std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceUbo->GetUbo()};
-                        materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
-                    }
+                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;

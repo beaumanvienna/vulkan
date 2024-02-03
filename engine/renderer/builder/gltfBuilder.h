@@ -88,6 +88,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;
+        std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
 
@@ -100,7 +101,7 @@ namespace GfxRenderEngine
         entt::entity m_GameObject;
 
         std::vector<entt::entity> m_InstancedObjects;
-        std::shared_ptr<InstanceBuffer> m_InstanceUbo;
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
         uint m_RenderObject;
 
         entt::registry& m_Registry;
