@@ -37,9 +37,11 @@
 namespace LucreApp
 {
     int   ImGUI::m_SelectedModel = 0;
+    int   ImGUI::m_SelectedModelPrevious = -1;
     int   ImGUI::m_MaxModels = 0;
     EnttV ImGUI::m_VisibleModels;
     int   ImGUI::m_SelectedGameObject = 0;
+    const char* ImGUI::m_CurrentItem = nullptr;
 
     float ImGUI::m_Roughness = 0.1f;
     bool  ImGUI::m_UseRoughness = false;
@@ -93,17 +95,16 @@ namespace LucreApp
             ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
         }
 
-        static int selectedModelPrevious = m_SelectedModel;
-        static const char* currentItem = nullptr;
-        if (m_SelectedModel != selectedModelPrevious)
+        if (m_SelectedModel != m_SelectedModelPrevious)
         {
             // reset animations drop down
-            selectedModelPrevious = m_SelectedModel;
+            m_SelectedModelPrevious = m_SelectedModel;
             m_SelectedGameObject = 0;
             m_UseAnimation = false;
             m_RepeatAnimation = false;
-            currentItem = nullptr;
+            m_CurrentItem = nullptr;
         }
+        m_SelectedModelPrevious = m_SelectedModel;
 
         {
             uint node = currentScene->GetTreeNodeIndex(entity);
@@ -131,9 +132,9 @@ namespace LucreApp
                 items[itemIndex++] = animation.GetName().c_str();
             }
             
-            if (!currentItem)
+            if (!m_CurrentItem)
             {
-                currentItem = items[0];
+                m_CurrentItem = items[0];
             }
 
             ImGui::Checkbox("use###007", &m_UseAnimation);
@@ -141,17 +142,17 @@ namespace LucreApp
             ImGui::Checkbox("repeat###001", &m_RepeatAnimation);
             ImGui::SameLine();
 
-            if (ImGui::BeginCombo("##combo", currentItem)) // The 2nd parameter is the label previewed before opening the combo
+            if (ImGui::BeginCombo("##combo", m_CurrentItem)) // The 2nd parameter is the label previewed before opening the combo
             {
                 for (size_t index = 0; index < numberOfAnimations; ++index)
                 {
-                    bool isSelected = (currentItem == items[index]);
+                    bool isSelected = (m_CurrentItem == items[index]);
                     if (ImGui::Selectable(items[index], isSelected))
                     {
-                        currentItem = items[index];
+                        m_CurrentItem = items[index];
                         if (m_UseAnimation)
                         {
-                            animations.Start(currentItem);
+                            animations.Start(m_CurrentItem);
                             animations.SetRepeat(m_RepeatAnimation);
                         }
                     }
@@ -307,6 +308,9 @@ namespace LucreApp
     void ImGUI::SetupSlider(Scene* scene)
     {
         m_SelectedModel = 0;
+        m_SelectedModelPrevious = -1;
+        m_CurrentItem = nullptr;
+
         m_VisibleModels.clear();
         TreeNode& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
 

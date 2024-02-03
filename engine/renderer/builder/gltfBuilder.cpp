@@ -330,7 +330,6 @@ namespace GfxRenderEngine
             transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
         }
 
-
         { // add mesh and transform components to all instances
             MeshComponent mesh{nodeName, m_Model};
             m_Registry.emplace<MeshComponent>(entity, mesh);
