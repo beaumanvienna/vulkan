@@ -1,0 +1,145 @@
+{
+    "file format identifier": 1.2,
+    "description": "dessert scene",
+    "author": "Copyright (c) 2023 Engine Development Team",
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/cactus/cactus.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.0534534, 0.0534534, 0.0534534
+                        ],
+                        "rotation":
+                        [
+                            -0.182574, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.292384, 0.0020506, 0.347838
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.07136, 0.0713599, 0.0713599
+                        ],
+                        "rotation":
+                        [
+                            -0.103002, 0, 0
+                        ],
+                        "translation":
+                        [
+                            0.0389098, -0.0138492, 0.269492
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.09894, 0.09894, 0.09894
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 0.175009, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.129419, -0.0264592, 0.162929
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            2.4, 2.4, 2.4
+                        ],
+                        "rotation":
+                        [
+                            2.15439e-08, -0.117642, 1.16075e-08
+                        ],
+                        "translation":
+                        [
+                            -0.221573, -1.14068, 1.17507
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.04698, 0.04698, 0.04698
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.542492, 0.000424656, 1.16065
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.047, 0.047, 0.047
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.01266, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.403067, -0.0157951, 1.39327
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

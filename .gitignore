@@ -1,6 +1,5 @@
 application/lucre/models/node hierarchy
 application/lucre/models/Wooden\ Crate
-*.json
 .vscode
 .DS_Store
 application/lucre/models/guybrush_animated_gltf
@@ -68,8 +67,11 @@ emulators/mednafen/install-sh
 emulators/mednafen/missing
 application/lucre/models/dont_upload
 renderdoc.cap
-main.scene
-night.scene
-beach.scene
-splash.scene
-settings.scene
+/main.scene
+/night.scene
+/beach.scene
+/splash.scene
+/settings.scene
+/night.json
+/beach.json
+/dessert.json
