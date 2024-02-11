@@ -35,28 +35,27 @@ namespace LucreApp
     {
 
     public:
-
         enum class State
         {
             SPLASH = 0,
             SETTINGS,
-            CUTSCENE, // do not change order 
+            CUTSCENE, // do not change order
             // insert game levels here
             MAIN,
             BEACH,
             NIGHT,
             DESSERT,
+            TERRAIN,
             MAX_STATES
         };
 
     public:
-
         GameState();
 
         void Start();
         void Stop();
-        Scene* OnUpdate();
-        void OnEvent(Event& event);
+        Scene *OnUpdate();
+        void OnEvent(Event &event);
 
         void EnableUserInput(bool enable);
 
@@ -69,20 +68,18 @@ namespace LucreApp
         void SetNextState(State state);
         State GetState() const { return m_State; }
         State GetNextState() const { return m_NextState; }
-        bool UserInputIsInabled() const { return m_UserInputEnabled;}
+        bool UserInputIsInabled() const { return m_UserInputEnabled; }
 
-        Scene* GetScene();
-        Scene* GetScene(State state);
-        Scene* GetNextScene();
+        Scene *GetScene();
+        Scene *GetScene(State state);
+        Scene *GetNextScene();
         void DestroyScene(const State state);
-        void SetupScene(const State state, const std::shared_ptr<Scene>& scene);
+        void SetupScene(const State state, const std::shared_ptr<Scene> &scene);
 
     private:
-
         void Load(State state);
 
     private:
-
         std::mutex m_Mutex;
         State m_State, m_NextState, m_LastState, m_DeleteScene;
         std::shared_ptr<Scene> m_Scenes[static_cast<int>(State::MAX_STATES)];

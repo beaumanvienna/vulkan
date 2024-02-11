@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -26,7 +26,7 @@
 
 namespace GfxRenderEngine
 {
-    #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
     uint whiteAlpha(float alpha);
     uint blackAlpha(float alpha);
@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         BUTTON_2_STATES_FOCUSED,
     };
 
-    enum ButtonStatesFourStates 
+    enum ButtonStatesFourStates
     {
         BUTTON_4_STATES_NOT_FOCUSED,
         BUTTON_4_STATES_NOT_FOCUSED_DEPRESSED,
@@ -54,14 +54,14 @@ namespace GfxRenderEngine
 
     void SCREEN_System_SendMessage(const char *command, const char *parameter);
 
-    typedef enum _keycode_t 
+    typedef enum _keycode_t
     {
-        NKCODE_BUTTON_CROSS = 23, // trackpad or X button(Xperia Play) is pressed
-        NKCODE_BUTTON_CROSS_PS3 = 96, // PS3 X button is pressed
-        NKCODE_BUTTON_CIRCLE = 1004, // Special custom keycode generated from 'O' button by our java code. Or 'O' button if Alt is pressed (TODO)
+        NKCODE_BUTTON_CROSS = 23,      // trackpad or X button(Xperia Play) is pressed
+        NKCODE_BUTTON_CROSS_PS3 = 96,  // PS3 X button is pressed
+        NKCODE_BUTTON_CIRCLE = 1004,   // Special custom keycode generated from 'O' button by our java code. Or 'O' button if Alt is pressed (TODO)
         NKCODE_BUTTON_CIRCLE_PS3 = 97, // PS3 O button is pressed
-        NKCODE_BUTTON_SQUARE = 99, // Square button(Xperia Play) is pressed
-        NKCODE_BUTTON_TRIANGLE = 100, // 'Triangle button(Xperia Play) is pressed
+        NKCODE_BUTTON_SQUARE = 99,     // Square button(Xperia Play) is pressed
+        NKCODE_BUTTON_TRIANGLE = 100,  // 'Triangle button(Xperia Play) is pressed
         NKCODE_DPAD_UP = 19,
         NKCODE_DPAD_DOWN = 20,
         NKCODE_DPAD_LEFT = 21,
@@ -308,7 +308,7 @@ namespace GfxRenderEngine
         NKCODE_OUYA_BUTTON_Y = 100,
 
         // Extended keycodes, not available on Android
-        NKCODE_EXT_PIPE = 1001,  // The key next to Z on euro 102-key keyboards.
+        NKCODE_EXT_PIPE = 1001, // The key next to Z on euro 102-key keyboards.
 
         NKCODE_EXT_MOUSEBUTTON_1 = 1002,
         NKCODE_EXT_MOUSEBUTTON_2 = 1003,
@@ -319,7 +319,7 @@ namespace GfxRenderEngine
         NKCODE_EXT_MOUSEWHEEL_DOWN = 1009
     } keycode_t;
 
-    enum AndroidJoystickAxis 
+    enum AndroidJoystickAxis
     {
         JOYSTICK_AXIS_X,
         JOYSTICK_AXIS_Y,
@@ -327,19 +327,19 @@ namespace GfxRenderEngine
         JOYSTICK_AXIS_HAT_Y
     };
 
-    enum SCREEN_UI_colors             //0xAABBGGRR
+    enum SCREEN_UI_colors // 0xAABBGGRR
     {
-        RETRO_COLOR_FONT_FOCUSED      = 0xFFFFFFFF,
-        RETRO_COLOR_FONT_NOT_FOCUSED  = 0xFFDE51E0,
-        RETRO_COLOR_FONT_FOREGROUND   = 0xFF90e8e7,
-        RETRO_COLOR_FONT_BACKGROUND   = 0xFF234d9a,
-        RETRO_COLOR_FONT_BACKGROUND2  = 0xc03a72b2,
+        RETRO_COLOR_FONT_FOCUSED = 0xFFFFFFFF,
+        RETRO_COLOR_FONT_NOT_FOCUSED = 0xFFDE51E0,
+        RETRO_COLOR_FONT_FOREGROUND = 0xFF90e8e7,
+        RETRO_COLOR_FONT_BACKGROUND = 0xFF234d9a,
+        RETRO_COLOR_FONT_BACKGROUND2 = 0xc03a72b2,
         RETRO_COLOR_FONT_ALMOST_WHITE = 0xFFFFFEe7,
-        RETRO_COLOR_BLUE              = 0xFFFF0000,
-        RETRO_COLOR_GREEN             = 0xFF00FF00,
-        RETRO_COLOR_RED               = 0xFF0000FF,
-        RETRO_COLOR_YELLOW            = 0xFF00FFFF,
-        RETRO_COLOR_BUTTON_ACTIVE     = 0xFF3d5857,
-        RETRO_COLOR_BUTTON_INACTIVE   = 0x7F65aac5
-    }; 
+        RETRO_COLOR_BLUE = 0xFFFF0000,
+        RETRO_COLOR_GREEN = 0xFF00FF00,
+        RETRO_COLOR_RED = 0xFF0000FF,
+        RETRO_COLOR_YELLOW = 0xFF00FFFF,
+        RETRO_COLOR_BUTTON_ACTIVE = 0xFF3d5857,
+        RETRO_COLOR_BUTTON_INACTIVE = 0x7F65aac5
+    };
 }
