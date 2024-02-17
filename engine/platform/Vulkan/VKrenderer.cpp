@@ -63,10 +63,9 @@ namespace GfxRenderEngine
                 sizeof(ShadowUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                MemoryFlagBits::HOST_ACCESS_RANDOM,
                 m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
-            m_ShadowUniformBuffers0[i]->Map();
         }
 
         for (uint i = 0; i < m_ShadowUniformBuffers1.size(); i++)
@@ -76,10 +75,9 @@ namespace GfxRenderEngine
                 sizeof(ShadowUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                MemoryFlagBits::HOST_ACCESS_RANDOM,
                 m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
-            m_ShadowUniformBuffers1[i]->Map();
         }
 
         for (uint i = 0; i < m_UniformBuffers.size(); i++)
@@ -89,10 +87,9 @@ namespace GfxRenderEngine
                 sizeof(GlobalUniformBuffer),
                 1,                                      // uint instanceCount
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                MemoryFlagBits::HOST_ACCESS_RANDOM,
                 m_Device->m_Properties.limits.minUniformBufferOffsetAlignment
             );
-            m_UniformBuffers[i]->Map();
         }
 
         // create a global pool for desciptor sets
@@ -831,14 +828,12 @@ namespace GfxRenderEngine
                 ubo.m_Projection = directionalLights[0]->m_LightView->GetProjectionMatrix();
                 ubo.m_View = directionalLights[0]->m_LightView->GetViewMatrix();
                 m_ShadowUniformBuffers0[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-                m_ShadowUniformBuffers0[m_CurrentFrameIndex]->Flush();
             }
             {
                 ShadowUniformBuffer ubo{};
                 ubo.m_Projection = directionalLights[1]->m_LightView->GetProjectionMatrix();
                 ubo.m_View = directionalLights[1]->m_LightView->GetViewMatrix();
                 m_ShadowUniformBuffers1[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-                m_ShadowUniformBuffers1[m_CurrentFrameIndex]->Flush();
             }
 
             BeginShadowRenderPass0(m_CurrentCommandBuffer);
@@ -1056,7 +1051,6 @@ namespace GfxRenderEngine
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
             m_LightSystem->Update(m_FrameInfo, ubo, registry);
             m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-            m_UniformBuffers[m_CurrentFrameIndex]->Flush();
 
             Begin3DRenderPass(m_CurrentCommandBuffer);
         }

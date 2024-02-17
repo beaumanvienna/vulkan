@@ -27,6 +27,7 @@
 
 #include "VKcore.h"
 #include "VKtexture.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -227,7 +228,7 @@ namespace GfxRenderEngine
         vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
     }
 
-    void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    /*void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
         auto device = VK_Core::m_Device->Device();
 
@@ -259,7 +260,7 @@ namespace GfxRenderEngine
         }
 
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
-    }
+    }*/
 
     bool VK_Texture::Create()
     {
@@ -273,21 +274,9 @@ namespace GfxRenderEngine
             return false;
         }
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        CreateBuffer
-        (
-            imageSize, 
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory
-        );
+        std::unique_ptr<VK_Buffer> stagingBuffer = std::make_unique<VK_Buffer>(imageSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryFlagBits::HOST_ACCESS_RANDOM);
 
-        void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
-        memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
-        vkUnmapMemory(device, stagingBufferMemory);
+        memcpy(stagingBuffer->GetMappedMemory(), m_LocalBuffer, static_cast<size_t>(imageSize));
 
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage
@@ -306,7 +295,7 @@ namespace GfxRenderEngine
 
         VK_Core::m_Device->CopyBufferToImage
         (
-            stagingBuffer,
+            stagingBuffer->GetBuffer(),
             m_TextureImage, 
             static_cast<uint>(m_Width), 
             static_cast<uint>(m_Height),
@@ -316,9 +305,6 @@ namespace GfxRenderEngine
         GenerateMipmaps();
 
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
 
         // Create a texture sampler
         // In Vulkan, textures are accessed by samplers

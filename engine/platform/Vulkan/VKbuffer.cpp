@@ -48,14 +48,47 @@ namespace GfxRenderEngine
     }
 
     VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
-                VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
+                VkBufferUsageFlags usageFlags, MemoryFlags memoryPropertyFlags,
                 VkDeviceSize minOffsetAlignment)
         : m_Device(VK_Core::m_Device.get()), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
           m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
     {
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_BufferSize = m_AlignmentSize * m_InstanceCount;
-        m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+    
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = m_BufferSize;
+        bufferInfo.usage = m_UsageFlags;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        bool hostAccessible = false;
+        VmaAllocationInfo vmaAllocationInfo = {};
+        auto vmaAllocationFlags = static_cast<VmaAllocationCreateFlags>(memoryPropertyFlags);
+        if (((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT) != 0u) ||
+            ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT) != 0u) ||
+            ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT) != 0u)) {
+            vmaAllocationFlags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            hostAccessible = true;
+        }
+
+        const VmaAllocationCreateInfo vmaAllocationCreateInfo{
+            .flags = vmaAllocationFlags,
+            .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+            .requiredFlags = {},
+            .preferredFlags = {},
+            .memoryTypeBits = std::numeric_limits<uint>::max(),
+            .pool = nullptr,
+            .pUserData = nullptr,
+            .priority = 0.5f,
+        };
+
+        if (vmaCreateBuffer(m_Device->GetVmaAllocator(), &bufferInfo, &vmaAllocationCreateInfo, &m_Buffer, &m_VmaAllocation, &vmaAllocationInfo) != VK_SUCCESS)
+        {
+            LOG_CORE_CRITICAL("failed to create buffer!");
+        }
+
+        m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;
     }
 
 
@@ -73,16 +106,47 @@ namespace GfxRenderEngine
                 
                 m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
                 m_BufferSize = m_AlignmentSize * m_InstanceCount;
-                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+               
+                VkBufferCreateInfo bufferInfo{};
+                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                bufferInfo.size = size;
+                bufferInfo.usage = m_UsageFlags;
+                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+                bool hostAccessible = false;
+                VmaAllocationInfo vmaAllocationInfo = {};
+                auto vmaAllocationFlags = static_cast<VmaAllocationCreateFlags>(MemoryFlagBits::HOST_ACCESS_RANDOM);
+                if (((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT) != 0u) ||
+                    ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT) != 0u) ||
+                    ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT) != 0u)) {
+                    vmaAllocationFlags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+                    hostAccessible = true;
+                }
+
+                const VmaAllocationCreateInfo vmaAllocationCreateInfo{
+                    .flags = vmaAllocationFlags,
+                    .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+                    .requiredFlags = {},
+                    .preferredFlags = {},
+                    .memoryTypeBits = std::numeric_limits<uint>::max(),
+                    .pool = nullptr,
+                    .pUserData = nullptr,
+                    .priority = 0.5f,
+                };
+
+                if (vmaCreateBuffer(m_Device->GetVmaAllocator(), &bufferInfo, &vmaAllocationCreateInfo, &m_Buffer, &m_VmaAllocation, &vmaAllocationInfo) != VK_SUCCESS)
+                {
+                    LOG_CORE_CRITICAL("failed to create buffer!");
+                }
+
+                m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;
             }
         }
 
 
     VK_Buffer::~VK_Buffer()
     {
-        Unmap();
-        vkDestroyBuffer(m_Device->Device(), m_Buffer, nullptr);
-        vkFreeMemory(m_Device->Device(), m_Memory, nullptr);
+        vmaDestroyBuffer(m_Device->GetVmaAllocator(), m_Buffer, m_VmaAllocation);
     }
 
     /**
@@ -94,29 +158,10 @@ namespace GfxRenderEngine
      *
      * @return VkResult of the buffer mapping call
      */
-    VkResult VK_Buffer::Map(VkDeviceSize size, VkDeviceSize offset)
-    {
-        if (!(m_Buffer && m_Memory)) LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
-        return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
-    }
 
     void VK_Buffer::MapBuffer()
     {
-        Map();
-    }
-
-    /**
-     * Unmap a mapped memory range
-     *
-     * @note Does not return a result as vkUnmapMemory can't fail
-     */
-    void VK_Buffer::Unmap()
-    {
-        if (m_Mapped)
-        {
-            vkUnmapMemory(m_Device->Device(), m_Memory);
-            m_Mapped = nullptr;
-        }
+        //Map();
     }
 
     /**
@@ -142,48 +187,6 @@ namespace GfxRenderEngine
             memOffset += offset;
             memcpy(memOffset, data, size);
         }
-    }
-
-    /**
-     * Flush a memory range of the buffer to make it visible to the device
-     *
-     * @note Only required for non-coherent memory
-     *
-     * @param size (Optional) Size of the memory range to flush. Pass VK_WHOLE_SIZE to flush the
-     * complete buffer range.
-     * @param offset (Optional) Byte offset from beginning
-     *
-     * @return VkResult of the flush call
-     */
-    VkResult VK_Buffer::Flush(VkDeviceSize size, VkDeviceSize offset)
-    {
-        VkMappedMemoryRange mappedRange = {};
-        mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        mappedRange.memory = m_Memory;
-        mappedRange.offset = offset;
-        mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
-    }
-
-    /**
-     * Invalidate a memory range of the buffer to make it visible to the host
-     *
-     * @note Only required for non-coherent memory
-     *
-     * @param size (Optional) Size of the memory range to invalidate. Pass VK_WHOLE_SIZE to invalidate
-     * the complete buffer range.
-     * @param offset (Optional) Byte offset from beginning
-     *
-     * @return VkResult of the invalidate call
-     */
-    VkResult VK_Buffer::Invalidate(VkDeviceSize size, VkDeviceSize offset)
-    {
-        VkMappedMemoryRange mappedRange = {};
-        mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        mappedRange.memory = m_Memory;
-        mappedRange.offset = offset;
-        mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
     }
 
     /**
@@ -217,17 +220,6 @@ namespace GfxRenderEngine
     }
 
     /**
-     *  Flush the memory range at index * m_AlignmentSize of the buffer to make it visible to the device
-     *
-     * @param index Used in offset calculation
-     *
-     */
-    VkResult VK_Buffer::FlushIndex(int index)
-    { 
-        return Flush(m_AlignmentSize, index * m_AlignmentSize);
-    }
-
-    /**
      * Create a buffer info descriptor
      *
      * @param index Specifies the region given by index * m_AlignmentSize
@@ -237,19 +229,5 @@ namespace GfxRenderEngine
     VkDescriptorBufferInfo VK_Buffer::DescriptorInfoForIndex(int index)
     {
         return DescriptorInfo(m_AlignmentSize, index * m_AlignmentSize);
-    }
-
-    /**
-     * Invalidate a memory range of the buffer to make it visible to the host
-     *
-     * @note Only required for non-coherent memory
-     *
-     * @param index Specifies the region to invalidate: index * m_AlignmentSize
-     *
-     * @return VkResult of the invalidate call
-     */
-    VkResult VK_Buffer::InvalidateIndex(int index)
-    {
-        return Invalidate(m_AlignmentSize, index * m_AlignmentSize);
     }
 }

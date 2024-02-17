@@ -33,8 +33,8 @@ namespace GfxRenderEngine
 {
     struct PipelineConfigInfo
     {
-        PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-        PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+        /*PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+        PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;*/
 
         // input assembly stage
         VkPipelineViewportStateCreateInfo viewportInfo;

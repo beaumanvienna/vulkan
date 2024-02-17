@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <vma.h>
 
 namespace GfxRenderEngine
 {
@@ -90,6 +91,7 @@ namespace GfxRenderEngine
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
         VkQueue PresentQueue() { return m_PresentQueue; }
         VkQueue TransferQueue() { return m_TransfertQueue; }
+        VmaAllocator GetVmaAllocator() { return m_VmaAllocator; }
 
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
@@ -103,16 +105,6 @@ namespace GfxRenderEngine
             VkFormatFeatureFlags features
         );
         VkFormat FindDepthFormat();
-
-        // Buffer Helper Functions
-        void CreateBuffer
-        (
-            VkDeviceSize size,
-            VkBufferUsageFlags usage,
-            VkMemoryPropertyFlags properties,
-            VkBuffer &buffer,
-            VkDeviceMemory &bufferMemory
-        );
 
         VkCommandBuffer BeginSingleTimeCommands(QueueTypes type);
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type);
@@ -177,6 +169,7 @@ namespace GfxRenderEngine
         VK_Window* m_Window;
         VkCommandPool m_GraphicsCommandPool;
         VkCommandPool m_LoadCommandPool;
+        VmaAllocator m_VmaAllocator = {};
 
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;

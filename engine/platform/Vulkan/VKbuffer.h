@@ -42,7 +42,7 @@ namespace GfxRenderEngine
     public:
 
         VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
-                VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
+                VkBufferUsageFlags usageFlags, MemoryFlags memoryPropertyFlags,
                 VkDeviceSize minOffsetAlignment = 1);
 
         VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU);
@@ -52,28 +52,16 @@ namespace GfxRenderEngine
         VK_Buffer(const VK_Buffer&) = delete;
         VK_Buffer& operator=(const VK_Buffer&) = delete;
 
-        VkResult Map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         virtual void MapBuffer() override;
-        void Unmap();
 
         void WriteToBuffer(const void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-        VkResult Flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkDescriptorBufferInfo DescriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-        VkResult Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
         void WriteToIndex(void* data, int index);
-        VkResult FlushIndex(int index);
         VkDescriptorBufferInfo DescriptorInfoForIndex(int index);
-        VkResult InvalidateIndex(int index);
 
         VkBuffer GetBuffer() const { return m_Buffer; }
         void* GetMappedMemory() const { return m_Mapped; }
-        uint GetInstanceCount() const { return m_InstanceCount; }
-        VkDeviceSize GetInstanceSize() const { return m_InstanceSize; }
-        VkDeviceSize GetAlignmentSize() const { return m_AlignmentSize; }
-        VkBufferUsageFlags GetUsageFlags() const { return m_UsageFlags; }
-        VkMemoryPropertyFlags GetMemoryPropertyFlags() const { return m_MemoryPropertyFlags; }
-        VkDeviceSize GetBufferSize() const { return m_BufferSize; }
 
     private:
 
@@ -83,7 +71,10 @@ namespace GfxRenderEngine
 
         VK_Device* m_Device;
         void* m_Mapped = nullptr;
+        VmaAllocation m_VmaAllocation;
         VkBuffer m_Buffer = VK_NULL_HANDLE;
+
+
         VkDeviceMemory m_Memory = VK_NULL_HANDLE;
 
         VkDeviceSize m_BufferSize;
@@ -92,6 +83,5 @@ namespace GfxRenderEngine
         VkDeviceSize m_AlignmentSize;
         VkBufferUsageFlags m_UsageFlags;
         VkMemoryPropertyFlags m_MemoryPropertyFlags;
-
     };
 }

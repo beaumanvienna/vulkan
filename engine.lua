@@ -2,7 +2,7 @@
 project "engine"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
@@ -28,6 +28,7 @@ project "engine"
         "vendor/tinygltf/tiny_gltf.cpp",
         "vendor/simdjson/simdjson.cpp",
         "vendor/simdjson/simdjson.h",
+        "vendor/vma/**.cpp"
     }
 
     includedirs
@@ -54,6 +55,7 @@ project "engine"
         "vendor/json",
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
+        "vendor/vma"
     }
 
     libdirs

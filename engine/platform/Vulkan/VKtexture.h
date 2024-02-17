@@ -54,9 +54,6 @@ namespace GfxRenderEngine
     private:
 
         bool Create();
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
-                          VkMemoryPropertyFlags properties, VkBuffer& buffer,
-                          VkDeviceMemory& bufferMemory);
         void CreateImage(VkFormat format, VkImageTiling tiling,
                          VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);

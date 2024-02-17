@@ -27,6 +27,7 @@
 
 #include "VKcore.h"
 #include "VKcubemap.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -160,40 +161,6 @@ namespace GfxRenderEngine
         vkBindImageMemory(device, m_CubemapImage, m_CubemapImageMemory, 0);
     }
 
-    void VK_Cubemap::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
-    {
-        auto device = VK_Core::m_Device->Device();
-
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create buffer!");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = VK_Core::m_Device->FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-        {
-            auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to allocate buffer memory!");
-            }
-        }
-
-        vkBindBufferMemory(device, buffer, bufferMemory, 0);
-    }
-
     bool VK_Cubemap::Create()
     {
         auto device = VK_Core::m_Device->Device();
@@ -201,8 +168,7 @@ namespace GfxRenderEngine
         VkDeviceSize layerSize;
         VkDeviceSize imageSize;
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        std::unique_ptr<VK_Buffer> stagingBuffer;
 
         void* data;
         uint64 memAddress;
@@ -222,22 +188,14 @@ namespace GfxRenderEngine
                 layerSize = m_Width * m_Height * m_BytesPerPixel;
                 imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
               
-                CreateBuffer
-                (
-                    imageSize, 
-                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    stagingBuffer,
-                    stagingBufferMemory
-                );
-                vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+                stagingBuffer = std::make_unique<VK_Buffer>(imageSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryFlagBits::HOST_ACCESS_RANDOM);
+                data = stagingBuffer->GetMappedMemory();
                 memAddress = reinterpret_cast<uint64>(data);
             }
             memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
             stbi_image_free(pixels);
             memAddress += layerSize;
         }
-        vkUnmapMemory(device, stagingBufferMemory);
 
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage
@@ -256,7 +214,7 @@ namespace GfxRenderEngine
 
         VK_Core::m_Device->CopyBufferToImage
         (
-            stagingBuffer,                  /*VkBuffer buffer*/
+            stagingBuffer->GetBuffer(),     /*VkBuffer buffer*/
             m_CubemapImage,                 /*VkImage image  */
             static_cast<uint>(m_Width),     /*uint width     */
             static_cast<uint>(m_Height),    /*uint height    */
@@ -268,9 +226,6 @@ namespace GfxRenderEngine
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         );
-
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
 
         // Create a texture sampler
         // In Vulkan, textures are accessed by samplers

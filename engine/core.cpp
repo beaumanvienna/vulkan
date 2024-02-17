@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         if (m_HomeDir == "")
         {
             auto path = std::filesystem::current_path();
-            m_HomeDir = path.u8string();
+            m_HomeDir = path.string();
         }
 
         EngineCore::AddSlash(m_HomeDir);

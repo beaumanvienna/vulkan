@@ -255,16 +255,15 @@ namespace GfxRenderEngine
         {
             vertexSize, m_VertexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            MemoryFlagBits::HOST_ACCESS_RANDOM
         };
-        stagingBuffer.Map();
         stagingBuffer.WriteToBuffer((void*) vertices.data());
 
         m_VertexBuffer = std::make_unique<VK_Buffer>
         (
             vertexSize, m_VertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            MemoryFlagBits::DEDICATED_MEMORY
         );
 
         m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_VertexBuffer->GetBuffer(), bufferSize);
@@ -286,16 +285,15 @@ namespace GfxRenderEngine
         {
             indexSize, m_IndexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            MemoryFlagBits::HOST_ACCESS_RANDOM
         };
-        stagingBuffer.Map();
         stagingBuffer.WriteToBuffer((void*) indices.data());
 
         m_IndexBuffer = std::make_unique<VK_Buffer>
         (
             indexSize, m_IndexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            MemoryFlagBits::DEDICATED_MEMORY
         );
         m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_IndexBuffer->GetBuffer(), bufferSize);
 
@@ -321,7 +319,6 @@ namespace GfxRenderEngine
 
         // update ubo
         static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->WriteToBuffer(m_Skeleton->m_ShaderData.m_FinalJointsMatrices.data());
-        static_cast<VK_Buffer*>(m_ShaderDataUbo.get())->Flush();
     }
 
     void VK_Model::BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)

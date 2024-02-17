@@ -57,7 +57,6 @@ namespace GfxRenderEngine
         {
             // update ubo
             m_Ubo->WriteToBuffer(m_DataInstances.data());
-            m_Ubo->Flush();
             m_Dirty = false;
         }
     }

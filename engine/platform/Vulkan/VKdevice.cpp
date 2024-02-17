@@ -96,6 +96,7 @@ namespace GfxRenderEngine
 
     VK_Device::~VK_Device()
     {
+        vmaDestroyAllocator(m_VmaAllocator);
         vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
         vkDestroyCommandPool(m_Device, m_LoadCommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
@@ -297,6 +298,27 @@ namespace GfxRenderEngine
         vkGetDeviceQueue(m_Device, indices.m_PresentFamily,  indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
         vkGetDeviceQueue(m_Device, indices.m_TransferFamily, indices.m_QueueIndices[QueueTypes::TRANSFER], &m_TransfertQueue);
         m_TransferQueueSupportsGraphics = indices.m_GraphicsFamily == indices.m_TransferFamily;
+
+        VmaVulkanFunctions vmaVulkanFunctions = {
+            .vkGetInstanceProcAddr = &vkGetInstanceProcAddr,
+            .vkGetDeviceProcAddr = &vkGetDeviceProcAddr
+        };
+
+        VmaAllocatorCreateInfo vmaAllocatorCreateInfo{
+            .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+            .physicalDevice = m_PhysicalDevice,
+            .device = m_Device,
+            .preferredLargeHeapBlockSize = 0,
+            .pAllocationCallbacks = nullptr,
+            .pDeviceMemoryCallbacks = nullptr,
+            .pHeapSizeLimit = nullptr,
+            .pVulkanFunctions = &vmaVulkanFunctions,
+            .instance = m_Instance,
+            .vulkanApiVersion = VK_API_VERSION_1_3,
+            .pTypeExternalMemoryHandleTypes = nullptr 
+        };
+
+        vmaCreateAllocator(&vmaAllocatorCreateInfo, &m_VmaAllocator);
     }
 
     void VK_Device::CreateCommandPool()
@@ -711,40 +733,6 @@ namespace GfxRenderEngine
 
         LOG_CORE_CRITICAL("failed to find suitable memory type!");
         return 0;
-    }
-
-    void VK_Device::CreateBuffer(
-        VkDeviceSize size,
-        VkBufferUsageFlags usage,
-        VkMemoryPropertyFlags properties,
-        VkBuffer &buffer,
-        VkDeviceMemory &bufferMemory)
-    {
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create vertex buffer!");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to allocate vertex buffer memory!");
-        }
-
-        vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
     }
 
     VkCommandBuffer VK_Device::BeginSingleTimeCommands(QueueTypes type)

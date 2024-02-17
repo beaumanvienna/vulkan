@@ -36,4 +36,15 @@ namespace GfxRenderEngine
         static std::shared_ptr<VK_Device> m_Device;
 
     };
+
+    using MemoryFlags = uint;
+    struct MemoryFlagBits {
+        static inline constexpr MemoryFlags NONE = { 0x00000000 };
+        static inline constexpr MemoryFlags DEDICATED_MEMORY = { 0x00000001 };
+        static inline constexpr MemoryFlags CAN_ALIAS = { 0x00000200 };
+        static inline constexpr MemoryFlags HOST_ACCESS_SEQUENTIAL_WRITE = { 0x00000400 };
+        static inline constexpr MemoryFlags HOST_ACCESS_RANDOM = { 0x00000800 };
+        static inline constexpr MemoryFlags STRATEGY_MIN_MEMORY = { 0x00010000 };
+        static inline constexpr MemoryFlags STRATEGY_MIN_TIME = { 0x00020000 };
+    };
 }
