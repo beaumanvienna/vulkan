@@ -33,7 +33,7 @@ namespace LucreApp
     KeyboardInputController::KeyboardInputController(const KeyboardInputControllerSpec& spec)
         : m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
     {
-          
+  
         m_MomentumX.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
         m_MomentumY.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
         m_MomentumZ.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
@@ -76,7 +76,7 @@ namespace LucreApp
         moveDir -= forwardDir * m_MomentumZ.Get(z, timestep);
         moveDir += rightDir   * m_MomentumX.Get(x, timestep);
         moveDir -= upDir      * m_MomentumY.Get(y, timestep);
-        
+
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
             transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * timestep * moveDir);

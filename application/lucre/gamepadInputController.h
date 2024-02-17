@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -26,14 +26,17 @@
 
 #include "engine.h"
 #include "scene/scene.h"
+#include "momentum.h"
 
 namespace LucreApp
 {
 
     struct GamepadInputControllerSpec
     {
-        float m_Deadzone{0.2f};
+        float m_Deadzone{0.05f};
         float m_Sensitivity{0.01f};
+        float m_MoveSpeed{1.5f};
+        float m_LookSpeed{0.5f};
     };
 
     class GamepadInputController
@@ -45,11 +48,16 @@ namespace LucreApp
         ~GamepadInputController() {}
 
         void GetTransform(TransformComponent& transform, bool scale = false);
+        void MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform);
 
     private:
 
         float m_Deadzone;
         float m_Sensitivity;
+        float m_MoveSpeed;
+        float m_LookSpeed;
+
+        Momentum m_Momentum;
 
     };
 }

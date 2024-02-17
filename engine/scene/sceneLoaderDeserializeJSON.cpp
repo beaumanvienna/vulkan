@@ -308,8 +308,8 @@ namespace GfxRenderEngine
         // transform
         TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
         glm::vec3 scale{1.0f};
-        glm::vec3 rotation{1.0f};
-        glm::vec3 translation{1.0f};
+        glm::vec3 rotation{0.0f};
+        glm::vec3 translation{0.0f};
 
         for (auto transformComponent : transformJSON)
         {

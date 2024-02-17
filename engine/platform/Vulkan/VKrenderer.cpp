@@ -1072,19 +1072,12 @@ namespace GfxRenderEngine
         if (dirtyFlag)
         {
             transform.SetMat4Global(parentMat4);
-            const glm::mat4& mat4Global = transform.GetMat4Global();
-            for (uint index = 0; index < node.Children(); index++)
-            {
-                UpdateTransformCache(scene, node.GetChild(index), mat4Global, true);
-            }
         }
-        else
+
+        const glm::mat4& mat4Global = transform.GetMat4Global();
+        for (uint index = 0; index < node.Children(); index++)
         {
-            const glm::mat4& mat4Global = transform.GetMat4Global();
-            for (uint index = 0; index < node.Children(); ++index)
-            {
-                UpdateTransformCache(scene, node.GetChild(index), mat4Global, false);
-            }
+            UpdateTransformCache(scene, node.GetChild(index), mat4Global, dirtyFlag);
         }
     }
 

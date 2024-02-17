@@ -61,11 +61,16 @@ namespace LucreApp
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
             m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
+
+            GamepadInputControllerSpec gamepadInputControllerSpec{};
+            m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
         }
 
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
+
+        m_Water = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf::0::Scene::Water");
 
         // get characters and start all animations
         m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
@@ -147,7 +152,7 @@ namespace LucreApp
         //    animations.SetRepeatAll(true);
         //    animations.Start();
         //}
-
+        if (m_Water == entt::null)
         {
             // place static lights for beach scene
             float intensity = 5.0f;
@@ -225,20 +230,14 @@ namespace LucreApp
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
-                    transform.SetScale({0.00999978, 0.0100001, 0.0100001});
+                    transform.SetScale({0.01, 0.01, 0.01});
                     transform.SetRotation({-0.888632, -0.571253, -0.166816});
                     transform.SetTranslation({1.5555, 4, -4.13539});
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
+
                 m_LightView0 = std::make_shared<Camera>();
-                float left   =  -4.0f;
-                float right  =   4.0f;
-                float bottom =  -4.0f;
-                float top    =   4.0f;
-                float near   =   0.1f;
-                float far    =  10.0f;
-                m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb0, m_LightView0);
             }
 
@@ -299,11 +298,29 @@ namespace LucreApp
             auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        }
+
+        if (m_Water != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Water);
+            transform.AddRotation({0.0f, 0.1f*timestep, 0.0f});
         }
 
         AnimateHero(timestep);
         if (m_CharacterAnimation) m_CharacterAnimation->OnUpdate(timestep);
+        {
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
+            float scaleX = lightbulbTransform.GetScale().x;
+            float left   =  -400.0f * scaleX;
+            float right  =   400.0f * scaleX;
+            float bottom =  -400.0f * scaleX;
+            float top    =   400.0f * scaleX;
+            float near   =    10.0f * scaleX;
+            float far    =  1000.0f * scaleX;
+            m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+        }
         SetLightView(m_Lightbulb0, m_LightView0);
         SetLightView(m_Lightbulb1, m_LightView1);
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
