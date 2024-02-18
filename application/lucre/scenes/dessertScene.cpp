@@ -71,6 +71,7 @@ namespace LucreApp
         m_Dictionary.List();
 
         m_Water = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf::0::Scene::Water");
+        if (m_Water == entt::null) m_Water = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/Island scene/gltf/Island2.gltf::0::Scene::Water");
 
         // get characters and start all animations
         m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");

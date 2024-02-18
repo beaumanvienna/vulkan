@@ -8,7 +8,7 @@ project "engine"
 
     defines
     {
-        "ENGINE_VERSION=\"0.8.6\"",
+        "ENGINE_VERSION=\"0.8.8\"",
         "PROFILING"
     }
 
@@ -28,6 +28,7 @@ project "engine"
         "vendor/tinygltf/tiny_gltf.cpp",
         "vendor/simdjson/simdjson.cpp",
         "vendor/simdjson/simdjson.h",
+        "vendor/fastgltf/src/*.cpp",
     }
 
     includedirs
@@ -45,6 +46,7 @@ project "engine"
         "vendor/shaderc/libshaderc/include/shaderc/",
         "vendor/shaderc/libshaderc/include/",
         "vendor/assetImporter/include",
+        "vendor/fastgltf/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
