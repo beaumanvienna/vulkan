@@ -22,6 +22,12 @@
 
 #pragma once
 
+#include <fastgltf/core.hpp>
+#include <fastgltf/types.hpp>
+#include <fastgltf/tools.hpp>
+#include <fastgltf/util.hpp>
+#include <fastgltf/glm_element_traits.hpp>
+
 #include "renderer/model.h"
 #include "renderer/gltf.h"
 #include "scene/scene.h"
@@ -64,30 +70,12 @@ namespace GfxRenderEngine
         int GetMinFilter(uint index);
         int GetMagFilter(uint index);
 
-    private:
-
-        template<typename T>
-        int LoadAccessor(const tinygltf::Accessor& accessor, const T*& pointer, uint* count = nullptr, int* type = nullptr)
-        {
-            const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-            pointer = reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-            if (count)
-            {
-                count[0] = static_cast<uint>(accessor.count);
-            }
-            if (type)
-            {
-                type[0] = accessor.type;
-            }
-            return accessor.componentType;
-        }
+        void PrintAssetError(fastgltf::Error assetErrorCode);
 
     private:
 
         std::string m_Filepath;
         std::string m_Basepath;
-        tinygltf::Model m_GltfModel;
-        tinygltf::TinyGLTF m_GltfLoader;
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;

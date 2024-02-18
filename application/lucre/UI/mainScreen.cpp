@@ -220,7 +220,7 @@ namespace LucreApp
         }
 
         m_SettingsButton->OnClick.Handle(this, &MainScreen::SettingsClick);
-        m_SettingsButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
+        m_SettingsButton->OnHighlight.Add([&](SCREEN_UI::EventParams &e)
         {
             if (!m_ToolTipsShown[MAIN_SETTINGS])
             {
@@ -255,7 +255,7 @@ namespace LucreApp
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::OffClick);
         m_OffButton->OnHold.Handle(this, &MainScreen::OffHold);
-        m_OffButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
+        m_OffButton->OnHighlight.Add([&](SCREEN_UI::EventParams &e)
         {
             if (!m_ToolTipsShown[MAIN_OFF])
             {

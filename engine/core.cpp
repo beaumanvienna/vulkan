@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         if (m_HomeDir == "")
         {
             auto path = std::filesystem::current_path();
-            m_HomeDir = path.u8string();
+            m_HomeDir = path.string();
         }
 
         EngineCore::AddSlash(m_HomeDir);
@@ -101,7 +101,7 @@ namespace GfxRenderEngine
         m_Audio = Audio::Create();
         m_Audio->Start();
         #ifdef LINUX
-            Sound::SetCallback([=](const LibPAmanager::Event& event)
+            Sound::SetCallback([this](const LibPAmanager::Event& event)
             {
                 AudioCallback((int)event.GetType());
             });

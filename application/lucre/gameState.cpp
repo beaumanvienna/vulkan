@@ -245,7 +245,7 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {   
                     auto scenePtr = std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
                     SetupScene(state, scenePtr);
@@ -266,7 +266,7 @@ namespace LucreApp
             }
             case State::BEACH:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr = std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
                     SetupScene(state, scenePtr);
@@ -287,7 +287,7 @@ namespace LucreApp
             }
             case State::NIGHT:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr = std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
                     SetupScene(state, scenePtr);
@@ -308,7 +308,7 @@ namespace LucreApp
             }
             case State::DESSERT:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr = std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
                     SetupScene(state, scenePtr);

@@ -1,24 +1,27 @@
 
 -- Team Engine 2021
 
-project "yaml-cpp"
+project "fastgltf"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
 
-    targetdir ("yaml-cpp/build")
-    objdir ("yaml-cpp/build")
+    targetdir ("fastgltf/build")
+    objdir ("fastgltf/build")
 
     files
     {
-        "yaml-cpp/src/**.h",
-        "yaml-cpp/src/**.cpp",
-        "yaml-cpp/include/**.h"
+        "fastgltf/src/**.cpp",
+        "fastgltf/include/**.h"
     }
 
     includedirs
     {
-        "yaml-cpp/include"
+        "glm",
+        "spdlog/include/",
+        "fastgltf/include",
+        "simdjson",
+        "../engine",
     }
 
     filter "system:linux"

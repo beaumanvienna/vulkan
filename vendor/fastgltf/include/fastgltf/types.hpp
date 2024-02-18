@@ -102,7 +102,7 @@ namespace fastgltf {
 	using num = float;
 #endif
 
-#pragma region Enums
+//#pragma region Enums
     // clang-format off
     enum class PrimitiveType : std::uint8_t {
         Points = 0,
@@ -288,9 +288,9 @@ namespace fastgltf {
     FASTGLTF_ASSIGNMENT_OP_TEMPLATE_MACRO(Category, Category, &)
     FASTGLTF_UNARY_OP_TEMPLATE_MACRO(Category, ~)
     // clang-format on
-#pragma endregion
+//#pragma endregion
 
-#pragma region ConversionFunctions
+//#pragma region ConversionFunctions
     /**
      * Gets the number of components for each element for the given accessor type. For example, with
      * a Vec3 accessor type this will return 3, as a Vec3 contains 3 components.
@@ -454,9 +454,9 @@ namespace fastgltf {
 				return "";
 		}
 	}
-#pragma endregion
+//#pragma endregion
 
-#pragma region Containers
+//#pragma region Containers
     /**
      * A static vector which cannot be resized freely. When constructed, the backing array is allocated once.
      */
@@ -593,17 +593,17 @@ namespace fastgltf {
 
         SmallVector() : _data(reinterpret_cast<T*>(storage.data())) {}
 
-		explicit SmallVector(const Allocator& allocator) noexcept : allocator(allocator), _data(reinterpret_cast<T*>(storage.data())) {}
+		explicit SmallVector(const Allocator& allocator2) noexcept : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {}
 
-        explicit SmallVector(std::size_t size, const Allocator& allocator = Allocator()) : allocator(allocator), _data(reinterpret_cast<T*>(storage.data())) {
+        explicit SmallVector(std::size_t size, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
             resize(size);
         }
 
-        SmallVector(std::size_t size, const T& value, const Allocator& allocator = Allocator()) : allocator(allocator), _data(reinterpret_cast<T*>(storage.data())) {
+        SmallVector(std::size_t size, const T& value, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
             assign(size, value);
         }
 
-        SmallVector(std::initializer_list<T> init, const Allocator& allocator = Allocator()) : allocator(allocator), _data(reinterpret_cast<T*>(storage.data())) {
+        SmallVector(std::initializer_list<T> init, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
             assign(init);
         }
 
@@ -1217,9 +1217,9 @@ namespace fastgltf {
 		!std::is_same_v<std::nullopt_t, std::remove_const_t<decltype(OptionalFlagValue<T>::missing_value)>>,
 		OptionalWithFlagValue<T>,
 		std::optional<T>>;
-#pragma endregion
+//#pragma endregion
 
-#pragma region Structs
+//#pragma region Structs
 	class URI;
 
 	/**
@@ -2081,7 +2081,7 @@ namespace fastgltf {
 			return *this;
 		}
     };
-#pragma endregion
+//#pragma endregion
 } // namespace fastgltf
 
 #ifdef _MSC_VER

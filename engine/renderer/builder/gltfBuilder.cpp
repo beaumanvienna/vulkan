@@ -28,8 +28,6 @@
 #include "renderer/materialDescriptor.h"
 #include "auxiliary/file.h"
 
-#include "VKmodel.h"
-
 namespace GfxRenderEngine
 {
 

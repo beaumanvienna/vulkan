@@ -471,7 +471,7 @@ namespace fastgltf {
 
 	public:
 		explicit Expected(Error error) : err(error) {}
-		explicit Expected(T&& value) : err(Error::None), value(std::move(value)) {}
+		explicit Expected(T&& value2) : err(Error::None), value(std::move(value2)) {}
 
 		Expected(const Expected<T>& other) = delete;
 		Expected(Expected<T>&& other) noexcept : err(other.err), value(std::move(other.value)) {}

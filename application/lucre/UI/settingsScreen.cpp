@@ -185,7 +185,7 @@ namespace LucreApp
         volume->SetEnabledPtr(&m_GlobalVolumeEnabled);
         volume->SetZeroLabel(ge->T("Mute"));
 
-        volume->OnChange.Add([=](EventParams &e) 
+        volume->OnChange.Add([this](EventParams &e)
         {
             Sound::SetDesktopVolume(m_GlobalVolume);
             return SCREEN_UI::EVENT_CONTINUE;
@@ -228,7 +228,7 @@ namespace LucreApp
 
         m_ControllerSetup = new ControllerSetup(m_Spritesheet);
         horizontalLayoutController->Add(m_ControllerSetup);
-        m_ControllerSetup->OnMappingSuccessful.Add([=](EventParams &e) 
+        m_ControllerSetup->OnMappingSuccessful.Add([this](EventParams &e) 
         {
             m_SettingsInfo->Show("Mapping successful", e.v);
             return SCREEN_UI::EVENT_CONTINUE;

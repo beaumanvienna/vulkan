@@ -23,7 +23,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
+#include "engine.h"
+#include <regex>
 #if !defined(__cplusplus) || (!defined(_MSVC_LANG) && __cplusplus < 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG < 201703L)
 #error "fastgltf requires C++17"
 #endif
@@ -698,10 +699,13 @@ fg::Expected<fg::DataSource> fg::Parser::decodeDataUri(URIView& uri) const noexc
 }
 
 fg::Expected<fg::DataSource> fg::Parser::loadFileFromUri(URIView& uri) const noexcept {
-    auto path = directory / fs::u8path(uri.path());
+    std::string strUri = std::string(uri.path());
+    std::regex regularExpression("%20");
+    auto path = directory / std::regex_replace(strUri, regularExpression, " ");
     std::error_code error;
     // If we were instructed to load external buffers and the files don't exist, we'll return an error.
     if (!fs::exists(path, error) || error) {
+        LOG_CORE_CRITICAL("fastgltf: Error::MissingExternalBuffer {0}", path);
 	    return Expected<DataSource> { Error::MissingExternalBuffer };
     }
 
@@ -1270,6 +1274,7 @@ fg::Expected<fg::Asset> fg::Parser::parse(simdjson::dom::object root, Category c
 					known = true;
 					if (!hasBit(config.extensions, extensionEnum)) {
 						// The extension is required, but not enabled by the user.
+                        LOG_CORE_CRITICAL("fastgltf: The extension is required, but not enabled by the user: {0}", extensionString);
 						return Expected<Asset>(Error::MissingExtensions);
 					}
 					break;
@@ -3197,7 +3202,7 @@ fg::Error fg::Parser::parseNodes(simdjson::dom::array& nodes, Asset& asset) {
 			if (hasBit(config.extensions, Extensions::KHR_lights_punctual)) {
 				dom::object lightsObject;
 				if (extensionsObject[extensions::KHR_lights_punctual].get_object().get(lightsObject) == SUCCESS) FASTGLTF_LIKELY {
-					std::uint64_t light;
+					std::uint64_t light = 0;
 					if (auto lightError = lightsObject["light"].get_uint64().get(light); error == SUCCESS) FASTGLTF_LIKELY {
 						node.lightIndex = static_cast<std::size_t>(light);
 					} else {
@@ -5120,8 +5125,8 @@ fg::Error fg::FileExporter::writeGltfJson(const Asset& asset, std::filesystem::p
     return Error::None;
 }
 
-fg::Error fg::FileExporter::writeGltfBinary(const Asset& asset, std::filesystem::path target, ExportOptions options) {
-    auto expected = Exporter::writeGltfBinary(asset, options);
+fg::Error fg::FileExporter::writeGltfBinary(const Asset& asset, std::filesystem::path target, ExportOptions options2) {
+    auto expected = Exporter::writeGltfBinary(asset, options2);
 
     if (!expected) {
         return expected.error();

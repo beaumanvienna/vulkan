@@ -2,7 +2,7 @@
 project "engine"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
@@ -28,7 +28,6 @@ project "engine"
         "vendor/tinygltf/tiny_gltf.cpp",
         "vendor/simdjson/simdjson.cpp",
         "vendor/simdjson/simdjson.h",
-        "vendor/fastgltf/src/*.cpp",
     }
 
     includedirs
@@ -169,6 +168,7 @@ project "engine"
 
     include "vendor/glfw.lua"
     include "vendor/yaml.lua"
+    include "vendor/fastgltf.lua"
     include "vendor/atlas"
     include "vendor/shaderc.lua"
     if ((os.host() ~= "macosx")) then

@@ -28,8 +28,6 @@
 #include "renderer/materialDescriptor.h"
 #include "auxiliary/file.h"
 
-#include "VKmodel.h"
-
 namespace GfxRenderEngine
 {
 
@@ -44,16 +42,45 @@ namespace GfxRenderEngine
     bool FastgltfBuilder::LoadGltf(uint const instanceCount, int const sceneID)
     {
         { // load ascii from file
-            std::string warn, err;
+            auto path = std::filesystem::path{m_Filepath};
 
-            stbi_set_flip_vertically_on_load(false);
-            if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
+            constexpr auto extensions = 
+                fastgltf::Extensions::KHR_mesh_quantization | 
+                fastgltf::Extensions::KHR_texture_transform;
+            fastgltf::Parser parser(extensions);
+
+            constexpr auto gltfOptions =
+                fastgltf::Options::DontRequireValidAssetMember |
+                fastgltf::Options::AllowDouble |
+                fastgltf::Options::LoadGLBBuffers |
+                fastgltf::Options::LoadExternalBuffers |
+                fastgltf::Options::LoadExternalImages |
+                fastgltf::Options::GenerateMeshIndices;
+
+            fastgltf::GltfDataBuffer data;
+
+            // load gltf or glb
+            data.loadFromFile(path);
+
+            // parse and load other files (*.bin, etc)
+            auto asset = parser.loadGltf(&data, path.parent_path(), gltfOptions);
+            auto assetErrorCode = asset.error();
+
+            if (assetErrorCode != fastgltf::Error::None)
             {
-                LOG_CORE_CRITICAL("LoadGltf errors: {0}, warnings: {1}", err, warn);
+                PrintAssetError(assetErrorCode);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
+
+            //auto error = asset->parse(fastgltf::Category::Scenes);
+            //if (error != fastgltf::Error::None)
+            //{
+            //    std::cerr << "Failed to parse glTF: " << fastgltf::to_underlying(error) << std::endl;
+            //    return Gltf::GLTF_LOAD_FAILURE;
+            //}
         }
 
+        /*
         if (!m_GltfModel.meshes.size())
         {
             LOG_CORE_CRITICAL("LoadGltf: no meshes found in {0}", m_Filepath);
@@ -130,12 +157,13 @@ namespace GfxRenderEngine
                 }
             }
         }
-
+        */
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
     bool FastgltfBuilder::MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex)
     {
+        /*
         // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
 
@@ -152,10 +180,12 @@ namespace GfxRenderEngine
         }
         m_HasMesh[gltfNodeIndex] = localHasMesh;
         return localHasMesh;
+        */
     }
 
     void FastgltfBuilder::ProcessScene(tinygltf::Scene& scene, uint const parentNode)
     {
+        /*
         size_t nodeCount = scene.nodes.size();
         if (!nodeCount)
         {
@@ -168,10 +198,12 @@ namespace GfxRenderEngine
         {
             ProcessNode(scene, scene.nodes[nodeIndex], parentNode);
         }
+        */
     }
 
     void FastgltfBuilder::ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
+        /*
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         auto& nodeName = node.name;
         auto meshIndex = node.mesh;
@@ -209,10 +241,12 @@ namespace GfxRenderEngine
             int gltfChildNodeIndex = node.children[childNodeIndex];
             ProcessNode(scene, gltfChildNodeIndex, currentNode);
         }
+        */
     }
 
     uint FastgltfBuilder::CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
+        /*
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         auto& nodeName = node.name;
         uint meshIndex = node.mesh;
@@ -337,10 +371,12 @@ namespace GfxRenderEngine
         }
 
         return newNode;
+        */
     }
 
     int FastgltfBuilder::GetMinFilter(uint index)
     {
+        /*
         int sampler = m_GltfModel.textures[index].sampler;
         int filter = m_GltfModel.samplers[sampler].minFilter;
         std::string& name = m_GltfModel.images[index].name;
@@ -367,10 +403,12 @@ namespace GfxRenderEngine
             }
         }
         return filter;
+        */
     }
 
     int FastgltfBuilder::GetMagFilter(uint index)
     {
+        /*
         int sampler = m_GltfModel.textures[index].sampler;
         int filter = m_GltfModel.samplers[sampler].magFilter;
         std::string& name = m_GltfModel.images[index].name;
@@ -396,10 +434,12 @@ namespace GfxRenderEngine
             }
         }
         return filter;
+        */
     }
 
     void FastgltfBuilder::LoadImagesGltf()
     {
+        /*
         m_ImageOffset = m_Images.size();
         size_t numImages = m_GltfModel.images.size();
         m_Images.resize(m_ImageOffset + numImages);
@@ -445,10 +485,12 @@ namespace GfxRenderEngine
             #endif
             m_Images[imageIndex] = texture;
         }
+        */
     }
 
     bool FastgltfBuilder::GetImageFormatGltf(uint const imageIndex)
     {
+        /*
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
@@ -558,10 +600,12 @@ namespace GfxRenderEngine
 
             m_Materials[materialIndex] = material;
         }
+        */
     }
 
     void FastgltfBuilder::LoadVertexDataGltf(uint const meshIndex)
     {
+        /*
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
@@ -773,10 +817,12 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = vertexCount;
             submesh.m_IndexCount  = indexCount;
         }
+        */
     }
 
     void FastgltfBuilder::LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex)
     {
+        /*
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
 
         if (node.matrix.size() == 16)
@@ -804,10 +850,12 @@ namespace GfxRenderEngine
                 transform.SetTranslation({node.translation[0], node.translation[1], node.translation[2]});
             }
         }
+        */
     }
 
     void FastgltfBuilder::AssignMaterial(ModelSubmesh& submesh, int const materialIndex)
     {
+        /*
         if (materialIndex == Gltf::GLTF_NOT_USED)
         {
             { // create material descriptor
@@ -1035,6 +1083,7 @@ namespace GfxRenderEngine
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
         }
+        */
     }
 
     void FastgltfBuilder::CalculateTangents()
@@ -1133,6 +1182,84 @@ namespace GfxRenderEngine
                     break;
             }
             cnt = (cnt + 1) % 3;
+        }
+    }
+
+    void FastgltfBuilder::PrintAssetError(fastgltf::Error assetErrorCode)
+    {
+        LOG_CORE_CRITICAL("FastgltfBuilder::LoadGltf: couldn't load {0}", m_Filepath);
+        switch(assetErrorCode)
+        {
+            case fastgltf::Error::None:
+            {
+                LOG_CORE_CRITICAL("error code: ");
+                break;
+            }
+            case fastgltf::Error::InvalidPath:
+            {
+                LOG_CORE_CRITICAL("error code: The glTF directory passed to loadGLTF is invalid.");
+                break;
+            }
+            case fastgltf::Error::MissingExtensions:
+            {
+                LOG_CORE_CRITICAL("error code: One or more extensions are required by the glTF but not enabled in the Parser.");
+                break;
+            }
+            case fastgltf::Error::UnknownRequiredExtension:
+            {
+                LOG_CORE_CRITICAL("error code: An extension required by the glTF is not supported by fastgltf.");
+                break;
+            }
+            case fastgltf::Error::InvalidJson:
+            {
+                LOG_CORE_CRITICAL("error code: An error occurred while parsing the JSON.");
+                break;
+            }
+            case fastgltf::Error::InvalidGltf:
+            {
+                LOG_CORE_CRITICAL("error code: The glTF is either missing something or has invalid data.");
+                break;
+            }
+            case fastgltf::Error::InvalidOrMissingAssetField:
+            {
+                LOG_CORE_CRITICAL("error code: The glTF asset object is missing or invalid.");
+                break;
+            }
+            case fastgltf::Error::InvalidGLB:
+            {
+                LOG_CORE_CRITICAL("error code: The GLB container is invalid.");
+                break;
+            }
+            case fastgltf::Error::MissingField:
+            {
+                LOG_CORE_CRITICAL("error code: A field is missing in the JSON stream.");
+                break;
+            }
+            case fastgltf::Error::MissingExternalBuffer:
+            {
+                LOG_CORE_CRITICAL("error code: With Options::LoadExternalBuffers, an external buffer was not found.");
+                break;
+            }
+            case fastgltf::Error::UnsupportedVersion:
+            {
+                LOG_CORE_CRITICAL("error code: The glTF version is not supported by fastgltf.");
+                break;
+            }
+            case fastgltf::Error::InvalidURI:
+            {
+                LOG_CORE_CRITICAL("error code: A URI from a buffer or image failed to be parsed.");
+                break;
+            }
+            case fastgltf::Error::InvalidFileData:
+            {
+                LOG_CORE_CRITICAL("error code: The file data is invalid, or the file type could not be determined.");
+                break;
+            }
+            default:
+            {
+                LOG_CORE_CRITICAL("error code: inkown fault code");
+                break;
+            }
         }
     }
 }
