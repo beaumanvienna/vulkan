@@ -93,14 +93,14 @@ namespace GfxRenderEngine
         VK_RenderPass(const VK_RenderPass &) = delete;
         VK_RenderPass& operator=(const VK_RenderPass &) = delete;
 
-        VkImageView GetImageViewColorAttachment() { return m_ColorAttachmentView; }
-        VkImageView GetImageViewGBufferPosition() { return m_GBufferPositionView; }
-        VkImageView GetImageViewGBufferNormal() { return m_GBufferNormalView; }
-        VkImageView GetImageViewGBufferColor() { return m_GBufferColorView; }
-        VkImageView GetImageViewGBufferMaterial() { return m_GBufferMaterialView; }
-        VkImageView GetImageViewGBufferEmission() { return m_GBufferEmissionView; }
+        VkImageView GetImageViewColorAttachment() { return m_Device->GetImageViewSlot(m_ColorAttachmentImage.defaultView()).vkImageView; }
+        VkImageView GetImageViewGBufferPosition() { return m_Device->GetImageViewSlot(m_GBufferPositionImage.defaultView()).vkImageView; }
+        VkImageView GetImageViewGBufferNormal() { return m_Device->GetImageViewSlot(m_GBufferNormalImage.defaultView()).vkImageView; }
+        VkImageView GetImageViewGBufferColor() { return m_Device->GetImageViewSlot(m_GBufferColorImage.defaultView()).vkImageView; }
+        VkImageView GetImageViewGBufferMaterial() { return m_Device->GetImageViewSlot(m_GBufferMaterialImage.defaultView()).vkImageView; }
+        VkImageView GetImageViewGBufferEmission() { return m_Device->GetImageViewSlot(m_GBufferEmissionImage.defaultView()).vkImageView; }
 
-        VkImage GetImageEmission() const { return m_GBufferEmissionImage; }
+        VkImage GetImageEmission() const { return m_Device->GetImageSlot(m_GBufferEmissionImage).vkImage; }
         VkFormat GetFormatEmission() const { return m_BufferEmissionFormat; }
 
         VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
@@ -143,7 +143,17 @@ namespace GfxRenderEngine
         VkFormat m_BufferMaterialFormat;
         VkFormat m_BufferEmissionFormat;
 
-        VkImage m_DepthImage;
+        ImageId m_DepthImage;
+        ImageId m_ColorAttachmentImage;
+        ImageId m_GBufferPositionImage;
+        ImageId m_GBufferNormalImage;
+        ImageId m_GBufferColorImage;
+        ImageId m_GBufferMaterialImage;
+        ImageId m_GBufferEmissionImage;
+
+        ImageViewId m_GBufferEmissionImageView;
+
+        /*VkImage m_DepthImage;
         VkImage m_ColorAttachmentImage;
         VkImage m_GBufferPositionImage;
         VkImage m_GBufferNormalImage;
@@ -165,7 +175,7 @@ namespace GfxRenderEngine
         VkDeviceMemory m_GBufferNormalImageMemory;
         VkDeviceMemory m_GBufferColorImageMemory;
         VkDeviceMemory m_GBufferMaterialImageMemory;
-        VkDeviceMemory m_GBufferEmissionImageMemory;
+        VkDeviceMemory m_GBufferEmissionImageMemory;*/
 
         std::vector<VkFramebuffer> m_3DFramebuffers;
         std::vector<VkFramebuffer> m_PostProcessingFramebuffers;

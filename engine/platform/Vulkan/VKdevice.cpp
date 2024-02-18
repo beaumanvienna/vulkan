@@ -38,6 +38,23 @@
 
 namespace GfxRenderEngine
 {
+    static const VkBufferUsageFlags BUFFER_USE_FLAGS =
+        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+        VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT |
+        VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT |
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+        VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT |
+        VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT |
+        VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT |
+        VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+        VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR |
+        VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
 
     // local callback functions
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -92,6 +109,9 @@ namespace GfxRenderEngine
         PickPhysicalDevice();
         CreateLogicalDevice();
         CreateCommandPool();
+
+        // I set every resource to have 10000 handles
+        m_GPUShaderResourceTable = std::make_unique<GPUShaderResourceTable>(10000, 10000, 10000, m_Device, false);
     }
 
     VK_Device::~VK_Device()
@@ -253,16 +273,119 @@ namespace GfxRenderEngine
             }
         }
 
-        VkPhysicalDeviceFeatures deviceFeatures = {};
-        deviceFeatures.samplerAnisotropy = VK_TRUE;
+        const VkPhysicalDeviceFeatures REQUIRED_PHYSICAL_DEVICE_FEATURES{
+            .robustBufferAccess = VK_FALSE,
+            .fullDrawIndexUint32 = VK_FALSE,
+            .imageCubeArray = VK_TRUE,
+            .independentBlend = VK_TRUE,
+            .geometryShader = VK_FALSE,
+            .tessellationShader = VK_TRUE,
+            .sampleRateShading = VK_FALSE,
+            .dualSrcBlend = VK_FALSE,
+            .logicOp = VK_FALSE,
+            .multiDrawIndirect = VK_TRUE,
+            .drawIndirectFirstInstance = VK_FALSE,
+            .depthClamp = VK_TRUE,
+            .depthBiasClamp = VK_FALSE,
+            .fillModeNonSolid = VK_TRUE,
+            .depthBounds = VK_FALSE,
+            .wideLines = VK_TRUE,
+            .largePoints = VK_FALSE,
+            .alphaToOne = VK_FALSE,
+            .multiViewport = VK_FALSE,
+            .samplerAnisotropy = VK_TRUE,
+            .textureCompressionETC2 = VK_FALSE,
+            .textureCompressionASTC_LDR = VK_FALSE,
+            .textureCompressionBC = VK_FALSE,
+            .occlusionQueryPrecise = VK_FALSE,
+            .pipelineStatisticsQuery = VK_FALSE,
+            .vertexPipelineStoresAndAtomics = VK_FALSE,
+            .fragmentStoresAndAtomics = VK_TRUE,
+            .shaderTessellationAndGeometryPointSize = VK_FALSE,
+            .shaderImageGatherExtended = VK_FALSE,
+            .shaderStorageImageExtendedFormats = VK_FALSE,
+            .shaderStorageImageMultisample = VK_TRUE,
+            .shaderStorageImageReadWithoutFormat = VK_TRUE,
+            .shaderStorageImageWriteWithoutFormat = VK_TRUE,
+            .shaderUniformBufferArrayDynamicIndexing = VK_FALSE,
+            .shaderSampledImageArrayDynamicIndexing = VK_FALSE,
+            .shaderStorageBufferArrayDynamicIndexing = VK_FALSE,
+            .shaderStorageImageArrayDynamicIndexing = VK_FALSE,
+            .shaderClipDistance = VK_FALSE,
+            .shaderCullDistance = VK_FALSE,
+            .shaderFloat64 = VK_FALSE,
+            .shaderInt64 = VK_TRUE,
+            .shaderInt16 = VK_TRUE,
+            .shaderResourceResidency = VK_FALSE,
+            .shaderResourceMinLod = VK_FALSE,
+            .sparseBinding = VK_FALSE,
+            .sparseResidencyBuffer = VK_FALSE,
+            .sparseResidencyImage2D = VK_FALSE,
+            .sparseResidencyImage3D = VK_FALSE,
+            .sparseResidency2Samples = VK_FALSE,
+            .sparseResidency4Samples = VK_FALSE,
+            .sparseResidency8Samples = VK_FALSE,
+            .sparseResidency16Samples = VK_FALSE,
+            .sparseResidencyAliased = VK_FALSE,
+            .variableMultisampleRate = VK_FALSE,
+            .inheritedQueries = VK_FALSE,
+        };
+
+        void* REQUIRED_DEVICE_FEATURE_P_CHAIN = nullptr;
+
+        VkPhysicalDeviceDescriptorIndexingFeatures vkPhysicalDeviceDescriptorIndexingFeatures = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+            .pNext = REQUIRED_DEVICE_FEATURE_P_CHAIN,
+            .shaderInputAttachmentArrayDynamicIndexing = VK_FALSE,
+            .shaderUniformTexelBufferArrayDynamicIndexing = VK_FALSE,
+            .shaderStorageTexelBufferArrayDynamicIndexing = VK_FALSE,
+            .shaderUniformBufferArrayNonUniformIndexing = VK_FALSE,
+            .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+            .shaderStorageBufferArrayNonUniformIndexing = VK_TRUE,
+            .shaderStorageImageArrayNonUniformIndexing = VK_TRUE,
+            .shaderInputAttachmentArrayNonUniformIndexing = VK_FALSE,
+            .shaderUniformTexelBufferArrayNonUniformIndexing = VK_FALSE,
+            .shaderStorageTexelBufferArrayNonUniformIndexing = VK_FALSE,
+            .descriptorBindingUniformBufferUpdateAfterBind = VK_FALSE,
+            .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+            .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
+            .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
+            .descriptorBindingUniformTexelBufferUpdateAfterBind = VK_FALSE,
+            .descriptorBindingStorageTexelBufferUpdateAfterBind = VK_FALSE,
+            .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
+            .descriptorBindingPartiallyBound = VK_TRUE,
+            .descriptorBindingVariableDescriptorCount = VK_FALSE,
+            .runtimeDescriptorArray = VK_TRUE,
+        };
+
+        REQUIRED_DEVICE_FEATURE_P_CHAIN = reinterpret_cast<void*>(&vkPhysicalDeviceDescriptorIndexingFeatures);
+
+        VkPhysicalDeviceBufferDeviceAddressFeatures vkPhysicalDeviceBufferDeviceAddressFeatures{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            .pNext = REQUIRED_DEVICE_FEATURE_P_CHAIN,
+            .bufferDeviceAddress = VK_TRUE,
+            .bufferDeviceAddressCaptureReplay = VK_TRUE,
+            .bufferDeviceAddressMultiDevice = VK_FALSE,
+        };
+
+        REQUIRED_DEVICE_FEATURE_P_CHAIN = reinterpret_cast<void*>(&vkPhysicalDeviceBufferDeviceAddressFeatures);
+
+        VkPhysicalDeviceFeatures2 vkPhysicalDeviceFeatures2{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+            .pNext = REQUIRED_DEVICE_FEATURE_P_CHAIN,
+            .features = REQUIRED_PHYSICAL_DEVICE_FEATURES,
+        };
+
+        REQUIRED_DEVICE_FEATURE_P_CHAIN = reinterpret_cast<void*>(&vkPhysicalDeviceFeatures2);
         
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = REQUIRED_DEVICE_FEATURE_P_CHAIN;
         
         createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         
-        createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.pEnabledFeatures = nullptr;
         createInfo.enabledExtensionCount = static_cast<uint>(m_RequiredDeviceExtensions.size());
         createInfo.ppEnabledExtensionNames = m_RequiredDeviceExtensions.data();
         
@@ -834,36 +957,6 @@ namespace GfxRenderEngine
         EndSingleTimeCommands(commandBuffer, QueueTypes::TRANSFER);
     }
 
-    void VK_Device::CreateImageWithInfo(
-        const VkImageCreateInfo &imageInfo,
-        VkMemoryPropertyFlags properties,
-        VkImage &image,
-        VkDeviceMemory &imageMemory)
-    {
-        if (vkCreateImage(m_Device, &imageInfo, nullptr, &image) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create image!");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(m_Device, image, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
-        }
-
-        if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to bind image memory!");
-        }
-    }
-
     void VK_Device::SetMaxUsableSampleCount()
     {
         VkSampleCountFlags counts = m_Properties.limits.framebufferColorSampleCounts & m_Properties.limits.framebufferDepthSampleCounts;
@@ -903,5 +996,449 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_1_BIT");
             m_SampleCountFlagBits = VK_SAMPLE_COUNT_1_BIT;
         }
+    }
+
+    auto VK_Device::CreateBuffer(const BufferInfo& info) -> BufferId {
+        auto [id, ret] = m_GPUShaderResourceTable->m_BufferSlots.NewSlot();
+
+        if (!(info.size > 0)) {
+            LOG_CORE_CRITICAL("can not create buffers with size zero");
+        }
+
+        ret.info = info;
+
+        const VkBufferCreateInfo vkBufferCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = {},
+            .size = static_cast<VkDeviceSize>(info.size),
+            .usage = BUFFER_USE_FLAGS,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = {},
+            .pQueueFamilyIndices = {},
+        };
+
+        bool hostAccessible = false;
+        VmaAllocationInfo vmaAllocationInfo = {};
+        auto vmaAllocationFlags = static_cast<VmaAllocationCreateFlags>(info.memoryFlags);
+        if (((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT) != 0u) ||
+            ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT) != 0u) ||
+            ((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT) != 0u)) {
+            vmaAllocationFlags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            hostAccessible = true;
+        }
+
+        const VmaAllocationCreateInfo vmaAllocationCreateInfo{
+            .flags = vmaAllocationFlags,
+            .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+            .requiredFlags = {},
+            .preferredFlags = {},
+            .memoryTypeBits = std::numeric_limits<uint>::max(),
+            .pool = nullptr,
+            .pUserData = nullptr,
+            .priority = 0.5f,
+        };
+
+        if (vmaCreateBuffer(m_VmaAllocator, &vkBufferCreateInfo, &vmaAllocationCreateInfo, &ret.vkBuffer, &ret.vmaAllocation, &vmaAllocationInfo) != VK_SUCCESS) {
+            LOG_CORE_CRITICAL("failed to create buffer!");
+        }
+
+        const VkBufferDeviceAddressInfo vkBufferDeviceAddressInfo{
+            .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+            .pNext = nullptr,
+            .buffer = ret.vkBuffer,
+        };
+
+        ret.deviceAddress = vkGetBufferDeviceAddress(m_Device, &vkBufferDeviceAddressInfo);
+
+        ret.hostAddress = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;
+        ret.zombie = false;
+
+        //if (this->impl_ctx.as<ImplInstance>()->info.enable_debug_names && !buffer_info.name.empty()) {
+        //    const auto buffer_name = buffer_info.name;
+        //    const VkDebugUtilsObjectNameInfoEXT buffer_name_info{
+        //        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        //        .pNext = nullptr,
+        //        .objectType = VK_OBJECT_TYPE_BUFFER,
+        //        .objectHandle = reinterpret_cast<uint64_t>(ret.vk_buffer),
+        //        .pObjectName = buffer_name.c_str(),
+        //    };
+        //    vkSetDebugUtilsObjectNameEXT(vk_device, &buffer_name_info);
+        //}
+
+        return BufferId{ id };
+    }
+
+    auto isDepthFormat(Format format) -> bool
+    {
+        switch (format)
+        {
+        case Format::D16_UNORM: return true;
+        case Format::X8_D24_UNORM_PACK32: return true;
+        case Format::D32_SFLOAT: return true;
+        case Format::S8_UINT: return true;
+        case Format::D16_UNORM_S8_UINT: return true;
+        case Format::D24_UNORM_S8_UINT: return true;
+        case Format::D32_SFLOAT_S8_UINT: return true;
+        default: return false;
+        }
+    }
+
+    auto isStencilFormat(Format format) -> bool
+    {
+        switch (format)
+        {
+        case Format::S8_UINT: return true;
+        case Format::D16_UNORM_S8_UINT: return true;
+        case Format::D24_UNORM_S8_UINT: return true;
+        case Format::D32_SFLOAT_S8_UINT: return true;
+        default: return false;
+        }
+    }
+
+    auto inferAspectFromFormat(Format format) -> VkImageAspectFlags
+    {
+        if (isDepthFormat(format) || isStencilFormat(format))
+        {
+            return (isDepthFormat(format) ? VK_IMAGE_ASPECT_DEPTH_BIT : 0) | (isStencilFormat(format) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+        }
+        return VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+
+    auto makeSubressourceRange(ImageMipArraySlice const& slice, VkImageAspectFlags aspect) -> VkImageSubresourceRange
+    {
+        return VkImageSubresourceRange
+        {
+            .aspectMask = aspect,
+            .baseMipLevel = slice.baseMipLevel,
+            .levelCount = slice.levelCount,
+            .baseArrayLayer = slice.baseArrayLayer,
+            .layerCount = slice.layerCount,
+        };
+    }
+
+    auto VK_Device::validateImageSlice(const ImageMipArraySlice& slice, ImageId id) -> ImageMipArraySlice {
+        if (slice.levelCount == std::numeric_limits<uint>::max() || slice.levelCount == 0) {
+            auto image_info = GetImageSlot(id).info;
+            return ImageMipArraySlice{
+                .baseMipLevel = 0,
+                .levelCount = image_info.mipLevelCount,
+                .baseArrayLayer = 0,
+                .layerCount = image_info.arrayLayerCount,
+            };
+        }
+        else {
+            return slice;
+        }
+    }
+
+    auto VK_Device::validateImageSlice(const ImageMipArraySlice& slice, ImageViewId id) -> ImageMipArraySlice {
+        if (slice.levelCount == std::numeric_limits<uint>::max() || slice.levelCount == 0) {
+            return GetImageViewSlot(id).info.slice;
+        }
+        else {
+            return slice;
+        }
+    }
+
+    auto initializeImageCreateInfoFromImageInfo(const ImageInfo& info) -> VkImageCreateInfo {
+        if (!(std::popcount(info.sampleCount) == 1 && info.sampleCount <= 64)) {
+            LOG_CORE_CRITICAL("image samples must be power of two and between 1 and 64(inclusive)");
+        }
+        if (!(info.size.x > 0 &&
+            info.size.y > 0 &&
+            info.size.z > 0)) {
+            LOG_CORE_CRITICAL("image (x,y,z) dimensions must be greater then 0");
+        }
+        if (!(info.arrayLayerCount > 0)) {
+            LOG_CORE_CRITICAL("image array layer count must be greater then 0");
+        }
+        if (!(info.mipLevelCount > 0)) {
+            LOG_CORE_CRITICAL("image mip layer count must be greater then 0");
+        }
+
+        const auto vkImageType = static_cast<VkImageType>(info.dimensions - 1);
+
+        auto vkImageCreateFlags = static_cast<VkImageCreateFlags>(info.flags);
+
+        const VkImageCreateInfo vkImageCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = vkImageCreateFlags,
+            .imageType = vkImageType,
+            .format = static_cast<VkFormat>(info.format),
+            .extent = std::bit_cast<VkExtent3D>(info.size),
+            .mipLevels = info.mipLevelCount,
+            .arrayLayers = info.arrayLayerCount,
+            .samples = static_cast<VkSampleCountFlagBits>(info.sampleCount),
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .usage = info.usage,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = {},
+            .pQueueFamilyIndices = {},
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+        return vkImageCreateInfo;
+    }
+
+    auto VK_Device::CreateImage(const ImageInfo& info) -> ImageId { 
+        auto [id, image_slot_variant] = m_GPUShaderResourceTable->m_ImageSlots.NewSlot();
+        //GFX_DBG_ASSERT_TRUE_M(image_info.dimensions >= 1 && image_info.dimensions <= 3, "image dimensions must be a value between 1 to 3(inclusive)");
+        ImplImageSlot ret = {};
+        ret.zombie = false;
+        ret.info = info;
+        ret.viewSlot.info = ImageViewInfo{
+            .type = static_cast<ImageViewType>(info.dimensions - 1),
+            .format = info.format,
+            .image = {id},
+            .slice = ImageMipArraySlice{
+                .baseMipLevel = 0,
+                .levelCount = info.mipLevelCount,
+                .baseArrayLayer = 0,
+                .layerCount = info.arrayLayerCount,
+            },
+            .name = info.name,
+        };
+        ret.aspectFlags = inferAspectFromFormat(info.format);
+        const VkImageCreateInfo vkImageCreateInfo = initializeImageCreateInfoFromImageInfo(info);
+        const VmaAllocationCreateInfo vmaAllocationCreateInfo{
+            .flags = static_cast<VmaAllocationCreateFlags>(info.memoryFlags),
+            .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+            .requiredFlags = {},
+            .preferredFlags = {},
+            .memoryTypeBits = std::numeric_limits<uint>::max(),
+            .pool = nullptr,
+            .pUserData = nullptr,
+            .priority = 0.5f,
+        };
+
+
+        if (vmaCreateImage(m_VmaAllocator, &vkImageCreateInfo, &vmaAllocationCreateInfo, &ret.vkImage, &ret.vmaAllocation, nullptr) != VK_SUCCESS) {
+            LOG_CORE_CRITICAL("failed to create image!");
+        }
+
+        VkImageViewType vkImageViewType = {};
+        if (info.arrayLayerCount > 1) {
+            if (!(info.dimensions >= 1 && info.dimensions <= 2)) {
+                LOG_CORE_CRITICAL("image dimensions must be 1 or 2 if making an image array!");
+            }
+
+            vkImageViewType = static_cast<VkImageViewType>(info.dimensions + 3);
+        }
+        else {
+            vkImageViewType = static_cast<VkImageViewType>(info.dimensions - 1);
+        }
+
+        const VkImageViewCreateInfo vkImageViewCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = {},
+            .image = ret.vkImage,
+            .viewType = vkImageViewType,
+            .format = *reinterpret_cast<const VkFormat*>(&info.format),
+            .components = VkComponentMapping{
+                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+            },
+            .subresourceRange = {
+                .aspectMask = ret.aspectFlags,
+                .baseMipLevel = 0,
+                .levelCount = info.mipLevelCount,
+                .baseArrayLayer = 0,
+                .layerCount = info.arrayLayerCount,
+            },
+        };
+
+        if (vkCreateImageView(m_Device, &vkImageViewCreateInfo, nullptr, &ret.viewSlot.vkImageView) != VK_SUCCESS) {
+            LOG_CORE_CRITICAL("failed to create image view!");
+        }
+
+        //if (this->impl_ctx.as<ImplInstance>()->info.enable_debug_names && !info.name.empty()) {
+        //    auto image_name = image_info.name;
+        //    const VkDebugUtilsObjectNameInfoEXT swapchain_image_name_info{
+        //        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        //        .pNext = nullptr,
+        //        .objectType = VK_OBJECT_TYPE_IMAGE,
+        //        .objectHandle = reinterpret_cast<uint64_t>(ret.vk_image),
+        //        .pObjectName = image_name.c_str(),
+        //    };
+        //    vkSetDebugUtilsObjectNameEXT(m_Device, &swapchain_image_name_info);
+
+        //    auto image_view_name = image_info.name;
+        //    const VkDebugUtilsObjectNameInfoEXT swapchain_image_view_name_info{
+        //        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        //        .pNext = nullptr,
+        //        .objectType = VK_OBJECT_TYPE_IMAGE_VIEW,
+        //        .objectHandle = reinterpret_cast<uint64_t>(ret.view_slot.vk_image_view),
+        //        .pObjectName = image_view_name.c_str(),
+        //    };
+        //    vkSetDebugUtilsObjectNameEXT(m_Device, &swapchain_image_view_name_info);
+        //}
+        m_GPUShaderResourceTable->WriteDescriptorSetImage(ret.viewSlot.vkImageView, info.usage, id.index);
+
+        image_slot_variant = ret;
+
+        return ImageId{ id };
+    }
+
+    auto VK_Device::CreateImageView(const ImageViewInfo& info) -> ImageViewId { 
+        auto [id, imageSlot] = m_GPUShaderResourceTable->m_ImageSlots.NewSlot();
+        imageSlot = {};
+        const ImplImageSlot& parentImageSlot = GetImageSlot(info.image);
+        ImplImageViewSlot ret = {};
+        ret.info = info;
+        ImageMipArraySlice slice = validateImageSlice(info.slice, info.image);
+        ret.info.slice = slice;
+        const VkImageViewCreateInfo vkImageViewCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = {},
+            .image = parentImageSlot.vkImage,
+            .viewType = static_cast<VkImageViewType>(info.type),
+            .format = *reinterpret_cast<const VkFormat*>(&info.format),
+            .components = VkComponentMapping{
+                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+            },
+            .subresourceRange = makeSubressourceRange(slice, parentImageSlot.aspectFlags),
+        };
+
+        if (vkCreateImageView(m_Device, &vkImageViewCreateInfo, nullptr, &ret.vkImageView) != VK_SUCCESS) {
+            LOG_CORE_CRITICAL("failed to create image view!");
+        }
+ /*       if (this->impl_ctx.as<ImplInstance>()->info.enable_debug_names && !image_view_info.name.empty()) {
+            auto image_view_name = image_view_info.name;
+            const VkDebugUtilsObjectNameInfoEXT name_info{
+                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+                .pNext = nullptr,
+                .objectType = VK_OBJECT_TYPE_IMAGE_VIEW,
+                .objectHandle = reinterpret_cast<uint64_t>(ret.vk_image_view),
+                .pObjectName = image_view_name.c_str(),
+            };
+            vkSetDebugUtilsObjectNameEXT(this->vk_device, &name_info);
+        }*/
+        //write_descriptor_set_image(this->vk_device, this->gpu_shader_resource_table.vk_descriptor_set, ret.vk_image_view, parentImageSlot.info.usage, id.index);
+        m_GPUShaderResourceTable->WriteDescriptorSetImage(ret.vkImageView, parentImageSlot.info.usage, id.index);
+        imageSlot.viewSlot = ret;
+        return ImageViewId{ id };
+    }
+
+    auto VK_Device::CreateSampler(const SamplerInfo& info) -> SamplerId {
+        auto [id, ret] = m_GPUShaderResourceTable->m_SamplerSlots.NewSlot();
+
+        ret.info = info;
+        ret.zombie = false;
+
+        VkSamplerReductionModeCreateInfo vk_sampler_reduction_mode_create_info{
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO,
+            .pNext = nullptr,
+            .reductionMode = static_cast<VkSamplerReductionMode>(info.reductionMode),
+        };
+
+        if (!(info.mipmapFilter != Filter::CUBIC_IMG)) {
+            LOG_CORE_CRITICAL("can not use cube addressing for mipmap filtering!");
+        }
+
+        const VkSamplerCreateInfo vkSamplerCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .pNext = reinterpret_cast<void*>(&vk_sampler_reduction_mode_create_info),
+            .flags = {},
+            .magFilter = static_cast<VkFilter>(info.magnificationFilter),
+            .minFilter = static_cast<VkFilter>(info.minificationFilter),
+            .mipmapMode = static_cast<VkSamplerMipmapMode>(info.mipmapFilter),
+            .addressModeU = static_cast<VkSamplerAddressMode>(info.addressModeU),
+            .addressModeV = static_cast<VkSamplerAddressMode>(info.addressModeV),
+            .addressModeW = static_cast<VkSamplerAddressMode>(info.addressModeW),
+            .mipLodBias = info.mipLodBias,
+            .anisotropyEnable = static_cast<VkBool32>(info.enableAnisotropy),
+            .maxAnisotropy = info.maxAnisotropy,
+            .compareEnable = static_cast<VkBool32>(info.enableCompare),
+            .compareOp = static_cast<VkCompareOp>(info.compareOp),
+            .minLod = info.minLod,
+            .maxLod = info.maxLod,
+            .borderColor = static_cast<VkBorderColor>(info.borderColor),
+            .unnormalizedCoordinates = static_cast<VkBool32>(info.enableUnnormalizedCoordinates),
+        };
+
+        if (vkCreateSampler(m_Device, &vkSamplerCreateInfo, nullptr, &ret.vkSampler) != VK_SUCCESS) {
+            LOG_CORE_CRITICAL("failed to create sampler");
+        }
+
+        //if (this->impl_ctx.as<ImplInstance>()->info.enable_debug_names && !info.name.empty()) {
+        //    auto sampler_name = info.name;
+        //    const VkDebugUtilsObjectNameInfoEXT sampler_name_info{
+        //        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        //        .pNext = nullptr,
+        //        .objectType = VK_OBJECT_TYPE_SAMPLER,
+        //        .objectHandle = reinterpret_cast<uint64_t>(ret.vk_sampler),
+        //        .pObjectName = sampler_name.c_str(),
+        //    };
+        //    vkSetDebugUtilsObjectNameEXT(this->vk_device, &sampler_name_info);
+        //}
+
+        m_GPUShaderResourceTable->WriteDescriptorSetSampler(ret.vkSampler, id.index);
+
+        return SamplerId{ id };
+    }
+
+    void VK_Device::DestroyBuffer(const BufferId& id) {
+        ImplBufferSlot& bufferSlot = m_GPUShaderResourceTable->m_BufferSlots.DereferenceId(id);
+        vmaDestroyBuffer(m_VmaAllocator, bufferSlot.vkBuffer, bufferSlot.vmaAllocation);
+        bufferSlot = {};
+        m_GPUShaderResourceTable->m_BufferSlots.ReturnSlot(id);
+    }
+
+    void VK_Device::DestroyImage(const ImageId& id) {
+        ImplImageSlot& imageSlot = m_GPUShaderResourceTable->m_ImageSlots.DereferenceId(id);
+        std::cout << "TODO: destroy image" << std::endl;
+        //m_GPUShaderResourceTable->write_descriptor_set_image(this->vk_null_image_view, image_slot.info.usage, id.index);
+        vkDestroyImageView(m_Device, imageSlot.viewSlot.vkImageView, nullptr);
+        if (imageSlot.swapchainImageIndex == NOT_OWNED_BY_SWAPCHAIN) {
+            vmaDestroyImage(m_VmaAllocator, imageSlot.vkImage, imageSlot.vmaAllocation);
+        }
+        imageSlot = {};
+        m_GPUShaderResourceTable->m_ImageSlots.ReturnSlot(id);
+    }
+
+    void VK_Device::DestroyImageView(const ImageViewId& id) {
+        if (m_GPUShaderResourceTable->m_ImageSlots.DereferenceId(id).vkImage != VK_NULL_HANDLE) {
+            LOG_CORE_CRITICAL("can not destroy default image view of image");
+        }
+
+        ImplImageViewSlot& imageSlot = m_GPUShaderResourceTable->m_ImageSlots.DereferenceId(id).viewSlot;
+        std::cout << "TODO: destroy image view" << std::endl;
+        //m_GPUShaderResourceTable->write_descriptor_set_image(this->vk_null_image_view, ImageUsageFlagBits::SHADER_STORAGE | ImageUsageFlagBits::SHADER_SAMPLED, id.index);
+        vkDestroyImageView(m_Device, imageSlot.vkImageView, nullptr);
+        imageSlot = {};
+        m_GPUShaderResourceTable->m_ImageSlots.ReturnSlot(id);
+    }
+
+    void VK_Device::DestroySampler(const SamplerId& id) {
+        ImplSamplerSlot& samplerSlot = m_GPUShaderResourceTable->m_SamplerSlots.DereferenceId(id);
+        std::cout << "TODO: destroy sampler" << std::endl;
+        //m_GPUShaderResourceTable->write_descriptor_set_sampler(m_Device, this->gpu_shader_resource_table.vk_descriptor_set, this->vk_null_sampler, id.index);
+        vkDestroySampler(m_Device, samplerSlot.vkSampler, nullptr);
+        samplerSlot = {};
+        m_GPUShaderResourceTable->m_SamplerSlots.ReturnSlot(id);
+    }
+
+    auto VK_Device::GetBufferSlot(const BufferId& id) -> ImplBufferSlot {
+        return m_GPUShaderResourceTable->m_BufferSlots.DereferenceId(id);
+    }
+
+    auto VK_Device::GetImageSlot(const ImageId& id) -> ImplImageSlot {
+        return m_GPUShaderResourceTable->m_ImageSlots.DereferenceId(id);
+    }
+
+    auto VK_Device::GetImageViewSlot(const ImageViewId& id) -> ImplImageViewSlot {
+        return m_GPUShaderResourceTable->m_ImageSlots.DereferenceId(id).viewSlot;
+    }
+
+    auto VK_Device::GetSamplerSlot(const SamplerId& id) -> ImplSamplerSlot {
+        return m_GPUShaderResourceTable->m_SamplerSlots.DereferenceId(id);
     }
 }

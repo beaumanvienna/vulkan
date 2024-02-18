@@ -44,10 +44,8 @@ namespace GfxRenderEngine
 
     VK_ShadowMap::~VK_ShadowMap()
     {
-        vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_ShadowDepthImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemory, nullptr);
-        vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler, nullptr);
+        VK_Core::m_Device->DestroyImage(m_ShadowDepthImage);
+        VK_Core::m_Device->DestroySampler(m_ShadowDepthSampler);
         vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass, nullptr);
     }
 
@@ -121,84 +119,33 @@ namespace GfxRenderEngine
     void VK_ShadowMap::CreateShadowDepthResources()
     {
         // image
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = m_ShadowMapExtent.width;
-        imageInfo.extent.height = m_ShadowMapExtent.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = m_DepthFormat;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.flags = 0;
+        m_ShadowDepthImage = VK_Core::m_Device->CreateImage({
+            .format = static_cast<Format>(m_DepthFormat),
+            .size = { static_cast<uint>(m_ShadowMapExtent.width), static_cast<uint>(m_ShadowMapExtent.height), 1 },
+            .usage = ImageUsageFlagBits::DEPTH_STENCIL_ATTACHMENT | ImageUsageFlagBits::SHADER_SAMPLED
+            });
 
-        m_Device->CreateImageWithInfo
-        (
-            imageInfo,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            m_ShadowDepthImage,
-            m_ShadowDepthImageMemory
-        );
+        //// sampler
+        m_ShadowDepthSampler = VK_Core::m_Device->CreateSampler({
+            .enableCompare = true,
+            .compareOp = CompareOp::LESS,
+            .maxLod = 1.0f,
+            .borderColor = BorderColor::FLOAT_OPAQUE_WHITE
+            });
 
-        // image view
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = m_ShadowDepthImage;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = m_DepthFormat;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageView) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
-        }
-
-        // sampler
-        VkSamplerCreateInfo samplerCreateInfo{};
-        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.compareEnable = VK_TRUE;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_LESS;
-        samplerCreateInfo.mipLodBias = 0.0f;
-        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = 1;
-        samplerCreateInfo.maxAnisotropy = 1.0;
-        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
-        {
-            auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSampler);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create sampler!");
-            }
-        }
-
-        m_DescriptorImageInfo.sampler     = m_ShadowDepthSampler;
-        m_DescriptorImageInfo.imageView   = m_ShadowDepthImageView;
+        m_DescriptorImageInfo.sampler     = VK_Core::m_Device->GetSamplerSlot(m_ShadowDepthSampler).vkSampler;
+        m_DescriptorImageInfo.imageView   = VK_Core::m_Device->GetImageViewSlot(m_ShadowDepthImage.defaultView()).vkImageView;
         m_DescriptorImageInfo.imageLayout = m_ImageLayout;
     }
 
     void VK_ShadowMap::CreateShadowFramebuffer()
     {
+        VkImageView imageView = VK_Core::m_Device->GetImageViewSlot(m_ShadowDepthImage.defaultView()).vkImageView;
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_ShadowRenderPass;
         framebufferInfo.attachmentCount = static_cast<uint>(ShadowRenderTargets::NUMBER_OF_ATTACHMENTS);
-        framebufferInfo.pAttachments = &m_ShadowDepthImageView;
+        framebufferInfo.pAttachments = &imageView;
         framebufferInfo.width = m_ShadowMapExtent.width;
         framebufferInfo.height = m_ShadowMapExtent.height;
         framebufferInfo.layers = 1;

@@ -62,13 +62,8 @@ namespace GfxRenderEngine
 
     VK_RenderPass::~VK_RenderPass()
     {
-        vkDestroyImageView(m_Device->Device(), m_DepthImageView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_DepthImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_DepthImageMemory, nullptr);
-
-        vkDestroyImageView(m_Device->Device(), m_ColorAttachmentView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_ColorAttachmentImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_ColorAttachmentImageMemory, nullptr);
+        m_Device->DestroyImage(m_DepthImage);
+        m_Device->DestroyImage(m_ColorAttachmentImage);
 
         for (auto framebuffer : m_3DFramebuffers)
         {
@@ -95,43 +90,11 @@ namespace GfxRenderEngine
     {
         VkFormat format = m_SwapChain->GetSwapChainImageFormat();
 
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = m_RenderPassExtent.width;
-        imageInfo.extent.height = m_RenderPassExtent.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = format;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.flags = 0;
-
-        m_Device->CreateImageWithInfo(
-            imageInfo,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            m_ColorAttachmentImage,
-            m_ColorAttachmentImageMemory);
-
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = m_ColorAttachmentImage;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = format;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create texture image view!");
-        }
+        m_ColorAttachmentImage = m_Device->CreateImage({
+            .format = static_cast<Format>(format),
+            .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+            .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT
+            });
     }
 
     void VK_RenderPass::CreateDepthResources()
@@ -139,43 +102,11 @@ namespace GfxRenderEngine
         VkFormat depthFormat = m_Device->FindDepthFormat();
         m_DepthFormat = depthFormat;
 
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = m_RenderPassExtent.width;
-        imageInfo.extent.height = m_RenderPassExtent.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = depthFormat;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.flags = 0;
-
-        m_Device->CreateImageWithInfo(
-            imageInfo,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            m_DepthImage,
-            m_DepthImageMemory);
-
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = m_DepthImage;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = depthFormat;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_DepthImageView) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create texture image view!");
-        }
+        m_DepthImage = m_Device->CreateImage({
+            .format = static_cast<Format>(m_DepthFormat),
+            .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+            .usage = ImageUsageFlagBits::DEPTH_STENCIL_ATTACHMENT
+            });
     }
 
     void VK_RenderPass::Create3DFramebuffers()
@@ -183,15 +114,15 @@ namespace GfxRenderEngine
         m_3DFramebuffers.resize(m_SwapChain->ImageCount());
         for (size_t i = 0; i < m_SwapChain->ImageCount(); i++)
         {
-            std::array<VkImageView, static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS)> attachments = 
+            std::array<VkImageView, static_cast<uint>(RenderTargets3D::NUMBER_OF_ATTACHMENTS)> attachments =
             {
-                m_ColorAttachmentView,
-                m_DepthImageView,
-                m_GBufferPositionView,
-                m_GBufferNormalView,
-                m_GBufferColorView,
-                m_GBufferMaterialView,
-                m_GBufferEmissionView
+                m_Device->GetImageViewSlot(m_ColorAttachmentImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_DepthImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferPositionImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferNormalImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferColorImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferMaterialImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferEmissionImageView).vkImageView
             };
 
             VkFramebufferCreateInfo framebufferInfo = {};
@@ -222,8 +153,8 @@ namespace GfxRenderEngine
             std::array<VkImageView, static_cast<uint>(RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS)> attachments = 
             {
                 m_SwapChain->GetImageView(i),
-                m_ColorAttachmentView,
-                m_GBufferEmissionView
+                m_Device->GetImageViewSlot(m_ColorAttachmentImage.defaultView()).vkImageView,
+                m_Device->GetImageViewSlot(m_GBufferEmissionImageView).vkImageView,
             };
 
             VkFramebufferCreateInfo framebufferInfo = {};
@@ -279,233 +210,60 @@ namespace GfxRenderEngine
     void VK_RenderPass::CreateGBufferImages()
     {
         {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_RenderPassExtent.width;
-            imageInfo.extent.height = m_RenderPassExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = m_BufferPositionFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            m_Device->CreateImageWithInfo(
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_GBufferPositionImage,
-                m_GBufferPositionImageMemory);
+            m_GBufferPositionImage = m_Device->CreateImage({
+                .format = static_cast<Format>(m_BufferPositionFormat),
+                .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+                .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT
+                });
         }
 
         {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_RenderPassExtent.width;
-            imageInfo.extent.height = m_RenderPassExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = m_BufferNormalFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            m_Device->CreateImageWithInfo(
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_GBufferNormalImage,
-                m_GBufferNormalImageMemory);
+            m_GBufferNormalImage = m_Device->CreateImage({
+                .format = static_cast<Format>(m_BufferNormalFormat),
+                .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+                .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT
+                });
         }
 
         {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_RenderPassExtent.width;
-            imageInfo.extent.height = m_RenderPassExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = m_BufferColorFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            m_Device->CreateImageWithInfo(
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_GBufferColorImage,
-                m_GBufferColorImageMemory);
+            m_GBufferColorImage = m_Device->CreateImage({
+                .format = static_cast<Format>(m_BufferColorFormat),
+                .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+                .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT
+                });
         }
 
         {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_RenderPassExtent.width;
-            imageInfo.extent.height = m_RenderPassExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = m_BufferMaterialFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            m_Device->CreateImageWithInfo(
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_GBufferMaterialImage,
-                m_GBufferMaterialImageMemory);
+            m_GBufferMaterialImage = m_Device->CreateImage({
+                .format = static_cast<Format>(m_BufferMaterialFormat),
+                .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+                .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT
+                });
         }
 
         {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = m_RenderPassExtent.width;
-            imageInfo.extent.height = m_RenderPassExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = m_BufferEmissionFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            m_Device->CreateImageWithInfo(
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_GBufferEmissionImage,
-                m_GBufferEmissionImageMemory);
+            m_GBufferEmissionImage = m_Device->CreateImage({
+                .format = static_cast<Format>(m_BufferEmissionFormat),
+                .size = { m_RenderPassExtent.width, m_RenderPassExtent.height, 1},
+                .mipLevelCount = VK_RenderSystemBloom::NUMBER_OF_MIPMAPS,
+                .usage = ImageUsageFlagBits::COLOR_ATTACHMENT | ImageUsageFlagBits::INPUT_ATTACHMENT | ImageUsageFlagBits::SHADER_SAMPLED
+                });
         }
 
     }
 
     void VK_RenderPass::CreateGBufferImageViews()
     {
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_GBufferPositionImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_BufferPositionFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferPositionView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
-
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_GBufferNormalImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_BufferNormalFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferNormalView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
-
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_GBufferColorImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_BufferColorFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferColorView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
-
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_GBufferMaterialImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_BufferMaterialFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferMaterialView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
-
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.pNext = nullptr;
-            viewInfo.flags = 0;
-            viewInfo.image = m_GBufferEmissionImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_BufferEmissionFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferEmissionView);
-            if (result != VK_SUCCESS)
-            {
-                LOG_CORE_CRITICAL("failed to create texture image view!");
-            }
-        }
+        m_GBufferEmissionImageView = m_Device->CreateImageView({
+            .format = static_cast<Format>(m_BufferEmissionFormat),
+            .image = m_GBufferEmissionImage,
+            .slice = {
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                }
+            });
     }
 
     void VK_RenderPass::Create3DRenderPass()
@@ -952,24 +710,14 @@ namespace GfxRenderEngine
 
     void VK_RenderPass::DestroyGBuffers()
     {
-        vkDestroyImageView(m_Device->Device(), m_GBufferPositionView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_GBufferPositionImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_GBufferPositionImageMemory, nullptr);
+        m_Device->DestroyImage(m_GBufferPositionImage);
 
-        vkDestroyImageView(m_Device->Device(), m_GBufferNormalView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_GBufferNormalImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_GBufferNormalImageMemory, nullptr);
+        m_Device->DestroyImage(m_GBufferNormalImage);
 
-        vkDestroyImageView(m_Device->Device(), m_GBufferColorView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_GBufferColorImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_GBufferColorImageMemory, nullptr);
+        m_Device->DestroyImage(m_GBufferColorImage);
 
-        vkDestroyImageView(m_Device->Device(), m_GBufferMaterialView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_GBufferMaterialImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_GBufferMaterialImageMemory, nullptr);
+        m_Device->DestroyImage(m_GBufferMaterialImage);
 
-        vkDestroyImageView(m_Device->Device(), m_GBufferEmissionView, nullptr);
-        vkDestroyImage(m_Device->Device(), m_GBufferEmissionImage, nullptr);
-        vkFreeMemory(m_Device->Device(), m_GBufferEmissionImageMemory, nullptr);
+        m_Device->DestroyImage(m_GBufferEmissionImage);
     }
 }

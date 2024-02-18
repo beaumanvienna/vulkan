@@ -54,8 +54,6 @@ namespace GfxRenderEngine
     private:
 
         bool Create();
-        void CreateImage(VkFormat format, VkImageTiling tiling,
-                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
         void GenerateMipmaps();
 
@@ -78,11 +76,9 @@ namespace GfxRenderEngine
         int m_Type;
 
         VkFormat m_ImageFormat;
-        VkImage m_TextureImage;
-        VkDeviceMemory m_TextureImageMemory;
+        ImageId m_TextureImage;
         VkImageLayout m_ImageLayout;
-        VkImageView m_ImageView;
-        VkSampler m_Sampler;
+        SamplerId m_Sampler;
 
         VkDescriptorImageInfo m_DescriptorImageInfo;
 

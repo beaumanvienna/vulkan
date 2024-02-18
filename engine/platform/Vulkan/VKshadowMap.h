@@ -75,11 +75,14 @@ namespace GfxRenderEngine
         VkFramebuffer m_ShadowFramebuffer;
         VkRenderPass m_ShadowRenderPass;
 
-        VkImage m_ShadowDepthImage;
+        //VkImage m_ShadowDepthImage;
         VkImageLayout m_ImageLayout;
-        VkImageView m_ShadowDepthImageView;
-        VkDeviceMemory m_ShadowDepthImageMemory;
-        VkSampler m_ShadowDepthSampler;
+        //VkImageView m_ShadowDepthImageView;
+        //VkDeviceMemory m_ShadowDepthImageMemory;
+        //VkSampler m_ShadowDepthSampler;
+
+        ImageId m_ShadowDepthImage;
+        SamplerId m_ShadowDepthSampler;
 
         VkDescriptorImageInfo m_DescriptorImageInfo;
     };

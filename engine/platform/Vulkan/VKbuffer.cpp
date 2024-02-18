@@ -62,7 +62,12 @@ namespace GfxRenderEngine
         bufferInfo.usage = m_UsageFlags;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        bool hostAccessible = false;
+        bufferId = m_Device->CreateBuffer({
+            .size = static_cast<uint>(m_BufferSize),
+            .memoryFlags = memoryPropertyFlags
+            });
+
+        /*bool hostAccessible = false;
         VmaAllocationInfo vmaAllocationInfo = {};
         auto vmaAllocationFlags = static_cast<VmaAllocationCreateFlags>(memoryPropertyFlags);
         if (((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT) != 0u) ||
@@ -88,7 +93,7 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("failed to create buffer!");
         }
 
-        m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;
+        m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;*/
     }
 
 
@@ -113,7 +118,12 @@ namespace GfxRenderEngine
                 bufferInfo.usage = m_UsageFlags;
                 bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-                bool hostAccessible = false;
+                bufferId = m_Device->CreateBuffer({
+                    .size = static_cast<uint>(m_BufferSize),
+                    .memoryFlags = MemoryFlagBits::HOST_ACCESS_RANDOM
+                    });
+
+                /*bool hostAccessible = false;
                 VmaAllocationInfo vmaAllocationInfo = {};
                 auto vmaAllocationFlags = static_cast<VmaAllocationCreateFlags>(MemoryFlagBits::HOST_ACCESS_RANDOM);
                 if (((vmaAllocationFlags & VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT) != 0u) ||
@@ -139,14 +149,15 @@ namespace GfxRenderEngine
                     LOG_CORE_CRITICAL("failed to create buffer!");
                 }
 
-                m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;
+                m_Mapped = hostAccessible ? vmaAllocationInfo.pMappedData : nullptr;*/
             }
         }
 
 
     VK_Buffer::~VK_Buffer()
     {
-        vmaDestroyBuffer(m_Device->GetVmaAllocator(), m_Buffer, m_VmaAllocation);
+        //vmaDestroyBuffer(m_Device->GetVmaAllocator(), m_Buffer, m_VmaAllocation);
+        m_Device->DestroyBuffer(bufferId);
     }
 
     /**
@@ -175,15 +186,15 @@ namespace GfxRenderEngine
      */
     void VK_Buffer::WriteToBuffer(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
-        if (!(m_Mapped)) LOG_CORE_CRITICAL("void VK_Buffer::WriteToBuffer(...): cannot copy to unmapped buffer");
+        if (!(GetMappedMemory())) LOG_CORE_CRITICAL("void VK_Buffer::WriteToBuffer(...): cannot copy to unmapped buffer");
 
         if (size == VK_WHOLE_SIZE)
         {
-            memcpy(m_Mapped, data, m_BufferSize);
+            memcpy(GetMappedMemory(), data, m_BufferSize);
         }
         else
         {
-            char *memOffset = (char *)m_Mapped;
+            char *memOffset = (char *)GetMappedMemory();
             memOffset += offset;
             memcpy(memOffset, data, size);
         }
@@ -201,7 +212,7 @@ namespace GfxRenderEngine
     {
         return VkDescriptorBufferInfo
         {
-            m_Buffer,
+            m_Device->GetBufferSlot(bufferId).vkBuffer,
             offset,
             size,
         };

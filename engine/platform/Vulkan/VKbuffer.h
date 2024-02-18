@@ -60,8 +60,8 @@ namespace GfxRenderEngine
         void WriteToIndex(void* data, int index);
         VkDescriptorBufferInfo DescriptorInfoForIndex(int index);
 
-        VkBuffer GetBuffer() const { return m_Buffer; }
-        void* GetMappedMemory() const { return m_Mapped; }
+        VkBuffer GetBuffer() { return m_Device->GetBufferSlot(bufferId).vkBuffer; }
+        void* GetMappedMemory() const { return m_Device->GetBufferSlot(bufferId).hostAddress; }
 
     private:
 
@@ -69,10 +69,11 @@ namespace GfxRenderEngine
 
     private:
 
+        BufferId bufferId = {};
         VK_Device* m_Device;
-        void* m_Mapped = nullptr;
-        VmaAllocation m_VmaAllocation;
-        VkBuffer m_Buffer = VK_NULL_HANDLE;
+        //void* m_Mapped = nullptr;
+        //VmaAllocation m_VmaAllocation;
+        //VkBuffer m_Buffer = VK_NULL_HANDLE;
 
 
         VkDeviceMemory m_Memory = VK_NULL_HANDLE;

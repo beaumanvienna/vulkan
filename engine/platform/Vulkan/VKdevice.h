@@ -26,6 +26,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <vma.h>
+#include "VKgpuResources.h"
 
 namespace GfxRenderEngine
 {
@@ -118,19 +119,26 @@ namespace GfxRenderEngine
             uint layerCount
         );
 
-        void CreateImageWithInfo
-        (
-            const VkImageCreateInfo &imageInfo,
-            VkMemoryPropertyFlags properties,
-            VkImage &image,
-            VkDeviceMemory &imageMemory
-        );
-
         VkPhysicalDeviceProperties m_Properties;
         VkSampleCountFlagBits m_SampleCountFlagBits;
         
         VkInstance GetInstance() const { return m_Instance; }
         bool MultiThreadingSupport() const { return m_TransferQueueSupportsGraphics; }
+
+        auto CreateBuffer(const BufferInfo& info) -> BufferId;
+        auto CreateImage(const ImageInfo& info) -> ImageId;
+        auto CreateImageView(const ImageViewInfo& info) -> ImageViewId;
+        auto CreateSampler(const SamplerInfo& info) -> SamplerId;
+
+        void DestroyBuffer(const BufferId& id);
+        void DestroyImage(const ImageId& id);
+        void DestroyImageView(const ImageViewId& id);
+        void DestroySampler(const SamplerId& id);
+
+        auto GetBufferSlot(const BufferId& id) -> ImplBufferSlot;
+        auto GetImageSlot(const ImageId& id) -> ImplImageSlot;
+        auto GetImageViewSlot(const ImageViewId& id) -> ImplImageViewSlot;
+        auto GetSamplerSlot(const SamplerId& id) -> ImplSamplerSlot;
 
     private:
 
@@ -162,6 +170,9 @@ namespace GfxRenderEngine
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
+        auto validateImageSlice(const ImageMipArraySlice& slice, ImageId id)->ImageMipArraySlice;
+        auto validateImageSlice(const ImageMipArraySlice& slice, ImageViewId id)->ImageMipArraySlice;
+
         VkInstance m_Instance;
         QueueFamilyIndices m_QueueFamilyIndices;
         VkDebugUtilsMessengerEXT m_DebugMessenger;
@@ -170,6 +181,7 @@ namespace GfxRenderEngine
         VkCommandPool m_GraphicsCommandPool;
         VkCommandPool m_LoadCommandPool;
         VmaAllocator m_VmaAllocator = {};
+        std::unique_ptr<GPUShaderResourceTable> m_GPUShaderResourceTable;
 
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;
@@ -180,9 +192,9 @@ namespace GfxRenderEngine
 
         const std::vector<const char *> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
         #ifdef MACOSX
-            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset", VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME };
         #else
-            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME };
         #endif
         bool m_TransferQueueSupportsGraphics = false;
     };
