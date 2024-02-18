@@ -211,7 +211,7 @@ namespace GfxRenderEngine
                         for (auto instanceObject : instanceObjects)
                         {
                             std::string_view instanceObjectKey = instanceObject.unescaped_key();
-    
+
                             if (instanceObjectKey == "transform")
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
@@ -303,7 +303,7 @@ namespace GfxRenderEngine
                         for (auto instanceObject : instanceObjects)
                         {
                             std::string_view instanceObjectKey = instanceObject.unescaped_key();
-    
+
                             if (instanceObjectKey == "transform")
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
