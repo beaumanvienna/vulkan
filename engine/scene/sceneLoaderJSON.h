@@ -64,7 +64,7 @@ namespace GfxRenderEngine
 
         void Deserialize(std::string& filepath);
 
-        void ParseGltfFile(ondemand::object gltfFileJSON);
+        void ParseGltfFile(ondemand::object gltfFileJSON, bool fast=false);
         void ParseFbxFile(ondemand::object fbxFileJSON);
         void ParseObjFile(ondemand::object objFileJSON);
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);

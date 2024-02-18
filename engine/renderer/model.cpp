@@ -63,4 +63,9 @@ namespace GfxRenderEngine
                (m_Amplification == other.m_Amplification) &&
                (m_Unlit       == other.m_Unlit);
     }
+
+    SkeletalAnimations& Model::GetAnimations()
+    {
+        return *(m_Animations.get());
+    }
 }

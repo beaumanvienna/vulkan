@@ -26,12 +26,12 @@
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
 
-#include "renderer/builder/gltfBuilder.h"
+#include "renderer/builder/fastgltfBuilder.h"
 
 namespace GfxRenderEngine
 {
 
-    void GltfBuilder::LoadSkeletonsGltf()
+    void FastgltfBuilder::LoadSkeletonsGltf()
     {
         size_t numberOfSkeletons = m_GltfModel.skins.size();
         if (!numberOfSkeletons)
@@ -189,7 +189,7 @@ namespace GfxRenderEngine
                     }
                     else
                     {
-                        CORE_ASSERT(false, "GltfBuilder::LoadSkeletonsGltf: cannot handle timestamp format");
+                        CORE_ASSERT(false, "FastgltfBuilder::LoadSkeletonsGltf: cannot handle timestamp format");
                     }
                 }
 
@@ -230,7 +230,7 @@ namespace GfxRenderEngine
                         }
                         default: 
                         {
-                            CORE_ASSERT(false, "void GltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
+                            CORE_ASSERT(false, "void FastgltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
                             break;
                         }
                     }
@@ -277,14 +277,9 @@ namespace GfxRenderEngine
         if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
-    SkeletalAnimations& Model::GetAnimations()
-    {
-        return *(m_Animations.get());
-    }
-
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void GltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
+    void FastgltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
         int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint

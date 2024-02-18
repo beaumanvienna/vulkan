@@ -103,6 +103,20 @@ namespace GfxRenderEngine
                     ParseGltfFile(gltfFileJSON);
                 }
             }
+            else if (sceneObjectKey == "fastgltf files")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
+                ondemand::array gltfFiles = sceneObject.value().get_array();
+                {
+                    int gltfFileCount = gltfFiles.count_elements();
+                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file (fastgltf)") : LOG_CORE_INFO("loading {0} gltf files (fastgltf)", gltfFileCount);
+                }
+
+                for (auto gltfFileJSON : gltfFiles)
+                {
+                    ParseGltfFile(gltfFileJSON, true /*fast*/);
+                }
+            }
             else if (sceneObjectKey == "fbx files")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
@@ -119,12 +133,12 @@ namespace GfxRenderEngine
             }
             else
             {
-                LOG_CORE_CRITICAL("unrecognized scene object");
+                LOG_CORE_CRITICAL("unrecognized scene object '" + std::string(sceneObjectKey) + "'");
             }
         }
     }
 
-    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON)
+    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast)
     {
         std::string gltfFilename;
 
@@ -155,8 +169,16 @@ namespace GfxRenderEngine
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
 
-                GltfBuilder builder(gltfFilename, m_Scene);
-                loadSuccessful = builder.LoadGltf(instanceCount);
+                if (fast)
+                {
+                    FastgltfBuilder builder(gltfFilename, m_Scene);
+                    loadSuccessful = builder.LoadGltf(instanceCount);
+                }
+                else
+                {
+                    GltfBuilder builder(gltfFilename, m_Scene);
+                    loadSuccessful = builder.LoadGltf(instanceCount);
+                }
                 if (loadSuccessful)
                 {
                     Gltf::GltfFile gltfFile(gltfFilename);

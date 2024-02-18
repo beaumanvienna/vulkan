@@ -88,6 +88,7 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
