@@ -26,12 +26,12 @@
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
 
-#include "renderer/builder/gltfBuilder.h"
+#include "renderer/builder/fastgltfBuilder.h"
 
 namespace GfxRenderEngine
 {
 
-    void GltfBuilder::LoadSkeletonsGltf()
+    void FastgltfBuilder::LoadSkeletonsGltf()
     {
         /*
         size_t numberOfSkeletons = m_GltfModel.skins.size();
@@ -281,7 +281,7 @@ namespace GfxRenderEngine
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void GltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
+    void FastgltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
         /*
         int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];

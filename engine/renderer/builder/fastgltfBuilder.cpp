@@ -44,10 +44,10 @@ namespace GfxRenderEngine
         { // load ascii from file
             auto path = std::filesystem::path{m_Filepath};
 
-            constexpr auto extensions = 
+            constexpr auto extensions =
                 fastgltf::Extensions::KHR_mesh_quantization | 
+                fastgltf::Extensions::KHR_materials_emissive_strength | 
                 fastgltf::Extensions::KHR_texture_transform;
-            fastgltf::Parser parser(extensions);
 
             constexpr auto gltfOptions =
                 fastgltf::Options::DontRequireValidAssetMember |
@@ -57,13 +57,14 @@ namespace GfxRenderEngine
                 fastgltf::Options::LoadExternalImages |
                 fastgltf::Options::GenerateMeshIndices;
 
-            fastgltf::GltfDataBuffer data;
+            fastgltf::GltfDataBuffer dataBuffer;
+            fastgltf::Parser parser(extensions);
 
-            // load gltf or glb
-            data.loadFromFile(path);
+            // load raw data of the file (can be gltf or glb)
+            dataBuffer.loadFromFile(path);
 
-            // parse and load other files (*.bin, etc)
-            auto asset = parser.loadGltf(&data, path.parent_path(), gltfOptions);
+            // parse (function determines if gltf or glb)
+            fastgltf::Expected<fastgltf::Asset> asset = parser.loadGltf(&dataBuffer, path.parent_path(), gltfOptions);
             auto assetErrorCode = asset.error();
 
             if (assetErrorCode != fastgltf::Error::None)
@@ -71,16 +72,9 @@ namespace GfxRenderEngine
                 PrintAssetError(assetErrorCode);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
-
-            //auto error = asset->parse(fastgltf::Category::Scenes);
-            //if (error != fastgltf::Error::None)
-            //{
-            //    std::cerr << "Failed to parse glTF: " << fastgltf::to_underlying(error) << std::endl;
-            //    return Gltf::GLTF_LOAD_FAILURE;
-            //}
+            m_GltfModel = std::move(asset.get());
         }
 
-        /*
         if (!m_GltfModel.meshes.size())
         {
             LOG_CORE_CRITICAL("LoadGltf: no meshes found in {0}", m_Filepath);
@@ -107,21 +101,21 @@ namespace GfxRenderEngine
         m_HasMesh.resize(m_GltfModel.nodes.size(), false);
         if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
         {
-            auto& scene = m_GltfModel.scenes[sceneID];
-            size_t nodeCount = scene.nodes.size();
+            fastgltf::Scene& scene = m_GltfModel.scenes[sceneID];
+            size_t nodeCount = scene.nodeIndices.size();
             for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
             {
-                MarkNode(scene, scene.nodes[nodeIndex]);
+                MarkNode(scene, scene.nodeIndices[nodeIndex]);
             }
         }
         else //no scene ID was provided --> use all scenes
         {
-            for (auto& scene : m_GltfModel.scenes)
+            for (fastgltf::Scene& scene : m_GltfModel.scenes)
             {
-                size_t nodeCount = scene.nodes.size();
+                size_t nodeCount = scene.nodeIndices.size();
                 for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
                 {
-                    MarkNode(scene, scene.nodes[nodeIndex]);
+                    MarkNode(scene, scene.nodeIndices[nodeIndex]);
                 }
             }
         }
@@ -157,18 +151,16 @@ namespace GfxRenderEngine
                 }
             }
         }
-        */
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
-    bool FastgltfBuilder::MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex)
+    bool FastgltfBuilder::MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex)
     {
-        /*
         // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
 
         // does this gltf node have a mesh?
-        bool localHasMesh = (node.mesh != Gltf::GLTF_NOT_USED);
+        bool localHasMesh = (node.meshIndex.has_value());
 
         // do any of the child nodes have a mesh?
         size_t childNodeCount = node.children.size();
@@ -180,13 +172,11 @@ namespace GfxRenderEngine
         }
         m_HasMesh[gltfNodeIndex] = localHasMesh;
         return localHasMesh;
-        */
     }
 
-    void FastgltfBuilder::ProcessScene(tinygltf::Scene& scene, uint const parentNode)
+    void FastgltfBuilder::ProcessScene(fastgltf::Scene& scene, uint const parentNode)
     {
-        /*
-        size_t nodeCount = scene.nodes.size();
+        size_t nodeCount = scene.nodeIndices.size();
         if (!nodeCount)
         {
             LOG_CORE_WARN("Builder::ProcessScene: empty scene in {0}", m_Filepath);
@@ -196,23 +186,21 @@ namespace GfxRenderEngine
         m_RenderObject = 0;
         for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
         {
-            ProcessNode(scene, scene.nodes[nodeIndex], parentNode);
+            ProcessNode(scene, scene.nodeIndices[nodeIndex], parentNode);
         }
-        */
     }
 
-    void FastgltfBuilder::ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
+    void FastgltfBuilder::ProcessNode(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
-        /*
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
-        auto& nodeName = node.name;
-        auto meshIndex = node.mesh;
+        std::string nodeName(node.name);
+        int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
 
         uint currentNode = parentNode;
 
         if (m_HasMesh[gltfNodeIndex]) 
         {
-            if (meshIndex > Gltf::GLTF_NOT_USED)
+            if (meshIndex != Gltf::GLTF_NOT_USED)
             {
                 currentNode = CreateGameObject(scene, gltfNodeIndex, parentNode);
             }
@@ -222,8 +210,8 @@ namespace GfxRenderEngine
                 auto entity = m_Registry.create();
 
                 // create scene graph node and add to parent
-                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
-                auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+                auto longName = m_Filepath + shortName;
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
 
@@ -241,19 +229,19 @@ namespace GfxRenderEngine
             int gltfChildNodeIndex = node.children[childNodeIndex];
             ProcessNode(scene, gltfChildNodeIndex, currentNode);
         }
-        */
     }
 
-    uint FastgltfBuilder::CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
+    uint FastgltfBuilder::CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
-        /*
+
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
-        auto& nodeName = node.name;
-        uint meshIndex = node.mesh;
+        std::string nodeName(node.name);
+        int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.create();
-        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
-        auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+        auto baseName = + "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + baseName;
+        auto longName = m_Filepath + baseName;
 
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
@@ -286,7 +274,8 @@ namespace GfxRenderEngine
                 for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
                 {
                     ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
-                    AssignMaterial(submesh, glTFPrimitive.material);
+                    CORE_ASSERT(glTFPrimitive.materialIndex.has_value(), "no material index");
+                    AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
                 }
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
@@ -371,149 +360,163 @@ namespace GfxRenderEngine
         }
 
         return newNode;
-        */
-    }
-
-    int FastgltfBuilder::GetMinFilter(uint index)
-    {
-        /*
-        int sampler = m_GltfModel.textures[index].sampler;
-        int filter = m_GltfModel.samplers[sampler].minFilter;
-        std::string& name = m_GltfModel.images[index].name;
-        switch (filter)
-        {
-            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
-            case Gltf::GLTF_NOT_USED:
-            {
-                // use default filter
-                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-                break;
-            }
-            default:
-            {
-                // use default filter
-                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-                LOG_CORE_ERROR("minFilter: filter {0} not found, name = {1}", filter, name);
-                break;
-            }
-        }
-        return filter;
-        */
-    }
-
-    int FastgltfBuilder::GetMagFilter(uint index)
-    {
-        /*
-        int sampler = m_GltfModel.textures[index].sampler;
-        int filter = m_GltfModel.samplers[sampler].magFilter;
-        std::string& name = m_GltfModel.images[index].name;
-        switch (filter)
-        {
-            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
-            case Gltf::GLTF_NOT_USED:
-            {
-                // use default filter
-                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-                break;
-            }
-            default:
-            {
-                filter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-                LOG_CORE_ERROR("magFilter: filter {0} not found, name = {1}", filter, name);
-                break;
-            }
-        }
-        return filter;
-        */
-    }
-
-    void FastgltfBuilder::LoadImagesGltf()
-    {
-        /*
-        m_ImageOffset = m_Images.size();
-        size_t numImages = m_GltfModel.images.size();
-        m_Images.resize(m_ImageOffset + numImages);
-
-        // retrieve all images from the glTF file
-        for (uint imageIndex = 0; imageIndex < numImages; ++imageIndex)
-        {
-            std::string imageFilepath = m_Basepath + m_GltfModel.images[imageIndex].uri;
-            tinygltf::Image& glTFImage = m_GltfModel.images[imageIndex];
-
-            // glTFImage.component - the number of channels in each pixel
-            // three channels per pixel need to be converted to four channels per pixel
-            uchar* buffer;
-            uint64 bufferSize;
-            if (glTFImage.component == 3)
-            {
-                bufferSize = glTFImage.width * glTFImage.height * 4;
-                std::vector<uchar> imageData(bufferSize, 0x00);
-
-                buffer = (uchar*)imageData.data();
-                uchar* rgba = buffer;
-                uchar* rgb = &glTFImage.image[0];
-                for (int j = 0; j < glTFImage.width * glTFImage.height; ++j)
-                {
-                    memcpy(rgba, rgb, sizeof(uchar) * 3);
-                    rgba += 4;
-                    rgb += 3;
-                }
-            }
-            else
-            {
-                buffer = &glTFImage.image[0];
-                bufferSize = glTFImage.image.size();
-            }
-
-            auto texture = Texture::Create();
-            int minFilter = GetMinFilter(imageIndex);
-            int magFilter = GetMinFilter(imageIndex);
-            bool imageFormat = GetImageFormatGltf(imageIndex);
-            texture->Init(glTFImage.width, glTFImage.height, imageFormat, buffer, minFilter, magFilter);
-            #ifdef DEBUG
-                texture->SetFilename(imageFilepath);
-            #endif
-            m_Images[imageIndex] = texture;
-        }
-        */
     }
 
     bool FastgltfBuilder::GetImageFormatGltf(uint const imageIndex)
     {
-        /*
-        for (uint i = 0; i < m_GltfModel.materials.size(); i++)
+        for(fastgltf::Material& material : m_GltfModel.materials)
         {
-            tinygltf::Material glTFMaterial = m_GltfModel.materials[i];
-
-            if (static_cast<uint>(glTFMaterial.pbrMetallicRoughness.baseColorTexture.index) == imageIndex)
+            if(material.pbrData.baseColorTexture.has_value()) // albedo aka diffuse map aka bas color -> sRGB
             {
-                return Texture::USE_SRGB;
+                uint diffuseTextureIndex = material.pbrData.baseColorTexture.value().textureIndex;
+                auto& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                if (imageIndex == diffuseTexture.imageIndex.value())
+                {
+                    return Texture::USE_SRGB;
+                }
             }
-            else if (static_cast<uint>(glTFMaterial.emissiveTexture.index) == imageIndex)
+            else if(material.emissiveTexture.has_value())
             {
-                return Texture::USE_SRGB;
-            }
-            else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
-            {
-                int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
-                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                if (static_cast<uint>(diffuseTexture.source) == imageIndex)
+                uint emissiveTextureIndex = material.emissiveTexture.value().textureIndex;
+                auto& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
+                if (imageIndex == emissiveTexture.imageIndex.value())
                 {
                     return Texture::USE_SRGB;
                 }
             }
         }
+
         return Texture::USE_UNORM;
+    }
+
+    int FastgltfBuilder::GetMinFilter(uint index)
+    {
+        size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
+        fastgltf::Filter filter = m_GltfModel.samplers[sampler].minFilter.value();
+        return static_cast<int>(filter);
+    }
+
+    int FastgltfBuilder::GetMagFilter(uint index)
+    {
+        size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
+        fastgltf::Filter filter = m_GltfModel.samplers[sampler].magFilter.value();
+        return static_cast<int>(filter);
+    }
+
+    void FastgltfBuilder::LoadImagesGltf()
+    {
+        size_t numImages = m_GltfModel.images.size();
+        m_Images.resize(numImages);
+
+        // retrieve all images from the glTF file
+        for (uint imageIndex = 0; imageIndex < numImages; ++imageIndex)
+        {
+            fastgltf::Image& glTFImage = m_GltfModel.images[imageIndex];
+            auto texture = Texture::Create();
+
+            // image data is of type std::variant: the data type can be a URI/filepath, an Array, or a BufferView
+            // std::visit calls the appropriate function
+            std::visit 
+            (
+                fastgltf::visitor
+                {
+                    [&](fastgltf::sources::URI& filePath) // load from file name
+                    {
+                        const std::string imageFilepath(filePath.uri.path().begin(), filePath.uri.path().end());
+
+                        CORE_ASSERT(filePath.fileByteOffset == 0, "no offset data support with stbi " + glTFImage.name);
+                        CORE_ASSERT(filePath.uri.isLocalPath(), "no local file " + glTFImage.name);
+
+                        int width = 0, height = 0, nrChannels = 0;
+                        unsigned char* buffer = stbi_load(imageFilepath.c_str(), &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                        CORE_ASSERT(buffer, "stbi failed (image data = URI) " + glTFImage.name);
+                        CORE_ASSERT(nrChannels == 4, "wrong number of channels");
+
+                        int minFilter = GetMinFilter(imageIndex);
+                        int magFilter = GetMinFilter(imageIndex);
+                        bool imageFormat = GetImageFormatGltf(imageIndex);
+                        texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
+                        stbi_image_free(buffer);
+                    },
+                    [&](fastgltf::sources::Array& vector) // load from memory
+                    {
+                        int width = 0, height = 0, nrChannels = 0;
+
+                        using byte = unsigned char;
+                        byte* buffer = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                        CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
+
+                        int minFilter = GetMinFilter(imageIndex);
+                        int magFilter = GetMinFilter(imageIndex);
+                        bool imageFormat = GetImageFormatGltf(imageIndex);
+                        texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
+                        stbi_image_free(buffer);
+                    },
+                    [&](fastgltf::sources::BufferView& view)
+                    {
+                        auto& bufferView = m_GltfModel.bufferViews[view.bufferViewIndex];
+                        auto& bufferFromBufferView = m_GltfModel.buffers[bufferView.bufferIndex];
+
+                        std::visit
+                        (
+                            fastgltf::visitor
+                            {
+                                [&](auto& arg) // default branch if image data is not supported
+                                {
+                                    LOG_CORE_CRITICAL("not supported default branch (image data = BUfferView) " + glTFImage.name);
+                                },
+                                [&](fastgltf::sources::Array& vector) // load from memory
+                                {
+                                    int width = 0, height = 0, nrChannels = 0;
+                                    unsigned char* buffer = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                                    CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
+
+                                    unsigned char* buffer4Channels = nullptr;
+                                    std::vector<unsigned char> newBuffer4Channels;
+
+                                    if (nrChannels == 3)
+                                    {
+                                        size_t bufferSize = sizeof(unsigned char) * width * height * 4;
+                                        newBuffer4Channels.resize(bufferSize, 255 /*alpha = 1.0*/);
+
+                                        buffer4Channels = static_cast<unsigned char*>(newBuffer4Channels.data());
+                                        unsigned char* rgba = buffer4Channels; // destination
+                                        unsigned char* rgb = buffer; //src
+                                        for (int i = 0; i < width * height; ++i)
+                                        {
+                                            std::memcpy(rgba, rgb, sizeof(unsigned char) * 3);
+                                            rgba += 4;
+                                            rgb += 3;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        buffer4Channels = buffer;
+                                    }
+
+                                    int minFilter = GetMinFilter(imageIndex);
+                                    int magFilter = GetMinFilter(imageIndex);
+                                    bool imageFormat = GetImageFormatGltf(imageIndex);
+                                    texture->Init(width, height, imageFormat, buffer4Channels, minFilter, magFilter);
+
+                                    stbi_image_free(buffer);
+                                }
+                            },
+                            bufferFromBufferView.data
+                        );
+                    },
+                    [&](auto& arg) // default branch if image data is not supported
+                    {
+                        LOG_CORE_CRITICAL("not supported default branch " + glTFImage.name);
+                    },
+                },
+                glTFImage.data
+            );
+
+            m_Images[imageIndex] = texture;
+        }
     }
 
     void FastgltfBuilder::LoadMaterialsGltf()
@@ -522,90 +525,103 @@ namespace GfxRenderEngine
         m_Materials.resize(numMaterials);
         for (uint materialIndex = 0; materialIndex < numMaterials; ++materialIndex)
         {
-            tinygltf::Material glTFMaterial = m_GltfModel.materials[materialIndex];
+            fastgltf::Material& glTFMaterial = m_GltfModel.materials[materialIndex];
 
             Material material{};
             material.m_Features = m_SkeletalAnimation;
-            material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
-            material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
-            material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
-            material.m_EmissiveStrength = 0;
+            material.m_Roughness = glTFMaterial.pbrData.roughnessFactor;
+            material.m_Metallic = glTFMaterial.pbrData.metallicFactor;
 
-            if (glTFMaterial.emissiveFactor.size() == 3)
+            // diffuse color
             {
-                glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
-                if (emissiveFactor != glm::vec3(0,0,0))
-                {
-                    material.m_EmissiveFactor = emissiveFactor;
-                    material.m_EmissiveStrength = emissiveFactor.r;
-                }
-            }
-            if (glTFMaterial.emissiveTexture.index != Gltf::GLTF_NOT_USED)
-            {
-                int emissiveTextureIndex = glTFMaterial.emissiveTexture.index;
-                tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
-                material.m_EmissiveMapIndex = emissiveTexture.source;
-                material.m_Features |= Material::HAS_EMISSIVE_MAP;
-                if (!material.m_EmissiveStrength) material.m_EmissiveStrength = 1;
-            }
-            {
-                auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
-                if (it != glTFMaterial.extensions.end())
-                {
-                    auto extension = it->second;
-                    if (extension.IsObject())
-                    {
-                        auto emissiveStrength = extension.Get("emissiveStrength");
-                        if (emissiveStrength.IsReal())
-                        {
-                            material.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
-                        }
-                    }
-                }
+                material.m_DiffuseColor = glm::make_vec3(glTFMaterial.pbrData.baseColorFactor.data());
             }
 
-            if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
+            // diffuse map aka basecolor aka albedo
+            if (glTFMaterial.pbrData.baseColorTexture.has_value())
             {
-                material.m_DiffuseColor = glm::make_vec3(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
-            }
-            if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != Gltf::GLTF_NOT_USED)
-            {
-                int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
-                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                material.m_DiffuseMapIndex = diffuseTexture.source;
+                uint diffuseMapIndex = glTFMaterial.pbrData.baseColorTexture.value().textureIndex;
+                material.m_DiffuseMapIndex = m_GltfModel.textures[diffuseMapIndex].imageIndex.value();
                 material.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
-            else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
+
+            // normal map
+            if (glTFMaterial.normalTexture.has_value())
             {
-                LOG_CORE_WARN("using legacy field values/baseColorTexture");
-                int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
-                tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                material.m_DiffuseMapIndex = diffuseTexture.source;
-                material.m_Features |= Material::HAS_DIFFUSE_MAP;
-            }
-            if (glTFMaterial.normalTexture.index != Gltf::GLTF_NOT_USED)
-            {
-                int normalTextureIndex = glTFMaterial.normalTexture.index;
-                tinygltf::Texture& normalTexture = m_GltfModel.textures[normalTextureIndex];
-                material.m_NormalMapIndex = normalTexture.source;
+                uint normalMapIndex = glTFMaterial.pbrData.baseColorTexture.value().textureIndex;
+                material.m_NormalMapIndex = m_GltfModel.textures[normalMapIndex].imageIndex.value();
+                material.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
                 material.m_Features |= Material::HAS_NORMAL_MAP;
             }
-            if (glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != Gltf::GLTF_NOT_USED)
+
+            if (glTFMaterial.pbrData.metallicRoughnessTexture.has_value())
             {
-                int MetallicRoughnessTextureIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
-                tinygltf::Texture& MetallicRoughnessTexture = m_GltfModel.textures[MetallicRoughnessTextureIndex];
-                material.m_RoughnessMetallicMapIndex = MetallicRoughnessTexture.source;
+                int metallicRoughnessMapIndex = glTFMaterial.pbrData.metallicRoughnessTexture.value().textureIndex;
+                material.m_RoughnessMetallicMapIndex = m_GltfModel.textures[metallicRoughnessMapIndex].imageIndex.value();
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
+            }
+
+
+            // emissive factor and emissive strength
+            {
+                glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                material.m_EmissiveFactor = emissiveFactor;
+
+                material.m_EmissiveStrength = glTFMaterial.emissiveStrength;
+            }
+
+            // emissive texture
+            if (glTFMaterial.emissiveTexture.has_value())
+            {
+                uint emissiveTextureIndex = glTFMaterial.emissiveTexture.value().textureIndex;
+                material.m_EmissiveMapIndex = m_GltfModel.textures[emissiveTextureIndex].imageIndex.value();
+                material.m_Features |= Material::HAS_EMISSIVE_MAP;
             }
 
             m_Materials[materialIndex] = material;
         }
-        */
+    }
+
+    template<typename T>
+    fastgltf::ComponentType FastgltfBuilder::LoadAccessor
+    (
+        const fastgltf::Accessor& accessor,
+        const T*& pointer,
+        size_t* count /*= nullptr*/,
+        fastgltf::AccessorType* type /*= nullptr*/
+    )
+    {
+        CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
+        const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
+        auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
+        std::visit
+        (
+            fastgltf::visitor
+            {
+                [&](auto& arg) // default branch if image data is not supported
+                {
+                    LOG_CORE_CRITICAL("not supported default branch (LoadAccessor) ");
+                },
+                [&](fastgltf::sources::Array& vector)
+                {
+                    pointer = reinterpret_cast<const T*>(vector.bytes.data() + bufferView.byteOffset);
+                }
+            },
+            buffer.data
+        );
+        if (count)
+        {
+            count[0] = accessor.count;
+        }
+        if (type)
+        {
+            type[0] = accessor.type;
+        }
+        return accessor.componentType;
     }
 
     void FastgltfBuilder::LoadVertexDataGltf(uint const meshIndex)
     {
-        /*
         // handle vertex data
         m_Vertices.clear();
         m_Indices.clear();
@@ -623,18 +639,21 @@ namespace GfxRenderEngine
             submesh.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
             submesh.m_InstanceCount = m_InstanceCount;
 
-            uint vertexCount = 0;
-            uint indexCount  = 0;
+            size_t vertexCount = 0;
+            size_t indexCount  = 0;
 
             glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
-            if (glTFPrimitive.material != Gltf::GLTF_NOT_USED)
+            if (glTFPrimitive.materialIndex.has_value())
             {
-                if (!(static_cast<size_t>(glTFPrimitive.material) < m_Materials.size()))
-                {
-                    LOG_CORE_CRITICAL("LoadVertexDataGltf: glTFPrimitive.material must be less than m_Materials.size()");
-                }
-                diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
+                size_t materialIndex = glTFPrimitive.materialIndex.value();
+                CORE_ASSERT
+                (
+                    materialIndex < m_Materials.size(),
+                    "LoadVertexDataGltf: glTFPrimitive.materialIndex must be less than m_Materials.size()"
+                );
+                diffuseColor = m_Materials[materialIndex].m_DiffuseColor;
             }
+
             // Vertices
             {
                 const float* positionBuffer  = nullptr;
@@ -644,73 +663,75 @@ namespace GfxRenderEngine
                 const uint*  jointsBuffer    = nullptr;
                 const float* weightsBuffer   = nullptr;
 
-                int jointsBufferDataType = 0;
+                fastgltf::ComponentType jointsBufferDataType = fastgltf::ComponentType::Invalid;
 
                 // Get buffer data for vertex positions
-                if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
+                if (glTFPrimitive.findAttribute("POSITION") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>
                     (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second],
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("POSITION")->second],
                         positionBuffer,
                         &vertexCount
                     );
-                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
-                if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end())
+                if (glTFPrimitive.findAttribute("NORMAL") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>
                     (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second],
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("NORMAL")->second],
                         normalsBuffer
                     );
-                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
-                #define USE_TINYGLTF_TANGENTS
-                #ifdef USE_TINYGLTF_TANGENTS
-                    // Get buffer data for vertex tangents
-                    if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
-                    {
-                        auto componentType = LoadAccessor<float>
-                        (
-                            m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second],
-                            tangentsBuffer
-                        );
-                        CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
-                    }
-                #endif
-                // Get buffer data for vertex texture coordinates
-                // glTF supports multiple sets, we only load the first one
-                if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
+                // Get buffer data for vertex tangents
+                if (glTFPrimitive.findAttribute("TANGENT") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>
                     (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second],
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("TANGENT")->second],
+                        tangentsBuffer
+                    );
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
+                }
+                // Get buffer data for vertex texture coordinates
+                // glTF supports multiple sets, we only load the first one
+                if (glTFPrimitive.findAttribute("TEXCOORD_0") != glTFPrimitive.attributes.end())
+                {
+                    auto componentType = LoadAccessor<float>
+                    (
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("TEXCOORD_0")->second],
                         texCoordsBuffer
                     );
-                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
 
                 // Get buffer data for joints
-                if (glTFPrimitive.attributes.find("JOINTS_0") != glTFPrimitive.attributes.end())
+                if (glTFPrimitive.findAttribute("JOINTS_0") != glTFPrimitive.attributes.end())
                 {
                     jointsBufferDataType = LoadAccessor<uint>
                     (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second],
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("JOINTS_0")->second],
                         jointsBuffer
                     );
-                    CORE_ASSERT((jointsBufferDataType == GL_BYTE) || (jointsBufferDataType == GL_UNSIGNED_BYTE), "unexpected component type");
+                    CORE_ASSERT
+                    (
+                        (fastgltf::getGLComponentType(jointsBufferDataType) == GL_BYTE) || 
+                        (fastgltf::getGLComponentType(jointsBufferDataType) == GL_UNSIGNED_BYTE),
+                        "unexpected component type"
+                    );
                 }
                 // Get buffer data for joint weights
-                if (glTFPrimitive.attributes.find("WEIGHTS_0") != glTFPrimitive.attributes.end())
+                if (glTFPrimitive.findAttribute("WEIGHTS_0") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>
                     (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second],
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("WEIGHTS_0")->second],
                         weightsBuffer
                     );
-                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
 
                 // Append data to model's vertex buffer
@@ -728,11 +749,12 @@ namespace GfxRenderEngine
                     glm::vec4 t             = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
-                    vertex.m_UV             = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    auto uv                 = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    vertex.m_UV             = glm::vec2(uv.x, 1.0f - uv.y);
                     vertex.m_Color          = diffuseColor;
                     if (jointsBuffer && weightsBuffer)
                     {
-                        switch (jointsBufferDataType)
+                        switch (getGLComponentType(jointsBufferDataType))
                         {
                             case GL_BYTE:
                             case GL_UNSIGNED_BYTE:
@@ -763,13 +785,15 @@ namespace GfxRenderEngine
                     CalculateTangents();
                 }
             }
+
             // Indices
+            if (glTFPrimitive.indicesAccessor.has_value())
             {
                 const uint32_t* buffer;
-                uint count = 0;
+                size_t count = 0;
                 auto componentType = LoadAccessor<uint32_t>
                 (
-                    m_GltfModel.accessors[glTFPrimitive.indices],
+                    m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()],
                     buffer,
                     &count
                 );
@@ -779,7 +803,7 @@ namespace GfxRenderEngine
                 // glTF supports different component types of indices
                 switch (componentType)
                 {
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: 
+                    case fastgltf::ComponentType::UnsignedInt: 
                     {
                         const uint32_t* buf = buffer;
                         for (size_t index = 0; index < count; index++)
@@ -788,7 +812,7 @@ namespace GfxRenderEngine
                         }
                         break;
                     }
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+                    case fastgltf::ComponentType::UnsignedShort:
                     {
                         const uint16_t* buf = reinterpret_cast<const uint16_t*>(buffer);
                         for (size_t index = 0; index < count; index++) 
@@ -797,7 +821,7 @@ namespace GfxRenderEngine
                         }
                         break;
                     }
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
+                    case fastgltf::ComponentType::UnsignedByte:
                     {
                         const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
                         for (size_t index = 0; index < count; index++)
@@ -817,45 +841,38 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = vertexCount;
             submesh.m_IndexCount  = indexCount;
         }
-        */
     }
 
     void FastgltfBuilder::LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex)
     {
-        /*
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
 
-        if (node.matrix.size() == 16)
-        {
-            transform.SetMat4Local(glm::make_mat4x4(node.matrix.data()));
-        }
-        else
-        {
-            if (node.rotation.size() == 4)
+        std::visit
+        (
+            fastgltf::visitor
             {
-                float x = node.rotation[0];
-                float y = node.rotation[1];
-                float z = node.rotation[2];
-                float w = node.rotation[3];
-
-                transform.SetRotation({w, x, y, z});
-
-            }
-            if (node.scale.size() == 3)
-            {
-                transform.SetScale({node.scale[0], node.scale[1], node.scale[2]});
-            }
-            if (node.translation.size() == 3)
-            {
-                transform.SetTranslation({node.translation[0], node.translation[1], node.translation[2]});
-            }
-        }
-        */
+                [&](auto& arg) // default branch if image data is not supported
+                {
+                    LOG_CORE_CRITICAL("not supported default branch (LoadTransformationMatrix) ");
+                },
+                [&](fastgltf::TRS& TRS)
+                {
+                    transform.SetScale({TRS.scale[0], TRS.scale[1], TRS.scale[2]});
+                    // note the order w, x, y, z
+                    transform.SetRotation({TRS.rotation[3], TRS.rotation[0], TRS.rotation[1], TRS.rotation[2]});
+                    transform.SetTranslation({TRS.translation[0], TRS.translation[1], TRS.translation[2]});
+                },
+                [&](fastgltf::Node::TransformMatrix& matrix)
+                {
+                    transform.SetMat4Local(glm::make_mat4x4(matrix.data()));
+                }
+            },
+            node.transform
+        );
     }
 
     void FastgltfBuilder::AssignMaterial(ModelSubmesh& submesh, int const materialIndex)
     {
-        /*
         if (materialIndex == Gltf::GLTF_NOT_USED)
         {
             { // create material descriptor
@@ -899,7 +916,7 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
             { // create material descriptor
@@ -914,7 +931,7 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Images.size()");
 
             { // create material descriptor
@@ -929,8 +946,8 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex  = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
@@ -946,8 +963,8 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex  = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
@@ -963,9 +980,9 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
@@ -983,9 +1000,9 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
@@ -1007,9 +1024,9 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
-            uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
+            uint diffuseMapIndex           = material.m_DiffuseMapIndex;
+            uint normalMapIndex            = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
             CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
             CORE_ASSERT(normalMapIndex             < m_Images.size(), "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
             CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
@@ -1026,7 +1043,7 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
-            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
 
             { // create material descriptor
@@ -1057,7 +1074,7 @@ namespace GfxRenderEngine
             // emissive texture
             if (material.m_Features & Material::HAS_EMISSIVE_MAP)
             {
-                uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
+                uint emissiveMapIndex = material.m_EmissiveMapIndex;
                 CORE_ASSERT(emissiveMapIndex < m_Images.size(), "FastgltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
                 {  // create material descriptor
@@ -1083,7 +1100,6 @@ namespace GfxRenderEngine
                 LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
             }
         }
-        */
     }
 
     void FastgltfBuilder::CalculateTangents()

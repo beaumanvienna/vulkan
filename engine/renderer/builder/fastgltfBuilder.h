@@ -63,10 +63,10 @@ namespace GfxRenderEngine
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
-        bool MarkNode(tinygltf::Scene& scene, int const gltfNodeIndex);
-        void ProcessScene(tinygltf::Scene& scene, uint const parentNode);
-        void ProcessNode(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
-        uint CreateGameObject(tinygltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        bool MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex);
+        void ProcessScene(fastgltf::Scene& scene, uint const parentNode);
+        void ProcessNode(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        uint CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
         int GetMinFilter(uint index);
         int GetMagFilter(uint index);
 
@@ -74,13 +74,23 @@ namespace GfxRenderEngine
 
     private:
 
+        template<typename T>
+        fastgltf::ComponentType LoadAccessor
+        (
+            const fastgltf::Accessor& accessor,
+            const T*& pointer,
+            size_t* count = nullptr,
+            fastgltf::AccessorType* type = nullptr
+        );
+
+    private:
+
         std::string m_Filepath;
         std::string m_Basepath;
+        fastgltf::Asset m_GltfModel;
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
-
-        uint m_ImageOffset;
 
         // scene graph
         uint m_InstanceCount;

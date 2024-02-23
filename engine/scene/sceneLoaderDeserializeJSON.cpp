@@ -186,7 +186,7 @@ namespace GfxRenderEngine
                 }
                 else
                 {
-                    LOG_CORE_ERROR("gltf file did not load properly: {0}", gltfFilename);
+                    LOG_CORE_CRITICAL("gltf file did not load properly: {0}", gltfFilename);
                     return;
                 }
 
