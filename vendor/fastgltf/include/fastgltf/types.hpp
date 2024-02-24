@@ -1845,7 +1845,7 @@ namespace fastgltf {
         /**
          * The emissive strength from the KHR_materials_emissive_strength extension.
          */
-        num emissiveStrength = 0.0f;
+        num emissiveStrength = 1.0f;
 
         /**
          * The index of refraction as specified through KHR_materials_ior.

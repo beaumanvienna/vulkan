@@ -473,33 +473,10 @@ namespace GfxRenderEngine
                                     unsigned char* buffer = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4 /*int desired_channels*/);
                                     CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
 
-                                    unsigned char* buffer4Channels = nullptr;
-                                    std::vector<unsigned char> newBuffer4Channels;
-
-                                    if (nrChannels == 3)
-                                    {
-                                        size_t bufferSize = sizeof(unsigned char) * width * height * 4;
-                                        newBuffer4Channels.resize(bufferSize, 255 /*alpha = 1.0*/);
-
-                                        buffer4Channels = static_cast<unsigned char*>(newBuffer4Channels.data());
-                                        unsigned char* rgba = buffer4Channels; // destination
-                                        unsigned char* rgb = buffer; //src
-                                        for (int i = 0; i < width * height; ++i)
-                                        {
-                                            std::memcpy(rgba, rgb, sizeof(unsigned char) * 3);
-                                            rgba += 4;
-                                            rgb += 3;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        buffer4Channels = buffer;
-                                    }
-
                                     int minFilter = GetMinFilter(imageIndex);
                                     int magFilter = GetMinFilter(imageIndex);
                                     bool imageFormat = GetImageFormatGltf(imageIndex);
-                                    texture->Init(width, height, imageFormat, buffer4Channels, minFilter, magFilter);
+                                    texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
                                     stbi_image_free(buffer);
                                 }
@@ -561,13 +538,29 @@ namespace GfxRenderEngine
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
-
             // emissive factor and emissive strength
             {
+                // emissive factor
                 glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
                 material.m_EmissiveFactor = emissiveFactor;
 
-                material.m_EmissiveStrength = glTFMaterial.emissiveStrength;
+                // emissive strength
+                // set the emissive strength only if an emissive texture was provided or an emissive vertex color via emissiveFactor
+                // in either way, emissiveFactor must have been provided
+                // (no need to also check for an emissive texture via glTFMaterial.emissiveTexture.has_value())
+                // emissive strength is just an extra value via an extension
+                // ("emissiveStrength" is normally not provided, but factored into emssiveFactor, default is 1.0f)
+                bool emissiveMaterial = (emissiveFactor != glm::vec3(0,0,0));
+                if (emissiveMaterial)
+                {
+                    // simplified (only using 1st component of emissive factor, instead of all three)
+                    material.m_EmissiveStrength = glTFMaterial.emissiveStrength * material.m_EmissiveFactor.r;
+                }
+                else
+                {
+                    // emissive texture nor emissive vertex color provided -> do not use as emissive material
+                    material.m_EmissiveStrength = 0.0f;
+                }
             }
 
             // emissive texture
