@@ -210,7 +210,7 @@ namespace GfxRenderEngine
                 auto entity = m_Registry.create();
 
                 // create scene graph node and add to parent
-                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+                auto shortName = ":f:" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
                 auto longName = m_Filepath + shortName;
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
@@ -239,7 +239,7 @@ namespace GfxRenderEngine
         int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.create();
-        auto baseName = + "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+        auto baseName = ":f:" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + baseName;
         auto longName = m_Filepath + baseName;
 
@@ -573,44 +573,6 @@ namespace GfxRenderEngine
 
             m_Materials[materialIndex] = material;
         }
-    }
-
-    template<typename T>
-    fastgltf::ComponentType FastgltfBuilder::LoadAccessor
-    (
-        const fastgltf::Accessor& accessor,
-        const T*& pointer,
-        size_t* count /*= nullptr*/,
-        fastgltf::AccessorType* type /*= nullptr*/
-    )
-    {
-        CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
-        const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
-        auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
-        std::visit
-        (
-            fastgltf::visitor
-            {
-                [&](auto& arg) // default branch if image data is not supported
-                {
-                    LOG_CORE_CRITICAL("not supported default branch (LoadAccessor) ");
-                },
-                [&](fastgltf::sources::Array& vector)
-                {
-                    pointer = reinterpret_cast<const T*>(vector.bytes.data() + bufferView.byteOffset);
-                }
-            },
-            buffer.data
-        );
-        if (count)
-        {
-            count[0] = accessor.count;
-        }
-        if (type)
-        {
-            type[0] = accessor.type;
-        }
-        return accessor.componentType;
     }
 
     void FastgltfBuilder::LoadVertexDataGltf(uint const meshIndex)

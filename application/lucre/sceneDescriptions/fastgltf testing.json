@@ -1,9 +1,63 @@
 {
     "file format identifier": 1.2,
-    "description": "dessert scene",
-    "author": "Copyright (c) 2023 Engine Development Team",
+    "description": "fastgltf testing",
+    "author": "Copyright (c) 2024 Engine Development Team",
     "fastgltf files":
     [
+        {
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.299999, 0.299998, 0.299999
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.583, 2.132, 4.564
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island2.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            7.2, 7.2, 7.2
+                        ],
+                        "rotation":
+                        [
+                            2.15439e-08, -0.117642, 1.16075e-08
+                        ],
+                        "translation":
+                        [
+                            -0.221573, -1.10685, 1.17507
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
             "instances":
@@ -43,10 +97,104 @@
                     }
                 }
             ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.164, 0.164, 0.164
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.323, 2, 4.8
+                        ]
+                    }
+                }
+            ]
         }
     ],   
     "gltf files":
     [
+        {
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.299999, 0.299998, 0.299999
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.349, 2.132, 4.608
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.341708, 0.341708, 0.341708
+                        ],
+                        "rotation":
+                        [
+                            0, -0.00120295, 0
+                        ],
+                        "translation":
+                        [
+                            3.347, 2.55043, 4.33114
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.342, 0.342, 0.342
+                        ],
+                        "rotation":
+                        [
+                            0, -1.05649, 0
+                        ],
+                        "translation":
+                        [
+                            5, 2.55043, 4.2638
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/external_3D_files/cactus/cactus.gltf",
             "instances":
@@ -159,6 +307,23 @@
                         "translation":
                         [
                             -0.325976, 0.896592, 4.16285
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            3.73, 0.896592, 4.16285
                         ]
                     }
                 }
