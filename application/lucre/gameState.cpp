@@ -55,7 +55,7 @@ namespace LucreApp
 #ifdef MACOSX
         SetNextState(State::CUTSCENE);
 #else
-        SetNextState(State::DESSERT);
+        SetNextState(State::TERRAIN);
 #endif
     }
 
@@ -348,6 +348,7 @@ namespace LucreApp
         {
             auto lambda = [=]()
             {
+                // todo: use the json format
                 auto scenePtr = std::make_shared<TerrainScene>("terrain.scene", "application/lucre/sceneDescriptions/terrain.scene");
                 SetupScene(state, scenePtr);
                 GetScene(state)->Load();

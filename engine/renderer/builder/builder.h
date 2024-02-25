@@ -23,6 +23,7 @@
 #pragma once
 
 #include "renderer/model.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
@@ -33,7 +34,7 @@ namespace GfxRenderEngine
         Builder() = default;
 
         void LoadModelObjWavefront(const std::string &filepath, int fragAmplification = 1.0);
-        void LoadTerrainHeightMap(const std::string &filepath);
+        entt::entity LoadTerrainHeightMap(const std::string &filepath, Scene &scene);
         void LoadParticle(const glm::vec4 &color);
         void LoadSprite(Sprite const &sprite, float const amplification = 0.0f, int const unlit = 0, glm::vec4 const &color = glm::vec4(1.0f));
         entt::entity LoadCubemap(const std::vector<std::string> &faces, entt::registry &registry);
@@ -50,5 +51,8 @@ namespace GfxRenderEngine
         // cubemap
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
         std::vector<Submesh> m_CubemapSubmeshes{};
+
+        uint32_t terrainSize = 0;
+        std::vector<std::vector<float>> terrainData;
     };
 }

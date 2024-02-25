@@ -46,6 +46,7 @@ namespace LucreApp
 
         virtual void Start() override;
         virtual void Stop() override;
+
         virtual void OnUpdate(const Timestep &timestep) override;
         virtual Camera &GetCamera() override { return m_CameraController->GetCamera(); }
         virtual void OnEvent(Event &event) override;
@@ -71,6 +72,8 @@ namespace LucreApp
 
     private:
         std::shared_ptr<Renderer> m_Renderer;
+
+        // todo: change as SceneLoaderJSON
         SceneLoader m_SceneLoader;
 
         // the camera is keyboard-controlled
@@ -79,10 +82,14 @@ namespace LucreApp
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_Lightbulb0;
+        entt::entity m_Camera, m_Skybox, m_Lightbulb0, terrain;
         std::vector<DirectionalLightComponent *> m_DirectionalLights;
         entt::entity m_DirectionalLight0;
         entt::entity m_PointLight[MAX_LIGHTS];
+
+        //------
+        void loadTerrain();
+        //------
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;

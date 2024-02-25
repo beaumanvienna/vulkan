@@ -77,15 +77,6 @@ namespace LucreApp
             float height1 = 0.4f;
             std::vector<glm::vec3> lightPositions =
                 {
-                    {-0.285, height1, -2.8},
-                    {-3.2, height1, -2.8},
-                    {-6.1, height1, -2.8},
-                    {2.7, height1, -2.8},
-                    {5.6, height1, -2.8},
-                    {-0.285, height1, 0.7},
-                    {-3.2, height1, 0.7},
-                    {-6.1, height1, 0.7},
-                    {2.7, height1, 0.7},
                     {5.6, height1, 0.7}};
 
             for (size_t i = 0; i < lightPositions.size(); i++)
@@ -110,11 +101,20 @@ namespace LucreApp
     {
         m_SceneLoader.Deserialize(); // loads YAML
         ImGUI::SetupSlider(this);
-
         LoadModels();
+        loadTerrain();
         LoadScripts();
     }
 
+    void TerrainScene::loadTerrain()
+    {
+        Builder builder;
+        terrain = builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save", *this);
+        auto view = m_Registry.view<TransformComponent>();
+        auto &terrainTransform = view.get<TransformComponent>(terrain);
+        terrainTransform.SetScale(1.0f);
+        terrainTransform.SetTranslation({0.0f, 0.0f, 0.0f});
+    }
     void TerrainScene::LoadModels()
     {
         {
@@ -166,7 +166,7 @@ namespace LucreApp
 
     void TerrainScene::StartScripts()
     {
-        }
+    }
 
     void TerrainScene::Stop()
     {
