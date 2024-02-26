@@ -525,7 +525,7 @@ namespace GfxRenderEngine
             // normal map
             if (glTFMaterial.normalTexture.has_value())
             {
-                uint normalMapIndex = glTFMaterial.pbrData.baseColorTexture.value().textureIndex;
+                uint normalMapIndex = glTFMaterial.normalTexture.value().textureIndex;
                 material.m_NormalMapIndex = m_GltfModel.textures[normalMapIndex].imageIndex.value();
                 material.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
                 material.m_Features |= Material::HAS_NORMAL_MAP;
