@@ -109,11 +109,12 @@ namespace LucreApp
     void TerrainScene::loadTerrain()
     {
         Builder builder;
-        terrain = builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save", *this);
+        builder.LoadTerrainHeightMapPNG("application/lucre/models/assets/terrain/heightmap.png", *this);
+        // terrain = builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save", *this);
         auto view = m_Registry.view<TransformComponent>();
         auto &terrainTransform = view.get<TransformComponent>(terrain);
         terrainTransform.SetScale(1.0f);
-        terrainTransform.SetTranslation({0.0f, 0.0f, 0.0f});
+        terrainTransform.SetTranslation({-5.0f, 0.0f, -5.0f});
     }
     void TerrainScene::LoadModels()
     {

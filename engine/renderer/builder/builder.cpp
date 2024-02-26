@@ -28,6 +28,8 @@
 #include "auxiliary/hash.h"
 #include "scene/scene.h"
 
+#include "stb_image.h"
+
 #include "VKmodel.h"
 
 namespace std
@@ -47,50 +49,20 @@ namespace std
 namespace GfxRenderEngine
 {
 
-    entt::entity Builder::LoadTerrainHeightMap(const std::string &filepath, Scene &scene)
+    void Builder::PopulateTerrainData(const std::vector<std::vector<float>> &heightMap)
     {
-
-        m_Vertices.clear();
-        m_Indices.clear();
-        m_Cubemaps.clear();
-        std::ifstream file(filepath, std::ios::ate | std::ios::binary);
-
-        if (!file.is_open())
-        {
-            throw std::runtime_error("failed to open file: " + filepath);
-        }
-        size_t fileSize = static_cast<size_t>(file.tellg());
-        size_t floatCount = fileSize / sizeof(float);
-
-        std::vector<float> buffer(floatCount);
-        file.seekg(0);
-        file.read(reinterpret_cast<char *>(buffer.data()), fileSize);
-        file.close();
-
-        terrainSize = static_cast<uint32_t>(sqrt(floatCount));
-        terrainData.resize(terrainSize, std::vector<float>(terrainSize));
-        for (size_t i = 0; i < terrainSize; ++i)
-        {
-            for (size_t j = 0; j < terrainSize; ++j)
-            {
-                terrainData[i][j] = buffer[i * terrainSize + j];
-            }
-        }
-
-        float scale = 0.1f;       // Scale for the grid spacing
-        float heightScale = .01f; // Scale for the height values
-        size_t rows = terrainData.size();
-        size_t cols = terrainData.empty() ? 0 : terrainData[0].size();
-        // size_t rows = 50;
-        // size_t cols = 50;
+        float scale = 0.1f;      // Scale for the grid spacing
+        float heightScale = 1.f; // Scale for the height values
+        size_t rows = heightMap.size();
+        size_t cols = heightMap.empty() ? 0 : heightMap[0].size();
         Vertex vertex{};
         for (size_t z = 0; z < rows; ++z)
         {
             for (size_t x = 0; x < cols; ++x)
             {
-                vertex.m_Position = glm::vec3(x * scale, terrainData[z][x] * heightScale, z * scale);
+                vertex.m_Position = glm::vec3(x * scale, heightMap[z][x] * heightScale, z * scale);
                 std::cout << vertex.m_Position.x << " " << vertex.m_Position.y << " " << vertex.m_Position.z << std::endl;
-                vertex.m_Color = glm::vec3(1.f, 0.f, 1.f);
+                vertex.m_Color = glm::vec3(0.f, 0.f, heightMap[z][x] / 3);
                 vertex.m_UV = glm::vec2(0.f, 0.f);
                 vertex.m_Amplification = 0.f;
                 vertex.m_Unlit = 0;
@@ -102,10 +74,10 @@ namespace GfxRenderEngine
 
                 glm::vec3 sumNormals(0.0f);
                 // Neighbors
-                glm::vec3 left = x > 0 ? glm::vec3(-1.0f, terrainData[z][x - 1] - terrainData[z][x], 0.0f) : glm::vec3(0.0f);
-                glm::vec3 right = x < rows - 1 ? glm::vec3(1.0f, terrainData[z][x + 1] - terrainData[z][x], 0.0f) : glm::vec3(0.0f);
-                glm::vec3 down = z > 0 ? glm::vec3(0.0f, terrainData[z - 1][x] - terrainData[z][x], -1.0f) : glm::vec3(0.0f);
-                glm::vec3 up = z < rows - 1 ? glm::vec3(0.0f, terrainData[z + 1][x] - terrainData[z][x], 1.0f) : glm::vec3(0.0f);
+                glm::vec3 left = x > 0 ? glm::vec3(-1.0f, heightMap[z][x - 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
+                glm::vec3 right = x < rows - 1 ? glm::vec3(1.0f, heightMap[z][x + 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
+                glm::vec3 down = z > 0 ? glm::vec3(0.0f, heightMap[z - 1][x] - heightMap[z][x], -1.0f) : glm::vec3(0.0f);
+                glm::vec3 up = z < rows - 1 ? glm::vec3(0.0f, heightMap[z + 1][x] - heightMap[z][x], 1.0f) : glm::vec3(0.0f);
 
                 // Cross products to compute normals
                 if (x > 0 && z > 0)
@@ -118,11 +90,7 @@ namespace GfxRenderEngine
                     sumNormals += glm::cross(up, left);
 
                 vertex.m_Normal = glm::normalize(sumNormals);
-                // vertex.m_Normal = glm::vec3(0.0f, 1.0f, 0.0f);
-
                 m_Vertices.push_back(vertex);
-
-                //--------
             }
         }
         for (size_t z = 0; z < rows - 1; ++z)
@@ -144,6 +112,111 @@ namespace GfxRenderEngine
                 m_Indices.push_back(bottomRight);
             }
         }
+    }
+    entt::entity Builder::LoadTerrainHeightMapPNG(const std::string &filepath, Scene &scene)
+    {
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Cubemaps.clear();
+        int m_Width, m_Height, m_BytesPerPixel;
+        uchar *m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 0);
+        std::vector<std::vector<float>> terrainData(m_Width, std::vector<float>(m_Height));
+        if (m_LocalBuffer)
+        {
+            LOG_CORE_CRITICAL("Texture: load file {0}", filepath);
+            std::cout << "buffer size: " << sizeof(m_LocalBuffer) << std::endl
+                      << "width: " << m_Width << std::endl
+                      << "height: " << m_Height << std::endl
+                      << "bytes per pixel: " << m_BytesPerPixel << std::endl;
+            for (int i = 0; i < m_Width; i++)
+            {
+                for (int j = 0; j < m_Height; j++)
+                {
+                    std::cout << static_cast<float>(m_LocalBuffer[i * m_Width + j]) << " ";
+                    terrainData[i][j] = static_cast<float>(m_LocalBuffer[i * m_Width + j]) / 127.0f;
+                }
+                std::cout << std::endl;
+            }
+            stbi_image_free(m_LocalBuffer);
+
+            PopulateTerrainData(terrainData);
+
+            ModelSubmesh submesh{};
+            submesh.m_FirstIndex = 0;
+            submesh.m_FirstVertex = 0;
+            submesh.m_IndexCount = m_Indices.size();
+            submesh.m_VertexCount = m_Vertices.size();
+
+            { // create material descriptor
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+            }
+            submesh.m_MaterialProperties.m_Roughness = 0.5f;
+            submesh.m_MaterialProperties.m_Metallic = 0.1f;
+            submesh.m_MaterialProperties.m_NormalMapIntensity = 1.0f;
+
+            m_Submeshes.push_back(submesh);
+
+            // create game object
+            auto model = Engine::m_Engine->LoadModel(*this);
+            entt::entity entity;
+            {
+                auto &registry = scene.GetRegistry();
+                auto &sceneGraph = scene.GetSceneGraph();
+                auto &dictionary = scene.GetDictionary();
+
+                entity = registry.create();
+                MeshComponent mesh{"terrain", model};
+                registry.emplace<MeshComponent>(entity, mesh);
+                TransformComponent transform{};
+                registry.emplace<TransformComponent>(entity, transform);
+                PbrNoMapTag pbrNoMapTag{};
+                registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+
+                uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
+                sceneGraph.GetRoot().AddChild(groupNode);
+            }
+            return entity;
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", filepath);
+        }
+        LOG_CORE_CRITICAL("I am here hello", filepath);
+
+        return entt::null;
+    }
+    entt::entity Builder::LoadTerrainHeightMap(const std::string &filepath, Scene &scene)
+    {
+
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Cubemaps.clear();
+        std::ifstream file(filepath, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open())
+        {
+            throw std::runtime_error("failed to open file: " + filepath);
+        }
+        size_t fileSize = static_cast<size_t>(file.tellg());
+        size_t floatCount = fileSize / sizeof(float);
+
+        std::vector<float> buffer(floatCount);
+        file.seekg(0);
+        file.read(reinterpret_cast<char *>(buffer.data()), fileSize);
+        file.close();
+
+        uint32_t terrainSize = static_cast<uint32_t>(sqrt(floatCount));
+        std::vector<std::vector<float>> terrainData(terrainSize, std::vector<float>(terrainSize));
+        for (size_t i = 0; i < terrainSize; ++i)
+        {
+            for (size_t j = 0; j < terrainSize; ++j)
+            {
+                terrainData[i][j] = buffer[i * terrainSize + j];
+            }
+        }
+        //---------------------
+        // PopulateTerrainData(terrainData);
 
         ModelSubmesh submesh{};
         submesh.m_FirstIndex = 0;
@@ -182,6 +255,7 @@ namespace GfxRenderEngine
         }
         return entity;
     }
+
     void Builder::LoadSprite(Sprite const &sprite, float const amplification, int const unlit, glm::vec4 const &color)
     {
         m_Vertices.clear();
