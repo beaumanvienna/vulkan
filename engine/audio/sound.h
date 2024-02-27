@@ -26,7 +26,7 @@
 
 #include "engine.h"
 
-#ifdef LINUX
+#ifdef PULSEAUDIO
 
     #include "SoundDeviceManager.h"
 
