@@ -31,5 +31,5 @@ AlwaysBreakTemplateDeclarations: No
 AllowShortEnumsOnASingleLine: false
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
-SpaceBeforeCpp11BracedList: true
+SpaceBeforeCpp11BracedList: false
 AllowShortLoopsOnASingleLine: false

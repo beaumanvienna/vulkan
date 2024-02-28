@@ -122,49 +122,49 @@ namespace GfxRenderEngine
         // | / |
         // 3 - 2
 
-        Vertex vertex[4] {// index 0, 0.0f,  1.0f
-                          {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                           {color.x, color.y, color.z},
-                           /*norm*/ {0.0f, 0.0f, -1.0f},
-                           /*uv*/ {0.0f, 1.0f},
-                           1.0f /*amplification*/,
-                           0 /*unlit*/,
-                           /*tangent*/ glm::vec3(0.0),
-                           glm::ivec4(0.0),
-                           glm::vec4(0.0)},
+        Vertex vertex[4]{// index 0, 0.0f,  1.0f
+                         {/*pos*/ {-1.0f, 1.0f, 0.0f},
+                          {color.x, color.y, color.z},
+                          /*norm*/ {0.0f, 0.0f, -1.0f},
+                          /*uv*/ {0.0f, 1.0f},
+                          1.0f /*amplification*/,
+                          0 /*unlit*/,
+                          /*tangent*/ glm::vec3(0.0),
+                          glm::ivec4(0.0),
+                          glm::vec4(0.0)},
 
-                          // index 1, 1.0f,  1.0f
-                          {/*pos*/ {1.0f, 1.0f, 0.0f},
-                           {color.x, color.y, color.z},
-                           /*norm*/ {0.0f, 0.0f, -1.0f},
-                           /*uv*/ {1.0f, 1.0f},
-                           1.0f /*amplification*/,
-                           0 /*unlit*/,
-                           /*tangent*/ glm::vec3(0.0),
-                           glm::ivec4(0.0),
-                           glm::vec4(0.0)},
+                         // index 1, 1.0f,  1.0f
+                         {/*pos*/ {1.0f, 1.0f, 0.0f},
+                          {color.x, color.y, color.z},
+                          /*norm*/ {0.0f, 0.0f, -1.0f},
+                          /*uv*/ {1.0f, 1.0f},
+                          1.0f /*amplification*/,
+                          0 /*unlit*/,
+                          /*tangent*/ glm::vec3(0.0),
+                          glm::ivec4(0.0),
+                          glm::vec4(0.0)},
 
-                          // index 2, 1.0f,  0.0f
-                          {/*pos*/ {1.0f, -1.0f, 0.0f},
-                           {color.x, color.y, color.z},
-                           /*norm*/ {0.0f, 0.0f, -1.0f},
-                           /*uv*/ {1.0f, 0.0f},
-                           1.0f /*amplification*/,
-                           0 /*unlit*/,
-                           /*tangent*/ glm::vec3(0.0),
-                           glm::ivec4(0.0),
-                           glm::vec4(0.0)},
+                         // index 2, 1.0f,  0.0f
+                         {/*pos*/ {1.0f, -1.0f, 0.0f},
+                          {color.x, color.y, color.z},
+                          /*norm*/ {0.0f, 0.0f, -1.0f},
+                          /*uv*/ {1.0f, 0.0f},
+                          1.0f /*amplification*/,
+                          0 /*unlit*/,
+                          /*tangent*/ glm::vec3(0.0),
+                          glm::ivec4(0.0),
+                          glm::vec4(0.0)},
 
-                          // index 3, 0.0f,  0.0f
-                          {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                           {color.x, color.y, color.z},
-                           /*norm*/ {0.0f, 0.0f, -1.0f},
-                           /*uv*/ {0.0f, 0.0f},
-                           1.0f /*amplification*/,
-                           0 /*unlit*/,
-                           /*tangent*/ glm::vec3(0.0),
-                           glm::ivec4(0.0),
-                           glm::vec4(0.0)}};
+                         // index 3, 0.0f,  0.0f
+                         {/*pos*/ {-1.0f, -1.0f, 0.0f},
+                          {color.x, color.y, color.z},
+                          /*norm*/ {0.0f, 0.0f, -1.0f},
+                          /*uv*/ {0.0f, 0.0f},
+                          1.0f /*amplification*/,
+                          0 /*unlit*/,
+                          /*tangent*/ glm::vec3(0.0),
+                          glm::ivec4(0.0),
+                          glm::vec4(0.0)}};
         for (int i = 0; i < 4; i++)
             m_Vertices.push_back(vertex[i]);
 
@@ -238,7 +238,7 @@ namespace GfxRenderEngine
         }
 
         {
-            ModelSubmesh submesh {};
+            ModelSubmesh submesh{};
             submesh.m_FirstVertex = 0;
             submesh.m_VertexCount = VERTEX_COUNT;
 
@@ -254,11 +254,11 @@ namespace GfxRenderEngine
         {
             auto model = Engine::m_Engine->LoadModel(*this);
             entity = registry.create();
-            MeshComponent mesh {"cubemap", model};
+            MeshComponent mesh{"cubemap", model};
             registry.emplace<MeshComponent>(entity, mesh);
-            TransformComponent transform {};
+            TransformComponent transform{};
             registry.emplace<TransformComponent>(entity, transform);
-            CubemapComponent cubemapComponent {};
+            CubemapComponent cubemapComponent{};
             registry.emplace<CubemapComponent>(entity, cubemapComponent);
         }
 
@@ -283,13 +283,13 @@ namespace GfxRenderEngine
         m_Vertices.clear();
         m_Indices.clear();
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices {};
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
         for (const auto& shape : shapes)
         {
             for (const auto& index : shape.mesh.indices)
             {
-                Vertex vertex {};
+                Vertex vertex{};
                 vertex.m_Amplification = fragAmplification;
 
                 if (index.vertex_index >= 0)
@@ -335,7 +335,7 @@ namespace GfxRenderEngine
         }
 
         {
-            ModelSubmesh submesh {};
+            ModelSubmesh submesh{};
             submesh.m_FirstIndex = 0;
             submesh.m_FirstVertex = 0;
             submesh.m_IndexCount = m_Indices.size();
@@ -387,12 +387,12 @@ namespace GfxRenderEngine
         uint vertexIndex1 = 0;
         uint vertexIndex2 = 0;
         uint vertexIndex3 = 0;
-        glm::vec3 position1 = glm::vec3 {0.0f};
-        glm::vec3 position2 = glm::vec3 {0.0f};
-        glm::vec3 position3 = glm::vec3 {0.0f};
-        glm::vec2 uv1 = glm::vec2 {0.0f};
-        glm::vec2 uv2 = glm::vec2 {0.0f};
-        glm::vec2 uv3 = glm::vec2 {0.0f};
+        glm::vec3 position1 = glm::vec3{0.0f};
+        glm::vec3 position2 = glm::vec3{0.0f};
+        glm::vec3 position3 = glm::vec3{0.0f};
+        glm::vec2 uv1 = glm::vec2{0.0f};
+        glm::vec2 uv2 = glm::vec2{0.0f};
+        glm::vec2 uv3 = glm::vec2{0.0f};
 
         for (uint index : indices)
         {
