@@ -33,3 +33,5 @@ SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
 SpaceBeforeCpp11BracedList: false
 AllowShortLoopsOnASingleLine: false
+ColumnLimit: 200
+SortIncludes: false
