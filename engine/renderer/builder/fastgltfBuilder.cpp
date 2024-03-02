@@ -67,7 +67,7 @@ namespace GfxRenderEngine
             m_GltfModel = std::move(asset.get());
         }
 
-        if (!m_GltfModel.meshes.size())
+        if (!m_GltfModel.meshes.size() && !m_GltfModel.lights.size() && !m_GltfModel.cameras.size())
         {
             LOG_CORE_CRITICAL("LoadGltf: no meshes found in {0}", m_Filepath);
             return Gltf::GLTF_LOAD_FAILURE;
@@ -186,13 +186,15 @@ namespace GfxRenderEngine
     {
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         std::string nodeName(node.name);
-        int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
 
         uint currentNode = parentNode;
 
         if (m_HasMesh[gltfNodeIndex])
         {
-            if (meshIndex != Gltf::GLTF_NOT_USED)
+            int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
+            int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
+            int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
+            if ((meshIndex != Gltf::GLTF_NOT_USED) || (lightIndex != Gltf::GLTF_NOT_USED) || (cameraIndex != Gltf::GLTF_NOT_USED))
             {
                 currentNode = CreateGameObject(scene, gltfNodeIndex, parentNode);
             }
@@ -229,6 +231,8 @@ namespace GfxRenderEngine
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         std::string nodeName(node.name);
         int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
+        int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
+        int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.create();
         auto baseName = ":f:" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
@@ -241,115 +245,154 @@ namespace GfxRenderEngine
         TransformComponent transform{};
         LoadTransformationMatrix(transform, gltfNodeIndex);
 
-        // *** Instancing ***
-        // create instance tag for first game object;
-        // and collect further instances in it.
-        // The renderer can loop over all instance tags
-        // to retrieve the corresponding game objects.
-
-        if (!m_InstanceIndex)
+        if (meshIndex != Gltf::GLTF_NOT_USED)
         {
-            InstanceTag instanceTag;
-            instanceTag.m_Instances.push_back(entity);
-            m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
-            instanceTag.m_InstanceBuffer = m_InstanceBuffer;
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
-            m_Registry.emplace<InstanceTag>(entity, instanceTag);
-            transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
-            m_InstancedObjects.push_back(entity);
+            // create a model
 
-            // create model for 1st instance
-            LoadVertexDataGltf(meshIndex);
-            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
-            { // assign material
-                uint primitiveIndex = 0;
-                for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+            // *** Instancing ***
+            // create instance tag for first game object;
+            // and collect further instances in it.
+            // The renderer can loop over all instance tags
+            // to retrieve the corresponding game objects.
+
+            if (!m_InstanceIndex)
+            {
+                InstanceTag instanceTag;
+                instanceTag.m_Instances.push_back(entity);
+                m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
+                instanceTag.m_InstanceBuffer = m_InstanceBuffer;
+                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                m_Registry.emplace<InstanceTag>(entity, instanceTag);
+                transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
+                m_InstancedObjects.push_back(entity);
+
+                // create model for 1st instance
+                LoadVertexDataGltf(meshIndex);
+                LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
+                { // assign material
+                    uint primitiveIndex = 0;
+                    for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+                    {
+                        ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
+                        CORE_ASSERT(glTFPrimitive.materialIndex.has_value(), "no material index");
+                        AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
+                    }
+                }
+                m_Model = Engine::m_Engine->LoadModel(*this);
+
+                // material tags (can have multiple tags)
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
                 {
-                    ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
-                    CORE_ASSERT(glTFPrimitive.materialIndex.has_value(), "no material index");
-                    AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
+                    PbrNoMapTag pbrNoMapTag{};
+                    m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
+                {
+                    PbrDiffuseTag pbrDiffuseTag{};
+                    m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
+                {
+                    PbrDiffuseSATag pbrDiffuseSATag{};
+                    m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
+
+                    SkeletalAnimationTag skeletalAnimationTag{};
+                    m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
+                {
+                    PbrDiffuseNormalTag pbrDiffuseNormalTag;
+                    m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
+                {
+                    PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
+                    m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
+
+                    SkeletalAnimationTag skeletalAnimationTag{};
+                    m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
+                {
+                    PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
+                    m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
+                {
+                    PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
+                    m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
+
+                    SkeletalAnimationTag skeletalAnimationTag{};
+                    m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+                }
+
+                // emissive materials
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
+                {
+                    PbrEmissiveTag pbrEmissiveTag{};
+                    m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
+                }
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
+                {
+                    PbrEmissiveTextureTag pbrEmissiveTextureTag{};
+                    m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
+                }
+
+                if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
+                {
+                    PbrMaterial pbrMaterial{};
+                    m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
                 }
             }
-            m_Model = Engine::m_Engine->LoadModel(*this);
-
-            // material tags (can have multiple tags)
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
+            else
             {
-                PbrNoMapTag pbrNoMapTag{};
-                m_Registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseMap)
-            {
-                PbrDiffuseTag pbrDiffuseTag{};
-                m_Registry.emplace<PbrDiffuseTag>(entity, pbrDiffuseTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseSAMap)
-            {
-                PbrDiffuseSATag pbrDiffuseSATag{};
-                m_Registry.emplace<PbrDiffuseSATag>(entity, pbrDiffuseSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalMap)
-            {
-                PbrDiffuseNormalTag pbrDiffuseNormalTag;
-                m_Registry.emplace<PbrDiffuseNormalTag>(entity, pbrDiffuseNormalTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalSAMap)
-            {
-                PbrDiffuseNormalSATag pbrDiffuseNormalSATag;
-                m_Registry.emplace<PbrDiffuseNormalSATag>(entity, pbrDiffuseNormalSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap)
-            {
-                PbrDiffuseNormalRoughnessMetallicTag pbrDiffuseNormalRoughnessMetallicTag;
-                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicTag>(entity, pbrDiffuseNormalRoughnessMetallicTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap)
-            {
-                PbrDiffuseNormalRoughnessMetallicSATag pbrDiffuseNormalRoughnessMetallicSATag;
-                m_Registry.emplace<PbrDiffuseNormalRoughnessMetallicSATag>(entity, pbrDiffuseNormalRoughnessMetallicSATag);
-
-                SkeletalAnimationTag skeletalAnimationTag{};
-                m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
+                entt::entity instance = m_InstancedObjects[m_RenderObject++];
+                InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
+                instanceTag.m_Instances.push_back(entity);
+                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+                transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
             }
 
-            // emissive materials
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissive)
-            {
-                PbrEmissiveTag pbrEmissiveTag{};
-                m_Registry.emplace<PbrEmissiveTag>(entity, pbrEmissiveTag);
-            }
-            if (m_MaterialFeatures & MaterialDescriptor::MtPbrEmissiveTexture)
-            {
-                PbrEmissiveTextureTag pbrEmissiveTextureTag{};
-                m_Registry.emplace<PbrEmissiveTextureTag>(entity, pbrEmissiveTextureTag);
-            }
-
-            if (m_MaterialFeatures & MaterialDescriptor::ALL_PBR_MATERIALS)
-            {
-                PbrMaterial pbrMaterial{};
-                m_Registry.emplace<PbrMaterial>(entity, pbrMaterial);
+            { // add mesh component to all instances
+                MeshComponent mesh{nodeName, m_Model};
+                m_Registry.emplace<MeshComponent>(entity, mesh);
             }
         }
-        else
+        else if (lightIndex != Gltf::GLTF_NOT_USED)
         {
-            entt::entity instance = m_InstancedObjects[m_RenderObject++];
-            InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
-            instanceTag.m_Instances.push_back(entity);
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
-            transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
-        }
+            // create a light
+            fastgltf:: Light& glTFLight = m_GltfModel.lights[lightIndex];
+            switch (glTFLight.type)
+            {
+                case fastgltf::LightType::Directional:
+                {
+                    break;
+                }
+                case fastgltf::LightType::Spot:
+                {
+                    break;
+                }
+                case fastgltf::LightType::Point:
+                {
+                    PointLightComponent pointLightComponent{};
+                    pointLightComponent.m_LightIntensity = glTFLight.intensity / 2500.0f;
+                    pointLightComponent.m_Radius = glTFLight.range.has_value() ? glTFLight.range.value() : 0.1f;
+                    pointLightComponent.m_Color = glm::make_vec3(glTFLight.color.data());
 
-        { // add mesh and transform components to all instances
-            MeshComponent mesh{nodeName, m_Model};
-            m_Registry.emplace<MeshComponent>(entity, mesh);
-            m_Registry.emplace<TransformComponent>(entity, transform);
+                    m_Registry.emplace<PointLightComponent>(entity, pointLightComponent);
+                    break;
+                }
+                default:
+                {
+                    CORE_ASSERT(false, "fastgltfBuilder: type of light not supported");
+                }
+            }
         }
+        else if (cameraIndex != Gltf::GLTF_NOT_USED)
+        {
+            // create a camera
+        }
+        m_Registry.emplace<TransformComponent>(entity, transform);
 
         return newNode;
     }
