@@ -3203,7 +3203,7 @@ fg::Error fg::Parser::parseNodes(simdjson::dom::array& nodes, Asset& asset) {
 				dom::object lightsObject;
 				if (extensionsObject[extensions::KHR_lights_punctual].get_object().get(lightsObject) == SUCCESS) FASTGLTF_LIKELY {
 					std::uint64_t light = 0;
-					if (auto lightError = lightsObject["light"].get_uint64().get(light); error == SUCCESS) FASTGLTF_LIKELY {
+					if (auto lightError = lightsObject["light"].get_uint64().get(light); lightError == SUCCESS) FASTGLTF_LIKELY {
 						node.lightIndex = static_cast<std::size_t>(light);
 					} else {
 						return error == NO_SUCH_FIELD || error == INCORRECT_TYPE ? Error::InvalidGltf : Error::InvalidJson;
