@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -62,8 +62,7 @@ layout(location = 0) out vec2 fragOffset;
 layout(push_constant) uniform Push
 {
     vec4 m_Position;
-    vec4 m_Color;
-    float m_Radius;
+    vec4 m_ColorRadius; // w is radius
 } push;
 
 void main()
@@ -73,8 +72,8 @@ void main()
     vec3 cameraUpWorld = {ubo.m_View[0][1], ubo.m_View[1][1], ubo.m_View[2][1]};
 
     vec3 positionWorld = push.m_Position.xyz
-        + push.m_Radius * fragOffset.x * cameraRightWorld
-        + push.m_Radius * fragOffset.y * cameraUpWorld;
+        + push.m_ColorRadius.w * fragOffset.x * cameraRightWorld
+        + push.m_ColorRadius.w * fragOffset.y * cameraUpWorld;
 
     gl_Position = ubo.m_Projection * ubo.m_View * vec4(positionWorld, 1.0);
 }

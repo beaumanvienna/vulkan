@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -55,8 +55,7 @@ layout (location = 0) out vec4 outColor;
 layout(push_constant) uniform Push
 {
     vec4 m_Position;
-    vec4 m_Color;
-    float m_Radius;
+    vec4 m_ColorRadius; // w is radius
 } push;
 
 void main()
@@ -69,5 +68,5 @@ void main()
     float oneMinusDisSqr = (1 - dis) * (1 - dis);
     vec3 bloom = vec3(oneMinusDisSqr, oneMinusDisSqr, oneMinusDisSqr);
     float alpha = smoothstep(0.1, 1.0, 1-dis);
-    outColor = vec4(push.m_Color.xyz + bloom, alpha);
+    outColor = vec4(push.m_ColorRadius.xyz + bloom, alpha);
 }
