@@ -21,7 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 128
+#include "engine/platform/Vulkan/pointlights.h"
 
 const vec2 OFFSETS[6] = vec2[](
     vec2(-1.0, -1.0),
