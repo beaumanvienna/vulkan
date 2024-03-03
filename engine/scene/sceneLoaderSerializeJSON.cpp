@@ -37,6 +37,7 @@ namespace GfxRenderEngine
     void SceneLoaderJSON::SerializeScene(int indent)
     {
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
+        size_t fastgltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
         size_t fbxFileCount = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene.size();
         size_t objFileCount = m_SceneDescriptionFile.m_ObjFiles.m_ObjFilesFromScene.size();
 
@@ -47,6 +48,11 @@ namespace GfxRenderEngine
         SerializeString(indent, "description", m_SceneDescriptionFile.m_Description);
         SerializeString(indent, "author", m_SceneDescriptionFile.m_Author);
 
+        if (fastgltfFileCount) // fastgltf
+        {
+            bool noComma = (gltfFileCount == 0) && (fbxFileCount == 0);
+            SerializeFastgltfFiles(indent, noComma);
+        }
         if (gltfFileCount) // gltf
         {
             bool noComma = (fbxFileCount == 0);
@@ -92,6 +98,23 @@ namespace GfxRenderEngine
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
         size_t gltfFileIndex = 0;
         for (auto& gltfFile : m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene)
+        {
+            bool noCommaLocal = ((gltfFileIndex+1) == gltfFileCount);
+            SerializeGltfFile(indent, gltfFile, noCommaLocal);
+            ++gltfFileIndex;
+        }
+        m_OutputFile << indentStr << "]" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeFastgltfFiles(int indent, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"fastgltf files\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t gltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
+        size_t gltfFileIndex = 0;
+        for (auto& gltfFile : m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene)
         {
             bool noCommaLocal = ((gltfFileIndex+1) == gltfFileCount);
             SerializeGltfFile(indent, gltfFile, noCommaLocal);

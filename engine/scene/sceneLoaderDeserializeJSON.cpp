@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -27,10 +27,7 @@
 namespace GfxRenderEngine
 {
 
-    SceneLoaderJSON::SceneLoaderJSON(Scene& scene)
-        : m_Scene(scene)
-    {
-    }
+    SceneLoaderJSON::SceneLoaderJSON(Scene& scene) : m_Scene(scene) {}
 
     void SceneLoaderJSON::Deserialize(std::string& filepath, std::string& alternativeFilepath)
     {
@@ -65,33 +62,29 @@ namespace GfxRenderEngine
 
             if (sceneObjectKey == "file format identifier")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number");
 
                 // only check major version of "file format identifier"
                 m_SceneDescriptionFile.m_FileFormatIdentifier = sceneObject.value().get_double();
-                CORE_ASSERT
-                (
-                    (std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
-                    "The scene description major version does not match"
-                );
+                CORE_ASSERT((std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)), "The scene description major version does not match");
             }
             else if (sceneObjectKey == "description")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string");
                 std::string_view sceneDescription = sceneObject.value().get_string();
                 m_SceneDescriptionFile.m_Description = std::string(sceneDescription);
                 LOG_CORE_INFO("description: {0}", m_SceneDescriptionFile.m_Description);
             }
             else if (sceneObjectKey == "author")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string");
                 std::string_view sceneAuthor = sceneObject.value().get_string();
                 m_SceneDescriptionFile.m_Author = std::string(sceneAuthor);
                 LOG_CORE_INFO("author: {0}", m_SceneDescriptionFile.m_Author);
             }
             else if (sceneObjectKey == "gltf files")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
@@ -100,12 +93,12 @@ namespace GfxRenderEngine
 
                 for (auto gltfFileJSON : gltfFiles)
                 {
-                    ParseGltfFile(gltfFileJSON);
+                    ParseGltfFile(gltfFileJSON, false /*tinygltf loader*/, m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene);
                 }
             }
             else if (sceneObjectKey == "fastgltf files")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
@@ -114,12 +107,12 @@ namespace GfxRenderEngine
 
                 for (auto gltfFileJSON : gltfFiles)
                 {
-                    ParseGltfFile(gltfFileJSON, true /*fast*/);
+                    ParseGltfFile(gltfFileJSON, true /*fast*/, m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene);
                 }
             }
             else if (sceneObjectKey == "fbx files")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array" );
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
                 ondemand::array fbxFiles = sceneObject.value().get_array();
                 {
                     int fbxFileCount = fbxFiles.count_elements();
@@ -138,11 +131,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast)
+    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene)
     {
         std::string gltfFilename;
-
-        std::vector<Gltf::GltfFile>& gltfFilesFromScene = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
         bool loadSuccessful = false;
 
         for (auto gltfFileObject : gltfFileJSON)
@@ -214,12 +205,12 @@ namespace GfxRenderEngine
 
                             if (instanceObjectKey == "transform")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object");
                                 ParseTransform(instanceObject.value(), entity);
                             }
                             else if (instanceObjectKey == "nodes")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object" );
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object");
                                 ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
                             }
                             else
@@ -306,7 +297,7 @@ namespace GfxRenderEngine
 
                             if (instanceObjectKey == "transform")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object" );
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object");
                                 ParseTransform(instanceObject.value(), entity);
                             }
                             else
@@ -365,14 +356,15 @@ namespace GfxRenderEngine
     void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
     {
         uint nodeCount = nodesJSON.count_elements();
-        if (!nodeCount) return;
+        if (!nodeCount)
+            return;
 
         gltfFileInstance.m_Nodes.resize(nodeCount);
 
         uint nodeIndex = 0;
         for (auto nodeJSON : nodesJSON)
         {
-            CORE_ASSERT((nodeJSON.value().type() == ondemand::json_type::object), "type must be object" );
+            CORE_ASSERT((nodeJSON.value().type() == ondemand::json_type::object), "type must be object");
             ondemand::object nodeObjects = nodeJSON.value();
 
             Gltf::Node& gltfNode = gltfFileInstance.m_Nodes[nodeIndex];
@@ -456,4 +448,4 @@ namespace GfxRenderEngine
         }
         return returnVec3;
     }
-}
+} // namespace GfxRenderEngine

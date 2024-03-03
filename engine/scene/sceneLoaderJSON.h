@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         void Deserialize(std::string& filepath, std::string& alternativeFilepath);
         void Serialize();
         Gltf::GltfFiles& GetGltfFiles() { return m_SceneDescriptionFile.m_GltfFiles; }
+        Gltf::GltfFiles& GetFastgltfFiles() { return m_SceneDescriptionFile.m_FastgltfFiles; }
 
     private:
 
@@ -56,6 +57,7 @@ namespace GfxRenderEngine
             std::string m_Description;
             std::string m_Author;
             Gltf::GltfFiles m_GltfFiles;
+            Gltf::GltfFiles m_FastgltfFiles;
             Fbx::FbxFiles m_FbxFiles;
             Obj::ObjFiles m_ObjFiles;
         };
@@ -64,7 +66,7 @@ namespace GfxRenderEngine
 
         void Deserialize(std::string& filepath);
 
-        void ParseGltfFile(ondemand::object gltfFileJSON, bool fast=false);
+        void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene);
         void ParseFbxFile(ondemand::object fbxFileJSON);
         void ParseObjFile(ondemand::object objFileJSON);
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
@@ -83,6 +85,7 @@ namespace GfxRenderEngine
         void SerializeBool(int indent, std::string const& key, bool value, bool noComma = false);
         void SerializeNumber(int indent, std::string const& key, double const value, bool noComma = false);
         void SerializeGltfFiles(int indent, bool noComma);
+        void SerializeFastgltfFiles(int indent, bool noComma);
         void SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances);
         void SerializeInstance(int indent, Gltf::Instance const& instance, bool noComma);
