@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -49,24 +49,22 @@ namespace GfxRenderEngine
 
     struct SCREEN_Atlas;
 
-    struct FontID 
+    struct FontID
     {
     public:
-        explicit FontID(const char *_id) 
-            : id(_id) {}
-        FontID() 
-            : id(nullptr) {}
+        explicit FontID(const char* _id) : id(_id) {}
+        FontID() : id(nullptr) {}
 
-        static inline FontID invalid() { return FontID{ nullptr }; }
+        static inline FontID invalid() { return FontID{nullptr}; }
 
         bool isInvalid() const { return id == nullptr; }
 
     private:
-        const char *id;
+        const char* id;
         friend struct SCREEN_Atlas;
     };
 
-    struct AtlasChar 
+    struct AtlasChar
     {
         // texcoords
         float sx, sy, ex, ey;
@@ -78,14 +76,14 @@ namespace GfxRenderEngine
         unsigned short pw, ph;
     };
 
-    struct AtlasCharRange 
+    struct AtlasCharRange
     {
         int start;
         int end;
         int result_index;
     };
 
-    struct AtlasFontHeader 
+    struct AtlasFontHeader
     {
         float padding;
         float height;
@@ -96,23 +94,23 @@ namespace GfxRenderEngine
         char name[32];
     };
 
-    struct SCREEN_AtlasFont 
+    struct SCREEN_AtlasFont
     {
         float padding;
         float height;
         float ascend;
         float distslope;
-        const AtlasChar *charData;
-        const AtlasCharRange *ranges;
+        const AtlasChar* charData;
+        const AtlasCharRange* ranges;
         int numRanges;
         int numChars;
         char name[32];
 
         // Returns 0 on no match.
-        const AtlasChar *getChar(int utf32) const ;
+        const AtlasChar* getChar(int utf32) const;
     };
 
-    struct AtlasHeader 
+    struct AtlasHeader
     {
         int magic;
         int version;
@@ -125,11 +123,11 @@ namespace GfxRenderEngine
         const SCREEN_AtlasFont* getFont(FontID id) const;
 
         const char zim[32];
-        const SCREEN_AtlasFont **fonts;
+        const SCREEN_AtlasFont** fonts;
         int num_fonts = 0;
-        AtlasImage *images = nullptr;
+        AtlasImage* images = nullptr;
         int num_images = 0;
     };
 
     extern const SCREEN_Atlas ui_atlas;
-}
+} // namespace GfxRenderEngine

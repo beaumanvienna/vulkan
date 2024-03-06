@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -29,26 +29,21 @@
 
 namespace LucreApp
 {
-    Credits::Credits(SpriteSheet* spritesheet, SCREEN_UI::LayoutParams *layoutParams)
-            : LinearLayout(SCREEN_UI::ORIENT_VERTICAL, layoutParams), m_Spritesheet(spritesheet)
+    Credits::Credits(SpriteSheet* spritesheet, SCREEN_UI::LayoutParams* layoutParams)
+        : LinearLayout(SCREEN_UI::ORIENT_VERTICAL, layoutParams), m_Spritesheet(spritesheet)
     {
         CreateViews();
     }
 
-    Credits::~Credits()
-    {
-    }
+    Credits::~Credits() {}
 
-    bool Credits::Key(const SCREEN_KeyInput &input)
-    {
-        return LinearLayout::Key(input);
-    }
+    bool Credits::Key(const SCREEN_KeyInput& input) { return LinearLayout::Key(input); }
 
     void Credits::CreateViews()
     {
         using namespace SCREEN_UI;
 
-        float availableWidth  = UI::m_Common->m_AvailableWidth - 2 * UI::m_Common->m_TabMarginLeftRight;
+        float availableWidth = UI::m_Common->m_AvailableWidth - 2 * UI::m_Common->m_TabMarginLeftRight;
         float availableHeight = UI::m_Common->m_AvailableHeight;
 
         // Reset content
@@ -64,33 +59,30 @@ namespace LucreApp
         }
 
         float verticalSpace = (availableHeight - 4 * UI::m_Common->m_IconHeight);
-        LinearLayout* creditsHorizontal = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT,verticalSpace));
+        LinearLayout* creditsHorizontal =
+            new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT, verticalSpace));
         Add(creditsHorizontal);
-        
+
         // vertical column for logos
         auto sprite = Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP));
         sprite.SetScale(UI::m_Common->m_ScaleAll);
-        LinearLayout *logos = new LinearLayout(ORIENT_VERTICAL);
+        LinearLayout* logos = new LinearLayout(ORIENT_VERTICAL);
         creditsHorizontal->Add(logos);
         logos->Add(new Spacer(0.0f, verticalSpace / 2.0f));
         ImageView* ppssppLogo = new ImageView(sprite, new AnchorLayoutParams(sprite.GetWidth(), sprite.GetHeight()));
         logos->Add(ppssppLogo);
 
-        creditsHorizontal->Add(new TextView
-        (
-            "\n"
-            "The in-game GUI used in Lucre is based on\n"
-            "\n"
-            "PPSSPP:\n"
-            "www.ppsspp.org\n"
-            "(license: GNU GPLv2)\n",
-            ALIGN_HCENTER | ALIGN_VCENTER | FLAG_WRAP_TEXT, true, new LinearLayoutParams(availableWidth - sprite.GetWidth(), verticalSpace)));
+        creditsHorizontal->Add(new TextView("\n"
+                                            "The in-game GUI used in Lucre is based on\n"
+                                            "\n"
+                                            "PPSSPP:\n"
+                                            "www.ppsspp.org\n"
+                                            "(license: GNU GPLv2)\n",
+                                            ALIGN_HCENTER | ALIGN_VCENTER | FLAG_WRAP_TEXT, true,
+                                            new LinearLayoutParams(availableWidth - sprite.GetWidth(), verticalSpace)));
 
         return;
     }
 
-    void Credits::Update()
-    {
-        ViewGroup::Update();
-    }
-}
+    void Credits::Update() { ViewGroup::Update(); }
+} // namespace LucreApp

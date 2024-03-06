@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    Encapsulates a vulkan buffer
@@ -36,14 +36,12 @@
 
 namespace GfxRenderEngine
 {
-    class VK_Buffer: public Buffer
+    class VK_Buffer : public Buffer
     {
 
     public:
-
-        VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
-                VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
-                VkDeviceSize minOffsetAlignment = 1);
+        VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
+                  VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment = 1);
 
         VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU);
 
@@ -76,11 +74,9 @@ namespace GfxRenderEngine
         VkDeviceSize GetBufferSize() const { return m_BufferSize; }
 
     private:
-
         static VkDeviceSize GetAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
     private:
-
         VK_Device* m_Device;
         void* m_Mapped = nullptr;
         VkBuffer m_Buffer = VK_NULL_HANDLE;
@@ -92,6 +88,5 @@ namespace GfxRenderEngine
         VkDeviceSize m_AlignmentSize;
         VkBufferUsageFlags m_UsageFlags;
         VkMemoryPropertyFlags m_MemoryPropertyFlags;
-
     };
-}
+} // namespace GfxRenderEngine

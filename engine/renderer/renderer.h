@@ -26,7 +26,6 @@
 #include <memory>
 
 #include "engine.h"
-#include "scene/entity.h"
 #include "scene/sceneGraph.h"
 #include "scene/particleSystem.h"
 #include "renderer/camera.h"

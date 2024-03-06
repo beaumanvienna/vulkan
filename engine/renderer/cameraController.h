@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -26,6 +26,7 @@
 
 #include "engine.h"
 #include "camera.h"
+#include "scene/components.h"
 
 namespace GfxRenderEngine
 {
@@ -33,11 +34,12 @@ namespace GfxRenderEngine
     class CameraController
     {
     public:
-
         CameraController(Camera::ProjectionType type = Camera::PERSPECTIVE_PROJECTION);
+        CameraController(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetProjection();
         void SetProjection(Camera::ProjectionType type);
+        void SetProjection(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetZoomFactor(float factor);
         float GetZoomFactor() const { return m_ZoomFactor; }
@@ -46,14 +48,13 @@ namespace GfxRenderEngine
         void SetTranslation(const glm::vec2& translation);
         void SetTranslation(const glm::vec3& translation);
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
+        void SetViewYXZ(const glm::mat4& modelMatrix);
 
         Camera& GetCamera() { return *m_Camera; }
 
     private:
-
         std::shared_ptr<Camera> m_Camera;
 
         float m_ZoomFactor;
-
     };
-}
+} // namespace GfxRenderEngine

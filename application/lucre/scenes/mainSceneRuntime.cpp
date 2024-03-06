@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <stdlib.h>
@@ -40,7 +40,7 @@ namespace LucreApp
         auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
         for (auto entity : view)
         {
-            auto& transform  = view.get<TransformComponent>(entity);
+            auto& transform = view.get<TransformComponent>(entity);
             transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(transform.GetTranslation(), 1.f)));
         }
     }
@@ -63,7 +63,7 @@ namespace LucreApp
         }
 
         static uint index = 0;
-        if (m_Fire)  // from volcano
+        if (m_Fire) // from volcano
         {
             static auto start = Engine::m_Engine->GetTime();
             if ((Engine::m_Engine->GetTime() - start) > 100ms)
@@ -71,7 +71,7 @@ namespace LucreApp
                 if (index < MAX_B)
                 {
                     // random values in [-1.0f, 1.0f]
-                    float rVal = 2*(static_cast<float>(rand()) / RAND_MAX) - 1.0f;
+                    float rVal = 2 * (static_cast<float>(rand()) / RAND_MAX) - 1.0f;
                     // get new start time
                     start = Engine::m_Engine->GetTime();
 
@@ -81,7 +81,7 @@ namespace LucreApp
 
                     auto& rigidbody = m_Registry.get<RigidbodyComponent>(m_Banana[index]);
                     auto body = static_cast<b2Body*>(rigidbody.m_Body);
-                    body->SetLinearVelocity(b2Vec2(0.1f + rVal*4, 5.0f));
+                    body->SetLinearVelocity(b2Vec2(0.1f + rVal * 4, 5.0f));
                     body->SetTransform(b2Vec2(0.0f, 3.2f), 0.0f);
 
                     index++;
@@ -119,7 +119,7 @@ namespace LucreApp
             }
             else
             {
-                body->SetTransform(b2Vec2(-3.0f + 0.5 * (i-12), 2.0f + i * 1.0f), 0.0f);
+                body->SetTransform(b2Vec2(-3.0f + 0.5 * (i - 12), 2.0f + i * 1.0f), 0.0f);
                 transform.SetTranslationZ(0.3f);
             }
             i++;
@@ -133,6 +133,5 @@ namespace LucreApp
         int velocityIterations = 6;
         int positionIterations = 2;
         m_World->Step(step, velocityIterations, positionIterations);
-
     }
-}
+} // namespace LucreApp

@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -37,7 +37,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         VK_Context(VK_Window* window);
         virtual ~VK_Context() override {}
 
@@ -51,14 +50,16 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) override;
-        virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) override { m_Renderer->ToggleDebugWindow(callback);}
+        virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) override
+        {
+            m_Renderer->ToggleDebugWindow(callback);
+        }
 
         virtual uint GetContextWidth() const override { return m_Renderer->GetContextWidth(); }
         virtual uint GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
         virtual bool MultiThreadingSupport() const override;
 
     private:
-
         bool m_Initialized;
 
         VK_Window* m_Window;
@@ -67,6 +68,5 @@ namespace GfxRenderEngine
         std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
         std::chrono::duration<float, std::chrono::seconds::period> m_FrameDuration;
         int m_VSyncIsWorking;
-
     };
-}
+} // namespace GfxRenderEngine

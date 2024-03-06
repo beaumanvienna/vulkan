@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,20 +12,18 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
 
-
 #include "engine.h"
 #include "scene/scene.h"
-#include "scene/entity.h"
 #include "scene/components.h"
 #include "scene/particleSystem.h"
 #include "scene/sceneLoaderJSON.h"
@@ -38,21 +36,19 @@
 #include "keyboardInputController.h"
 #include "characterAnimation.h"
 
-
 namespace LucreApp
 {
     class DessertScene : public Scene
     {
 
     public:
-
         DessertScene(const std::string& filepath, const std::string& alternativeFilepath);
         ~DessertScene() override {}
 
         virtual void Start() override;
         virtual void Stop() override;
         virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
+        virtual Camera& GetCamera() override;
         virtual void OnEvent(Event& event) override;
         virtual void OnResize() override;
 
@@ -62,37 +58,59 @@ namespace LucreApp
         virtual void StartScripts() override;
 
     private:
-
         void LoadModels();
         void ResetScene();
         void RotateLights(const Timestep& timestep);
         void AnimateHero(const Timestep& timestep);
         void AnimateVulcan(const Timestep& timestep);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
-        void SetDirectionalLight
-        (
-            const entt::entity directionalLight,
-            const entt::entity lightbulb,
-            const std::shared_ptr<Camera>& lightView,
-            int renderpass
-        );
+        void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
+                                 const std::shared_ptr<Camera>& lightView, int renderpass);
         void ApplyDebugSettings();
 
     private:
+        enum CameraTypes
+        {
+            DefaultCamera = 0,
+            AttachedToLight,
+            HeroCam,
+            ShadowMapHiRes,
+            ShadowMapLowRes,
+            MaxCameraTypes
+        };
+
+        class CameraControllers
+        {
+        public:
+            CameraControllers() = default;
+            std::shared_ptr<CameraController>& GetActiveCameraController();
+            int GetActiveCameraIndex() { return m_ActiveCamera; };
+            std::shared_ptr<CameraController>& SetActiveCameraController(int index);
+            std::shared_ptr<CameraController>& SetActiveCameraController(CameraTypes cameraType);
+            void SetProjectionAll();
+
+            std::shared_ptr<CameraController>& operator[](int index);
+            CameraControllers& operator++();
+
+        private:
+            int m_ActiveCamera = static_cast<uint>(CameraTypes::DefaultCamera);
+            std::shared_ptr<CameraController> m_CameraController[CameraTypes::MaxCameraTypes];
+        };
 
         std::shared_ptr<Renderer> m_Renderer;
         SceneLoaderJSON m_SceneLoaderJSON;
 
-        // the camera is keyboard-controlled
-        std::shared_ptr<CameraController> m_CameraController;
+        // all things camera
+        CameraControllers m_CameraControllers;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
         std::shared_ptr<GamepadInputController> m_GamepadInputController;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_NonPlayableCharacter1, m_NonPlayableCharacter2, m_NonPlayableCharacter3;
+        entt::entity m_Skybox, m_NonPlayableCharacter1, m_NonPlayableCharacter2, m_NonPlayableCharacter3;
         entt::entity m_Hero, m_Lightbulb0, m_Lightbulb1, m_Guybrush, m_Water;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
+        entt::entity m_Camera[CameraTypes::MaxCameraTypes];
         entt::entity m_PointLight[MAX_LIGHTS];
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
 
@@ -100,7 +118,6 @@ namespace LucreApp
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
 
     private:
-
         struct BananaComponent
         {
             bool m_IsOnTheGround;
@@ -114,4 +131,4 @@ namespace LucreApp
             bool m_Rotated;
         };
     };
-}
+} // namespace LucreApp

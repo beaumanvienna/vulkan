@@ -40,7 +40,9 @@ namespace GfxRenderEngine
         glm::vec4 m_ColorRadius; // w is radius
     };
 
-    VK_LightSystem::VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout) : m_Device(device)
+    VK_LightSystem::VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass,
+                                   VK_DescriptorSetLayout& globalDescriptorSetLayout)
+        : m_Device(device)
     {
         CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
         CreatePipeline(renderPass);
@@ -83,12 +85,14 @@ namespace GfxRenderEngine
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>(m_Device, "bin-int/pointLight.vert.spv", "bin-int/pointLight.frag.spv", pipelineConfig);
+        m_Pipeline = std::make_unique<VK_Pipeline>(m_Device, "bin-int/pointLight.vert.spv", "bin-int/pointLight.frag.spv",
+                                                   pipelineConfig);
     }
 
     void VK_LightSystem::Render(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
+                                &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         std::map<float, entt::entity>::reverse_iterator it;
@@ -105,7 +109,9 @@ namespace GfxRenderEngine
             push.m_Position = glm::vec4(lightPosition, 1.f);
             push.m_ColorRadius = glm::vec4(pointLight.m_Color, pointLight.m_Radius);
 
-            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PointLightPushConstants), &push);
+            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PointLightPushConstants),
+                               &push);
 
             vkCmdDraw(frameInfo.m_CommandBuffer, 6, 1, 0, 0);
         }

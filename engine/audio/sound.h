@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -28,49 +28,45 @@
 
 #ifdef LINUX
 
-    #include "SoundDeviceManager.h"
+#include "SoundDeviceManager.h"
 
-    namespace GfxRenderEngine
+namespace GfxRenderEngine
+{
+
+    class Sound
     {
 
-        class Sound
-        {
+    public:
+        static void Start();
+        static uint GetDesktopVolume();
+        static std::string& GetDefaultOutputDevice();
+        static void SetDesktopVolume(uint desktopVolume);
+        static std::vector<std::string>& GetOutputDeviceList();
+        static void SetOutputDevice(const std::string& outputDevice);
+        static void SetCallback(std::function<void(const LibPAmanager::Event&)> callback);
 
-        public:
-            static void Start();
-            static uint GetDesktopVolume();
-            static std::string& GetDefaultOutputDevice();
-            static void SetDesktopVolume(uint desktopVolume);
-            static std::vector<std::string>& GetOutputDeviceList();
-            static void SetOutputDevice(const std::string& outputDevice);
-            static void SetCallback(std::function<void(const LibPAmanager::Event&)> callback);
-
-        private:
-
-            static LibPAmanager::SoundDeviceManager* m_SoundDeviceManager;
-
-        };
-    }
+    private:
+        static LibPAmanager::SoundDeviceManager* m_SoundDeviceManager;
+    };
+} // namespace GfxRenderEngine
 
 #else
 
-    namespace GfxRenderEngine
+namespace GfxRenderEngine
+{
+    class Sound
     {
-        class Sound
-        {
 
-        public:
-            static void Start();
-            static uint GetDesktopVolume();
-            static std::string& GetDefaultOutputDevice();
-            static void SetDesktopVolume(uint desktopVolume);
-            static std::vector<std::string>& GetOutputDeviceList();
-            static void SetOutputDevice(const std::string& outputDevice);
+    public:
+        static void Start();
+        static uint GetDesktopVolume();
+        static std::string& GetDefaultOutputDevice();
+        static void SetDesktopVolume(uint desktopVolume);
+        static std::vector<std::string>& GetOutputDeviceList();
+        static void SetOutputDevice(const std::string& outputDevice);
 
-        private:
-
-        };
-    }
+    private:
+    };
+} // namespace GfxRenderEngine
 
 #endif
-

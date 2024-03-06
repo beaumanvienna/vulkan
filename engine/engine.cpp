@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <chrono>
@@ -45,7 +45,7 @@ int engine(int argc, char* argv[])
         }
         while (!engine->IsInitialized())
         {
-            // poll window events 
+            // poll window events
             // to prevent desktop message
             // "app not responding"
             // while shaders compile
@@ -67,7 +67,7 @@ int engine(int argc, char* argv[])
         {
             return -1;
         }
-        engine->SetAppEventCallback([&](Event& event) { application->OnEvent(event); } );
+        engine->SetAppEventCallback([&](Event& event) { application->OnEvent(event); });
     }
 
     LOG_CORE_INFO("entering main application");
@@ -98,8 +98,8 @@ int engine(int argc, char* argv[])
     engine->Quit();
 
     PROFILE_END_SESSION();
-    #ifdef DEBUG
-        LOG_CORE_INFO("leaving main");
-    #endif
+#ifdef DEBUG
+    LOG_CORE_INFO("leaving main");
+#endif
     return 0;
 }

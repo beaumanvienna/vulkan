@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "engine.h"
@@ -30,11 +30,7 @@
 namespace GfxRenderEngine
 {
 
-    VK_SwapChain::VK_SwapChain(VkExtent2D extent)
-        : m_WindowExtent{extent}
-    {
-        Init();
-    }
+    VK_SwapChain::VK_SwapChain(VkExtent2D extent) : m_WindowExtent{extent} { Init(); }
 
     VK_SwapChain::VK_SwapChain(VkExtent2D extent, std::shared_ptr<VK_SwapChain> previous)
         : m_WindowExtent{extent}, m_OldSwapChain{previous}
@@ -75,29 +71,21 @@ namespace GfxRenderEngine
         }
     }
 
-    VkResult VK_SwapChain::AcquireNextImage(uint *imageIndex)
+    VkResult VK_SwapChain::AcquireNextImage(uint* imageIndex)
     {
         PROFILE_SCOPE("waitFor InFlightFences");
-        vkWaitForFences(
-            m_Device->Device(),
-            1,
-            &m_InFlightFences[m_CurrentFrame],
-            VK_TRUE,
-            std::numeric_limits<uint64>::max());
+        vkWaitForFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE,
+                        std::numeric_limits<uint64>::max());
 
-        VkResult result = vkAcquireNextImageKHR(
-            m_Device->Device(),
-            m_SwapChain,
-            std::numeric_limits<uint64>::max(),
-            m_ImageAvailableSemaphores[m_CurrentFrame],  // must be a not signaled semaphore
-            VK_NULL_HANDLE,
-            imageIndex);
+        VkResult result =
+            vkAcquireNextImageKHR(m_Device->Device(), m_SwapChain, std::numeric_limits<uint64>::max(),
+                                  m_ImageAvailableSemaphores[m_CurrentFrame], // must be a not signaled semaphore
+                                  VK_NULL_HANDLE, imageIndex);
 
         return result;
     }
 
-    VkResult VK_SwapChain::SubmitCommandBuffers(
-        const VkCommandBuffer *buffers, uint *imageIndex)
+    VkResult VK_SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex)
     {
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
@@ -156,8 +144,7 @@ namespace GfxRenderEngine
         VkExtent2D extent = ChooseSwapExtent(m_SwapChainSupport.capabilities);
 
         uint imageCount = m_SwapChainSupport.capabilities.minImageCount + 1;
-        if (m_SwapChainSupport.capabilities.maxImageCount > 0 &&
-            imageCount > m_SwapChainSupport.capabilities.maxImageCount)
+        if (m_SwapChainSupport.capabilities.maxImageCount > 0 && imageCount > m_SwapChainSupport.capabilities.maxImageCount)
         {
             imageCount = m_SwapChainSupport.capabilities.maxImageCount;
         }
@@ -174,11 +161,8 @@ namespace GfxRenderEngine
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
         QueueFamilyIndices& indices = m_Device->PhysicalQueueFamilies();
-        uint queueFamilyIndices[] = 
-        {
-            static_cast<uint>(indices.m_GraphicsFamily), 
-            static_cast<uint>(indices.m_PresentFamily)
-        };
+        uint queueFamilyIndices[] = {static_cast<uint>(indices.m_GraphicsFamily),
+                                     static_cast<uint>(indices.m_PresentFamily)};
 
         if (indices.m_GraphicsFamily != indices.m_PresentFamily)
         {
@@ -189,8 +173,8 @@ namespace GfxRenderEngine
         else
         {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.queueFamilyIndexCount = 0;      // Optional
-            createInfo.pQueueFamilyIndices = nullptr;  // Optional
+            createInfo.queueFamilyIndexCount = 0;     // Optional
+            createInfo.pQueueFamilyIndices = nullptr; // Optional
         }
 
         createInfo.preTransform = m_SwapChainSupport.capabilities.currentTransform;
@@ -259,8 +243,7 @@ namespace GfxRenderEngine
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            if (
-                vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
+            if (vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
                     VK_SUCCESS ||
                 vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
                     VK_SUCCESS ||
@@ -271,9 +254,9 @@ namespace GfxRenderEngine
         }
     }
 
-    VkSurfaceFormatKHR VK_SwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
+    VkSurfaceFormatKHR VK_SwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
-        for (const auto &availableFormat : availableFormats)
+        for (const auto& availableFormat : availableFormats)
         {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -285,13 +268,13 @@ namespace GfxRenderEngine
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VK_SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
+    VkPresentModeKHR VK_SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
-        //std::cout << "Present mode: V-Sync" << std::endl;
+        // std::cout << "Present mode: V-Sync" << std::endl;
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VK_SwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
+    VkExtent2D VK_SwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
         if (capabilities.currentExtent.width != std::numeric_limits<uint>::max())
         {
@@ -300,12 +283,10 @@ namespace GfxRenderEngine
         else
         {
             VkExtent2D actualExtent = m_WindowExtent;
-            actualExtent.width = std::max(
-            capabilities.minImageExtent.width,
-            std::min(capabilities.maxImageExtent.width, actualExtent.width));
-            actualExtent.height = std::max(
-            capabilities.minImageExtent.height,
-            std::min(capabilities.maxImageExtent.height, actualExtent.height));
+            actualExtent.width =
+                std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = std::max(capabilities.minImageExtent.height,
+                                           std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }
@@ -316,4 +297,4 @@ namespace GfxRenderEngine
         bool imageFormatEqual = (swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat);
         return (imageFormatEqual);
     }
-}
+} // namespace GfxRenderEngine

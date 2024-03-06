@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -39,9 +39,9 @@ namespace GfxRenderEngine
         char name[32];
     };
 
-    struct Atlas 
+    struct Atlas
     {
-        const AtlasImage *images = nullptr;
+        const AtlasImage* images = nullptr;
         const int num_images = 0;
     };
 
@@ -49,24 +49,28 @@ namespace GfxRenderEngine
     {
 
     public:
-
         SpriteSheet();
 
         void AddSpritesheet();
         bool AddSpritesheet(const std::string& fileName);
-        bool AddSpritesheet(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */);
-        bool AddSpritesheetTile(const Sprite& originalSprite, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
-        bool AddSpritesheetTile(const std::string& fileName, const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
-        bool AddSpritesheetTile(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
-                                const std::string& mapName, uint rows, uint columns, uint spacing, const float scale = 1.0f);
+        bool AddSpritesheet(const char* path /* GNU */, int resourceID /* MSVC */,
+                            const std::string& resourceClass /* MSVC */);
+        bool AddSpritesheetTile(const Sprite& originalSprite, const std::string& mapName, uint rows, uint columns,
+                                uint spacing, const float scale = 1.0f);
+        bool AddSpritesheetTile(const std::string& fileName, const std::string& mapName, uint rows, uint columns,
+                                uint spacing, const float scale = 1.0f);
+        bool AddSpritesheetTile(const char* path /* GNU */, int resourceID /* MSVC */,
+                                const std::string& resourceClass /* MSVC */, const std::string& mapName, uint rows,
+                                uint columns, uint spacing, const float scale = 1.0f);
         bool AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scaleX, const float scaleY);
         bool AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scale = 1.0f);
         bool AddSpritesheetRow(const std::string& fileName, uint frames, const float scaleX, const float scaleY);
         bool AddSpritesheetRow(const std::string& fileName, uint frames, const float scale = 1.0f);
-        bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
-                            uint frames, const float scaleX, const float scaleY);
-        bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, 
-                            uint frames, const float scale = 1.0f);
+        bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */,
+                               const std::string& resourceClass /* MSVC */, uint frames, const float scaleX,
+                               const float scaleY);
+        bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */,
+                               const std::string& resourceClass /* MSVC */, uint frames, const float scale = 1.0f);
         Sprite GetSprite(uint index);
         void SetScale(const float scale);
         void ListSprites();
@@ -77,14 +81,11 @@ namespace GfxRenderEngine
         void BeginFrame() {}
 
     private:
-
         void AddSpritesheetTile(const std::string& mapName, uint rows, uint columns, uint spacing, const float scale);
 
     private:
-
         std::shared_ptr<Texture> m_Texture;
         std::vector<Sprite> m_SpriteTable;
         uint m_Rows, m_Columns;
-
     };
-}
+} // namespace GfxRenderEngine

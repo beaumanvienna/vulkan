@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -26,7 +26,6 @@
 
 #include "core.h"
 #include "engine.h"
-#include "scene/entity.h"
 #include "platform/window.h"
 #include "renderer/cursor.h"
 #include "renderer/cameraController.h"
@@ -45,7 +44,6 @@ namespace LucreApp
     {
 
     public:
-
         Lucre();
         ~Lucre() {}
 
@@ -65,12 +63,10 @@ namespace LucreApp
         bool InGameGuiIsRunning() const { return m_InGameGuiIsRunning; }
 
     public:
-
         static std::shared_ptr<Lucre> m_Application;
         static SpriteSheet* m_Spritesheet;
 
     private:
-
         void InitSettings();
         void InitCursor();
         void ShowCursor();
@@ -78,9 +74,8 @@ namespace LucreApp
         void Cancel();
 
     private:
-
         UIControllerIcon* m_UIControllerIcon = nullptr;
-        UI*               m_UI = nullptr;
+        UI* m_UI = nullptr;
 
         AppSettings m_AppSettings{&Engine::m_SettingsManager};
         GameState m_GameState;
@@ -95,6 +90,5 @@ namespace LucreApp
         SpriteSheet m_Atlas;
         bool m_InGameGuiIsRunning;
         bool m_DebugWindowIsRunning;
-
     };
-}
+} // namespace LucreApp

@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gui/Common/Data/Text/wrapText.h"
@@ -86,10 +86,7 @@ namespace GfxRenderEngine
         }
     }
 
-    bool SCREEN_WordWrapper::IsShy(uint32_t c)
-    {
-        return c == 0x00AD;
-    }
+    bool SCREEN_WordWrapper::IsShy(uint32_t c) { return c == 0x00AD; }
 
     std::string SCREEN_WordWrapper::Wrapped()
     {
@@ -197,7 +194,7 @@ namespace GfxRenderEngine
             ellipsisWidth_ = MeasureWidth("...", 3);
         }
 
-        for (SCREEN_UTF8 utf(str_); !utf.end(); )
+        for (SCREEN_UTF8 utf(str_); !utf.end();)
         {
             int beforeIndex = utf.byteIndex();
             uint32_t c = utf.next();
@@ -291,4 +288,4 @@ namespace GfxRenderEngine
 
         AppendWord((int)len, false);
     }
-}
+} // namespace GfxRenderEngine

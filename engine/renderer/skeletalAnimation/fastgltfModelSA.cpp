@@ -40,7 +40,7 @@ namespace GfxRenderEngine
             return;
         }
 
-        if (numberOfSkeletons>1)
+        if (numberOfSkeletons > 1)
         {
             LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin 0.");
         }
@@ -55,7 +55,9 @@ namespace GfxRenderEngine
             // does it have information about joints?
             if (glTFSkin.inverseBindMatrices.has_value()) // glTFSkin.inverseBindMatrices refers to an gltf accessor
             {
-                auto& joints = m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+                auto& joints =
+                    m_Skeleton
+                        ->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
 
                 // set up number of joints
                 size_t numberOfJoints = glTFSkin.joints.size();
@@ -73,13 +75,8 @@ namespace GfxRenderEngine
                 {
                     size_t count = 0;
                     fastgltf::AccessorType type;
-                    fastgltf::ComponentType componentType = LoadAccessor<glm::mat4>
-                    (
-                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices.value()],
-                        inverseBindMatrices,
-                        &count,
-                        &type
-                    );
+                    fastgltf::ComponentType componentType = LoadAccessor<glm::mat4>(
+                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices.value()], inverseBindMatrices, &count, &type);
                     CORE_ASSERT(type == fastgltf::AccessorType::Mat4, "unexpected type");
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                     // assert # of matrices matches # of joints
@@ -91,7 +88,7 @@ namespace GfxRenderEngine
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
-                    joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
+                    joint.m_GlobalGltfNodeIndex = globalGltfNodeIndex;
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
@@ -99,36 +96,30 @@ namespace GfxRenderEngine
                     // the fields are set to defaults in the constructor
                     // in case they cannot be found in the gltf model
                     fastgltf::Node& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
-                    std::visit
-                    (
-                        fastgltf::visitor
-                        {
-                            [&](auto& arg) // default branch if image data is not supported
-                            {
-                                LOG_CORE_CRITICAL("not supported default branch (LoadTransformationMatrix) ");
-                            },
-                            [&](fastgltf::TRS& TRS)
-                            {
-                                // scale 
-                                joint.m_DeformedNodeScale = glm::vec3(TRS.scale[0], TRS.scale[1], TRS.scale[2]);
-                                // rotation
-                                {
-                                    // note the order w, x, y, z
-                                    glm::quat q(TRS.rotation[3], TRS.rotation[0], TRS.rotation[1], TRS.rotation[2]);
-                                    joint.m_DeformedNodeRotation = glm::mat4(q);
-                                }
-                                // translation
-                                joint.m_DeformedNodeTranslation = glm::vec3(TRS.translation[0], TRS.translation[1], TRS.translation[2]);
-                                // undeformed node matrix
-                                joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
-                            },
-                            [&](fastgltf::Node::TransformMatrix& matrix)
-                            {
-                                joint.m_UndefomedNodeMatrix = glm::make_mat4x4(matrix.data());
-                            }
-                        },
-                        gltfNode.transform
-                    );
+                    std::visit(
+                        fastgltf::visitor{[&](auto& arg) // default branch if image data is not supported
+                                          { LOG_CORE_CRITICAL("not supported default branch (LoadTransformationMatrix) "); },
+                                          [&](fastgltf::TRS& TRS)
+                                          {
+                                              // scale
+                                              joint.m_DeformedNodeScale =
+                                                  glm::vec3(TRS.scale[0], TRS.scale[1], TRS.scale[2]);
+                                              // rotation
+                                              {
+                                                  // note the order w, x, y, z
+                                                  glm::quat q(TRS.rotation[3], TRS.rotation[0], TRS.rotation[1],
+                                                              TRS.rotation[2]);
+                                                  joint.m_DeformedNodeRotation = glm::mat4(q);
+                                              }
+                                              // translation
+                                              joint.m_DeformedNodeTranslation =
+                                                  glm::vec3(TRS.translation[0], TRS.translation[1], TRS.translation[2]);
+                                              // undeformed node matrix
+                                              joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
+                                          },
+                                          [&](fastgltf::Node::TransformMatrix& matrix)
+                                          { joint.m_UndefomedNodeMatrix = glm::make_mat4x4(matrix.data()); }},
+                        gltfNode.transform);
 
                     // set up map "global node" to "joint index"
                     m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
@@ -137,7 +128,6 @@ namespace GfxRenderEngine
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
-
             }
 
             // create a buffer to be used in the shader for the joint matrices
@@ -170,12 +160,8 @@ namespace GfxRenderEngine
                 {
                     size_t count = 0;
                     const float* timestampBuffer;
-                    fastgltf::ComponentType componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFSampler.inputAccessor],
-                        timestampBuffer,
-                        &count
-                    );
+                    fastgltf::ComponentType componentType =
+                        LoadAccessor<float>(m_GltfModel.accessors[glTFSampler.inputAccessor], timestampBuffer, &count);
 
                     if (fastgltf::getGLComponentType(componentType) == GL_FLOAT)
                     {
@@ -196,13 +182,7 @@ namespace GfxRenderEngine
                     size_t count = 0;
                     fastgltf::AccessorType type;
                     const uint* buffer;
-                    LoadAccessor<uint>
-                    (
-                        m_GltfModel.accessors[glTFSampler.outputAccessor],
-                        buffer,
-                        &count,
-                        &type
-                    );
+                    LoadAccessor<uint>(m_GltfModel.accessors[glTFSampler.outputAccessor], buffer, &count, &type);
 
                     switch (type)
                     {
@@ -226,7 +206,7 @@ namespace GfxRenderEngine
                             }
                             break;
                         }
-                        default: 
+                        default:
                         {
                             CORE_ASSERT(false, "void FastgltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
                             break;
@@ -253,7 +233,7 @@ namespace GfxRenderEngine
                 channel.m_SamplerIndex = glTFChannel.samplerIndex;
                 CORE_ASSERT(glTFChannel.nodeIndex.has_value(), "FastgltfBuilder::LoadSkeletonsGltf() no target node");
                 channel.m_Node = glTFChannel.nodeIndex.value();
-                switch(glTFChannel.path)
+                switch (glTFChannel.path)
                 {
                     case fastgltf::AnimationPath::Scale:
                     {
@@ -280,7 +260,8 @@ namespace GfxRenderEngine
             m_Animations->Push(animation);
         }
 
-        if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
+        if (m_Animations->Size())
+            m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)
@@ -292,7 +273,7 @@ namespace GfxRenderEngine
 
         joint.m_ParentJoint = parentJoint;
 
-        //process children (if any)
+        // process children (if any)
         size_t numberOfChildren = m_GltfModel.nodes[globalGltfNodeIndex].children.size();
         if (numberOfChildren > 0)
         {
@@ -305,4 +286,4 @@ namespace GfxRenderEngine
             }
         }
     }
-}
+} // namespace GfxRenderEngine

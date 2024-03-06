@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -31,7 +31,6 @@
 #include "renderer/skeletalAnimation/skeleton.h"
 #include "renderer/skeletalAnimation/skeletalAnimations.h"
 #include "auxiliary/timestep.h"
-#include "scene/entity.h"
 
 namespace LucreApp
 {
@@ -39,7 +38,6 @@ namespace LucreApp
     {
 
     public:
-
         CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations);
         ~CharacterAnimation() {}
 
@@ -48,11 +46,10 @@ namespace LucreApp
         void OnUpdate(const Timestep& timestep);
 
     private:
-    
         static constexpr float WALK_SPEED = 1.0f;
         static constexpr float TIME_TO_GET_TO_WALK_SPEED = 1.0f;
         static constexpr float WAIT_START_WALK = 0.8f;
-        static constexpr int   FRAMES_PER_ROTATION = 7;
+        static constexpr int FRAMES_PER_ROTATION = 7;
 
         enum MotionState
         {
@@ -70,22 +67,12 @@ namespace LucreApp
             NUMBER_OF_MOTION_STATES
         };
 
-    std::vector<std::string> m_AnimationsNames =
-    {
-        "Idle",
-        "Jumping",
-        "StartWalk",
-        "StopWalk",
-        "Walk",
-        "Jogging",
-        "Jumping Down",
-        "Falling Idle",
-        "Punching",
-        "Running",
-    };
+        std::vector<std::string> m_AnimationsNames = {
+            "Idle",    "Jumping",      "StartWalk",    "StopWalk", "Walk",
+            "Jogging", "Jumping Down", "Falling Idle", "Punching", "Running",
+        };
 
     private:
-
         void SetState(MotionState state);
         void InitiateRotation(float rotateDirRight, float rotateDirLeft, int framesToRotate);
         void MoveAtSpeed(const Timestep& timestep, TransformComponent& characterTransform);
@@ -95,7 +82,6 @@ namespace LucreApp
         float ToDegree(float rotation);
 
     private:
-
         entt::registry& m_Registry;
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         entt::entity m_GameObject;
@@ -116,6 +102,5 @@ namespace LucreApp
 
         MotionState m_MotionState;
         std::vector<int> m_AnimationIndices;
-
     };
-}
+} // namespace LucreApp

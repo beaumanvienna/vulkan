@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "VKcore.h"
@@ -30,7 +30,8 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemSpriteRenderer::VK_RenderSystemSpriteRenderer(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemSpriteRenderer::VK_RenderSystemSpriteRenderer(VkRenderPass renderPass,
+                                                                 std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
@@ -54,7 +55,8 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
+            VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
@@ -72,28 +74,14 @@ namespace GfxRenderEngine
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin-int/spriteRenderer.vert.spv",
-            "bin-int/spriteRenderer.frag.spv",
-            pipelineConfig
-        );
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/spriteRenderer.vert.spv",
+                                                   "bin-int/spriteRenderer.frag.spv", pipelineConfig);
     }
 
     void VK_RenderSystemSpriteRenderer::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
+                                &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent>();
@@ -102,17 +90,13 @@ namespace GfxRenderEngine
             auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
             auto& transform = view.get<TransformComponent>(entity);
             VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Local();
+            push.m_ModelMatrix = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
             push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
             push.m_NormalMatrix[3].y = spriteRendererComponent.m_Metallic;
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
+            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(VK_PushConstantDataGeneric), &push);
 
             auto& mesh = view.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
@@ -125,17 +109,8 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemSpriteRenderer::DrawParticles(const VK_FrameInfo& frameInfo, ParticleSystem* particleSystem)
     {
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_PipelineLayout,
-            0,
-            1,
-            &frameInfo.m_GlobalDescriptorSet,
-            0,
-            nullptr
-        );
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
+                                &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
 
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
@@ -148,20 +123,15 @@ namespace GfxRenderEngine
 
             auto& transform = particleSystem->m_Registry.get<TransformComponent>(particle.m_Entity);
             VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix  = transform.GetMat4Local();
+            push.m_ModelMatrix = transform.GetMat4Local();
             push.m_NormalMatrix = transform.GetNormalMatrix();
-            vkCmdPushConstants(
-                frameInfo.m_CommandBuffer,
-                m_PipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(VK_PushConstantDataGeneric),
-                &push);
+            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(VK_PushConstantDataGeneric), &push);
 
             auto& mesh = particleSystem->m_Registry.get<MeshComponent>(particle.m_SpriteEntity);
             static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
             static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
         }
-
     }
-}
+} // namespace GfxRenderEngine

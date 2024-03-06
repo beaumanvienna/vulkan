@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -79,7 +79,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         VK_Renderer(VK_Window* window);
         virtual ~VK_Renderer();
 
@@ -106,7 +105,8 @@ namespace GfxRenderEngine
         virtual bool Init() override;
         virtual void BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(entt::registry& registry) override;
-        virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
+        virtual void SubmitShadows(entt::registry& registry,
+                                   const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
         virtual void Submit(Scene& scene) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
@@ -116,10 +116,14 @@ namespace GfxRenderEngine
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
-        virtual void SetAmbientLightIntensity(float ambientLightIntensity) override { m_AmbientLightIntensity = ambientLightIntensity; }
+        virtual void SetAmbientLightIntensity(float ambientLightIntensity) override
+        {
+            m_AmbientLightIntensity = ambientLightIntensity;
+        }
         virtual float GetAmbientLightIntensity() override { return m_AmbientLightIntensity; }
         virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) override;
-        virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f) override;
+        virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color,
+                          const float textureID = 1.0f) override;
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
 
         virtual void UpdateAnimations(entt::registry& registry, const Timestep& timestep) override;
@@ -127,11 +131,9 @@ namespace GfxRenderEngine
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
     public:
-
         static std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
 
     private:
-
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void RecreateSwapChain();
@@ -146,7 +148,6 @@ namespace GfxRenderEngine
         void Recreate();
 
     private:
-
         bool m_ShadersCompiled;
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
@@ -161,38 +162,41 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderPass> m_RenderPass;
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
-        std::unique_ptr<VK_RenderSystemShadow>                                      m_RenderSystemShadow;
-        std::unique_ptr<VK_RenderSystemPbrNoMap>                                    m_RenderSystemPbrNoMap;
-        std::unique_ptr<VK_RenderSystemPbrDiffuse>                                  m_RenderSystemPbrDiffuse;
-        std::unique_ptr<VK_RenderSystemPbrEmissive>                                 m_RenderSystemPbrEmissive;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseSA>                                m_RenderSystemPbrDiffuseSA;
-        std::unique_ptr<VK_RenderSystemShadowAnimated>                              m_RenderSystemShadowAnimated;
-        std::unique_ptr<VK_RenderSystemShadowInstanced>                             m_RenderSystemShadowInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormal>                            m_RenderSystemPbrDiffuseNormal;
-        std::unique_ptr<VK_RenderSystemPbrNoMapInstanced>                           m_RenderSystemPbrNoMapInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA>                          m_RenderSystemPbrDiffuseNormalSA;
-        std::unique_ptr<VK_RenderSystemPbrEmissiveTexture>                          m_RenderSystemPbrEmissiveTexture;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseInstanced>                         m_RenderSystemPbrDiffuseInstanced;
-        std::unique_ptr<VK_RenderSystemPbrEmissiveInstanced>                        m_RenderSystemPbrEmissiveInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseSAInstanced>                       m_RenderSystemPbrDiffuseSAInstanced;
-        std::unique_ptr<VK_RenderSystemShadowAnimatedInstanced>                     m_RenderSystemShadowAnimatedInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSAInstanced>                 m_RenderSystemPbrDiffuseNormalSAInstanced;
-        std::unique_ptr<VK_RenderSystemPbrEmissiveTextureInstanced>                 m_RenderSystemPbrEmissiveTextureInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic>           m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2>          m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>         m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced>  m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced> m_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced;
-        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalInstanced>                   m_RenderSystemPbrDiffuseNormalInstanced;
-        std::unique_ptr<VK_RenderSystemDeferredShading>                             m_RenderSystemDeferredShading;
-        std::unique_ptr<VK_RenderSystemPostProcessing>                              m_RenderSystemPostProcessing;
-        std::unique_ptr<VK_RenderSystemBloom>                                       m_RenderSystemBloom;
-        std::unique_ptr<VK_RenderSystemCubemap>                                     m_RenderSystemCubemap;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer>                              m_RenderSystemSpriteRenderer;
-        std::unique_ptr<VK_RenderSystemSpriteRenderer2D>                            m_RenderSystemSpriteRenderer2D;
-        std::unique_ptr<VK_RenderSystemGUIRenderer>                                 m_RenderSystemGUIRenderer;
-        std::unique_ptr<VK_RenderSystemDebug>                                       m_RenderSystemDebug;
-        std::unique_ptr<VK_LightSystem>                                             m_LightSystem;
+        std::unique_ptr<VK_RenderSystemShadow> m_RenderSystemShadow;
+        std::unique_ptr<VK_RenderSystemPbrNoMap> m_RenderSystemPbrNoMap;
+        std::unique_ptr<VK_RenderSystemPbrDiffuse> m_RenderSystemPbrDiffuse;
+        std::unique_ptr<VK_RenderSystemPbrEmissive> m_RenderSystemPbrEmissive;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseSA> m_RenderSystemPbrDiffuseSA;
+        std::unique_ptr<VK_RenderSystemShadowAnimated> m_RenderSystemShadowAnimated;
+        std::unique_ptr<VK_RenderSystemShadowInstanced> m_RenderSystemShadowInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormal> m_RenderSystemPbrDiffuseNormal;
+        std::unique_ptr<VK_RenderSystemPbrNoMapInstanced> m_RenderSystemPbrNoMapInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSA> m_RenderSystemPbrDiffuseNormalSA;
+        std::unique_ptr<VK_RenderSystemPbrEmissiveTexture> m_RenderSystemPbrEmissiveTexture;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseInstanced> m_RenderSystemPbrDiffuseInstanced;
+        std::unique_ptr<VK_RenderSystemPbrEmissiveInstanced> m_RenderSystemPbrEmissiveInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseSAInstanced> m_RenderSystemPbrDiffuseSAInstanced;
+        std::unique_ptr<VK_RenderSystemShadowAnimatedInstanced> m_RenderSystemShadowAnimatedInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalSAInstanced> m_RenderSystemPbrDiffuseNormalSAInstanced;
+        std::unique_ptr<VK_RenderSystemPbrEmissiveTextureInstanced> m_RenderSystemPbrEmissiveTextureInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic> m_RenderSystemPbrDiffuseNormalRoughnessMetallic;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2> m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced>
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced>
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalInstanced> m_RenderSystemPbrDiffuseNormalInstanced;
+        std::unique_ptr<VK_RenderSystemDeferredShading> m_RenderSystemDeferredShading;
+        std::unique_ptr<VK_RenderSystemPostProcessing> m_RenderSystemPostProcessing;
+        std::unique_ptr<VK_RenderSystemBloom> m_RenderSystemBloom;
+        std::unique_ptr<VK_RenderSystemCubemap> m_RenderSystemCubemap;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
+        std::unique_ptr<VK_RenderSystemSpriteRenderer2D> m_RenderSystemSpriteRenderer2D;
+        std::unique_ptr<VK_RenderSystemGUIRenderer> m_RenderSystemGUIRenderer;
+        std::unique_ptr<VK_RenderSystemDebug> m_RenderSystemDebug;
+        std::unique_ptr<VK_LightSystem> m_LightSystem;
 
         std::shared_ptr<Imgui> m_Imgui;
 
@@ -226,4 +230,4 @@ namespace GfxRenderEngine
 
         bool m_ShowDebugShadowMap;
     };
-}
+} // namespace GfxRenderEngine

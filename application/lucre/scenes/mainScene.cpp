@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <stdlib.h>
@@ -27,7 +27,7 @@
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
-    #include "resources/resources.h"
+#include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
 #include "auxiliary/math.h"
 
@@ -39,8 +39,8 @@ namespace LucreApp
 {
 
     MainScene::MainScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false},
-              m_StartTimer{true}, m_LaunchVolcanoTimer(1000), m_SceneLoader{*this}
+        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false}, m_StartTimer{true},
+          m_LaunchVolcanoTimer(1000), m_SceneLoader{*this}
     {
     }
 
@@ -55,7 +55,7 @@ namespace LucreApp
         {
             m_CameraController = std::make_shared<CameraController>();
 
-            m_Camera = CreateEntity();
+            m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
             ResetScene();
@@ -75,15 +75,13 @@ namespace LucreApp
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
 
-        m_LaunchVolcanoTimer.SetEventCallback
-        (
+        m_LaunchVolcanoTimer.SetEventCallback(
             [](uint in, void* data)
             {
                 std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
                 Engine::m_Engine->QueueEvent(event);
                 return 0u;
-            }
-        );
+            });
 
         {
             std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
@@ -106,52 +104,22 @@ namespace LucreApp
             float height2 = 1.3f;
             float height3 = 2.4f;
             float height4 = 3.5f;
-            std::vector<glm::vec3> lightPositions =
-            {
-                {-0.285, height1, -1.542},
-                {-3.2,   height1, -1.5420},
-                {-6.1,   height1, -1.5420},
-                { 2.7,   height1, -1.5420},
-                { 5.6,   height1, -1.5420},
-                {-0.285, height1, 1.2},
-                {-3.2,   height1, 1.2},
-                {-6.1,   height1, 1.2},
-                { 2.7,   height1, 1.2},
-                { 5.6,   height1, 1.2},
+            std::vector<glm::vec3> lightPositions = {
+                {-0.285, height1, -1.542}, {-3.2, height1, -1.5420}, {-6.1, height1, -1.5420}, {2.7, height1, -1.5420},
+                {5.6, height1, -1.5420},   {-0.285, height1, 1.2},   {-3.2, height1, 1.2},     {-6.1, height1, 1.2},
+                {2.7, height1, 1.2},       {5.6, height1, 1.2},
 
-                {-0.285, height2, -1.542},
-                {-3.2,   height2, -1.5420},
-                {-6.1,   height2, -1.5420},
-                { 2.7,   height2, -1.5420},
-                { 5.6,   height2, -1.5420},
-                {-0.285, height2, 1.2},
-                {-3.2,   height2, 1.2},
-                {-6.1,   height2, 1.2},
-                { 2.7,   height2, 1.2},
-                { 5.6,   height2, 1.2},
+                {-0.285, height2, -1.542}, {-3.2, height2, -1.5420}, {-6.1, height2, -1.5420}, {2.7, height2, -1.5420},
+                {5.6, height2, -1.5420},   {-0.285, height2, 1.2},   {-3.2, height2, 1.2},     {-6.1, height2, 1.2},
+                {2.7, height2, 1.2},       {5.6, height2, 1.2},
 
-                {-0.285, height3, -1.542},
-                {-3.2,   height3, -1.5420},
-                {-6.1,   height3, -1.5420},
-                { 2.7,   height3, -1.5420},
-                { 5.6,   height3, -1.5420},
-                {-0.285, height3, 1.2},
-                {-3.2,   height3, 1.2},
-                {-6.1,   height3, 1.2},
-                { 2.7,   height3, 1.2},
-                { 5.6,   height3, 1.2},
+                {-0.285, height3, -1.542}, {-3.2, height3, -1.5420}, {-6.1, height3, -1.5420}, {2.7, height3, -1.5420},
+                {5.6, height3, -1.5420},   {-0.285, height3, 1.2},   {-3.2, height3, 1.2},     {-6.1, height3, 1.2},
+                {2.7, height3, 1.2},       {5.6, height3, 1.2},
 
-                {-0.285, height4, -1.542},
-                {-3.2,   height4, -1.5420},
-                {-6.1,   height4, -1.5420},
-                { 2.7,   height4, -1.5420},
-                { 5.6,   height4, -1.5420},
-                {-0.285, height4, 1.2},
-                {-3.2,   height4, 1.2},
-                {-6.1,   height4, 1.2},
-                { 2.7,   height4, 1.2},
-                { 5.6,   height4, 1.2}
-            };
+                {-0.285, height4, -1.542}, {-3.2, height4, -1.5420}, {-6.1, height4, -1.5420}, {2.7, height4, -1.5420},
+                {5.6, height4, -1.5420},   {-0.285, height4, 1.2},   {-3.2, height4, 1.2},     {-6.1, height4, 1.2},
+                {2.7, height4, 1.2},       {5.6, height4, 1.2}};
 
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
@@ -169,16 +137,13 @@ namespace LucreApp
 
         float scaleHero = 1.5f;
         // horn
-        m_SpritesheetHorn.AddSpritesheetRow
-        (
-            Lucre::m_Spritesheet->GetSprite(I_HORN),
-            HORN_ANIMATION_SPRITES /* frames */, 
-            scaleHero /* scale) */
+        m_SpritesheetHorn.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_HORN), HORN_ANIMATION_SPRITES /* frames */,
+                                            scaleHero /* scale) */
         );
 
         InitPhysics();
 
-        m_SceneLoader.Deserialize();  // loads YAML
+        m_SceneLoader.Deserialize(); // loads YAML
         ImGUI::SetupSlider(this);
 
         LoadModels();
@@ -187,7 +152,8 @@ namespace LucreApp
 
     void MainScene::LoadScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck =
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
@@ -221,7 +187,8 @@ namespace LucreApp
     {
         {
             static uint previousFrame = 0;
-            if (!m_HornAnimation.IsRunning()) m_HornAnimation.Start();
+            if (!m_HornAnimation.IsRunning())
+                m_HornAnimation.Start();
             if (m_HornAnimation.IsNewFrame())
             {
                 auto& previousMesh = m_Registry.get<MeshComponent>(m_Guybrush[previousFrame]);
@@ -245,7 +212,7 @@ namespace LucreApp
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
-            auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -285,18 +252,19 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent mouseEvent)
+        dispatcher.Dispatch<MouseScrolledEvent>(
+            [this](MouseScrolledEvent mouseEvent)
             {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= mouseEvent.GetY()*0.1f;
+                zoomFactor -= mouseEvent.GetY() * 0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent keyboardEvent)
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent keyboardEvent)
             {
-                switch(keyboardEvent.GetKeyCode())
+                switch (keyboardEvent.GetKeyCode())
                 {
                     case ENGINE_KEY_R:
                         ResetScene();
@@ -307,14 +275,10 @@ namespace LucreApp
                         break;
                 }
                 return false;
-            }
-        );
+            });
     }
 
-    void MainScene::OnResize()
-    {
-        m_CameraController->SetProjection();
-    }
+    void MainScene::OnResize() { m_CameraController->SetProjection(); }
 
     void MainScene::ResetScene()
     {
@@ -378,7 +342,8 @@ namespace LucreApp
             Model::m_NormalMapIntensity = 1.0f;
         }
 
-        if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity || ImGUI::m_UsePointLightIntensity)
+        if (ImGUI::m_UseRoughness || ImGUI::m_UseMetallic || ImGUI::m_UseNormalMapIntensity ||
+            ImGUI::m_UsePointLightIntensity)
         {
             if (ImGUI::m_UsePointLightIntensity)
             {
@@ -396,4 +361,4 @@ namespace LucreApp
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
-}
+} // namespace LucreApp

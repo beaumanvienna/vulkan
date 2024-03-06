@@ -1,4 +1,4 @@
-/* Controller Copyright (c) 2021 Controller Development Team 
+/* Controller Copyright (c) 2021 Controller Development Team
    https://github.com/beaumanvienna/gfxRenderController
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "platform/SDL/controllerConfiguration.h"
@@ -31,7 +31,7 @@ namespace GfxRenderEngine
         Reset();
         m_Running = true;
         m_ControllerID = controllerID;
-        SetControllerConfText("press dpad up","(or use ENTER to skip this button)");
+        SetControllerConfText("press dpad up", "(or use ENTER to skip this button)");
         m_MappingCreated = false;
     }
 
@@ -42,10 +42,10 @@ namespace GfxRenderEngine
 
         for (int i = 0; i < STATE_CONF_MAX; i++)
         {
-            m_ControllerButton[i]=STATE_CONF_SKIP_ITEM;
+            m_ControllerButton[i] = STATE_CONF_SKIP_ITEM;
         }
 
-        for (int i = 0; i < 4;i++)
+        for (int i = 0; i < 4; i++)
         {
             m_Hat[i] = -1;
             m_HatValue[i] = -1;
@@ -67,25 +67,25 @@ namespace GfxRenderEngine
 
     void ControllerConfiguration::StatemachineConf(int cmd)
     {
-        if ((cmd==STATE_CONF_SKIP_ITEM) && (m_ConfigurationState > STATE_CONF_BUTTON_RIGHTSHOULDER))
+        if ((cmd == STATE_CONF_SKIP_ITEM) && (m_ConfigurationState > STATE_CONF_BUTTON_RIGHTSHOULDER))
         {
-            StatemachineConfAxis(STATE_CONF_SKIP_ITEM,false);
+            StatemachineConfAxis(STATE_CONF_SKIP_ITEM, false);
             return;
         }
 
-        if ((Input::GetActiveController() == m_ControllerID) || (cmd==STATE_CONF_SKIP_ITEM))
+        if ((Input::GetActiveController() == m_ControllerID) || (cmd == STATE_CONF_SKIP_ITEM))
         {
             switch (m_ConfigurationState)
             {
                 case STATE_CONF_BUTTON_DPAD_UP:
                     if (m_SecondRun == -1)
                     {
-                        SetControllerConfText("press dpad up","(or use ENTER to skip this button)");
+                        SetControllerConfText("press dpad up", "(or use ENTER to skip this button)");
                         m_SecondRun = cmd;
                     }
                     else if (m_SecondRun == cmd)
                     {
-                        m_ControllerButton[m_ConfigurationState]=cmd;
+                        m_ControllerButton[m_ConfigurationState] = cmd;
                         m_ConfigurationState = STATE_CONF_BUTTON_DPAD_DOWN;
                         m_ReportedState = REPORTED_STATE_DOWN;
                         SetControllerConfText("press dpad down");
@@ -93,105 +93,105 @@ namespace GfxRenderEngine
                     }
                     break;
                 case STATE_CONF_BUTTON_DPAD_DOWN:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_DPAD_LEFT;
                     m_ReportedState = REPORTED_STATE_LEFT;
                     SetControllerConfText("press dpad left");
                     break;
                 case STATE_CONF_BUTTON_DPAD_LEFT:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_DPAD_RIGHT;
                     m_ReportedState = REPORTED_STATE_RIGHT;
                     SetControllerConfText("press dpad right");
                     break;
                 case STATE_CONF_BUTTON_DPAD_RIGHT:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_A;
                     m_ReportedState = REPORTED_STATE_SOUTH;
                     SetControllerConfText("press south button (lower)");
                     break;
                 case STATE_CONF_BUTTON_A:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_B;
                     m_ReportedState = REPORTED_STATE_EAST;
                     SetControllerConfText("press east button (right)");
                     break;
                 case STATE_CONF_BUTTON_B:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_X;
                     m_ReportedState = REPORTED_STATE_WEST;
                     SetControllerConfText("press west button (left)");
                     break;
                 case STATE_CONF_BUTTON_X:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_Y;
                     m_ReportedState = REPORTED_STATE_NORTH;
                     SetControllerConfText("press north button (upper)");
                     break;
                 case STATE_CONF_BUTTON_Y:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_LEFTSTICK;
                     m_ReportedState = REPORTED_STATE_LSTICK;
                     SetControllerConfText("press left stick button");
                     break;
                 case STATE_CONF_BUTTON_LEFTSTICK:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_RIGHTSTICK;
                     m_ReportedState = REPORTED_STATE_RSTICK;
                     SetControllerConfText("press right stick button");
                     break;
                 case STATE_CONF_BUTTON_RIGHTSTICK:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_LEFTSHOULDER;
                     m_ReportedState = REPORTED_STATE_LTRIGGER;
                     SetControllerConfText("press left front shoulder");
                     break;
                 case STATE_CONF_BUTTON_LEFTSHOULDER:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_RIGHTSHOULDER;
                     m_ReportedState = REPORTED_STATE_RTRIGGER;
                     SetControllerConfText("press right front shoulder");
                     break;
                 case STATE_CONF_BUTTON_RIGHTSHOULDER:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_BACK;
                     m_ReportedState = REPORTED_STATE_SELECT;
                     SetControllerConfText("press select button");
                     break;
                 case STATE_CONF_BUTTON_BACK:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_START;
                     m_ReportedState = REPORTED_STATE_START;
                     SetControllerConfText("press start button");
                     break;
                 case STATE_CONF_BUTTON_START:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_BUTTON_GUIDE;
                     m_ReportedState = REPORTED_STATE_GUIDE;
                     SetControllerConfText("press guide button");
                     break;
                 case STATE_CONF_BUTTON_GUIDE:
-                    m_ControllerButton[m_ConfigurationState]=cmd;
+                    m_ControllerButton[m_ConfigurationState] = cmd;
                     m_ConfigurationState = STATE_CONF_AXIS_LEFTSTICK_X;
                     m_ReportedState = REPORTED_STATE_LSTICK;
                     SetControllerConfText("twirl left stick");
-                    m_CountX=0;
-                    m_CountY=0;
-                    m_ValueX=-1;
-                    m_ValueY=-1;
+                    m_CountX = 0;
+                    m_CountY = 0;
+                    m_ValueX = -1;
+                    m_ValueY = -1;
                     break;
                 case STATE_CONF_AXIS_LEFTTRIGGER:
-                    m_ControllerButton[STATE_CONF_BUTTON_LEFTTRIGGER]=cmd;
+                    m_ControllerButton[STATE_CONF_BUTTON_LEFTTRIGGER] = cmd;
                     m_ConfigurationState = STATE_CONF_AXIS_RIGHTTRIGGER;
                     m_ReportedState = REPORTED_STATE_RTRIGGER;
                     SetControllerConfText("press right rear shoulder");
                     break;
                 case STATE_CONF_AXIS_RIGHTTRIGGER:
-                    m_ControllerButton[STATE_CONF_BUTTON_RIGHTTRIGGER]=cmd;
+                    m_ControllerButton[STATE_CONF_BUTTON_RIGHTTRIGGER] = cmd;
                     SetMapping();
                     break;
                 default:
-                    (void) 0;
+                    (void)0;
                     break;
             }
         }
@@ -199,9 +199,9 @@ namespace GfxRenderEngine
 
     void ControllerConfiguration::StatemachineConfAxis(int cmd, bool negative)
     {
-        if ( (m_Running) && (m_ConfigurationState >= STATE_CONF_AXIS_LEFTSTICK_X) )
+        if ((m_Running) && (m_ConfigurationState >= STATE_CONF_AXIS_LEFTSTICK_X))
         {
-            if ((Input::GetActiveController() == m_ControllerID)  || (cmd==STATE_CONF_SKIP_ITEM))
+            if ((Input::GetActiveController() == m_ControllerID) || (cmd == STATE_CONF_SKIP_ITEM))
             {
                 switch (m_ConfigurationState)
                 {
@@ -209,10 +209,10 @@ namespace GfxRenderEngine
                     case STATE_CONF_AXIS_LEFTSTICK_Y:
                         if (CheckAxis(cmd))
                         {
-                            m_CountX=0;
-                            m_CountY=0;
-                            m_ValueX=-1;
-                            m_ValueY=-1;
+                            m_CountX = 0;
+                            m_CountY = 0;
+                            m_ValueX = -1;
+                            m_ValueY = -1;
 
                             m_ConfigurationState = STATE_CONF_AXIS_RIGHTSTICK_X;
                             m_ReportedState = REPORTED_STATE_RSTICK;
@@ -223,24 +223,24 @@ namespace GfxRenderEngine
                     case STATE_CONF_AXIS_RIGHTSTICK_Y:
                         if (cmd == STATE_CONF_SKIP_ITEM)
                         {
-                            m_CountX=0;
-                            m_CountY=0;
-                            m_ValueX=-1;
-                            m_ValueY=-1;
+                            m_CountX = 0;
+                            m_CountY = 0;
+                            m_ValueX = -1;
+                            m_ValueY = -1;
 
                             m_ConfigurationState = STATE_CONF_AXIS_LEFTTRIGGER;
                             m_ReportedState = REPORTED_STATE_LTRIGGER;
                             SetControllerConfText("press left rear shoulder");
                         }
-                        else if ( (cmd != m_ControllerButton[STATE_CONF_AXIS_LEFTSTICK_X]) &&\
-                                (cmd != m_ControllerButton[STATE_CONF_AXIS_LEFTSTICK_Y]))
+                        else if ((cmd != m_ControllerButton[STATE_CONF_AXIS_LEFTSTICK_X]) &&
+                                 (cmd != m_ControllerButton[STATE_CONF_AXIS_LEFTSTICK_Y]))
                         {
                             if (CheckAxis(cmd))
                             {
-                                m_CountX=0;
-                                m_CountY=0;
-                                m_ValueX=-1;
-                                m_ValueY=-1;
+                                m_CountX = 0;
+                                m_CountY = 0;
+                                m_ValueX = -1;
+                                m_ValueY = -1;
 
                                 m_ConfigurationState = STATE_CONF_AXIS_LEFTTRIGGER;
                                 m_ReportedState = REPORTED_STATE_LTRIGGER;
@@ -251,20 +251,20 @@ namespace GfxRenderEngine
                     case STATE_CONF_AXIS_LEFTTRIGGER:
                         if (cmd == STATE_CONF_SKIP_ITEM)
                         {
-                            m_CountX=0;
-                            m_ValueX=-1;
+                            m_CountX = 0;
+                            m_ValueX = -1;
 
                             m_ConfigurationState = STATE_CONF_AXIS_RIGHTTRIGGER;
                             m_ReportedState = REPORTED_STATE_RTRIGGER;
                             SetControllerConfText("press right rear shoulder");
                         }
-                        else if ( (cmd != m_ControllerButton[STATE_CONF_AXIS_RIGHTSTICK_X]) &&\
-                                (cmd != m_ControllerButton[STATE_CONF_AXIS_RIGHTSTICK_Y]))
+                        else if ((cmd != m_ControllerButton[STATE_CONF_AXIS_RIGHTSTICK_X]) &&
+                                 (cmd != m_ControllerButton[STATE_CONF_AXIS_RIGHTSTICK_Y]))
                         {
                             if (CheckTrigger(cmd))
                             {
-                                m_CountX=0;
-                                m_ValueX=-1;
+                                m_CountX = 0;
+                                m_ValueX = -1;
 
                                 m_ConfigurationState = STATE_CONF_AXIS_RIGHTTRIGGER;
                                 m_ReportedState = REPORTED_STATE_RTRIGGER;
@@ -276,28 +276,29 @@ namespace GfxRenderEngine
                     case STATE_CONF_AXIS_RIGHTTRIGGER:
                         if (cmd == STATE_CONF_SKIP_ITEM)
                         {
-                            m_CountX=0;
-                            m_ValueX=-1;
+                            m_CountX = 0;
+                            m_ValueX = -1;
                             SetMapping();
                         }
                         else if (cmd != m_ControllerButton[STATE_CONF_AXIS_LEFTTRIGGER])
                         {
                             if (CheckTrigger(cmd))
                             {
-                                m_CountX=0;
-                                m_ValueX=-1;
+                                m_CountX = 0;
+                                m_ValueX = -1;
                                 SetMapping();
                             }
                         }
                         break;
                     default:
-                        (void) 0;
+                        (void)0;
                         break;
                 }
             }
-        } else if ( (m_Running) && (m_ConfigurationState <= STATE_CONF_BUTTON_DPAD_RIGHT) )
+        }
+        else if ((m_Running) && (m_ConfigurationState <= STATE_CONF_BUTTON_DPAD_RIGHT))
         {
-            if ((Input::GetActiveController() == m_ControllerID)  || (cmd==STATE_CONF_SKIP_ITEM))
+            if ((Input::GetActiveController() == m_ControllerID) || (cmd == STATE_CONF_SKIP_ITEM))
             {
                 m_Axis[m_AxisIterator] = cmd;
                 m_AxisValue[m_AxisIterator] = negative;
@@ -316,7 +317,7 @@ namespace GfxRenderEngine
                         SetControllerConfText("press south button (lower)");
                         break;
                     default:
-                        (void) 0;
+                        (void)0;
                         break;
                 }
                 m_ConfigurationState++;
@@ -328,24 +329,27 @@ namespace GfxRenderEngine
 
     bool ControllerConfiguration::CheckAxis(int cmd)
     {
-        if (cmd==STATE_CONF_SKIP_ITEM) return true;
+        if (cmd == STATE_CONF_SKIP_ITEM)
+            return true;
 
         bool ok = false;
 
-        if ( (m_CountX > 10) && (m_CountY>10) )
+        if ((m_CountX > 10) && (m_CountY > 10))
         {
-            m_ControllerButton[m_ConfigurationState]=m_ValueX;
-            m_ControllerButton[m_ConfigurationState+1]=m_ValueY;
+            m_ControllerButton[m_ConfigurationState] = m_ValueX;
+            m_ControllerButton[m_ConfigurationState + 1] = m_ValueY;
             ok = true;
         }
 
-        if ( (m_ValueX!=-1) && (m_ValueY!=-1) )
+        if ((m_ValueX != -1) && (m_ValueY != -1))
         {
-            if (m_ValueX == cmd) m_CountX++;
-            if (m_ValueY == cmd) m_CountY++;
+            if (m_ValueX == cmd)
+                m_CountX++;
+            if (m_ValueY == cmd)
+                m_CountY++;
         }
 
-        if ( (m_ValueX!=-1) && (m_ValueY==-1) )
+        if ((m_ValueX != -1) && (m_ValueY == -1))
         {
             if (m_ValueX > cmd)
             {
@@ -358,9 +362,9 @@ namespace GfxRenderEngine
             }
         }
 
-        if ( (m_ValueX==-1) && (m_ValueY==-1) )
+        if ((m_ValueX == -1) && (m_ValueY == -1))
         {
-            m_ValueX=cmd;
+            m_ValueX = cmd;
         }
 
         return ok;
@@ -368,23 +372,25 @@ namespace GfxRenderEngine
 
     bool ControllerConfiguration::CheckTrigger(int cmd)
     {
-        if (cmd==STATE_CONF_SKIP_ITEM) return true;
+        if (cmd == STATE_CONF_SKIP_ITEM)
+            return true;
         bool ok = false;
 
         if (m_CountX > 10)
         {
-            m_ControllerButton[m_ConfigurationState]=m_ValueX;
+            m_ControllerButton[m_ConfigurationState] = m_ValueX;
             ok = true;
         }
 
-        if (m_ValueX!=-1)
+        if (m_ValueX != -1)
         {
-            if (m_ValueX == cmd) m_CountX++;
+            if (m_ValueX == cmd)
+                m_CountX++;
         }
 
-        if (m_ValueX==-1)
+        if (m_ValueX == -1)
         {
-            m_ValueX=cmd;
+            m_ValueX = cmd;
         }
 
         return ok;
@@ -392,7 +398,8 @@ namespace GfxRenderEngine
 
     void ControllerConfiguration::StatemachineConfHat(int hat, int value)
     {
-        if (m_ConfigurationState > STATE_CONF_BUTTON_DPAD_RIGHT) return;
+        if (m_ConfigurationState > STATE_CONF_BUTTON_DPAD_RIGHT)
+            return;
 
         if (Input::GetActiveController() == m_ControllerID)
         {
@@ -402,13 +409,13 @@ namespace GfxRenderEngine
             switch (m_ConfigurationState)
             {
                 case STATE_CONF_BUTTON_DPAD_UP:
-                    if ( (m_SecondRunHat == -1) && (m_SecondRunValue == -1) )
+                    if ((m_SecondRunHat == -1) && (m_SecondRunValue == -1))
                     {
                         SetControllerConfText("press dpad up again");
                         m_SecondRunHat = hat;
                         m_SecondRunValue = value;
                     }
-                    else if ( (m_SecondRunHat == hat) && (m_SecondRunValue == value) )
+                    else if ((m_SecondRunHat == hat) && (m_SecondRunValue == value))
                     {
                         m_HatIterator++;
                         m_ConfigurationState = STATE_CONF_BUTTON_DPAD_DOWN;
@@ -437,7 +444,7 @@ namespace GfxRenderEngine
                     m_HatIterator++;
                     break;
                 default:
-                    (void) 0;
+                    (void)0;
                     break;
             }
         }
@@ -445,7 +452,8 @@ namespace GfxRenderEngine
     void ControllerConfiguration::SetControllerConfText(std::string text1, std::string text2)
     {
         m_Text1 = text1;
-        if (text2 != "") m_Text2 = text2;
+        if (text2 != "")
+            m_Text2 = text2;
 
         m_UpdateControllerText = true;
     }
@@ -458,9 +466,10 @@ namespace GfxRenderEngine
         int pos;
         while (static_cast<size_t>(pos = name.find(",")) != std::string::npos)
         {
-            name = name.erase(pos,1);
+            name = name.erase(pos, 1);
         }
-        if (name.length() > 45) name = name.substr(0,45);
+        if (name.length() > 45)
+            name = name.substr(0, 45);
 
         Input::GetControllerGUID(m_ControllerID, m_DatabaseEntry);
         m_DatabaseEntry = m_DatabaseEntry + "," + name;
@@ -483,7 +492,8 @@ namespace GfxRenderEngine
 
         if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_DOWN] != STATE_CONF_SKIP_ITEM)
         {
-            m_DatabaseEntry = m_DatabaseEntry + ",dpdown:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_DOWN]);
+            m_DatabaseEntry =
+                m_DatabaseEntry + ",dpdown:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_DOWN]);
         }
         else if ((m_Hat[1] != -1) && (m_HatValue[1] != -1))
         {
@@ -503,7 +513,8 @@ namespace GfxRenderEngine
 
         if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_LEFT] != STATE_CONF_SKIP_ITEM)
         {
-            m_DatabaseEntry = m_DatabaseEntry + ",dpleft:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_LEFT]);
+            m_DatabaseEntry =
+                m_DatabaseEntry + ",dpleft:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_LEFT]);
         }
         else if ((m_Hat[2] != -1) && (m_HatValue[2] != -1))
         {
@@ -521,13 +532,15 @@ namespace GfxRenderEngine
             }
         }
 
-        if ( m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT] != STATE_CONF_SKIP_ITEM)
+        if (m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT] != STATE_CONF_SKIP_ITEM)
         {
-            m_DatabaseEntry = m_DatabaseEntry + ",dpright:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT]);
+            m_DatabaseEntry =
+                m_DatabaseEntry + ",dpright:b" + std::to_string(m_ControllerButton[STATE_CONF_BUTTON_DPAD_RIGHT]);
         }
         else if ((m_Hat[3] != -1) && (m_HatValue[3] != -1))
         {
-            m_DatabaseEntry = m_DatabaseEntry + ",dpright:h" + std::to_string(m_Hat[3]) + "." + std::to_string(m_HatValue[3]);
+            m_DatabaseEntry =
+                m_DatabaseEntry + ",dpright:h" + std::to_string(m_Hat[3]) + "." + std::to_string(m_HatValue[3]);
         }
         else if (m_Axis[3] != -1)
         {
@@ -641,11 +654,10 @@ namespace GfxRenderEngine
             m_DatabaseEntry += ",y:b";
             m_DatabaseEntry += std::to_string(m_ControllerButton[STATE_CONF_BUTTON_Y]);
         }
-        m_DatabaseEntry +=  ",platform:Linux,";
-
+        m_DatabaseEntry += ",platform:Linux,";
 
         m_MappingCreated = true;
         SetControllerConfText("Start controller setup (" + std::to_string(m_ControllerID + 1) + ")");
         LOG_CORE_INFO("Mapping created!");
     }
-}
+} // namespace GfxRenderEngine

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,15 +12,15 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-   This file is based on 
+   This file is based on
    github.com/blurrypiano/littleVulkanEngine/blob/master/littleVulkanEngine/imguiDemo/lve_imgui.cpp
    License: MIT */
 
@@ -32,28 +32,27 @@ namespace GfxRenderEngine
 {
     static void VKCheckResult(VkResult err)
     {
-        if (err == 0) return;
+        if (err == 0)
+            return;
         fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-        if (err < 0) abort();
+        if (err < 0)
+            abort();
     }
 
     VK_Imgui::VK_Imgui(VkRenderPass renderPass, uint imageCount)
     {
         // set up a descriptor pool stored on this instance, see header for more comments on this.
-        VkDescriptorPoolSize pool_sizes[] = 
-        {
-            {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
-        };
+        VkDescriptorPoolSize pool_sizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                             {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
         VkDescriptorPoolCreateInfo pool_info = {};
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -71,7 +70,7 @@ namespace GfxRenderEngine
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO();
         (void)io;
         // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -130,7 +129,7 @@ namespace GfxRenderEngine
     void VK_Imgui::Render(VkCommandBuffer commandBuffer)
     {
         ImGui::Render();
-        ImDrawData *drawdata = ImGui::GetDrawData();
+        ImDrawData* drawdata = ImGui::GetDrawData();
         ImGui_ImplVulkan_RenderDrawData(drawdata, commandBuffer);
     }
 
@@ -140,15 +139,12 @@ namespace GfxRenderEngine
         ImGui::Begin("Vulkan Engine Debug Window");
 
         auto callback = Imgui::m_Callback;
-        if (callback) callback();
+        if (callback)
+            callback();
 
-        ImGui::Text
-        (
-            "Application average %.3f ms/frame (%.1f FPS)",
-            1000.0f / ImGui::GetIO().Framerate,
-            ImGui::GetIO().Framerate
-        );
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                    ImGui::GetIO().Framerate);
         ImGui::End();
         ImGui::PopStyleColor();
     }
-}
+} // namespace GfxRenderEngine

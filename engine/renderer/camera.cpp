@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "renderer/camera.h"
@@ -27,8 +27,7 @@ namespace GfxRenderEngine
 {
 
     Camera::Camera()
-        : m_ProjectionType{PROJECTION_UNDEFINED},
-          m_Position{0.0f}, m_Rotation{0.0f, glm::pi<float>(), glm::pi<float>()}
+        : m_ProjectionType{PROJECTION_UNDEFINED}, m_Position{0.0f}, m_Rotation{0.0f, glm::pi<float>(), glm::pi<float>()}
     {
     }
 
@@ -68,14 +67,11 @@ namespace GfxRenderEngine
         m_ProjectionMatrix[3][2] = -(far * near) / (far - near);
     }
 
-    void Camera::SetPosition(const glm::vec3& position) 
-    { 
-        m_Position = position;
-    }
+    void Camera::SetPosition(const glm::vec3& position) { m_Position = position; }
 
-    void Camera::SetRotation(const glm::vec3& rotation) 
+    void Camera::SetRotation(const glm::vec3& rotation)
     {
-        m_Rotation = glm::vec3{rotation.x, rotation.y+glm::pi<float>(), rotation.z+glm::pi<float>()};
+        m_Rotation = glm::vec3{rotation.x, rotation.y + glm::pi<float>(), rotation.z + glm::pi<float>()};
     }
 
     void Camera::SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up)
@@ -112,7 +108,7 @@ namespace GfxRenderEngine
     void Camera::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
     {
         m_Position = position;
-        m_Rotation = glm::vec3{rotation.x, rotation.y+glm::pi<float>(), rotation.z+glm::pi<float>()};
+        m_Rotation = glm::vec3{rotation.x, rotation.y + glm::pi<float>(), rotation.z + glm::pi<float>()};
 
         const float c3 = glm::cos(m_Rotation.z);
         const float s3 = glm::sin(m_Rotation.z);
@@ -139,4 +135,4 @@ namespace GfxRenderEngine
 
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
-}
+} // namespace GfxRenderEngine

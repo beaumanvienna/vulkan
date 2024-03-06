@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -30,21 +30,19 @@ namespace GfxRenderEngine
     {
 
     public:
-
         Builder() = default;
 
         void LoadModelObjWavefront(const std::string& filepath, int fragAmplification = 1.0);
         void LoadParticle(const glm::vec4& color);
-        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0, glm::vec4 const& color = glm::vec4(1.0f));
+        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
+                        glm::vec4 const& color = glm::vec4(1.0f));
         entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);
 
     private:
-
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
     public:
-
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<ModelSubmesh> m_Submeshes{};
@@ -52,6 +50,5 @@ namespace GfxRenderEngine
         // cubemap
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
         std::vector<Submesh> m_CubemapSubmeshes{};
-
     };
-}
+} // namespace GfxRenderEngine

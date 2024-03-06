@@ -29,7 +29,6 @@
 #include "events/event.h"
 #include "renderer/model.h"
 #include "renderer/renderer.h"
-#include "scene/entity.h"
 
 namespace GfxRenderEngine
 {

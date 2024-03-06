@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "VKcore.h"
@@ -29,12 +29,9 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemDebug::VK_RenderSystemDebug
-    (
-        VkRenderPass renderPass,
-        std::vector<VkDescriptorSetLayout>& descriptorSetLayouts,
-        const VkDescriptorSet* shadowMapDescriptorSet
-    )
+    VK_RenderSystemDebug::VK_RenderSystemDebug(VkRenderPass renderPass,
+                                               std::vector<VkDescriptorSetLayout>& descriptorSetLayouts,
+                                               const VkDescriptorSet* shadowMapDescriptorSet)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         m_ShadowMapDescriptorSets = shadowMapDescriptorSet;
@@ -53,7 +50,8 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
+            VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
@@ -71,46 +69,35 @@ namespace GfxRenderEngine
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin-int/debug.vert.spv",
-            "bin-int/debug.frag.spv",
-            pipelineConfig
-        );
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/debug.vert.spv", "bin-int/debug.frag.spv",
+                                                   pipelineConfig);
     }
 
     void VK_RenderSystemDebug::RenderEntities(const VK_FrameInfo& frameInfo, bool showDebugShadowMap)
     {
-        if (!showDebugShadowMap) return;
+        if (!showDebugShadowMap)
+            return;
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        std::vector<VkDescriptorSet> localDescriptorSet = 
-        {
-            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]
-        };
+        std::vector<VkDescriptorSet> localDescriptorSet = {m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
 
-        vkCmdBindDescriptorSets
-        (
-            frameInfo.m_CommandBuffer,         // VkCommandBuffer        commandBuffer
-            VK_PIPELINE_BIND_POINT_GRAPHICS,   // VkPipelineBindPoint    pipelineBindPoint
-            m_PipelineLayout,                  // VkPipelineLayout       layout
-            0,                                 // uint32_t               firstSet
-            localDescriptorSet.size(),         // uint32_t               descriptorSetCount
-            localDescriptorSet.data(),         // const VkDescriptorSet* pDescriptorSets
-            0,                                 // uint32_t               dynamicOffsetCount
-            nullptr                            // const uint32_t*        pDynamicOffsets
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer
+                                VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint
+                                m_PipelineLayout,                // VkPipelineLayout       layout
+                                0,                               // uint32_t               firstSet
+                                localDescriptorSet.size(),       // uint32_t               descriptorSetCount
+                                localDescriptorSet.data(),       // const VkDescriptorSet* pDescriptorSets
+                                0,                               // uint32_t               dynamicOffsetCount
+                                nullptr                          // const uint32_t*        pDynamicOffsets
         );
 
         // vertices actually generated in the shader
         int vertexCount = 6;
-        vkCmdDraw
-        (
-            frameInfo.m_CommandBuffer,      // VkCommandBuffer commandBuffer
-            vertexCount,                    // uint32_t        vertexCount
-            1,                              // uint32_t        instanceCount
-            0,                              // uint32_t        firstVertex
-            0                               // uint32_t        firstInstance
+        vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                  vertexCount,               // uint32_t        vertexCount
+                  1,                         // uint32_t        instanceCount
+                  0,                         // uint32_t        firstVertex
+                  0                          // uint32_t        firstInstance
         );
     }
-}
+} // namespace GfxRenderEngine

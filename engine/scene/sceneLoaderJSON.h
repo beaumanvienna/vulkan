@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -40,7 +40,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         SceneLoaderJSON(Scene& scene);
         ~SceneLoaderJSON() {}
 
@@ -50,7 +49,6 @@ namespace GfxRenderEngine
         Gltf::GltfFiles& GetFastgltfFiles() { return m_SceneDescriptionFile.m_FastgltfFiles; }
 
     private:
-
         struct SceneDescriptionFile
         {
             double m_FileFormatIdentifier;
@@ -63,7 +61,6 @@ namespace GfxRenderEngine
         };
 
     private:
-
         void Deserialize(std::string& filepath);
 
         void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene);
@@ -72,11 +69,9 @@ namespace GfxRenderEngine
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
         void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
 
-
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
     private:
-
         static constexpr bool NO_COMMA = true;
         static constexpr int NO_INDENT = 0;
 
@@ -105,13 +100,11 @@ namespace GfxRenderEngine
         void SerializeInstance(int indent, Obj::Instance const& instance, bool noComma);
 
     private:
-
         std::ofstream m_OutputFile;
         static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
         Scene& m_Scene;
 
         SceneDescriptionFile m_SceneDescriptionFile;
-
     };
-}
+} // namespace GfxRenderEngine

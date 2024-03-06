@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,13 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
@@ -37,9 +37,7 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        MouseMovedEvent(float x, float y)
-            : m_MouseX(x), m_MouseY(y) {}
+        MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
 
         inline float GetX() const { return m_MouseX; }
         inline float GetY() const { return m_MouseY; }
@@ -55,20 +53,14 @@ namespace GfxRenderEngine
         }
 
     private:
-
         float m_MouseX, m_MouseY;
-
     };
 
     class MouseScrolledEvent : public Event
     {
 
     public:
-
-        MouseScrolledEvent(float xOffset, float yOffset)
-            : m_MouseOffsetX(xOffset), m_MouseOffsetY(yOffset)
-        {
-        }
+        MouseScrolledEvent(float xOffset, float yOffset) : m_MouseOffsetX(xOffset), m_MouseOffsetY(yOffset) {}
 
         inline float GetX() const { return m_MouseOffsetX; }
         inline float GetY() const { return m_MouseOffsetY; }
@@ -84,17 +76,13 @@ namespace GfxRenderEngine
         }
 
     private:
-
         float m_MouseOffsetX, m_MouseOffsetY;
-
     };
-
 
     class MouseButtonEvent : public Event
     {
 
     public:
-
         enum MouseButtons
         {
             Left,
@@ -103,19 +91,14 @@ namespace GfxRenderEngine
         };
 
     public:
-
         inline int GetMouseButton() const { return m_MouseButton; }
 
         EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryMouseButton);
 
     protected:
-        MouseButtonEvent(int mouseButton)
-            : m_MouseButton(mouseButton)
-        {
-        }
+        MouseButtonEvent(int mouseButton) : m_MouseButton(mouseButton) {}
 
         int m_MouseButton;
-
     };
 
     class MouseButtonPressedEvent : public MouseButtonEvent
@@ -125,7 +108,6 @@ namespace GfxRenderEngine
         MouseButtonPressedEvent(int mouseButton, double posX, double posY)
             : MouseButtonEvent(mouseButton), m_MouseX(posX), m_MouseY(posY)
         {
-
         }
 
         inline int GetButton() const { return m_MouseButton; }
@@ -144,17 +126,13 @@ namespace GfxRenderEngine
     private:
         double m_MouseX;
         double m_MouseY;
-
     };
 
     class MouseButtonReleasedEvent : public MouseButtonEvent
     {
 
     public:
-        MouseButtonReleasedEvent(int mouseButton)
-            : MouseButtonEvent(mouseButton)
-        {
-        }
+        MouseButtonReleasedEvent(int mouseButton) : MouseButtonEvent(mouseButton) {}
 
         EVENT_CLASS_TYPE(MouseButtonReleased);
 
@@ -164,6 +142,5 @@ namespace GfxRenderEngine
             str << "MouseButtonReleasedEvent: m_MouseButton: " << GetMouseButton();
             return str.str();
         }
-
     };
-}
+} // namespace GfxRenderEngine

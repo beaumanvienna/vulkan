@@ -50,7 +50,7 @@ namespace GfxRenderEngine
     {
         class SCREEN_DrawContext;
         class SCREEN_Texture;
-    }
+    } // namespace SCREEN_Draw
 
     namespace SCREEN_UI
     {
@@ -73,15 +73,9 @@ namespace GfxRenderEngine
 
         struct Drawable
         {
-            Drawable()
-                : type(DRAW_NOTHING),
-                color(0xFFFFFFFF)
-            {}
+            Drawable() : type(DRAW_NOTHING), color(0xFFFFFFFF) {}
 
-            explicit Drawable(uint32_t col)
-                : type(DRAW_SOLID_COLOR),
-                color(col)
-            {}
+            explicit Drawable(uint32_t col) : type(DRAW_SOLID_COLOR), color(col) {}
 
             DrawableType type;
             uint32_t color;
@@ -97,25 +91,14 @@ namespace GfxRenderEngine
 
         struct FontStyle
         {
-            FontStyle()
-                : atlasFont(0),
-                sizePts(0),
-                flags(0)
-            {}
+            FontStyle() : atlasFont(0), sizePts(0), flags(0) {}
 
-            FontStyle(const char *name, int size)
-                : atlasFont(0),
-                fontName(name),
-                sizePts(size),
-                flags(0)
-            {}
+            FontStyle(const char* name, int size) : atlasFont(0), fontName(name), sizePts(size), flags(0) {}
 
-            FontStyle(FontID atlasFnt, const char *name, int size)
-                : atlasFont(atlasFnt),
-                fontName(name),
-                sizePts(size),
-                flags(0)
-            {}
+            FontStyle(FontID atlasFnt, const char* name, int size)
+                : atlasFont(atlasFnt), fontName(name), sizePts(size), flags(0)
+            {
+            }
 
             FontID atlasFont;
             // For native fonts:
@@ -204,18 +187,28 @@ namespace GfxRenderEngine
 
         inline Orientation Opposite(Orientation o)
         {
-            if (o == ORIENT_HORIZONTAL) return ORIENT_VERTICAL; else return ORIENT_HORIZONTAL;
+            if (o == ORIENT_HORIZONTAL)
+                return ORIENT_VERTICAL;
+            else
+                return ORIENT_HORIZONTAL;
         }
 
         inline FocusDirection Opposite(FocusDirection d)
         {
-            switch (d) {
-            case FOCUS_UP: return FOCUS_DOWN;
-            case FOCUS_DOWN: return FOCUS_UP;
-            case FOCUS_LEFT: return FOCUS_RIGHT;
-            case FOCUS_RIGHT: return FOCUS_LEFT;
-            case FOCUS_PREV: return FOCUS_NEXT;
-            case FOCUS_NEXT: return FOCUS_PREV;
+            switch (d)
+            {
+                case FOCUS_UP:
+                    return FOCUS_DOWN;
+                case FOCUS_DOWN:
+                    return FOCUS_UP;
+                case FOCUS_LEFT:
+                    return FOCUS_RIGHT;
+                case FOCUS_RIGHT:
+                    return FOCUS_LEFT;
+                case FOCUS_PREV:
+                    return FOCUS_NEXT;
+                case FOCUS_NEXT:
+                    return FOCUS_PREV;
             }
             return d;
         }
@@ -256,17 +249,14 @@ namespace GfxRenderEngine
             MeasureSpec(MeasureSpecType t, float s = 0.0f) : type(t), size(s) {}
             MeasureSpec() : type(UNSPECIFIED), size(0) {}
 
-            MeasureSpec operator -(float amount)
-            {
-                return MeasureSpec(type, size - amount);
-            }
+            MeasureSpec operator-(float amount) { return MeasureSpec(type, size - amount); }
             MeasureSpecType type;
             float size;
         };
 
         struct EventParams
         {
-            View *v;
+            View* v;
             uint32_t a, b, x, y;
             float f;
             std::string s;
@@ -283,13 +273,11 @@ namespace GfxRenderEngine
             Event() {}
             ~Event();
 
-            void Trigger(EventParams &e);
+            void Trigger(EventParams& e);
 
-            EventReturn Dispatch(EventParams &e);
+            EventReturn Dispatch(EventParams& e);
 
-
-            template<class T>
-            T *Handle(T *thiz, EventReturn (T::* theCallback)(EventParams &e))
+            template <class T> T* Handle(T* thiz, EventReturn (T::*theCallback)(EventParams& e))
             {
                 Add(std::bind(theCallback, thiz, std::placeholders::_1));
                 return thiz;
@@ -308,14 +296,8 @@ namespace GfxRenderEngine
             Margins(int8_t horiz, int8_t vert) : top(vert), bottom(vert), left(horiz), right(horiz) {}
             Margins(int8_t l, int8_t t, int8_t r, int8_t b) : top(t), bottom(b), left(l), right(r) {}
 
-            int horiz() const
-            {
-                return left + right;
-            }
-            int vert() const
-            {
-                return top + bottom;
-            }
+            int horiz() const { return left + right; }
+            int vert() const { return top + bottom; }
 
             int8_t top;
             int8_t bottom;
@@ -330,14 +312,8 @@ namespace GfxRenderEngine
             Padding(float horiz, float vert) : top(vert), bottom(vert), left(horiz), right(horiz) {}
             Padding(float l, float t, float r, float b) : top(t), bottom(b), left(l), right(r) {}
 
-            float horiz() const
-            {
-                return left + right;
-            }
-            float vert() const
-            {
-                return top + bottom;
-            }
+            float horiz() const { return left + right; }
+            float vert() const { return top + bottom; }
 
             float top;
             float bottom;
@@ -355,46 +331,39 @@ namespace GfxRenderEngine
         class LayoutParams
         {
         public:
-            LayoutParams(LayoutParamsType type = LP_PLAIN)
-                : width(WRAP_CONTENT), height(WRAP_CONTENT), type_(type) {}
-            LayoutParams(Size w, Size h, LayoutParamsType type = LP_PLAIN)
-                : width(w), height(h), type_(type) {}
+            LayoutParams(LayoutParamsType type = LP_PLAIN) : width(WRAP_CONTENT), height(WRAP_CONTENT), type_(type) {}
+            LayoutParams(Size w, Size h, LayoutParamsType type = LP_PLAIN) : width(w), height(h), type_(type) {}
             virtual ~LayoutParams() {}
             Size width;
             Size height;
 
             bool Is(LayoutParamsType type) const { return type_ == type; }
 
-            template <typename T>
-            T *As()
+            template <typename T> T* As()
             {
                 if (Is(T::StaticType()))
                 {
-                    return static_cast<T *>(this);
+                    return static_cast<T*>(this);
                 }
                 return nullptr;
             }
 
-            template <typename T>
-            const T *As() const
+            template <typename T> const T* As() const
             {
                 if (Is(T::StaticType()))
                 {
-                    return static_cast<const T *>(this);
+                    return static_cast<const T*>(this);
                 }
                 return nullptr;
             }
 
-            static LayoutParamsType StaticType()
-            {
-                return LP_PLAIN;
-            }
+            static LayoutParamsType StaticType() { return LP_PLAIN; }
 
         private:
             LayoutParamsType type_;
         };
 
-        View *GetFocusedView();
+        View* GetFocusedView();
 
         class Tween;
         class CallbackColorTween;
@@ -402,7 +371,9 @@ namespace GfxRenderEngine
         class View
         {
         public:
-            View(LayoutParams *layoutParams = 0) : layoutParams_(layoutParams), visibility_(V_VISIBLE), measuredWidth_(0), measuredHeight_(0), enabledPtr_(0), enabled_(true), enabledMeansDisabled_(false)
+            View(LayoutParams* layoutParams = 0)
+                : layoutParams_(layoutParams), visibility_(V_VISIBLE), measuredWidth_(0), measuredHeight_(0), enabledPtr_(0),
+                  enabled_(true), enabledMeansDisabled_(false)
             {
                 if (!layoutParams)
                 {
@@ -411,49 +382,44 @@ namespace GfxRenderEngine
             }
             virtual ~View();
 
-            virtual bool Key(const SCREEN_KeyInput &input) { return false; }
-            virtual bool Touch(const SCREEN_TouchInput &input) { return false; }
-            virtual void Axis(const SCREEN_AxisInput &input) {}
+            virtual bool Key(const SCREEN_KeyInput& input) { return false; }
+            virtual bool Touch(const SCREEN_TouchInput& input) { return false; }
+            virtual void Axis(const SCREEN_AxisInput& input) {}
             virtual void Update();
 
             virtual void DeviceLost() {}
-            virtual void DeviceRestored(SCREEN_Draw::SCREEN_DrawContext *draw) {}
+            virtual void DeviceRestored(SCREEN_Draw::SCREEN_DrawContext* draw) {}
 
-            virtual void Query(float x, float y, std::vector<View *> &list);
+            virtual void Query(float x, float y, std::vector<View*>& list);
             virtual std::string Describe() const;
 
             virtual void FocusChanged(int focusFlags) {}
-            virtual void PersistData(PersistStatus status, std::string anonId, PersistMap &storage);
+            virtual void PersistData(PersistStatus status, std::string anonId, PersistMap& storage);
 
-            void Move(Bounds bounds)
-            {
-                bounds_ = bounds;
-            }
+            void Move(Bounds bounds) { bounds_ = bounds; }
 
-            virtual void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert);
+            virtual void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert);
             virtual void Layout() {}
-            virtual void Draw(SCREEN_UIContext &dc) {}
+            virtual void Draw(SCREEN_UIContext& dc) {}
 
             virtual float GetMeasuredWidth() const { return measuredWidth_; }
             virtual float GetMeasuredHeight() const { return measuredHeight_; }
 
-            virtual void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const;
-            virtual void GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const;
+            virtual void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const;
+            virtual void GetContentDimensionsBySpec(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert,
+                                                    float& w, float& h) const;
 
             void SetBounds(Bounds bounds) { bounds_ = bounds; }
-            virtual const LayoutParams *GetLayoutParams() const { return layoutParams_.get(); }
-            virtual void ReplaceLayoutParams(LayoutParams *newLayoutParams) { layoutParams_.reset(newLayoutParams); }
-            const Bounds &GetBounds() const { return bounds_; }
+            virtual const LayoutParams* GetLayoutParams() const { return layoutParams_.get(); }
+            virtual void ReplaceLayoutParams(LayoutParams* newLayoutParams) { layoutParams_.reset(newLayoutParams); }
+            const Bounds& GetBounds() const { return bounds_; }
 
             virtual bool SetFocus();
 
             virtual bool CanBeFocused() const { return true; }
-            virtual bool SubviewFocused(View *view) { return false; }
+            virtual bool SubviewFocused(View* view) { return false; }
 
-            bool HasFocus() const
-            {
-                return GetFocusedView() == this;
-            }
+            bool HasFocus() const { return GetFocusedView() == this; }
 
             void SetEnabled(bool enabled)
             {
@@ -462,7 +428,8 @@ namespace GfxRenderEngine
                 enabled_ = enabled;
                 enabledMeansDisabled_ = false;
             }
-            bool IsEnabled() const {
+            bool IsEnabled() const
+            {
 
                 if (enabledFunc_)
                 {
@@ -480,13 +447,13 @@ namespace GfxRenderEngine
                 enabledPtr_ = nullptr;
                 enabledMeansDisabled_ = false;
             }
-            void SetEnabledPtr(bool *enabled)
+            void SetEnabledPtr(bool* enabled)
             {
                 enabledFunc_ = nullptr;
                 enabledPtr_ = enabled;
                 enabledMeansDisabled_ = false;
             }
-            void SetDisabledPtr(bool *disabled)
+            void SetDisabledPtr(bool* disabled)
             {
                 enabledFunc_ = nullptr;
                 enabledPtr_ = disabled;
@@ -496,15 +463,14 @@ namespace GfxRenderEngine
             virtual void SetVisibility(Visibility visibility) { visibility_ = visibility; }
             Visibility GetVisibility() const { return visibility_; }
 
-            const std::string &Tag() const { return tag_; }
-            void SetTag(const std::string &str) { tag_ = str; }
+            const std::string& Tag() const { return tag_; }
+            void SetTag(const std::string& str) { tag_ = str; }
 
             virtual bool IsViewGroup() const { return false; }
 
             Point GetFocusPosition(FocusDirection dir);
 
-            template <class T>
-            T *AddTween(T *t)
+            template <class T> T* AddTween(T* t)
             {
                 tweens_.push_back(t);
                 return t;
@@ -521,46 +487,43 @@ namespace GfxRenderEngine
 
             Bounds bounds_;
 
-            std::vector<Tween *> tweens_;
+            std::vector<Tween*> tweens_;
 
         private:
             std::function<bool()> enabledFunc_;
-            bool *enabledPtr_;
+            bool* enabledPtr_;
             bool enabled_;
             bool enabledMeansDisabled_;
-
         };
 
         class InertView : public View
         {
         public:
-            InertView(LayoutParams *layoutParams)
-                : View(layoutParams) {}
+            InertView(LayoutParams* layoutParams) : View(layoutParams) {}
 
-            bool Key(const SCREEN_KeyInput &input) override { return false; }
-            bool Touch(const SCREEN_TouchInput &input) override { return false; }
+            bool Key(const SCREEN_KeyInput& input) override { return false; }
+            bool Touch(const SCREEN_TouchInput& input) override { return false; }
             bool CanBeFocused() const override { return false; }
         };
 
         class Clickable : public View
         {
         public:
-            Clickable(LayoutParams *layoutParams);
+            Clickable(LayoutParams* layoutParams);
             virtual ~Clickable() {}
 
-            bool Key(const SCREEN_KeyInput &input) override;
-            bool Touch(const SCREEN_TouchInput &input) override;
+            bool Key(const SCREEN_KeyInput& input) override;
+            bool Touch(const SCREEN_TouchInput& input) override;
 
             void FocusChanged(int focusFlags) override;
 
             Event OnClick;
 
         protected:
-
             virtual void Click();
-            void DrawBG(SCREEN_UIContext &dc, const Style &style);
+            void DrawBG(SCREEN_UIContext& dc, const Style& style);
 
-            CallbackColorTween *bgColor_ = nullptr;
+            CallbackColorTween* bgColor_ = nullptr;
             float bgColorLast_ = 0.0f;
             int downCountDown_ = 0;
             bool dragging_ = false;
@@ -570,15 +533,16 @@ namespace GfxRenderEngine
         class Button : public Clickable
         {
         public:
-            Button(const std::string &text, uint maxTextLength, LayoutParams *layoutParams = nullptr);
-            Button(const Sprite& image, LayoutParams *layoutParams = nullptr)
-                : Clickable(layoutParams), m_Image(image) {}
-            Button(const std::string &text, const Sprite& image, LayoutParams *layoutParams = nullptr)
-                : Clickable(layoutParams), text_(text), m_Image(image) {}
+            Button(const std::string& text, uint maxTextLength, LayoutParams* layoutParams = nullptr);
+            Button(const Sprite& image, LayoutParams* layoutParams = nullptr) : Clickable(layoutParams), m_Image(image) {}
+            Button(const std::string& text, const Sprite& image, LayoutParams* layoutParams = nullptr)
+                : Clickable(layoutParams), text_(text), m_Image(image)
+            {
+            }
 
-            void Draw(SCREEN_UIContext &dc) override;
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
-            const std::string &GetText() const { return text_; }
+            void Draw(SCREEN_UIContext& dc) override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
+            const std::string& GetText() const { return text_; }
 
             void SetPadding(int w, int h)
             {
@@ -600,19 +564,23 @@ namespace GfxRenderEngine
         class Slider : public Clickable
         {
         public:
-            Slider(int *value, int minValue, int maxValue, LayoutParams *layoutParams = 0)
-                : Clickable(layoutParams), value_(value), showPercent_(false), minValue_(minValue), maxValue_(maxValue), paddingLeft_(5), paddingRight_(70), step_(1), repeat_(-1) {}
+            Slider(int* value, int minValue, int maxValue, LayoutParams* layoutParams = 0)
+                : Clickable(layoutParams), value_(value), showPercent_(false), minValue_(minValue), maxValue_(maxValue),
+                  paddingLeft_(5), paddingRight_(70), step_(1), repeat_(-1)
+            {
+            }
 
-            Slider(int *value, int minValue, int maxValue, int step = 1, LayoutParams *layoutParams = 0)
-                : Clickable(layoutParams), value_(value), showPercent_(false), minValue_(minValue), maxValue_(maxValue), paddingLeft_(5), paddingRight_(70), repeat_(-1)
+            Slider(int* value, int minValue, int maxValue, int step = 1, LayoutParams* layoutParams = 0)
+                : Clickable(layoutParams), value_(value), showPercent_(false), minValue_(minValue), maxValue_(maxValue),
+                  paddingLeft_(5), paddingRight_(70), repeat_(-1)
             {
                 step_ = step <= 0 ? 1 : step;
             }
-            void Draw(SCREEN_UIContext &dc) override;
-            bool Key(const SCREEN_KeyInput &input) override;
-            bool Touch(const SCREEN_TouchInput &input) override;
+            void Draw(SCREEN_UIContext& dc) override;
+            bool Key(const SCREEN_KeyInput& input) override;
+            bool Touch(const SCREEN_TouchInput& input) override;
             void Update() override;
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
             void SetShowPercent(bool s) { showPercent_ = s; }
 
             void Clamp();
@@ -622,7 +590,7 @@ namespace GfxRenderEngine
         private:
             bool ApplyKey(int keyCode);
 
-            int *value_;
+            int* value_;
             bool showPercent_;
             int minValue_;
             int maxValue_;
@@ -636,13 +604,16 @@ namespace GfxRenderEngine
         class SliderFloat : public Clickable
         {
         public:
-            SliderFloat(float *value, float minValue, float maxValue, LayoutParams *layoutParams = 0)
-                : Clickable(layoutParams), value_(value), minValue_(minValue), maxValue_(maxValue), paddingLeft_(5), paddingRight_(70), repeat_(-1) {}
-            void Draw(SCREEN_UIContext &dc) override;
-            bool Key(const SCREEN_KeyInput &input) override;
-            bool Touch(const SCREEN_TouchInput &input) override;
+            SliderFloat(float* value, float minValue, float maxValue, LayoutParams* layoutParams = 0)
+                : Clickable(layoutParams), value_(value), minValue_(minValue), maxValue_(maxValue), paddingLeft_(5),
+                  paddingRight_(70), repeat_(-1)
+            {
+            }
+            void Draw(SCREEN_UIContext& dc) override;
+            bool Key(const SCREEN_KeyInput& input) override;
+            bool Touch(const SCREEN_TouchInput& input) override;
             void Update() override;
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
 
             void Clamp();
 
@@ -651,7 +622,7 @@ namespace GfxRenderEngine
         private:
             bool ApplyKey(int keyCode);
 
-            float *value_;
+            float* value_;
             float minValue_;
             float maxValue_;
             float paddingLeft_;
@@ -663,20 +634,21 @@ namespace GfxRenderEngine
         class Item : public InertView
         {
         public:
-            Item(LayoutParams *layoutParams);
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
+            Item(LayoutParams* layoutParams);
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
         };
 
         class ClickableItem : public Clickable
         {
         public:
-            ClickableItem(LayoutParams *layoutParams);
-            ClickableItem(LayoutParams *layoutParams, bool transparentBackground);
+            ClickableItem(LayoutParams* layoutParams);
+            ClickableItem(LayoutParams* layoutParams, bool transparentBackground);
             virtual ~ClickableItem() {}
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
 
             // Draws the item background.
-            void Draw(SCREEN_UIContext &dc) override;
+            void Draw(SCREEN_UIContext& dc) override;
+
         private:
             bool transparentBackground_ = false;
         };
@@ -685,38 +657,63 @@ namespace GfxRenderEngine
         class Choice : public ClickableItem
         {
         public:
-            Choice(const std::string &text, LayoutParams *layoutParams = nullptr)
-                : Choice(text, std::string(), false, layoutParams) { numIcons_= 0; }
-            Choice(const std::string &text, bool transparentBackground, LayoutParams *layoutParams)
-                : Choice(text, transparentBackground, std::string(), false, layoutParams) { numIcons_= 0; }
-            Choice(const std::string &text, const std::string &smallText, bool selected, LayoutParams *layoutParams)
-                : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image({}),
-                                centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
-            Choice(const std::string &text, bool transparentBackground, const std::string &smallText, bool selected, LayoutParams *layoutParams)
+            Choice(const std::string& text, LayoutParams* layoutParams = nullptr)
+                : Choice(text, std::string(), false, layoutParams)
+            {
+                numIcons_ = 0;
+            }
+            Choice(const std::string& text, bool transparentBackground, LayoutParams* layoutParams)
+                : Choice(text, transparentBackground, std::string(), false, layoutParams)
+            {
+                numIcons_ = 0;
+            }
+            Choice(const std::string& text, const std::string& smallText, bool selected, LayoutParams* layoutParams)
+                : ClickableItem(layoutParams), text_(text), smallText_(smallText), m_Image({}), centered_(false),
+                  highlighted_(false), selected_(selected)
+            {
+                numIcons_ = 0;
+            }
+            Choice(const std::string& text, bool transparentBackground, const std::string& smallText, bool selected,
+                   LayoutParams* layoutParams)
                 : ClickableItem(layoutParams, transparentBackground), text_(text), smallText_(smallText), m_Image({}),
-                                centered_(false), highlighted_(false), selected_(selected) { numIcons_= 0; }
-            Choice(const Sprite& image, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
+                  centered_(false), highlighted_(false), selected_(selected)
+            {
+                numIcons_ = 0;
+            }
+            Choice(const Sprite& image, LayoutParams* layoutParams = nullptr, bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), m_Image(image), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false) { numIcons_ = 1; }
-            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
+                  hasHoldFeature_(hasHoldFeature), heldDown_(false)
+            {
+                numIcons_ = 1;
+            }
+            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed,
+                   LayoutParams* layoutParams = nullptr, bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image),
-                                m_ImageActive(image_active), m_ImageDepressed(image_depressed) { numIcons_ = 3;}
-            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed, const Sprite& image_depressed_inactive,
-                const std::string &text, LayoutParams *layoutParams = nullptr, bool hasHoldFeature = false)
+                  hasHoldFeature_(hasHoldFeature), heldDown_(false), m_Image(image), m_ImageActive(image_active),
+                  m_ImageDepressed(image_depressed)
+            {
+                numIcons_ = 3;
+            }
+            Choice(const Sprite& image, const Sprite& image_active, const Sprite& image_depressed,
+                   const Sprite& image_depressed_inactive, const std::string& text, LayoutParams* layoutParams = nullptr,
+                   bool hasHoldFeature = false)
                 : ClickableItem(layoutParams), centered_(false), highlighted_(false), selected_(false),
-                                hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
-                                m_ImageActive(image_active), m_ImageDepressed(image_depressed),
-                                m_ImageDepressedInactive(image_depressed_inactive) { numIcons_ = 4;}
+                  hasHoldFeature_(hasHoldFeature), heldDown_(false), text_(text), m_Image(image),
+                  m_ImageActive(image_active), m_ImageDepressed(image_depressed),
+                  m_ImageDepressedInactive(image_depressed_inactive)
+            {
+                numIcons_ = 4;
+            }
 
             Event OnHold;
             Event OnHighlight;
-            bool Key(const SCREEN_KeyInput &input) override;
-            bool Touch(const SCREEN_TouchInput &touch) override;
+            bool Key(const SCREEN_KeyInput& input) override;
+            bool Touch(const SCREEN_TouchInput& touch) override;
             void Update() override;
             virtual void HighlightChanged(bool highlighted);
-            void GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const override;
-            void Draw(SCREEN_UIContext &dc) override;
+            void GetContentDimensionsBySpec(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert, float& w,
+                                            float& h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
             virtual void SetCentered(bool c) { centered_ = c; }
             virtual void SetIcon(Sprite& iconImage) { m_Image = iconImage; }
             bool CanBeFocused() const override { return focusable_; }
@@ -726,9 +723,8 @@ namespace GfxRenderEngine
             std::string GetName() const { return m_Name; }
 
         protected:
-
             virtual bool IsSticky() const { return false; }
-            virtual float CalculateTextScale(const SCREEN_UIContext &dc, float availWidth) const;
+            virtual float CalculateTextScale(const SCREEN_UIContext& dc, float availWidth) const;
 
             std::string text_;
             std::string smallText_;
@@ -753,51 +749,53 @@ namespace GfxRenderEngine
         class StickyChoice : public Choice
         {
         public:
-            StickyChoice(const std::string &text, const std::string &smallText = "", LayoutParams *layoutParams = 0)
-                : Choice(text, smallText, false, layoutParams) {}
-            StickyChoice(const Sprite& buttonImage, LayoutParams *layoutParams = 0)
-                : Choice(buttonImage, layoutParams) {}
-            StickyChoice(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive, const std::string &text, LayoutParams *layoutParams = 0)
-                : Choice(icon, icon_active, icon_depressed, icon_depressed_inactive, text, layoutParams) {}
+            StickyChoice(const std::string& text, const std::string& smallText = "", LayoutParams* layoutParams = 0)
+                : Choice(text, smallText, false, layoutParams)
+            {
+            }
+            StickyChoice(const Sprite& buttonImage, LayoutParams* layoutParams = 0) : Choice(buttonImage, layoutParams) {}
+            StickyChoice(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed,
+                         const Sprite& icon_depressed_inactive, const std::string& text, LayoutParams* layoutParams = 0)
+                : Choice(icon, icon_active, icon_depressed, icon_depressed_inactive, text, layoutParams)
+            {
+            }
 
-            bool Key(const SCREEN_KeyInput &key) override;
-            bool Touch(const SCREEN_TouchInput &touch) override;
+            bool Key(const SCREEN_KeyInput& key) override;
+            bool Touch(const SCREEN_TouchInput& touch) override;
             void FocusChanged(int focusFlags) override;
 
-            void Press() { down_ = true; dragging_ = false;  }
-            void Release() { down_ = false; dragging_ = false; }
+            void Press()
+            {
+                down_ = true;
+                dragging_ = false;
+            }
+            void Release()
+            {
+                down_ = false;
+                dragging_ = false;
+            }
             bool IsDown() { return down_; }
 
         protected:
-
             bool IsSticky() const override { return true; }
         };
 
         class InfoItem : public Item
         {
         public:
-            InfoItem(const std::string &text, const std::string &rightText, LayoutParams *layoutParams = nullptr);
+            InfoItem(const std::string& text, const std::string& rightText, LayoutParams* layoutParams = nullptr);
 
-            void Draw(SCREEN_UIContext &dc) override;
+            void Draw(SCREEN_UIContext& dc) override;
 
             bool CanBeFocused() const override { return true; }
 
-            void SetText(const std::string &text)
-            {
-                text_ = text;
-            }
-            const std::string &GetText() const
-            {
-                return text_;
-            }
-            void SetRightText(const std::string &text)
-            {
-                rightText_ = text;
-            }
+            void SetText(const std::string& text) { text_ = text; }
+            const std::string& GetText() const { return text_; }
+            void SetRightText(const std::string& text) { rightText_ = text; }
 
         private:
-            CallbackColorTween *bgColor_ = nullptr;
-            CallbackColorTween *fgColor_ = nullptr;
+            CallbackColorTween* bgColor_ = nullptr;
+            CallbackColorTween* fgColor_ = nullptr;
 
             std::string text_;
             std::string rightText_;
@@ -806,9 +804,10 @@ namespace GfxRenderEngine
         class ItemHeader : public Item
         {
         public:
-            ItemHeader(const std::string &text, LayoutParams *layoutParams = 0);
-            void Draw(SCREEN_UIContext &dc) override;
-            void GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const override;
+            ItemHeader(const std::string& text, LayoutParams* layoutParams = 0);
+            void Draw(SCREEN_UIContext& dc) override;
+            void GetContentDimensionsBySpec(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert, float& w,
+                                            float& h) const override;
 
         private:
             std::string text_;
@@ -817,13 +816,13 @@ namespace GfxRenderEngine
         class PopupHeader : public Item
         {
         public:
-            PopupHeader(const std::string &text, LayoutParams *layoutParams = 0)
-                : Item(layoutParams), text_(text)
+            PopupHeader(const std::string& text, LayoutParams* layoutParams = 0) : Item(layoutParams), text_(text)
             {
-                    layoutParams_->width = FILL_PARENT;
-                    layoutParams_->height = 64.0f;
+                layoutParams_->width = FILL_PARENT;
+                layoutParams_->height = 64.0f;
             }
-            void Draw(SCREEN_UIContext &dc) override;
+            void Draw(SCREEN_UIContext& dc) override;
+
         private:
             std::string text_;
         };
@@ -831,42 +830,45 @@ namespace GfxRenderEngine
         class Separator : public Item
         {
         public:
-            Separator(LayoutParams *layoutParams = 0)
-                : Item(layoutParams)
+            Separator(LayoutParams* layoutParams = 0) : Item(layoutParams)
             {
-                    layoutParams_->width = FILL_PARENT;
-                    layoutParams_->height = 4.0f;
+                layoutParams_->width = FILL_PARENT;
+                layoutParams_->height = 4.0f;
             }
-            void Draw(SCREEN_UIContext &dc) override;
+            void Draw(SCREEN_UIContext& dc) override;
         };
 
         class CheckBox : public ClickableItem
         {
         public:
-            CheckBox(bool *toggle, const std::string &text, const std::string &smallText = "", LayoutParams *layoutParams = 0)
+            CheckBox(bool* toggle, const std::string& text, const std::string& smallText = "",
+                     LayoutParams* layoutParams = 0)
                 : ClickableItem(layoutParams), toggle_(toggle), text_(text), smallText_(smallText)
             {
                 OnClick.Handle(this, &CheckBox::OnClicked);
             }
 
-            void Draw(SCREEN_UIContext &dc) override;
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
 
-            EventReturn OnClicked(EventParams &e);
+            EventReturn OnClicked(EventParams& e);
 
             virtual void Toggle();
             virtual bool Toggled() const;
-        private:
-            float CalculateTextScale(const SCREEN_UIContext &dc, float availWidth) const;
 
-            bool *toggle_;
+        private:
+            float CalculateTextScale(const SCREEN_UIContext& dc, float availWidth) const;
+
+            bool* toggle_;
             std::string text_;
             std::string smallText_;
         };
 
-        class BitCheckBox : public CheckBox {
+        class BitCheckBox : public CheckBox
+        {
         public:
-            BitCheckBox(uint32_t *bitfield, uint32_t bit, const std::string &text, const std::string &smallText = "", LayoutParams *layoutParams = nullptr)
+            BitCheckBox(uint32_t* bitfield, uint32_t bit, const std::string& text, const std::string& smallText = "",
+                        LayoutParams* layoutParams = nullptr)
                 : CheckBox(nullptr, text, smallText, layoutParams), bitfield_(bitfield), bit_(bit)
             {
             }
@@ -875,23 +877,23 @@ namespace GfxRenderEngine
             bool Toggled() const override;
 
         private:
-            uint32_t *bitfield_;
+            uint32_t* bitfield_;
             uint32_t bit_;
         };
 
         class Spacer : public InertView
         {
         public:
-            Spacer(LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), w_(0.0f), h_(0.0f) {}
-            Spacer(float size, LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), w_(size), h_(size) {}
-            Spacer(float w, float h, LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), w_(w), h_(h) {}
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override {
-                w = w_; h = h_;
+            Spacer(LayoutParams* layoutParams = 0) : InertView(layoutParams), w_(0.0f), h_(0.0f) {}
+            Spacer(float size, LayoutParams* layoutParams = 0) : InertView(layoutParams), w_(size), h_(size) {}
+            Spacer(float w, float h, LayoutParams* layoutParams = 0) : InertView(layoutParams), w_(w), h_(h) {}
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override
+            {
+                w = w_;
+                h = h_;
             }
-            void Draw(SCREEN_UIContext &dc) override {}
+            void Draw(SCREEN_UIContext& dc) override {}
+
         private:
             float w_;
             float h_;
@@ -900,18 +902,29 @@ namespace GfxRenderEngine
         class TextView : public InertView
         {
         public:
-            TextView(const std::string &text, LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), text_(text), textAlign_(0), textColor_(0xFFFFFFFF), shadow_(false), focusable_(false), clip_(true) {}
+            TextView(const std::string& text, LayoutParams* layoutParams = 0)
+                : InertView(layoutParams), text_(text), textAlign_(0), textColor_(0xFFFFFFFF), shadow_(false),
+                  focusable_(false), clip_(true)
+            {
+            }
 
-            TextView(const std::string &text, int textAlign, bool big, LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), text_(text), textAlign_(textAlign), textColor_(0xFFFFFFFF), shadow_(CoreSettings::m_UITheme==THEME_RETRO), focusable_(false), clip_(true) {}
+            TextView(const std::string& text, int textAlign, bool big, LayoutParams* layoutParams = 0)
+                : InertView(layoutParams), text_(text), textAlign_(textAlign), textColor_(0xFFFFFFFF),
+                  shadow_(CoreSettings::m_UITheme == THEME_RETRO), focusable_(false), clip_(true)
+            {
+            }
 
-            void GetContentDimensionsBySpec(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert, float &w, float &h) const override;
-            void Draw(SCREEN_UIContext &dc) override;
+            void GetContentDimensionsBySpec(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert, float& w,
+                                            float& h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
 
-            void SetText(const std::string &text) { text_ = text; }
-            const std::string &GetText() const { return text_; }
-            void SetTextColor(uint32_t color) { textColor_ = color; hasTextColor_ = true; }
+            void SetText(const std::string& text) { text_ = text; }
+            const std::string& GetText() const { return text_; }
+            void SetTextColor(uint32_t color)
+            {
+                textColor_ = color;
+                hasTextColor_ = true;
+            }
             void SetShadow(bool shadow) { shadow_ = shadow; }
             void SetFocusable(bool focusable) { focusable_ = focusable; }
             void SetClip(bool clip) { clip_ = clip; }
@@ -931,23 +944,32 @@ namespace GfxRenderEngine
         class TextEdit : public View
         {
         public:
-            TextEdit(const std::string &text, const std::string &placeholderText, LayoutParams *layoutParams = 0);
-            void SetText(const std::string &text) { text_ = text; scrollPos_ = 0; caret_ = (int)text_.size(); }
-            void SetTextColor(uint32_t color) { textColor_ = color; hasTextColor_ = true; }
-            const std::string &GetText() const { return text_; }
+            TextEdit(const std::string& text, const std::string& placeholderText, LayoutParams* layoutParams = 0);
+            void SetText(const std::string& text)
+            {
+                text_ = text;
+                scrollPos_ = 0;
+                caret_ = (int)text_.size();
+            }
+            void SetTextColor(uint32_t color)
+            {
+                textColor_ = color;
+                hasTextColor_ = true;
+            }
+            const std::string& GetText() const { return text_; }
             void SetMaxLen(size_t maxLen) { maxLen_ = maxLen; }
             void SetTextAlign(int align) { align_ = align; }
 
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
-            void Draw(SCREEN_UIContext &dc) override;
-            bool Key(const SCREEN_KeyInput &key) override;
-            bool Touch(const SCREEN_TouchInput &touch) override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
+            bool Key(const SCREEN_KeyInput& key) override;
+            bool Touch(const SCREEN_TouchInput& touch) override;
 
             Event OnTextChange;
             Event OnEnter;
 
         private:
-            void InsertAtCaret(const char *text);
+            void InsertAtCaret(const char* text);
 
             std::string text_;
             std::string undo_;
@@ -964,26 +986,25 @@ namespace GfxRenderEngine
         class ImageView : public InertView
         {
         public:
-            ImageView(const Sprite& atlasImage, LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), m_Image(atlasImage) {}
+            ImageView(const Sprite& atlasImage, LayoutParams* layoutParams = 0)
+                : InertView(layoutParams), m_Image(atlasImage)
+            {
+            }
 
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
-            void Draw(SCREEN_UIContext &dc) override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
 
         private:
-
             Sprite m_Image;
-
         };
 
         class ProgressBar : public InertView
         {
         public:
-            ProgressBar(LayoutParams *layoutParams = 0)
-                : InertView(layoutParams), progress_(0.0) {}
+            ProgressBar(LayoutParams* layoutParams = 0) : InertView(layoutParams), progress_(0.0) {}
 
-            void GetContentDimensions(const SCREEN_UIContext &dc, float &w, float &h) const override;
-            void Draw(SCREEN_UIContext &dc) override;
+            void GetContentDimensions(const SCREEN_UIContext& dc, float& w, float& h) const override;
+            void Draw(SCREEN_UIContext& dc) override;
 
             void SetProgress(float progress)
             {
@@ -994,7 +1015,9 @@ namespace GfxRenderEngine
                 else if (progress < 0.0f)
                 {
                     progress_ = 0.0f;
-                } else {
+                }
+                else
+                {
                     progress_ = progress;
                 }
             }
@@ -1004,13 +1027,13 @@ namespace GfxRenderEngine
             float progress_;
         };
 
-        void MeasureBySpec(Size sz, float contentWidth, MeasureSpec spec, float *measured);
+        void MeasureBySpec(Size sz, float contentWidth, MeasureSpec spec, float* measured);
 
-        bool IsDPadKey(const SCREEN_KeyInput &key);
-        bool IsAcceptKey(const SCREEN_KeyInput &key);
-        bool IsEscapeKey(const SCREEN_KeyInput &key);
-        bool IsTabLeftKey(const SCREEN_KeyInput &key);
-        bool IsTabRightKey(const SCREEN_KeyInput &key);
+        bool IsDPadKey(const SCREEN_KeyInput& key);
+        bool IsAcceptKey(const SCREEN_KeyInput& key);
+        bool IsEscapeKey(const SCREEN_KeyInput& key);
+        bool IsTabLeftKey(const SCREEN_KeyInput& key);
+        bool IsTabRightKey(const SCREEN_KeyInput& key);
 
-    }  // namespace
-}
+    } // namespace SCREEN_UI
+} // namespace GfxRenderEngine

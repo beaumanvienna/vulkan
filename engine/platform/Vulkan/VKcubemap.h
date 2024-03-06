@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -31,11 +31,10 @@
 
 namespace GfxRenderEngine
 {
-    class VK_Cubemap: public Cubemap
+    class VK_Cubemap : public Cubemap
     {
 
     public:
-
         VK_Cubemap(bool nearestFilter = false);
         virtual ~VK_Cubemap();
 
@@ -43,21 +42,17 @@ namespace GfxRenderEngine
         virtual int GetWidth() const override { return m_Width; }
         virtual int GetHeight() const override { return m_Height; }
 
-        const VkDescriptorImageInfo GetDescriptorImageInfo() const { return m_DescriptorImageInfo;}
+        const VkDescriptorImageInfo GetDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 
     private:
-
         bool Create();
-        void CreateImage(VkFormat format, VkImageTiling tiling,
-                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+        void CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
-                          VkMemoryPropertyFlags properties, VkBuffer& buffer,
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
 
     private:
-
         static constexpr int NUMBER_OF_CUBEMAP_IMAGES = 6;
 
         std::vector<std::string> m_FileNames;
@@ -77,4 +72,4 @@ namespace GfxRenderEngine
 
         VkDescriptorImageInfo m_DescriptorImageInfo;
     };
-}
+} // namespace GfxRenderEngine

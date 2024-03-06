@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gui/Render/textureAtlas.h"
@@ -30,7 +30,7 @@
 namespace GfxRenderEngine
 {
 
-    const SCREEN_AtlasFont *SCREEN_Atlas::getFont(FontID id) const
+    const SCREEN_AtlasFont* SCREEN_Atlas::getFont(FontID id) const
     {
         if (id.isInvalid())
         {
@@ -47,13 +47,13 @@ namespace GfxRenderEngine
         return nullptr;
     }
 
-    const AtlasChar *SCREEN_AtlasFont::getChar(int utf32) const
+    const AtlasChar* SCREEN_AtlasFont::getChar(int utf32) const
     {
         for (int i = 0; i < numRanges; i++)
         {
             if (utf32 >= ranges[i].start && utf32 < ranges[i].end)
             {
-                const AtlasChar *c = &charData[ranges[i].result_index + utf32 - ranges[i].start];
+                const AtlasChar* c = &charData[ranges[i].result_index + utf32 - ranges[i].start];
                 if (c->ex == 0 && c->ey == 0)
                 {
                     return nullptr;
@@ -66,4 +66,4 @@ namespace GfxRenderEngine
         }
         return nullptr;
     }
-}
+} // namespace GfxRenderEngine

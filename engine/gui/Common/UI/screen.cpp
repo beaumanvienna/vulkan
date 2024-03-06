@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
@@ -53,10 +53,7 @@ namespace GfxRenderEngine
         camera.SetViewDirection(position, direction);
     }
 
-    SCREEN_ScreenManager::~SCREEN_ScreenManager()
-    {
-        shutdown();
-    }
+    SCREEN_ScreenManager::~SCREEN_ScreenManager() { shutdown(); }
 
     void SCREEN_ScreenManager::update()
     {
@@ -100,35 +97,35 @@ namespace GfxRenderEngine
         nextStack_.clear();
     }
 
-    bool SCREEN_ScreenManager::touch(const SCREEN_TouchInput &touch)
+    bool SCREEN_ScreenManager::touch(const SCREEN_TouchInput& touch)
     {
         std::lock_guard<std::recursive_mutex> guard(inputLock_);
         bool result = false;
 
         if (touch.flags & TOUCH_RELEASE_ALL)
         {
-            for (auto &layer : stack_)
+            for (auto& layer : stack_)
             {
-                SCREEN_Screen *screen = layer.screen;
+                SCREEN_Screen* screen = layer.screen;
                 result = layer.screen->touch(screen->transformTouch(touch));
             }
         }
         else if (!stack_.empty())
         {
-            SCREEN_Screen *screen = stack_.back().screen;
+            SCREEN_Screen* screen = stack_.back().screen;
             result = stack_.back().screen->touch(screen->transformTouch(touch));
         }
         return result;
     }
 
-    bool SCREEN_ScreenManager::key(const SCREEN_KeyInput &key)
+    bool SCREEN_ScreenManager::key(const SCREEN_KeyInput& key)
     {
         std::lock_guard<std::recursive_mutex> guard(inputLock_);
         bool result = false;
 
         if (key.flags & KEY_UP)
         {
-            for (auto &layer : stack_)
+            for (auto& layer : stack_)
             {
                 result = layer.screen->key(key);
             }
@@ -140,14 +137,14 @@ namespace GfxRenderEngine
         return result;
     }
 
-    bool SCREEN_ScreenManager::axis(const SCREEN_AxisInput &axis)
+    bool SCREEN_ScreenManager::axis(const SCREEN_AxisInput& axis)
     {
         std::lock_guard<std::recursive_mutex> guard(inputLock_);
         bool result = false;
         // Send center axis to every screen layer.
         if (axis.value == 0)
         {
-            for (auto &layer : stack_)
+            for (auto& layer : stack_)
             {
                 result = layer.screen->axis(axis);
             }
@@ -161,13 +158,13 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::deviceLost()
     {
-        for (auto &iter : stack_)
+        for (auto& iter : stack_)
             iter.screen->deviceLost();
     }
 
     void SCREEN_ScreenManager::deviceRestored()
     {
-        for (auto &iter : stack_)
+        for (auto& iter : stack_)
             iter.screen->deviceRestored();
     }
 
@@ -216,27 +213,27 @@ namespace GfxRenderEngine
         processFinishDialog();
     }
 
-    //void SCREEN_ScreenManager::sendMessage(const char *msg, const char *value)
+    // void SCREEN_ScreenManager::sendMessage(const char *msg, const char *value)
     //{
-    //    if (!strcmp(msg, "recreateviews"))
-    //    {
-    //        RecreateAllViews();
-    //    }
-    //    if (!strcmp(msg, "lost_focus"))
-    //    {
-    //        SCREEN_TouchInput input;
-    //        input.flags = TOUCH_RELEASE_ALL;
-    //        input.timestamp = Engine::m_Engine->GetTime();
-    //        input.id = 0;
-    //        touch(input);
-    //    }
-    //    if (!stack_.empty())
-    //    {
-    //        stack_.back().screen->sendMessage(msg, value);
-    //    }
-    //}
+    //     if (!strcmp(msg, "recreateviews"))
+    //     {
+    //         RecreateAllViews();
+    //     }
+    //     if (!strcmp(msg, "lost_focus"))
+    //     {
+    //         SCREEN_TouchInput input;
+    //         input.flags = TOUCH_RELEASE_ALL;
+    //         input.timestamp = Engine::m_Engine->GetTime();
+    //         input.id = 0;
+    //         touch(input);
+    //     }
+    //     if (!stack_.empty())
+    //     {
+    //         stack_.back().screen->sendMessage(msg, value);
+    //     }
+    // }
 
-    SCREEN_Screen *SCREEN_ScreenManager::topScreen() const
+    SCREEN_Screen* SCREEN_ScreenManager::topScreen() const
     {
         if (!stack_.empty())
         {
@@ -263,7 +260,7 @@ namespace GfxRenderEngine
         nextStack_.clear();
     }
 
-    void SCREEN_ScreenManager::push(SCREEN_Screen *screen, int layerFlags)
+    void SCREEN_ScreenManager::push(SCREEN_Screen* screen, int layerFlags)
     {
         std::lock_guard<std::recursive_mutex> guard(inputLock_);
         screen->setSCREEN_ScreenManager(this);
@@ -302,7 +299,7 @@ namespace GfxRenderEngine
 
     void SCREEN_ScreenManager::RecreateAllViews()
     {
-        while(lastFocusView.size())
+        while (lastFocusView.size())
         {
             lastFocusView.pop();
 
@@ -322,7 +319,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void SCREEN_ScreenManager::finishDialog(SCREEN_Screen *dialog, DialogResult result)
+    void SCREEN_ScreenManager::finishDialog(SCREEN_Screen* dialog, DialogResult result)
     {
         if (stack_.empty())
         {
@@ -339,7 +336,7 @@ namespace GfxRenderEngine
         dialogResult_ = result;
     }
 
-    SCREEN_Screen *SCREEN_ScreenManager::dialogParent(const SCREEN_Screen *dialog) const
+    SCREEN_Screen* SCREEN_ScreenManager::dialogParent(const SCREEN_Screen* dialog) const
     {
         for (size_t i = 1; i < stack_.size(); ++i)
         {
@@ -358,10 +355,10 @@ namespace GfxRenderEngine
         {
             {
                 std::lock_guard<std::recursive_mutex> guard(inputLock_);
-                SCREEN_Screen *caller = dialogParent(dialogFinished_);
+                SCREEN_Screen* caller = dialogParent(dialogFinished_);
                 for (size_t i = 0; i < stack_.size(); ++i)
                 {
-                    if (stack_[i].screen == dialogFinished_) 
+                    if (stack_[i].screen == dialogFinished_)
                     {
                         stack_.erase(stack_.begin() + i);
                     }
@@ -395,4 +392,4 @@ namespace GfxRenderEngine
         RecreateAllViews();
         m_CameraController->SetProjection();
     }
-}
+} // namespace GfxRenderEngine

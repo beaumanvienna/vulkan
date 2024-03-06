@@ -37,8 +37,7 @@
 
 namespace std
 {
-    template <>
-    struct hash<GfxRenderEngine::Vertex>
+    template <> struct hash<GfxRenderEngine::Vertex>
     {
         size_t operator()(GfxRenderEngine::Vertex const& vertex) const
         {
@@ -47,7 +46,7 @@ namespace std
             return seed;
         }
     };
-}
+} // namespace std
 
 namespace GfxRenderEngine
 {
@@ -56,16 +55,9 @@ namespace GfxRenderEngine
 
     bool Vertex::operator==(const Vertex& other) const
     {
-        return (m_Position    == other.m_Position) &&
-               (m_Color       == other.m_Color) &&
-               (m_Normal      == other.m_Normal) &&
-               (m_UV          == other.m_UV) &&
-               (m_Amplification == other.m_Amplification) &&
-               (m_Unlit       == other.m_Unlit);
+        return (m_Position == other.m_Position) && (m_Color == other.m_Color) && (m_Normal == other.m_Normal) &&
+               (m_UV == other.m_UV) && (m_Amplification == other.m_Amplification) && (m_Unlit == other.m_Unlit);
     }
 
-    SkeletalAnimations& Model::GetAnimations()
-    {
-        return *(m_Animations.get());
-    }
-}
+    SkeletalAnimations& Model::GetAnimations() { return *(m_Animations.get()); }
+} // namespace GfxRenderEngine

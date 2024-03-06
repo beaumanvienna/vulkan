@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,24 +15,23 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-
 #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <Windows.h>
-    #include <direct.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <direct.h>
 #else
-    #include <strings.h>
-    #include <dirent.h>
-    #include <unistd.h>
-    #include <errno.h>
+#include <strings.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 #include <cstring>
@@ -50,12 +49,12 @@
 #include "gui/Common/File/path.h"
 
 #ifdef _WIN32
-    #include "time.h"
+#include "time.h"
 #endif
 
 namespace GfxRenderEngine
 {
-    #ifdef _WIN32
+#ifdef _WIN32
     inline struct tm* localtime_r(const time_t* clock, struct tm* result)
     {
         if (localtime_s(result, clock) == 0)
@@ -64,7 +63,7 @@ namespace GfxRenderEngine
         }
         return NULL;
     }
-    #endif
+#endif
 
     // Returns true if filename exists and is a directory
     bool IsDirectory(const Path& filename)
@@ -77,10 +76,11 @@ namespace GfxRenderEngine
                 return false;
         }
 
-    #if defined(_WIN32)
+#if defined(_WIN32)
         WIN32_FILE_ATTRIBUTE_DATA data{};
 
-        if (!GetFileAttributesExW(filename.ToWString().c_str(), GetFileExInfoStandard, &data) || data.dwFileAttributes == INVALID_FILE_ATTRIBUTES)
+        if (!GetFileAttributesExW(filename.ToWString().c_str(), GetFileExInfoStandard, &data) ||
+            data.dwFileAttributes == INVALID_FILE_ATTRIBUTES)
         {
             auto err = GetLastError();
 
@@ -88,27 +88,27 @@ namespace GfxRenderEngine
         }
         DWORD result = data.dwFileAttributes;
         return (result & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
-    #else
+#else
         std::string copy = filename.ToString();
         struct stat file_info;
         int result = stat(copy.c_str(), &file_info);
-        if (result < 0) 
+        if (result < 0)
         {
             return false;
         }
         return S_ISDIR(file_info.st_mode);
-    #endif
+#endif
     }
 
     namespace File
     {
 
-        bool GetFileInfo(const Path& path, FileInfo* fileInfo) 
+        bool GetFileInfo(const Path& path, FileInfo* fileInfo)
         {
             switch (path.Type())
             {
                 case PathType::NATIVE:
-                    break;  // OK
+                    break; // OK
                 default:
                     return false;
             }
@@ -116,7 +116,7 @@ namespace GfxRenderEngine
             // TODO: Expand relative paths?
             fileInfo->fullName = path;
 
-    #ifdef _WIN32
+#ifdef _WIN32
             auto FiletimeToStatTime = [](FILETIME ft)
             {
                 const int windowsTickResolution = 10000000;
@@ -142,27 +142,28 @@ namespace GfxRenderEngine
             fileInfo->ctime = FiletimeToStatTime(attrs.ftCreationTime);
             if (attrs.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
             {
-                fileInfo->access = 0444;  // Read
+                fileInfo->access = 0444; // Read
             }
-            else {
-                fileInfo->access = 0666;  // Read/Write
+            else
+            {
+                fileInfo->access = 0666; // Read/Write
             }
             if (attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                fileInfo->access |= 0111;  // Execute
+                fileInfo->access |= 0111; // Execute
             }
-    #else
+#else
 
-    #if (defined __ANDROID__) && (__ANDROID_API__ < 21)
+#if (defined __ANDROID__) && (__ANDROID_API__ < 21)
             struct stat file_info;
             int result = stat(path.c_str(), &file_info);
-    #elif (MACOSX)
+#elif (MACOSX)
             struct stat file_info;
             int result = stat(path.c_str(), &file_info);
-    #else
+#else
             struct stat64 file_info;
             int result = stat64(path.c_str(), &file_info);
-    #endif
+#endif
             if (result < 0)
             {
                 fileInfo->exists = false;
@@ -182,7 +183,7 @@ namespace GfxRenderEngine
             {
                 fileInfo->isWritable = true;
             }
-    #endif
+#endif
             return true;
         }
 
@@ -202,7 +203,7 @@ namespace GfxRenderEngine
             }
         }
 
-        bool FileInfo::operator <(const FileInfo& other) const
+        bool FileInfo::operator<(const FileInfo& other) const
         {
             if (isDirectory && !other.isDirectory)
             {
@@ -263,7 +264,7 @@ namespace GfxRenderEngine
         size_t GetFilesInDir(const Path& directory, std::vector<FileInfo>* files, const char* filter, int flags)
         {
 
-    #ifdef _WIN32
+#ifdef _WIN32
             if (directory.IsRoot())
             {
                 std::vector<std::string> drives = File::GetWindowsDrives();
@@ -284,7 +285,7 @@ namespace GfxRenderEngine
                 }
                 return files->size();
             }
-    #endif
+#endif
 
             size_t foundEntries = 0;
             std::set<std::string> filters;
@@ -309,10 +310,11 @@ namespace GfxRenderEngine
                     filters.insert(std::move(tmp));
                 }
             }
-    #ifdef _WIN32
+#ifdef _WIN32
             // Find the first file in the directory.
             WIN32_FIND_DATA ffd;
-            HANDLE hFind = FindFirstFileExW((directory.ToWString() + L"\\*").c_str(), FindExInfoStandard, &ffd, FindExSearchNameMatch, NULL, 0);
+            HANDLE hFind = FindFirstFileExW((directory.ToWString() + L"\\*").c_str(), FindExInfoStandard, &ffd,
+                                            FindExSearchNameMatch, NULL, 0);
             if (hFind == INVALID_HANDLE_VALUE)
             {
                 return 0;
@@ -320,17 +322,17 @@ namespace GfxRenderEngine
 
             do
             {
-                #ifdef _MSC_VER
+#ifdef _MSC_VER
                 const std::string virtualName = ConvertWStringToUTF8(ffd.cFileName);
-                #else
+#else
                 const std::string virtualName = ffd.cFileName;
-                #endif
-    #else
+#endif
+#else
             struct dirent* result = NULL;
 
-            //std::string directoryWithSlash = directory;
-            //if (directoryWithSlash.back() != '/')
-            //    directoryWithSlash += "/";
+            // std::string directoryWithSlash = directory;
+            // if (directoryWithSlash.back() != '/')
+            //     directoryWithSlash += "/";
 
             DIR* dirp = opendir(directory.c_str());
             if (!dirp)
@@ -339,7 +341,7 @@ namespace GfxRenderEngine
             while ((result = readdir(dirp)))
             {
                 const std::string virtualName(result->d_name);
-    #endif
+#endif
                 // check for "." and ".."
                 if (virtualName == "." || virtualName == "..")
                 {
@@ -348,13 +350,13 @@ namespace GfxRenderEngine
 
                 if (!(flags & GETFILES_GETHIDDEN))
                 {
-    #ifdef _WIN32
+#ifdef _WIN32
                     if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0)
                         continue;
-    #else
+#else
                     if (virtualName[0] == '.')
                         continue;
-    #endif
+#endif
                 }
 
                 FileInfo info;
@@ -362,23 +364,23 @@ namespace GfxRenderEngine
                 if (directory.IsRoot())
                 {
                     std::string str = "/" + std::string(virtualName.c_str());
-                    info.fullName =  Path(str);
+                    info.fullName = Path(str);
                 }
                 else
                 {
-                    info.fullName =  directory / virtualName;
+                    info.fullName = directory / virtualName;
                 }
 
                 info.isDirectory = IsDirectory(info.fullName);
                 info.exists = true;
                 info.size = 0;
-                info.isWritable = false;  // TODO - implement some kind of check
+                info.isWritable = false; // TODO - implement some kind of check
                 if (!info.isDirectory)
                 {
                     std::string ext = info.fullName.GetFileExtension();
                     if (!ext.empty())
                     {
-                        ext = ext.substr(1);  // Remove the dot.
+                        ext = ext.substr(1); // Remove the dot.
                         if (filter && filters.find(ext) == filters.end())
                         {
                             continue;
@@ -391,13 +393,13 @@ namespace GfxRenderEngine
                     files->push_back(std::move(info));
                 }
                 foundEntries++;
-    #ifdef _WIN32
+#ifdef _WIN32
             } while (FindNextFile(hFind, &ffd) != 0);
             FindClose(hFind);
-    #else
+#else
             }
             closedir(dirp);
-    #endif
+#endif
             if (files)
             {
                 std::sort(files->begin(), files->end());
@@ -427,7 +429,7 @@ namespace GfxRenderEngine
             return sizeSum;
         }
 
-    #ifdef _WIN32
+#ifdef _WIN32
 
         std::vector<std::string> GetWindowsDrives()
         {
@@ -445,13 +447,14 @@ namespace GfxRenderEngine
                     str += "/";
                     drives.push_back(str);
 
-
-                    while (*drive++) {}
+                    while (*drive++)
+                    {
+                    }
                 }
             }
             return drives;
         }
-    #endif
+#endif
 
-    }  // namespace File
-}
+    } // namespace File
+} // namespace GfxRenderEngine

@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -36,12 +36,12 @@
 namespace GfxRenderEngine
 {
 
-    namespace SCREEN_UI 
+    namespace SCREEN_UI
     {
         class View;
     }
 
-    enum DialogResult 
+    enum DialogResult
     {
         DR_OK,
         DR_CANCEL,
@@ -53,23 +53,17 @@ namespace GfxRenderEngine
     class SCREEN_ScreenManager;
     class SCREEN_UIContext;
 
-    namespace SCREEN_Draw 
+    namespace SCREEN_Draw
     {
         class SCREEN_DrawContext;
     }
 
-    class SCREEN_Screen 
+    class SCREEN_Screen
     {
     public:
-        SCREEN_Screen() 
-            : screenManager_(nullptr) 
-        {
-        }
+        SCREEN_Screen() : screenManager_(nullptr) {}
 
-        virtual ~SCREEN_Screen() 
-        {
-            screenManager_ = nullptr;
-        }
+        virtual ~SCREEN_Screen() { screenManager_ = nullptr; }
 
         virtual void onFinish(DialogResult reason) {}
         virtual void update() {}
@@ -77,62 +71,62 @@ namespace GfxRenderEngine
         virtual void render() {}
         virtual void postRender() {}
         virtual void resized() {}
-        virtual void dialogFinished(const SCREEN_Screen *dialog, DialogResult result) {}
-        virtual bool touch(const SCREEN_TouchInput &touch) { return false;  }
-        virtual bool key(const SCREEN_KeyInput &key) { return false; }
-        virtual bool axis(const SCREEN_AxisInput &touch) { return false; }
-        virtual void sendMessage(const char *msg, const char *value) {}
+        virtual void dialogFinished(const SCREEN_Screen* dialog, DialogResult result) {}
+        virtual bool touch(const SCREEN_TouchInput& touch) { return false; }
+        virtual bool key(const SCREEN_KeyInput& key) { return false; }
+        virtual bool axis(const SCREEN_AxisInput& touch) { return false; }
+        virtual void sendMessage(const char* msg, const char* value) {}
         virtual void deviceLost() {}
         virtual void deviceRestored() {}
 
         virtual void RecreateViews() {}
 
-        SCREEN_ScreenManager *screenManager() { return screenManager_; }
-        void setSCREEN_ScreenManager(SCREEN_ScreenManager *sm) { screenManager_ = sm; }
+        SCREEN_ScreenManager* screenManager() { return screenManager_; }
+        void setSCREEN_ScreenManager(SCREEN_ScreenManager* sm) { screenManager_ = sm; }
 
-        virtual void *dialogData() { return 0; }
+        virtual void* dialogData() { return 0; }
 
         virtual std::string tag() const { return std::string(""); }
 
         virtual bool isTransparent() const { return false; }
         virtual bool isTopLevel() const { return false; }
 
-        virtual SCREEN_TouchInput transformTouch(const SCREEN_TouchInput &touch) { return touch; }
+        virtual SCREEN_TouchInput transformTouch(const SCREEN_TouchInput& touch) { return touch; }
 
     private:
-        SCREEN_ScreenManager *screenManager_;
+        SCREEN_ScreenManager* screenManager_;
     };
 
-    class SCREEN_Transition 
+    class SCREEN_Transition
     {
     public:
         SCREEN_Transition() {}
     };
 
-    enum 
+    enum
     {
         LAYER_SIDEMENU = 1,
         LAYER_TRANSPARENT = 2,
     };
 
-    typedef void(*PostRenderCallback)(SCREEN_UIContext *ui, void *userdata);
+    typedef void (*PostRenderCallback)(SCREEN_UIContext* ui, void* userdata);
 
-    class SCREEN_ScreenManager 
+    class SCREEN_ScreenManager
     {
     public:
         SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI);
         virtual ~SCREEN_ScreenManager();
 
-        void switchScreen(SCREEN_Screen *screen);
+        void switchScreen(SCREEN_Screen* screen);
         void update();
 
-        void setUIContext(SCREEN_UIContext *context) { uiContext_ = context; }
-        SCREEN_UIContext *getUIContext() { return uiContext_; }
+        void setUIContext(SCREEN_UIContext* context) { uiContext_ = context; }
+        SCREEN_UIContext* getUIContext() { return uiContext_; }
 
-        void setSCREEN_DrawContext(SCREEN_Draw::SCREEN_DrawContext *context) { thin3DContext_ = context; }
-        SCREEN_Draw::SCREEN_DrawContext *getSCREEN_DrawContext() { return thin3DContext_; }
+        void setSCREEN_DrawContext(SCREEN_Draw::SCREEN_DrawContext* context) { thin3DContext_ = context; }
+        SCREEN_Draw::SCREEN_DrawContext* getSCREEN_DrawContext() { return thin3DContext_; }
 
-        void setPostRenderCallback(PostRenderCallback cb, void *userdata) 
+        void setPostRenderCallback(PostRenderCallback cb, void* userdata)
         {
             postRenderCb_ = cb;
             postRenderUserdata_ = userdata;
@@ -145,23 +139,22 @@ namespace GfxRenderEngine
         void deviceLost();
         void deviceRestored();
 
-        void push(SCREEN_Screen *screen, int layerFlags = 0);
+        void push(SCREEN_Screen* screen, int layerFlags = 0);
 
         void RecreateAllViews();
 
-        void finishDialog(SCREEN_Screen *dialog, DialogResult result = DR_OK);
-        SCREEN_Screen *dialogParent(const SCREEN_Screen *dialog) const;
+        void finishDialog(SCREEN_Screen* dialog, DialogResult result = DR_OK);
+        SCREEN_Screen* dialogParent(const SCREEN_Screen* dialog) const;
 
-        bool touch(const SCREEN_TouchInput &touch);
-        bool key(const SCREEN_KeyInput &key);
-        bool axis(const SCREEN_AxisInput &touch);
+        bool touch(const SCREEN_TouchInput& touch);
+        bool key(const SCREEN_KeyInput& key);
+        bool axis(const SCREEN_AxisInput& touch);
 
-        void sendMessage(const char *msg, const char *value);
+        void sendMessage(const char* msg, const char* value);
 
-        SCREEN_Screen *topScreen() const;
+        SCREEN_Screen* topScreen() const;
 
     public:
-
         std::recursive_mutex inputLock_;
         static SpriteSheet* m_SpritesheetUI;
         static SCREEN_ScreenManager* m_ScreenManager;
@@ -173,22 +166,20 @@ namespace GfxRenderEngine
         void processFinishDialog();
 
     private:
-
-
-        SCREEN_UIContext *uiContext_;
-        SCREEN_Draw::SCREEN_DrawContext *thin3DContext_;
+        SCREEN_UIContext* uiContext_;
+        SCREEN_Draw::SCREEN_DrawContext* thin3DContext_;
 
         PostRenderCallback postRenderCb_ = nullptr;
-        void *postRenderUserdata_ = nullptr;
+        void* postRenderUserdata_ = nullptr;
 
-        const SCREEN_Screen *dialogFinished_;
+        const SCREEN_Screen* dialogFinished_;
         DialogResult dialogResult_;
 
-        struct Layer 
+        struct Layer
         {
-            SCREEN_Screen *screen;
+            SCREEN_Screen* screen;
             int flags;
-            SCREEN_UI::View *focusedView;
+            SCREEN_UI::View* focusedView;
         };
 
         std::vector<Layer> stack_;
@@ -197,4 +188,4 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Renderer> m_Renderer;
     };
-}
+} // namespace GfxRenderEngine

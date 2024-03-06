@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -45,10 +45,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Transformation::Stop()
-    {
-        m_IsRunning = false;
-    }
+    void Transformation::Stop() { m_IsRunning = false; }
 
     bool Transformation::IsRunning()
     {
@@ -91,8 +88,7 @@ namespace GfxRenderEngine
     }
 
     Rotation::Rotation(float duration, float rotation1, float rotation2)
-        : Transformation(duration), m_Rotation(glm::vec3(0.0f)),
-          m_Rotation1(rotation1), m_Rotation2(rotation2)
+        : Transformation(duration), m_Rotation(glm::vec3(0.0f)), m_Rotation1(rotation1), m_Rotation2(rotation2)
     {
     }
 
@@ -103,12 +99,12 @@ namespace GfxRenderEngine
         {
             delta = (Engine::m_Engine->GetTime() - m_StartTime) / m_Duration;
             float deltaRotation = m_Rotation1 * (1 - delta) + m_Rotation2 * delta;
-            m_Transform = Rotate( deltaRotation, glm::vec3(0, 0, 1));
+            m_Transform = Rotate(deltaRotation, glm::vec3(0, 0, 1));
         }
 
         return m_Transform;
     }
-    
+
     glm::vec3 Rotation::GetRotation()
     {
         float delta;
@@ -127,8 +123,8 @@ namespace GfxRenderEngine
     }
 
     Scaling::Scaling(float duration /* in seconds */, float scaleX1, float scaleY1, float scaleX2, float scaleY2)
-        : Transformation(duration), m_ScaleX1(scaleX1), m_ScaleY1(scaleY1), 
-          m_ScaleX2(scaleX2), m_ScaleY2(scaleY2), m_Scale(glm::vec3(0.0f))
+        : Transformation(duration), m_ScaleX1(scaleX1), m_ScaleY1(scaleY1), m_ScaleX2(scaleX2), m_ScaleY2(scaleY2),
+          m_Scale(glm::vec3(0.0f))
     {
     }
 
@@ -215,7 +211,7 @@ namespace GfxRenderEngine
         m_Scalings.clear();
         m_Running = false;
         m_CurrentSequenceTranslation = 0;
-        m_CurrentSequenceRotation  = 0;
+        m_CurrentSequenceRotation = 0;
         m_CurrentSequenceScale = 0;
         m_FinalScaling = glm::vec3(1.0f);
         m_FinalRotation = glm::vec3(0.0f);
@@ -234,7 +230,7 @@ namespace GfxRenderEngine
             if (m_NumberOfTranslationSequences)
             {
                 isRunningTranslation = m_Translations[m_CurrentSequenceTranslation].IsRunning();
-                if ((!isRunningTranslation) && (m_CurrentSequenceTranslation < m_NumberOfTranslationSequences -1))
+                if ((!isRunningTranslation) && (m_CurrentSequenceTranslation < m_NumberOfTranslationSequences - 1))
                 {
                     m_CurrentSequenceTranslation++;
                     m_Translations[m_CurrentSequenceTranslation].Start();
@@ -247,7 +243,7 @@ namespace GfxRenderEngine
             if (m_NumberOfRotationSequences)
             {
                 isRunningRotation = m_Rotations[m_CurrentSequenceRotation].IsRunning();
-                if ((!isRunningRotation) && (m_CurrentSequenceRotation < m_NumberOfRotationSequences -1))
+                if ((!isRunningRotation) && (m_CurrentSequenceRotation < m_NumberOfRotationSequences - 1))
                 {
                     m_CurrentSequenceRotation++;
                     m_Rotations[m_CurrentSequenceRotation].Start();
@@ -260,7 +256,7 @@ namespace GfxRenderEngine
             if (m_NumberOfScaleSequences)
             {
                 isRunningScale = m_Scalings[m_CurrentSequenceScale].IsRunning();
-                if ((!isRunningScale) && (m_CurrentSequenceScale < m_NumberOfScaleSequences -1))
+                if ((!isRunningScale) && (m_CurrentSequenceScale < m_NumberOfScaleSequences - 1))
                 {
                     m_CurrentSequenceScale++;
                     m_Scalings[m_CurrentSequenceScale].Start();
@@ -273,24 +269,15 @@ namespace GfxRenderEngine
         return m_Running;
     }
 
-    void Animation::AddTranslation(const Translation translation)
-    {
-        m_Translations.push_back(translation);
-    }
+    void Animation::AddTranslation(const Translation translation) { m_Translations.push_back(translation); }
 
-    void Animation::AddRotation(const Rotation rotation)
-    {
-        m_Rotations.push_back(rotation);
-    }
+    void Animation::AddRotation(const Rotation rotation) { m_Rotations.push_back(rotation); }
 
-    void Animation::AddScaling(const Scaling scale)
-    {
-        m_Scalings.push_back(scale);
-    }
+    void Animation::AddScaling(const Scaling scale) { m_Scalings.push_back(scale); }
 
     const glm::mat4& Animation::GetMat4()
     {
-        if (IsRunning()) 
+        if (IsRunning())
         {
             m_Transform = glm::mat4(1.0f);
             if (m_NumberOfScaleSequences)
@@ -301,14 +288,15 @@ namespace GfxRenderEngine
             {
                 m_Transform = m_Rotations[m_CurrentSequenceRotation].GetTransformation() * m_Transform;
             }
-            if (m_NumberOfTranslationSequences) 
+            if (m_NumberOfTranslationSequences)
             {
                 m_Transform = m_Translations[m_CurrentSequenceTranslation].GetTransformation() * m_Transform;
             }
         }
         else
         {
-            m_Transform = Scale(m_FinalScaling) * glm::mat4(1.0f);;
+            m_Transform = Scale(m_FinalScaling) * glm::mat4(1.0f);
+            ;
             m_Transform = glm::toMat4(glm::quat(m_FinalRotation)) * m_Transform;
             m_Transform = Translate(m_FinalTranslation) * m_Transform;
         }
@@ -321,4 +309,4 @@ namespace GfxRenderEngine
         m_FinalRotation = rotation;
         m_FinalTranslation = translation;
     }
-}
+} // namespace GfxRenderEngine

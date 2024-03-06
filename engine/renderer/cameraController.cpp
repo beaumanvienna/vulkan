@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,13 +12,15 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+
+#include "gtx/matrix_decompose.hpp"
 
 #include "cameraController.h"
 #include "core.h"
@@ -27,11 +29,16 @@
 namespace GfxRenderEngine
 {
 
-    CameraController::CameraController(Camera::ProjectionType type)
-        : m_ZoomFactor{1.0f}
+    CameraController::CameraController(Camera::ProjectionType type) : m_ZoomFactor{1.0f}
     {
         m_Camera = std::make_shared<Camera>();
         SetProjection(type);
+    }
+
+    CameraController::CameraController(PerspectiveCameraComponent& perspectiveCameraComponent) : m_ZoomFactor{1.0f}
+    {
+        m_Camera = std::make_shared<Camera>();
+        SetProjection(perspectiveCameraComponent);
     }
 
     void CameraController::SetZoomFactor(float factor)
@@ -40,24 +47,24 @@ namespace GfxRenderEngine
         SetProjection(m_Camera->GetProjectionType());
     }
 
-    void CameraController::SetRotation(const glm::vec3& rotation)
-    {
-        m_Camera->SetRotation( rotation );
-    }
+    void CameraController::SetRotation(const glm::vec3& rotation) { m_Camera->SetRotation(rotation); }
 
     void CameraController::SetTranslation(const glm::vec2& translation)
     {
-        m_Camera->SetPosition( {translation.x, translation.y, 0.0f} );
+        m_Camera->SetPosition({translation.x, translation.y, 0.0f});
     }
 
-    void CameraController::SetTranslation(const glm::vec3& translation)
-    {
-        m_Camera->SetPosition(translation);
-    }
+    void CameraController::SetTranslation(const glm::vec3& translation) { m_Camera->SetPosition(translation); }
 
-    void CameraController::SetProjection()
+    void CameraController::SetProjection() { SetProjection(m_Camera->GetProjectionType()); }
+
+    void CameraController::SetProjection(PerspectiveCameraComponent& perspectiveCameraComponent)
     {
-        SetProjection(m_Camera->GetProjectionType());
+        float aspectRatio = Engine::m_Engine->GetWindowAspectRatio();
+        m_Camera->SetPerspectiveProjection(glm::radians(perspectiveCameraComponent.m_YFov) * m_ZoomFactor, aspectRatio,
+                                           perspectiveCameraComponent.m_ZNear, // near
+                                           perspectiveCameraComponent.m_ZFar   // far
+        );
     }
 
     void CameraController::SetProjection(Camera::ProjectionType type)
@@ -65,37 +72,28 @@ namespace GfxRenderEngine
         // aspect ratio of main window
         float aspectRatio = Engine::m_Engine->GetWindowAspectRatio();
 
-        switch(type)
+        switch (type)
         {
             case Camera::ORTHOGRAPHIC_PROJECTION:
             {
                 float normalize = Engine::m_Engine->GetWindowWidth();
 
-                float orthoLeft   =  0.0f;
-                float orthoRight  =  normalize;
-                float orthoBottom =  normalize / aspectRatio;
-                float orthoTop    =  0.0f;
-                float orthoNear   =  2.0f;
-                float orthoFar    = -2.0f;
-                m_Camera->SetOrthographicProjection
-                (
-                    orthoLeft * m_ZoomFactor,
-                    orthoRight * m_ZoomFactor,
-                    orthoBottom * m_ZoomFactor,
-                    orthoTop * m_ZoomFactor,
-                    orthoNear,
-                    orthoFar
-                );
+                float orthoLeft = 0.0f;
+                float orthoRight = normalize;
+                float orthoBottom = normalize / aspectRatio;
+                float orthoTop = 0.0f;
+                float orthoNear = 2.0f;
+                float orthoFar = -2.0f;
+                m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor, orthoRight * m_ZoomFactor,
+                                                    orthoBottom * m_ZoomFactor, orthoTop * m_ZoomFactor, orthoNear,
+                                                    orthoFar);
                 break;
             }
             case Camera::PERSPECTIVE_PROJECTION:
             {
-                m_Camera->SetPerspectiveProjection
-                (
-                    glm::radians(50.0f) * m_ZoomFactor,
-                    aspectRatio,
-                    0.1f, // near
-                    50.0f // far
+                m_Camera->SetPerspectiveProjection(glm::radians(50.0f) * m_ZoomFactor, aspectRatio,
+                                                   0.1f, // near
+                                                   50.0f // far
                 );
                 break;
             }
@@ -110,4 +108,16 @@ namespace GfxRenderEngine
     {
         m_Camera->SetViewYXZ(position, rotation);
     }
-}
+
+    void CameraController::SetViewYXZ(const glm::mat4& modelMatrix)
+    {
+        glm::vec3 translation;
+        glm::quat rotation;
+        glm::vec3 scale;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+        glm::vec3 rotationEuler = glm::eulerAngles(rotation);
+        m_Camera->SetViewYXZ(translation, rotationEuler);
+    }
+} // namespace GfxRenderEngine

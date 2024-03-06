@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gui/common.h"
@@ -49,10 +49,10 @@ namespace GfxRenderEngine
 
         UIThemeInit();
 
-        ui_theme.checkOn         = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CHECKEDBOX);
-        ui_theme.checkOff        = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_SQUARE);
-        ui_theme.whiteImage      = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_WHITE);
-        ui_theme.sliderKnob      = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CIRCLE);
+        ui_theme.checkOn = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CHECKEDBOX);
+        ui_theme.checkOff = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_SQUARE);
+        ui_theme.whiteImage = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_WHITE);
+        ui_theme.sliderKnob = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_CIRCLE);
         ui_theme.dropShadow4Grid = SCREEN_ScreenManager::m_SpritesheetUI->GetSprite(I_DROP_SHADOW);
 
         theme = &ui_theme;
@@ -74,7 +74,8 @@ namespace GfxRenderEngine
             ui_theme.itemHighlightedStyle = MakeStyle(0xFFFFFFFF, 0x55ffffff); //
 
             ui_theme.buttonStyle = MakeStyle(RETRO_COLOR_FONT_FOREGROUND, 0x70000000); // inactive button
-            ui_theme.buttonFocusedStyle = MakeStyle(RETRO_COLOR_FONT_FOREGROUND, RETRO_COLOR_FONT_BACKGROUND); // active button
+            ui_theme.buttonFocusedStyle =
+                MakeStyle(RETRO_COLOR_FONT_FOREGROUND, RETRO_COLOR_FONT_BACKGROUND); // active button
             ui_theme.buttonDownStyle = MakeStyle(0xFFFFFFFF, 0xFFBD9939);
             ui_theme.buttonDisabledStyle = MakeStyle(0x80EEEEEE, 0x55E0D4AF);
             ui_theme.buttonHighlightedStyle = MakeStyle(0xFFFFFFFF, 0x55BDBB39);
@@ -85,7 +86,7 @@ namespace GfxRenderEngine
             ui_theme.popupTitle.fgColor = RETRO_COLOR_FONT_FOREGROUND;
             ui_theme.popupStyle = MakeStyle(0xFFFFFFFF, 0xFF303030);
 
-            m_Font = FontID{ "RETRO24" };
+            m_Font = FontID{"RETRO24"};
         }
         else
         {
@@ -111,71 +112,71 @@ namespace GfxRenderEngine
             ui_theme.popupTitle.fgColor = 0xFFE3BE59;
             ui_theme.popupStyle = MakeStyle(0xFFFFFFFF, 0xFF303030);
 
-            m_Font = FontID{ "UBUNTU24" };
+            m_Font = FontID{"UBUNTU24"};
         }
     }
 
-    //void SCREEN_UIContext::Init(SCREEN_Draw::SCREEN_DrawContext *thin3d, SCREEN_Draw::SCREEN_Pipeline *uipipe, 
-    //                            SCREEN_Draw::SCREEN_Pipeline *uipipenotex, SCREEN_DrawBuffer *uidrawbuffer,
-    //                            SCREEN_DrawBuffer *uidrawbufferTop)
+    // void SCREEN_UIContext::Init(SCREEN_Draw::SCREEN_DrawContext *thin3d, SCREEN_Draw::SCREEN_Pipeline *uipipe,
+    //                             SCREEN_Draw::SCREEN_Pipeline *uipipenotex, SCREEN_DrawBuffer *uidrawbuffer,
+    //                             SCREEN_DrawBuffer *uidrawbufferTop)
     //{
-    //    using namespace SCREEN_Draw;
-    //    draw_ = thin3d;
-    //    sampler_ = draw_->CreateSamplerState({ SCREEN_TextureFilter::LINEAR, SCREEN_TextureFilter::LINEAR, SCREEN_TextureFilter::LINEAR });
-    //    ui_pipeline_ = uipipe;
-    //    ui_pipeline_notex_ = uipipenotex;
-    //    uidrawbuffer_ = uidrawbuffer;
-    //    uidrawbufferTop_ = uidrawbufferTop;
-    //    textDrawer_ = SCREEN_TextDrawer::Create(thin3d);  // May return nullptr if no implementation is available for this platform.
-    //}
+    //     using namespace SCREEN_Draw;
+    //     draw_ = thin3d;
+    //     sampler_ = draw_->CreateSamplerState({ SCREEN_TextureFilter::LINEAR, SCREEN_TextureFilter::LINEAR,
+    //     SCREEN_TextureFilter::LINEAR }); ui_pipeline_ = uipipe; ui_pipeline_notex_ = uipipenotex; uidrawbuffer_ =
+    //     uidrawbuffer; uidrawbufferTop_ = uidrawbufferTop; textDrawer_ = SCREEN_TextDrawer::Create(thin3d);  // May return
+    //     nullptr if no implementation is available for this platform.
+    // }
     //
-    //void SCREEN_UIContext::BeginFrame()
+    // void SCREEN_UIContext::BeginFrame()
     //{
-    //    if (!uitexture_) {
-    //        uitexture_ = CreateTextureFromFile(draw_, "ui_atlas.zim", ImageFileType::ZIM, false);
-    //        _dbg_assert_msg_(uitexture_, "Failed to load ui_atlas.zim.\n\nPlace it in the directory \"assets\" under your PPSSPP directory.");
-    //    }
-    //    uidrawbufferTop_->SetCurZ(0.0f);
-    //    uidrawbuffer_->SetCurZ(0.0f);
-    //    ActivateTopScissor();
-    //}
+    //     if (!uitexture_) {
+    //         uitexture_ = CreateTextureFromFile(draw_, "ui_atlas.zim", ImageFileType::ZIM, false);
+    //         _dbg_assert_msg_(uitexture_, "Failed to load ui_atlas.zim.\n\nPlace it in the directory \"assets\" under your
+    //         PPSSPP directory.");
+    //     }
+    //     uidrawbufferTop_->SetCurZ(0.0f);
+    //     uidrawbuffer_->SetCurZ(0.0f);
+    //     ActivateTopScissor();
+    // }
     //
-    //void SCREEN_UIContext::Begin()
+    // void SCREEN_UIContext::Begin()
     //{
-    //    BeginPipeline(ui_pipeline_, sampler_);
-    //}
+    //     BeginPipeline(ui_pipeline_, sampler_);
+    // }
     //
-    //void SCREEN_UIContext::BeginNoTex()
+    // void SCREEN_UIContext::BeginNoTex()
     //{
-    //    draw_->BindSamplerStates(0, 1, &sampler_);
-    //    UIBegin(ui_pipeline_notex_);
-    //}
+    //     draw_->BindSamplerStates(0, 1, &sampler_);
+    //     UIBegin(ui_pipeline_notex_);
+    // }
     //
-    //void SCREEN_UIContext::BeginPipeline(SCREEN_Draw::SCREEN_Pipeline *pipeline, SCREEN_Draw::SCREEN_SamplerState *samplerState)
+    // void SCREEN_UIContext::BeginPipeline(SCREEN_Draw::SCREEN_Pipeline *pipeline, SCREEN_Draw::SCREEN_SamplerState
+    // *samplerState)
     //{
-    //    draw_->BindSamplerStates(0, 1, &samplerState);
-    //    RebindTexture();
-    //    UIBegin(pipeline);
-    //}
+    //     draw_->BindSamplerStates(0, 1, &samplerState);
+    //     RebindTexture();
+    //     UIBegin(pipeline);
+    // }
     //
-    //void SCREEN_UIContext::RebindTexture() const 
+    // void SCREEN_UIContext::RebindTexture() const
     //{
-    //    if (uitexture_)
-    //        draw_->BindTexture(0, uitexture_->GetTexture());
-    //}
+    //     if (uitexture_)
+    //         draw_->BindTexture(0, uitexture_->GetTexture());
+    // }
 
     void SCREEN_UIContext::Flush()
     {
-        ///RenderCommand::Flush();
+        /// RenderCommand::Flush();
     }
 
-    //void SCREEN_UIContext::SetCurZ(float curZ)
+    // void SCREEN_UIContext::SetCurZ(float curZ)
     //{
-    //    SCREEN_ui_draw2d.SetCurZ(curZ);
-    //    SCREEN_ui_draw2d_front.SetCurZ(curZ);
-    //}
+    //     SCREEN_ui_draw2d.SetCurZ(curZ);
+    //     SCREEN_ui_draw2d_front.SetCurZ(curZ);
+    // }
     //
-    void SCREEN_UIContext::PushScissor(const Bounds &bounds)
+    void SCREEN_UIContext::PushScissor(const Bounds& bounds)
     {
         Flush();
         Bounds clipped = TransformBounds(bounds);
@@ -210,7 +211,7 @@ namespace GfxRenderEngine
         }
     }
 
-    Bounds SCREEN_UIContext::GetLayoutBounds() const 
+    Bounds SCREEN_UIContext::GetLayoutBounds() const
     {
         Bounds bounds = GetBounds();
 
@@ -221,20 +222,20 @@ namespace GfxRenderEngine
     {
         return; // scissors deactivated
         Bounds bounds;
-        if (scissorStack_.size()) 
+        if (scissorStack_.size())
         {
-            //float scale_x = 1.0f;
-            //float scale_y = 1.0f;
+            // float scale_x = 1.0f;
+            // float scale_y = 1.0f;
             bounds = scissorStack_.back();
-            //int x = floorf(scale_x * bounds.x);
-            //int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));
-            //int w = std::max(0.0f, ceilf(scale_x * bounds.w));
-            //int h = std::max(0.0f, ceilf(scale_y * bounds.h));
-            //RenderCommand::SetScissor(x, y, w, h);
-        } 
-        else 
+            // int x = floorf(scale_x * bounds.x);
+            // int y = Engine::m_Engine->GetWindowHeight() - floorf(scale_y * (bounds.y + bounds.h));
+            // int w = std::max(0.0f, ceilf(scale_x * bounds.w));
+            // int h = std::max(0.0f, ceilf(scale_y * bounds.h));
+            // RenderCommand::SetScissor(x, y, w, h);
+        }
+        else
         {
-            //RenderCommand::SetScissor(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());
+            // RenderCommand::SetScissor(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());
         }
     }
 
@@ -244,57 +245,56 @@ namespace GfxRenderEngine
         fontScaleY_ = scaleY * Engine::m_Engine->GetWindowHeight() / 1080.0f;
     }
 
-    void SCREEN_UIContext::SetFontStyle(const SCREEN_UI::FontStyle& fontStyle)
-    {
-        *fontStyle_ = fontStyle;
-    }
+    void SCREEN_UIContext::SetFontStyle(const SCREEN_UI::FontStyle& fontStyle) { *fontStyle_ = fontStyle; }
 
-    void SCREEN_UIContext::MeasureText(const SCREEN_UI::FontStyle &style, float scaleX, float scaleY, const char *str, float *x, float *y, int align) const 
+    void SCREEN_UIContext::MeasureText(const SCREEN_UI::FontStyle& style, float scaleX, float scaleY, const char* str,
+                                       float* x, float* y, int align) const
     {
         MeasureTextCount(style, scaleX, scaleY, str, (int)strlen(str), x, y, align);
     }
 
-    void SCREEN_UIContext::MeasureTextCount(const SCREEN_UI::FontStyle &style, float scaleX, float scaleY, const char *str, int count, float *x, float *y, int align) const 
+    void SCREEN_UIContext::MeasureTextCount(const SCREEN_UI::FontStyle& style, float scaleX, float scaleY, const char* str,
+                                            int count, float* x, float* y, int align) const
     {
         float sizeFactor = (float)style.sizePts / 24.0f;
         Draw()->SetFontScale(scaleX * sizeFactor, scaleY * sizeFactor);
         Draw()->MeasureTextCount(style.atlasFont, str, count, x, y);
     }
 
-    void SCREEN_UIContext::MeasureTextRect(const SCREEN_UI::FontStyle &style, float scaleX, float scaleY, const char *str, int count, const Bounds &bounds, float *x, float *y, int align) const
+    void SCREEN_UIContext::MeasureTextRect(const SCREEN_UI::FontStyle& style, float scaleX, float scaleY, const char* str,
+                                           int count, const Bounds& bounds, float* x, float* y, int align) const
     {
         float sizeFactor = (float)style.sizePts / 24.0f;
         Draw()->SetFontScale(scaleX * sizeFactor, scaleY * sizeFactor);
         Draw()->MeasureTextRect(m_Font, str, count, bounds, x, y, align);
     }
 
-    void SCREEN_UIContext::DrawText(const char *str, float x, float y, uint32_t color, int align)
+    void SCREEN_UIContext::DrawText(const char* str, float x, float y, uint32_t color, int align)
     {
         float sizeFactor = (float)fontStyle_->sizePts / 24.0f;
         Draw()->SetFontScale(fontScaleX_ * sizeFactor, fontScaleY_ * sizeFactor);
         Draw()->DrawText(fontStyle_->atlasFont, str, x, y, color, align);
     }
 
-    //void SCREEN_UIContext::DrawTextShadow(const char *str, float x, float y, uint32_t color, int align)
+    // void SCREEN_UIContext::DrawTextShadow(const char *str, float x, float y, uint32_t color, int align)
     //{
-    //    uint32_t alpha = (color >> 1) & 0xFF000000;
-    //    DrawText(str, x + 2, y + 2, alpha, align);
-    //    DrawText(str, x, y, color, align);
-    //}
+    //     uint32_t alpha = (color >> 1) & 0xFF000000;
+    //     DrawText(str, x + 2, y + 2, alpha, align);
+    //     DrawText(str, x, y, color, align);
+    // }
     //
-    void SCREEN_UIContext::DrawTextRect(const char *str, const Bounds &bounds, uint32_t color, int align)
+    void SCREEN_UIContext::DrawTextRect(const char* str, const Bounds& bounds, uint32_t color, int align)
     {
         float sizeFactor = (float)fontStyle_->sizePts / 24.0f;
         Draw()->SetFontScale(fontScaleX_ * sizeFactor, fontScaleY_ * sizeFactor);
         Draw()->DrawTextRect(m_Font, str, bounds.x, bounds.y, bounds.w, bounds.h, color, align);
-
     }
     namespace MarleyApp
     {
         extern Sprite* whiteImage;
     }
 
-    void SCREEN_UIContext::FillRect(const SCREEN_UI::Drawable &drawable, const Bounds &bounds)
+    void SCREEN_UIContext::FillRect(const SCREEN_UI::Drawable& drawable, const Bounds& bounds)
     {
         if ((drawable.color & 0xFF000000) == 0)
         {
@@ -304,56 +304,60 @@ namespace GfxRenderEngine
         switch (drawable.type)
         {
             case SCREEN_UI::DRAW_SOLID_COLOR:
-                uidrawbuffer_->DrawImageStretch(theme->whiteImage, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);
+                uidrawbuffer_->DrawImageStretch(theme->whiteImage, bounds.x, bounds.y, bounds.x2(), bounds.y2(),
+                                                drawable.color);
                 break;
             case SCREEN_UI::DRAW_4GRID:
-                // uidrawbuffer_->DrawImage4Grid(drawable.image, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);
+                // uidrawbuffer_->DrawImage4Grid(drawable.image, bounds.x, bounds.y, bounds.x2(), bounds.y2(),
+                // drawable.color);
                 LOG_CORE_ERROR("not supported: case SCREEN_UI::DRAW_4GRID");
                 break;
             case SCREEN_UI::DRAW_STRETCH_IMAGE:
-                // uidrawbuffer_->DrawImageStretch(drawable.image, bounds.x, bounds.y, bounds.x2(), bounds.y2(), drawable.color);
+                // uidrawbuffer_->DrawImageStretch(drawable.image, bounds.x, bounds.y, bounds.x2(), bounds.y2(),
+                // drawable.color);
                 LOG_CORE_ERROR("not supported: case SCREEN_UI::DRAW_STRETCH_IMAGE");
                 break;
             case SCREEN_UI::DRAW_NOTHING:
             {
                 break;
             }
-        } 
+        }
     }
 
-    //void SCREEN_UIContext::PushTransform(const UITransform &transform)
+    // void SCREEN_UIContext::PushTransform(const UITransform &transform)
     //{
-    //    Flush();
+    //     Flush();
     //
-    //    using namespace SCREEN_Lin;
+    //     using namespace SCREEN_Lin;
     //
-    //    SCREEN_Matrix4x4 m = Draw()->GetDrawMatrix();
-    //    const SCREEN_Vec3 &t = transform.translate;
-    //    SCREEN_Vec3 scaledTranslate = SCREEN_Vec3(
-    //        t.x * m.xx + t.y * m.xy + t.z * m.xz + m.xw,
-    //        t.x * m.yx + t.y * m.yy + t.z * m.yz + m.yw,
-    //        t.x * m.zx + t.y * m.zy + t.z * m.zz + m.zw);
+    //     SCREEN_Matrix4x4 m = Draw()->GetDrawMatrix();
+    //     const SCREEN_Vec3 &t = transform.translate;
+    //     SCREEN_Vec3 scaledTranslate = SCREEN_Vec3(
+    //         t.x * m.xx + t.y * m.xy + t.z * m.xz + m.xw,
+    //         t.x * m.yx + t.y * m.yy + t.z * m.yz + m.yw,
+    //         t.x * m.zx + t.y * m.zy + t.z * m.zz + m.zw);
     //
-    //    m.translateAndScale(scaledTranslate, transform.scale);
-    //    Draw()->PushDrawMatrix(m);
-    //    Draw()->PushAlpha(transform.alpha);
+    //     m.translateAndScale(scaledTranslate, transform.scale);
+    //     Draw()->PushDrawMatrix(m);
+    //     Draw()->PushAlpha(transform.alpha);
     //
-    //    transformStack_.push_back(transform);
-    //}
+    //     transformStack_.push_back(transform);
+    // }
     //
-    //void SCREEN_UIContext::PopTransform()
+    // void SCREEN_UIContext::PopTransform()
     //{
-    //    Flush();
+    //     Flush();
     //
-    //    transformStack_.pop_back();
+    //     transformStack_.pop_back();
     //
-    //    Draw()->PopDrawMatrix();
-    //    Draw()->PopAlpha();
-    //}
+    //     Draw()->PopDrawMatrix();
+    //     Draw()->PopAlpha();
+    // }
 
-    Bounds SCREEN_UIContext::TransformBounds(const Bounds &bounds)
+    Bounds SCREEN_UIContext::TransformBounds(const Bounds& bounds)
     {
-        if (!transformStack_.empty()) {
+        if (!transformStack_.empty())
+        {
             const UITransform t = transformStack_.back();
             Bounds translated = bounds.Offset(t.translate.x, t.translate.y);
 
@@ -365,4 +369,4 @@ namespace GfxRenderEngine
 
         return bounds;
     }
-}
+} // namespace GfxRenderEngine

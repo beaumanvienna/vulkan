@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -42,13 +42,9 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        VK_RenderSystemPostProcessing
-        (
-            VkRenderPass renderPass,
-            std::vector<VkDescriptorSetLayout>& postProcessingDescriptorSetLayouts,
-            const VkDescriptorSet* postProcessingDescriptorSet
-        );
+        VK_RenderSystemPostProcessing(VkRenderPass renderPass,
+                                      std::vector<VkDescriptorSetLayout>& postProcessingDescriptorSetLayouts,
+                                      const VkDescriptorSet* postProcessingDescriptorSet);
         ~VK_RenderSystemPostProcessing();
 
         VK_RenderSystemPostProcessing(const VK_RenderSystemPostProcessing&) = delete;
@@ -57,16 +53,13 @@ namespace GfxRenderEngine
         void PostProcessingPass(const VK_FrameInfo& frameInfo);
 
     private:
-
         void CreatePostProcessingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePostProcessingPipeline(VkRenderPass renderPass);
 
     private:
-
         VkPipelineLayout m_PostProcessingPipelineLayout;
         std::unique_ptr<VK_Pipeline> m_PostProcessingPipeline;
 
         const VkDescriptorSet* m_PostProcessingDescriptorSets;
-
     };
-}
+} // namespace GfxRenderEngine

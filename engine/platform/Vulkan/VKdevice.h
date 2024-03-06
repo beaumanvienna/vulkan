@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -46,17 +46,12 @@ namespace GfxRenderEngine
     struct QueueFamilyIndices
     {
         int m_GraphicsFamily = -1;
-        int m_PresentFamily  = -1;
+        int m_PresentFamily = -1;
         int m_TransferFamily = -1;
         int m_NumberOfQueues = 0;
         std::vector<int> m_UniqueFamilyIndices;
         int m_QueueIndices[QueueTypes::NUMBER_OF_QUEUE_TYPES] = {};
-        bool IsComplete()
-        { 
-            return  (m_GraphicsFamily>=0) && 
-                    (m_PresentFamily>=0) && 
-                    (m_TransferFamily>=0);
-        }
+        bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0) && (m_TransferFamily >= 0); }
     };
 
     class VK_Window;
@@ -65,21 +60,20 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        #ifdef NDEBUG
+#ifdef NDEBUG
         const bool m_EnableValidationLayers = false;
-        #else
+#else
         const bool m_EnableValidationLayers = true;
-        #endif
+#endif
 
         VK_Device(VK_Window* window);
         ~VK_Device();
 
         // Not copyable or movable
-        VK_Device(const VK_Device &) = delete;
-        VK_Device& operator=(const VK_Device &) = delete;
-        VK_Device(VK_Device &&) = delete;
-        VK_Device& operator=(VK_Device &&) = delete;
+        VK_Device(const VK_Device&) = delete;
+        VK_Device& operator=(const VK_Device&) = delete;
+        VK_Device(VK_Device&&) = delete;
+        VK_Device& operator=(VK_Device&&) = delete;
 
         void Shutdown();
 
@@ -96,59 +90,36 @@ namespace GfxRenderEngine
         QueueFamilyIndices& PhysicalQueueFamilies() { return m_QueueFamilyIndices; }
         uint GetGraphicsQueueFamily() { return m_QueueFamilyIndices.m_GraphicsFamily; }
         void SetMaxUsableSampleCount();
-        VkFormat FindSupportedFormat
-        (
-            const std::vector<VkFormat> &candidates,
-            VkImageTiling tiling,
-            VkFormatFeatureFlags features
-        );
+        VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+                                     VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
 
         // Buffer Helper Functions
-        void CreateBuffer
-        (
-            VkDeviceSize size,
-            VkBufferUsageFlags usage,
-            VkMemoryPropertyFlags properties,
-            VkBuffer &buffer,
-            VkDeviceMemory &bufferMemory
-        );
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                          VkDeviceMemory& bufferMemory);
 
         VkCommandBuffer BeginSingleTimeCommands(QueueTypes type);
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        void CopyBufferToImage
-        (
-            VkBuffer buffer,
-            VkImage image,
-            uint width,
-            uint height,
-            uint layerCount
-        );
+        void CopyBufferToImage(VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount);
 
-        void CreateImageWithInfo
-        (
-            const VkImageCreateInfo &imageInfo,
-            VkMemoryPropertyFlags properties,
-            VkImage &image,
-            VkDeviceMemory &imageMemory
-        );
+        void CreateImageWithInfo(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image,
+                                 VkDeviceMemory& imageMemory);
 
         VkPhysicalDeviceProperties m_Properties;
         VkSampleCountFlagBits m_SampleCountFlagBits;
-        
+
         VkInstance GetInstance() const { return m_Instance; }
         bool MultiThreadingSupport() const { return m_TransferQueueSupportsGraphics; }
 
     private:
-
         static constexpr int NO_ASSIGNED = -1;
 
         struct QueueSpec
         {
-            int     m_QueueFamilyIndex;
-            float   m_QueuePriority;
-            int     m_QueueCount;
+            int m_QueueFamilyIndex;
+            float m_QueuePriority;
+            int m_QueueCount;
         };
 
         void CreateInstance();
@@ -165,7 +136,7 @@ namespace GfxRenderEngine
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice& device);
-        void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+        void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         void HasGflwRequiredInstanceExtensions();
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
@@ -185,12 +156,13 @@ namespace GfxRenderEngine
         VkQueue m_PresentQueue;
         VkQueue m_TransfertQueue;
 
-        const std::vector<const char *> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
-        #ifdef MACOSX
-            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
-        #else
-            const std::vector<const char *> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-        #endif
+        const std::vector<const char*> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
+#ifdef MACOSX
+        const std::vector<const char*> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                                                     "VK_KHR_portability_subset"};
+#else
+        const std::vector<const char*> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#endif
         bool m_TransferQueueSupportsGraphics = false;
     };
-}
+} // namespace GfxRenderEngine

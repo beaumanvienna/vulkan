@@ -37,8 +37,8 @@ namespace LucreApp
 {
 
     GameState::GameState()
-        : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH},
-          m_InputIdle{false}, m_UserInputEnabled{false}
+        : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH}, m_InputIdle{false},
+          m_UserInputEnabled{false}
     {
         memset(m_StateLoaded, false, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }
@@ -51,22 +51,19 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        #ifdef MACOSX
-            SetNextState(State::CUTSCENE);
-        #else
-            SetNextState(State::DESSERT);
-        #endif
+#ifdef MACOSX
+        SetNextState(State::CUTSCENE);
+#else
+        SetNextState(State::DESSERT);
+#endif
     }
 
-    void GameState::Stop()
-    {
-        GetScene()->Stop();
-    }
+    void GameState::Stop() { GetScene()->Stop(); }
 
     std::string GameState::StateToString(State state) const
     {
         std::string str;
-        switch(state)
+        switch (state)
         {
             case State::SPLASH:
             {
@@ -112,7 +109,7 @@ namespace LucreApp
 
     Scene* GameState::OnUpdate()
     {
-        switch(m_State)
+        switch (m_State)
         {
             case State::SPLASH:
             {
@@ -195,7 +192,8 @@ namespace LucreApp
     void GameState::SetNextState(State state)
     {
         m_NextState = state;
-        if (!IsLoaded(state)) Load(state);
+        if (!IsLoaded(state))
+            Load(state);
     }
 
     void GameState::PrepareDeleteScene()
@@ -203,7 +201,7 @@ namespace LucreApp
         // last scene must be a game level
         if (static_cast<int>(m_LastState) > static_cast<int>(State::CUTSCENE))
         {
-            // current scene must be cut scene 
+            // current scene must be cut scene
             if (static_cast<int>(m_State) == static_cast<int>(State::CUTSCENE))
             {
                 LOG_APP_INFO("deleting scene {0}", StateToString(m_LastState));
@@ -233,11 +231,12 @@ namespace LucreApp
     void GameState::Load(GameState::State state)
     {
         ASSERT(!IsLoaded(state));
-        switch(state)
+        switch (state)
         {
             case State::SPLASH:
             {
-                auto scenePtr = std::make_shared<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
+                auto scenePtr =
+                    std::make_shared<SplashScene>("splash.scene", "application/lucre/sceneDescriptions/splash.scene");
                 SetupScene(state, scenePtr);
                 GetScene(state)->Start();
                 SetLoaded(state);
@@ -246,8 +245,9 @@ namespace LucreApp
             case State::MAIN:
             {
                 auto lambda = [&]()
-                {   
-                    auto scenePtr = std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
+                {
+                    auto scenePtr =
+                        std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -268,7 +268,8 @@ namespace LucreApp
             {
                 auto lambda = [&]()
                 {
-                    auto scenePtr = std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
+                    auto scenePtr =
+                        std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -289,7 +290,8 @@ namespace LucreApp
             {
                 auto lambda = [&]()
                 {
-                    auto scenePtr = std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
+                    auto scenePtr =
+                        std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -310,7 +312,8 @@ namespace LucreApp
             {
                 auto lambda = [&]()
                 {
-                    auto scenePtr = std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
+                    auto scenePtr =
+                        std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -329,7 +332,8 @@ namespace LucreApp
             }
             case State::CUTSCENE:
             {
-                auto scenePtr = std::make_shared<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene");
+                auto scenePtr =
+                    std::make_shared<CutScene>("cutScene.scene", "application/lucre/sceneDescriptions/cutScene.scene");
                 SetupScene(state, scenePtr);
                 GetScene(state)->Start();
                 SetLoaded(state);
@@ -337,7 +341,8 @@ namespace LucreApp
             }
             case State::SETTINGS:
             {
-                auto scenePtr = std::make_shared<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
+                auto scenePtr =
+                    std::make_shared<SettingsScene>("settings.scene", "application/lucre/sceneDescriptions/settings.scene");
                 SetupScene(state, scenePtr);
                 GetScene(state)->Start();
                 SetLoaded(state);
@@ -349,20 +354,11 @@ namespace LucreApp
         }
     }
 
-    void GameState::EnableUserInput(bool enable)
-    {
-        m_UserInputEnabled = enable;
-    }
+    void GameState::EnableUserInput(bool enable) { m_UserInputEnabled = enable; }
 
-    Scene* GameState::GetScene()
-    {
-        return GetScene(m_State);
-    }
+    Scene* GameState::GetScene() { return GetScene(m_State); }
 
-    Scene* GameState::GetNextScene()
-    {
-        return GetScene(m_NextState);
-    }
+    Scene* GameState::GetNextScene() { return GetScene(m_NextState); }
 
     Scene* GameState::GetScene(State state)
     {
@@ -395,4 +391,4 @@ namespace LucreApp
         m_StateLoaded[static_cast<int>(state)] = false;
         m_Scenes[static_cast<int>(state)] = nullptr;
     }
-}
+} // namespace LucreApp

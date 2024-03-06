@@ -43,32 +43,41 @@ namespace GfxRenderEngine
 
         const float ITEM_HEIGHT = 64.0f;
 
-        void ApplyGravity(const Bounds outer, const Margins &margins, float w, float h, int gravity, Bounds &inner)
+        void ApplyGravity(const Bounds outer, const Margins& margins, float w, float h, int gravity, Bounds& inner)
         {
             inner.w = w;
             inner.h = h;
 
             switch (gravity & G_HORIZMASK)
             {
-                case G_LEFT: inner.x = outer.x + margins.left; break;
-                case G_RIGHT: inner.x = outer.x + outer.w - w - margins.right; break;
-                case G_HCENTER: inner.x = outer.x + (outer.w - w) / 2; break;
+                case G_LEFT:
+                    inner.x = outer.x + margins.left;
+                    break;
+                case G_RIGHT:
+                    inner.x = outer.x + outer.w - w - margins.right;
+                    break;
+                case G_HCENTER:
+                    inner.x = outer.x + (outer.w - w) / 2;
+                    break;
             }
 
             switch (gravity & G_VERTMASK)
             {
-                case G_TOP: inner.y = outer.y + margins.top; break;
-                case G_BOTTOM: inner.y = outer.y + outer.h - h - margins.bottom; break;
-                case G_VCENTER: inner.y = outer.y + (outer.h - h) / 2; break;
+                case G_TOP:
+                    inner.y = outer.y + margins.top;
+                    break;
+                case G_BOTTOM:
+                    inner.y = outer.y + outer.h - h - margins.bottom;
+                    break;
+                case G_VCENTER:
+                    inner.y = outer.y + (outer.h - h) / 2;
+                    break;
             }
         }
 
-        ViewGroup::~ViewGroup()
-        {
-            Clear();
-        }
+        ViewGroup::~ViewGroup() { Clear(); }
 
-        void ViewGroup::RemoveSubview(View *view)
+        void ViewGroup::RemoveSubview(View* view)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
             for (size_t i = 0; i < views_.size(); i++)
@@ -93,7 +102,7 @@ namespace GfxRenderEngine
             views_.clear();
         }
 
-        void ViewGroup::PersistData(PersistStatus status, std::string anonId, PersistMap &storage)
+        void ViewGroup::PersistData(PersistStatus status, std::string anonId, PersistMap& storage)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
 
@@ -109,7 +118,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void ViewGroup::Query(float x, float y, std::vector<View *> &list)
+        void ViewGroup::Query(float x, float y, std::vector<View*>& list)
         {
             if (bounds_.Contains(x, y))
             {
@@ -121,7 +130,7 @@ namespace GfxRenderEngine
             }
         }
 
-        bool ViewGroup::Key(const SCREEN_KeyInput &input)
+        bool ViewGroup::Key(const SCREEN_KeyInput& input)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
             bool ret = false;
@@ -135,7 +144,7 @@ namespace GfxRenderEngine
             return ret;
         }
 
-        bool ViewGroup::Touch(const SCREEN_TouchInput &input)
+        bool ViewGroup::Touch(const SCREEN_TouchInput& input)
         {
             bool clicked = false;
             std::lock_guard<std::mutex> guard(modifyLock_);
@@ -144,13 +153,14 @@ namespace GfxRenderEngine
                 if ((*iter)->GetVisibility() == V_VISIBLE)
                 {
                     clicked = (*iter)->Touch(input);
-                    if (clicked) return true;
+                    if (clicked)
+                        return true;
                 }
             }
             return clicked;
         }
 
-        void ViewGroup::Axis(const SCREEN_AxisInput &input)
+        void ViewGroup::Axis(const SCREEN_AxisInput& input)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
             for (auto iter = views_.begin(); iter != views_.end(); ++iter)
@@ -171,7 +181,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void ViewGroup::DeviceRestored(SCREEN_Draw::SCREEN_DrawContext *draw)
+        void ViewGroup::DeviceRestored(SCREEN_Draw::SCREEN_DrawContext* draw)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
             for (auto iter = views_.begin(); iter != views_.end(); ++iter)
@@ -180,16 +190,15 @@ namespace GfxRenderEngine
             }
         }
 
-        void ViewGroup::Draw(SCREEN_UIContext &dc)
+        void ViewGroup::Draw(SCREEN_UIContext& dc)
         {
             if (hasDropShadow_)
             {
                 dc.FillRect(SCREEN_UI::Drawable(0x60000000), dc.GetBounds().Expand(dropShadowExpand_));
                 float dropsize = 40.0f;
-                dc.Draw()->DrawImage4Grid(dc.theme->dropShadow4Grid,
-                    bounds_.x - dropsize, bounds_.y - dropsize*1.5f,
-                    bounds_.x2() + dropsize, bounds_.y2()+dropsize*1.5f,
-                    /*Color*/0xFF000000, /*corner_scale*/3.0f);
+                dc.Draw()->DrawImage4Grid(dc.theme->dropShadow4Grid, bounds_.x - dropsize, bounds_.y - dropsize * 1.5f,
+                                          bounds_.x2() + dropsize, bounds_.y2() + dropsize * 1.5f,
+                                          /*Color*/ 0xFF000000, /*corner_scale*/ 3.0f);
             }
 
             if (clip_)
@@ -199,7 +208,7 @@ namespace GfxRenderEngine
 
             dc.FillRect(bg_, bounds_);
 
-            for (View *view : views_)
+            for (View* view : views_)
             {
                 if (view->GetVisibility() == V_VISIBLE)
                 {
@@ -219,7 +228,7 @@ namespace GfxRenderEngine
         void ViewGroup::Update()
         {
             View::Update();
-            for (View *view : views_)
+            for (View* view : views_)
             {
                 if (view->GetVisibility() != V_GONE)
                 {
@@ -242,7 +251,7 @@ namespace GfxRenderEngine
             return false;
         }
 
-        bool ViewGroup::SubviewFocused(View *view)
+        bool ViewGroup::SubviewFocused(View* view)
         {
             for (size_t i = 0; i < views_.size(); i++)
             {
@@ -254,7 +263,7 @@ namespace GfxRenderEngine
             return false;
         }
 
-        static float HorizontalOverlap(const Bounds &a, const Bounds &b)
+        static float HorizontalOverlap(const Bounds& a, const Bounds& b)
         {
             if (a.x2() < b.x || b.x2() < a.x)
             {
@@ -274,7 +283,7 @@ namespace GfxRenderEngine
             }
         }
 
-        static float VerticalOverlap(const Bounds &a, const Bounds &b)
+        static float VerticalOverlap(const Bounds& a, const Bounds& b)
         {
             if (a.y2() < b.y || b.y2() < a.y)
             {
@@ -294,7 +303,7 @@ namespace GfxRenderEngine
             }
         }
 
-        float GetDirectionScore(View *origin, View *destination, FocusDirection direction)
+        float GetDirectionScore(View* origin, View* destination, FocusDirection direction)
         {
             if (!destination->CanBeFocused())
             {
@@ -315,7 +324,7 @@ namespace GfxRenderEngine
             float dx = destPos.x - originPos.x;
             float dy = (destPos.y - originPos.y) * 10.0f;
 
-            float distance = sqrtf(dx*dx + dy*dy);
+            float distance = sqrtf(dx * dx + dy * dy);
             float overlap = 0.0f;
             float dirX = dx / distance;
             float dirY = dy / distance;
@@ -404,7 +413,7 @@ namespace GfxRenderEngine
             }
         }
 
-        NeighborResult ViewGroup::FindNeighbor(View *view, FocusDirection direction, NeighborResult result)
+        NeighborResult ViewGroup::FindNeighbor(View* view, FocusDirection direction, NeighborResult result)
         {
             if (!IsEnabled())
             {
@@ -414,7 +423,6 @@ namespace GfxRenderEngine
             {
                 return result;
             }
-
 
             int num = -1;
             for (size_t i = 0; i < views_.size(); i++)
@@ -466,7 +474,7 @@ namespace GfxRenderEngine
                     {
                         if ((*iter)->IsViewGroup())
                         {
-                            ViewGroup *vg = static_cast<ViewGroup *>(*iter);
+                            ViewGroup* vg = static_cast<ViewGroup*>(*iter);
                             if (vg)
                             {
                                 result = vg->FindNeighbor(view, direction, result);
@@ -480,7 +488,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void LinearLayout::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        void LinearLayout::Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             MeasureBySpec(layoutParams_->width, 0.0f, horiz, &measuredWidth_);
             MeasureBySpec(layoutParams_->height, 0.0f, vert, &measuredHeight_);
@@ -498,7 +506,7 @@ namespace GfxRenderEngine
 
             int numVisible = 0;
 
-            for (View *view : views_)
+            for (View* view : views_)
             {
                 if (view->GetVisibility() == V_GONE)
                 {
@@ -506,7 +514,7 @@ namespace GfxRenderEngine
                 }
                 numVisible++;
 
-                const LinearLayoutParams *linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
+                const LinearLayoutParams* linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
 
                 Margins margins = defaultMargins_;
 
@@ -586,13 +594,13 @@ namespace GfxRenderEngine
 
                 float usedWidth = 0.0f;
 
-                for (View *view : views_)
+                for (View* view : views_)
                 {
                     if (view->GetVisibility() == V_GONE)
                     {
                         continue;
                     }
-                    const LinearLayoutParams *linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
+                    const LinearLayoutParams* linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
 
                     if (linLayoutParams && linLayoutParams->weight > 0.0f)
                     {
@@ -638,13 +646,13 @@ namespace GfxRenderEngine
 
                 float usedHeight = 0.0f;
 
-                for (View *view : views_)
+                for (View* view : views_)
                 {
                     if (view->GetVisibility() == V_GONE)
                     {
                         continue;
                     }
-                    const LinearLayoutParams *linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
+                    const LinearLayoutParams* linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
 
                     if (linLayoutParams && linLayoutParams->weight > 0.0f)
                     {
@@ -681,7 +689,7 @@ namespace GfxRenderEngine
 
         void LinearLayout::Layout()
         {
-            const Bounds &bounds = bounds_;
+            const Bounds& bounds = bounds_;
 
             Bounds itemBounds;
             float pos;
@@ -706,7 +714,7 @@ namespace GfxRenderEngine
                     continue;
                 }
 
-                const LinearLayoutParams *linLayoutParams = views_[i]->GetLayoutParams()->As<LinearLayoutParams>();
+                const LinearLayoutParams* linLayoutParams = views_[i]->GetLayoutParams()->As<LinearLayoutParams>();
 
                 Gravity gravity = G_TOPLEFT;
                 Margins margins = defaultMargins_;
@@ -729,9 +737,8 @@ namespace GfxRenderEngine
                 }
 
                 Bounds innerBounds;
-                ApplyGravity(itemBounds, margins,
-                    views_[i]->GetMeasuredWidth(), views_[i]->GetMeasuredHeight(),
-                    gravity, innerBounds);
+                ApplyGravity(itemBounds, margins, views_[i]->GetMeasuredWidth(), views_[i]->GetMeasuredHeight(), gravity,
+                             innerBounds);
 
                 views_[i]->SetBounds(innerBounds);
                 views_[i]->Layout();
@@ -740,46 +747,46 @@ namespace GfxRenderEngine
             }
         }
 
-    //    void FrameLayout::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
-    //    {
-    //        if (views_.empty()) {
-    //            MeasureBySpec(layoutParams_->width, 0.0f, horiz, &measuredWidth_);
-    //            MeasureBySpec(layoutParams_->height, 0.0f, vert, &measuredHeight_);
-    //            return;
-    //        }
-    //
-    //        for (size_t i = 0; i < views_.size(); i++)
-    //        {
-    //            if (views_[i]->GetVisibility() == V_GONE)
-    //                continue;
-    //            views_[i]->Measure(dc, horiz, vert);
-    //        }
-    //    }
-    //
-    //    void FrameLayout::Layout()
-    //    {
-    //        for (size_t i = 0; i < views_.size(); i++) {
-    //            if (views_[i]->GetVisibility() == V_GONE)
-    //                continue;
-    //            float w = views_[i]->GetMeasuredWidth();
-    //            float h = views_[i]->GetMeasuredHeight();
-    //
-    //            Bounds bounds;
-    //            bounds.w = w;
-    //            bounds.h = h;
-    //
-    //            bounds.x = bounds_.x + (measuredWidth_ - w) / 2;
-    //            bounds.y = bounds_.y + (measuredWidth_ - h) / 2;
-    //            views_[i]->SetBounds(bounds);
-    //        }
-    //    }
-    //
-        void ScrollView::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        //    void FrameLayout::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        //    {
+        //        if (views_.empty()) {
+        //            MeasureBySpec(layoutParams_->width, 0.0f, horiz, &measuredWidth_);
+        //            MeasureBySpec(layoutParams_->height, 0.0f, vert, &measuredHeight_);
+        //            return;
+        //        }
+        //
+        //        for (size_t i = 0; i < views_.size(); i++)
+        //        {
+        //            if (views_[i]->GetVisibility() == V_GONE)
+        //                continue;
+        //            views_[i]->Measure(dc, horiz, vert);
+        //        }
+        //    }
+        //
+        //    void FrameLayout::Layout()
+        //    {
+        //        for (size_t i = 0; i < views_.size(); i++) {
+        //            if (views_[i]->GetVisibility() == V_GONE)
+        //                continue;
+        //            float w = views_[i]->GetMeasuredWidth();
+        //            float h = views_[i]->GetMeasuredHeight();
+        //
+        //            Bounds bounds;
+        //            bounds.w = w;
+        //            bounds.h = h;
+        //
+        //            bounds.x = bounds_.x + (measuredWidth_ - w) / 2;
+        //            bounds.y = bounds_.y + (measuredWidth_ - h) / 2;
+        //            views_[i]->SetBounds(bounds);
+        //        }
+        //    }
+        //
+        void ScrollView::Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             Margins margins;
             if (views_.size())
             {
-                const LinearLayoutParams *linLayoutParams = views_[0]->GetLayoutParams()->As<LinearLayoutParams>();
+                const LinearLayoutParams* linLayoutParams = views_[0]->GetLayoutParams()->As<LinearLayoutParams>();
                 if (linLayoutParams)
                 {
                     margins = linLayoutParams->margins;
@@ -837,7 +844,7 @@ namespace GfxRenderEngine
 
             // Respect margins
             Margins margins;
-            const LinearLayoutParams *linLayoutParams = views_[0]->GetLayoutParams()->As<LinearLayoutParams>();
+            const LinearLayoutParams* linLayoutParams = views_[0]->GetLayoutParams()->As<LinearLayoutParams>();
             if (linLayoutParams)
             {
                 margins = linLayoutParams->margins;
@@ -874,7 +881,7 @@ namespace GfxRenderEngine
             views_[0]->Layout();
         }
 
-        bool ScrollView::Key(const SCREEN_KeyInput &input)
+        bool ScrollView::Key(const SCREEN_KeyInput& input)
         {
             if (visibility_ != V_VISIBLE)
                 return ViewGroup::Key(input);
@@ -907,10 +914,10 @@ namespace GfxRenderEngine
             return ViewGroup::Key(input);
         }
 
-        bool ScrollView::Touch(const SCREEN_TouchInput &touch)
+        bool ScrollView::Touch(const SCREEN_TouchInput& touch)
         {
             bool clicked = false;
-            if ( (touch.flags & TOUCH_WHEEL) && (visibility_ == V_VISIBLE) )
+            if ((touch.flags & TOUCH_WHEEL) && (visibility_ == V_VISIBLE))
             {
                 if (touch.y < 0)
                 {
@@ -935,7 +942,7 @@ namespace GfxRenderEngine
         const float friction = 0.92f;
         const float stop_threshold = 0.1f;
 
-        void ScrollView::Draw(SCREEN_UIContext &dc)
+        void ScrollView::Draw(SCREEN_UIContext& dc)
         {
             if (!views_.size())
             {
@@ -963,13 +970,13 @@ namespace GfxRenderEngine
             }
         }
 
-        bool ScrollView::SubviewFocused(View *view)
+        bool ScrollView::SubviewFocused(View* view)
         {
 
             if (!ViewGroup::SubviewFocused(view))
                 return false;
 
-            const Bounds &vBounds = view->GetBounds();
+            const Bounds& vBounds = view->GetBounds();
             const float overscroll = std::min(view->GetBounds().h / 1.5f, GetBounds().h / 4.0f);
 
             float pos = ClampedScrollPos(scrollPos_);
@@ -999,7 +1006,7 @@ namespace GfxRenderEngine
             return true;
         }
 
-        void ScrollView::PersistData(PersistStatus status, std::string anonId, PersistMap &storage)
+        void ScrollView::PersistData(PersistStatus status, std::string anonId, PersistMap& storage)
         {
             ViewGroup::PersistData(status, anonId, storage);
 
@@ -1009,21 +1016,21 @@ namespace GfxRenderEngine
                 tag = anonId;
             }
 
-            PersistBuffer &buffer = storage["ScrollView::" + tag];
+            PersistBuffer& buffer = storage["ScrollView::" + tag];
             switch (status)
             {
                 case PERSIST_SAVE:
-                    {
-                        buffer.resize(1);
-                        float pos = scrollToTarget_ ? scrollTarget_ : scrollPos_;
-                        buffer[0] = static_cast<int>(pos);
-                    }
-                    break;
+                {
+                    buffer.resize(1);
+                    float pos = scrollToTarget_ ? scrollTarget_ : scrollPos_;
+                    buffer[0] = static_cast<int>(pos);
+                }
+                break;
 
                 case PERSIST_RESTORE:
                     if (buffer.size() == 1)
                     {
-                        float pos = *(float *)&buffer[0];
+                        float pos = *(float*)&buffer[0];
                         scrollPos_ = pos;
                         scrollTarget_ = pos;
                         scrollToTarget_ = false;
@@ -1042,10 +1049,7 @@ namespace GfxRenderEngine
             }
         }
 
-        float ScrollView::GetScrollPosition()
-        {
-            return scrollPos_;
-        }
+        float ScrollView::GetScrollPosition() { return scrollPos_; }
 
         void ScrollView::ScrollTo(float newScrollPos)
         {
@@ -1062,7 +1066,8 @@ namespace GfxRenderEngine
         float ScrollView::ClampedScrollPos(float pos)
         {
 
-            if (!views_.size()) {
+            if (!views_.size())
+            {
                 return 0.0f;
             }
 
@@ -1121,7 +1126,9 @@ namespace GfxRenderEngine
                 {
                     scrollPos_ = target;
                     scrollToTarget_ = false;
-                } else {
+                }
+                else
+                {
                     scrollPos_ += (target - scrollPos_) * 0.3f;
                 }
             }
@@ -1134,7 +1141,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void AnchorLayout::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        void AnchorLayout::Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             MeasureBySpec(layoutParams_->width, 0.0f, horiz, &measuredWidth_);
             MeasureBySpec(layoutParams_->height, 0.0f, vert, &measuredHeight_);
@@ -1151,7 +1158,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void AnchorLayout::MeasureViews(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        void AnchorLayout::MeasureViews(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             for (size_t i = 0; i < views_.size(); i++)
             {
@@ -1173,7 +1180,7 @@ namespace GfxRenderEngine
                     }
                 }
 
-                const AnchorLayoutParams *params = views_[i]->GetLayoutParams()->As<AnchorLayoutParams>();
+                const AnchorLayoutParams* params = views_[i]->GetLayoutParams()->As<AnchorLayoutParams>();
                 if (params)
                 {
                     width = params->width;
@@ -1217,14 +1224,16 @@ namespace GfxRenderEngine
         {
             for (size_t i = 0; i < views_.size(); i++)
             {
-                const AnchorLayoutParams *params = views_[i]->GetLayoutParams()->As<AnchorLayoutParams>();
+                const AnchorLayoutParams* params = views_[i]->GetLayoutParams()->As<AnchorLayoutParams>();
 
                 Bounds vBounds;
                 vBounds.w = views_[i]->GetMeasuredWidth();
                 vBounds.h = views_[i]->GetMeasuredHeight();
 
-                if (vBounds.w > bounds_.w) vBounds.w = bounds_.w;
-                if (vBounds.h > bounds_.h) vBounds.h = bounds_.h;
+                if (vBounds.w > bounds_.w)
+                    vBounds.w = bounds_.w;
+                if (vBounds.h > bounds_.h)
+                    vBounds.h = bounds_.h;
 
                 float left = 0, top = 0, right = 0, bottom = 0, center = false;
                 if (params)
@@ -1274,25 +1283,26 @@ namespace GfxRenderEngine
             }
         }
 
-        GridLayout::GridLayout(GridLayoutSettings settings, LayoutParams *layoutParams)
+        GridLayout::GridLayout(GridLayoutSettings settings, LayoutParams* layoutParams)
             : ViewGroup(layoutParams), settings_(settings), numColumns_(1)
         {
-
         }
 
-        void GridLayout::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        void GridLayout::Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             MeasureSpecType measureType = settings_.fillCells ? EXACTLY : AT_MOST;
 
             for (size_t i = 0; i < views_.size(); i++)
             {
-                views_[i]->Measure(dc, MeasureSpec(measureType, settings_.columnWidth), MeasureSpec(measureType, settings_.rowHeight));
+                views_[i]->Measure(dc, MeasureSpec(measureType, settings_.columnWidth),
+                                   MeasureSpec(measureType, settings_.rowHeight));
             }
 
             MeasureBySpec(layoutParams_->width, 0.0f, horiz, &measuredWidth_);
 
             numColumns_ = (measuredWidth_ - settings_.spacing) / (settings_.columnWidth + settings_.spacing);
-            if (!numColumns_) numColumns_ = 1;
+            if (!numColumns_)
+                numColumns_ = 1;
             int numRows = (int)(views_.size() + (numColumns_ - 1)) / numColumns_;
 
             float estimatedHeight = (settings_.rowHeight + settings_.spacing) * numRows;
@@ -1314,9 +1324,8 @@ namespace GfxRenderEngine
                 itemBounds.w = settings_.columnWidth;
                 itemBounds.h = settings_.rowHeight;
 
-                ApplyGravity(itemBounds, Margins(0.0f),
-                    views_[i]->GetMeasuredWidth(), views_[i]->GetMeasuredHeight(),
-                    G_HCENTER | G_VCENTER, innerBounds);
+                ApplyGravity(itemBounds, Margins(0.0f), views_[i]->GetMeasuredWidth(), views_[i]->GetMeasuredHeight(),
+                             G_HCENTER | G_VCENTER, innerBounds);
 
                 views_[i]->SetBounds(innerBounds);
                 views_[i]->Layout();
@@ -1335,15 +1344,16 @@ namespace GfxRenderEngine
             }
         }
 
-        TabHolder::TabHolder(Orientation orientation, float stripSize, LayoutParams *layoutParams, float leftMargin)
+        TabHolder::TabHolder(Orientation orientation, float stripSize, LayoutParams* layoutParams, float leftMargin)
             : LinearLayout(Opposite(orientation), layoutParams), stripSize_(stripSize)
         {
             if (orientation == ORIENT_HORIZONTAL)
             {
-                LinearLayout *horizontalSpacer = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, FILL_PARENT));
+                LinearLayout* horizontalSpacer =
+                    new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, FILL_PARENT));
                 horizontalSpacer->SetTag("TabHolder::horizontalSpacer");
                 horizontalSpacer->SetSpacing(0.0f);
-                horizontalSpacer->Add(new Spacer(leftMargin,0.0f));
+                horizontalSpacer->Add(new Spacer(leftMargin, 0.0f));
                 tabStrip_ = new ChoiceStrip(orientation, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
                 tabStrip_->SetTag("TabHolder::tabStrip_");
                 tabStrip_->SetTopTabs(true);
@@ -1366,14 +1376,14 @@ namespace GfxRenderEngine
             Add(contents_)->SetClip(true);
         }
 
-        void TabHolder::AddTabContents(const std::string &title, View *tabContents)
+        void TabHolder::AddTabContents(const std::string& title, View* tabContents)
         {
             tabContents->ReplaceLayoutParams(new AnchorLayoutParams(FILL_PARENT, FILL_PARENT));
             tabs_.push_back(tabContents);
 
             if (useIcons_)
             {
-                tabStrip_->AddChoice(title, m_Icon, m_Icon_active, m_Icon_depressed, m_Icon_depressed_inactive,title);
+                tabStrip_->AddChoice(title, m_Icon, m_Icon_active, m_Icon_depressed, m_Icon_depressed_inactive, title);
             }
             else
             {
@@ -1396,7 +1406,7 @@ namespace GfxRenderEngine
                 return;
             }
 
-            auto setupTween = [&](View *view, AnchorTranslateTween *&tween)
+            auto setupTween = [&](View* view, AnchorTranslateTween*& tween)
             {
                 if (tween)
                 {
@@ -1404,11 +1414,12 @@ namespace GfxRenderEngine
                 }
 
                 tween = new AnchorTranslateTween(0.15f, bezierEaseInOut);
-                tween->Finish.Add([&](EventParams &e)
-                {
-                    e.v->SetVisibility(tabs_[currentTab_] == e.v ? V_VISIBLE : V_GONE);
-                    return EVENT_DONE;
-                });
+                tween->Finish.Add(
+                    [&](EventParams& e)
+                    {
+                        e.v->SetVisibility(tabs_[currentTab_] == e.v ? V_VISIBLE : V_GONE);
+                        return EVENT_DONE;
+                    });
                 view->AddTween(tween)->Persist();
             };
 
@@ -1454,7 +1465,7 @@ namespace GfxRenderEngine
             tabStrip_->SetSelection(tab);
         }
 
-        EventReturn TabHolder::OnTabClick(EventParams &e)
+        EventReturn TabHolder::OnTabClick(EventParams& e)
         {
             if (e.b != 0)
             {
@@ -1463,7 +1474,7 @@ namespace GfxRenderEngine
             return EVENT_DONE;
         }
 
-        void TabHolder::PersistData(PersistStatus status, std::string anonId, PersistMap &storage)
+        void TabHolder::PersistData(PersistStatus status, std::string anonId, PersistMap& storage)
         {
             ViewGroup::PersistData(status, anonId, storage);
 
@@ -1473,23 +1484,25 @@ namespace GfxRenderEngine
                 tag = anonId;
             }
 
-            PersistBuffer &buffer = storage["TabHolder::" + tag];
-            switch (status) {
-            case PERSIST_SAVE:
-                buffer.resize(1);
-                buffer[0] = currentTab_;
-                break;
+            PersistBuffer& buffer = storage["TabHolder::" + tag];
+            switch (status)
+            {
+                case PERSIST_SAVE:
+                    buffer.resize(1);
+                    buffer[0] = currentTab_;
+                    break;
 
-            case PERSIST_RESTORE:
-                if (buffer.size() == 1)
-                {
-                    SetCurrentTab(buffer[0], true);
-                }
-                break;
+                case PERSIST_RESTORE:
+                    if (buffer.size() == 1)
+                    {
+                        SetCurrentTab(buffer[0], true);
+                    }
+                    break;
             }
         }
 
-        void TabHolder::SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive)
+        void TabHolder::SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed,
+                                const Sprite& icon_depressed_inactive)
         {
             m_Icon = icon;
             m_Icon_active = icon_active;
@@ -1498,28 +1511,16 @@ namespace GfxRenderEngine
             useIcons_ = true;
         }
 
-        bool TabHolder::HasFocus(int& tab)
-        {
-            return tabStrip_->AnyTabHasFocus(tab);
-        }
+        bool TabHolder::HasFocus(int& tab) { return tabStrip_->AnyTabHasFocus(tab); }
 
-        void TabHolder::enableAllTabs()
-        {
-            tabStrip_->enableAllTabs();
-        }
+        void TabHolder::enableAllTabs() { tabStrip_->enableAllTabs(); }
 
-        void TabHolder::disableAllTabs()
-        {
-            tabStrip_->disableAllTabs();
-        }
+        void TabHolder::disableAllTabs() { tabStrip_->disableAllTabs(); }
 
-        void TabHolder::SetEnabled(int tab)
-        {
-            tabStrip_->SetEnabled(tab);
-        }
+        void TabHolder::SetEnabled(int tab) { tabStrip_->SetEnabled(tab); }
 
-        ChoiceStrip::ChoiceStrip(Orientation orientation, LayoutParams *layoutParams)
-                : LinearLayout(orientation, layoutParams), selected_(0), topTabs_(false)
+        ChoiceStrip::ChoiceStrip(Orientation orientation, LayoutParams* layoutParams)
+            : LinearLayout(orientation, layoutParams), selected_(0), topTabs_(false)
         {
             SetSpacing(0.0f);
         }
@@ -1540,10 +1541,7 @@ namespace GfxRenderEngine
             }
         }
 
-        void ChoiceStrip::SetEnabled(int tab)
-        {
-            Choice(tab)->SetEnabled(true);
-        }
+        void ChoiceStrip::SetEnabled(int tab) { Choice(tab)->SetEnabled(true); }
 
         bool ChoiceStrip::AnyTabHasFocus(int& tab)
         {
@@ -1560,12 +1558,10 @@ namespace GfxRenderEngine
             return anyTabHasFocus;
         }
 
-        void ChoiceStrip::AddChoice(const std::string &title)
+        void ChoiceStrip::AddChoice(const std::string& title)
         {
-            StickyChoice *c = new StickyChoice(title, "",
-                    orientation_ == ORIENT_HORIZONTAL ?
-                    nullptr :
-                    new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
+            StickyChoice* c = new StickyChoice(
+                title, "", orientation_ == ORIENT_HORIZONTAL ? nullptr : new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
             c->OnClick.Handle(this, &ChoiceStrip::OnChoiceClick);
             c->SetTag("ChoiceStrip::c");
             Add(c);
@@ -1573,24 +1569,22 @@ namespace GfxRenderEngine
                 c->Press();
         }
 
-        void ChoiceStrip::AddChoice(const std::string &title, const Sprite& icon,
-                                    const Sprite& icon_active, const Sprite& icon_depressed,
-                                    const Sprite& icon_depressed_inactive, const std::string &text)
+        void ChoiceStrip::AddChoice(const std::string& title, const Sprite& icon, const Sprite& icon_active,
+                                    const Sprite& icon_depressed, const Sprite& icon_depressed_inactive,
+                                    const std::string& text)
         {
-            StickyChoice *c = new StickyChoice(icon, icon_active, icon_depressed, icon_depressed_inactive, text,
-                    orientation_ == ORIENT_HORIZONTAL ?
-                    nullptr :
-                    new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
+            StickyChoice* c = new StickyChoice(
+                icon, icon_active, icon_depressed, icon_depressed_inactive, text,
+                orientation_ == ORIENT_HORIZONTAL ? nullptr : new LinearLayoutParams(FILL_PARENT, ITEM_HEIGHT));
             c->OnClick.Handle(this, &ChoiceStrip::OnChoiceClick);
             c->SetCentered(true);
             c->SetTag("ChoiceStrip::c");
             Add(c);
             if (selected_ == (int)views_.size() - 1)
                 c->Press();
-
         }
 
-        bool ChoiceStrip::Touch(const SCREEN_TouchInput &input)
+        bool ChoiceStrip::Touch(const SCREEN_TouchInput& input)
         {
             bool clicked = false;
             for (unsigned int choice = 0; choice < (unsigned int)views_.size(); choice++)
@@ -1603,7 +1597,7 @@ namespace GfxRenderEngine
             return clicked;
         }
 
-        EventReturn ChoiceStrip::OnChoiceClick(EventParams &e)
+        EventReturn ChoiceStrip::OnChoiceClick(EventParams& e)
         {
             for (int i = 0; i < (int)views_.size(); i++)
             {
@@ -1627,13 +1621,13 @@ namespace GfxRenderEngine
         void ChoiceStrip::SetSelection(int sel)
         {
             int prevSelected = selected_;
-            StickyChoice *prevChoice = Choice(selected_);
+            StickyChoice* prevChoice = Choice(selected_);
             if (prevChoice)
             {
                 prevChoice->Release();
             }
             selected_ = sel;
-            StickyChoice *newChoice = Choice(selected_);
+            StickyChoice* newChoice = Choice(selected_);
             if (newChoice)
             {
                 newChoice->Press();
@@ -1657,7 +1651,7 @@ namespace GfxRenderEngine
             }
         }
 
-        bool ChoiceStrip::Key(const SCREEN_KeyInput &input)
+        bool ChoiceStrip::Key(const SCREEN_KeyInput& input)
         {
             bool ret = false;
             if (input.flags & KEY_DOWN)
@@ -1682,32 +1676,34 @@ namespace GfxRenderEngine
             return ret || ViewGroup::Key(input);
         }
 
-        void ChoiceStrip::Draw(SCREEN_UIContext &dc)
+        void ChoiceStrip::Draw(SCREEN_UIContext& dc)
         {
             ViewGroup::Draw(dc);
             if (topTabs_ && CoreSettings::m_UITheme != THEME_RETRO)
             {
                 if (orientation_ == ORIENT_HORIZONTAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2() - 4.0f, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x, bounds_.y2() - 4.0f, bounds_.x2(),
+                                                bounds_.y2(), dc.theme->itemDownStyle.background.color);
                 }
                 else if (orientation_ == ORIENT_VERTICAL)
                 {
-                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x2() - 4.0f, bounds_.y, bounds_.x2(), bounds_.y2(), dc.theme->itemDownStyle.background.color );
+                    dc.Draw()->DrawImageStretch(dc.theme->whiteImage, bounds_.x2() - 4.0f, bounds_.y, bounds_.x2(),
+                                                bounds_.y2(), dc.theme->itemDownStyle.background.color);
                 }
             }
         }
 
-        StickyChoice *ChoiceStrip::Choice(int index)
+        StickyChoice* ChoiceStrip::Choice(int index)
         {
             if ((size_t)index < views_.size())
             {
-                return static_cast<StickyChoice *>(views_[index]);
+                return static_cast<StickyChoice*>(views_[index]);
             }
             return nullptr;
         }
 
-        ListView::ListView(ListAdaptor *a, float popupWidth, std::set<int> hidden, LayoutParams *layoutParams)
+        ListView::ListView(ListAdaptor* a, float popupWidth, std::set<int> hidden, LayoutParams* layoutParams)
             : ScrollView(ORIENT_VERTICAL, layoutParams), adaptor_(a), maxHeight_(0), hidden_(hidden), m_Width(popupWidth)
         {
 
@@ -1724,13 +1720,13 @@ namespace GfxRenderEngine
             {
                 if (hidden_.find(i) == hidden_.end())
                 {
-                    View *v = linLayout_->Add(adaptor_->CreateItemView(i, m_Width));
+                    View* v = linLayout_->Add(adaptor_->CreateItemView(i, m_Width));
                     adaptor_->AddEventCallback(v, std::bind(&ListView::OnItemCallback, this, i, std::placeholders::_1));
                 }
             }
         }
 
-        void ListView::Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert)
+        void ListView::Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
             ScrollView::Measure(dc, horiz, vert);
             if (maxHeight_ > 0 && measuredHeight_ > maxHeight_)
@@ -1739,7 +1735,7 @@ namespace GfxRenderEngine
             }
         }
 
-        EventReturn ListView::OnItemCallback(int num, EventParams &e)
+        EventReturn ListView::OnItemCallback(int num, EventParams& e)
         {
             EventParams ev{};
             ev.v = nullptr;
@@ -1750,24 +1746,25 @@ namespace GfxRenderEngine
             return EVENT_DONE;
         }
 
-    //    View *ChoiceListAdaptor::CreateItemView(int index)
-    //    {
-    //        return new Choice(items_[index]);
-    //    }
-    //
-    //    bool ChoiceListAdaptor::AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback)
-    //    {
-    //        Choice *choice = (Choice *)view;
-    //        choice->OnClick.Add(callback);
-    //        return EVENT_DONE;
-    //    }
+        //    View *ChoiceListAdaptor::CreateItemView(int index)
+        //    {
+        //        return new Choice(items_[index]);
+        //    }
+        //
+        //    bool ChoiceListAdaptor::AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback)
+        //    {
+        //        Choice *choice = (Choice *)view;
+        //        choice->OnClick.Add(callback);
+        //        return EVENT_DONE;
+        //    }
 
-        #define TRANSPARENT_BACKGROUND true
-        View *StringVectorListAdaptor::CreateItemView(int index, float width)
+#define TRANSPARENT_BACKGROUND true
+        View* StringVectorListAdaptor::CreateItemView(int index, float width)
         {
             if (CoreSettings::m_UITheme == THEME_RETRO)
             {
-                return new Choice(items_[index], TRANSPARENT_BACKGROUND, "", index == selected_, new LinearLayoutParams(width, 64.0f));
+                return new Choice(items_[index], TRANSPARENT_BACKGROUND, "", index == selected_,
+                                  new LinearLayoutParams(width, 64.0f));
             }
             else
             {
@@ -1775,12 +1772,12 @@ namespace GfxRenderEngine
             }
         }
 
-        bool StringVectorListAdaptor::AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback)
+        bool StringVectorListAdaptor::AddEventCallback(View* view, std::function<EventReturn(EventParams&)> callback)
         {
-            Choice *choice = (Choice *)view;
+            Choice* choice = (Choice*)view;
             choice->OnClick.Add(callback);
             return EVENT_DONE;
         }
 
-    }
-}
+    } // namespace SCREEN_UI
+} // namespace GfxRenderEngine

@@ -30,7 +30,6 @@
 
 #include "engine.h"
 #include "renderer/camera.h"
-#include "scene/entity.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"
@@ -43,7 +42,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
+        VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass,
+                       VK_DescriptorSetLayout& globalDescriptorSetLayout);
         ~VK_LightSystem();
 
         VK_LightSystem(const VK_LightSystem&) = delete;

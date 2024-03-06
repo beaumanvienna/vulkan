@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -66,7 +66,9 @@ namespace GfxRenderEngine
 
                 // only check major version of "file format identifier"
                 m_SceneDescriptionFile.m_FileFormatIdentifier = sceneObject.value().get_double();
-                CORE_ASSERT((std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)), "The scene description major version does not match");
+                CORE_ASSERT(
+                    (std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
+                    "The scene description major version does not match");
             }
             else if (sceneObjectKey == "description")
             {
@@ -88,12 +90,14 @@ namespace GfxRenderEngine
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
-                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file") : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
+                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file")
+                                       : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
                 }
 
                 for (auto gltfFileJSON : gltfFiles)
                 {
-                    ParseGltfFile(gltfFileJSON, false /*tinygltf loader*/, m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene);
+                    ParseGltfFile(gltfFileJSON, false /*tinygltf loader*/,
+                                  m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene);
                 }
             }
             else if (sceneObjectKey == "fastgltf files")
@@ -102,7 +106,8 @@ namespace GfxRenderEngine
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
-                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file (fastgltf)") : LOG_CORE_INFO("loading {0} gltf files (fastgltf)", gltfFileCount);
+                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file (fastgltf)")
+                                       : LOG_CORE_INFO("loading {0} gltf files (fastgltf)", gltfFileCount);
                 }
 
                 for (auto gltfFileJSON : gltfFiles)
@@ -116,7 +121,8 @@ namespace GfxRenderEngine
                 ondemand::array fbxFiles = sceneObject.value().get_array();
                 {
                     int fbxFileCount = fbxFiles.count_elements();
-                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file") : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file")
+                                      : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
                 }
 
                 for (auto fbxFileJSON : fbxFiles)
@@ -131,7 +137,8 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene)
+    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast,
+                                        std::vector<Gltf::GltfFile>& gltfFilesFromScene)
     {
         std::string gltfFilename;
         bool loadSuccessful = false;
@@ -194,7 +201,8 @@ namespace GfxRenderEngine
                     uint instanceIndex = 0;
                     for (auto instance : instances)
                     {
-                        std::string fullEntityName = gltfFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
+                        std::string fullEntityName =
+                            gltfFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
                         entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                         Gltf::Instance& gltfFileInstance = gltfFileInstances[instanceIndex];
                         gltfFileInstance.m_Entity = entity;
@@ -205,12 +213,14 @@ namespace GfxRenderEngine
 
                             if (instanceObjectKey == "transform")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object");
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object),
+                                            "type must be object");
                                 ParseTransform(instanceObject.value(), entity);
                             }
                             else if (instanceObjectKey == "nodes")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array), "type must be object");
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array),
+                                            "type must be object");
                                 ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
                             }
                             else
@@ -286,7 +296,8 @@ namespace GfxRenderEngine
                     uint instanceIndex = 0;
                     for (auto instance : instances)
                     {
-                        std::string fullEntityName = fbxFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
+                        std::string fullEntityName =
+                            fbxFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
                         entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                         Fbx::Instance& fbxFileInstance = fbxFileInstances[instanceIndex];
                         fbxFileInstance.m_Entity = entity;
@@ -297,7 +308,8 @@ namespace GfxRenderEngine
 
                             if (instanceObjectKey == "transform")
                             {
-                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object), "type must be object");
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object),
+                                            "type must be object");
                                 ParseTransform(instanceObject.value(), entity);
                             }
                             else
@@ -353,7 +365,8 @@ namespace GfxRenderEngine
         transform.SetTranslation(translation);
     }
 
-    void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance)
+    void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename,
+                                         Gltf::Instance& gltfFileInstance)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount)
@@ -396,14 +409,16 @@ namespace GfxRenderEngine
                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                     if (gameObject != entt::null)
                     {
-                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
+                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView,
+                                      fullEntityName);
 
                         ScriptComponent scriptComponent(scriptComponentStringView);
                         m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
                     }
                     else
                     {
-                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description", scriptComponentStringView, fullEntityName);
+                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description",
+                                      scriptComponentStringView, fullEntityName);
                     }
                 }
                 else

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -36,32 +36,15 @@ namespace GfxRenderEngine
     {
 
     public:
-        Sprite(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scale = 1.0f);
+        Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
+               const std::shared_ptr<Texture> texture, const std::string& name, const float scale = 1.0f);
 
-        Sprite(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scale,
-                const bool rotated);
+        Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
+               const std::shared_ptr<Texture> texture, const std::string& name, const float scale, const bool rotated);
 
-        Sprite(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scaleX,
-                const float scaleY,
-                const bool rotated = false);
+        Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
+               const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX, const float scaleY,
+               const bool rotated = false);
 
         Sprite();
 
@@ -98,7 +81,7 @@ namespace GfxRenderEngine
 
     // --------- Sprite2D ---------
     // a wrapper for sprite with
-    // pos1Y and pos2Y flipped 
+    // pos1Y and pos2Y flipped
     // to support a camera in the
     // opposite up direction
 
@@ -108,36 +91,21 @@ namespace GfxRenderEngine
     public:
         Sprite2D(const Sprite& sprite);
 
-        Sprite2D(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scale = 1.0f);
+        Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
+                 const int height, const std::shared_ptr<Texture> texture, const std::string& name,
+                 const float scale = 1.0f);
 
-        Sprite2D(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scale,
-                const bool rotated);
+        Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
+                 const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale,
+                 const bool rotated);
 
-        Sprite2D(
-                const float pos1X, const float pos1Y, 
-                const float pos2X, const float pos2Y,
-                const int width,  const int height,
-                const std::shared_ptr<Texture> texture,
-                const std::string& name,
-                const float scaleX,
-                const float scaleY,
-                const bool rotated = false);
+        Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
+                 const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX,
+                 const float scaleY, const bool rotated = false);
 
         Sprite2D();
 
     private:
         void FlipY();
     };
-}
+} // namespace GfxRenderEngine

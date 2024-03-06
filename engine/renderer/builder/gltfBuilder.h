@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -33,21 +33,18 @@ namespace GfxRenderEngine
     {
 
     public:
-
         GltfBuilder() = delete;
         GltfBuilder(const std::string& filepath, Scene& scene);
 
         bool LoadGltf(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
 
     public:
-
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Images{};
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-
         void LoadImagesGltf();
         void LoadMaterialsGltf();
         void LoadVertexDataGltf(uint const meshIndex);
@@ -65,12 +62,12 @@ namespace GfxRenderEngine
         int GetMagFilter(uint index);
 
     private:
-
-        template<typename T>
+        template <typename T>
         int LoadAccessor(const tinygltf::Accessor& accessor, const T*& pointer, uint* count = nullptr, int* type = nullptr)
         {
             const tinygltf::BufferView& view = m_GltfModel.bufferViews[accessor.bufferView];
-            pointer = reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+            pointer =
+                reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
             if (count)
             {
                 count[0] = static_cast<uint>(accessor.count);
@@ -83,7 +80,6 @@ namespace GfxRenderEngine
         }
 
     private:
-
         std::string m_Filepath;
         std::string m_Basepath;
         tinygltf::Model m_GltfModel;
@@ -108,18 +104,15 @@ namespace GfxRenderEngine
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
 
-
-    // skeletal animation
+        // skeletal animation
     private:
-
         void LoadSkeletonsGltf();
         void LoadJoint(int globalGltfNodeIndex, int parentJoint);
         uint m_SkeletalAnimation;
 
     public:
-
         std::shared_ptr<Armature::Skeleton> m_Skeleton;
         std::shared_ptr<Buffer> m_ShaderData;
         std::shared_ptr<SkeletalAnimations> m_Animations;
     };
-}
+} // namespace GfxRenderEngine

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -40,14 +40,12 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        static constexpr float DEGREES_0   = 0.0f;
-        static constexpr float DEGREES_90  = glm::pi<float>() / 2.0f;
+        static constexpr float DEGREES_0 = 0.0f;
+        static constexpr float DEGREES_90 = glm::pi<float>() / 2.0f;
         static constexpr float DEGREES_180 = glm::pi<float>();
         static constexpr float DEGREES_270 = glm::pi<float>() * 1.5f;
 
     public:
-
         TransformComponent();
         TransformComponent(const glm::mat4& mat4);
 
@@ -71,7 +69,6 @@ namespace GfxRenderEngine
         void AddTranslation(const glm::vec3& deltaTranslation);
         void AddTranslationX(const float deltaTranslation);
 
-
         // the getters must be const; only the setters have write access
         const glm::vec3& GetScale() { return m_Scale; }
         const glm::vec3& GetRotation() { return m_Rotation; }
@@ -84,16 +81,14 @@ namespace GfxRenderEngine
         const glm::mat4& GetMat4Global();
         const glm::mat4& GetNormalMatrix();
         const glm::mat4& GetParent();
-        void  SetDirtyFlag();
-        bool  GetDirtyFlag() const;
-        void  SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex);
+        void SetDirtyFlag();
+        bool GetDirtyFlag() const;
+        void SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex);
 
     private:
-
         void RecalculateMatrices();
 
     private:
-
         bool m_Dirty{true};
 
         // local
@@ -115,7 +110,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled = true);
         MeshComponent(std::shared_ptr<Model> model, bool enabled = true);
 
@@ -124,9 +118,7 @@ namespace GfxRenderEngine
         bool m_Enabled{false};
 
     private:
-
         static uint m_DefaultNameTagCounter;
-
     };
 
     struct PointLightComponent
@@ -145,17 +137,40 @@ namespace GfxRenderEngine
         int m_RenderPass{0};
     };
 
+    struct OrthographicCameraComponent
+    {
+        OrthographicCameraComponent(float xmag, float ymag, float zfar, float znear)
+            : m_XMag(xmag), m_YMag(ymag), m_ZFar(zfar), m_ZNear(znear)
+        {
+        }
+        float m_XMag{0.f};
+        float m_YMag{0.f};
+        float m_ZFar{0.f};
+        float m_ZNear{0.f};
+    };
+
+    struct PerspectiveCameraComponent
+    {
+        PerspectiveCameraComponent(float aspectRatio, float yfov, float zfar, float znear)
+            : m_AspectRatio(aspectRatio), m_YFov(yfov), m_ZFar(zfar), m_ZNear(znear)
+        {
+        }
+        float m_AspectRatio{0.f};
+        float m_YFov{0.f};
+        float m_ZFar{0.f};
+        float m_ZNear{0.f};
+    };
+
     struct RigidbodyComponent
     {
         enum Type
-        { 
+        {
             STATIC,
             DYNAMIC
         };
 
         Type m_Type = Type::STATIC;
         void* m_Body = nullptr;
-
     };
 
     class NativeScript;
@@ -254,4 +269,4 @@ namespace GfxRenderEngine
     {
         uint m_Tag{0};
     };
-}
+} // namespace GfxRenderEngine

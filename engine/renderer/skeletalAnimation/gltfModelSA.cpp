@@ -38,8 +38,8 @@ namespace GfxRenderEngine
         {
             return;
         }
-        
-        if (numberOfSkeletons>1)
+
+        if (numberOfSkeletons > 1)
         {
             LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin 0.");
         }
@@ -52,9 +52,12 @@ namespace GfxRenderEngine
             const tinygltf::Skin& glTFSkin = m_GltfModel.skins[0];
 
             // does it have information about joints?
-            if (glTFSkin.inverseBindMatrices != Gltf::GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
+            if (glTFSkin.inverseBindMatrices !=
+                Gltf::GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
             {
-                auto& joints = m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+                auto& joints =
+                    m_Skeleton
+                        ->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
 
                 // set up number of joints
                 size_t numberOfJoints = glTFSkin.joints.size();
@@ -72,13 +75,8 @@ namespace GfxRenderEngine
                 {
                     uint count = 0;
                     int type = 0;
-                    auto componentType = LoadAccessor<glm::mat4>
-                    (
-                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices],
-                        inverseBindMatrices,
-                        &count,
-                        &type
-                    );
+                    auto componentType = LoadAccessor<glm::mat4>(m_GltfModel.accessors[glTFSkin.inverseBindMatrices],
+                                                                 inverseBindMatrices, &count, &type);
                     CORE_ASSERT(type == TINYGLTF_TYPE_MAT4, "unexpected type");
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                     // assert # of matrices matches # of joints
@@ -90,7 +88,7 @@ namespace GfxRenderEngine
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
-                    joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
+                    joint.m_GlobalGltfNodeIndex = globalGltfNodeIndex;
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
@@ -99,14 +97,15 @@ namespace GfxRenderEngine
                     // in case they cannot be found in the gltf model
                     auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
 
-                    if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // size must be 0 or 3
+                    if (gltfNode.translation.size() ==
+                        3) // std::vector<double> gltfmodel.node.translation; // size must be 0 or 3
                     {
                         joint.m_DeformedNodeTranslation = glm::make_vec3(gltfNode.translation.data());
                     }
 
                     if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // size must be 0 or 4
                     {
-                        glm::quat q    = glm::make_quat(gltfNode.rotation.data());
+                        glm::quat q = glm::make_quat(gltfNode.rotation.data());
                         joint.m_DeformedNodeRotation = glm::mat4(q);
                     }
 
@@ -131,7 +130,6 @@ namespace GfxRenderEngine
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
-
             }
 
             // create a buffer to be used in the shader for the joint matrices
@@ -157,7 +155,7 @@ namespace GfxRenderEngine
             {
                 tinygltf::AnimationSampler glTFSampler = gltfAnimation.samplers[samplerIndex];
                 auto& sampler = animation->m_Samplers[samplerIndex];
-                
+
                 sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
                 if (glTFSampler.interpolation == "STEP")
                 {
@@ -172,12 +170,8 @@ namespace GfxRenderEngine
                 {
                     uint count = 0;
                     const float* timestampBuffer;
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFSampler.input],
-                        timestampBuffer,
-                        &count
-                    );
+                    auto componentType =
+                        LoadAccessor<float>(m_GltfModel.accessors[glTFSampler.input], timestampBuffer, &count);
 
                     if (componentType == GL_FLOAT)
                     {
@@ -198,13 +192,7 @@ namespace GfxRenderEngine
                     uint count = 0;
                     int type;
                     const uint* buffer;
-                    LoadAccessor<uint>
-                    (
-                        m_GltfModel.accessors[glTFSampler.output],
-                        buffer,
-                        &count,
-                        &type
-                    );
+                    LoadAccessor<uint>(m_GltfModel.accessors[glTFSampler.output], buffer, &count, &type);
 
                     switch (type)
                     {
@@ -228,7 +216,7 @@ namespace GfxRenderEngine
                             }
                             break;
                         }
-                        default: 
+                        default:
                         {
                             CORE_ASSERT(false, "void GltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
                             break;
@@ -251,9 +239,9 @@ namespace GfxRenderEngine
             for (size_t channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex)
             {
                 tinygltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
-                SkeletalAnimation::Channel& channel    = animation->m_Channels[channelIndex];
-                channel.m_SamplerIndex                 = glTFChannel.sampler;
-                channel.m_Node                         = glTFChannel.target_node;
+                SkeletalAnimation::Channel& channel = animation->m_Channels[channelIndex];
+                channel.m_SamplerIndex = glTFChannel.sampler;
+                channel.m_Node = glTFChannel.target_node;
                 if (glTFChannel.target_path == "translation")
                 {
                     channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
@@ -273,8 +261,9 @@ namespace GfxRenderEngine
             }
             m_Animations->Push(animation);
         }
-        
-        if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
+
+        if (m_Animations->Size())
+            m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)
@@ -286,7 +275,7 @@ namespace GfxRenderEngine
 
         joint.m_ParentJoint = parentJoint;
 
-        //process children (if any)
+        // process children (if any)
         size_t numberOfChildren = m_GltfModel.nodes[globalGltfNodeIndex].children.size();
         if (numberOfChildren > 0)
         {
@@ -299,4 +288,4 @@ namespace GfxRenderEngine
             }
         }
     }
-}
+} // namespace GfxRenderEngine

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -56,11 +56,8 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        VK_Pipeline(std::shared_ptr<VK_Device> device,
-                    const std::string& filePathVertexShader_SPV, 
-                    const std::string& filePathFragmentShader_SPV,
-                    const PipelineConfigInfo& spec);
+        VK_Pipeline(std::shared_ptr<VK_Device> device, const std::string& filePathVertexShader_SPV,
+                    const std::string& filePathFragmentShader_SPV, const PipelineConfigInfo& spec);
         ~VK_Pipeline();
 
         VK_Pipeline(const VK_Pipeline&) = delete;
@@ -69,26 +66,19 @@ namespace GfxRenderEngine
         void Bind(VkCommandBuffer commandBuffer);
 
         static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
-        static void SetColorBlendState
-        (
-            PipelineConfigInfo& configInfo,
-            int attachmentCount,
-            const VkPipelineColorBlendAttachmentState* blendAttachments
-        );
+        static void SetColorBlendState(PipelineConfigInfo& configInfo, int attachmentCount,
+                                       const VkPipelineColorBlendAttachmentState* blendAttachments);
 
     private:
-
         static std::vector<char> readFile(const std::string& filepath);
         void CreateGraphicsPipeline(const std::string& filePathVertexShader_SPV,
-                                    const std::string& filePathFragmentShader_SPV,
-                                    const PipelineConfigInfo& configInfo);
+                                    const std::string& filePathFragmentShader_SPV, const PipelineConfigInfo& configInfo);
         void CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
-    private:
 
+    private:
         std::shared_ptr<VK_Device> m_Device;
         VkPipeline m_GraphicsPipeline;
         VkShaderModule m_VertShaderModule;
         VkShaderModule m_FragShaderModule;
-
     };
-}
+} // namespace GfxRenderEngine

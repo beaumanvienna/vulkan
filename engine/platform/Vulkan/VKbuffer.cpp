@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,14 +12,14 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
    Encapsulates a vulkan buffer
    Based on https://github.com/blurrypiano/littleVulkanEngine/blob/main/src/lve_buffer.cpp
    Initially based off VulkanBuffer by Sascha Willems -
@@ -40,16 +40,15 @@ namespace GfxRenderEngine
      */
     VkDeviceSize VK_Buffer::GetAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment)
     {
-      if (minOffsetAlignment > 0)
-      {
-        return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
-      }
-      return instanceSize;
+        if (minOffsetAlignment > 0)
+        {
+            return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+        }
+        return instanceSize;
     }
 
-    VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount,
-                VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
-                VkDeviceSize minOffsetAlignment)
+    VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
+                         VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment)
         : m_Device(VK_Core::m_Device.get()), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
           m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
     {
@@ -58,25 +57,22 @@ namespace GfxRenderEngine
         m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
     }
 
-
-    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage)
-            : m_Device(VK_Core::m_Device.get())
+    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device.get())
+    {
+        if (bufferUsage == Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU)
         {
-            if (bufferUsage == Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU)
-            {
-                m_InstanceSize          = size;
-                m_InstanceCount         = 1;
-                m_UsageFlags            = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-                m_MemoryPropertyFlags   = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-                
-                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
-                
-                m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
-                m_BufferSize = m_AlignmentSize * m_InstanceCount;
-                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
-            }
-        }
+            m_InstanceSize = size;
+            m_InstanceCount = 1;
+            m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
+            VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+
+            m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
+            m_BufferSize = m_AlignmentSize * m_InstanceCount;
+            m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+        }
+    }
 
     VK_Buffer::~VK_Buffer()
     {
@@ -96,14 +92,12 @@ namespace GfxRenderEngine
      */
     VkResult VK_Buffer::Map(VkDeviceSize size, VkDeviceSize offset)
     {
-        if (!(m_Buffer && m_Memory)) LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
+        if (!(m_Buffer && m_Memory))
+            LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
         return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
     }
 
-    void VK_Buffer::MapBuffer()
-    {
-        Map();
-    }
+    void VK_Buffer::MapBuffer() { Map(); }
 
     /**
      * Unmap a mapped memory range
@@ -128,9 +122,10 @@ namespace GfxRenderEngine
      * @param offset (Optional) Byte offset from beginning of m_Mapped region
      *
      */
-    void VK_Buffer::WriteToBuffer(const void *data, VkDeviceSize size, VkDeviceSize offset)
+    void VK_Buffer::WriteToBuffer(const void* data, VkDeviceSize size, VkDeviceSize offset)
     {
-        if (!(m_Mapped)) LOG_CORE_CRITICAL("void VK_Buffer::WriteToBuffer(...): cannot copy to unmapped buffer");
+        if (!(m_Mapped))
+            LOG_CORE_CRITICAL("void VK_Buffer::WriteToBuffer(...): cannot copy to unmapped buffer");
 
         if (size == VK_WHOLE_SIZE)
         {
@@ -138,7 +133,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            char *memOffset = (char *)m_Mapped;
+            char* memOffset = (char*)m_Mapped;
             memOffset += offset;
             memcpy(memOffset, data, size);
         }
@@ -196,8 +191,7 @@ namespace GfxRenderEngine
      */
     VkDescriptorBufferInfo VK_Buffer::DescriptorInfo(VkDeviceSize size, VkDeviceSize offset)
     {
-        return VkDescriptorBufferInfo
-        {
+        return VkDescriptorBufferInfo{
             m_Buffer,
             offset,
             size,
@@ -211,10 +205,7 @@ namespace GfxRenderEngine
      * @param index Used in offset calculation
      *
      */
-    void VK_Buffer::WriteToIndex(void *data, int index)
-    {
-        WriteToBuffer(data, m_InstanceSize, index * m_AlignmentSize);
-    }
+    void VK_Buffer::WriteToIndex(void* data, int index) { WriteToBuffer(data, m_InstanceSize, index * m_AlignmentSize); }
 
     /**
      *  Flush the memory range at index * m_AlignmentSize of the buffer to make it visible to the device
@@ -222,10 +213,7 @@ namespace GfxRenderEngine
      * @param index Used in offset calculation
      *
      */
-    VkResult VK_Buffer::FlushIndex(int index)
-    { 
-        return Flush(m_AlignmentSize, index * m_AlignmentSize);
-    }
+    VkResult VK_Buffer::FlushIndex(int index) { return Flush(m_AlignmentSize, index * m_AlignmentSize); }
 
     /**
      * Create a buffer info descriptor
@@ -248,8 +236,5 @@ namespace GfxRenderEngine
      *
      * @return VkResult of the invalidate call
      */
-    VkResult VK_Buffer::InvalidateIndex(int index)
-    {
-        return Invalidate(m_AlignmentSize, index * m_AlignmentSize);
-    }
-}
+    VkResult VK_Buffer::InvalidateIndex(int index) { return Invalidate(m_AlignmentSize, index * m_AlignmentSize); }
+} // namespace GfxRenderEngine

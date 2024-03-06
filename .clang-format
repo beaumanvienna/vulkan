@@ -33,6 +33,6 @@ SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
 SpaceBeforeCpp11BracedList: false
 AllowShortLoopsOnASingleLine: false
-ColumnLimit: 200
+ColumnLimit: 125
 SortIncludes: false
 AccessModifierOffset: -4

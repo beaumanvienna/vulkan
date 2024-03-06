@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <stdlib.h>
@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     BeachScene::BeachScene(const std::string& filepath, const std::string& alternativeFilepath)
-            : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoader{*this}
+        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoader{*this}
     {
     }
 
@@ -51,10 +51,10 @@ namespace LucreApp
         ImGUI::m_AmbientLightIntensity = 0.177;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
-        {  // set up camera
+        { // set up camera
             m_CameraController = std::make_shared<CameraController>();
 
-            m_Camera = CreateEntity();
+            m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
             ResetScene();
@@ -69,26 +69,18 @@ namespace LucreApp
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
-        m_NonPlayableCharacter = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
+        m_NonPlayableCharacter =
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
 
         {
             // place static lights for beach scene
             float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 0.4f;
-            std::vector<glm::vec3> lightPositions =
-            {
-                {-0.285, height1, -2.8},
-                {-3.2,   height1, -2.8},
-                {-6.1,   height1, -2.8},
-                { 2.7,   height1, -2.8},
-                { 5.6,   height1, -2.8},
-                {-0.285, height1,  0.7},
-                {-3.2,   height1,  0.7},
-                {-6.1,   height1,  0.7},
-                { 2.7,   height1,  0.7},
-                { 5.6,   height1,  0.7}
-            };
+            std::vector<glm::vec3> lightPositions = {{-0.285, height1, -2.8}, {-3.2, height1, -2.8}, {-6.1, height1, -2.8},
+                                                     {2.7, height1, -2.8},    {5.6, height1, -2.8},  {-0.285, height1, 0.7},
+                                                     {-3.2, height1, 0.7},    {-6.1, height1, 0.7},  {2.7, height1, 0.7},
+                                                     {5.6, height1, 0.7}};
 
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
@@ -113,7 +105,7 @@ namespace LucreApp
 
     void BeachScene::Load()
     {
-        m_SceneLoader.Deserialize();  // loads YAML
+        m_SceneLoader.Deserialize(); // loads YAML
         ImGUI::SetupSlider(this);
 
         LoadModels();
@@ -123,25 +115,21 @@ namespace LucreApp
     void BeachScene::LoadModels()
     {
         {
-            std::vector<std::string> faces =
-            {
-                "application/lucre/models/assets/Skybox/right.png",
-                "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",
-                "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/front.png",
-                "application/lucre/models/assets/Skybox/back.png"
-            };
+            std::vector<std::string> faces = {
+                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
-            auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
+            auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(20.0f);
         }
         {
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     m_Lightbulb0 = m_Registry.create();
@@ -154,23 +142,24 @@ namespace LucreApp
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
                 m_LightView0 = std::make_shared<Camera>();
-                float left   =  -4.0f;
-                float right  =   4.0f;
-                float bottom =  -4.0f;
-                float top    =   4.0f;
-                float near   =   0.1f;
-                float far    =  10.0f;
+                float left = -4.0f;
+                float right = 4.0f;
+                float bottom = -4.0f;
+                float top = 4.0f;
+                float near = 0.1f;
+                float far = 10.0f;
                 m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb0, m_LightView0);
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                m_Lightbulb1 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
-                            
+
                     transform.SetScale({0.00999934, 0.00999997, 0.00999993});
                     transform.SetRotation({-1.11028, -0.546991, 0.165967});
                     transform.SetTranslation({6, 6.26463, -14.1572});
@@ -178,25 +167,24 @@ namespace LucreApp
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
                 m_LightView1 = std::make_shared<Camera>();
-                float left   = -20.0f;
-                float right  =  20.0f;
+                float left = -20.0f;
+                float right = 20.0f;
                 float bottom = -14.0f;
-                float top    =  14.0f;
-                float near   =   0.1f;
-                float far    =  40.0f;
+                float top = 14.0f;
+                float near = 0.1f;
+                float far = 40.0f;
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
     }
 
-    void BeachScene::LoadScripts()
-    {
-    }
+    void BeachScene::LoadScripts() {}
 
     void BeachScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck =
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
@@ -217,7 +205,7 @@ namespace LucreApp
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
-            auto& cameraTransform  = view.get<TransformComponent>(m_Camera);
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -260,20 +248,17 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event)
+        dispatcher.Dispatch<MouseScrolledEvent>(
+            [this](MouseScrolledEvent l_Event)
             {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= l_Event.GetY()*0.1f;
+                zoomFactor -= l_Event.GetY() * 0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
-            }
-        );
+            });
     }
 
-    void BeachScene::OnResize()
-    {
-        m_CameraController->SetProjection();
-    }
+    void BeachScene::OnResize() { m_CameraController->SetProjection(); }
 
     void BeachScene::ResetScene()
     {
@@ -294,16 +279,17 @@ namespace LucreApp
         auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
         for (auto entity : view)
         {
-            auto& transform  = view.get<TransformComponent>(entity);
+            auto& transform = view.get<TransformComponent>(entity);
             transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(transform.GetTranslation(), 1.f)));
         }
     }
 
     void BeachScene::AnimateHero(const Timestep& timestep)
     {
-        if (m_NonPlayableCharacter == entt::null) return;
+        if (m_NonPlayableCharacter == entt::null)
+            return;
         auto view = m_Registry.view<TransformComponent>();
-        auto& heroTransform  = view.get<TransformComponent>(m_NonPlayableCharacter);
+        auto& heroTransform = view.get<TransformComponent>(m_NonPlayableCharacter);
 
         static float deltaX = 0.5f;
         static float deltaY = 0.5f;
@@ -311,7 +297,7 @@ namespace LucreApp
 
         constexpr float DEFORM_X_SPEED = 0.2f;
         static float deformX = DEFORM_X_SPEED;
-        
+
         if (deltaX > 0.55f)
         {
             deformX = -DEFORM_X_SPEED;
@@ -328,26 +314,21 @@ namespace LucreApp
     void BeachScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
         {
-            auto& lightbulbTransform  = m_Registry.get<TransformComponent>(lightbulb);
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
 
-            glm::vec3 position  = lightbulbTransform.GetTranslation();
-            glm::vec3 rotation  = lightbulbTransform.GetRotation();
+            glm::vec3 position = lightbulbTransform.GetTranslation();
+            glm::vec3 rotation = lightbulbTransform.GetRotation();
             lightView->SetViewYXZ(position, rotation);
         }
     }
 
-    void BeachScene::SetDirectionalLight
-    (
-        const entt::entity directionalLight,
-        const entt::entity lightbulb,
-        const std::shared_ptr<Camera>& lightView,
-        int renderpass
-    )
+    void BeachScene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
+                                         const std::shared_ptr<Camera>& lightView, int renderpass)
     {
-        auto& lightbulbTransform         = m_Registry.get<TransformComponent>(lightbulb);
-        auto& directionalLightComponent  = m_Registry.get<DirectionalLightComponent>(directionalLight);
-        directionalLightComponent.m_Direction  = lightbulbTransform.GetRotation();
-        directionalLightComponent.m_LightView  = lightView.get();
+        auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
+        auto& directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
+        directionalLightComponent.m_Direction = lightbulbTransform.GetRotation();
+        directionalLightComponent.m_LightView = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
     }
 
@@ -358,4 +339,4 @@ namespace LucreApp
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
-}
+} // namespace LucreApp

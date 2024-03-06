@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -33,17 +33,12 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        SCREEN_WordWrapper(const char *str, float maxW, int flags)
-            : str_(str), maxW_(maxW), flags_(flags)
-        {
-        }
+        SCREEN_WordWrapper(const char* str, float maxW, int flags) : str_(str), maxW_(maxW), flags_(flags) {}
 
         std::string Wrapped();
 
     protected:
-
-        virtual float MeasureWidth(const char *str, size_t bytes) = 0;
+        virtual float MeasureWidth(const char* str, size_t bytes) = 0;
         void Wrap();
         bool WrapBeforeWord();
         void AppendWord(int endIndex, bool addNewline);
@@ -53,7 +48,7 @@ namespace GfxRenderEngine
         static bool IsSpace(uint32_t c);
         static bool IsShy(uint32_t c);
 
-        const char *const str_;
+        const char* const str_;
         const float maxW_;
         const int flags_;
         std::string out_;
@@ -73,4 +68,4 @@ namespace GfxRenderEngine
         // Skip all characters until the next newline.
         bool scanForNewline_ = false;
     };
-}
+} // namespace GfxRenderEngine

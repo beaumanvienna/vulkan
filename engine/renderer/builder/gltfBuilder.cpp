@@ -32,9 +32,8 @@ namespace GfxRenderEngine
 {
 
     GltfBuilder::GltfBuilder(const std::string& filepath, Scene& scene)
-        : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()},
-          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
-          m_InstanceCount{0}, m_InstanceIndex{0}, m_MaterialFeatures{0}
+        : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()}, m_SceneGraph{scene.GetSceneGraph()},
+          m_Dictionary{scene.GetDictionary()}, m_InstanceCount{0}, m_InstanceIndex{0}, m_MaterialFeatures{0}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -61,7 +60,7 @@ namespace GfxRenderEngine
         if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
         {
             // check if valid
-            if ((m_GltfModel.scenes.size()-1) < static_cast<size_t>(sceneID))
+            if ((m_GltfModel.scenes.size() - 1) < static_cast<size_t>(sceneID))
             {
                 LOG_CORE_CRITICAL("LoadGltf: scene not found in {0}", m_Filepath);
                 return Gltf::GLTF_LOAD_FAILURE;
@@ -85,7 +84,7 @@ namespace GfxRenderEngine
                 MarkNode(scene, scene.nodes[nodeIndex]);
             }
         }
-        else //no scene ID was provided --> use all scenes
+        else // no scene ID was provided --> use all scenes
         {
             for (auto& scene : m_GltfModel.scenes)
             {
@@ -99,7 +98,7 @@ namespace GfxRenderEngine
 
         // PASS 2 (for all instances)
         m_InstanceCount = instanceCount;
-        for(m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
+        for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.create();
@@ -120,7 +119,7 @@ namespace GfxRenderEngine
             {
                 ProcessScene(m_GltfModel.scenes[sceneID], groupNode);
             }
-            else //no scene ID was provided --> use all scenes
+            else // no scene ID was provided --> use all scenes
             {
                 for (auto& scene : m_GltfModel.scenes)
                 {
@@ -176,7 +175,7 @@ namespace GfxRenderEngine
 
         uint currentNode = parentNode;
 
-        if (m_HasMesh[gltfNodeIndex]) 
+        if (m_HasMesh[gltfNodeIndex])
         {
             if (meshIndex > Gltf::GLTF_NOT_USED)
             {
@@ -216,7 +215,8 @@ namespace GfxRenderEngine
         uint meshIndex = node.mesh;
 
         auto entity = m_Registry.create();
-        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
+        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
+                         "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + scene.name + "::" + nodeName;
 
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
@@ -228,7 +228,7 @@ namespace GfxRenderEngine
         // *** Instancing ***
         // create instance tag for first game object;
         // and collect further instances in it.
-        // The renderer can loop over all instance tags 
+        // The renderer can loop over all instance tags
         // to retrieve the corresponding game objects.
 
         if (!m_InstanceIndex)
@@ -237,14 +237,16 @@ namespace GfxRenderEngine
             instanceTag.m_Instances.push_back(entity);
             m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
             instanceTag.m_InstanceBuffer = m_InstanceBuffer;
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                                                          transform.GetNormalMatrix());
             m_Registry.emplace<InstanceTag>(entity, instanceTag);
             transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
             m_InstancedObjects.push_back(entity);
 
             // create model for 1st instance
             LoadVertexDataGltf(meshIndex);
-            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
+            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
+                          m_Filepath, nodeName);
             { // assign material
                 uint primitiveIndex = 0;
                 for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
@@ -324,7 +326,8 @@ namespace GfxRenderEngine
             entt::entity instance = m_InstancedObjects[m_RenderObject++];
             InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
             instanceTag.m_Instances.push_back(entity);
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                                                          transform.GetNormalMatrix());
             transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
         }
 
@@ -344,12 +347,30 @@ namespace GfxRenderEngine
         std::string& name = m_GltfModel.images[index].name;
         switch (filter)
         {
-            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+            {
+                break;
+            }
             case Gltf::GLTF_NOT_USED:
             {
                 // use default filter
@@ -374,12 +395,30 @@ namespace GfxRenderEngine
         std::string& name = m_GltfModel.images[index].name;
         switch (filter)
         {
-            case TINYGLTF_TEXTURE_FILTER_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: { break; }
-            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: { break; }
-            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: { break; }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+            {
+                break;
+            }
+            case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+            {
+                break;
+            }
             case Gltf::GLTF_NOT_USED:
             {
                 // use default filter
@@ -438,9 +477,9 @@ namespace GfxRenderEngine
             int magFilter = GetMinFilter(imageIndex);
             bool imageFormat = GetImageFormatGltf(imageIndex);
             texture->Init(glTFImage.width, glTFImage.height, imageFormat, buffer, minFilter, magFilter);
-            #ifdef DEBUG
-                texture->SetFilename(imageFilepath);
-            #endif
+#ifdef DEBUG
+            texture->SetFilename(imageFilepath);
+#endif
             m_Images[imageIndex] = texture;
         }
     }
@@ -483,14 +522,14 @@ namespace GfxRenderEngine
             Material material{};
             material.m_Features = m_SkeletalAnimation;
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
-            material.m_Metallic  = glTFMaterial.pbrMetallicRoughness.metallicFactor;
+            material.m_Metallic = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
             material.m_EmissiveStrength = 0;
 
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
                 glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
-                if (emissiveFactor != glm::vec3(0,0,0))
+                if (emissiveFactor != glm::vec3(0, 0, 0))
                 {
                     material.m_EmissiveFactor = emissiveFactor;
                     material.m_EmissiveStrength = emissiveFactor.r;
@@ -502,7 +541,8 @@ namespace GfxRenderEngine
                 tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
                 material.m_EmissiveMapIndex = emissiveTexture.source;
                 material.m_Features |= Material::HAS_EMISSIVE_MAP;
-                if (!material.m_EmissiveStrength) material.m_EmissiveStrength = 1;
+                if (!material.m_EmissiveStrength)
+                    material.m_EmissiveStrength = 1;
             }
             {
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
@@ -574,11 +614,11 @@ namespace GfxRenderEngine
             ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
 
             submesh.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
-            submesh.m_FirstIndex  = static_cast<uint32_t>(m_Indices.size());
+            submesh.m_FirstIndex = static_cast<uint32_t>(m_Indices.size());
             submesh.m_InstanceCount = m_InstanceCount;
 
             uint vertexCount = 0;
-            uint indexCount  = 0;
+            uint indexCount = 0;
 
             glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             if (glTFPrimitive.material != Gltf::GLTF_NOT_USED)
@@ -591,120 +631,107 @@ namespace GfxRenderEngine
             }
             // Vertices
             {
-                const float* positionBuffer  = nullptr;
-                const float* normalsBuffer   = nullptr;
-                const float* tangentsBuffer  = nullptr;
+                const float* positionBuffer = nullptr;
+                const float* normalsBuffer = nullptr;
+                const float* tangentsBuffer = nullptr;
                 const float* texCoordsBuffer = nullptr;
-                const uint*  jointsBuffer    = nullptr;
-                const float* weightsBuffer   = nullptr;
+                const uint* jointsBuffer = nullptr;
+                const float* weightsBuffer = nullptr;
 
                 int jointsBufferDataType = 0;
 
                 // Get buffer data for vertex positions
                 if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
                 {
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second],
-                        positionBuffer,
-                        &vertexCount
-                    );
+                    auto componentType =
+                        LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second],
+                                            positionBuffer, &vertexCount);
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
                 if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end())
                 {
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second],
-                        normalsBuffer
-                    );
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("NORMAL")->second], normalsBuffer);
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
-                #define USE_TINYGLTF_TANGENTS
-                #ifdef USE_TINYGLTF_TANGENTS
-                    // Get buffer data for vertex tangents
-                    if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
-                    {
-                        auto componentType = LoadAccessor<float>
-                        (
-                            m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second],
-                            tangentsBuffer
-                        );
-                        CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
-                    }
-                #endif
+#define USE_TINYGLTF_TANGENTS
+#ifdef USE_TINYGLTF_TANGENTS
+                // Get buffer data for vertex tangents
+                if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
+                {
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("TANGENT")->second], tangentsBuffer);
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                }
+#endif
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
                 if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
                 {
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second],
-                        texCoordsBuffer
-                    );
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("TEXCOORD_0")->second], texCoordsBuffer);
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
 
                 // Get buffer data for joints
                 if (glTFPrimitive.attributes.find("JOINTS_0") != glTFPrimitive.attributes.end())
                 {
-                    jointsBufferDataType = LoadAccessor<uint>
-                    (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second],
-                        jointsBuffer
-                    );
-                    CORE_ASSERT((jointsBufferDataType == GL_BYTE) || (jointsBufferDataType == GL_UNSIGNED_BYTE), "unexpected component type");
+                    jointsBufferDataType = LoadAccessor<uint>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("JOINTS_0")->second], jointsBuffer);
+                    CORE_ASSERT((jointsBufferDataType == GL_BYTE) || (jointsBufferDataType == GL_UNSIGNED_BYTE),
+                                "unexpected component type");
                 }
                 // Get buffer data for joint weights
                 if (glTFPrimitive.attributes.find("WEIGHTS_0") != glTFPrimitive.attributes.end())
                 {
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second],
-                        weightsBuffer
-                    );
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("WEIGHTS_0")->second], weightsBuffer);
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
 
                 // Append data to model's vertex buffer
                 uint numVerticesBefore = m_Vertices.size();
-                m_Vertices.resize(numVerticesBefore+vertexCount);
+                m_Vertices.resize(numVerticesBefore + vertexCount);
                 uint vertexIndex = numVerticesBefore;
                 for (size_t v = 0; v < vertexCount; v++)
                 {
                     Vertex vertex{};
-                    vertex.m_Amplification  = 1.0f;
-                    auto position           = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
-                    vertex.m_Position       = glm::vec3(position.x, position.y, position.z);
-                    vertex.m_Normal         = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vertex.m_Amplification = 1.0f;
+                    auto position = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
+                    vertex.m_Position = glm::vec3(position.x, position.y, position.z);
+                    vertex.m_Normal =
+                        glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
 
-                    glm::vec4 t             = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
+                    glm::vec4 t = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
-                    vertex.m_UV             = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                    vertex.m_Color          = diffuseColor;
+                    vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    vertex.m_Color = diffuseColor;
                     if (jointsBuffer && weightsBuffer)
                     {
                         switch (jointsBufferDataType)
                         {
                             case GL_BYTE:
                             case GL_UNSIGNED_BYTE:
-                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int8_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds =
+                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int8_t*>(jointsBuffer)[v * 4])));
                                 break;
                             case GL_SHORT:
                             case GL_UNSIGNED_SHORT:
-                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int16_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds =
+                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int16_t*>(jointsBuffer)[v * 4])));
                                 break;
                             case GL_INT:
                             case GL_UNSIGNED_INT:
-                                vertex.m_JointIds = glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int32_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds =
+                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int32_t*>(jointsBuffer)[v * 4])));
                                 break;
                             default:
                                 LOG_CORE_CRITICAL("data type of joints buffer not found");
                                 break;
                         }
-                        vertex.m_Weights        = glm::make_vec4(&weightsBuffer[v * 4]);
+                        vertex.m_Weights = glm::make_vec4(&weightsBuffer[v * 4]);
                     }
                     m_Vertices[vertexIndex] = vertex;
                     ++vertexIndex;
@@ -721,19 +748,14 @@ namespace GfxRenderEngine
             {
                 const uint32_t* buffer;
                 uint count = 0;
-                auto componentType = LoadAccessor<uint32_t>
-                (
-                    m_GltfModel.accessors[glTFPrimitive.indices],
-                    buffer,
-                    &count
-                );
+                auto componentType = LoadAccessor<uint32_t>(m_GltfModel.accessors[glTFPrimitive.indices], buffer, &count);
 
                 indexCount += count;
 
                 // glTF supports different component types of indices
                 switch (componentType)
                 {
-                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: 
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
                     {
                         const uint32_t* buf = buffer;
                         for (size_t index = 0; index < count; index++)
@@ -745,7 +767,7 @@ namespace GfxRenderEngine
                     case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
                     {
                         const uint16_t* buf = reinterpret_cast<const uint16_t*>(buffer);
-                        for (size_t index = 0; index < count; index++) 
+                        for (size_t index = 0; index < count; index++)
                         {
                             m_Indices.push_back(buf[index]);
                         }
@@ -769,7 +791,7 @@ namespace GfxRenderEngine
             }
 
             submesh.m_VertexCount = vertexCount;
-            submesh.m_IndexCount  = indexCount;
+            submesh.m_IndexCount = indexCount;
         }
     }
 
@@ -791,7 +813,6 @@ namespace GfxRenderEngine
                 float w = node.rotation[3];
 
                 transform.SetRotation({w, x, y, z});
-
             }
             if (node.scale.size() == 3)
             {
@@ -815,7 +836,7 @@ namespace GfxRenderEngine
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
-            submesh.m_MaterialProperties.m_Metallic  = 0.1f;
+            submesh.m_MaterialProperties.m_Metallic = 0.1f;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (1)", materialIndex);
             return;
@@ -829,12 +850,12 @@ namespace GfxRenderEngine
         auto& material = m_Materials[materialIndex];
         // assign only those material features that are actually needed in the renderer
         submesh.m_MaterialProperties.m_NormalMapIntensity = material.m_NormalMapIntensity;
-        submesh.m_MaterialProperties.m_Roughness          = material.m_Roughness;
-        submesh.m_MaterialProperties.m_Metallic           = material.m_Metallic;
-        submesh.m_MaterialProperties.m_EmissiveStrength   = material.m_EmissiveStrength;
+        submesh.m_MaterialProperties.m_Roughness = material.m_Roughness;
+        submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
+        submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
 
-        uint pbrFeatures = material.m_Features & (
-                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
+        uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
+                                                  Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
 
         if (pbrFeatures == Material::NO_MAP)
         {
@@ -845,7 +866,8 @@ namespace GfxRenderEngine
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (2), features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
@@ -855,101 +877,124 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseSAMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint normalMapIndex = m_ImageOffset + material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex  = m_ImageOffset + material.m_NormalMapIndex;
+            uint normalMapIndex = m_ImageOffset + material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
+        else if (pbrFeatures ==
+                 (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
+            CORE_ASSERT(normalMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
+                                 Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
+            CORE_ASSERT(normalMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
@@ -957,22 +1002,28 @@ namespace GfxRenderEngine
         }
         else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP))
         {
-            uint diffuseMapIndex           = m_ImageOffset + material.m_DiffuseMapIndex;
-            uint normalMapIndex            = m_ImageOffset + material.m_NormalMapIndex;
+            uint diffuseMapIndex = m_ImageOffset + material.m_DiffuseMapIndex;
+            uint normalMapIndex = m_ImageOffset + material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = m_ImageOffset + material.m_RoughnessMetallicMapIndex;
-            CORE_ASSERT(diffuseMapIndex            < m_Images.size(), "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex             < m_Images.size(), "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex  < m_Images.size(), "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
+            CORE_ASSERT(normalMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -987,7 +1038,8 @@ namespace GfxRenderEngine
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else
         {
@@ -998,7 +1050,8 @@ namespace GfxRenderEngine
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (3), features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (3), features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
 
         // emissive materials
@@ -1008,29 +1061,34 @@ namespace GfxRenderEngine
             if (material.m_Features & Material::HAS_EMISSIVE_MAP)
             {
                 uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
-                CORE_ASSERT(emissiveMapIndex < m_Images.size(), "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
+                CORE_ASSERT(emissiveMapIndex < m_Images.size(),
+                            "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
-                {  // create material descriptor
+                { // create material descriptor
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
                     std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
+                    auto materialDescriptor =
+                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
 
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex,
+                              material.m_Features);
             }
             else // emissive vertex color
             {
                 { // create material descriptor
 
                     std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
+                    auto materialDescriptor =
+                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 }
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
 
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex,
+                              material.m_Features);
             }
         }
     }
@@ -1078,17 +1136,17 @@ namespace GfxRenderEngine
             {
                 case 0:
                     position1 = vertex.m_Position;
-                    uv1  = vertex.m_UV;
+                    uv1 = vertex.m_UV;
                     vertexIndex1 = index;
                     break;
                 case 1:
                     position2 = vertex.m_Position;
-                    uv2  = vertex.m_UV;
+                    uv2 = vertex.m_UV;
                     vertexIndex2 = index;
                     break;
                 case 2:
                     position3 = vertex.m_Position;
-                    uv3  = vertex.m_UV;
+                    uv3 = vertex.m_UV;
                     vertexIndex3 = index;
 
                     glm::vec3 edge1 = position2 - position1;
@@ -1122,7 +1180,8 @@ namespace GfxRenderEngine
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
-                    if (tangent.x==0.0f && tangent.y==0.0f && tangent.z==0.0f) tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+                    if (tangent.x == 0.0f && tangent.y == 0.0f && tangent.z == 0.0f)
+                        tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
@@ -1133,4 +1192,4 @@ namespace GfxRenderEngine
             cnt = (cnt + 1) % 3;
         }
     }
-}
+} // namespace GfxRenderEngine

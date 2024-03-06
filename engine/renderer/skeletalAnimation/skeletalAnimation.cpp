@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -27,24 +27,13 @@
 namespace GfxRenderEngine
 {
 
-    SkeletalAnimation::SkeletalAnimation(std::string const& name)
-        : m_Name{name}, m_Repeat{false}
-    {}
+    SkeletalAnimation::SkeletalAnimation(std::string const& name) : m_Name{name}, m_Repeat{false} {}
 
-    void SkeletalAnimation::Start()
-    {
-        m_CurrentKeyFrameTime = m_FirstKeyFrameTime;
-    }
-    
-    void SkeletalAnimation::Stop()
-    {
-        m_CurrentKeyFrameTime = m_LastKeyFrameTime + 1.0f;
-    }
+    void SkeletalAnimation::Start() { m_CurrentKeyFrameTime = m_FirstKeyFrameTime; }
 
-    bool SkeletalAnimation::IsRunning() const
-    {
-        return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime));
-    }
+    void SkeletalAnimation::Stop() { m_CurrentKeyFrameTime = m_LastKeyFrameTime + 1.0f; }
+
+    bool SkeletalAnimation::IsRunning() const { return (m_Repeat || (m_CurrentKeyFrameTime <= m_LastKeyFrameTime)); }
 
     bool SkeletalAnimation::WillExpire(const Timestep& timestep) const
     {
@@ -60,7 +49,7 @@ namespace GfxRenderEngine
         }
         m_CurrentKeyFrameTime += timestep;
 
-        if ( m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))
+        if (m_Repeat && (m_CurrentKeyFrameTime > m_LastKeyFrameTime))
         {
             m_CurrentKeyFrameTime = m_FirstKeyFrameTime;
         }
@@ -72,18 +61,22 @@ namespace GfxRenderEngine
 
             for (size_t i = 0; i < sampler.m_Timestamps.size() - 1; i++)
             {
-                if ((m_CurrentKeyFrameTime >= sampler.m_Timestamps[i]) && (m_CurrentKeyFrameTime <= sampler.m_Timestamps[i + 1]))
+                if ((m_CurrentKeyFrameTime >= sampler.m_Timestamps[i]) &&
+                    (m_CurrentKeyFrameTime <= sampler.m_Timestamps[i + 1]))
                 {
-                    switch(sampler.m_Interpolation)
+                    switch (sampler.m_Interpolation)
                     {
                         case InterpolationMethod::LINEAR:
                         {
-                            float a = (m_CurrentKeyFrameTime - sampler.m_Timestamps[i]) / (sampler.m_Timestamps[i + 1] - sampler.m_Timestamps[i]);
+                            float a = (m_CurrentKeyFrameTime - sampler.m_Timestamps[i]) /
+                                      (sampler.m_Timestamps[i + 1] - sampler.m_Timestamps[i]);
                             switch (channel.m_Path)
                             {
                                 case Path::TRANSLATION:
                                 {
-                                    joint.m_DeformedNodeTranslation = glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i], sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
+                                    joint.m_DeformedNodeTranslation =
+                                        glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i],
+                                                 sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
                                     break;
                                 }
                                 case Path::ROTATION:
@@ -105,7 +98,9 @@ namespace GfxRenderEngine
                                 }
                                 case Path::SCALE:
                                 {
-                                    joint.m_DeformedNodeScale = glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i], sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
+                                    joint.m_DeformedNodeScale =
+                                        glm::mix(sampler.m_TRSoutputValuesToBeInterpolated[i],
+                                                 sampler.m_TRSoutputValuesToBeInterpolated[i + 1], a);
                                     break;
                                 }
                                 default:
@@ -119,7 +114,8 @@ namespace GfxRenderEngine
                             {
                                 case Path::TRANSLATION:
                                 {
-                                    joint.m_DeformedNodeTranslation = glm::vec3(sampler.m_TRSoutputValuesToBeInterpolated[i]);
+                                    joint.m_DeformedNodeTranslation =
+                                        glm::vec3(sampler.m_TRSoutputValuesToBeInterpolated[i]);
                                     break;
                                 }
                                 case Path::ROTATION:
@@ -153,4 +149,4 @@ namespace GfxRenderEngine
             }
         }
     }
-}
+} // namespace GfxRenderEngine

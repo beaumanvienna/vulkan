@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
@@ -34,8 +34,7 @@
 namespace GfxRenderEngine
 {
     Scene::Scene(const std::string& filepath, const std::string& alternativeFilepath)
-        : m_IsRunning(false), m_Filepath(filepath),
-          m_AlternativeFilepath{alternativeFilepath}
+        : m_IsRunning(false), m_Filepath(filepath), m_AlternativeFilepath{alternativeFilepath}
     {
         m_Name = EngineCore::GetFilenameWithoutExtension(filepath);
         auto entity = m_Registry.create();
@@ -47,26 +46,11 @@ namespace GfxRenderEngine
         m_SceneGraph.CreateNode(entity, "root", m_Name + "::sceneRoot", m_Dictionary);
     }
 
-    Scene::~Scene()
-    {
-    }
+    Scene::~Scene() {}
 
-    entt::entity Scene::CreateEntity()
+    entt::entity Scene::CreatePointLight(const float intensity, const float radius, const glm::vec3& color)
     {
-        Entity entity = Entity::CreateEntity(m_Registry);
-        return entity.GetID();
-    }
-
-    void Scene::DestroyEntity(entt::entity entity)
-    {
-        // destroys an entity and all its components
-        m_Registry.destroy(entity);
-    }
-
-    entt::entity Scene::CreatePointLight(const float intensity, const float radius,
-                                         const glm::vec3& color)
-    {
-        entt::entity pointLight = CreateEntity();
+        entt::entity pointLight = m_Registry.create();
 
         PointLightComponent pointLightComponent{intensity, radius, color};
         m_Registry.emplace<PointLightComponent>(pointLight, pointLightComponent);
@@ -75,10 +59,10 @@ namespace GfxRenderEngine
 
     entt::entity Scene::CreateDirectionalLight(const float intensity, const glm::vec3& color)
     {
-        entt::entity directionlLight = CreateEntity();
+        entt::entity directionlLight = m_Registry.create();
 
         DirectionalLightComponent directionlLightComponent{intensity, color};
         m_Registry.emplace<DirectionalLightComponent>(directionlLight, directionlLightComponent);
         return directionlLight;
     }
-}
+} // namespace GfxRenderEngine
