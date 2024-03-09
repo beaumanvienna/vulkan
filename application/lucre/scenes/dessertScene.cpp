@@ -34,6 +34,7 @@
 #include "dessertScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
+#include "animation/easingFunctions.h"
 
 namespace LucreApp
 {
@@ -82,6 +83,41 @@ namespace LucreApp
             auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToLight]);
 
             m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
+        }
+        // set up moving lights
+        {
+            for (int index = 0; index < NUMBER_OF_MOVING_LIGHTS; ++index)
+            {
+                m_MovingLights[index] = m_Dictionary.Retrieve(
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:0::Scene::LightModel" +
+                    std::to_string(index + 1));
+            }
+            if (m_MovingLights[0] != entt::null)
+            {
+                {
+                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("Hello X Constant");
+                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("Hello Y Constant");
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                {
+                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart");
+                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart");
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                {
+                    std::shared_ptr<EasingAnimation> animationX =
+                        std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart inverted", INVERT_EASE);
+                    std::shared_ptr<EasingAnimation> animationY =
+                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart inverted", INVERT_EASE);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                m_EasingAnimation.SetLoop(true);
+                m_EasingAnimation.SetDuration(10.0s);
+                m_EasingAnimation.Start();
+            }
         }
         m_Water = m_Dictionary.Retrieve(
             "application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf::0::Scene::Water");
@@ -305,6 +341,10 @@ namespace LucreApp
 
     void DessertScene::OnUpdate(const Timestep& timestep)
     {
+        if (m_MovingLights[0] != entt::null)
+        {
+            m_EasingAnimation.Run();
+        }
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();

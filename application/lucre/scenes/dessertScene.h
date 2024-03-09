@@ -36,6 +36,8 @@
 #include "keyboardInputController.h"
 #include "characterAnimation.h"
 
+#include "animation/easingAnimations.h"
+
 namespace LucreApp
 {
     class DessertScene : public Scene
@@ -116,6 +118,11 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
+        static constexpr int NUMBER_OF_MOVING_LIGHTS = 3;
+        static constexpr int ANIMATE_X_Y = 2;
+        static constexpr bool INVERT_EASE = true;
+        entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
+        EasingAnimations<ANIMATE_X_Y> m_EasingAnimation;
 
     private:
         struct BananaComponent

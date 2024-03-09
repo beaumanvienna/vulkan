@@ -93,24 +93,15 @@ namespace GfxRenderEngine
         // mark gltf nodes to receive a game object ID if they have a mesh or any child has
         // --> create array of flags for all nodes of the gltf file
         m_HasMesh.resize(m_GltfModel.nodes.size(), false);
-        if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
         {
-            fastgltf::Scene& scene = m_GltfModel.scenes[sceneID];
+            // if a scene ID was provided, use it, otherwise use scene 0
+            int sceneIDLocal = (sceneID > Gltf::GLTF_NOT_USED) ? sceneID : 0;
+
+            fastgltf::Scene& scene = m_GltfModel.scenes[sceneIDLocal];
             size_t nodeCount = scene.nodeIndices.size();
             for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
             {
                 MarkNode(scene, scene.nodeIndices[nodeIndex]);
-            }
-        }
-        else // no scene ID was provided --> use all scenes
-        {
-            for (fastgltf::Scene& scene : m_GltfModel.scenes)
-            {
-                size_t nodeCount = scene.nodeIndices.size();
-                for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-                {
-                    MarkNode(scene, scene.nodeIndices[nodeIndex]);
-                }
             }
         }
 
@@ -279,8 +270,16 @@ namespace GfxRenderEngine
                     for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
                     {
                         ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
-                        CORE_ASSERT(glTFPrimitive.materialIndex.has_value(), "no material index");
-                        AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
+
+                        if (glTFPrimitive.materialIndex.has_value())
+                        {
+                            AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
+                        }
+                        else
+                        {
+                            LOG_CORE_ERROR("submesh has no material, check your 3D model");
+                            AssignMaterial(submesh, Gltf::GLTF_NOT_USED);
+                        }
                     }
                 }
                 m_Model = Engine::m_Engine->LoadModel(*this);
@@ -858,14 +857,14 @@ namespace GfxRenderEngine
         {
             { // create material descriptor
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
             submesh.m_MaterialProperties.m_Metallic = 0.1f;
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (1)", materialIndex);
+            LOG_CORE_INFO("default material assigned: material index {0}, PbrNoMap (1)", materialIndex);
             return;
         }
 

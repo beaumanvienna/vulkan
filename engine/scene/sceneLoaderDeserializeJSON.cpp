@@ -142,6 +142,8 @@ namespace GfxRenderEngine
     {
         std::string gltfFilename;
         bool loadSuccessful = false;
+        int sceneID = Gltf::GLTF_NOT_USED;
+        bool instanceFieldFound = false;
 
         for (auto gltfFileObject : gltfFileJSON)
         {
@@ -161,8 +163,17 @@ namespace GfxRenderEngine
                     return;
                 }
             }
+            else if (gltfFileObjectKey == "sceneID")
+            {
+                if (instanceFieldFound)
+                {
+                    LOG_CORE_ERROR("place sceneID before instances in the scene description file");
+                }
+                sceneID = static_cast<int>(gltfFileObject.value().get_uint64());
+            }
             else if (gltfFileObjectKey == "instances")
             {
+                instanceFieldFound = true;
                 // get array of gltf file instances
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
@@ -170,12 +181,12 @@ namespace GfxRenderEngine
                 if (fast)
                 {
                     FastgltfBuilder builder(gltfFilename, m_Scene);
-                    loadSuccessful = builder.LoadGltf(instanceCount);
+                    loadSuccessful = builder.LoadGltf(instanceCount, sceneID);
                 }
                 else
                 {
                     GltfBuilder builder(gltfFilename, m_Scene);
-                    loadSuccessful = builder.LoadGltf(instanceCount);
+                    loadSuccessful = builder.LoadGltf(instanceCount, sceneID);
                 }
                 if (loadSuccessful)
                 {
