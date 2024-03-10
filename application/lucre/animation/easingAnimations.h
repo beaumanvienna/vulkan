@@ -27,7 +27,8 @@
 #include "engine.h"
 #include "easingAnimation.h"
 
-using Duration = std::chrono::duration<float, std::chrono::seconds::period>;
+using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using Duration = std::chrono::duration<float, std::chrono::milliseconds::period>;
 
 namespace LucreApp
 {
@@ -39,7 +40,8 @@ namespace LucreApp
         class AnimationsXY
         {
         public:
-            AnimationsXY(std::initializer_list<std::shared_ptr<EasingAnimation>> arguments)
+            AnimationsXY(Duration duration, std::initializer_list<std::shared_ptr<EasingAnimation>> arguments)
+                : m_Duration{duration}
             {
                 CORE_ASSERT(arguments.size() == dimensions,
                             "EasingAnimations::AnimationsXY: wrong number of arguments to initialze animation sequence");
@@ -57,25 +59,27 @@ namespace LucreApp
                     std::cout << m_AnimationsXY[index]->GetName() << "\n";
                 }
             }
-            void Run(float normalizedTime)
+            void Run(float normalizedTime, float speedXY[dimensions])
             {
                 for (int index = 0; index < dimensions; ++index)
                 {
-                    m_AnimationsXY[index]->Run(normalizedTime);
+                    m_AnimationsXY[index]->Run(normalizedTime, speedXY[index]);
                 }
             }
+            Duration GetDuration() const { return m_Duration; }
 
         private:
+            Duration m_Duration;
             std::shared_ptr<EasingAnimation> m_AnimationsXY[dimensions];
         };
 
     public:
-        EasingAnimations()
-            : m_IsRunning{false}, m_Duration{0.0ms}, m_TimePerAnimation{0.0ms}, m_Loop{false}, m_PrintNotRunning{true}
+        EasingAnimations() : m_IsRunning{false}, m_Duration{0.0ms}, m_Loop{false}, m_PrintNotRunning{true} {}
+        void PushAnimation(AnimationsXY& animationXY)
         {
+            m_Duration += animationXY.GetDuration();
+            m_Animations.push_back(animationXY);
         }
-
-        void PushAnimation(AnimationsXY& animations) { m_Animations.push_back(animations); }
         void Print()
         {
             for (auto& animationXY : m_Animations)
@@ -84,7 +88,6 @@ namespace LucreApp
             }
         }
         void SetLoop(bool loop) { m_Loop = loop; }
-        void SetDuration(Duration duration) { m_Duration = duration; }
         void Start()
         {
             if (!m_Animations.size())
@@ -95,19 +98,19 @@ namespace LucreApp
 
             m_IsRunning = true;
             m_PrintNotRunning = true;
-            m_StartTime = Engine::m_Engine->GetTime().time_since_epoch();
+            m_StartTime = Engine::m_Engine->GetTime();
             {
-                m_TimePerAnimation = m_Duration / m_Animations.size();
                 m_StartTimes.clear();
                 m_StartTimes.resize(m_Animations.size());
-                for (size_t index = 0; index < m_Animations.size(); ++index)
+                m_StartTimes[0] = 0.0ms;
+                for (size_t index = 0; index < m_Animations.size() - 1; ++index)
                 {
-                    m_StartTimes[index] = m_StartTime + index * m_TimePerAnimation;
+                    m_StartTimes[index + 1] = m_StartTimes[index] + m_Animations[index].GetDuration();
                 }
             }
         }
         void Stop() { m_IsRunning = false; }
-        void Run()
+        void Run(float speedXY[dimensions])
         {
             if (!m_IsRunning)
             {
@@ -118,39 +121,43 @@ namespace LucreApp
                 }
                 return;
             }
-            Duration currentTime = Engine::m_Engine->GetTime().time_since_epoch();
+            TimePoint currentTime = Engine::m_Engine->GetTime();
             Duration timeElapsedTotal = currentTime - m_StartTime;
             if (timeElapsedTotal > m_Duration)
             {
                 if (m_Loop)
                 {
-                    m_StartTime = Engine::m_Engine->GetTime().time_since_epoch();
-                    for (uint index = 0; index < m_Animations.size(); ++index)
-                    {
-                        m_StartTimes[index] = m_StartTime + index * m_TimePerAnimation;
-                    }
+                    m_StartTime = Engine::m_Engine->GetTime();
                 }
                 else
                 {
+                    m_IsRunning = false;
                     return;
                 }
             }
-            float currentAnimationFloat = timeElapsedTotal / m_TimePerAnimation;
-            int currentAnimation = static_cast<int>(std::floor(currentAnimationFloat));
-            Duration timeElapsedCurrentAnimation = currentTime - m_StartTimes[currentAnimation];
-            float normalizedTime = timeElapsedCurrentAnimation / m_TimePerAnimation;
-            LOG_APP_INFO("currentAnimation: {0}", currentAnimation);
-            m_Animations[currentAnimation].Run(normalizedTime);
+            {
+                for (size_t currentAnimation = 0; currentAnimation < m_Animations.size(); ++currentAnimation)
+                {
+                    Duration currentAnimationDuration = m_Animations[currentAnimation].GetDuration();
+                    if (timeElapsedTotal < m_StartTimes[currentAnimation] + currentAnimationDuration)
+                    {
+                        Duration currentAnimationElapsed = timeElapsedTotal - m_StartTimes[currentAnimation];
+                        float normalizedTime = currentAnimationElapsed / currentAnimationDuration;
+                        LOG_APP_INFO("currentAnimation: {0}", currentAnimation);
+                        m_Animations[currentAnimation].Run(normalizedTime, speedXY);
+                        break;
+                    }
+                }
+            }
         }
 
     private:
         bool m_IsRunning;
-        Duration m_StartTime;
+        TimePoint m_StartTime;
         Duration m_Duration;
-        Duration m_TimePerAnimation;
         bool m_Loop;
         bool m_PrintNotRunning;
-        std::vector<Duration> m_StartTimes;
+        std::vector<Duration> m_StartTimes; // accumulated sequence durations 0s, 3s, 8s, ...
 
         std::vector<AnimationsXY> m_Animations;
     };

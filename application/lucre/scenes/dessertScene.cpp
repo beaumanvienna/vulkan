@@ -94,28 +94,59 @@ namespace LucreApp
             }
             if (m_MovingLights[0] != entt::null)
             {
-                {
-                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("Hello X Constant");
-                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("Hello Y Constant");
-                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
-                    m_EasingAnimation.PushAnimation(animation);
-                }
-                {
-                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart");
-                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart");
-                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
-                    m_EasingAnimation.PushAnimation(animation);
-                }
+                // go left, a bit slow
                 {
                     std::shared_ptr<EasingAnimation> animationX =
-                        std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart inverted", INVERT_EASE);
+                        std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart", -1.0f);
+                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("Hello Y Constant", 0.0f);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(1s, {animationX, animationY});
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                // go left and up
+                {
+                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("Hello X Constant", -1.0f);
                     std::shared_ptr<EasingAnimation> animationY =
-                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart inverted", INVERT_EASE);
-                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation{animationX, animationY};
+                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart", 2.0f);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(5s, {animationX, animationY});
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                // go left and down
+                {
+                    std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("Hello X Constant", -1.0f);
+                    std::shared_ptr<EasingAnimation> animationY =
+                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart ", -2.0f);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(5s, {animationX, animationY});
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+
+                /////////// go back
+                // go right and up
+                {
+                    std::shared_ptr<EasingAnimation> animationX =
+                        std::make_shared<EaseConstant>("Hello X EaseConstant", 1.0f);
+                    std::shared_ptr<EasingAnimation> animationY =
+                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart", 2.0f, INVERT_EASE);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(5s, {animationX, animationY});
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                // go right and down
+                {
+                    std::shared_ptr<EasingAnimation> animationX =
+                        std::make_shared<EaseConstant>("Hello X EaseConstant", 1.0f);
+                    std::shared_ptr<EasingAnimation> animationY =
+                        std::make_shared<EaseInOutQuart>("Hello Y EaseInOutQuart", -2.0f, INVERT_EASE);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(5s, {animationX, animationY});
+                    m_EasingAnimation.PushAnimation(animation);
+                }
+                // go right, a bit slow
+                {
+                    std::shared_ptr<EasingAnimation> animationX =
+                        std::make_shared<EaseInOutQuart>("Hello X EaseInOutQuart", 1.0f, INVERT_EASE);
+                    std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("Hello Y Constant", 0.0f);
+                    EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(1s, {animationX, animationY});
                     m_EasingAnimation.PushAnimation(animation);
                 }
                 m_EasingAnimation.SetLoop(true);
-                m_EasingAnimation.SetDuration(10.0s);
                 m_EasingAnimation.Start();
             }
         }
@@ -343,7 +374,11 @@ namespace LucreApp
     {
         if (m_MovingLights[0] != entt::null)
         {
-            m_EasingAnimation.Run();
+            float speedXY[ANIMATE_X_Y];
+            m_EasingAnimation.Run(speedXY);
+            auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[0]);
+            float speedFactor = timestep * 2.0f;
+            transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
         }
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {

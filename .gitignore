@@ -67,11 +67,5 @@ emulators/mednafen/install-sh
 emulators/mednafen/missing
 application/lucre/models/dont_upload
 renderdoc.cap
-/main.scene
-/night.scene
-/beach.scene
-/splash.scene
-/settings.scene
-/night.json
-/beach.json
-/dessert.json
+/*.scene
+/*.json

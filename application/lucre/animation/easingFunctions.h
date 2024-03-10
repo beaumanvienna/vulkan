@@ -31,12 +31,12 @@ namespace LucreApp
     class EaseConstant : public EasingAnimation
     {
     public:
-        EaseConstant(std::string const& name, bool invert = false) : EasingAnimation(name, invert) {}
+        EaseConstant(std::string const& name, float scale, bool invert = false) : EasingAnimation(name, scale, invert) {}
 
     private:
         virtual float EasingFunction(float time) override
         {
-            float returnValue = 1.0f;
+            float returnValue = m_Scale * 1.0f;
             LOG_APP_INFO("EaseConstant: {0}", returnValue);
             return returnValue;
         }
@@ -47,13 +47,13 @@ namespace LucreApp
     class EaseInOutQuart : public EasingAnimation
     {
     public:
-        EaseInOutQuart(std::string const& name, bool invert = false) : EasingAnimation(name, invert) {}
+        EaseInOutQuart(std::string const& name, float scale, bool invert = false) : EasingAnimation(name, scale, invert) {}
 
     private:
         virtual float EasingFunction(float time) override
         {
-            float returnValue =
-                (time < 0.5f) ? (8.0f * time * time * time * time) : (1.0f - std::pow(-2.0f * time + 2.0f, 4.0f) / 2.0f);
+            float returnValue = m_Scale * ((time < 0.5f) ? (8.0f * time * time * time * time)
+                                                         : (1.0f - std::pow(-2.0f * time + 2.0f, 4.0f) / 2.0f));
             LOG_APP_INFO("EaseInOutQuart: {0}", returnValue);
             return returnValue;
         }
