@@ -143,7 +143,6 @@ namespace LucreApp
                     {
                         Duration currentAnimationElapsed = timeElapsedTotal - m_StartTimes[currentAnimation];
                         float normalizedTime = currentAnimationElapsed / currentAnimationDuration;
-                        LOG_APP_INFO("currentAnimation: {0}", currentAnimation);
                         m_Animations[currentAnimation].Run(normalizedTime, speedXY);
                         break;
                     }

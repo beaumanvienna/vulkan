@@ -122,7 +122,8 @@ namespace LucreApp
         static constexpr int ANIMATE_X_Y = 2;
         static constexpr bool INVERT_EASE = true;
         entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
-        EasingAnimations<ANIMATE_X_Y> m_EasingAnimation;
+        EasingAnimations<ANIMATE_X_Y> m_EasingAnimation[3];
+        void AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation);
 
     private:
         struct BananaComponent

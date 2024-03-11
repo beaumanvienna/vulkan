@@ -30,12 +30,15 @@ namespace LucreApp
     class EasingAnimation
     {
     public:
-        EasingAnimation(std::string const& name, float scale, bool invert = false)
-            : m_Name{name}, m_Invert{invert}, m_Scale{scale}
+        EasingAnimation(std::string const& name, float scale, float offset, bool invert = false)
+            : m_Scale{scale}, m_Invert{invert}, m_Offset{offset}, m_Name{name}
         {
         }
 
-        void Run(float time, float& speed) { speed = m_Invert ? EasingFunction(1.0f - time) : EasingFunction(time); };
+        void Run(float time, float& speed)
+        {
+            speed = m_Offset + (m_Invert ? EasingFunction(1.0f - time) : EasingFunction(time));
+        };
         std::string const& GetName() const { return m_Name; }
 
     private:
@@ -46,6 +49,7 @@ namespace LucreApp
 
     private:
         bool m_Invert;
+        float m_Offset;
         std::string m_Name;
     };
 
