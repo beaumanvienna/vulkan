@@ -92,8 +92,8 @@ namespace GfxRenderEngine
             case Camera::PERSPECTIVE_PROJECTION:
             {
                 m_Camera->SetPerspectiveProjection(glm::radians(50.0f) * m_ZoomFactor, aspectRatio,
-                                                   0.1f, // near
-                                                   50.0f // far
+                                                   0.1f,  // near
+                                                   500.0f // far
                 );
                 break;
             }

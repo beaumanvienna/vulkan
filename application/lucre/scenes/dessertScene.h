@@ -118,11 +118,11 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
-        static constexpr int NUMBER_OF_MOVING_LIGHTS = 3;
+        static constexpr int NUMBER_OF_MOVING_LIGHTS = 6;
         static constexpr int ANIMATE_X_Y = 2;
         static constexpr bool INVERT_EASE = true;
         entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
-        EasingAnimations<ANIMATE_X_Y> m_EasingAnimation[3];
+        std::array<EasingAnimations<ANIMATE_X_Y>, NUMBER_OF_MOVING_LIGHTS> m_EasingAnimation;
         void AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation);
 
     private:

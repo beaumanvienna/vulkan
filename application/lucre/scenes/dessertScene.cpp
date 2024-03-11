@@ -86,17 +86,27 @@ namespace LucreApp
         }
         // set up moving lights
         {
-            for (int index = 0; index < NUMBER_OF_MOVING_LIGHTS; ++index)
+            int lightsIndex = 0;
+            for (int index = 0; index < 3; ++index)
             {
-                m_MovingLights[index] = m_Dictionary.Retrieve(
+                m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
                     "application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:0::Scene::LightModel" +
                     std::to_string(index + 1));
+                ++lightsIndex;
+            }
+            for (int index = 0; index < 3; ++index)
+            {
+                m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:1::Scene::LightModel" +
+                    std::to_string(index + 1));
+                ++lightsIndex;
             }
             if (m_MovingLights[0] != entt::null)
             {
-                AssignAnimation(m_EasingAnimation[0]);
-                AssignAnimation(m_EasingAnimation[1]);
-                AssignAnimation(m_EasingAnimation[2]);
+                for (auto& easingAnimation : m_EasingAnimation)
+                {
+                    AssignAnimation(easingAnimation);
+                }
             }
         }
         m_Water = m_Dictionary.Retrieve(
@@ -247,7 +257,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(300.0f);
         }
         { // directional lights
             {
@@ -323,53 +333,57 @@ namespace LucreApp
     {
         {
             static TimePoint sceneStartTime = Engine::m_Engine->GetTime();
+            auto animateLight = [&](bool& start, int light, Duration delay)
+            {
+                TimePoint currenTime = Engine::m_Engine->GetTime();
+                if (start && (currenTime - sceneStartTime > delay))
+                {
+                    start = false;
+                    m_EasingAnimation[light].Start();
+                }
+                float speedXY[ANIMATE_X_Y];
+                m_EasingAnimation[light].Run(speedXY);
+                auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
+                float speedFactor = timestep * 2.0f;
+                transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+            };
+
             int light = 0;
             if (m_MovingLights[light] != entt::null)
             {
                 static bool start = true;
-                TimePoint currenTime = Engine::m_Engine->GetTime();
-                if (start && (currenTime - sceneStartTime > 3s))
-                {
-                    start = false;
-                    m_EasingAnimation[light].Start();
-                }
-                float speedXY[ANIMATE_X_Y];
-                m_EasingAnimation[light].Run(speedXY);
-                auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
-                float speedFactor = timestep * 2.0f;
-                transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                animateLight(start, light, 3s);
+                ++light;
             }
-            light = 1;
             if (m_MovingLights[light] != entt::null)
             {
                 static bool start = true;
-                TimePoint currenTime = Engine::m_Engine->GetTime();
-                if (start && (currenTime - sceneStartTime > 2s))
-                {
-                    start = false;
-                    m_EasingAnimation[light].Start();
-                }
-                float speedXY[ANIMATE_X_Y];
-                m_EasingAnimation[light].Run(speedXY);
-                auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
-                float speedFactor = timestep * 2.0f;
-                transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                animateLight(start, light, 2s);
+                ++light;
             }
-            light = 2;
             if (m_MovingLights[light] != entt::null)
             {
                 static bool start = true;
-                TimePoint currenTime = Engine::m_Engine->GetTime();
-                if (start && (currenTime - sceneStartTime > 1s))
-                {
-                    start = false;
-                    m_EasingAnimation[light].Start();
-                }
-                float speedXY[ANIMATE_X_Y];
-                m_EasingAnimation[light].Run(speedXY);
-                auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
-                float speedFactor = timestep * 2.0f;
-                transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                animateLight(start, light, 1s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool start = true;
+                animateLight(start, light, 3s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool start = true;
+                animateLight(start, light, 2s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool start = true;
+                animateLight(start, light, 1s);
+                ++light;
             }
         }
         if (Lucre::m_Application->KeyboardInputIsReleased())
