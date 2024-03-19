@@ -53,8 +53,15 @@ namespace LucreApp
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         { // set up camera
-            m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>();
 
+            float aspectRatio = 1.7777777777777777f;
+            float yfov = 0.51f;
+            float zfar = 50.0f;
+            float znear = 0.1f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
+            m_CameraControllers[CameraTypes::DefaultCamera]->GetCamera().SetName("default camera");
             m_Camera[CameraTypes::DefaultCamera] = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::DefaultCamera], cameraTransform);
@@ -75,14 +82,13 @@ namespace LucreApp
         m_Dictionary.List();
 
         m_Camera[CameraTypes::AttachedToLight] =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:0::Scene::Camera");
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::Camera");
         // set up 2nd camera
         if (m_Camera[CameraTypes::AttachedToLight] != entt::null)
         {
             auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
-            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToLight]);
-
             m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
+            m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
         }
         // set up moving lights
         {
@@ -90,14 +96,14 @@ namespace LucreApp
             for (int index = 0; index < 3; ++index)
             {
                 m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
-                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:0::Scene::LightModel" +
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::LightModel" +
                     std::to_string(index + 1));
                 ++lightsIndex;
             }
             for (int index = 0; index < 3; ++index)
             {
                 m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
-                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf:f:1::Scene::LightModel" +
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf::1::Scene::LightModel" +
                     std::to_string(index + 1));
                 ++lightsIndex;
             }
@@ -107,6 +113,15 @@ namespace LucreApp
                 {
                     AssignAnimation(easingAnimation);
                 }
+            }
+        }
+
+        {
+            auto sceneLights = m_Dictionary.Retrieve("SceneLights");
+            if (sceneLights != entt::null)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(sceneLights);
+                transform.SetTranslation({0.0f, 0.5f, 2.0f});
             }
         }
         m_Water = m_Dictionary.Retrieve(
@@ -161,9 +176,11 @@ namespace LucreApp
 
                 entt::entity model = m_Dictionary.Retrieve(
                     "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::Armature");
-
-                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
-                m_CharacterAnimation->Start();
+                if (model != entt::null)
+                {
+                    m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
+                    m_CharacterAnimation->Start();
+                }
             }
         }
         else
@@ -194,7 +211,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacter3 =
-            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf:f:0::Scene::Kaya Body_Mesh");
+            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter3 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
@@ -216,9 +233,8 @@ namespace LucreApp
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -276,7 +292,7 @@ namespace LucreApp
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
 
-                m_LightView0 = std::make_shared<Camera>();
+                m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 SetLightView(m_Lightbulb0, m_LightView0);
             }
 
@@ -295,7 +311,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
-                m_LightView1 = std::make_shared<Camera>();
+                m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -20.0f;
                 float right = 20.0f;
                 float bottom = -14.0f;
@@ -333,56 +349,60 @@ namespace LucreApp
     {
         {
             static TimePoint sceneStartTime = Engine::m_Engine->GetTime();
-            auto animateLight = [&](bool& start, int light, Duration delay)
+            auto animateLight = [&](bool& isRunning, int light, Duration delay)
             {
+                return;
                 TimePoint currenTime = Engine::m_Engine->GetTime();
-                if (start && (currenTime - sceneStartTime > delay))
+                if (!isRunning && (currenTime - sceneStartTime > delay))
                 {
-                    start = false;
+                    isRunning = true;
                     m_EasingAnimation[light].Start();
                 }
-                float speedXY[ANIMATE_X_Y];
-                m_EasingAnimation[light].Run(speedXY);
-                auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
-                float speedFactor = timestep * 2.0f;
-                transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                if (isRunning)
+                {
+                    float speedXY[ANIMATE_X_Y];
+                    m_EasingAnimation[light].Run(speedXY);
+                    auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
+                    float speedFactor = timestep * 2.0f;
+                    transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                }
             };
 
             int light = 0;
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 3s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 3s);
                 ++light;
             }
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 2s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 2s);
                 ++light;
             }
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 1s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 1s);
                 ++light;
             }
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 3s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 3s);
                 ++light;
             }
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 2s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 2s);
                 ++light;
             }
             if (m_MovingLights[light] != entt::null)
             {
-                static bool start = true;
-                animateLight(start, light, 1s);
+                static bool isRunning = false;
+                animateLight(isRunning, light, 1s);
                 ++light;
             }
         }
@@ -405,7 +425,10 @@ namespace LucreApp
 
         AnimateHero(timestep);
         if (m_CharacterAnimation)
+        {
             m_CharacterAnimation->OnUpdate(timestep);
+        }
+
         {
             auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
             float scaleX = lightbulbTransform.GetScale().x;
@@ -493,8 +516,8 @@ namespace LucreApp
         m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
-        cameraTransform.SetTranslation({0.459809f, 3.27545f, 9.53199f});
-        cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({0.0f, 3.0f, 10.0f});
+        cameraTransform.SetRotation({0.0f, 0.0f, 0.0f});
     }
 
     void DessertScene::RotateLights(const Timestep& timestep)

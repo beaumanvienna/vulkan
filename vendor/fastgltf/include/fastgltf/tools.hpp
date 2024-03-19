@@ -345,8 +345,8 @@ public:
 	// some things that these come with (e.g. std::distance using operator-).
 	using iterator_category = std::random_access_iterator_tag;
 
-	AccessorIterator(const IterableAccessor<ElementType, BufferDataAdapter>* accessor2, std::size_t idx2 = 0)
-			: accessor(accessor2), idx(idx2) {
+	AccessorIterator(const IterableAccessor<ElementType, BufferDataAdapter>* _accessor, std::size_t _idx = 0)
+			: accessor(_accessor), idx(_idx) {
 		if (accessor->accessor.sparse.has_value()) {
 			// Get the first sparse index.
 			nextSparseIndex = internal::getAccessorElementAt<std::uint32_t>(accessor->indexComponentType,
@@ -427,7 +427,7 @@ class IterableAccessor {
 public:
 	using iterator = AccessorIterator<ElementType, BufferDataAdapter>;
 
-	explicit IterableAccessor(const Asset& asset2, const Accessor& accessor2, const BufferDataAdapter& adapter) : asset(asset2), accessor(accessor2) {
+	explicit IterableAccessor(const Asset& _asset, const Accessor& _accessor, const BufferDataAdapter& adapter) : asset(_asset), accessor(_accessor) {
 		componentType = accessor.componentType;
 
 		const auto& view = asset.bufferViews[*accessor.bufferViewIndex];

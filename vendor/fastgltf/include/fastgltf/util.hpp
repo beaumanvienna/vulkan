@@ -28,7 +28,9 @@
 
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <limits>
+#include <memory>
 #include <string_view>
 #include <type_traits>
 
@@ -147,6 +149,15 @@ namespace fastgltf {
 #endif
     [[nodiscard]] constexpr T max(T a, T b) noexcept {
         return (a > b) ? a : b;
+    }
+
+    template<typename T, typename... A>
+    [[noreturn]] constexpr void raise(A&&... args) {
+#ifdef __cpp_exceptions
+        throw T(std::forward<A>(args)...);
+#else
+        std::abort();
+#endif
     }
 
     /**
@@ -274,7 +285,7 @@ namespace fastgltf {
 #if FASTGLTF_HAS_CONCEPTS
     requires std::integral<T>
 #endif
-    [[gnu::const]] std::uint8_t clz(T value) {
+    [[gnu::const]] constexpr std::uint8_t clz(T value) {
         static_assert(std::is_integral_v<T>);
 #if FASTGLTF_HAS_BIT
         return static_cast<std::uint8_t>(std::countl_zero(value));
@@ -294,7 +305,7 @@ namespace fastgltf {
     }
 
 	template <typename T>
-	[[gnu::const]] std::uint8_t popcount(T value) {
+	[[gnu::const]] constexpr std::uint8_t popcount(T value) {
 		static_assert(std::is_integral_v<T>);
 #if FASTGLTF_HAS_BIT
 		return static_cast<std::uint8_t>(std::popcount(value));
@@ -327,7 +338,7 @@ namespace fastgltf {
 	 * Helper type in order to allow building a visitor out of multiple lambdas within a call to
 	 * std::visit
 	 */
-	template<class... Ts> 
+	template<class... Ts>
 	struct visitor : Ts... {
 		using Ts::operator()...;
 	};
@@ -378,6 +389,29 @@ namespace fastgltf {
 		return dst;
 	}
 #endif
+
+	/**
+	 * Returns the absolute value of the given integer in its unsigned type.
+	 * This avoids the issue with two complementary signed integers not being able to represent INT_MIN.
+	 */
+	template <typename T>
+	constexpr std::make_unsigned_t<T> uabs(T val) {
+		using unsigned_t = std::make_unsigned_t<T>;
+		return (val < 0)
+			? static_cast<unsigned_t>(-(val + 1)) + 1
+			: static_cast<unsigned_t>(val);
+	}
+
+	template <auto callback>
+	struct UniqueDeleter {
+		template <typename T>
+		constexpr void operator()(T* t) const {
+			callback(t);
+		}
+	};
+
+	template <typename T, auto callback>
+	using deletable_unique_ptr = std::unique_ptr<T, UniqueDeleter<callback>>;
 } // namespace fastgltf
 
 #ifdef _MSC_VER

@@ -26,10 +26,7 @@
 namespace GfxRenderEngine
 {
 
-    Camera::Camera()
-        : m_ProjectionType{PROJECTION_UNDEFINED}, m_Position{0.0f}, m_Rotation{0.0f, glm::pi<float>(), glm::pi<float>()}
-    {
-    }
+    Camera::Camera(ProjectionType projectionType) : m_ProjectionType{projectionType}, m_Position{0.0f}, m_Rotation{0.0f} {}
 
     void Camera::SetProjection(float left, float right, float bottom, float top, float near, float far)
     {
@@ -103,6 +100,19 @@ namespace GfxRenderEngine
     void Camera::SetViewTarget(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up)
     {
         SetViewDirection(position, target - position, up);
+    }
+
+    void Camera::SetViewYXZ(const glm::mat4& modelMatrix)
+    {
+        constexpr int column = 3;
+        m_Position = glm::vec3(modelMatrix[column][0], modelMatrix[column][1], modelMatrix[column][2]);
+
+        static glm::vec3 cameraPosition{0.0f, 0.0f, 0.0f};
+        static glm::vec3 target{0.0f, 0.0f, 1.0f};
+        static glm::vec3 up{0.0f, -1.0f, 0.0f};
+        static glm::mat4 lookAt = glm::lookAt(cameraPosition, target, up);
+        m_ViewMatrix = lookAt * glm::inverse(modelMatrix);
+        m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
     void Camera::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)

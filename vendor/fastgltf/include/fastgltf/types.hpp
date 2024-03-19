@@ -29,7 +29,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <cstdint>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -93,7 +92,7 @@
 #define FASTGLTF_QUOTE(x) FASTGLTF_QUOTE_Q(x)
 
 // fastgltf version string. Use FASTGLTF_QUOTE to stringify.
-#define FASTGLTF_VERSION 0.7.0
+#define FASTGLTF_VERSION 0.7.1
 
 namespace fastgltf {
 #if defined(FASTGLTF_USE_64BIT_FLOAT) && FASTGLTF_USE_64BIT_FLOAT
@@ -102,7 +101,6 @@ namespace fastgltf {
 	using num = float;
 #endif
 
-//#pragma region Enums
     // clang-format off
     enum class PrimitiveType : std::uint8_t {
         Points = 0,
@@ -136,28 +134,31 @@ namespace fastgltf {
      * Represents the various types of components an accessor could point at. This describes the
      * format each component of the structure, which in return is described by fastgltf::AccessorType, is in.
      *
-     * We use the top 16-bits to encode the amount of bits this component type needs.
-     * The lower 16-bits are used to store the glTF ID for the type. Therefore, use the fastgltf::getComponentBitSize
-     * and fastgltf::getGLComponentType functions should be used to extract data from this enum.
+     * As the constants used to identify component type in glTF fit within 13-bits, we store them in the lower 13 bits.
+     * The remaining three bits are then used to store the byte width of the type, minus 1, as 8 is not representable
+     * with just three bits.
+     *
+     * To get the byte or bit size of a component, use the fastgltf::getComponentByteSize or fastgltf::getComponentBitSize,
+     * respectively. To get the OpenGL constant for the component type, use fastgltf::getGLComponentType.
      */
-    enum class ComponentType : std::uint32_t {
+    enum class ComponentType : std::uint16_t {
         Invalid         = 0,
-        Byte            = ( 8 << 16) | 5120,
-        UnsignedByte    = ( 8 << 16) | 5121,
-        Short           = (16 << 16) | 5122,
-        UnsignedShort   = (16 << 16) | 5123,
+        Byte            = (0 << 13) | 5120,
+        UnsignedByte    = (0 << 13) | 5121,
+        Short           = (1 << 13) | 5122,
+        UnsignedShort   = (1 << 13) | 5123,
         /**
          * Signed integers are not officially allowed by the glTF spec, but are placed here for
          * the sake of completeness.
          */
-        Int             = (32 << 16) | 5124,
-        UnsignedInt     = (32 << 16) | 5125,
-        Float           = (32 << 16) | 5126,
+        Int             = (3 << 13) | 5124,
+        UnsignedInt     = (3 << 13) | 5125,
+        Float           = (3 << 13) | 5126,
         /**
          * Doubles are not officially allowed by the glTF spec, but can be enabled by passing
          * Options::AllowDouble if you require it.
          */
-        Double          = (64 << 16) | 5130,
+        Double          = (7 << 13) | 5130,
     };
 
     enum class Filter : std::uint16_t {
@@ -229,11 +230,6 @@ namespace fastgltf {
         Weights = 4,
     };
 
-    enum class CameraType : std::uint8_t {
-        Perspective = 0,
-        Orthographic = 1,
-    };
-
     enum class AlphaMode : std::uint8_t {
         Opaque,
         Mask,
@@ -288,9 +284,7 @@ namespace fastgltf {
     FASTGLTF_ASSIGNMENT_OP_TEMPLATE_MACRO(Category, Category, &)
     FASTGLTF_UNARY_OP_TEMPLATE_MACRO(Category, ~)
     // clang-format on
-//#pragma endregion
 
-//#pragma region ConversionFunctions
     /**
      * Gets the number of components for each element for the given accessor type. For example, with
      * a Vec3 accessor type this will return 3, as a Vec3 contains 3 components.
@@ -323,13 +317,19 @@ namespace fastgltf {
         return type == AccessorType::Mat2 || type == AccessorType::Mat3 || type == AccessorType::Mat4;
     }
 
-    constexpr auto getComponentBitSize(ComponentType componentType) noexcept {
-    	static_assert(std::is_same_v<std::underlying_type_t<ComponentType>, std::uint32_t>);
-    	return static_cast<std::uint16_t>(to_underlying(componentType) >> 16U);
-    }
+	constexpr auto getComponentByteSize(ComponentType componentType) noexcept {
+		static_assert(std::is_same_v<std::underlying_type_t<ComponentType>, std::uint16_t>);
+		if (componentType == ComponentType::Invalid)
+			return 0;
+		return (to_underlying(componentType) >> 13U) + 1;
+	}
+
+	constexpr auto getComponentBitSize(ComponentType componentType) noexcept {
+		return getComponentByteSize(componentType) * 8U;
+	}
 
     constexpr auto getElementByteSize(AccessorType type, ComponentType componentType) noexcept {
-        const auto componentSize = getComponentBitSize(componentType) / 8U;
+        const auto componentSize = getComponentByteSize(componentType);
         auto numComponents = getNumComponents(type);
         const auto rowCount = getElementRowCount(type);
         if (isMatrix(type) && (rowCount * componentSize) % 4 != 0) {
@@ -345,8 +345,8 @@ namespace fastgltf {
      * For example, getGLComponentType(ComponentType::Float) will return GL_FLOAT (0x1406).
      */
     constexpr auto getGLComponentType(ComponentType type) noexcept {
-    	static_assert(std::is_same_v<std::underlying_type_t<ComponentType>, std::uint32_t>);
-        return static_cast<std::uint16_t>(to_underlying(type));
+    	static_assert(std::is_same_v<std::underlying_type_t<ComponentType>, std::uint16_t>);
+        return to_underlying(type) & 0x1FFF; // 2^13 - 1 in hex, to mask the lower 13 bits.
     }
 
     /**
@@ -368,7 +368,7 @@ namespace fastgltf {
     };
 
     constexpr auto getComponentType(std::underlying_type_t<ComponentType> componentType) noexcept {
-        const auto index = componentType - getGLComponentType(ComponentType::Byte);
+        const size_t index = componentType - getGLComponentType(ComponentType::Byte);
         if (index >= components.size()) {
             return ComponentType::Invalid;
 		}
@@ -454,9 +454,6 @@ namespace fastgltf {
 				return "";
 		}
 	}
-//#pragma endregion
-
-//#pragma region Containers
     /**
      * A static vector which cannot be resized freely. When constructed, the backing array is allocated once.
      */
@@ -593,17 +590,17 @@ namespace fastgltf {
 
         SmallVector() : _data(reinterpret_cast<T*>(storage.data())) {}
 
-		explicit SmallVector(const Allocator& allocator2) noexcept : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {}
+		explicit SmallVector(const Allocator& _allocator) noexcept : allocator(_allocator), _data(reinterpret_cast<T*>(storage.data())) {}
 
-        explicit SmallVector(std::size_t size, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
+        explicit SmallVector(std::size_t size, const Allocator& _allocator = Allocator()) : allocator(_allocator), _data(reinterpret_cast<T*>(storage.data())) {
             resize(size);
         }
 
-        SmallVector(std::size_t size, const T& value, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
+        SmallVector(std::size_t size, const T& value, const Allocator& _allocator = Allocator()) : allocator(_allocator), _data(reinterpret_cast<T*>(storage.data())) {
             assign(size, value);
         }
 
-        SmallVector(std::initializer_list<T> init, const Allocator& allocator2 = Allocator()) : allocator(allocator2), _data(reinterpret_cast<T*>(storage.data())) {
+        SmallVector(std::initializer_list<T> init, const Allocator& _allocator = Allocator()) : allocator(_allocator), _data(reinterpret_cast<T*>(storage.data())) {
             assign(init);
         }
 
@@ -861,21 +858,13 @@ namespace fastgltf {
 
         [[nodiscard]] T& at(std::size_t idx) {
             if (idx >= size()) {
-#ifdef __cpp_exceptions
-                throw std::out_of_range("Index is out of range for SmallVector");
-#else
-				std::abort();
-#endif
+                fastgltf::raise<std::out_of_range>("Index is out of range for SmallVector");
             }
             return begin()[idx];
         }
         [[nodiscard]] const T& at(std::size_t idx) const {
             if (idx >= size()) {
-#ifdef __cpp_exceptions
-                throw std::out_of_range("Index is out of range for SmallVector");
-#else
-	            std::abort();
-#endif
+                fastgltf::raise<std::out_of_range>("Index is out of range for SmallVector");
             }
             return begin()[idx];
         }
@@ -1084,28 +1073,28 @@ namespace fastgltf {
 
 		[[nodiscard]] T& value()& {
 			if (!has_value()) {
-				throw std::bad_optional_access();
+                fastgltf::raise<std::bad_optional_access>();
 			}
 			return _value;
 		}
 
 		[[nodiscard]] const T& value() const& {
 			if (!has_value()) {
-				throw std::bad_optional_access();
+				fastgltf::raise<std::bad_optional_access>();
 			}
 			return _value;
 		}
 
 		[[nodiscard]] T&& value()&& {
 			if (!has_value()) {
-				throw std::bad_optional_access();
+				fastgltf::raise<std::bad_optional_access>();
 			}
 			return std::move(_value);
 		}
 
 		[[nodiscard]] const T&& value() const&& {
 			if (!has_value()) {
-				throw std::bad_optional_access();
+				fastgltf::raise<std::bad_optional_access>();
 			}
 			return std::move(_value);
 		}
@@ -1217,9 +1206,7 @@ namespace fastgltf {
 		!std::is_same_v<std::nullopt_t, std::remove_const_t<decltype(OptionalFlagValue<T>::missing_value)>>,
 		OptionalWithFlagValue<T>,
 		std::optional<T>>;
-//#pragma endregion
 
-//#pragma region Structs
 	class URI;
 
 	/**
@@ -1316,6 +1303,7 @@ namespace fastgltf {
 		static void decodePercents(std::string& x) noexcept;
 
 		[[nodiscard]] auto string() const noexcept -> std::string_view;
+		[[nodiscard]] auto c_str() const noexcept -> const char*;
 
 		[[nodiscard]] auto scheme() const noexcept -> std::string_view;
 		[[nodiscard]] auto userinfo() const noexcept -> std::string_view;
@@ -1411,34 +1399,34 @@ namespace fastgltf {
     namespace sources {
         struct BufferView {
             std::size_t bufferViewIndex;
-            MimeType mimeType;
+            MimeType mimeType = MimeType::None;
         };
 
         struct URI {
             std::size_t fileByteOffset;
             fastgltf::URI uri;
-            MimeType mimeType;
+            MimeType mimeType = MimeType::None;
         };
 
         struct Array {
             StaticVector<std::uint8_t> bytes;
-            MimeType mimeType;
+            MimeType mimeType = MimeType::None;
         };
 
 		/** @note This type is not used by the fastgltf parser and is only used for exporting. Use sources::Array instead when importing intead. */
 		struct Vector {
 			std::vector<std::uint8_t> bytes;
-			MimeType mimeType;
+			MimeType mimeType = MimeType::None;
 		};
 
         struct CustomBuffer {
             CustomBufferId id;
-            MimeType mimeType;
+            MimeType mimeType = MimeType::None;
         };
 
         struct ByteView {
             span<const std::byte> bytes;
-            MimeType mimeType;
+            MimeType mimeType = MimeType::None;
         };
 
 		struct Fallback {};
@@ -1561,7 +1549,7 @@ namespace fastgltf {
         FASTGLTF_STD_PMR_NS::vector<std::pair<FASTGLTF_STD_PMR_NS::string, std::size_t>> instancingAttributes;
 
         FASTGLTF_STD_PMR_NS::string name;
- 
+
         [[nodiscard]] auto findInstancingAttribute(std::string_view attributeName) noexcept {
             for (auto it = instancingAttributes.begin(); it != instancingAttributes.end(); ++it) {
                 if (it->first == attributeName)
@@ -1577,7 +1565,7 @@ namespace fastgltf {
             }
             return instancingAttributes.cend();
         }
-   };
+    };
 
     struct Primitive {
 		using attribute_type = std::pair<FASTGLTF_STD_PMR_NS::string, std::size_t>;
@@ -1591,6 +1579,13 @@ namespace fastgltf {
 
         Optional<std::size_t> indicesAccessor;
         Optional<std::size_t> materialIndex;
+
+		/**
+		 * Represents the mappings data from KHR_material_variants.
+		 * Use the variant index to index into this array to get the corresponding material index to use.
+		 * If the optional has no value, the normal materialIndex should be used as a fallback.
+		 */
+		std::vector<Optional<std::size_t>> mappings;
 
 		[[nodiscard]] auto findAttribute(std::string_view name) noexcept {
 			for (auto it = attributes.begin(); it != attributes.end(); ++it) {
@@ -1799,15 +1794,35 @@ namespace fastgltf {
         AlphaMode alphaMode = AlphaMode::Opaque;
 
 		/**
+		 * Determines whether back-face culling should be disabled when using this material.
+		 */
+		bool doubleSided = false;
+
+		/**
+		 * Only true when KHR_materials_unlit is enabled and specified for this material.
+		 */
+		bool unlit = false;
+
+		/**
 		 * The alpha value that determines the upper limit for fragments that
 		 * should be discarded for transparency.
 		 */
         num alphaCutoff = 0.5f;
 
-        /**
-         * Determines whether back-face culling should be disabled when using this material.
-         */
-        bool doubleSided = false;
+		/**
+		 * The emissive strength from the KHR_materials_emissive_strength extension.
+		 */
+		num emissiveStrength = 1.0f;
+
+		/**
+		 * The index of refraction as specified through KHR_materials_ior.
+		 */
+		num ior = 1.5f;
+
+		/**
+		 * The dispersion factor from KHR_materials_dispersion, specifies as 20/Abbe number (20/V).
+		 */
+		num dispersion = 0.0f;
 
 		std::unique_ptr<MaterialAnisotropy> anisotropy;
 
@@ -1842,16 +1857,6 @@ namespace fastgltf {
          */
         std::unique_ptr<MaterialVolume> volume;
 
-        /**
-         * The emissive strength from the KHR_materials_emissive_strength extension.
-         */
-        num emissiveStrength = 1.0f;
-
-        /**
-         * The index of refraction as specified through KHR_materials_ior.
-         */
-        num ior = 1.5f;
-
 		/**
 		 * The index of a packed texture from the MSFT_packing_normalRoughnessMetallic extension,
 		 * providing normal, roughness and metallic data.
@@ -1860,16 +1865,6 @@ namespace fastgltf {
 
 		std::unique_ptr<MaterialPackedTextures> packedOcclusionRoughnessMetallicTextures;
 
-        /**
-         * Only applicable if KHR_materials_unlit is enabled.
-         */
-        bool unlit = false;
-
-		/**
-		 * The dispersion factor from KHR_materials_dispersion, specifies as 20/Abbe number (20/V).
-		 */
-		num dispersion = 0.0f;
-
         FASTGLTF_STD_PMR_NS::string name;
     };
 
@@ -1877,7 +1872,7 @@ namespace fastgltf {
 		/**
 		 * If no sampler is specified, use a default sampler with repeat wrap and auto filter.
 		 */
-		 Optional<std::size_t> samplerIndex;
+		Optional<std::size_t> samplerIndex;
 
 		/**
 		 * The index of the image used by this texture. Either this will have a value,
@@ -1925,7 +1920,7 @@ namespace fastgltf {
         AccessorType type;
         ComponentType componentType;
         bool normalized = false;
-        
+
         std::variant<std::monostate, FASTGLTF_STD_PMR_NS::vector<double>, FASTGLTF_STD_PMR_NS::vector<std::int64_t>> max;
         std::variant<std::monostate, FASTGLTF_STD_PMR_NS::vector<double>, FASTGLTF_STD_PMR_NS::vector<std::int64_t>> min;
 
@@ -2025,6 +2020,8 @@ namespace fastgltf {
         std::vector<Skin> skins;
         std::vector<Texture> textures;
 
+		std::vector<std::string> materialVariants;
+
         // Keeps tracked of categories that were actually parsed.
         Category availableCategories = Category::None;
 
@@ -2052,6 +2049,7 @@ namespace fastgltf {
 				scenes(std::move(other.scenes)),
 				skins(std::move(other.skins)),
 				textures(std::move(other.textures)),
+				materialVariants(std::move(other.materialVariants)),
 				availableCategories(other.availableCategories) {}
 
 		Asset& operator=(const Asset& other) = delete;
@@ -2077,11 +2075,11 @@ namespace fastgltf {
 			scenes = std::move(other.scenes);
 			skins = std::move(other.skins);
 			textures = std::move(other.textures);
+			materialVariants = std::move(other.materialVariants);
 			availableCategories = other.availableCategories;
 			return *this;
 		}
     };
-//#pragma endregion
 } // namespace fastgltf
 
 #ifdef _MSC_VER

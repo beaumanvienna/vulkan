@@ -25,7 +25,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/components.h"
-#include "scene/sceneLoader.h"
+#include "scene/sceneLoaderJSON.h"
 #include "scene/particleSystem.h"
 #include "sprite/spriteAnimation.h"
 #include "renderer/renderer.h"
@@ -77,7 +77,7 @@ namespace LucreApp
         static constexpr float POINT_LIGHT_INTENSITY = 2.7f;
 
         std::shared_ptr<Renderer> m_Renderer;
-        SceneLoader m_SceneLoader;
+        SceneLoaderJSON m_SceneLoaderJSON;
 
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;

@@ -25,7 +25,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "scene/components.h"
-#include "scene/sceneLoader.h"
+#include "scene/sceneLoaderJSON.h"
 #include "renderer/cameraController.h"
 #include "renderer/renderer.h"
 #include "renderer/cubemap.h"
@@ -67,7 +67,7 @@ namespace LucreApp
 
     private:
         std::shared_ptr<Renderer> m_Renderer;
-        SceneLoader m_SceneLoader;
+        SceneLoaderJSON m_SceneLoaderJSON;
 
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;

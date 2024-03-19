@@ -247,7 +247,7 @@ namespace LucreApp
                 auto lambda = [&]()
                 {
                     auto scenePtr =
-                        std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
+                        std::make_shared<MainScene>("main.json", "application/lucre/sceneDescriptions/main.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -269,7 +269,7 @@ namespace LucreApp
                 auto lambda = [&]()
                 {
                     auto scenePtr =
-                        std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
+                        std::make_shared<BeachScene>("beach.json", "application/lucre/sceneDescriptions/beach.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();

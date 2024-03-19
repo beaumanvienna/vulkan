@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     BeachScene::BeachScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoader{*this}
+        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoaderJSON{*this}
     {
     }
 
@@ -52,11 +52,19 @@ namespace LucreApp
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         { // set up camera
-            m_CameraController = std::make_shared<CameraController>();
+            float aspectRatio = 1.7777777777777777f;
+            float yfov = 0.51f;
+            float zfar = 500.0f;
+            float znear = 0.1f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
             m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -85,9 +93,8 @@ namespace LucreApp
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -105,7 +112,7 @@ namespace LucreApp
 
     void BeachScene::Load()
     {
-        m_SceneLoader.Deserialize(); // loads YAML
+        m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(this);
 
         LoadModels();
@@ -124,7 +131,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(250.0f);
         }
         {
             {
@@ -141,7 +148,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
-                m_LightView0 = std::make_shared<Camera>();
+                m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -4.0f;
                 float right = 4.0f;
                 float bottom = -4.0f;
@@ -166,7 +173,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
-                m_LightView1 = std::make_shared<Camera>();
+                m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -20.0f;
                 float right = 20.0f;
                 float bottom = -14.0f;
@@ -187,17 +194,18 @@ namespace LucreApp
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if (duck != entt::null)
         {
-            auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
-
-            duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
-            LOG_APP_INFO("scripts loaded");
+            if (m_Registry.all_of<ScriptComponent>(duck))
+            {
+                auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
+                duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
+            }
         }
     }
 
     void BeachScene::Stop()
     {
         m_IsRunning = false;
-        m_SceneLoader.Serialize();
+        m_SceneLoaderJSON.Serialize();
     }
 
     void BeachScene::OnUpdate(const Timestep& timestep)
@@ -208,7 +216,7 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
         }
 
         AnimateHero(timestep);
@@ -265,8 +273,8 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-0.8f, 2.0f, 2.30515f});
-        cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({-0.8f, 2.0f, 2.3f});
+        cameraTransform.SetRotation({0.0f, 0.0f, 0.0f});
 
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
     }

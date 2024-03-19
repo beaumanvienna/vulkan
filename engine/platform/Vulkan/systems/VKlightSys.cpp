@@ -122,6 +122,8 @@ namespace GfxRenderEngine
         PROFILE_SCOPE("VK_LightSystem::Update");
         {
             m_SortedLight.clear();
+            auto& cameraPosition = frameInfo.m_Camera->GetPosition();
+
             int lightIndex = 0;
             auto view = registry.view<PointLightComponent, TransformComponent>();
             for (auto entity : view)
@@ -130,7 +132,6 @@ namespace GfxRenderEngine
 
                 ASSERT(lightIndex < MAX_LIGHTS);
 
-                auto& cameraPosition = frameInfo.m_Camera->GetPosition();
                 auto& mat4Global = transform.GetMat4Global();
                 constexpr int column = 3;
                 auto lightPosition = glm::vec3(mat4Global[column][0], mat4Global[column][1], mat4Global[column][2]);

@@ -198,7 +198,7 @@ namespace GfxRenderEngine
                 auto entity = m_Registry.create();
 
                 // create scene graph node and add to parent
-                auto shortName = ":f:" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
                 auto longName = m_Filepath + shortName;
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
@@ -221,7 +221,6 @@ namespace GfxRenderEngine
 
     uint FastgltfBuilder::CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
     {
-
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         std::string nodeName(node.name);
         int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
@@ -229,7 +228,7 @@ namespace GfxRenderEngine
         int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.create();
-        auto baseName = ":f:" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+        auto baseName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + baseName;
         auto longName = m_Filepath + baseName;
 
@@ -453,15 +452,29 @@ namespace GfxRenderEngine
 
     int FastgltfBuilder::GetMinFilter(uint index)
     {
-        size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
-        fastgltf::Filter filter = m_GltfModel.samplers[sampler].minFilter.value();
+        fastgltf::Filter filter = fastgltf::Filter::Linear;
+        if (m_GltfModel.textures[index].samplerIndex.has_value())
+        {
+            size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
+            if (m_GltfModel.samplers[sampler].minFilter.has_value())
+            {
+                filter = m_GltfModel.samplers[sampler].minFilter.value();
+            }
+        }
         return static_cast<int>(filter);
     }
 
     int FastgltfBuilder::GetMagFilter(uint index)
     {
-        size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
-        fastgltf::Filter filter = m_GltfModel.samplers[sampler].magFilter.value();
+        fastgltf::Filter filter = fastgltf::Filter::Linear;
+        if (m_GltfModel.textures[index].samplerIndex.has_value())
+        {
+            size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
+            if (m_GltfModel.samplers[sampler].magFilter.has_value())
+            {
+                filter = m_GltfModel.samplers[sampler].magFilter.value();
+            }
+        }
         return static_cast<int>(filter);
     }
 
@@ -531,9 +544,10 @@ namespace GfxRenderEngine
                                 [&](fastgltf::sources::Array& vector) // load from memory
                                 {
                                     int width = 0, height = 0, nrChannels = 0;
-                                    unsigned char* buffer =
-                                        stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()),
-                                                              &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                                    using byte = unsigned char;
+                                    byte* buffer = stbi_load_from_memory(vector.bytes.data() + bufferView.byteOffset,
+                                                                         static_cast<int>(bufferView.byteLength), &width,
+                                                                         &height, &nrChannels, 4);
                                     CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
 
                                     int minFilter = GetMinFilter(imageIndex);
@@ -782,48 +796,26 @@ namespace GfxRenderEngine
             // Indices
             if (glTFPrimitive.indicesAccessor.has_value())
             {
-                const uint32_t* buffer;
-                size_t count = 0;
-                auto componentType =
-                    LoadAccessor<uint32_t>(m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()], buffer, &count);
-
-                indexCount += count;
-
-                // glTF supports different component types of indices
-                switch (componentType)
                 {
-                    case fastgltf::ComponentType::UnsignedInt:
-                    {
-                        const uint32_t* buf = buffer;
-                        for (size_t index = 0; index < count; index++)
-                        {
-                            m_Indices.push_back(buf[index]);
-                        }
-                        break;
-                    }
-                    case fastgltf::ComponentType::UnsignedShort:
-                    {
-                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(buffer);
-                        for (size_t index = 0; index < count; index++)
-                        {
-                            m_Indices.push_back(buf[index]);
-                        }
-                        break;
-                    }
-                    case fastgltf::ComponentType::UnsignedByte:
-                    {
-                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
-                        for (size_t index = 0; index < count; index++)
-                        {
-                            m_Indices.push_back(buf[index]);
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        CORE_ASSERT(false, "unexpected component type, index component type not supported!");
-                        return;
-                    }
+                    auto& accessor = m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()];
+                    indexCount = accessor.count;
+
+                    // append indices for submesh to global index array
+                    size_t globalIndicesOffset = m_Indices.size();
+                    m_Indices.resize(m_Indices.size() + indexCount);
+
+                    std::vector<uint> submeshIndices;
+                    submeshIndices.resize(indexCount);
+
+                    fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor,
+                                                             [&](uint submeshIndex, size_t iterator)
+                                                             { submeshIndices[iterator] = submeshIndex; });
+
+                    // copy submesh indices into global index array
+                    uint* src = submeshIndices.data();
+                    uint* dest = m_Indices.data() + globalIndicesOffset;
+                    uint length = indexCount * sizeof(uint);
+                    memcpy(dest, src, length);
                 }
             }
 

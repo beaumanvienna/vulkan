@@ -46,7 +46,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(300.0f);
         }
         {
             float scaleHero = 0.0038f;
@@ -124,10 +124,9 @@ namespace LucreApp
                 m_PointLight[i] = CreatePointLight(POINT_LIGHT_INTENSITY, 0.1f, lightColors[i]);
                 auto rotateLight =
                     glm::rotate(glm::mat4(1.0f), (i * glm::two_pi<float>()) / lightColors.size(), {0.f, -1.f, 0.f});
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(m_PointLight[i]);
                 glm::vec3 translation = glm::vec3(rotateLight * glm::vec4(-1.0f, 0.25f, 1.0f, 0.0f));
                 transform.SetTranslation(translation);
-                m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
                 m_Registry.emplace<Group1>(m_PointLight[i], true);
             }
         }

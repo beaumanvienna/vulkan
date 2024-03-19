@@ -51,12 +51,20 @@ namespace LucreApp
         ImGUI::m_AmbientLightIntensity = 0.177;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
-        { // set up camera
-            m_CameraController = std::make_shared<CameraController>();
+        { // set up camera // set up camera
+            float aspectRatio = 1.7777777777777777f;
+            float yfov = 0.51f;
+            float zfar = 500.0f;
+            float znear = 0.1f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
             m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -168,9 +176,8 @@ namespace LucreApp
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -230,7 +237,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(250.0f);
         }
         { // directional lights
             {
@@ -248,7 +255,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
-                m_LightView0 = std::make_shared<Camera>();
+                m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -4.0f;
                 float right = 4.0f;
                 float bottom = -4.0f;
@@ -274,7 +281,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
-                m_LightView1 = std::make_shared<Camera>();
+                m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -20.0f;
                 float right = 20.0f;
                 float bottom = -14.0f;
@@ -316,7 +323,7 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
         }
 
         AnimateHero(timestep);
@@ -383,7 +390,7 @@ namespace LucreApp
         cameraTransform.SetTranslation({1.47303f, 3.27545f, 3.30939f});
         cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
     }
 
     void NightScene::RotateLights(const Timestep& timestep)

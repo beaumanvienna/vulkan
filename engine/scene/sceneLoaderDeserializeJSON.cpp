@@ -232,7 +232,7 @@ namespace GfxRenderEngine
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array),
                                             "type must be object");
-                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
+                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance, instanceIndex);
                             }
                             else
                             {
@@ -377,7 +377,7 @@ namespace GfxRenderEngine
     }
 
     void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename,
-                                         Gltf::Instance& gltfFileInstance)
+                                         Gltf::Instance& gltfFileInstance, uint instanceIndex)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount)
@@ -416,7 +416,8 @@ namespace GfxRenderEngine
                     std::string_view scriptComponentStringView = nodeObject.value().get_string();
                     gltfNode.m_ScriptComponent = std::string(scriptComponentStringView);
 
-                    std::string fullEntityName = gltfFilename + std::string("::" + gltfNode.m_Name);
+                    std::string fullEntityName =
+                        gltfFilename + "::" + std::to_string(instanceIndex) + "::" + gltfNode.m_Name;
                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                     if (gameObject != entt::null)
                     {

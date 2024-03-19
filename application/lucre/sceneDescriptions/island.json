@@ -2,7 +2,7 @@
     "file format identifier": 1.2,
     "description": "dessert scene",
     "author": "Copyright (c) 2023 Engine Development Team",
-    "gltf files":
+    "fastgltf files":
     [
         {
             "filename": "application/lucre/models/external_3D_files/cactus/cactus.gltf",

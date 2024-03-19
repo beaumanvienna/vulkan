@@ -81,6 +81,10 @@ namespace GfxRenderEngine
         SceneGraph m_SceneGraph;
         bool m_IsRunning;
 
+        // scene lights
+        uint m_SceneLightsGroupNode;
+        uint m_LightCounter;
+
         friend class SceneLoader;
         friend class SceneLoaderJSON;
     };

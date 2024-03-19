@@ -41,25 +41,29 @@ namespace LucreApp
 
     void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
     {
-
         glm::vec3 rotate{0};
         if (Input::IsKeyPressed(LOOK_RIGHT))
             rotate.y -= 1.f;
         if (Input::IsKeyPressed(LOOK_LEFT))
             rotate.y += 1.f;
         if (Input::IsKeyPressed(LOOK_UP))
-            rotate.x -= 1.f;
-        if (Input::IsKeyPressed(LOOK_DOWN))
             rotate.x += 1.f;
+        if (Input::IsKeyPressed(LOOK_DOWN))
+            rotate.x -= 1.f;
 
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
         {
-            transform.SetRotation(transform.GetRotation() + m_LookSpeed * (float)timestep * glm::normalize(rotate));
+            transform.AddRotation(m_LookSpeed * (float)timestep * glm::normalize(rotate));
         }
 
         // limit pitch values between about +/- 85ish degrees
-        transform.SetRotationX(glm::clamp(transform.GetRotation().x, -1.5f, 1.5f));
-        transform.SetRotationY(glm::mod(transform.GetRotation().y, glm::two_pi<float>()));
+        {
+            float rotationX = transform.GetRotation().x;
+            if (std::abs(rotationX) > 1.5f)
+            {
+                transform.SetRotationX(glm::clamp(rotationX, -1.5f, 1.5f));
+            }
+        }
 
         float yaw = transform.GetRotation().y;
         const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};

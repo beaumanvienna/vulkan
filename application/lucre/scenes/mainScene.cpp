@@ -40,7 +40,7 @@ namespace LucreApp
 
     MainScene::MainScene(const std::string& filepath, const std::string& alternativeFilepath)
         : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false}, m_StartTimer{true},
-          m_LaunchVolcanoTimer(1000), m_SceneLoader{*this}
+          m_LaunchVolcanoTimer(1000), m_SceneLoaderJSON{*this}
     {
     }
 
@@ -52,12 +52,20 @@ namespace LucreApp
         ImGUI::m_AmbientLightIntensity = 0.12;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
-        {
-            m_CameraController = std::make_shared<CameraController>();
+        { // set up camera
+            float aspectRatio = 1.7777777777777777f;
+            float yfov = 0.51f;
+            float zfar = 500.0f;
+            float znear = 0.1f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
             m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -121,12 +129,11 @@ namespace LucreApp
                 {5.6, height4, -1.5420},   {-0.285, height4, 1.2},   {-3.2, height4, 1.2},     {-6.1, height4, 1.2},
                 {2.7, height4, 1.2},       {5.6, height4, 1.2}};
 
-            for (size_t i = 0; i < lightPositions.size(); i++)
+            for (size_t index = 0; index < lightPositions.size(); ++index)
             {
                 auto entity = CreatePointLight(POINT_LIGHT_INTENSITY, lightRadius);
-                TransformComponent lightTransform{};
-                lightTransform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, lightTransform);
+                auto& lightTransform = m_Registry.get<TransformComponent>(entity);
+                lightTransform.SetTranslation(lightPositions[index]);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -143,7 +150,7 @@ namespace LucreApp
 
         InitPhysics();
 
-        m_SceneLoader.Deserialize(); // loads YAML
+        m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(this);
 
         LoadModels();
@@ -180,7 +187,7 @@ namespace LucreApp
     void MainScene::Stop()
     {
         m_IsRunning = false;
-        m_SceneLoader.Serialize();
+        m_SceneLoaderJSON.Serialize();
     }
 
     void MainScene::OnUpdate(const Timestep& timestep)
@@ -215,7 +222,7 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
         }
 
         // draw new scene
@@ -288,7 +295,7 @@ namespace LucreApp
         cameraTransform.SetTranslation({3.1, 1.08, -1.6});
         cameraTransform.SetRotation({-0.04, 1.9, 0});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
     }
 
     void MainScene::InitPhysics()

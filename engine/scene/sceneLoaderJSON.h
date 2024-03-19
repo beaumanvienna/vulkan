@@ -67,7 +67,8 @@ namespace GfxRenderEngine
         void ParseFbxFile(ondemand::object fbxFileJSON);
         void ParseObjFile(ondemand::object objFileJSON);
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
-        void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
+        void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,
+                            uint instanceIndex);
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 

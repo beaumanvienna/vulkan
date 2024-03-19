@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     class CameraController
     {
     public:
-        CameraController(Camera::ProjectionType type = Camera::PERSPECTIVE_PROJECTION);
+        CameraController(Camera::ProjectionType type);
         CameraController(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetProjection();

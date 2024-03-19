@@ -31,13 +31,13 @@ namespace GfxRenderEngine
 
     CameraController::CameraController(Camera::ProjectionType type) : m_ZoomFactor{1.0f}
     {
-        m_Camera = std::make_shared<Camera>();
+        m_Camera = std::make_shared<Camera>(type);
         SetProjection(type);
     }
 
     CameraController::CameraController(PerspectiveCameraComponent& perspectiveCameraComponent) : m_ZoomFactor{1.0f}
     {
-        m_Camera = std::make_shared<Camera>();
+        m_Camera = std::make_shared<Camera>(Camera::ProjectionType::PERSPECTIVE_PROJECTION);
         SetProjection(perspectiveCameraComponent);
     }
 
@@ -46,8 +46,6 @@ namespace GfxRenderEngine
         m_ZoomFactor = factor;
         SetProjection(m_Camera->GetProjectionType());
     }
-
-    void CameraController::SetRotation(const glm::vec3& rotation) { m_Camera->SetRotation(rotation); }
 
     void CameraController::SetTranslation(const glm::vec2& translation)
     {
@@ -109,15 +107,5 @@ namespace GfxRenderEngine
         m_Camera->SetViewYXZ(position, rotation);
     }
 
-    void CameraController::SetViewYXZ(const glm::mat4& modelMatrix)
-    {
-        glm::vec3 translation;
-        glm::quat rotation;
-        glm::vec3 scale;
-        glm::vec3 skew;
-        glm::vec4 perspective;
-        glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
-        glm::vec3 rotationEuler = glm::eulerAngles(rotation);
-        m_Camera->SetViewYXZ(translation, rotationEuler);
-    }
+    void CameraController::SetViewYXZ(const glm::mat4& modelMatrix) { m_Camera->SetViewYXZ(modelMatrix); }
 } // namespace GfxRenderEngine

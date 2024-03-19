@@ -70,9 +70,9 @@ namespace GfxRenderEngine
         void AddTranslationX(const float deltaTranslation);
 
         // the getters must be const; only the setters have write access
-        const glm::vec3& GetScale() { return m_Scale; }
-        const glm::vec3& GetRotation() { return m_Rotation; }
-        const glm::vec3& GetTranslation() { return m_Translation; }
+        const glm::vec3& GetScale() const { return m_Scale; }
+        const glm::vec3& GetRotation() const { return m_Rotation; }
+        const glm::vec3& GetTranslation() const { return m_Translation; }
 
         void SetMat4Local(const glm::mat4& mat4);
         void SetMat4Global(const glm::mat4& parent);
@@ -143,10 +143,11 @@ namespace GfxRenderEngine
             : m_XMag(xmag), m_YMag(ymag), m_ZFar(zfar), m_ZNear(znear)
         {
         }
-        float m_XMag{0.f};
-        float m_YMag{0.f};
-        float m_ZFar{0.f};
-        float m_ZNear{0.f};
+        OrthographicCameraComponent() = delete;
+        float m_XMag;
+        float m_YMag;
+        float m_ZFar;
+        float m_ZNear;
     };
 
     struct PerspectiveCameraComponent
@@ -155,10 +156,11 @@ namespace GfxRenderEngine
             : m_AspectRatio(aspectRatio), m_YFov(yfov), m_ZFar(zfar), m_ZNear(znear)
         {
         }
-        float m_AspectRatio{0.f};
-        float m_YFov{0.f};
-        float m_ZFar{0.f};
-        float m_ZNear{0.f};
+        PerspectiveCameraComponent() = delete;
+        float m_AspectRatio;
+        float m_YFov;
+        float m_ZFar;
+        float m_ZNear;
     };
 
     struct RigidbodyComponent
