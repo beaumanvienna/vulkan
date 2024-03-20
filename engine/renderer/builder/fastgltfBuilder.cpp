@@ -410,7 +410,7 @@ namespace GfxRenderEngine
             else if (const auto* pPerspective = std::get_if<fastgltf::Camera::Perspective>(&glTFCamera.camera))
             {
                 float aspectRatio = pPerspective->aspectRatio.has_value() ? pPerspective->aspectRatio.value() : 1.0f;
-                float yfov = pPerspective->yfov * 100;
+                float yfov = pPerspective->yfov;
                 float zfar = pPerspective->zfar.has_value() ? pPerspective->zfar.value() : 500.0f;
                 float znear = pPerspective->znear;
 

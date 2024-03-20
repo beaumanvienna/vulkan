@@ -55,7 +55,7 @@ namespace GfxRenderEngine
         m_Fovy = perspectiveCameraComponent.m_YFov;
         m_Aspect = Engine::m_Engine->GetWindowAspectRatio(); // aspect ratio of main window
 
-        m_Camera->SetPerspectiveProjection(glm::radians(m_Fovy) * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
+        m_Camera->SetPerspectiveProjection(m_Fovy * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
     }
 
     void CameraController::SetProjection(OrthographicCameraComponent& orthographicCameraComponent)
@@ -100,7 +100,7 @@ namespace GfxRenderEngine
             }
             case Camera::PERSPECTIVE_PROJECTION:
             {
-                m_Camera->SetPerspectiveProjection(glm::radians(m_Fovy) * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
+                m_Camera->SetPerspectiveProjection(m_Fovy * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
                 break;
             }
             case Camera::PROJECTION_UNDEFINED:

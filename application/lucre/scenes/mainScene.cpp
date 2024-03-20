@@ -54,7 +54,7 @@ namespace LucreApp
 
         { // set up camera
             float aspectRatio = 1.7777777777777777f;
-            float yfov = 50.0f;
+            float yfov = 0.51f;
             float znear = 0.1f;
             float zfar = 500.0f;
 
