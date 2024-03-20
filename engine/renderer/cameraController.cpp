@@ -29,10 +29,10 @@
 namespace GfxRenderEngine
 {
 
-    CameraController::CameraController(Camera::ProjectionType type) : m_ZoomFactor{1.0f}
+    CameraController::CameraController(OrthographicCameraComponent& orthographicCameraComponent) : m_ZoomFactor{1.0f}
     {
-        m_Camera = std::make_shared<Camera>(type);
-        SetProjection(type);
+        m_Camera = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
+        SetProjection(orthographicCameraComponent);
     }
 
     CameraController::CameraController(PerspectiveCameraComponent& perspectiveCameraComponent) : m_ZoomFactor{1.0f}
@@ -44,32 +44,43 @@ namespace GfxRenderEngine
     void CameraController::SetZoomFactor(float factor)
     {
         m_ZoomFactor = factor;
-        SetProjection(m_Camera->GetProjectionType());
+        SetProjection();
     }
-
-    void CameraController::SetTranslation(const glm::vec2& translation)
-    {
-        m_Camera->SetPosition({translation.x, translation.y, 0.0f});
-    }
-
-    void CameraController::SetTranslation(const glm::vec3& translation) { m_Camera->SetPosition(translation); }
-
-    void CameraController::SetProjection() { SetProjection(m_Camera->GetProjectionType()); }
 
     void CameraController::SetProjection(PerspectiveCameraComponent& perspectiveCameraComponent)
     {
-        float aspectRatio = Engine::m_Engine->GetWindowAspectRatio();
-        m_Camera->SetPerspectiveProjection(glm::radians(perspectiveCameraComponent.m_YFov) * m_ZoomFactor, aspectRatio,
-                                           perspectiveCameraComponent.m_ZNear, // near
-                                           perspectiveCameraComponent.m_ZFar   // far
-        );
+
+        m_ZNear = perspectiveCameraComponent.m_ZNear;
+        m_ZFar = perspectiveCameraComponent.m_ZFar;
+        m_Fovy = perspectiveCameraComponent.m_YFov;
+        m_Aspect = Engine::m_Engine->GetWindowAspectRatio(); // aspect ratio of main window
+
+        m_Camera->SetPerspectiveProjection(glm::radians(m_Fovy) * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
     }
 
-    void CameraController::SetProjection(Camera::ProjectionType type)
+    void CameraController::SetProjection(OrthographicCameraComponent& orthographicCameraComponent)
     {
-        // aspect ratio of main window
-        float aspectRatio = Engine::m_Engine->GetWindowAspectRatio();
+        m_XMag = orthographicCameraComponent.m_XMag;
+        m_YMag = orthographicCameraComponent.m_YMag;
+        m_ZNear = orthographicCameraComponent.m_ZNear;
+        m_ZFar = orthographicCameraComponent.m_ZFar;
+        m_Aspect = Engine::m_Engine->GetWindowAspectRatio(); // aspect ratio of main window
 
+        float normalize = Engine::m_Engine->GetWindowWidth();
+        float orthoLeft = 0.0f;
+        float orthoRight = normalize;
+        float orthoBottom = normalize / m_Aspect;
+        float orthoTop = 0.0f;
+        float orthoNear = m_ZNear;
+        float orthoFar = m_ZFar;
+        m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor, orthoRight * m_ZoomFactor, orthoBottom * m_ZoomFactor,
+                                            orthoTop * m_ZoomFactor, orthoNear, orthoFar);
+    }
+
+    void CameraController::SetProjection()
+    {
+        m_Aspect = Engine::m_Engine->GetWindowAspectRatio(); // aspect ratio of main window
+        Camera::ProjectionType type = m_Camera->GetProjectionType();
         switch (type)
         {
             case Camera::ORTHOGRAPHIC_PROJECTION:
@@ -78,10 +89,10 @@ namespace GfxRenderEngine
 
                 float orthoLeft = 0.0f;
                 float orthoRight = normalize;
-                float orthoBottom = normalize / aspectRatio;
+                float orthoBottom = normalize / m_Aspect;
                 float orthoTop = 0.0f;
-                float orthoNear = 2.0f;
-                float orthoFar = -2.0f;
+                float orthoNear = m_ZNear;
+                float orthoFar = m_ZFar;
                 m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor, orthoRight * m_ZoomFactor,
                                                     orthoBottom * m_ZoomFactor, orthoTop * m_ZoomFactor, orthoNear,
                                                     orthoFar);
@@ -89,14 +100,12 @@ namespace GfxRenderEngine
             }
             case Camera::PERSPECTIVE_PROJECTION:
             {
-                m_Camera->SetPerspectiveProjection(glm::radians(50.0f) * m_ZoomFactor, aspectRatio,
-                                                   0.1f,  // near
-                                                   500.0f // far
-                );
+                m_Camera->SetPerspectiveProjection(glm::radians(m_Fovy) * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
                 break;
             }
             case Camera::PROJECTION_UNDEFINED:
             {
+                CORE_ASSERT(false, "CameraController PROJECTION UNDEFINED");
                 break;
             }
         }

@@ -34,19 +34,16 @@ namespace GfxRenderEngine
     class CameraController
     {
     public:
-        CameraController(Camera::ProjectionType type);
+        CameraController(OrthographicCameraComponent& orthographicCameraComponent);
         CameraController(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetProjection();
-        void SetProjection(Camera::ProjectionType type);
+        void SetProjection(OrthographicCameraComponent& orthographicCameraComponent);
         void SetProjection(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetZoomFactor(float factor);
         float GetZoomFactor() const { return m_ZoomFactor; }
 
-        void SetRotation(const glm::vec3& rotation);
-        void SetTranslation(const glm::vec2& translation);
-        void SetTranslation(const glm::vec3& translation);
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
         void SetViewYXZ(const glm::mat4& modelMatrix);
 
@@ -56,5 +53,15 @@ namespace GfxRenderEngine
         std::shared_ptr<Camera> m_Camera;
 
         float m_ZoomFactor;
+        float m_Left;
+        float m_Right;
+        float m_Bottom;
+        float m_Top;
+        float m_ZNear;
+        float m_ZFar;
+        float m_Fovy;
+        float m_Aspect;
+        float m_XMag;
+        float m_YMag;
     };
 } // namespace GfxRenderEngine

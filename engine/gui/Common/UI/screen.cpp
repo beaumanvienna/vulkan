@@ -46,7 +46,9 @@ namespace GfxRenderEngine
         uiContext_ = new SCREEN_UIContext();
         dialogFinished_ = nullptr;
 
-        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
+                                                                -2.0f /*ZFar*/);
+        m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);
         auto& camera = m_CameraController->GetCamera();
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);

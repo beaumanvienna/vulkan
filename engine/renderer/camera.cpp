@@ -64,13 +64,6 @@ namespace GfxRenderEngine
         m_ProjectionMatrix[3][2] = -(far * near) / (far - near);
     }
 
-    void Camera::SetPosition(const glm::vec3& position) { m_Position = position; }
-
-    void Camera::SetRotation(const glm::vec3& rotation)
-    {
-        m_Rotation = glm::vec3{rotation.x, rotation.y + glm::pi<float>(), rotation.z + glm::pi<float>()};
-    }
-
     void Camera::SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up)
     {
         m_Position = position;
@@ -95,11 +88,6 @@ namespace GfxRenderEngine
         m_ViewMatrix[3][2] = -glm::dot(w, position);
 
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-    }
-
-    void Camera::SetViewTarget(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up)
-    {
-        SetViewDirection(position, target - position, up);
     }
 
     void Camera::SetViewYXZ(const glm::mat4& modelMatrix)

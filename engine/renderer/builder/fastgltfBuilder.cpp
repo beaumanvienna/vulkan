@@ -411,7 +411,7 @@ namespace GfxRenderEngine
             {
                 float aspectRatio = pPerspective->aspectRatio.has_value() ? pPerspective->aspectRatio.value() : 1.0f;
                 float yfov = pPerspective->yfov * 100;
-                float zfar = pPerspective->zfar.has_value() ? pPerspective->zfar.value() : 100.0f;
+                float zfar = pPerspective->zfar.has_value() ? pPerspective->zfar.value() : 500.0f;
                 float znear = pPerspective->znear;
 
                 PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);

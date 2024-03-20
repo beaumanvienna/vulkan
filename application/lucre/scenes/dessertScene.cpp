@@ -55,9 +55,9 @@ namespace LucreApp
         { // set up camera
 
             float aspectRatio = 1.7777777777777777f;
-            float yfov = 0.51f;
-            float zfar = 50.0f;
+            float yfov = 50.0f;
             float znear = 0.1f;
+            float zfar = 500.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
             m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
@@ -85,11 +85,25 @@ namespace LucreApp
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::Camera");
         // set up 2nd camera
         if (m_Camera[CameraTypes::AttachedToLight] != entt::null)
-        {
-            auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
-            m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
+
+        { // set up camera
+
+            float aspectRatio = 1.7777777777777777f;
+            float yfov = 50.0f;
+            float znear = 0.1f;
+            float zfar = 500.0f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraControllers[CameraTypes::AttachedToLight] =
+                std::make_shared<CameraController>(perspectiveCameraComponent);
             m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
+            m_CameraControllers[CameraTypes::AttachedToLight]->SetZoomFactor(1.0f);
         }
+        //{
+        //    auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
+        //    m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
+        //    m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
+        //}
         // set up moving lights
         {
             int lightsIndex = 0;
@@ -408,9 +422,8 @@ namespace LucreApp
         }
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
-            auto view = m_Registry.view<TransformComponent>();
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
-            auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);

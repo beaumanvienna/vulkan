@@ -49,17 +49,12 @@ namespace GfxRenderEngine
 
         const glm::vec3& GetPosition() const { return m_Position; }
 
-        void SetPosition(const glm::vec3& position);
-        void SetRotation(const glm::vec3& rotation);
-
         const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
         const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 
         void SetViewDirection(const glm::vec3& position, const glm::vec3& direction,
                               const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
-        void SetViewTarget(const glm::vec3& position, const glm::vec3& target,
-                           const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
         void SetViewYXZ(const glm::mat4& modelMatrix);
         void SetName(const std::string& name) { m_Name = name; }
