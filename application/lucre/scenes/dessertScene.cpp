@@ -85,25 +85,11 @@ namespace LucreApp
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::Camera");
         // set up 2nd camera
         if (m_Camera[CameraTypes::AttachedToLight] != entt::null)
-
-        { // set up camera
-
-            float aspectRatio = 1.7777777777777777f;
-            float yfov = 50.0f;
-            float znear = 0.1f;
-            float zfar = 500.0f;
-
-            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
-            m_CameraControllers[CameraTypes::AttachedToLight] =
-                std::make_shared<CameraController>(perspectiveCameraComponent);
+        {
+            auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
+            m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
             m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
-            m_CameraControllers[CameraTypes::AttachedToLight]->SetZoomFactor(1.0f);
         }
-        //{
-        //    auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
-        //    m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
-        //    m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
-        //}
         // set up moving lights
         {
             int lightsIndex = 0;
