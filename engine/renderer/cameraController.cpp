@@ -116,5 +116,5 @@ namespace GfxRenderEngine
         m_Camera->SetViewYXZ(position, rotation);
     }
 
-    void CameraController::SetViewYXZ(const glm::mat4& modelMatrix) { m_Camera->SetViewYXZ(modelMatrix); }
+    void CameraController::SetView(const glm::mat4& modelMatrix) { m_Camera->SetView(modelMatrix); }
 } // namespace GfxRenderEngine

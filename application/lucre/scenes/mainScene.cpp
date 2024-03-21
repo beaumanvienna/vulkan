@@ -53,7 +53,7 @@ namespace LucreApp
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         { // set up camera
-            float aspectRatio = 1.7777777777777777f;
+            float aspectRatio = 1.777f;
             float yfov = 0.51f;
             float znear = 0.1f;
             float zfar = 500.0f;
@@ -222,7 +222,7 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
+            m_CameraController->SetView(cameraTransform.GetMat4Global());
         }
 
         // draw new scene
@@ -292,10 +292,10 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({3.1, 1.08, -1.6});
-        cameraTransform.SetRotation({-0.04, 1.9, 0});
+        cameraTransform.SetTranslation({3.1f, 1.08f, -1.6f});
+        cameraTransform.SetRotation({-0.04f, 1.9f, 0.0f});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
+        m_CameraController->SetView(cameraTransform.GetMat4Global());
     }
 
     void MainScene::InitPhysics()

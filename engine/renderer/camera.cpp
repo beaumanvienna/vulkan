@@ -90,7 +90,7 @@ namespace GfxRenderEngine
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
     }
 
-    void Camera::SetViewYXZ(const glm::mat4& modelMatrix)
+    void Camera::SetView(const glm::mat4& modelMatrix)
     {
         constexpr int column = 3;
         m_Position = glm::vec3(modelMatrix[column][0], modelMatrix[column][1], modelMatrix[column][2]);

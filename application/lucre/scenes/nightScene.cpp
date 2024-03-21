@@ -52,7 +52,7 @@ namespace LucreApp
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         { // set up camera // set up camera
-            float aspectRatio = 1.7777777777777777f;
+            float aspectRatio = 1.777f;
             float yfov = 0.51f;
             float znear = 0.1f;
             float zfar = 500.0f;
@@ -323,7 +323,7 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
+            m_CameraController->SetView(cameraTransform.GetMat4Global());
         }
 
         AnimateHero(timestep);
@@ -387,10 +387,10 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({1.47303f, 3.27545f, 3.30939f});
-        cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({1.714f, 3.275f, 12.956f});
+        cameraTransform.SetRotation({-0.055f, 0.0f, 0.0f});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetMat4Global());
+        m_CameraController->SetView(cameraTransform.GetMat4Global());
     }
 
     void NightScene::RotateLights(const Timestep& timestep)

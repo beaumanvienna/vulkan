@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         float GetZoomFactor() const { return m_ZoomFactor; }
 
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
-        void SetViewYXZ(const glm::mat4& modelMatrix);
+        void SetView(const glm::mat4& modelMatrix);
 
         Camera& GetCamera() { return *m_Camera; }
 

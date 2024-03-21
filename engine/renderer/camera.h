@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         void SetViewDirection(const glm::vec3& position, const glm::vec3& direction,
                               const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
-        void SetViewYXZ(const glm::mat4& modelMatrix);
+        void SetView(const glm::mat4& modelMatrix);
         void SetName(const std::string& name) { m_Name = name; }
 
         ProjectionType GetProjectionType() const { return m_ProjectionType; }
