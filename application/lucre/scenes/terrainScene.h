@@ -23,17 +23,18 @@
 #pragma once
 
 #include "engine.h"
-#include "scene/scene.h"
-#include "scene/entity.h"
-#include "scene/components.h"
-#include "scene/sceneLoader.h"
 #include "renderer/cameraController.h"
-#include "renderer/renderer.h"
 #include "renderer/cubemap.h"
+#include "renderer/renderer.h"
+#include "scene/components.h"
+#include "scene/entity.h"
+#include "scene/scene.h"
+#include "scene/sceneLoader.h"
+#include "scene/sceneLoaderJSON.h"
 
-#include "lucre.h"
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
+#include "lucre.h"
 
 namespace LucreApp
 {
@@ -41,15 +42,15 @@ namespace LucreApp
     {
 
     public:
-        TerrainScene(const std::string &filepath, const std::string &alternativeFilepath);
+        TerrainScene(const std::string& filepath, const std::string& alternativeFilepath);
         ~TerrainScene() override {}
 
         virtual void Start() override;
         virtual void Stop() override;
 
-        virtual void OnUpdate(const Timestep &timestep) override;
-        virtual Camera &GetCamera() override { return m_CameraController->GetCamera(); }
-        virtual void OnEvent(Event &event) override;
+        virtual void OnUpdate(const Timestep& timestep) override;
+        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
+        virtual void OnEvent(Event& event) override;
         virtual void OnResize() override;
 
         virtual void Load() override;
@@ -60,21 +61,18 @@ namespace LucreApp
     private:
         void LoadModels();
         void ResetScene();
-        void RotateLights(const Timestep &timestep);
-        void AnimateHero(const Timestep &timestep);
-        void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera> &lightView);
-        void SetDirectionalLight(
-            const entt::entity directionalLight,
-            const entt::entity lightbulb,
-            const std::shared_ptr<Camera> &lightView,
-            int renderpass);
+        void RotateLights(const Timestep& timestep);
+        void AnimateHero(const Timestep& timestep);
+        void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
+        void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
+                                 const std::shared_ptr<Camera>& lightView, int renderpass);
         void ApplyDebugSettings();
 
     private:
         std::shared_ptr<Renderer> m_Renderer;
 
-        // todo: change as SceneLoaderJSON
-        SceneLoader m_SceneLoader;
+        SceneLoaderJSON m_SceneLoaderJSON;
+        // SceneLoader m_SceneLoader;
 
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;
@@ -83,7 +81,7 @@ namespace LucreApp
 
         // game objects
         entt::entity m_Camera, m_Skybox, m_Lightbulb0, terrain;
-        std::vector<DirectionalLightComponent *> m_DirectionalLights;
+        std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0;
         entt::entity m_PointLight[MAX_LIGHTS];
 
@@ -109,4 +107,4 @@ namespace LucreApp
             bool m_Rotated;
         };
     };
-}
+} // namespace LucreApp

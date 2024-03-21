@@ -23,24 +23,23 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "auxiliary/math.h"
 #include "core.h"
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
-#include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
-#include "auxiliary/math.h"
+#include "resources/resources.h"
 
-#include "dessertScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
+#include "dessertScene.h"
 
 namespace LucreApp
 {
 
-    DessertScene::DessertScene(const std::string &filepath, const std::string &alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this},
-          m_LaunchVolcanoTimer(1500)
+    DessertScene::DessertScene(const std::string& filepath, const std::string& alternativeFilepath)
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_LaunchVolcanoTimer(1500)
     {
     }
 
@@ -69,14 +68,16 @@ namespace LucreApp
         m_Dictionary.List();
 
         // get characters and start all animations
-        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
-        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::Scene::Cesium_Man");
+        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
+                                                        "monkey01/monkey01.gltf::0::root");
+        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/"
+                                       "CesiumManAnimations.gltf::0::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
             {
-                auto &mesh = m_Registry.get<MeshComponent>(m_Hero);
-                SkeletalAnimations &animations = mesh.m_Model->GetAnimations();
+                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
                 animations.SetRepeatAll(true);
                 animations.Start();
             }
@@ -85,13 +86,14 @@ namespace LucreApp
                 LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Hero));
             }
         }
-        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::guybrush object");
+        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/"
+                                           "guybrush.gltf::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
             {
-                auto &mesh = m_Registry.get<MeshComponent>(m_Guybrush);
-                SkeletalAnimations &animations = mesh.m_Model->GetAnimations();
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
                 animations.SetRepeatAll(true);
                 animations.Start();
             }
@@ -106,10 +108,11 @@ namespace LucreApp
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
             {
-                auto &mesh = m_Registry.get<MeshComponent>(m_Guybrush);
-                SkeletalAnimations &animations = mesh.m_Model->GetAnimations();
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::Armature");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/"
+                                                           "guybrush.gltf::0::Scene::Armature");
 
                 m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
                 m_CharacterAnimation->Start();
@@ -119,10 +122,11 @@ namespace LucreApp
         {
             if ((m_Hero != entt::null) && m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
             {
-                auto &mesh = m_Registry.get<MeshComponent>(m_Hero);
-                SkeletalAnimations &animations = mesh.m_Model->GetAnimations();
+                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::root");
+                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/"
+                                                           "animations/CesiumManAnimations.gltf::0::root");
                 if (model != entt::null)
                 {
                     m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
@@ -131,19 +135,22 @@ namespace LucreApp
             }
         }
 
-        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::0::Scene::Kaya Body_Mesh");
+        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/"
+                                                        "Kaya.gltf::0::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter2 != entt::null)
         {
-            auto &mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
-            SkeletalAnimations &animations = mesh.m_Model->GetAnimations();
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
             animations.Start();
         }
 
-        // m_NonPlayableCharacter3 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
-        // if (m_NonPlayableCharacter3 != entt::null)
+        // m_NonPlayableCharacter3 =
+        // m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya
+        // Body_Mesh"); if (m_NonPlayableCharacter3 != entt::null)
         //{
-        //     auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
+        //     auto& mesh =
+        //     m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
         //     SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
         //     animations.SetRepeatAll(true);
         //     animations.Start();
@@ -154,18 +161,10 @@ namespace LucreApp
             float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 1.785f;
-            std::vector<glm::vec3> lightPositions =
-                {
-                    {-0.285, height1, -2.8},
-                    {-3.2, height1, -2.8},
-                    {-6.1, height1, -2.8},
-                    {2.7, height1, -2.8},
-                    {5.6, height1, -2.8},
-                    {-0.285, height1, 0.7},
-                    {-3.2, height1, 0.7},
-                    {-6.1, height1, 0.7},
-                    {2.7, height1, 0.7},
-                    {5.6, height1, 0.7}};
+            std::vector<glm::vec3> lightPositions = {{-0.285, height1, -2.8}, {-3.2, height1, -2.8}, {-6.1, height1, -2.8},
+                                                     {2.7, height1, -2.8},    {5.6, height1, -2.8},  {-0.285, height1, 0.7},
+                                                     {-3.2, height1, 0.7},    {-6.1, height1, 0.7},  {2.7, height1, 0.7},
+                                                     {5.6, height1, 0.7}};
 
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
@@ -181,15 +180,15 @@ namespace LucreApp
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
             m_DirectionalLight1 = CreateDirectionalLight(intensity, color);
-            auto &directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
-            auto &directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
+            auto& directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
+            auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
 
         {
             m_LaunchVolcanoTimer.SetEventCallback(
-                [](uint in, void *data)
+                [](uint in, void* data)
                 {
                     std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
                     Engine::m_Engine->QueueEvent(event);
@@ -199,13 +198,13 @@ namespace LucreApp
 
             // volcano smoke animation
             int poolSize = 50;
-            m_SpritesheetSmoke.AddSpritesheetTile(
-                Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE), "volcano smoke sprite sheet",
-                8, 8, /* rows, columns */
-                0,    /* margin */
-                0.01f /* scale) */
+            m_SpritesheetSmoke.AddSpritesheetTile(Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE),
+                                                  "volcano smoke sprite sheet", 8, 8, /* rows, columns */
+                                                  0,                                  /* margin */
+                                                  0.01f                               /* scale) */
             );
-            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1 /*unlit*/);
+            m_VolcanoSmoke =
+                std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1 /*unlit*/);
         }
     }
 
@@ -221,24 +220,23 @@ namespace LucreApp
     void DessertScene::LoadModels()
     {
         { // cube map / skybox
-            std::vector<std::string> faces =
-                {
-                    "application/lucre/models/external_3D_files/night/right.png",
-                    "application/lucre/models/external_3D_files/night/left.png",
-                    "application/lucre/models/external_3D_files/night/top.png",
-                    "application/lucre/models/external_3D_files/night/bottom.png",
-                    "application/lucre/models/external_3D_files/night/front.png",
-                    "application/lucre/models/external_3D_files/night/back.png"};
+            std::vector<std::string> faces = {"application/lucre/models/external_3D_files/night/right.png",
+                                              "application/lucre/models/external_3D_files/night/left.png",
+                                              "application/lucre/models/external_3D_files/night/top.png",
+                                              "application/lucre/models/external_3D_files/night/bottom.png",
+                                              "application/lucre/models/external_3D_files/night/front.png",
+                                              "application/lucre/models/external_3D_files/night/back.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
-            auto &skyboxTransform = view.get<TransformComponent>(m_Skybox);
+            auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(20.0f);
         }
         { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/"
+                                                     "lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     LOG_APP_CRITICAL("m_Lightbulb0 not found");
@@ -263,7 +261,8 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/"
+                                                     "lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     LOG_APP_CRITICAL("m_Lightbulb1 not found");
@@ -289,16 +288,15 @@ namespace LucreApp
         }
     }
 
-    void DessertScene::LoadScripts()
-    {
-    }
+    void DessertScene::LoadScripts() {}
 
     void DessertScene::StartScripts()
     {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
+        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
+                                          "duck/duck.gltf::0::SceneWithDuck::duck");
         if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
-            auto &duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
+            auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
 
             duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
             LOG_APP_INFO("scripts loaded");
@@ -311,12 +309,12 @@ namespace LucreApp
         m_SceneLoaderJSON.Serialize();
     }
 
-    void DessertScene::OnUpdate(const Timestep &timestep)
+    void DessertScene::OnUpdate(const Timestep& timestep)
     {
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
-            auto &cameraTransform = view.get<TransformComponent>(m_Camera);
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -362,27 +360,26 @@ namespace LucreApp
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
     }
 
-    void DessertScene::OnEvent(Event &event)
+    void DessertScene::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event)
-                                                {
+        dispatcher.Dispatch<MouseScrolledEvent>(
+            [this](MouseScrolledEvent l_Event)
+            {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= l_Event.GetY()*0.1f;
+                zoomFactor -= l_Event.GetY() * 0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
-                return true; });
+                return true;
+            });
     }
 
-    void DessertScene::OnResize()
-    {
-        m_CameraController->SetProjection();
-    }
+    void DessertScene::OnResize() { m_CameraController->SetProjection(); }
 
     void DessertScene::ResetScene()
     {
         m_CameraController->SetZoomFactor(1.0f);
-        auto &cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
         cameraTransform.SetTranslation({0.459809f, 3.27545f, 9.53199f});
         cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
@@ -390,7 +387,7 @@ namespace LucreApp
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
     }
 
-    void DessertScene::RotateLights(const Timestep &timestep)
+    void DessertScene::RotateLights(const Timestep& timestep)
     {
         float time = 0.3f * timestep;
         auto rotateLight = glm::rotate(glm::mat4(1.f), time, {0.f, -1.f, 0.f});
@@ -398,17 +395,17 @@ namespace LucreApp
         auto view = m_Registry.view<PointLightComponent, TransformComponent, Group1>();
         for (auto entity : view)
         {
-            auto &transform = view.get<TransformComponent>(entity);
+            auto& transform = view.get<TransformComponent>(entity);
             transform.SetTranslation(glm::vec3(rotateLight * glm::vec4(transform.GetTranslation(), 1.f)));
         }
     }
 
-    void DessertScene::AnimateHero(const Timestep &timestep)
+    void DessertScene::AnimateHero(const Timestep& timestep)
     {
         if (m_NonPlayableCharacter1 == entt::null)
             return;
 
-        auto &heroTransform = m_Registry.get<TransformComponent>(m_NonPlayableCharacter1);
+        auto& heroTransform = m_Registry.get<TransformComponent>(m_NonPlayableCharacter1);
 
         static float deltaX = 0.5f;
         static float deltaY = 0.5f;
@@ -430,10 +427,10 @@ namespace LucreApp
         heroTransform.SetScale({deltaX, deltaY, deltaZ});
     }
 
-    void DessertScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera> &lightView)
+    void DessertScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
         {
-            auto &lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
 
             glm::vec3 position = lightbulbTransform.GetTranslation();
             glm::vec3 rotation = lightbulbTransform.GetRotation();
@@ -441,14 +438,11 @@ namespace LucreApp
         }
     }
 
-    void DessertScene::SetDirectionalLight(
-        const entt::entity directionalLight,
-        const entt::entity lightbulb,
-        const std::shared_ptr<Camera> &lightView,
-        int renderpass)
+    void DessertScene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
+                                           const std::shared_ptr<Camera>& lightView, int renderpass)
     {
-        auto &lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
-        auto &directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
+        auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
+        auto& directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
         directionalLightComponent.m_Direction = lightbulbTransform.GetRotation();
         directionalLightComponent.m_LightView = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
@@ -461,23 +455,22 @@ namespace LucreApp
         {
             start = Engine::m_Engine->GetTime();
 
-            ParticleSystem::Specification spec =
-                {
-                    {4.09f, 2.641f, -1.338f}, // glm::vec3 m_Position
-                    {0.0f, 0.0125f, 0.0f},    // glm::vec3 m_Velocity
-                    {0.0f, 0.0f, 0.0f},       // glm::vec3 m_Acceleration
+            ParticleSystem::Specification spec = {
+                {4.09f, 2.641f, -1.338f}, // glm::vec3 m_Position
+                {0.0f, 0.0125f, 0.0f},    // glm::vec3 m_Velocity
+                {0.0f, 0.0f, 0.0f},       // glm::vec3 m_Acceleration
 
-                    {0.0f, TransformComponent::DEGREES_90, 0.0f}, // glm::vec3 m_Rotation
-                    {0.0f, 0.0f, 0.0f},                           // float m_RotationSpeed
+                {0.0f, TransformComponent::DEGREES_90, 0.0f}, // glm::vec3 m_Rotation
+                {0.0f, 0.0f, 0.0f},                           // float m_RotationSpeed
 
-                    {1.0f, 1.0f, 1.0f, 1.0f}, // glm::vec4 m_StartColor
-                    {1.0f, 1.0f, 1.0f, 0.0f}, // glm::vec4 m_EndColor
+                {1.0f, 1.0f, 1.0f, 1.0f}, // glm::vec4 m_StartColor
+                {1.0f, 1.0f, 1.0f, 0.0f}, // glm::vec4 m_EndColor
 
-                    {0.005f}, // float m_StartSize
-                    {0.07f},  // float m_FinalSize
+                {0.005f}, // float m_StartSize
+                {0.07f},  // float m_FinalSize
 
-                    {6s}, // Timestep m_LifeTime
-                };
+                {6s}, // Timestep m_LifeTime
+            };
 
             ParticleSystem::Specification variation{};
             variation.m_Position = {0.0001f, 0.0f, 0.0f}; // a little x against z-fighting
@@ -503,4 +496,4 @@ namespace LucreApp
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
-}
+} // namespace LucreApp

@@ -23,23 +23,23 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "auxiliary/math.h"
 #include "core.h"
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
-#include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
-#include "auxiliary/math.h"
+#include "resources/resources.h"
 
-#include "terrainScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
+#include "terrainScene.h"
 
 namespace LucreApp
 {
 
-    TerrainScene::TerrainScene(const std::string &filepath, const std::string &alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoader{*this}
+    TerrainScene::TerrainScene(const std::string& filepath, const std::string& alternativeFilepath)
+        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoaderJSON{*this}
     {
     }
 
@@ -75,9 +75,7 @@ namespace LucreApp
             float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 0.4f;
-            std::vector<glm::vec3> lightPositions =
-                {
-                    {5.6, height1, 0.7}};
+            std::vector<glm::vec3> lightPositions = {{5.6, height1, 0.7}};
 
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
@@ -92,14 +90,14 @@ namespace LucreApp
             float intensity = 5.0f;
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
-            auto &directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
+            auto& directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
             m_DirectionalLights.push_back(&directionalLightComponent0);
         }
     }
 
     void TerrainScene::Load()
     {
-        m_SceneLoader.Deserialize(); // loads YAML
+        m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(this);
         LoadModels();
         loadTerrain();
@@ -109,34 +107,33 @@ namespace LucreApp
     void TerrainScene::loadTerrain()
     {
         Builder builder;
-        builder.LoadTerrainHeightMapPNG("application/lucre/models/assets/terrain/heightmap.png", *this);
-        // terrain = builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save", *this);
+        builder.LoadTerrainHeightMapPNG(m_SceneLoaderJSON.GetTerrainPath(), *this);
+        // terrain =
+        // builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save",
+        // *this);
         auto view = m_Registry.view<TransformComponent>();
-        auto &terrainTransform = view.get<TransformComponent>(terrain);
+        auto& terrainTransform = view.get<TransformComponent>(terrain);
         terrainTransform.SetScale(1.0f);
         terrainTransform.SetTranslation({-5.0f, 0.0f, -5.0f});
     }
     void TerrainScene::LoadModels()
     {
         {
-            std::vector<std::string> faces =
-                {
-                    "application/lucre/models/assets/Skybox/right.png",
-                    "application/lucre/models/assets/Skybox/left.png",
-                    "application/lucre/models/assets/Skybox/top.png",
-                    "application/lucre/models/assets/Skybox/bottom.png",
-                    "application/lucre/models/assets/Skybox/front.png",
-                    "application/lucre/models/assets/Skybox/back.png"};
+            std::vector<std::string> faces = {
+                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
-            auto &skyboxTransform = view.get<TransformComponent>(m_Skybox);
+            auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(20.0f);
         }
         {
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
+                                                     "lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     m_Lightbulb0 = m_Registry.create();
@@ -161,26 +158,22 @@ namespace LucreApp
         }
     }
 
-    void TerrainScene::LoadScripts()
-    {
-    }
+    void TerrainScene::LoadScripts() {}
 
-    void TerrainScene::StartScripts()
-    {
-    }
+    void TerrainScene::StartScripts() {}
 
     void TerrainScene::Stop()
     {
         m_IsRunning = false;
-        m_SceneLoader.Serialize();
+        m_SceneLoaderJSON.Serialize();
     }
 
-    void TerrainScene::OnUpdate(const Timestep &timestep)
+    void TerrainScene::OnUpdate(const Timestep& timestep)
     {
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
-            auto &cameraTransform = view.get<TransformComponent>(m_Camera);
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
@@ -215,27 +208,26 @@ namespace LucreApp
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
     }
 
-    void TerrainScene::OnEvent(Event &event)
+    void TerrainScene::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event)
-                                                {
+        dispatcher.Dispatch<MouseScrolledEvent>(
+            [this](MouseScrolledEvent l_Event)
+            {
                 auto zoomFactor = m_CameraController->GetZoomFactor();
-                zoomFactor -= l_Event.GetY()*0.1f;
+                zoomFactor -= l_Event.GetY() * 0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
-                return true; });
+                return true;
+            });
     }
 
-    void TerrainScene::OnResize()
-    {
-        m_CameraController->SetProjection();
-    }
+    void TerrainScene::OnResize() { m_CameraController->SetProjection(); }
 
     void TerrainScene::ResetScene()
     {
         m_CameraController->SetZoomFactor(1.0f);
-        auto &cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
         cameraTransform.SetTranslation({-0.8f, 2.0f, 2.30515f});
         cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
@@ -243,10 +235,10 @@ namespace LucreApp
         m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
     }
 
-    void TerrainScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera> &lightView)
+    void TerrainScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
         {
-            auto &lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
 
             glm::vec3 position = lightbulbTransform.GetTranslation();
             glm::vec3 rotation = lightbulbTransform.GetRotation();
@@ -254,14 +246,11 @@ namespace LucreApp
         }
     }
 
-    void TerrainScene::SetDirectionalLight(
-        const entt::entity directionalLight,
-        const entt::entity lightbulb,
-        const std::shared_ptr<Camera> &lightView,
-        int renderpass)
+    void TerrainScene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
+                                           const std::shared_ptr<Camera>& lightView, int renderpass)
     {
-        auto &lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
-        auto &directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
+        auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
+        auto& directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
         directionalLightComponent.m_Direction = lightbulbTransform.GetRotation();
         directionalLightComponent.m_LightView = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
@@ -274,4 +263,4 @@ namespace LucreApp
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
-}
+} // namespace LucreApp

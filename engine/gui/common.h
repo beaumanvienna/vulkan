@@ -52,13 +52,14 @@ namespace GfxRenderEngine
         BUTTON_4_STATES_FOCUSED_DEPRESSED,
     };
 
-    void SCREEN_System_SendMessage(const char *command, const char *parameter);
+    void SCREEN_System_SendMessage(const char* command, const char* parameter);
 
     typedef enum _keycode_t
     {
         NKCODE_BUTTON_CROSS = 23,      // trackpad or X button(Xperia Play) is pressed
         NKCODE_BUTTON_CROSS_PS3 = 96,  // PS3 X button is pressed
-        NKCODE_BUTTON_CIRCLE = 1004,   // Special custom keycode generated from 'O' button by our java code. Or 'O' button if Alt is pressed (TODO)
+        NKCODE_BUTTON_CIRCLE = 1004,   // Special custom keycode generated from 'O' button by our java
+                                       // code. Or 'O' button if Alt is pressed (TODO)
         NKCODE_BUTTON_CIRCLE_PS3 = 97, // PS3 O button is pressed
         NKCODE_BUTTON_SQUARE = 99,     // Square button(Xperia Play) is pressed
         NKCODE_BUTTON_TRIANGLE = 100,  // 'Triangle button(Xperia Play) is pressed
@@ -289,8 +290,8 @@ namespace GfxRenderEngine
         NKCODE_LEFTBRACE = 221,
         NKCODE_RIGHTBRACE = 222,
 
-        // Ouya buttons. Just here for reference, they map straight to regular android buttons
-        // and will be mapped the same way.
+        // Ouya buttons. Just here for reference, they map straight to regular android
+        // buttons and will be mapped the same way.
         NKCODE_OUYA_BUTTON_A = 97,
         NKCODE_OUYA_BUTTON_DPAD_DOWN = 20,
         NKCODE_OUYA_BUTTON_DPAD_LEFT = 21,
@@ -342,4 +343,4 @@ namespace GfxRenderEngine
         RETRO_COLOR_BUTTON_ACTIVE = 0xFF3d5857,
         RETRO_COLOR_BUTTON_INACTIVE = 0x7F65aac5
     };
-}
+} // namespace GfxRenderEngine
