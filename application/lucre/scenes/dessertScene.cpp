@@ -40,7 +40,7 @@ namespace LucreApp
 {
 
     DessertScene::DessertScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_RunLightAnimation{false}
     {
     }
 
@@ -347,11 +347,11 @@ namespace LucreApp
 
     void DessertScene::OnUpdate(const Timestep& timestep)
     {
+        if (m_RunLightAnimation)
         {
             static TimePoint sceneStartTime = Engine::m_Engine->GetTime();
             auto animateLight = [&](bool& isRunning, int light, Duration delay)
             {
-                return;
                 TimePoint currenTime = Engine::m_Engine->GetTime();
                 if (!isRunning && (currenTime - sceneStartTime > delay))
                 {
@@ -497,6 +497,7 @@ namespace LucreApp
                     }
                     case ENGINE_KEY_R:
                     {
+                        m_RunLightAnimation = true;
                         auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[0]);
                         transform.SetTranslation({0.0f, 0.0f, 0.0f});
                         m_EasingAnimation[0].Start();

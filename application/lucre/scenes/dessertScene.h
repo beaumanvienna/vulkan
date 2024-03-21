@@ -124,6 +124,7 @@ namespace LucreApp
         entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
         std::array<EasingAnimations<ANIMATE_X_Y>, NUMBER_OF_MOVING_LIGHTS> m_EasingAnimation;
         void AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation);
+        bool m_RunLightAnimation;
 
     private:
         struct BananaComponent

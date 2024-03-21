@@ -45,19 +45,16 @@ namespace GfxRenderEngine
         void SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far);
         void SetPerspectiveProjection(float fovy, float aspect, float near, float far);
         void SetProjection(float left, float right, float bottom, float top, float near, float far);
-        ProjectionType GetProjectionType() const { return m_ProjectionType; }
-
-        const glm::vec3& GetPosition() const { return m_Position; }
-
-        const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-        const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
-
         void SetViewDirection(const glm::vec3& position, const glm::vec3& direction,
                               const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
         void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
         void SetViewYXZ(const glm::mat4& modelMatrix);
         void SetName(const std::string& name) { m_Name = name; }
+
+        ProjectionType GetProjectionType() const { return m_ProjectionType; }
+        const glm::vec3& GetPosition() const { return m_Position; }
+        const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const std::string& GetName() const { return m_Name; }
 
     private:
