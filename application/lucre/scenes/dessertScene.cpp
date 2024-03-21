@@ -40,7 +40,7 @@ namespace LucreApp
 {
 
     DessertScene::DessertScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_RunLightAnimation{false}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_RunLightAnimation{true}
     {
     }
 

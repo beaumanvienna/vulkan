@@ -33,11 +33,16 @@ namespace LucreApp
         EasingAnimation(std::string const& name, float scale, float offset, bool invert = false)
             : m_Scale{scale}, m_Invert{invert}, m_Offset{offset}, m_Name{name}
         {
+            float rangeLow = offset - scale;
+            float rangeHigh = offset + scale;
+            m_RangeLow = rangeLow < rangeHigh ? rangeLow : rangeHigh;
+            m_RangeHigh = rangeLow < rangeHigh ? rangeHigh : rangeLow;
         }
 
         void Run(float time, float& speed)
         {
-            speed = m_Offset + (m_Invert ? EasingFunction(1.0f - time) : EasingFunction(time));
+            float value = m_Offset + (m_Invert ? EasingFunction(1.0f - time) : EasingFunction(time));
+            speed = std::clamp(value, m_RangeLow, m_RangeHigh);
         };
         std::string const& GetName() const { return m_Name; }
 
@@ -49,7 +54,7 @@ namespace LucreApp
 
     private:
         bool m_Invert;
-        float m_Offset;
+        float m_Offset, m_RangeLow, m_RangeHigh;
         std::string m_Name;
     };
 
