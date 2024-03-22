@@ -5,7 +5,7 @@
     "fastgltf files":
     [
         {
-            "filename": "application/lucre/models/external_3D_files/lights/gltf/lights.gltf",
+            "filename": "application/lucre/models/external_3D_files/lights/gltf/lights.glb",
             "instances":
             [
                 {
@@ -21,7 +21,7 @@
                         ],
                         "translation":
                         [
-                            1.59788, 2.14556, 4.63639
+                            1.59788, 2.135, 4.63639
                         ]
                     }
                 },
@@ -38,14 +38,14 @@
                         ],
                         "translation":
                         [
-                            3.62845, 2.14642, 4.7302
+                            3.62845, 2.135, 4.7302
                         ]
                     }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/lights/gltf/crate.gltf",
+            "filename": "application/lucre/models/external_3D_files/lights/gltf/crate.glb",
             "instances":
             [
                 {
@@ -255,7 +255,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.glb",
             "instances":
             [
                 {
@@ -295,7 +295,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island2.gltf",
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island2.glb",
             "instances":
             [
                 {
@@ -318,7 +318,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama.glb",
             "instances":
             [
                 {
@@ -392,7 +392,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.glb",
             "instances":
             [
                 {
@@ -432,7 +432,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
             "instances":
             [
                 {
@@ -451,11 +451,45 @@
                             0.323, 2, 4.8
                         ]
                     }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.232654, 0.23265, 0.232652
+                        ],
+                        "rotation":
+                        [
+                            0, 0.791235, 0
+                        ],
+                        "translation":
+                        [
+                            -2.37619, 1.7154, 2.936
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.233, 0.233, 0.233
+                        ],
+                        "rotation":
+                        [
+                            0, 0.785398, 0
+                        ],
+                        "translation":
+                        [
+                            -2.68948, 1.76626, 3.61797
+                        ]
+                    }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.gltf",
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.glb",
             "instances":
             [
                 {
@@ -529,7 +563,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/cactus/cactus.gltf",
+            "filename": "application/lucre/models/external_3D_files/cactus/cactus.glb",
             "instances":
             [
                 {
@@ -569,7 +603,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
             "instances":
             [
                 {
@@ -657,46 +691,6 @@
                         "translation":
                         [
                             17.575, 1.35333, -63.2978
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.gltf",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.232654, 0.23265, 0.232652
-                        ],
-                        "rotation":
-                        [
-                            0, 0.791235, 0
-                        ],
-                        "translation":
-                        [
-                            -2.37619, 1.7154, 2.936
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.233, 0.233, 0.233
-                        ],
-                        "rotation":
-                        [
-                            0, 0.785398, 0
-                        ],
-                        "translation":
-                        [
-                            -2.68948, 1.76626, 3.61797
                         ]
                     }
                 }

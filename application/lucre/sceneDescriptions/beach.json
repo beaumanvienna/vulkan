@@ -97,7 +97,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/dune/dune.gltf",
+            "filename": "application/lucre/models/external_3D_files/dune/dune.glb",
             "instances":
             [
                 {
@@ -325,7 +325,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
+            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.glb",
             "instances":
             [
                 {
@@ -344,13 +344,7 @@
                             -0.765511, 1.25744, -3.5
                         ]
                     }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
-            "instances":
-            [
+                },
                 {
                     "transform":
                     {

@@ -51,7 +51,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama.glb",
             "instances":
             [
                 {
@@ -74,7 +74,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.glb",
             "instances":
             [
                 {
@@ -97,7 +97,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.glb",
             "instances":
             [
                 {
@@ -137,7 +137,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
             "instances":
             [
                 {
@@ -348,7 +348,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
+            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.glb",
             "instances":
             [
                 {
@@ -388,7 +388,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.gltf",
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.glb",
             "instances":
             [
                 {
@@ -428,7 +428,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/dune/dune.gltf",
+            "filename": "application/lucre/models/external_3D_files/dune/dune.glb",
             "instances":
             [
                 {

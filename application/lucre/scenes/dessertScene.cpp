@@ -84,7 +84,7 @@ namespace LucreApp
         m_Dictionary.List();
 
         m_Camera[CameraTypes::AttachedToLight] =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::Camera");
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.glb::0::Scene::Camera");
         // set up 2nd camera
         if (m_Camera[CameraTypes::AttachedToLight] != entt::null)
         {
@@ -98,14 +98,14 @@ namespace LucreApp
             for (int index = 0; index < 3; ++index)
             {
                 m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
-                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf::0::Scene::LightModel" +
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.glb::0::Scene::LightModel" +
                     std::to_string(index + 1));
                 ++lightsIndex;
             }
             for (int index = 0; index < 3; ++index)
             {
                 m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
-                    "application/lucre/models/external_3D_files/lights/gltf/lights.gltf::1::Scene::LightModel" +
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.glb::1::Scene::LightModel" +
                     std::to_string(index + 1));
                 ++lightsIndex;
             }
@@ -127,14 +127,14 @@ namespace LucreApp
             }
         }
         m_Water = m_Dictionary.Retrieve(
-            "application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf::0::Scene::Water");
+            "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
         if (m_Water == entt::null)
             m_Water = m_Dictionary.Retrieve(
-                "application/lucre/models/external_3D_files/Island scene/gltf/Island2.gltf::0::Scene::Water");
+                "application/lucre/models/external_3D_files/Island scene/gltf/Island2.glb::0::Scene::Water");
 
         // get characters and start all animations
         m_NonPlayableCharacter1 =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.glb::0::root");
         m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/"
                                        "CesiumManAnimations.gltf::0::Scene::Cesium_Man");
         if (m_Hero != entt::null)
@@ -152,7 +152,7 @@ namespace LucreApp
             }
         }
         m_Guybrush = m_Dictionary.Retrieve(
-            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::guybrush object");
+            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -177,7 +177,7 @@ namespace LucreApp
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
                 entt::entity model = m_Dictionary.Retrieve(
-                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf::0::Scene::Armature");
+                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
                 if (model != entt::null)
                 {
                     m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
@@ -203,7 +203,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacter2 =
-            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::0::Scene::Kaya Body_Mesh");
+            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::0::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter2 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
@@ -213,7 +213,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacter3 =
-            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya Body_Mesh");
+            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::1::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter3 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);

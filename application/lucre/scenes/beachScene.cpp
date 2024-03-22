@@ -79,7 +79,7 @@ namespace LucreApp
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
         m_NonPlayableCharacter =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.gltf::0::root");
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.glb::0::root");
 
         {
             // place static lights for beach scene

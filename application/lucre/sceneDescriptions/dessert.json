@@ -5,7 +5,7 @@
     "fastgltf files":
     [
         {
-            "filename": "application/lucre/models/external_3D_files/cactus/cactus.gltf",
+            "filename": "application/lucre/models/external_3D_files/cactus/cactus.glb",
             "instances":
             [
                 {
@@ -227,7 +227,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
             "instances":
             [
                 {
@@ -885,7 +885,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/sand/gltf/sand.gltf",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/sand/gltf/sand.glb",
             "instances":
             [
                 {
@@ -987,49 +987,6 @@
                         "translation":
                         [
                             -80, 2.1, -40.4
-                        ]
-                    }
-                }
-            ]
-        }
-    ],
-    "fbx files":
-    [
-        {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.443, 0.443, 0.443
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            6.5, 1.43187, 1.23523
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.443, 0.443, 0.443
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            7.5, 1.43187, 1.23523
                         ]
                     }
                 }
