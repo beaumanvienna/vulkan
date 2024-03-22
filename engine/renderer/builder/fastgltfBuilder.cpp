@@ -40,7 +40,9 @@ namespace GfxRenderEngine
 
     bool FastgltfBuilder::LoadGltf(uint const instanceCount, int const sceneID)
     {
-        { // load ascii from file
+        stbi_set_flip_vertically_on_load(false);
+
+        { // load from file
             auto path = std::filesystem::path{m_Filepath};
 
             constexpr auto extensions =
@@ -662,8 +664,8 @@ namespace GfxRenderEngine
         {
             ModelSubmesh& submesh = m_Submeshes[primitiveIndex++];
 
-            submesh.m_FirstVertex = static_cast<uint32_t>(m_Vertices.size());
-            submesh.m_FirstIndex = static_cast<uint32_t>(m_Indices.size());
+            submesh.m_FirstVertex = static_cast<uint>(m_Vertices.size());
+            submesh.m_FirstIndex = static_cast<uint>(m_Indices.size());
             submesh.m_InstanceCount = m_InstanceCount;
 
             size_t vertexCount = 0;
@@ -754,7 +756,7 @@ namespace GfxRenderEngine
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
                     auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                    vertex.m_UV = glm::vec2(uv.x, 1.0f - uv.y);
+                    vertex.m_UV = uv;
                     vertex.m_Color = diffuseColor;
                     if (jointsBuffer && weightsBuffer)
                     {

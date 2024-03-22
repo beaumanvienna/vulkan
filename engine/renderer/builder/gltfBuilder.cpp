@@ -40,10 +40,11 @@ namespace GfxRenderEngine
 
     bool GltfBuilder::LoadGltf(uint const instanceCount, int const sceneID)
     {
-        { // load ascii from file
+        stbi_set_flip_vertically_on_load(false);
+
+        { // load from file
             std::string warn, err;
 
-            stbi_set_flip_vertically_on_load(false);
             if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
             {
                 LOG_CORE_CRITICAL("LoadGltf errors: {0}, warnings: {1}", err, warn);

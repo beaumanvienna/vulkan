@@ -77,7 +77,7 @@ namespace LucreApp
             }
         }
         {
-            GltfBuilder builder("application/lucre/models/external_3D_files/banana/banana.gltf", *this);
+            FastgltfBuilder builder("application/lucre/models/external_3D_files/banana/banana.gltf", *this);
             builder.LoadGltf(MAX_B /*instance(s)*/);
             auto model = Engine::m_Engine->LoadModel(builder);
 
