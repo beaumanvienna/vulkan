@@ -37,7 +37,8 @@ namespace LucreApp
     public:
         enum class State
         {
-            SPLASH = 0,
+            NULL_STATE = 0,
+            SPLASH,
             SETTINGS,
             CUTSCENE, // do not change order
             // insert game levels here
@@ -65,6 +66,7 @@ namespace LucreApp
         void SetLoaded(State state, bool isLoaded = true);
         std::string StateToString(State state) const;
         void SetNextState(State state);
+        void LoadNextState();
         State GetState() const { return m_State; }
         State GetNextState() const { return m_NextState; }
         bool UserInputIsInabled() const { return m_UserInputEnabled; }

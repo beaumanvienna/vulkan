@@ -277,7 +277,10 @@ namespace LucreApp
         cameraTransform.SetTranslation({-0.8f, 2.0f, 7.5f});
         cameraTransform.SetRotation({0.0f, 0.0f, 0.0f});
 
-        m_CameraController->SetView(cameraTransform.GetMat4Global());
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraController->SetView(cameraTransform.GetMat4Local());
     }
 
     void BeachScene::RotateLights(const Timestep& timestep)

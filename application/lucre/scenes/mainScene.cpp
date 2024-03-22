@@ -295,7 +295,10 @@ namespace LucreApp
         cameraTransform.SetTranslation({3.1f, 1.08f, -1.6f});
         cameraTransform.SetRotation({-0.04f, 1.9f, 0.0f});
 
-        m_CameraController->SetView(cameraTransform.GetMat4Global());
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraController->SetView(cameraTransform.GetMat4Local());
     }
 
     void MainScene::InitPhysics()

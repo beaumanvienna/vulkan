@@ -44,6 +44,8 @@ namespace LucreApp
     {
     }
 
+    DessertScene::~DessertScene() {}
+
     void DessertScene::Start()
     {
         m_IsRunning = true;
@@ -518,6 +520,11 @@ namespace LucreApp
 
         cameraTransform.SetTranslation({0.0f, 3.0f, 10.0f});
         cameraTransform.SetRotation({0.0f, 0.0f, 0.0f});
+
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraControllers[CameraTypes::DefaultCamera]->SetView(cameraTransform.GetMat4Local());
     }
 
     void DessertScene::RotateLights(const Timestep& timestep)

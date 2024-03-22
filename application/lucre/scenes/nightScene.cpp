@@ -390,7 +390,10 @@ namespace LucreApp
         cameraTransform.SetTranslation({1.714f, 3.275f, 12.956f});
         cameraTransform.SetRotation({-0.055f, 0.0f, 0.0f});
 
-        m_CameraController->SetView(cameraTransform.GetMat4Global());
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraController->SetView(cameraTransform.GetMat4Local());
     }
 
     void NightScene::RotateLights(const Timestep& timestep)

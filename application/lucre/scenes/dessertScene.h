@@ -45,7 +45,7 @@ namespace LucreApp
 
     public:
         DessertScene(const std::string& filepath, const std::string& alternativeFilepath);
-        ~DessertScene() override {}
+        virtual ~DessertScene() override;
 
         virtual void Start() override;
         virtual void Stop() override;
