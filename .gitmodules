@@ -14,3 +14,6 @@
 	path = application/lucre/models/assets
 	url = https://github.com/beaumanvienna/glTF-models
 
+[submodule "application/lucre/models/external_3D_files"]
+	path = application/lucre/models/external_3D_files
+	url = https://github.com/beaumanvienna/external_3D_files
