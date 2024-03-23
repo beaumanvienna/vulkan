@@ -66,6 +66,13 @@ project "engine"
         "MultiProcessorCompile"
     }
 
+    if USE_PULSEAUDIO then
+        defines
+        {
+            "PULSEAUDIO"
+        }
+    end
+
     filter "system:linux"
 
         linkoptions { "-fno-pie -no-pie" }
@@ -177,12 +184,6 @@ project "engine"
     end
     include "vendor/box2d"
     include "vendor/assetImporter"
-
-    if os.host() == "linux" then
-
-        include "vendor/pamanager/libpamanager/libpamanager.lua"
-
-    end
 
     if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2")  or (os.host() == "macosx" and _ACTION == "gmake2")) then
 

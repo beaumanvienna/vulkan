@@ -81,6 +81,20 @@ project "lucre"
     {
     }
 
+    if os.host() == "linux" then
+        USE_PULSEAUDIO = true
+    end
+    if USE_PULSEAUDIO then
+        links
+        {
+            "libpamanager"
+        }
+        defines
+        {
+            "PULSEAUDIO"
+        }
+    end
+
     filter "system:linux"
 
         linkoptions { "-fno-pie -no-pie" }
@@ -106,7 +120,6 @@ project "lucre"
             "X11",
             "Xrandr",
             "Xi",
-            "libpamanager",
             "pulse",
             "glib-2.0",
             "gio-2.0",
@@ -264,5 +277,8 @@ project "lucre"
         print("done.")
     end
 
-    include "engine.lua"
+    if USE_PULSEAUDIO then
+        include "vendor/pamanager/libpamanager/libpamanager.lua"
+    end
 
+    include "engine.lua"

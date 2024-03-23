@@ -1,5 +1,3 @@
-application/lucre/models/node hierarchy
-application/lucre/models/Wooden\ Crate
 .vscode
 .DS_Store
 application/lucre/models/guybrush_animated_gltf
@@ -58,14 +56,6 @@ resources/nsis/marleyInstaller.exe
 *.out
 *.app
 
-emulators/mednafen/aclocal.m4
-emulators/mednafen/ar-lib
-emulators/mednafen/compile
-emulators/mednafen/configure
-emulators/mednafen/depcomp
-emulators/mednafen/install-sh
-emulators/mednafen/missing
-application/lucre/models/dont_upload
 renderdoc.cap
 /*.scene
 /*.json

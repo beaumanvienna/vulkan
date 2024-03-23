@@ -309,8 +309,11 @@ namespace LucreApp
 
     void SettingsScreen::SetSoundCallback()
     {
-#ifdef LINUX
-        Sound::SetCallback([=](const LibPAmanager::Event& event) { UI::m_ScreenManager->RecreateAllViews(); });
-#endif
+        #ifdef PULSEAUDIO
+            Sound::SetCallback([=](const LibPAmanager::Event& event)
+            {
+                UI::m_ScreenManager->RecreateAllViews();
+            });
+        #endif
     }
 } // namespace LucreApp

@@ -25,7 +25,7 @@
 
 #include "audio/sound.h"
 
-#ifdef LINUX
+#ifdef PULSEAUDIO
 
 using namespace LibPAmanager;
 

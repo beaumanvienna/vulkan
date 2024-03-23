@@ -23,9 +23,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+#include "auxiliary/hash.h"
 #include "core.h"
 #include "renderer/builder/builder.h"
-#include "auxiliary/hash.h"
 
 #include "VKmodel.h"
 
@@ -36,7 +36,9 @@ namespace std
         size_t operator()(GfxRenderEngine::Vertex const& vertex) const
         {
             size_t seed = 0;
-            GfxRenderEngine::HashCombine(seed, vertex.m_Position, vertex.m_Color, vertex.m_Normal, vertex.m_UV);
+            GfxRenderEngine::HashCombine(seed, vertex.m_Position,
+                                         vertex.m_Color, vertex.m_Normal,
+                                         vertex.m_UV);
             return seed;
         }
     };
@@ -44,7 +46,8 @@ namespace std
 
 namespace GfxRenderEngine
 {
-    void Builder::LoadSprite(Sprite const& sprite, float const amplification, int const unlit, glm::vec4 const& color)
+    void Builder::LoadSprite(Sprite const& sprite, float const amplification,
+                             int const unlit, glm::vec4 const& color)
     {
         m_Vertices.clear();
         m_Indices.clear();
@@ -173,7 +176,8 @@ namespace GfxRenderEngine
         m_Indices.push_back(3);
     }
 
-    entt::entity Builder::LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry)
+    entt::entity Builder::LoadCubemap(const std::vector<std::string>& faces,
+                                      entt::registry& registry)
     {
         entt::entity entity;
         static constexpr uint VERTEX_COUNT = 36;
@@ -200,6 +204,7 @@ namespace GfxRenderEngine
 
                                                    {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f},  {1.0f, -1.0f, -1.0f},
                                                    {1.0f, -1.0f, -1.0f},  {-1.0f, -1.0f, 1.0f},  {1.0f, -1.0f, 1.0f}};
+
 
         // create vertices
         {
@@ -238,7 +243,8 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = VERTEX_COUNT;
 
             { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             m_Submeshes.push_back(submesh);
@@ -266,9 +272,11 @@ namespace GfxRenderEngine
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,
+                              filepath.c_str()))
         {
-            LOG_CORE_CRITICAL("LoadModel errors: {0}, warnings: {1}", err, warn);
+            LOG_CORE_CRITICAL("LoadModel errors: {0}, warnings: {1}", err,
+                              warn);
         }
 
         m_Vertices.clear();
@@ -317,7 +325,8 @@ namespace GfxRenderEngine
 
                 if (uniqueVertices.count(vertex) == 0)
                 {
-                    uniqueVertices[vertex] = static_cast<uint>(m_Vertices.size());
+                    uniqueVertices[vertex] =
+                        static_cast<uint>(m_Vertices.size());
                     m_Vertices.push_back(vertex);
                 }
                 m_Indices.push_back(uniqueVertices[vertex]);
@@ -332,7 +341,8 @@ namespace GfxRenderEngine
             submesh.m_VertexCount = m_Vertices.size();
 
             { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
@@ -343,7 +353,8 @@ namespace GfxRenderEngine
 
         // calculate tangents
         CalculateTangents();
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
+        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})",
+                      m_Vertices.size(), m_Indices.size(), filepath);
     }
 
     void Builder::CalculateTangents()
@@ -368,7 +379,8 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
+    void
+    Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
     {
         uint cnt = 0;
         uint vertexIndex1 = 0;
@@ -419,7 +431,8 @@ namespace GfxRenderEngine
                     float E2z = edge2.z;
 
                     float factor;
-                    if ((dU1 * dV2 - dU2 * dV1) > std::numeric_limits<float>::epsilon())
+                    if ((dU1 * dV2 - dU2 * dV1) >
+                        std::numeric_limits<float>::epsilon())
                     {
                         factor = 1.0f / (dU1 * dV2 - dU2 * dV1);
                     }
@@ -434,7 +447,9 @@ namespace GfxRenderEngine
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
                     if (tangent.x == 0.0f && tangent.y == 0.0f && tangent.z == 0.0f)
+                    {
                         tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+                    }
 
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;

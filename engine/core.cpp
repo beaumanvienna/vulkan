@@ -96,9 +96,12 @@ namespace GfxRenderEngine
         // init audio
         m_Audio = Audio::Create();
         m_Audio->Start();
-#ifdef LINUX
-        Sound::SetCallback([this](const LibPAmanager::Event& event) { AudioCallback((int)event.GetType()); });
-#endif
+        #ifdef PULSEAUDIO
+            Sound::SetCallback([this](const LibPAmanager::Event& event)
+            {
+                AudioCallback((int)event.GetType());
+            });
+        #endif
 
         // init controller
         if (!m_Controller.Start())
@@ -267,7 +270,7 @@ namespace GfxRenderEngine
 
     void Engine::AudioCallback(int eventType)
     {
-#ifdef LINUX
+#ifdef PULSEAUDIO
         switch (eventType)
         {
 
