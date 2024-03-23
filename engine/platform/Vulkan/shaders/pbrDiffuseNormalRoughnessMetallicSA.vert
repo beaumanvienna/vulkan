@@ -27,7 +27,7 @@
 
 #include "engine/renderer/skeletalAnimation/joints.h"
 
-#define MAX_LIGHTS 128
+#include "engine/platform/Vulkan/pointlights.h"
 
 layout(location = 0) in vec3  position;
 layout(location = 2) in vec3  normal;

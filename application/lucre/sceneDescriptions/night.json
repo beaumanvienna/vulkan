@@ -2,7 +2,7 @@
     "file format identifier": 1.2,
     "description": "night scene",
     "author": "Copyright (c) 2023 Engine Development Team",
-    "gltf files":
+    "fastgltf files":
     [
         {
             "filename": "application/lucre/models/external_3D_files/diorama/car.gltf",
@@ -51,7 +51,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama.glb",
             "instances":
             [
                 {
@@ -74,7 +74,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.gltf",
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.glb",
             "instances":
             [
                 {
@@ -97,7 +97,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/Kaya/gltf/Kaya.gltf",
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.glb",
             "instances":
             [
                 {
@@ -137,7 +137,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
             "instances":
             [
                 {
@@ -348,7 +348,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.gltf",
+            "filename": "application/lucre/models/external_3D_files/monkey01/monkey01.glb",
             "instances":
             [
                 {
@@ -356,7 +356,7 @@
                     {
                         "scale":
                         [
-                            0.53284, 0.5, 0.5
+                            0.541069, 0.5, 0.5
                         ],
                         "rotation":
                         [
@@ -388,7 +388,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/night/dune/dune.gltf",
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.glb",
             "instances":
             [
                 {
@@ -396,7 +396,149 @@
                     {
                         "scale":
                         [
-                            1, 1, 2
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -3.71298, -0.0543618, -2.602
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            5.38696, -0.054, -2.60216
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/dune/dune.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            0, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            4, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            8, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            12, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            16, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            20, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
                         ],
                         "rotation":
                         [
@@ -404,7 +546,506 @@
                         ],
                         "translation":
                         [
-                            0, 0, -0.0527391
+                            24, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            28, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            32, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            36, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            40, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            44, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            48, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            52, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            56, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            60, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            64, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            18, 0.999979, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, -0.00783988
+                        ],
+                        "translation":
+                        [
+                            81.5387, -0.204103, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -4, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -8, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -12, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -16, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -20, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -24, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -28, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -32, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -36, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -40, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -44, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -48, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -52, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -56, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -60, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -64, 0, 0
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            18, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0.0108685
+                        ],
+                        "translation":
+                        [
+                            -118.655, -0.621609, 0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/dune/darkWater.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1.1, 1, 2
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0, 0, 0
                         ]
                     }
                 }
@@ -419,15 +1060,15 @@
                     {
                         "scale":
                         [
-                            0.999825, 0.00999834, 0.999931
+                            7, 0.0698879, 6.99997
                         ],
                         "rotation":
                         [
-                            1.5708, 2.20537e-06, 2.27374e-13
+                            1.5708, 2.20537e-06, 0
                         ],
                         "translation":
                         [
-                            6.13225, 6.75375, -20.4116
+                            64.6021, 33.8638, -253.307
                         ]
                     }
                 }
@@ -442,15 +1083,15 @@
                     {
                         "scale":
                         [
-                            1, 1, 1
+                            1.63, 1.63, 1.63
                         ],
                         "rotation":
                         [
-                            8.23934e-08, 1.02564, 7.8281e-08
+                            8.23793e-08, 1.02564, 7.82672e-08
                         ],
                         "translation":
                         [
-                            2.74061, 0.0174653, -10.5124
+                            -19.8711, 0.0174667, -47.028
                         ]
                     }
                 }
@@ -566,21 +1207,15 @@
                     {
                         "scale":
                         [
-                            0.1,
-                            0.1,
-                            0.1
+                            0.1, 0.1, 0.1
                         ],
                         "rotation":
                         [
-                            1.570796327,
-                            0.0,
-                            0.0
+                            1.5708, 0, 0
                         ],
                         "translation":
                         [
-                            2.116,
-                            1.529,
-                           -1.377
+                            2.116, 1.529, -1.377
                         ]
                     }
                 }
@@ -607,38 +1242,6 @@
                         "translation":
                         [
                             3.67112, 1.90104, -1.16988
-                        ]
-                    }
-                }
-            ]
-        }
-    ],
-    "obj files":
-    [
-        {
-            "filename": "application/lucre/models/external_3D_files/banana/banana.obj",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "rotation":
-                        [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "translation":
-                        [
-                            0.0,
-                            0.0,
-                            0.0
                         ]
                     }
                 }

@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <algorithm>
@@ -46,14 +46,14 @@ namespace GfxRenderEngine
         pendingCond_.notify_all();
         guard.unlock();
 
-        if (pendingThread_.joinable()) 
+        if (pendingThread_.joinable())
         {
             pendingThread_.join();
         }
     }
 
     // Normalize slashes.
-    void SCREEN_PathBrowser::SetPath(const std::string &path)
+    void SCREEN_PathBrowser::SetPath(const std::string& path)
     {
         if (!EngineCore::IsDirectory(path))
         {
@@ -71,7 +71,8 @@ namespace GfxRenderEngine
         m_Path = path;
         for (size_t i = 0; i < m_Path.size(); i++)
         {
-            if (m_Path[i] == '\\') m_Path[i] = '/';
+            if (m_Path[i] == '\\')
+                m_Path[i] = '/';
         }
         if (!m_Path.size() || (m_Path[m_Path.size() - 1] != '/'))
         {
@@ -108,49 +109,47 @@ namespace GfxRenderEngine
         if (pendingThread_.joinable())
             return;
 
-        pendingThread_ = std::thread([&]
-        {
-            setCurrentThreadName("PathBrowser");
-
-            std::unique_lock<std::mutex> guard2(pendingLock_);
-            std::vector<File::FileInfo> results;
-            std::string lastPath;
-            while (!pendingStop_)
+        pendingThread_ = std::thread(
+            [&]
             {
-                while (lastPath == pendingPath_ && !pendingCancel_) 
-                {
-                    pendingCond_.wait(guard2);
-                }
-                lastPath = pendingPath_;
-                bool success = false;
-                if (!lastPath.empty())
-                {
-                    guard2.unlock();
-                    results.clear();
-                    success = false;
-                    guard2.lock();
-                }
+                setCurrentThreadName("PathBrowser");
 
-                if (pendingPath_ == lastPath)
+                std::unique_lock<std::mutex> guard2(pendingLock_);
+                std::vector<File::FileInfo> results;
+                std::string lastPath;
+                while (!pendingStop_)
                 {
-                    if (success && !pendingCancel_)
+                    while (lastPath == pendingPath_ && !pendingCancel_)
                     {
-                        pendingFiles_ = results;
+                        pendingCond_.wait(guard2);
                     }
-                    pendingPath_.clear();
-                    lastPath.clear();
-                    ready_ = true;
+                    lastPath = pendingPath_;
+                    bool success = false;
+                    if (!lastPath.empty())
+                    {
+                        guard2.unlock();
+                        results.clear();
+                        success = false;
+                        guard2.lock();
+                    }
+
+                    if (pendingPath_ == lastPath)
+                    {
+                        if (success && !pendingCancel_)
+                        {
+                            pendingFiles_ = results;
+                        }
+                        pendingPath_.clear();
+                        lastPath.clear();
+                        ready_ = true;
+                    }
                 }
-            }
-        });
+            });
     }
 
-    bool SCREEN_PathBrowser::IsListingReady()
-    {
-        return ready_;
-    }
+    bool SCREEN_PathBrowser::IsListingReady() { return ready_; }
 
-    bool SCREEN_PathBrowser::GetListing(std::vector<File::FileInfo> &fileInfo, const char *filter, bool *cancel)
+    bool SCREEN_PathBrowser::GetListing(std::vector<File::FileInfo>& fileInfo, const char* filter, bool* cancel)
     {
         std::unique_lock<std::mutex> guard(pendingLock_);
         while (!IsListingReady() && (!cancel || !*cancel))
@@ -163,20 +162,19 @@ namespace GfxRenderEngine
         File::GetFilesInDir(path, &fileInfo, filter);
 
         return true;
-
     }
 
-    void SCREEN_PathBrowser::Navigate(const std::string &path)
+    void SCREEN_PathBrowser::Navigate(const std::string& path)
     {
         if (path == ".")
         {
             return;
         }
-        if (path == "..") 
+        if (path == "..")
         {
             // Upwards.
             // Check for windows drives.
-            if (m_Path.size() == 3 && m_Path[1] == ':') 
+            if (m_Path.size() == 3 && m_Path[1] == ':')
             {
                 m_Path = "/";
             }
@@ -188,8 +186,8 @@ namespace GfxRenderEngine
                     m_Path = m_Path.substr(0, slash + 1);
                 }
             }
-        } 
-        else 
+        }
+        else
         {
             if (path.size() > 2 && path[1] == ':' && m_Path == "/")
             {
@@ -206,4 +204,4 @@ namespace GfxRenderEngine
         }
         HandlePath();
     }
-}
+} // namespace GfxRenderEngine

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <stdlib.h>
@@ -37,29 +37,24 @@ namespace LucreApp
     void MainScene::LoadModels()
     {
         {
-            std::vector<std::string> faces =
-            {
-                "application/lucre/models/assets/Skybox/right.png",
-                "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",
-                "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/front.png",
-                "application/lucre/models/assets/Skybox/back.png"
-            };
+            std::vector<std::string> faces = {
+                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
+                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
+                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
-            auto& skyboxTransform  = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
+            skyboxTransform.SetScale(300.0f);
         }
         {
-            float scaleHero   = 0.0038f;
+            float scaleHero = 0.0038f;
             m_SpritesheetHorn.SetScale(scaleHero);
             for (uint i = 0; i < HORN_ANIMATION_SPRITES; i++)
             {
-                auto sprite  = m_SpritesheetHorn.GetSprite(i);
-                float width  = sprite.GetWidth();
+                auto sprite = m_SpritesheetHorn.GetSprite(i);
+                float width = sprite.GetWidth();
                 float height = sprite.GetHeight();
 
                 Builder builder{};
@@ -69,7 +64,7 @@ namespace LucreApp
                 MeshComponent mesh{"horn animation", model};
                 mesh.m_Enabled = false;
 
-                m_Guybrush[i] = CreateEntity();
+                m_Guybrush[i] = m_Registry.create();
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};
@@ -82,14 +77,14 @@ namespace LucreApp
             }
         }
         {
-            GltfBuilder builder("application/lucre/models/external_3D_files/banana/banana.gltf", *this);
+            FastgltfBuilder builder("application/lucre/models/external_3D_files/banana/banana.gltf", *this);
             builder.LoadGltf(MAX_B /*instance(s)*/);
             auto model = Engine::m_Engine->LoadModel(builder);
-            
 
             for (uint i = 0; i < MAX_B; i++)
             {
-                m_Banana[i] = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/banana/banana.gltf::" + std::to_string(i) + "::root");
+                m_Banana[i] = m_Dictionary.Retrieve(
+                    "application/lucre/models/external_3D_files/banana/banana.gltf::" + std::to_string(i) + "::root");
 
                 TransformComponent transform{};
                 if (i < 12)
@@ -98,7 +93,7 @@ namespace LucreApp
                 }
                 else
                 {
-                    transform.SetTranslation(glm::vec3{-3.0f + 0.5 * (i-12), 0.5f, 0.3f});
+                    transform.SetTranslation(glm::vec3{-3.0f + 0.5 * (i - 12), 0.5f, 0.3f});
                 }
                 m_Registry.emplace<BananaComponent>(m_Banana[i], true);
 
@@ -117,36 +112,23 @@ namespace LucreApp
                 fixtureDef.restitution = 0.4f;
                 body->CreateFixture(&fixtureDef);
                 m_Registry.emplace<RigidbodyComponent>(m_Banana[i], RigidbodyComponent::DYNAMIC, body);
-
             }
         }
         {
 
-            std::vector<glm::vec3> lightColors =
-            {
-                {1.f, .1f, .1f},
-                {.1f, .1f, 1.f},
-                {.1f, 1.f, .1f},
-                {1.f, 1.f, .1f},
-                {.1f, 1.f, 1.f},
-                {1.f, 1.f, 1.f}
-            };
+            std::vector<glm::vec3> lightColors = {{1.f, .1f, .1f}, {.1f, .1f, 1.f}, {.1f, 1.f, .1f},
+                                                  {1.f, 1.f, .1f}, {.1f, 1.f, 1.f}, {1.f, 1.f, 1.f}};
 
             for (size_t i = 0; i < lightColors.size(); i++)
             {
                 m_PointLight[i] = CreatePointLight(POINT_LIGHT_INTENSITY, 0.1f, lightColors[i]);
-                auto rotateLight = glm::rotate
-                (
-                    glm::mat4(1.0f),
-                    (i * glm::two_pi<float>()) / lightColors.size(),
-                    {0.f, -1.f, 0.f}
-                );
-                TransformComponent transform{};
+                auto rotateLight =
+                    glm::rotate(glm::mat4(1.0f), (i * glm::two_pi<float>()) / lightColors.size(), {0.f, -1.f, 0.f});
+                auto& transform = m_Registry.get<TransformComponent>(m_PointLight[i]);
                 glm::vec3 translation = glm::vec3(rotateLight * glm::vec4(-1.0f, 0.25f, 1.0f, 0.0f));
                 transform.SetTranslation(translation);
-                m_Registry.emplace<TransformComponent>(m_PointLight[i], transform);
                 m_Registry.emplace<Group1>(m_PointLight[i], true);
             }
         }
     }
-}
+} // namespace LucreApp

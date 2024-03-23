@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -30,18 +30,19 @@
 namespace LucreApp
 {
 
-    void ControllerSetupAnimation::OnAttach() 
+    void ControllerSetupAnimation::OnAttach()
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
-        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 2.0f, 2.0f);
+        m_SpritesheetPointers.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_CONTROLLER_SETUP), 19 /* frames */, 2.0f,
+                                                2.0f);
     }
 
-    void ControllerSetupAnimation::OnDetach()  {}
+    void ControllerSetupAnimation::OnDetach() {}
 
     void ControllerSetupAnimation::SetActiveController(int activeController)
     {
         glm::vec3 translation(0.0f);
-        float windowWidthHalf  = Engine::m_Engine->GetWindowWidth() / 2.0f;
+        float windowWidthHalf = Engine::m_Engine->GetWindowWidth() / 2.0f;
         float windowHeight = Engine::m_Engine->GetWindowHeight();
         if (activeController == Controller::FIRST_CONTROLLER)
         {
@@ -67,5 +68,5 @@ namespace LucreApp
         m_Renderer->DrawWithTransform(sprite, position);
     }
 
-    void ControllerSetupAnimation::OnEvent(Event& event)  {}
-}
+    void ControllerSetupAnimation::OnEvent(Event& event) {}
+} // namespace LucreApp

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,14 +12,14 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-    
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
    be found under https://github.com/TheCherno/Hazel/blob/master/LICENSE
@@ -31,6 +31,7 @@
 #include "renderer/renderer.h"
 #include "renderer/builder/builder.h"
 #include "renderer/builder/gltfBuilder.h"
+#include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
 
 namespace GfxRenderEngine
@@ -39,7 +40,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         virtual ~GraphicsContext() = default;
 
         virtual bool Init() = 0;
@@ -50,6 +50,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) = 0;
+        virtual std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
 
@@ -59,7 +60,6 @@ namespace GfxRenderEngine
 
         static std::shared_ptr<GraphicsContext> Create(void* window);
 
-    private: 
-    
+    private:
     };
-}
+} // namespace GfxRenderEngine

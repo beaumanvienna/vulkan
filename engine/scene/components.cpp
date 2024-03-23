@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <iostream>
@@ -40,21 +40,17 @@ namespace GfxRenderEngine
     {
     }
 
-    MeshComponent::MeshComponent(std::shared_ptr<Model> model, bool enabled)
-        : m_Model{model}, m_Enabled{enabled}
+    MeshComponent::MeshComponent(std::shared_ptr<Model> model, bool enabled) : m_Model{model}, m_Enabled{enabled}
     {
         m_Name = "mesh component " + std::to_string(m_DefaultNameTagCounter++);
     }
 
     TransformComponent::TransformComponent()
-        : m_Scale(glm::vec3(1.0)), m_Rotation(glm::vec3(0.0)),
-          m_Translation(glm::vec3(0.0)), m_Dirty(true)
-    {}
-
-    TransformComponent::TransformComponent(const glm::mat4& mat4)
+        : m_Scale(glm::vec3(1.0)), m_Rotation(glm::vec3(0.0)), m_Translation(glm::vec3(0.0)), m_Dirty(true)
     {
-        SetMat4Local(mat4);
     }
+
+    TransformComponent::TransformComponent(const glm::mat4& mat4) { SetMat4Local(mat4); }
 
     void TransformComponent::SetMat4Local(const glm::mat4& mat4)
     {
@@ -71,15 +67,9 @@ namespace GfxRenderEngine
         SetScale(scale);
     }
 
-    void TransformComponent::SetDirtyFlag()
-    {
-        m_Dirty = true;
-    }
+    void TransformComponent::SetDirtyFlag() { m_Dirty = true; }
 
-    bool TransformComponent::GetDirtyFlag() const
-    {
-        return m_Dirty;
-    }
+    bool TransformComponent::GetDirtyFlag() const { return m_Dirty; }
 
     void TransformComponent::SetScale(const glm::vec3& scale)
     {
@@ -111,10 +101,7 @@ namespace GfxRenderEngine
         m_Dirty = true;
     }
 
-    void TransformComponent::AddScale(const glm::vec3& deltaScale)
-    {
-        SetScale(m_Scale + deltaScale);
-    }
+    void TransformComponent::AddScale(const glm::vec3& deltaScale) { SetScale(m_Scale + deltaScale); }
 
     void TransformComponent::SetRotation(const glm::vec3& rotation)
     {
@@ -148,10 +135,7 @@ namespace GfxRenderEngine
         m_Dirty = true;
     }
 
-    void TransformComponent::AddRotation(const glm::vec3& deltaRotation)
-    {
-        SetRotation(m_Rotation + deltaRotation);
-    }
+    void TransformComponent::AddRotation(const glm::vec3& deltaRotation) { SetRotation(m_Rotation + deltaRotation); }
 
     void TransformComponent::AddRotationY(const float deltaRotation)
     {
@@ -258,14 +242,9 @@ namespace GfxRenderEngine
         }
     }
 
-    const glm::mat4& TransformComponent::GetParent()
-    {
-        return m_Parent;
-    }
+    const glm::mat4& TransformComponent::GetParent() { return m_Parent; }
 
-    ScriptComponent::ScriptComponent(const std::string& filepath)
-        : m_Filepath(filepath) {}
+    ScriptComponent::ScriptComponent(const std::string& filepath) : m_Filepath(filepath) {}
 
-    ScriptComponent::ScriptComponent(const std::string_view filepath)
-        : m_Filepath(std::string(filepath)) {}
-}
+    ScriptComponent::ScriptComponent(const std::string_view filepath) : m_Filepath(std::string(filepath)) {}
+} // namespace GfxRenderEngine

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "core.h"
@@ -37,18 +37,18 @@ namespace LucreApp
     {
         m_Renderer = Engine::m_Engine->GetRenderer();
 
-        // create orthogonal camera 
-        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        // create orthogonal camera
+
+        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
+                                                                -2.0f /*ZFar*/);
+        m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);
         auto& camera = m_CameraController->GetCamera();
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
         camera.SetViewDirection(position, direction);
 
         // walk
-        m_SpritesheetWalk.AddSpritesheetRow
-        (
-            Lucre::m_Spritesheet->GetSprite(I_WALK),
-            WALK_ANIMATION_SPRITES /* frames */
+        m_SpritesheetWalk.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_WALK), WALK_ANIMATION_SPRITES /* frames */
         );
         m_WalkAnimation.Create(150ms /* per frame */, &m_SpritesheetWalk);
         m_WalkAnimation.Start();
@@ -62,7 +62,7 @@ namespace LucreApp
             MeshComponent mesh{"walk animation", model};
             mesh.m_Enabled = false;
 
-            m_Guybrush[i] = CreateEntity();
+            m_Guybrush[i] = m_Registry.create();
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
@@ -71,7 +71,7 @@ namespace LucreApp
 
         // beach
         {
-            m_Beach = CreateEntity();
+            m_Beach = m_Registry.create();
 
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Beach, transform);
@@ -81,7 +81,7 @@ namespace LucreApp
         {
             for (uint i = 0; i < 2; i++)
             {
-                m_Clouds[i] = CreateEntity();
+                m_Clouds[i] = m_Registry.create();
 
                 TransformComponent transform{};
                 m_Registry.emplace<TransformComponent>(m_Clouds[i], transform);
@@ -90,28 +90,25 @@ namespace LucreApp
         Init();
     }
 
-    void CutScene::ResetTimer()
-    {
-        m_StartTime = Engine::m_Engine->GetTime();
-    }
+    void CutScene::ResetTimer() { m_StartTime = Engine::m_Engine->GetTime(); }
 
     // used at the beginning and to resize
     void CutScene::Init()
     {
         m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
-        m_EndPositionX     = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
-        float windowWidth  = static_cast<float>(Engine::m_Engine->GetWindowWidth());
+        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        float windowWidth = static_cast<float>(Engine::m_Engine->GetWindowWidth());
         float windowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
         // walk
-        float scaleHero     = windowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
-        
+        float scaleHero = windowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
+
         m_GuybrushWalkDelta = windowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
             auto sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
             sprite.SetScale(scaleHero);
-            float width  = sprite.GetWidth();
+            float width = sprite.GetWidth();
             float height = sprite.GetHeight();
 
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
@@ -136,7 +133,6 @@ namespace LucreApp
             float spriteWidthClouds = m_CloudSprite.GetWidth();
             m_TranslationX0 = spriteWidthClouds / 2.0f;
             m_TranslationX1 = -spriteWidthClouds / 2.0f;
-
         }
         // beach
         {
@@ -144,9 +140,9 @@ namespace LucreApp
 
             auto& transform = m_Registry.get<TransformComponent>(m_Beach);
             transform = TransformComponent(m_BeachSprite.GetMat4());
-            transform.SetTranslation(glm::vec3{windowWidth/2.0f, windowHeight - spriteHeight/2, 0.0f});
+            transform.SetTranslation(glm::vec3{windowWidth / 2.0f, windowHeight - spriteHeight / 2, 0.0f});
         }
-        
+
         // clouds
         {
             for (uint i = 0; i < 2; i++)
@@ -156,10 +152,10 @@ namespace LucreApp
             }
         }
     }
-    
+
     void CutScene::MoveClouds(const Timestep& timestep)
     {
-        float spriteWidth  = m_CloudSprite.GetWidth();
+        float spriteWidth = m_CloudSprite.GetWidth();
         float spriteHeight = m_CloudSprite.GetHeight();
 
         float speed = 20.0f;
@@ -167,13 +163,13 @@ namespace LucreApp
         m_TranslationX0 += timestep * speed;
         m_TranslationX1 += timestep * speed;
 
-        if (m_TranslationX0 > spriteWidth*1.5f)
+        if (m_TranslationX0 > spriteWidth * 1.5f)
         {
-            m_TranslationX0 = -spriteWidth/2.0f;
+            m_TranslationX0 = -spriteWidth / 2.0f;
         }
-        if (m_TranslationX1 > spriteWidth*1.5f)
+        if (m_TranslationX1 > spriteWidth * 1.5f)
         {
-            m_TranslationX1 = -spriteWidth/2.0f;
+            m_TranslationX1 = -spriteWidth / 2.0f;
         }
 
         // need to gloss over some rounding effects
@@ -181,19 +177,17 @@ namespace LucreApp
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[0]);
             transform = TransformComponent(glossOver);
-            transform.SetTranslation(glm::vec3{m_TranslationX0, spriteHeight/2.0f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_TranslationX0, spriteHeight / 2.0f, 0.0f});
         }
 
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
             transform = TransformComponent(glossOver);
-            transform.SetTranslation(glm::vec3{m_TranslationX1, spriteHeight/2.0f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_TranslationX1, spriteHeight / 2.0f, 0.0f});
         }
     }
 
-    void CutScene::Stop()
-    {
-    }
+    void CutScene::Stop() {}
 
     void CutScene::OnUpdate(const Timestep& timestep)
     {
@@ -228,12 +222,13 @@ namespace LucreApp
             {
                 previousFrame = m_WalkAnimation.GetCurrentFrame();
             }
-            float frameTranslationX = 0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * m_WalkAnimation.GetCurrentFrame();
+            float frameTranslationX =
+                0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * m_WalkAnimation.GetCurrentFrame();
 
             for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
-                transform.SetTranslationX(frameTranslationX+walkOffset);
+                transform.SetTranslationX(frameTranslationX + walkOffset);
             }
         }
         MoveClouds(timestep);
@@ -251,7 +246,6 @@ namespace LucreApp
         // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
         Draw();
-
     }
 
     void CutScene::Draw()
@@ -267,13 +261,13 @@ namespace LucreApp
             auto& transform = m_Registry.get<TransformComponent>(m_Clouds[1]);
             m_Renderer->DrawWithTransform(m_CloudSprite, transform.GetMat4Local());
         }
-        
+
         // beach
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Beach);
             m_Renderer->DrawWithTransform(m_BeachSprite, transform.GetMat4Local());
         }
-        
+
         // hero
         {
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[0]);
@@ -281,13 +275,11 @@ namespace LucreApp
         }
     }
 
-    void CutScene::OnEvent(Event& event)
-    {
-    }
+    void CutScene::OnEvent(Event& event) {}
 
     void CutScene::OnResize()
     {
         m_CameraController->SetProjection();
         Init();
     }
-}
+} // namespace LucreApp

@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -32,29 +32,30 @@
 namespace GfxRenderEngine
 {
 
-    namespace SCREEN_UI 
+    namespace SCREEN_UI
     {
 
         void EnableFocusMovement(bool enable);
         bool IsFocusMovementEnabled();
-        View *GetFocusedView();
-        void SetFocusedView(View *view, bool force = false);
-        void RemoveQueuedEventsByEvent(Event *e);
-        void RemoveQueuedEventsByView(View * v);
+        View* GetFocusedView();
+        void SetFocusedView(View* view, bool force = false);
+        void RemoveQueuedEventsByEvent(Event* e);
+        void RemoveQueuedEventsByView(View* v);
 
-        void EventTriggered(Event *e, EventParams params);
+        void EventTriggered(Event* e, EventParams params);
         void DispatchEvents();
 
         class ViewGroup;
 
-        void LayoutViewHierarchy(const SCREEN_UIContext &dc, ViewGroup *root, bool ignoreInsets);
-        void UpdateViewHierarchy(ViewGroup *root);
+        void LayoutViewHierarchy(const SCREEN_UIContext& dc, ViewGroup* root, bool ignoreInsets);
+        void UpdateViewHierarchy(ViewGroup* root);
 
-        bool KeyEvent(const SCREEN_KeyInput &key, ViewGroup *root);
-        bool TouchEvent(const SCREEN_TouchInput &touch, ViewGroup *root);
-        bool AxisEvent(const SCREEN_AxisInput &axis, ViewGroup *root);
+        bool KeyEvent(const SCREEN_KeyInput& key, ViewGroup* root);
+        bool TouchEvent(const SCREEN_TouchInput& touch, ViewGroup* root);
+        bool AxisEvent(const SCREEN_AxisInput& axis, ViewGroup* root);
 
-        enum class SCREEN_UISound {
+        enum class SCREEN_UISound
+        {
             SELECT = 0,
             BACK,
             CONFIRM,
@@ -68,5 +69,5 @@ namespace GfxRenderEngine
 
         void PlayUISound(SCREEN_UISound sound);
 
-    }  // namespace SCREEN_UI
-}
+    } // namespace SCREEN_UI
+} // namespace GfxRenderEngine

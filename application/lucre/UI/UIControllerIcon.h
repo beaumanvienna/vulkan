@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -25,7 +25,6 @@
 #include "engine.h"
 #include "core.h"
 #include "layer/layer.h"
-#include "scene/entity.h"
 #include "renderer/renderer.h"
 #include "sprite/spritesheet.h"
 #include "transform/transformation.h"
@@ -37,9 +36,7 @@ namespace LucreApp
     {
 
     public:
-
-        UIControllerIcon(bool indent, const std::string& name = "UIControllerIcon")
-            : Layer(name), m_Indent(indent) {}
+        UIControllerIcon(bool indent, const std::string& name = "UIControllerIcon") : Layer(name), m_Indent(indent) {}
 
         void OnAttach() override;
         void OnDetach() override;
@@ -50,15 +47,12 @@ namespace LucreApp
         void Init();
 
     public:
-
         entt::registry m_Registry;
 
     private:
-
         void LoadModels();
 
     private:
-
         Sprite2D m_ControllerSprite;
         entt::entity m_ID1, m_ID2;
         bool m_Indent;
@@ -70,6 +64,5 @@ namespace LucreApp
         Animation m_Controller2MoveIn;
         Animation m_Controller2MoveOut;
         bool m_Controller2Detected;
-
     };
-}
+} // namespace LucreApp

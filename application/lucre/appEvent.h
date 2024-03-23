@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -37,12 +37,14 @@ namespace LucreApp
     enum AppEventCategory
     {
         None = 0,
-        EventCategoryGameState        = BIT(0)
+        EventCategoryGameState = BIT(0)
     };
 
-    #define EVENT_CLASS_APP_CATEGORY(x) int GetAppCategoryFlags() const override { return x; }
-    #define EVENT_CLASS_APP_TYPE(x) static AppEventType GetStaticAppType() { return AppEventType::x; }\
-            AppEventType GetAppEventType() const override { return GetStaticAppType(); }\
+#define EVENT_CLASS_APP_CATEGORY(x) \
+    int GetAppCategoryFlags() const override { return x; }
+#define EVENT_CLASS_APP_TYPE(x)                                        \
+    static AppEventType GetStaticAppType() { return AppEventType::x; } \
+    AppEventType GetAppEventType() const override { return GetStaticAppType(); }
 
     class AppEvent : public Event
     {
@@ -53,15 +55,12 @@ namespace LucreApp
 
     class AppEventDispatcher
     {
-        template <typename T>
-        using EventFn = std::function<bool(T&)>;
+        template <typename T> using EventFn = std::function<bool(T&)>;
 
     public:
-        AppEventDispatcher(AppEvent& event)
-            : m_Event(event) {}
+        AppEventDispatcher(AppEvent& event) : m_Event(event) {}
 
-        template<typename T>
-        bool Dispatch(EventFn<T> func)
+        template <typename T> bool Dispatch(EventFn<T> func)
         {
             if (m_Event.GetAppEventType() == T::GetStaticAppType())
             {
@@ -72,19 +71,14 @@ namespace LucreApp
         }
 
     private:
-
         AppEvent& m_Event;
-
     };
 
     class SceneChangedEvent : public AppEvent
     {
 
     public:
-
-        SceneChangedEvent(GameState::State newScene)
-          : m_NewScene(newScene)
-        {}
+        SceneChangedEvent(GameState::State newScene) : m_NewScene(newScene) {}
 
         EVENT_CLASS_CATEGORY(EventCategoryApplication);
         EVENT_CLASS_TYPE(ApplicationEvent);
@@ -95,7 +89,7 @@ namespace LucreApp
         std::string ToString() const override
         {
             std::string strNewScene;
-            switch(m_NewScene)
+            switch (m_NewScene)
             {
                 case GameState::State::SPLASH:
                     strNewScene = "splash";
@@ -122,7 +116,6 @@ namespace LucreApp
     {
 
     public:
-
         SceneFinishedEvent() {}
 
         EVENT_CLASS_CATEGORY(EventCategoryApplication);
@@ -137,4 +130,4 @@ namespace LucreApp
             return str.str();
         }
     };
-}
+} // namespace LucreApp

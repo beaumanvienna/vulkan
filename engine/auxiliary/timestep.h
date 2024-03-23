@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -32,7 +32,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         Timestep(std::chrono::duration<float, std::chrono::seconds::period> time);
 
         std::chrono::duration<float, std::chrono::seconds::period> GetSeconds() const;
@@ -41,19 +40,14 @@ namespace GfxRenderEngine
         void Print() const;
         float Count() const;
 
-        Timestep& operator =(const std::chrono::duration<float, std::chrono::seconds::period>& timestep);
+        Timestep& operator=(const std::chrono::duration<float, std::chrono::seconds::period>& timestep);
         Timestep& operator-=(const Timestep& other);
-        Timestep  operator -(const Timestep& other) const;
-        bool      operator<=(const std::chrono::duration<float, std::chrono::seconds::period>& other) const;
+        Timestep operator-(const Timestep& other) const;
+        bool operator<=(const std::chrono::duration<float, std::chrono::seconds::period>& other) const;
 
-        operator float() const
-        {
-            return m_Timestep.count();
-        }
+        operator float() const { return m_Timestep.count(); }
 
     private:
-
         std::chrono::duration<float, std::chrono::seconds::period> m_Timestep;
-
     };
-}
+} // namespace GfxRenderEngine

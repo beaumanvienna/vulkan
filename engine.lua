@@ -2,13 +2,13 @@
 project "engine"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
     defines
     {
-        "ENGINE_VERSION=\"0.8.6\"",
+        "ENGINE_VERSION=\"0.8.8\"",
         "PROFILING"
     }
 
@@ -45,6 +45,7 @@ project "engine"
         "vendor/shaderc/libshaderc/include/shaderc/",
         "vendor/shaderc/libshaderc/include/",
         "vendor/assetImporter/include",
+        "vendor/fastgltf/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
@@ -174,6 +175,7 @@ project "engine"
 
     include "vendor/glfw.lua"
     include "vendor/yaml.lua"
+    include "vendor/fastgltf.lua"
     include "vendor/atlas"
     include "vendor/shaderc.lua"
     if ((os.host() ~= "macosx")) then

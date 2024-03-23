@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "engine.h"
@@ -32,7 +32,7 @@ namespace GfxRenderEngine
 
     VK_ShadowMap::VK_ShadowMap(int width)
     {
-        m_ShadowMapExtent.width  = width;
+        m_ShadowMapExtent.width = width;
         m_ShadowMapExtent.height = width;
         m_Device = VK_Core::m_Device;
         m_DepthFormat = m_Device->FindDepthFormat();
@@ -86,20 +86,24 @@ namespace GfxRenderEngine
         constexpr uint NUMBER_OF_DEPENDENCIES = 2;
         std::array<VkSubpassDependency, NUMBER_OF_DEPENDENCIES> dependencies;
 
-        dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                                // Index of the render pass being depended upon by dstSubpass
-        dependencies[0].dstSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW); // The index of the render pass depending on srcSubpass
-        dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;              // What pipeline stage must have completed for the dependency
-        dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;         // What pipeline stage is waiting on the dependency
-        dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                          // What access scopes influence the dependency
-        dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;       // What access scopes are waiting on the dependency
-        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                        // Other configuration about the dependency
+        dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL; // Index of the render pass being depended upon by dstSubpass
+        dependencies[0].dstSubpass =
+            static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW); // The index of the render pass depending on srcSubpass
+        dependencies[0].srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage must have completed for the dependency
+        dependencies[0].dstStageMask =
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;            // What pipeline stage is waiting on the dependency
+        dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT; // What access scopes influence the dependency
+        dependencies[0].dstAccessMask =
+            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;              // What access scopes are waiting on the dependency
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
 
-        dependencies[1].srcSubpass      = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW);
-        dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
-        dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dependencies[1].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependencies[1].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[1].srcSubpass = static_cast<uint>(SubPassesShadow::SUBPASS_SHADOW);
+        dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         // render pass
@@ -137,13 +141,8 @@ namespace GfxRenderEngine
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.flags = 0;
 
-        m_Device->CreateImageWithInfo
-        (
-            imageInfo,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            m_ShadowDepthImage,
-            m_ShadowDepthImageMemory
-        );
+        m_Device->CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_ShadowDepthImage,
+                                      m_ShadowDepthImageMemory);
 
         // image view
         VkImageViewCreateInfo viewInfo{};
@@ -187,8 +186,8 @@ namespace GfxRenderEngine
             }
         }
 
-        m_DescriptorImageInfo.sampler     = m_ShadowDepthSampler;
-        m_DescriptorImageInfo.imageView   = m_ShadowDepthImageView;
+        m_DescriptorImageInfo.sampler = m_ShadowDepthSampler;
+        m_DescriptorImageInfo.imageView = m_ShadowDepthImageView;
         m_DescriptorImageInfo.imageLayout = m_ImageLayout;
     }
 
@@ -203,13 +202,9 @@ namespace GfxRenderEngine
         framebufferInfo.height = m_ShadowMapExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(
-                m_Device->Device(),
-                &framebufferInfo,
-                nullptr,
-                &m_ShadowFramebuffer) != VK_SUCCESS)
+        if (vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_ShadowFramebuffer) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create shadow framebuffer!");
         }
     }
-}
+} // namespace GfxRenderEngine

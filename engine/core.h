@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -46,11 +46,9 @@ namespace GfxRenderEngine
     class Engine
     {
     public:
-
         static constexpr bool SWITCH_OFF_COMPUTER = true;
 
     public:
-
         Engine(const std::string& configFilePath);
         ~Engine();
 
@@ -88,19 +86,23 @@ namespace GfxRenderEngine
 
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }
         void DisableMousePointer() { m_Window->DisableMousePointer(); }
-        void AllowCursor()    { m_Window->AllowCursor(); }
+        void AllowCursor() { m_Window->AllowCursor(); }
         void DisallowCursor() { m_Window->DisallowCursor(); }
 
         void PlaySound(std::string filename) { m_Audio->PlaySound(filename); }
-        void PlaySound(const char* path, int resourceID, const std::string& resourceClass) { m_Audio->PlaySound(path, resourceID, resourceClass); }
+        void PlaySound(const char* path, int resourceID, const std::string& resourceClass)
+        {
+            m_Audio->PlaySound(path, resourceID, resourceClass);
+        }
 
         std::shared_ptr<Renderer> GetRenderer() const { return m_GraphicsContext->GetRenderer(); }
-        bool MultiThreadingSupport() const { return m_GraphicsContext->MultiThreadingSupport(); }
+        bool MultiThreadingSupport() const { return false; /*m_GraphicsContext->MultiThreadingSupport(); */ }
         void SetAppEventCallback(EventCallbackFunction eventCallback);
 
         void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
@@ -114,18 +116,15 @@ namespace GfxRenderEngine
         void ToggleFullscreen();
 
     public:
-
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
 
     private:
-
         static void SignalHandler(int signal);
         void AudioCallback(int eventType);
 
     private:
-
         std::string m_HomeDir;
         std::string m_ConfigFilePath;
         std::shared_ptr<Window> m_Window;
@@ -141,6 +140,5 @@ namespace GfxRenderEngine
 
         bool m_Running, m_Paused, m_GraphicsContextInitialized;
         std::vector<std::unique_ptr<Event>> m_EventQueue;
-
     };
-}
+} // namespace GfxRenderEngine

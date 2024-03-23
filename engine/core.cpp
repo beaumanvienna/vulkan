@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <csignal>
@@ -38,40 +38,36 @@ namespace GfxRenderEngine
     Engine* Engine::m_Engine = nullptr;
     SettingsManager Engine::m_SettingsManager;
 
-    Engine::Engine(const std::string& configFilePath) :
-                m_ConfigFilePath(configFilePath),
-                m_DisableMousePointerTimer(2500),
-                m_Running(false), m_Paused(false),
-                m_Timestep{0ms}, m_GraphicsContextInitialized(false)
+    Engine::Engine(const std::string& configFilePath)
+        : m_ConfigFilePath(configFilePath), m_DisableMousePointerTimer(2500), m_Running(false), m_Paused(false),
+          m_Timestep{0ms}, m_GraphicsContextInitialized(false)
     {
-        #ifdef _MSC_VER
-            m_HomeDir = "";
-        #else
-            m_HomeDir = getenv("HOME");
-        #endif
+#ifdef _MSC_VER
+        m_HomeDir = "";
+#else
+        m_HomeDir = getenv("HOME");
+#endif
 
         if (m_HomeDir == "")
         {
             auto path = std::filesystem::current_path();
-            m_HomeDir = path.u8string();
+            m_HomeDir = path.string();
         }
 
         EngineCore::AddSlash(m_HomeDir);
 
         m_Engine = this;
 
-        m_DisableMousePointerTimer.SetEventCallback([](uint interval, void* parameters)
+        m_DisableMousePointerTimer.SetEventCallback(
+            [](uint interval, void* parameters)
             {
                 uint returnValue = 0;
                 Engine::m_Engine->DisableMousePointer();
                 return returnValue;
-            }
-        );
+            });
     }
 
-    Engine::~Engine()
-    {
-    }
+    Engine::~Engine() {}
 
     bool Engine::Start()
     {
@@ -82,7 +78,7 @@ namespace GfxRenderEngine
         }
         InitSettings();
 
-        //signal handling
+        // signal handling
         signal(SIGINT, SignalHandler);
 
         // create main window
@@ -94,7 +90,7 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("Could not create main window");
             return false;
         }
-        m_Window->SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+        m_Window->SetEventCallback([this](Event& event) { return this->OnEvent(event); });
         m_GraphicsContext = GraphicsContext::Create(m_Window.get());
 
         // init audio
@@ -115,7 +111,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            m_Controller.SetEventCallback([this](Event& event){ return this->OnEvent(event); });
+            m_Controller.SetEventCallback([this](Event& event) { return this->OnEvent(event); });
         }
 
         m_Running = true;
@@ -132,7 +128,7 @@ namespace GfxRenderEngine
     void Engine::Quit()
     {
         // save settings
-        m_CoreSettings.m_EngineVersion    = ENGINE_VERSION;
+        m_CoreSettings.m_EngineVersion = ENGINE_VERSION;
         m_CoreSettings.m_EnableFullscreen = IsFullscreen();
         m_SettingsManager.SaveToFile();
     }
@@ -172,7 +168,7 @@ namespace GfxRenderEngine
 
         if (m_EventQueue.size())
         {
-            for (auto& event: m_EventQueue)
+            for (auto& event : m_EventQueue)
             {
                 OnEvent(*event.get());
             }
@@ -180,10 +176,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Engine::OnRender()
-    {
-        m_GraphicsContext->SwapBuffers();
-    }
+    void Engine::OnRender() { m_GraphicsContext->SwapBuffers(); }
 
     void Engine::SignalHandler(int signal)
     {
@@ -193,35 +186,33 @@ namespace GfxRenderEngine
             exit(0);
         }
     }
-    
-    void Engine::QueueEvent(std::unique_ptr<Event>& event)
-    {
-        m_EventQueue.push_back(std::move(event));
-    }
+
+    void Engine::QueueEvent(std::unique_ptr<Event>& event) { m_EventQueue.push_back(std::move(event)); }
 
     void Engine::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
 
         // log events
-        //if (event.GetCategoryFlags() & EventCategoryApplication) LOG_CORE_INFO(event);
-        //if (event.GetCategoryFlags() & EventCategoryInput)       LOG_CORE_INFO(event);
-        //if (event.GetCategoryFlags() & EventCategoryMouse)       LOG_CORE_INFO(event);
-        //if (event.GetCategoryFlags() & EventCategoryController)  LOG_CORE_INFO(event);
-        //if (event.GetCategoryFlags() & EventCategoryJoystick)    LOG_CORE_INFO(event);
+        // if (event.GetCategoryFlags() & EventCategoryApplication) LOG_CORE_INFO(event);
+        // if (event.GetCategoryFlags() & EventCategoryInput)       LOG_CORE_INFO(event);
+        // if (event.GetCategoryFlags() & EventCategoryMouse)       LOG_CORE_INFO(event);
+        // if (event.GetCategoryFlags() & EventCategoryController)  LOG_CORE_INFO(event);
+        // if (event.GetCategoryFlags() & EventCategoryJoystick)    LOG_CORE_INFO(event);
 
         // dispatch to Engine
-        //dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent event)
+        // dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent event)
         //    {
         //        Shutdown();
         //        return true;
         //    }
         //);
 
-        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent l_Event)
+        dispatcher.Dispatch<WindowResizeEvent>(
+            [this](WindowResizeEvent l_Event)
             {
-                //RenderCommand::SetScissor(0, 0, event.GetWidth(), event.GetHeight());
-                //m_WindowScale = GetWindowWidth() / GetContextWidth();
+                // RenderCommand::SetScissor(0, 0, event.GetWidth(), event.GetHeight());
+                // m_WindowScale = GetWindowWidth() / GetContextWidth();
                 if ((l_Event.GetWidth() == 0) || (l_Event.GetHeight() == 0))
                 {
                     LOG_CORE_INFO("application paused");
@@ -232,12 +223,12 @@ namespace GfxRenderEngine
                     m_Paused = false;
                 }
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
             {
-                switch(l_Event.GetKeyCode())
+                switch (l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_F:
                         LOG_CORE_INFO("toggle fullscreen at frame {0}", GetRenderer()->GetFrameCounter());
@@ -245,27 +236,27 @@ namespace GfxRenderEngine
                         break;
                 }
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<MouseMovedEvent>([this](MouseMovedEvent l_Event)
+        dispatcher.Dispatch<MouseMovedEvent>(
+            [this](MouseMovedEvent l_Event)
             {
                 m_Window->EnableMousePointer();
                 m_DisableMousePointerTimer.Stop();
                 m_DisableMousePointerTimer.Start();
                 return true;
-            }
-        );
+            });
 
         // dispatch to application layers
         if (!event.IsHandled())
         {
-            for (auto layerIterator = m_LayerStack.end(); layerIterator != m_LayerStack.begin(); )
+            for (auto layerIterator = m_LayerStack.end(); layerIterator != m_LayerStack.begin();)
             {
                 layerIterator--;
                 (*layerIterator)->OnEvent(event);
 
-                if (event.IsHandled()) break;
+                if (event.IsHandled())
+                    break;
             }
         }
         // dispatch to application
@@ -275,41 +266,37 @@ namespace GfxRenderEngine
         }
     }
 
-
-    void Engine::ToggleFullscreen()
-    {
-        m_Window->ToggleFullscreen();
-    }
+    void Engine::ToggleFullscreen() { m_Window->ToggleFullscreen(); }
 
     void Engine::AudioCallback(int eventType)
     {
-        #ifdef PULSEAUDIO
-            switch (eventType)
-            {
+#ifdef PULSEAUDIO
+        switch (eventType)
+        {
 
-                case LibPAmanager::Event::OUTPUT_DEVICE_CHANGED:
-                {
-                    LOG_CORE_INFO("current audio output device: {0}", Sound::GetDefaultOutputDevice());
-                    break;
-                }
-                case LibPAmanager::Event::OUTPUT_DEVICE_LIST_CHANGED:
-                {
-                    auto outputDeviceList = Sound::GetOutputDeviceList();
-                    for (auto device : outputDeviceList)
-                    {
-                        LOG_CORE_INFO("list all audio output devices: {0}", device);
-                    }
-                    break;
-                }
-                case LibPAmanager::Event::OUTPUT_DEVICE_VOLUME_CHANGED:
-                {
-                    auto volume = Sound::GetDesktopVolume();
-                    // user code goes here
-                    LOG_CORE_INFO("output volume changed to: {0}", volume);
-                    break;
-                }
+            case LibPAmanager::Event::OUTPUT_DEVICE_CHANGED:
+            {
+                LOG_CORE_INFO("current audio output device: {0}", Sound::GetDefaultOutputDevice());
+                break;
             }
-        #endif
+            case LibPAmanager::Event::OUTPUT_DEVICE_LIST_CHANGED:
+            {
+                auto outputDeviceList = Sound::GetOutputDeviceList();
+                for (auto device : outputDeviceList)
+                {
+                    LOG_CORE_INFO("list all audio output devices: {0}", device);
+                }
+                break;
+            }
+            case LibPAmanager::Event::OUTPUT_DEVICE_VOLUME_CHANGED:
+            {
+                auto volume = Sound::GetDesktopVolume();
+                // user code goes here
+                LOG_CORE_INFO("output volume changed to: {0}", volume);
+                break;
+            }
+        }
+#endif
     }
 
     void Engine::InitSettings()
@@ -334,15 +321,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void Engine::ApplyAppSettings()
-    {
-        m_SettingsManager.ApplySettings();
-    }
+    void Engine::ApplyAppSettings() { m_SettingsManager.ApplySettings(); }
 
-    void Engine::SetAppEventCallback(EventCallbackFunction eventCallback)
-    {
-        m_AppEventCallback = eventCallback;
-    }
+    void Engine::SetAppEventCallback(EventCallbackFunction eventCallback) { m_AppEventCallback = eventCallback; }
 
     std::chrono::time_point<std::chrono::high_resolution_clock> Engine::GetTime() const
     {
@@ -374,8 +355,9 @@ namespace GfxRenderEngine
                     }
                 }
                 log.push_back(static_cast<uint>(entity));
-                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity), currentScene->GetDictionary().GetLongName(entity));
+                LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity),
+                              currentScene->GetDictionary().GetLongName(entity));
             }
         }
     }
-}
+} // namespace GfxRenderEngine

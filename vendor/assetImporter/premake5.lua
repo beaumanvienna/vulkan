@@ -1,7 +1,7 @@
 project "assetImporter"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
@@ -150,7 +150,7 @@ project "assetImporter"
 project "zlibstatic"
     kind "StaticLib"
     language "C"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 

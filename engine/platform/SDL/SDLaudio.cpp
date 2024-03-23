@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,13 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
@@ -40,7 +40,7 @@ namespace GfxRenderEngine
 
         // Set up the audio stream
         int result = Mix_OpenAudio(44100, AUDIO_S16SYS, SOUND_CHANNELS, 512);
-        if( result < 0 )
+        if (result < 0)
         {
             std::string errorMessage = SDL_GetError();
             LOG_CORE_WARN("Unable to open audio: {0}", errorMessage);
@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         }
 
         result = Mix_AllocateChannels(4);
-        if( result < 0 )
+        if (result < 0)
         {
             std::string errorMessage = SDL_GetError();
             LOG_CORE_WARN("Unable to allocate mixing channels: {0}", errorMessage);
@@ -58,7 +58,7 @@ namespace GfxRenderEngine
 
     void SDLAudio::Stop()
     {
-        for (uint i = 0; i < SOUND_CHANNELS; i++ )
+        for (uint i = 0; i < SOUND_CHANNELS; i++)
         {
             Mix_FreeChunk(m_DataBuffer[i]);
         }
@@ -77,7 +77,8 @@ namespace GfxRenderEngine
             m_DataBuffer[i] = Mix_LoadWAV(filename.c_str());
             if (m_DataBuffer[i] == nullptr)
             {
-                LOG_CORE_WARN("SDLAudio::PlaySound: Unable to load sound file: {0}, Mix_GetError(): {1}", filename, Mix_GetError());
+                LOG_CORE_WARN("SDLAudio::PlaySound: Unable to load sound file: {0}, Mix_GetError(): {1}", filename,
+                              Mix_GetError());
                 return;
             }
         }
@@ -98,16 +99,17 @@ namespace GfxRenderEngine
             if (!sdlRWOps)
             {
                 LOG_CORE_WARN("SDLAudio::PlaySound: Resource '{0}' not found", path);
-                return; 
+                return;
             }
 
             m_DataBuffer[i] = Mix_LoadWAV_RW(sdlRWOps, 0);
             if (m_DataBuffer[i] == nullptr)
             {
-                LOG_CORE_WARN("SDLAudio::PlaySound: Unable to load sound file: {0}, Mix_GetError(): {1}", path, Mix_GetError());
+                LOG_CORE_WARN("SDLAudio::PlaySound: Unable to load sound file: {0}, Mix_GetError(): {1}", path,
+                              Mix_GetError());
                 return;
             }
         }
         Mix_PlayChannel(-1, m_DataBuffer[0], 0);
     }
-}
+} // namespace GfxRenderEngine

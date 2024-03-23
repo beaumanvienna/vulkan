@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <fstream>
@@ -33,7 +33,8 @@ namespace GfxRenderEngine
 
     class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
     {
-        shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override;
+        shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type,
+                                           const char* requestingSource, size_t includeDepth) override;
         void ReleaseInclude(shaderc_include_result* data) override;
         static std::string ReadFile(const std::string& filepath);
     };
@@ -44,7 +45,6 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("compiling {0}", sourceFilepath);
         ReadFile();
         Compile();
-
     }
 
     void VK_Shader::ReadFile()
@@ -111,7 +111,8 @@ namespace GfxRenderEngine
         auto precompileResult = compiler.PreprocessGlsl(m_SourceCode, shaderType, m_SourceFilepath.c_str(), options);
         if (precompileResult.GetCompilationStatus() != shaderc_compilation_status_success)
         {
-            LOG_CORE_ERROR("VK_Shader: Could not preompile shader {0}, error message: {1}", m_SourceFilepath, precompileResult.GetErrorMessage());
+            LOG_CORE_ERROR("VK_Shader: Could not preompile shader {0}, error message: {1}", m_SourceFilepath,
+                           precompileResult.GetErrorMessage());
             return;
         }
 
@@ -120,7 +121,8 @@ namespace GfxRenderEngine
         auto compileResult = compiler.CompileGlslToSpv(m_SourceCode, shaderType, m_SourceFilepath.c_str(), options);
         if (compileResult.GetCompilationStatus() != shaderc_compilation_status_success)
         {
-            LOG_CORE_ERROR("VK_Shader: Could not compile shader {0}, error message: {1}", m_SourceFilepath, compileResult.GetErrorMessage());
+            LOG_CORE_ERROR("VK_Shader: Could not compile shader {0}, error message: {1}", m_SourceFilepath,
+                           compileResult.GetErrorMessage());
             return;
         }
 
@@ -134,7 +136,8 @@ namespace GfxRenderEngine
         }
     }
 
-    shaderc_include_result* ShaderIncluder::GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth)
+    shaderc_include_result* ShaderIncluder::GetInclude(const char* requestedSource, shaderc_include_type type,
+                                                       const char* requestingSource, size_t includeDepth)
     {
         std::string msg = std::string(requestingSource);
         msg += std::to_string(type);
@@ -191,4 +194,4 @@ namespace GfxRenderEngine
         }
         return sourceCode;
     }
-}
+} // namespace GfxRenderEngine

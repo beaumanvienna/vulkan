@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "lucre.h"
@@ -61,24 +61,24 @@ namespace LucreApp
         glm::vec2 finalScreenPosition1;
         float xPosWide1 = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
         float yPosWide12 = 226.0f * UI::m_Common->m_ScaleAll;
-        finalOutOfScreenPosition= glm::vec2(2000.0f, 300.0f);
+        finalOutOfScreenPosition = glm::vec2(2000.0f, 300.0f);
         if (m_Narrow)
         {
-            finalScreenPosition1    = glm::vec2(320.0f, 110.0f);
+            finalScreenPosition1 = glm::vec2(320.0f, 110.0f);
         }
         else
         {
-            finalScreenPosition1    = glm::vec2(xPosWide1, yPosWide12);
+            finalScreenPosition1 = glm::vec2(xPosWide1, yPosWide12);
         }
 
         m_StarMoveIn1.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition1));
-        m_StarMoveIn1.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
+        m_StarMoveIn1.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
-        m_StarRotate1.AddRotation(Rotation(      100.0f * duration,    0.0f,  250.0f));
+        m_StarRotate1.AddRotation(Rotation(100.0f * duration, 0.0f, 250.0f));
         m_StarRotate1.AddTranslation(Translation(100.0f * duration, finalScreenPosition1, finalScreenPosition1));
 
         m_StarMoveOut1.AddTranslation(Translation(1.0f * duration, finalScreenPosition1, finalOutOfScreenPosition));
-        m_StarMoveOut1.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
+        m_StarMoveOut1.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 2nd star icon: move left to top left corner
         float xPosWide23 = UI::m_Common->m_TabMarginLeftRight + UI::m_Common->m_IconWidth * 1.5f;
@@ -93,13 +93,13 @@ namespace LucreApp
         }
 
         m_StarMoveIn2.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition2));
-        m_StarMoveIn2.AddRotation(Rotation(      1.0f * duration,    0.0f,   -3.141f));
+        m_StarMoveIn2.AddRotation(Rotation(1.0f * duration, 0.0f, -3.141f));
 
-        m_StarRotate2.AddRotation(Rotation(      100.0f * duration,    0.0f,  -250.0f));
+        m_StarRotate2.AddRotation(Rotation(100.0f * duration, 0.0f, -250.0f));
         m_StarRotate2.AddTranslation(Translation(100.0f * duration, finalScreenPosition2, finalScreenPosition2));
 
         m_StarMoveOut2.AddTranslation(Translation(1.0f * duration, finalScreenPosition2, finalOutOfScreenPosition));
-        m_StarMoveOut2.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
+        m_StarMoveOut2.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 3rd star icon: move left to bottom left corner
         float yPosWide3 = yPosWide12 + 568.0f * UI::m_Common->m_ScaleAll;
@@ -114,24 +114,24 @@ namespace LucreApp
         }
 
         m_StarMoveIn3.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition3));
-        m_StarMoveIn3.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
+        m_StarMoveIn3.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
-        m_StarRotate3.AddRotation(Rotation(      100.0f * duration,    0.0f,  250.0f));
+        m_StarRotate3.AddRotation(Rotation(100.0f * duration, 0.0f, 250.0f));
         m_StarRotate3.AddTranslation(Translation(100.0f * duration, finalScreenPosition3, finalScreenPosition3));
 
         m_StarMoveOut3.AddTranslation(Translation(1.0f * duration, finalScreenPosition3, finalOutOfScreenPosition));
-        m_StarMoveOut3.AddRotation(Rotation(      1.0f * duration,    0.0f,   3.141f));
+        m_StarMoveOut3.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
-        m_Start   = false;
-        m_Stop    = false;
+        m_Start = false;
+        m_Stop = false;
         ChangeState(State::IDLE);
     }
 
-    void UIStarIcon::OnDetach()  {}
+    void UIStarIcon::OnDetach() {}
 
     void UIStarIcon::OnUpdate(const Timestep& timestep)
     {
-        switch(m_State)
+        switch (m_State)
         {
             case State::IDLE:
                 if (m_Start)
@@ -246,12 +246,12 @@ namespace LucreApp
         }
     }
 
-    void UIStarIcon::OnEvent(Event& event)  {}
+    void UIStarIcon::OnEvent(Event& event) {}
 
     void UIStarIcon::StartSequence()
     {
-        m_Start   = false;
-        m_Stop    = false;
+        m_Start = false;
+        m_Stop = false;
         m_StarMoveIn1.Start();
         m_StarMoveIn2.Start();
         m_StarMoveIn3.Start();
@@ -267,8 +267,8 @@ namespace LucreApp
 
     void UIStarIcon::StopSequence()
     {
-        m_Start   = false;
-        m_Stop    = false;
+        m_Start = false;
+        m_Stop = false;
         m_StarMoveIn1.Stop();
         m_StarMoveIn2.Stop();
         m_StarMoveIn3.Stop();
@@ -297,19 +297,16 @@ namespace LucreApp
         m_StarMoveOut3.Stop();
     }
 
-    void UIStarIcon::ChangeState(State state)
-    {
-        m_State = state;
-    }
+    void UIStarIcon::ChangeState(State state) { m_State = state; }
 
     void UIStarIcon::OnResize()
     {
-        bool start  = m_StarMoveIn1.IsRunning();
+        bool start = m_StarMoveIn1.IsRunning();
         bool rotate = m_StarRotate1.IsRunning();
 
         Init();
 
-        if (start || rotate) StartSequence();
-        
+        if (start || rotate)
+            StartSequence();
     }
-}
+} // namespace LucreApp

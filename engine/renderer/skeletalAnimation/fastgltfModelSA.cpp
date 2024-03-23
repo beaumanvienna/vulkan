@@ -26,20 +26,21 @@
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
 
-#include "renderer/builder/gltfBuilder.h"
+#include "renderer/builder/fastgltfBuilder.h"
 
 namespace GfxRenderEngine
 {
 
-    void GltfBuilder::LoadSkeletonsGltf()
+    void FastgltfBuilder::LoadSkeletonsGltf()
     {
+
         size_t numberOfSkeletons = m_GltfModel.skins.size();
         if (!numberOfSkeletons)
         {
             return;
         }
-        
-        if (numberOfSkeletons>1)
+
+        if (numberOfSkeletons > 1)
         {
             LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin 0.");
         }
@@ -49,12 +50,14 @@ namespace GfxRenderEngine
 
         // use skeleton 0 from the glTF model to fill the skeleton
         {
-            const tinygltf::Skin& glTFSkin = m_GltfModel.skins[0];
+            const fastgltf::Skin& glTFSkin = m_GltfModel.skins[0];
 
             // does it have information about joints?
-            if (glTFSkin.inverseBindMatrices != Gltf::GLTF_NOT_USED) // glTFSkin.inverseBindMatrices refers to an gltf accessor
+            if (glTFSkin.inverseBindMatrices.has_value()) // glTFSkin.inverseBindMatrices refers to an gltf accessor
             {
-                auto& joints = m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+                auto& joints =
+                    m_Skeleton
+                        ->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
 
                 // set up number of joints
                 size_t numberOfJoints = glTFSkin.joints.size();
@@ -70,19 +73,14 @@ namespace GfxRenderEngine
                 // --> first, retrieve raw data and copy into a std::vector
                 const glm::mat4* inverseBindMatrices;
                 {
-                    uint count = 0;
-                    int type = 0;
-                    auto componentType = LoadAccessor<glm::mat4>
-                    (
-                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices],
-                        inverseBindMatrices,
-                        &count,
-                        &type
-                    );
-                    CORE_ASSERT(type == TINYGLTF_TYPE_MAT4, "unexpected type");
-                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                    size_t count = 0;
+                    fastgltf::AccessorType type;
+                    fastgltf::ComponentType componentType = LoadAccessor<glm::mat4>(
+                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices.value()], inverseBindMatrices, &count, &type);
+                    CORE_ASSERT(type == fastgltf::AccessorType::Mat4, "unexpected type");
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                     // assert # of matrices matches # of joints
-                    CORE_ASSERT(static_cast<size_t>(count) == numberOfJoints, "accessor.count != numberOfJoints");
+                    CORE_ASSERT(count == numberOfJoints, "accessor.count != numberOfJoints");
                 }
 
                 // loop over all joints from gltf model and fill the skeleton with joints
@@ -90,39 +88,38 @@ namespace GfxRenderEngine
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
-                    joint.m_GlobalGltfNodeIndex   = globalGltfNodeIndex;
+                    joint.m_GlobalGltfNodeIndex = globalGltfNodeIndex;
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
                     // set up node transform (either TRS or from directy from "matrix")
                     // the fields are set to defaults in the constructor
                     // in case they cannot be found in the gltf model
-                    auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
-
-                    if (gltfNode.translation.size() == 3) // std::vector<double> gltfmodel.node.translation; // size must be 0 or 3
-                    {
-                        joint.m_DeformedNodeTranslation = glm::make_vec3(gltfNode.translation.data());
-                    }
-
-                    if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // size must be 0 or 4
-                    {
-                        glm::quat q    = glm::make_quat(gltfNode.rotation.data());
-                        joint.m_DeformedNodeRotation = glm::mat4(q);
-                    }
-
-                    if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // size must be 0 or 3
-                    {
-                        joint.m_DeformedNodeScale = glm::make_vec3(gltfNode.scale.data());
-                    }
-
-                    if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // size must be 0 or 16
-                    {
-                        joint.m_UndefomedNodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
-                    }
-                    else
-                    {
-                        joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
-                    }
+                    fastgltf::Node& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
+                    std::visit(
+                        fastgltf::visitor{[&](auto& arg) // default branch if image data is not supported
+                                          { LOG_CORE_CRITICAL("not supported default branch (LoadTransformationMatrix) "); },
+                                          [&](fastgltf::TRS& TRS)
+                                          {
+                                              // scale
+                                              joint.m_DeformedNodeScale =
+                                                  glm::vec3(TRS.scale[0], TRS.scale[1], TRS.scale[2]);
+                                              // rotation
+                                              {
+                                                  // note the order w, x, y, z
+                                                  glm::quat q(TRS.rotation[3], TRS.rotation[0], TRS.rotation[1],
+                                                              TRS.rotation[2]);
+                                                  joint.m_DeformedNodeRotation = glm::mat4(q);
+                                              }
+                                              // translation
+                                              joint.m_DeformedNodeTranslation =
+                                                  glm::vec3(TRS.translation[0], TRS.translation[1], TRS.translation[2]);
+                                              // undeformed node matrix
+                                              joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
+                                          },
+                                          [&](fastgltf::Node::TransformMatrix& matrix)
+                                          { joint.m_UndefomedNodeMatrix = glm::make_mat4x4(matrix.data()); }},
+                        gltfNode.transform);
 
                     // set up map "global node" to "joint index"
                     m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
@@ -131,7 +128,6 @@ namespace GfxRenderEngine
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
-
             }
 
             // create a buffer to be used in the shader for the joint matrices
@@ -146,7 +142,7 @@ namespace GfxRenderEngine
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {
             auto& gltfAnimation = m_GltfModel.animations[animationIndex];
-            std::string name = gltfAnimation.name;
+            std::string name(gltfAnimation.name);
             LOG_CORE_INFO("name of animation: {0}", name);
             std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(name);
 
@@ -155,31 +151,19 @@ namespace GfxRenderEngine
             animation->m_Samplers.resize(numberOfSamplers);
             for (size_t samplerIndex = 0; samplerIndex < numberOfSamplers; ++samplerIndex)
             {
-                tinygltf::AnimationSampler glTFSampler = gltfAnimation.samplers[samplerIndex];
+                fastgltf::AnimationSampler glTFSampler = gltfAnimation.samplers[samplerIndex];
                 auto& sampler = animation->m_Samplers[samplerIndex];
-                
-                sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
-                if (glTFSampler.interpolation == "STEP")
-                {
-                    sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::STEP;
-                }
-                else if (glTFSampler.interpolation == "CUBICSPLINE")
-                {
-                    sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::CUBICSPLINE;
-                }
+
+                sampler.m_Interpolation = static_cast<SkeletalAnimation::InterpolationMethod>(glTFSampler.interpolation);
 
                 // get timestamp
                 {
-                    uint count = 0;
+                    size_t count = 0;
                     const float* timestampBuffer;
-                    auto componentType = LoadAccessor<float>
-                    (
-                        m_GltfModel.accessors[glTFSampler.input],
-                        timestampBuffer,
-                        &count
-                    );
+                    fastgltf::ComponentType componentType =
+                        LoadAccessor<float>(m_GltfModel.accessors[glTFSampler.inputAccessor], timestampBuffer, &count);
 
-                    if (componentType == GL_FLOAT)
+                    if (fastgltf::getGLComponentType(componentType) == GL_FLOAT)
                     {
                         sampler.m_Timestamps.resize(count);
                         for (size_t index = 0; index < count; ++index)
@@ -189,26 +173,20 @@ namespace GfxRenderEngine
                     }
                     else
                     {
-                        CORE_ASSERT(false, "GltfBuilder::LoadSkeletonsGltf: cannot handle timestamp format");
+                        CORE_ASSERT(false, "FastgltfBuilder::LoadSkeletonsGltf: cannot handle timestamp format");
                     }
                 }
 
                 // Read sampler keyframe output translate/rotate/scale values
                 {
-                    uint count = 0;
-                    int type;
+                    size_t count = 0;
+                    fastgltf::AccessorType type;
                     const uint* buffer;
-                    LoadAccessor<uint>
-                    (
-                        m_GltfModel.accessors[glTFSampler.output],
-                        buffer,
-                        &count,
-                        &type
-                    );
+                    LoadAccessor<uint>(m_GltfModel.accessors[glTFSampler.outputAccessor], buffer, &count, &type);
 
                     switch (type)
                     {
-                        case TINYGLTF_TYPE_VEC3:
+                        case fastgltf::AccessorType::Vec3:
                         {
                             const glm::vec3* outputBuffer = reinterpret_cast<const glm::vec3*>(buffer);
                             sampler.m_TRSoutputValuesToBeInterpolated.resize(count);
@@ -218,7 +196,7 @@ namespace GfxRenderEngine
                             }
                             break;
                         }
-                        case TINYGLTF_TYPE_VEC4:
+                        case fastgltf::AccessorType::Vec4:
                         {
                             const glm::vec4* outputBuffer = reinterpret_cast<const glm::vec4*>(buffer);
                             sampler.m_TRSoutputValuesToBeInterpolated.resize(count);
@@ -228,9 +206,9 @@ namespace GfxRenderEngine
                             }
                             break;
                         }
-                        default: 
+                        default:
                         {
-                            CORE_ASSERT(false, "void GltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
+                            CORE_ASSERT(false, "void FastgltfBuilder::LoadSkeletonsGltf(...): accessor type not found");
                             break;
                         }
                     }
@@ -250,48 +228,52 @@ namespace GfxRenderEngine
             animation->m_Channels.resize(numberOfChannels);
             for (size_t channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex)
             {
-                tinygltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
-                SkeletalAnimation::Channel& channel    = animation->m_Channels[channelIndex];
-                channel.m_SamplerIndex                 = glTFChannel.sampler;
-                channel.m_Node                         = glTFChannel.target_node;
-                if (glTFChannel.target_path == "translation")
+                fastgltf::AnimationChannel glTFChannel = gltfAnimation.channels[channelIndex];
+                SkeletalAnimation::Channel& channel = animation->m_Channels[channelIndex];
+                channel.m_SamplerIndex = glTFChannel.samplerIndex;
+                CORE_ASSERT(glTFChannel.nodeIndex.has_value(), "FastgltfBuilder::LoadSkeletonsGltf() no target node");
+                channel.m_Node = glTFChannel.nodeIndex.value();
+                switch (glTFChannel.path)
                 {
-                    channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
-                }
-                else if (glTFChannel.target_path == "rotation")
-                {
-                    channel.m_Path = SkeletalAnimation::Path::ROTATION;
-                }
-                else if (glTFChannel.target_path == "scale")
-                {
-                    channel.m_Path = SkeletalAnimation::Path::SCALE;
-                }
-                else
-                {
-                    LOG_CORE_CRITICAL("path not supported");
+                    case fastgltf::AnimationPath::Scale:
+                    {
+                        channel.m_Path = SkeletalAnimation::Path::SCALE;
+                        break;
+                    }
+                    case fastgltf::AnimationPath::Rotation:
+                    {
+                        channel.m_Path = SkeletalAnimation::Path::ROTATION;
+                        break;
+                    }
+                    case fastgltf::AnimationPath::Translation:
+                    {
+                        channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
+                        break;
+                    }
+                    default:
+                    {
+                        LOG_CORE_CRITICAL("path not supported");
+                        break;
+                    }
                 }
             }
             m_Animations->Push(animation);
         }
-        
-        if (m_Animations->Size()) m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
-    }
 
-    SkeletalAnimations& Model::GetAnimations()
-    {
-        return *(m_Animations.get());
+        if (m_Animations->Size())
+            m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
-    void GltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
+    void FastgltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
         int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint
 
         joint.m_ParentJoint = parentJoint;
 
-        //process children (if any)
+        // process children (if any)
         size_t numberOfChildren = m_GltfModel.nodes[globalGltfNodeIndex].children.size();
         if (numberOfChildren > 0)
         {
@@ -304,4 +286,4 @@ namespace GfxRenderEngine
             }
         }
     }
-}
+} // namespace GfxRenderEngine

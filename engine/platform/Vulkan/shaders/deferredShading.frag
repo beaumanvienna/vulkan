@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#extension GL_GOOGLE_include_directive : enable
+
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/shadowMapping.h"
 

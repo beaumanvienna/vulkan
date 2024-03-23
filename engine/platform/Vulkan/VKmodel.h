@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -30,6 +30,7 @@
 #include "renderer/buffer.h"
 #include "renderer/builder/builder.h"
 #include "renderer/builder/gltfBuilder.h"
+#include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
 #include "scene/material.h"
 #include "scene/scene.h"
@@ -55,7 +56,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         struct VK_Vertex : public Vertex
         {
             static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
@@ -63,9 +63,9 @@ namespace GfxRenderEngine
         };
 
     public:
-
         VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
         VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder);
+        VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder);
         VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder);
         virtual ~VK_Model() override;
 
@@ -79,8 +79,10 @@ namespace GfxRenderEngine
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
         void PushConstants(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
-        void PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
-        void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
+        void PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                           const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
+        void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                             VK_Submesh const& submesh);
 
         void Draw(VkCommandBuffer commandBuffer);
         void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);
@@ -91,38 +93,56 @@ namespace GfxRenderEngine
         void DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
-        void DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+        void DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo,
+                                                            const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo,
+                                                             const VkPipelineLayout& pipelineLayout);
+        void DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                   float emissiveStrength = 0.f);
+        void DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                          float emissiveStrength = 0.f);
 
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
-        void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
-        void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
-        void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                            const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                              const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                  const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                    const VkPipelineLayout& pipelineLayout);
+        void DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                          const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+        void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                 const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
+        void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                                      const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                                     const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                                    const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+                                                   const VkPipelineLayout& pipelineLayout);
 
         void DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& descriptorSet);
-        void DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VkDescriptorSet const& shadowDescriptorSet);
-        void DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, const VkDescriptorSet& shadowDescriptorSet);
-        void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
-        void DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
-        void DrawAnimatedShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout, VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                const VkDescriptorSet& descriptorSet);
+        void DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                 VkDescriptorSet const& shadowDescriptorSet);
+        void DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                         const VkDescriptorSet& shadowDescriptorSet);
+        void DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
+                                        VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
+                                         VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
+        void DrawAnimatedShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
+                                                 VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
 
     private:
-
         void CopySubmeshes(std::vector<ModelSubmesh> const& modelSubmeshes);
 
     private:
-
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
 
@@ -153,6 +173,5 @@ namespace GfxRenderEngine
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced{};
         std::vector<VK_Submesh> m_SubmeshesCubemap{};
-
     };
-}
+} // namespace GfxRenderEngine

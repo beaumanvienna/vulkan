@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -37,6 +37,7 @@ namespace GfxRenderEngine
     void SceneLoaderJSON::SerializeScene(int indent)
     {
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
+        size_t fastgltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
         size_t fbxFileCount = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene.size();
         size_t objFileCount = m_SceneDescriptionFile.m_ObjFiles.m_ObjFilesFromScene.size();
 
@@ -47,6 +48,11 @@ namespace GfxRenderEngine
         SerializeString(indent, "description", m_SceneDescriptionFile.m_Description);
         SerializeString(indent, "author", m_SceneDescriptionFile.m_Author);
 
+        if (fastgltfFileCount) // fastgltf
+        {
+            bool noComma = (gltfFileCount == 0) && (fbxFileCount == 0);
+            SerializeFastgltfFiles(indent, noComma);
+        }
         if (gltfFileCount) // gltf
         {
             bool noComma = (fbxFileCount == 0);
@@ -80,7 +86,7 @@ namespace GfxRenderEngine
     void SceneLoaderJSON::SerializeNumber(int indent, std::string const& key, double const value, bool noComma)
     {
         std::string indentStr(indent, ' ');
-        m_OutputFile << indentStr << "\"" << key << "\": " << value  << (noComma ? "" : ",") << "\n";
+        m_OutputFile << indentStr << "\"" << key << "\": " << value << (noComma ? "" : ",") << "\n";
     }
 
     void SceneLoaderJSON::SerializeGltfFiles(int indent, bool noComma)
@@ -93,7 +99,24 @@ namespace GfxRenderEngine
         size_t gltfFileIndex = 0;
         for (auto& gltfFile : m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene)
         {
-            bool noCommaLocal = ((gltfFileIndex+1) == gltfFileCount);
+            bool noCommaLocal = ((gltfFileIndex + 1) == gltfFileCount);
+            SerializeGltfFile(indent, gltfFile, noCommaLocal);
+            ++gltfFileIndex;
+        }
+        m_OutputFile << indentStr << "]" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeFastgltfFiles(int indent, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"fastgltf files\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t gltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
+        size_t gltfFileIndex = 0;
+        for (auto& gltfFile : m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene)
+        {
+            bool noCommaLocal = ((gltfFileIndex + 1) == gltfFileCount);
             SerializeGltfFile(indent, gltfFile, noCommaLocal);
             ++gltfFileIndex;
         }
@@ -120,7 +143,7 @@ namespace GfxRenderEngine
         size_t instanceIndex = 0;
         for (auto& instance : instances)
         {
-            bool noComma = ((instanceIndex+1) == instanceCount);
+            bool noComma = ((instanceIndex + 1) == instanceCount);
             SerializeInstance(indent, instance, noComma);
             ++instanceIndex;
         }
@@ -170,7 +193,7 @@ namespace GfxRenderEngine
         size_t nodeIndex = 0;
         for (auto& node : nodes)
         {
-            bool noComma = ((nodeIndex+1) == nodeCount);
+            bool noComma = ((nodeIndex + 1) == nodeCount);
             SerializeNode(indent, node, noComma);
             ++nodeIndex;
         }
@@ -215,7 +238,7 @@ namespace GfxRenderEngine
         size_t fbxFileIndex = 0;
         for (auto& fbxFile : m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene)
         {
-            bool noCommaLocal = ((fbxFileIndex+1) == fbxFileCount);
+            bool noCommaLocal = ((fbxFileIndex + 1) == fbxFileCount);
             SerializeFbxFile(indent, fbxFile, noCommaLocal);
             ++fbxFileIndex;
         }
@@ -242,7 +265,7 @@ namespace GfxRenderEngine
         size_t instanceIndex = 0;
         for (auto& instance : instances)
         {
-            bool noComma = ((instanceIndex+1) == instanceCount);
+            bool noComma = ((instanceIndex + 1) == instanceCount);
             SerializeInstance(indent, instance, noComma);
             ++instanceIndex;
         }
@@ -268,7 +291,7 @@ namespace GfxRenderEngine
         size_t objFileIndex = 0;
         for (auto& objFile : m_SceneDescriptionFile.m_ObjFiles.m_ObjFilesFromScene)
         {
-            bool noComma = ((objFileIndex+1) == objFileCount);
+            bool noComma = ((objFileIndex + 1) == objFileCount);
             SerializeObjFile(indent, objFile, noComma);
             ++objFileIndex;
         }
@@ -295,7 +318,7 @@ namespace GfxRenderEngine
         size_t instanceIndex = 0;
         for (auto& instance : instances)
         {
-            bool noCommaLocal = ((instanceIndex+1) == instanceCount);
+            bool noCommaLocal = ((instanceIndex + 1) == instanceCount);
             SerializeInstance(indent, instance, noCommaLocal);
             ++instanceIndex;
         }
@@ -311,4 +334,4 @@ namespace GfxRenderEngine
         m_OutputFile << indentStr << "}" << (noComma ? "" : ",") << "\n";
     }
 
-}
+} // namespace GfxRenderEngine

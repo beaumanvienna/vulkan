@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -29,26 +29,23 @@ namespace GfxRenderEngine
 {
 
     VK_Cursor::VK_Cursor()
-        : m_Width(0), m_Height(0), m_BitsPerPixel(0),
-        m_HotX(0), m_HotY(0), m_Pixels(nullptr),
-        m_Cursor(nullptr), m_Window(nullptr)
+        : m_Width(0), m_Height(0), m_BitsPerPixel(0), m_HotX(0), m_HotY(0), m_Pixels(nullptr), m_Cursor(nullptr),
+          m_Window(nullptr)
     {
     }
 
-    VK_Cursor::~VK_Cursor()
-    {
-    }
+    VK_Cursor::~VK_Cursor() {}
 
     // create cursor internal
     bool VK_Cursor::SetCursor()
     {
         bool ok = false;
 
-        if(m_Pixels)
+        if (m_Pixels)
         {
             ok = true;
             GLFWimage image;
-            image.width  = m_Width;
+            image.width = m_Width;
             image.height = m_Height;
             image.pixels = m_Pixels;
 
@@ -60,15 +57,9 @@ namespace GfxRenderEngine
         return ok;
     }
 
-    void VK_Cursor::AllowCursor()
-    {
-        Engine::m_Engine->AllowCursor();
-    }
+    void VK_Cursor::AllowCursor() { Engine::m_Engine->AllowCursor(); }
 
-    void VK_Cursor::DisallowCursor()
-    {
-        Engine::m_Engine->DisallowCursor();
-    }
+    void VK_Cursor::DisallowCursor() { Engine::m_Engine->DisallowCursor(); }
 
     // create cursor from file on disk
     bool VK_Cursor::SetCursor(const std::string& fileName, uint xHot, uint yHot)
@@ -94,6 +85,7 @@ namespace GfxRenderEngine
 
     void VK_Cursor::RestoreCursor()
     {
-        if(m_Cursor) glfwSetCursor(m_Window, m_Cursor);
+        if (m_Cursor)
+            glfwSetCursor(m_Window, m_Cursor);
     }
-}
+} // namespace GfxRenderEngine

@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 128
+#include "engine/platform/Vulkan/pointlights.h"
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;

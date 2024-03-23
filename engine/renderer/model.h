@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,28 +12,27 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
 
-#define GL_BYTE                     0x1400  //5120
-#define GL_UNSIGNED_BYTE            0x1401  //5121
-#define GL_SHORT                    0x1402  //5122
-#define GL_UNSIGNED_SHORT           0x1403  //5123
-#define GL_INT                      0x1404  //5124
-#define GL_UNSIGNED_INT             0x1405  //5125
-#define GL_FLOAT                    0x1406  //5126
-#define GL_2_BYTES                  0x1407  //5127
-#define GL_3_BYTES                  0x1408  //5128
-#define GL_4_BYTES                  0x1409  //5129
-#define GL_DOUBLE                   0x140A  //5130
-
+#define GL_BYTE 0x1400           // 5120
+#define GL_UNSIGNED_BYTE 0x1401  // 5121
+#define GL_SHORT 0x1402          // 5122
+#define GL_UNSIGNED_SHORT 0x1403 // 5123
+#define GL_INT 0x1404            // 5124
+#define GL_UNSIGNED_INT 0x1405   // 5125
+#define GL_FLOAT 0x1406          // 5126
+#define GL_2_BYTES 0x1407        // 5127
+#define GL_3_BYTES 0x1408        // 5128
+#define GL_4_BYTES 0x1409        // 5129
+#define GL_DOUBLE 0x140A         // 5130
 
 #include <memory>
 
@@ -57,15 +56,15 @@ namespace GfxRenderEngine
 
     struct Vertex
     {
-        glm::vec3   m_Position;
-        glm::vec3   m_Color;
-        glm::vec3   m_Normal;
-        glm::vec2   m_UV;
-        float       m_Amplification;
-        int         m_Unlit;
-        glm::vec3   m_Tangent;
-        glm::ivec4  m_JointIds; 
-        glm::vec4   m_Weights;
+        glm::vec3 m_Position;
+        glm::vec3 m_Color;
+        glm::vec3 m_Normal;
+        glm::vec2 m_UV;
+        float m_Amplification;
+        int m_Unlit;
+        glm::vec3 m_Tangent;
+        glm::ivec4 m_JointIds;
+        glm::vec4 m_Weights;
 
         bool operator==(const Vertex& other) const;
     };
@@ -74,14 +73,14 @@ namespace GfxRenderEngine
     {
         enum Bitfield
         {
-            NO_MAP                     = 0x0,
-            HAS_DIFFUSE_MAP            = 0x1 << 0x0,
-            HAS_NORMAL_MAP             = 0x1 << 0x1,
-            HAS_ROUGHNESS_MAP          = 0x1 << 0x2,
-            HAS_METALLIC_MAP           = 0x1 << 0x3,
+            NO_MAP = 0x0,
+            HAS_DIFFUSE_MAP = 0x1 << 0x0,
+            HAS_NORMAL_MAP = 0x1 << 0x1,
+            HAS_ROUGHNESS_MAP = 0x1 << 0x2,
+            HAS_METALLIC_MAP = 0x1 << 0x3,
             HAS_ROUGHNESS_METALLIC_MAP = 0x1 << 0x4,
-            HAS_EMISSIVE_MAP           = 0x1 << 0x5,
-            HAS_SKELETAL_ANIMATION     = 0x1 << 0x6
+            HAS_EMISSIVE_MAP = 0x1 << 0x5,
+            HAS_SKELETAL_ANIMATION = 0x1 << 0x6
         };
         glm::vec3 m_DiffuseColor;
         glm::vec3 m_EmissiveFactor;
@@ -125,7 +124,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         Model() {}
         virtual ~Model() = default;
 
@@ -140,7 +138,6 @@ namespace GfxRenderEngine
         static float m_NormalMapIntensity;
 
     protected:
-
         std::vector<std::shared_ptr<Texture>> m_Images;
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
 
@@ -148,6 +145,5 @@ namespace GfxRenderEngine
         std::shared_ptr<SkeletalAnimations> m_Animations;
         std::shared_ptr<Armature::Skeleton> m_Skeleton;
         std::shared_ptr<Buffer> m_ShaderDataUbo;
-
     };
-}
+} // namespace GfxRenderEngine

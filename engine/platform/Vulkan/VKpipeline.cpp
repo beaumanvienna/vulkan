@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <fstream>
@@ -28,10 +28,8 @@
 namespace GfxRenderEngine
 {
 
-    VK_Pipeline::VK_Pipeline(std::shared_ptr<VK_Device> device,
-                            const std::string& filePathVertexShader_SPV,
-                            const std::string& filePathFragmentShader_SPV,
-                            const PipelineConfigInfo& spec)
+    VK_Pipeline::VK_Pipeline(std::shared_ptr<VK_Device> device, const std::string& filePathVertexShader_SPV,
+                             const std::string& filePathFragmentShader_SPV, const PipelineConfigInfo& spec)
         : m_Device(device)
     {
         CreateGraphicsPipeline(filePathVertexShader_SPV, filePathFragmentShader_SPV, spec);
@@ -62,12 +60,11 @@ namespace GfxRenderEngine
 
         file.close();
         return buffer;
-
     }
 
-    void VK_Pipeline::CreateGraphicsPipeline(const std::string& filePathVertexShader_SPV, 
-                                            const std::string& filePathFragmentShader_SPV,
-                                            const PipelineConfigInfo& configInfo)
+    void VK_Pipeline::CreateGraphicsPipeline(const std::string& filePathVertexShader_SPV,
+                                             const std::string& filePathFragmentShader_SPV,
+                                             const PipelineConfigInfo& configInfo)
     {
         ASSERT(configInfo.pipelineLayout != nullptr);
         ASSERT(configInfo.renderPass != nullptr);
@@ -133,13 +130,8 @@ namespace GfxRenderEngine
         pipelineInfo.basePipelineIndex = -1;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(
-            m_Device->Device(),
-            VK_NULL_HANDLE,
-            1,
-            &pipelineInfo,
-            nullptr,
-            &m_GraphicsPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(m_Device->Device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) !=
+            VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create graphics pipeline");
         }
@@ -179,21 +171,20 @@ namespace GfxRenderEngine
         configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
         configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
         configInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
-        configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
-        configInfo.rasterizationInfo.depthBiasClamp = 0.0f;           // Optional
-        configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;     // Optional
+        configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
+        configInfo.rasterizationInfo.depthBiasClamp = 0.0f;          // Optional
+        configInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;    // Optional
 
         configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
         configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        configInfo.multisampleInfo.minSampleShading = 1.0f;           // Optional
-        configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
-        configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
-        configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
+        configInfo.multisampleInfo.minSampleShading = 1.0f;          // Optional
+        configInfo.multisampleInfo.pSampleMask = nullptr;            // Optional
+        configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE; // Optional
+        configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;      // Optional
 
         configInfo.colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-        VK_COLOR_COMPONENT_A_BIT;
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         configInfo.colorBlendAttachment.blendEnable = VK_TRUE;
         configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -204,24 +195,24 @@ namespace GfxRenderEngine
 
         configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
-        configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
+        configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
         configInfo.colorBlendInfo.attachmentCount = 1;
         configInfo.colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
-        configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
+        configInfo.colorBlendInfo.blendConstants[0] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[1] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[2] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[3] = 0.0f; // Optional
 
         configInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         configInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
         configInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
         configInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
         configInfo.depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
-        configInfo.depthStencilInfo.minDepthBounds = 0.0f;  // Optional
-        configInfo.depthStencilInfo.maxDepthBounds = 1.0f;  // Optional
+        configInfo.depthStencilInfo.minDepthBounds = 0.0f; // Optional
+        configInfo.depthStencilInfo.maxDepthBounds = 1.0f; // Optional
         configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
-        configInfo.depthStencilInfo.front = {};  // Optional
-        configInfo.depthStencilInfo.back = {};   // Optional
+        configInfo.depthStencilInfo.front = {}; // Optional
+        configInfo.depthStencilInfo.back = {};  // Optional
 
         configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -233,21 +224,22 @@ namespace GfxRenderEngine
         configInfo.m_AttributeDescriptions = VK_Model::VK_Vertex::GetAttributeDescriptions();
     }
 
-    void VK_Pipeline::SetColorBlendState(PipelineConfigInfo& configInfo, int attachmentCount, const VkPipelineColorBlendAttachmentState* blendAttachments)
+    void VK_Pipeline::SetColorBlendState(PipelineConfigInfo& configInfo, int attachmentCount,
+                                         const VkPipelineColorBlendAttachmentState* blendAttachments)
     {
         configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
-        configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
+        configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
         configInfo.colorBlendInfo.attachmentCount = attachmentCount;
         configInfo.colorBlendInfo.pAttachments = blendAttachments;
-        configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
-        configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
+        configInfo.colorBlendInfo.blendConstants[0] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[1] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[2] = 0.0f; // Optional
+        configInfo.colorBlendInfo.blendConstants[3] = 0.0f; // Optional
     }
 
     void VK_Pipeline::Bind(VkCommandBuffer commandBuffer)
     {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
     }
-}
+} // namespace GfxRenderEngine

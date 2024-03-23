@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "VKcore.h"
@@ -30,7 +30,8 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrEmissiveTexture::VK_RenderSystemPbrEmissiveTexture(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrEmissiveTexture::VK_RenderSystemPbrEmissiveTexture(
+        VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
@@ -54,7 +55,8 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
+            VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
@@ -70,16 +72,18 @@ namespace GfxRenderEngine
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_GEOMETRY);
-        
+
         // depth test must pass for same depth
         pipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
         // g buffer position, g buffer normal, g buffer color, g buffer material, g buffer emission
         // no blending
-        auto attachmentCount = (int) VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS; 
+        auto attachmentCount = (int)VK_RenderPass::NUMBER_OF_GBUFFER_ATTACHMENTS;
         pipelineConfig.colorBlendAttachment.blendEnable = VK_FALSE;
 
-        std::array<VkPipelineColorBlendAttachmentState, static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)> blAttachments;
+        std::array<VkPipelineColorBlendAttachmentState,
+                   static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)>
+            blAttachments;
         for (uint i = 0; i < static_cast<uint>(VK_RenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS); ++i)
         {
             blAttachments[i] = pipelineConfig.colorBlendAttachment;
@@ -87,13 +91,8 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>
-        (
-            VK_Core::m_Device,
-            "bin-int/pbrEmissiveTexture.vert.spv",
-            "bin-int/pbrEmissiveTexture.frag.spv",
-            pipelineConfig
-        );
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrEmissiveTexture.vert.spv",
+                                                   "bin-int/pbrEmissiveTexture.frag.spv", pipelineConfig);
     }
 
     void VK_RenderSystemPbrEmissiveTexture::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
@@ -104,13 +103,14 @@ namespace GfxRenderEngine
         for (auto entity : view)
         {
             auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh      = view.get<MeshComponent>(entity);
-            auto& tag       = view.get<PbrEmissiveTextureTag>(entity);
+            auto& mesh = view.get<MeshComponent>(entity);
+            auto& tag = view.get<PbrEmissiveTextureTag>(entity);
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawEmissiveTexture(frameInfo, transform, m_PipelineLayout, tag.m_EmissiveStrength);
+                static_cast<VK_Model*>(mesh.m_Model.get())
+                    ->DrawEmissiveTexture(frameInfo, transform, m_PipelineLayout, tag.m_EmissiveStrength);
             }
         }
     }
-}
+} // namespace GfxRenderEngine

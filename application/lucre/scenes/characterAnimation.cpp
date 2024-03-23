@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,14 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
-
 
 #include "characterAnimation.h"
 #include "scene/components.h"
@@ -32,8 +31,8 @@ namespace LucreApp
     CharacterAnimation::CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
         : m_Registry{registry}, m_GameObject{gameObject}, m_Animations{animations}, m_DirToTheRight{false},
           m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE},
-          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f},
-          m_WaitStartWalk{0.0f}, m_WalkSpeedScaled{0.0f}
+          m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f}, m_WaitStartWalk{0.0f},
+          m_WalkSpeedScaled{0.0f}
     {
         m_DurationStartWalk = animations.GetDuration("StartWalk");
         m_DurationStopWalk = animations.GetDuration("StopWalk");
@@ -46,7 +45,7 @@ namespace LucreApp
     {
         {
             m_AnimationIndices.resize(m_AnimationsNames.size());
-            for (uint index = 0; index<NUMBER_OF_MOTION_STATES; ++index)
+            for (uint index = 0; index < NUMBER_OF_MOTION_STATES; ++index)
             {
                 std::string name = m_AnimationsNames[index];
                 m_AnimationIndices[index] = m_Animations.GetIndex(name);
@@ -74,20 +73,20 @@ namespace LucreApp
         m_PreviousPositionX = translation.x;
 
         auto view = m_Registry.view<TransformComponent>();
-        auto& characterTransform  = view.get<TransformComponent>(m_GameObject);
-        //float characterScale = characterTransform.GetScale().x;
-        m_WalkSpeedScaled = WALK_SPEED;  // character scale does not work as models can also be scaled on the vertex level :-(
+        auto& characterTransform = view.get<TransformComponent>(m_GameObject);
+        // float characterScale = characterTransform.GetScale().x;
+        m_WalkSpeedScaled = WALK_SPEED; // character scale does not work as models can also be scaled on the vertex level :-(
 
         if (Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, Controller::Controller::BUTTON_A))
         {
             if (m_MotionState != MotionState::JUMPING)
             {
-                if ((m_MotionState == MotionState::WALK) || (m_MotionState == MotionState::START_WALK) || (m_MotionState == MotionState::STOP_WALK))
+                if ((m_MotionState == MotionState::WALK) || (m_MotionState == MotionState::START_WALK) ||
+                    (m_MotionState == MotionState::STOP_WALK))
                 {
-                    InitiateRotation
-                    (
-                        -TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,
-                        m_FramesPerRotation + 1 // plus one because it starts to rotate later (normally it starts to rotate here)
+                    InitiateRotation(-TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,
+                                     m_FramesPerRotation +
+                                         1 // plus one because it starts to rotate later (normally it starts to rotate here)
                     );
                 }
 
@@ -144,7 +143,8 @@ namespace LucreApp
                     }
                     else
                     {
-                        m_Speed = std::max(m_WalkSpeedScaled, m_Speed + (m_WalkSpeedScaled * timestep * timestep * timestep / TIME_TO_GET_TO_WALK_SPEED));
+                        m_Speed = std::max(m_WalkSpeedScaled, m_Speed + (m_WalkSpeedScaled * timestep * timestep * timestep /
+                                                                         TIME_TO_GET_TO_WALK_SPEED));
                     }
 
                     // move
@@ -209,7 +209,8 @@ namespace LucreApp
                     if (m_Animations.WillExpire(timestep))
                     {
                         // initiate rotation of the character in the direction of travel
-                        InitiateRotation(-TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,m_FramesPerRotation);
+                        InitiateRotation(-TransformComponent::DEGREES_90, TransformComponent::DEGREES_90,
+                                         m_FramesPerRotation);
                         RotateY(characterTransform, m_RotationPerFrame);
 
                         SetState(MotionState::IDLE);
@@ -251,7 +252,7 @@ namespace LucreApp
 
     void CharacterAnimation::PerformRotation(TransformComponent& characterTransform)
     {
-        if ((m_FramesToRotate-1) > 0)
+        if ((m_FramesToRotate - 1) > 0)
         {
             --m_FramesToRotate;
             RotateY(characterTransform, m_RotationPerFrame);
@@ -265,10 +266,7 @@ namespace LucreApp
         m_RotationPerFrame = rotationY / m_FramesPerRotation;
     }
 
-    float CharacterAnimation::ToDegree(float rotation)
-    {
-        return rotation * 180.0f / TransformComponent::DEGREES_180;
-    }
+    float CharacterAnimation::ToDegree(float rotation) { return rotation * 180.0f / TransformComponent::DEGREES_180; }
 
     void CharacterAnimation::EliminateRoundingErrorsRotationY(TransformComponent& characterTransform)
     {
@@ -308,4 +306,4 @@ namespace LucreApp
         }
         characterTransform.SetRotationY(rotationY);
     }
-}
+} // namespace LucreApp

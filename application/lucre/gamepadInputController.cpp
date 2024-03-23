@@ -28,10 +28,10 @@
 namespace LucreApp
 {
     GamepadInputController::GamepadInputController(const GamepadInputControllerSpec& spec)
-        : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity},
-          m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
+        : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}, m_MoveSpeed{spec.m_MoveSpeed},
+          m_LookSpeed{spec.m_LookSpeed}
     {
-        m_Momentum.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
+        m_Momentum.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/ 8);
     }
 
     void GamepadInputController::GetTransform(TransformComponent& transform, bool scale)
@@ -52,7 +52,8 @@ namespace LucreApp
         // right
         if (scale)
         {
-            glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
+            glm::vec2 controllerAxisInputRight =
+                Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
 
             if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
             {
@@ -76,7 +77,8 @@ namespace LucreApp
     void GamepadInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
     {
 
-        glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
+        glm::vec2 controllerAxisInputRight =
+            Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
 
         // rotate
         if (std::abs(controllerAxisInputRight.x) > m_Deadzone)
@@ -108,4 +110,4 @@ namespace LucreApp
             }
         }
     }
-}
+} // namespace LucreApp

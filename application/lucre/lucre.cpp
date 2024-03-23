@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <thread>
@@ -39,11 +39,7 @@ namespace LucreApp
     std::shared_ptr<Lucre> Lucre::m_Application;
     SpriteSheet* Lucre::m_Spritesheet;
 
-    Lucre::Lucre()
-        : m_CurrentScene{nullptr}, m_InGameGuiIsRunning{false},
-          m_DebugWindowIsRunning{false}
-    {
-    }
+    Lucre::Lucre() : m_CurrentScene{nullptr}, m_InGameGuiIsRunning{false}, m_DebugWindowIsRunning{false} {}
 
     bool Lucre::Start()
     {
@@ -67,8 +63,11 @@ namespace LucreApp
 
         m_Renderer = Engine::m_Engine->GetRenderer();
 
-        // create orthogonal camera 
-        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        // create orthogonal camera
+        
+        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
+                                                                -2.0f /*ZFar*/);
+        m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);
         auto& camera = m_CameraController->GetCamera();
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -77,10 +76,7 @@ namespace LucreApp
         return true;
     }
 
-    void Lucre::Shutdown()
-    {
-        m_GameState.Stop();
-    }
+    void Lucre::Shutdown() { m_GameState.Stop(); }
 
     void Lucre::OnUpdate(const Timestep& timestep)
     {
@@ -89,7 +85,8 @@ namespace LucreApp
 
         // update/render layer stack
         // health bar
-        if (static_cast<int>(m_GameState.GetState()) > static_cast<int>(GameState::State::CUTSCENE)) m_UI->Health(90.0f);
+        if (static_cast<int>(m_GameState.GetState()) > static_cast<int>(GameState::State::CUTSCENE))
+            m_UI->Health(90.0f);
         // controller icons
         m_UIControllerIcon->Indent(m_GameState.GetState() == GameState::State::SETTINGS);
         m_UIControllerIcon->OnUpdate(timestep);
@@ -97,7 +94,7 @@ namespace LucreApp
         // gui
         if (m_InGameGuiIsRunning)
         {
-            m_UI->OnUpdate(timestep);  // direct submits
+            m_UI->OnUpdate(timestep); // direct submits
         }
 
         m_Renderer->EndScene();
@@ -118,25 +115,20 @@ namespace LucreApp
         const uchar* data;
 
         m_EmptyCursor = Cursor::Create();
-        data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/cursorEmpty.png", IDB_CURSOR_EMPTY, "PNG");
+        data = (const uchar*)ResourceSystem::GetDataPointer(fileSize, "/images/images/cursorEmpty.png", IDB_CURSOR_EMPTY,
+                                                            "PNG");
         m_EmptyCursor->SetCursor(data, fileSize, 1, 1);
 
         m_Cursor = Cursor::Create();
-        data = (const uchar*) ResourceSystem::GetDataPointer(fileSize, "/images/images/cursor.png", IDB_CURSOR_RETRO, "PNG");
+        data = (const uchar*)ResourceSystem::GetDataPointer(fileSize, "/images/images/cursor.png", IDB_CURSOR_RETRO, "PNG");
         m_Cursor->SetCursor(data, fileSize, 32, 32);
 
         Engine::m_Engine->AllowCursor();
     }
 
-    void Lucre::ShowCursor()
-    {
-        m_Cursor->RestoreCursor();
-    }
+    void Lucre::ShowCursor() { m_Cursor->RestoreCursor(); }
 
-    void Lucre::HideCursor()
-    {
-        m_EmptyCursor->RestoreCursor();
-    }
+    void Lucre::HideCursor() { m_EmptyCursor->RestoreCursor(); }
 
     void Lucre::InitSettings()
     {
@@ -151,7 +143,7 @@ namespace LucreApp
     {
         if (CoreSettings::m_EnableSystemSounds)
         {
-            switch(resourceID)
+            switch (resourceID)
             {
                 case IDR_WAVES:
                     Engine::m_Engine->PlaySound("/sounds/waves.ogg", IDR_WAVES, "OGG");
@@ -160,7 +152,6 @@ namespace LucreApp
                     Engine::m_Engine->PlaySound("/sounds/buckle.ogg", IDR_BUCKLE, "OGG");
                     break;
             }
-
         }
     }
 
@@ -177,7 +168,8 @@ namespace LucreApp
     {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event)
+        dispatcher.Dispatch<ControllerButtonPressedEvent>(
+            [this](ControllerButtonPressedEvent l_Event)
             {
                 switch (l_Event.GetControllerButton())
                 {
@@ -189,12 +181,12 @@ namespace LucreApp
                         break;
                 }
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
             {
-                switch(l_Event.GetKeyCode())
+                switch (l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_M:
                         Engine::m_Engine->ToggleDebugWindow(LucreApp::ImGUI::DebugWindow);
@@ -216,15 +208,14 @@ namespace LucreApp
                         break;
                 }
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent l_Event)
+        dispatcher.Dispatch<WindowResizeEvent>(
+            [this](WindowResizeEvent l_Event)
             {
                 OnResize();
                 return true;
-            }
-        );
+            });
 
         // dispatch to application
         if (!event.IsHandled())
@@ -237,7 +228,8 @@ namespace LucreApp
     {
         AppEventDispatcher appDispatcher(event);
 
-        appDispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent l_Event)
+        appDispatcher.Dispatch<SceneChangedEvent>(
+            [this](SceneChangedEvent l_Event)
             {
                 if (m_GameState.GetState() != GameState::State::CUTSCENE)
                 {
@@ -254,14 +246,13 @@ namespace LucreApp
                     }
                 }
                 return true;
-            }
-        );
+            });
 
-        appDispatcher.Dispatch<SceneFinishedEvent>([this](SceneFinishedEvent l_Event)
+        appDispatcher.Dispatch<SceneFinishedEvent>(
+            [this](SceneFinishedEvent l_Event)
             {
                 m_CurrentScene->Stop();
                 return true;
-            }
-        );
+            });
     }
-}
+} // namespace LucreApp

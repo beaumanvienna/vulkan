@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <string>
@@ -32,10 +32,10 @@ namespace GfxRenderEngine
 {
 
     VK_Cubemap::VK_Cubemap(bool nearestFilter)
-        : m_NearestFilter(nearestFilter), m_MipLevels(1), m_FileNames({""}), m_Type(0), 
-          m_Width(0), m_Height(0), m_BytesPerPixel(0), m_InternalFormat(0),
-          m_DataFormat(0), m_sRGB(false)
-    {}
+        : m_NearestFilter(nearestFilter), m_MipLevels(1), m_FileNames({""}), m_Type(0), m_Width(0), m_Height(0),
+          m_BytesPerPixel(0), m_InternalFormat(0), m_DataFormat(0), m_sRGB(false)
+    {
+    }
 
     VK_Cubemap::~VK_Cubemap()
     {
@@ -83,7 +83,7 @@ namespace GfxRenderEngine
 
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        } 
+        }
         else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -97,22 +97,14 @@ namespace GfxRenderEngine
             LOG_APP_CRITICAL("unsupported layout transition!");
         }
 
-        vkCmdPipelineBarrier
-        (
-            commandBuffer,
-            sourceStage, destinationStage,
-            0,
-            0, nullptr,
-            0, nullptr,
-            1, &barrier
-        );
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
         m_ImageLayout = newLayout;
     }
 
-    void VK_Cubemap::CreateImage(VkFormat format, VkImageTiling tiling,
-                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+    void VK_Cubemap::CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                                 VkMemoryPropertyFlags properties)
     {
         auto device = VK_Core::m_Device->Device();
 
@@ -160,7 +152,8 @@ namespace GfxRenderEngine
         vkBindImageMemory(device, m_CubemapImage, m_CubemapImageMemory, 0);
     }
 
-    void VK_Cubemap::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    void VK_Cubemap::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+                                  VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
         auto device = VK_Core::m_Device->Device();
 
@@ -207,11 +200,11 @@ namespace GfxRenderEngine
         void* data;
         uint64 memAddress;
         stbi_uc* pixels;
-       
+
         for (int i = 0; i < NUMBER_OF_CUBEMAP_IMAGES; i++)
         {
             // load all faces
-            pixels = stbi_load(m_FileNames[i].c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4); //4 == STBI_rgb_alpha
+            pixels = stbi_load(m_FileNames[i].c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4); // 4 == STBI_rgb_alpha
             if (!pixels)
             {
                 LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", m_FileNames[i]);
@@ -221,15 +214,10 @@ namespace GfxRenderEngine
             {
                 layerSize = m_Width * m_Height * m_BytesPerPixel;
                 imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
-              
-                CreateBuffer
-                (
-                    imageSize, 
-                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    stagingBuffer,
-                    stagingBufferMemory
-                );
+
+                CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+                             stagingBufferMemory);
                 vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
                 memAddress = reinterpret_cast<uint64>(data);
             }
@@ -240,34 +228,22 @@ namespace GfxRenderEngine
         vkUnmapMemory(device, stagingBufferMemory);
 
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-        CreateImage
-        (
-            format,                                                       /*VkFormat format                 */
-            VK_IMAGE_TILING_OPTIMAL,                                      /*VkImageTiling tiling            */
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, /*VkImageUsageFlags usage         */
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT                           /*VkMemoryPropertyFlags properties*/
+        CreateImage(format,                                                       /*VkFormat format                 */
+                    VK_IMAGE_TILING_OPTIMAL,                                      /*VkImageTiling tiling            */
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, /*VkImageUsageFlags usage         */
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT                           /*VkMemoryPropertyFlags properties*/
         );
 
-        TransitionImageLayout
-        (
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+        TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        VK_Core::m_Device->CopyBufferToImage(stagingBuffer,               /*VkBuffer buffer*/
+                                             m_CubemapImage,              /*VkImage image  */
+                                             static_cast<uint>(m_Width),  /*uint width     */
+                                             static_cast<uint>(m_Height), /*uint height    */
+                                             NUMBER_OF_CUBEMAP_IMAGES     /*uint layerCount*/
         );
 
-        VK_Core::m_Device->CopyBufferToImage
-        (
-            stagingBuffer,                  /*VkBuffer buffer*/
-            m_CubemapImage,                 /*VkImage image  */
-            static_cast<uint>(m_Width),     /*uint width     */
-            static_cast<uint>(m_Height),    /*uint height    */
-            NUMBER_OF_CUBEMAP_IMAGES        /*uint layerCount*/
-        );
-
-        TransitionImageLayout
-        (
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        );
+        TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -311,16 +287,17 @@ namespace GfxRenderEngine
 
         // Create image view
         // Images are not directly accessed by shaders and
-        // are abstracted by image views. 
+        // are abstracted by image views.
         // Image views contain additional
         // information and sub resource ranges
-        VkImageViewCreateInfo view {};
+        VkImageViewCreateInfo view{};
         view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
         view.format = m_ImageFormat;
-        view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-        // A subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
-        // It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
+        view.components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
+        // A subresource range describes the set of mip levels (and array layers) that can be accessed through this image
+        // view It's possible to create multiple image views for a single image referring to different (and/or overlapping)
+        // ranges of the image
         view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         view.subresourceRange.baseMipLevel = 0;
         view.subresourceRange.baseArrayLayer = 0;
@@ -339,10 +316,10 @@ namespace GfxRenderEngine
             }
         }
 
-        m_DescriptorImageInfo.sampler     = m_Sampler;
-        m_DescriptorImageInfo.imageView   = m_ImageView;
+        m_DescriptorImageInfo.sampler = m_Sampler;
+        m_DescriptorImageInfo.imageView = m_ImageView;
         m_DescriptorImageInfo.imageLayout = m_ImageLayout;
 
         return true;
     }
-}
+} // namespace GfxRenderEngine

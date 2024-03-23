@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -34,7 +34,6 @@ namespace GfxRenderEngine
     class SettingsManager
     {
     public:
-
         SettingsManager();
 
         void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
@@ -49,11 +48,9 @@ namespace GfxRenderEngine
         void ApplySettings();
         void PrintSettings() const;
 
-        template <typename T>
-        void PushSetting(std::string key, T* value); 
+        template <typename T> void PushSetting(std::string key, T* value);
 
     private:
-
         enum class ElementType
         {
             TYPE_INT,
@@ -69,11 +66,9 @@ namespace GfxRenderEngine
         };
 
     private:
-
         std::string m_Filepath;
         bool m_SettingsLoadedFromFile;
         YAML::Node m_YAMLNode;
         std::map<std::string, ListElement> m_Settings;
-
     };
-}
+} // namespace GfxRenderEngine

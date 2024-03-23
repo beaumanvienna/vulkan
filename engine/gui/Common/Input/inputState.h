@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -28,14 +28,14 @@
 #include <vector>
 namespace GfxRenderEngine
 {
-    enum 
+    enum
     {
-        DEVICE_ID_ANY = -1, 
-        DEVICE_ID_DEFAULT = 0,  
-        DEVICE_ID_KEYBOARD = 1,  
-        DEVICE_ID_MOUSE = 2,  
-        DEVICE_ID_PAD_0 = 10,  
-        DEVICE_ID_PAD_1 = 11,  
+        DEVICE_ID_ANY = -1,
+        DEVICE_ID_DEFAULT = 0,
+        DEVICE_ID_KEYBOARD = 1,
+        DEVICE_ID_MOUSE = 2,
+        DEVICE_ID_PAD_0 = 10,
+        DEVICE_ID_PAD_1 = 11,
         DEVICE_ID_PAD_2 = 12,
         DEVICE_ID_PAD_3 = 13,
         DEVICE_ID_PAD_4 = 14,
@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         DEVICE_ID_PAD_7 = 17,
         DEVICE_ID_PAD_8 = 18,
         DEVICE_ID_PAD_9 = 19,
-        DEVICE_ID_X360_0 = 20,  
+        DEVICE_ID_X360_0 = 20,
         DEVICE_ID_X360_1 = 21,
         DEVICE_ID_X360_2 = 22,
         DEVICE_ID_X360_3 = 23,
@@ -53,9 +53,9 @@ namespace GfxRenderEngine
 
     const int MAX_NUM_PADS = 10;
 
-    const char *SCREEN_GetDeviceName(int deviceId);
+    const char* SCREEN_GetDeviceName(int deviceId);
 
-    enum 
+    enum
     {
         PAD_BUTTON_A = 1,
         PAD_BUTTON_B = 2,
@@ -74,7 +74,7 @@ namespace GfxRenderEngine
         PAD_BUTTON_BACK = 8192,
     };
 
-    class SCREEN_KeyDef 
+    class SCREEN_KeyDef
     {
     public:
         SCREEN_KeyDef() : deviceId(0), keyCode(0) {}
@@ -82,17 +82,22 @@ namespace GfxRenderEngine
         int deviceId;
         int keyCode;
 
-        bool operator < (const SCREEN_KeyDef &other) const
+        bool operator<(const SCREEN_KeyDef& other) const
         {
-            if (deviceId < other.deviceId) return true;
-            if (deviceId > other.deviceId) return false;
-            if (keyCode < other.keyCode) return true;
+            if (deviceId < other.deviceId)
+                return true;
+            if (deviceId > other.deviceId)
+                return false;
+            if (keyCode < other.keyCode)
+                return true;
             return false;
         }
-        bool operator == (const SCREEN_KeyDef &other) const
+        bool operator==(const SCREEN_KeyDef& other) const
         {
-            if (deviceId != other.deviceId && deviceId != DEVICE_ID_ANY && other.deviceId != DEVICE_ID_ANY) return false;
-            if (keyCode != other.keyCode) return false;
+            if (deviceId != other.deviceId && deviceId != DEVICE_ID_ANY && other.deviceId != DEVICE_ID_ANY)
+                return false;
+            if (keyCode != other.keyCode)
+                return false;
             return true;
         }
     };
@@ -124,8 +129,8 @@ namespace GfxRenderEngine
         double timestamp;
     };
 
-    #undef KEY_DOWN
-    #undef KEY_UP
+#undef KEY_DOWN
+#undef KEY_UP
 
     enum
     {
@@ -133,7 +138,7 @@ namespace GfxRenderEngine
         KEY_UP = 1 << 1,
         KEY_HASWHEELDELTA = 1 << 2,
         KEY_IS_REPEAT = 1 << 3,
-        KEY_CHAR = 1 << 4,  
+        KEY_CHAR = 1 << 4,
     };
 
     struct SCREEN_KeyInput
@@ -148,8 +153,8 @@ namespace GfxRenderEngine
     struct SCREEN_AxisInput
     {
         int deviceId;
-        int axisId;  
+        int axisId;
         float value;
         int flags;
     };
-}
+} // namespace GfxRenderEngine

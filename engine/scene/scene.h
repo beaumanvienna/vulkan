@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -28,7 +28,6 @@
 #include "engine.h"
 #include "entt.hpp"
 #include "events/event.h"
-#include "scene/entity.h"
 #include "scene/sceneGraph.h"
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
@@ -40,7 +39,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         Scene() = delete;
         Scene(const std::string& filepath, const std::string& alternativeFilepath);
         virtual ~Scene();
@@ -58,12 +56,11 @@ namespace GfxRenderEngine
         virtual void StartScripts() = 0;
         virtual void ResetTimer() {}
 
-        entt::entity CreateEntity();
         void DestroyEntity(entt::entity entity);
 
         entt::entity CreatePointLight(const float intensity = 1.0f, const float radius = 0.1f,
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
-        entt::entity CreateDirectionalLight(const float intensity = 1.0f, 
+        entt::entity CreateDirectionalLight(const float intensity = 1.0f,
                                             const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
 
         bool IsFinished() const { return !m_IsRunning; }
@@ -76,7 +73,6 @@ namespace GfxRenderEngine
         uint GetTreeNodeIndex(entt::entity entity) { return m_SceneGraph.GetTreeNodeIndex(entity); }
 
     protected:
-
         std::string m_Name;
         std::string m_Filepath;
         std::string m_AlternativeFilepath;
@@ -85,8 +81,11 @@ namespace GfxRenderEngine
         SceneGraph m_SceneGraph;
         bool m_IsRunning;
 
+        // scene lights
+        uint m_SceneLightsGroupNode;
+        uint m_LightCounter;
+
         friend class SceneLoader;
         friend class SceneLoaderJSON;
-
     };
-}
+} // namespace GfxRenderEngine

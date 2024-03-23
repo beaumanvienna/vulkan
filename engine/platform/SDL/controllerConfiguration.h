@@ -1,4 +1,4 @@
-/* Controller Copyright (c) 2021 Controller Development Team 
+/* Controller Copyright (c) 2021 Controller Development Team
    https://github.com/beaumanvienna/gfxRenderController
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -30,7 +30,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         enum TextID
         {
             TEXT1 = 0,
@@ -39,52 +38,52 @@ namespace GfxRenderEngine
 
         enum ConfigState
         {
-            STATE_CONF_BUTTON_DPAD_UP = 0,          //0
-            STATE_CONF_BUTTON_DPAD_DOWN,            //1
-            STATE_CONF_BUTTON_DPAD_LEFT,            //2
-            STATE_CONF_BUTTON_DPAD_RIGHT,           //3
-            STATE_CONF_BUTTON_A,                    //4
-            STATE_CONF_BUTTON_B,                    //5
-            STATE_CONF_BUTTON_X,                    //6
-            STATE_CONF_BUTTON_Y,                    //7
-            STATE_CONF_BUTTON_BACK,                 //8
-            STATE_CONF_BUTTON_GUIDE,                //9
-            STATE_CONF_BUTTON_START,                //10
-            STATE_CONF_BUTTON_LEFTSTICK,            //11
-            STATE_CONF_BUTTON_RIGHTSTICK,           //12
-            STATE_CONF_BUTTON_LEFTSHOULDER,         //13
-            STATE_CONF_BUTTON_RIGHTSHOULDER,        //14
-            STATE_CONF_AXIS_LEFTSTICK_X,            //15
-            STATE_CONF_AXIS_LEFTSTICK_Y,            //16
-            STATE_CONF_AXIS_RIGHTSTICK_X,           //17
-            STATE_CONF_AXIS_RIGHTSTICK_Y,           //18
-            STATE_CONF_AXIS_LEFTTRIGGER,            //19
-            STATE_CONF_AXIS_RIGHTTRIGGER,           //20
-            STATE_CONF_BUTTON_LEFTTRIGGER,          //21
-            STATE_CONF_BUTTON_RIGHTTRIGGER,         //22
-            STATE_CONF_SKIP_ITEM,                   //23
-            STATE_CONF_MAX                          //24
+            STATE_CONF_BUTTON_DPAD_UP = 0,   // 0
+            STATE_CONF_BUTTON_DPAD_DOWN,     // 1
+            STATE_CONF_BUTTON_DPAD_LEFT,     // 2
+            STATE_CONF_BUTTON_DPAD_RIGHT,    // 3
+            STATE_CONF_BUTTON_A,             // 4
+            STATE_CONF_BUTTON_B,             // 5
+            STATE_CONF_BUTTON_X,             // 6
+            STATE_CONF_BUTTON_Y,             // 7
+            STATE_CONF_BUTTON_BACK,          // 8
+            STATE_CONF_BUTTON_GUIDE,         // 9
+            STATE_CONF_BUTTON_START,         // 10
+            STATE_CONF_BUTTON_LEFTSTICK,     // 11
+            STATE_CONF_BUTTON_RIGHTSTICK,    // 12
+            STATE_CONF_BUTTON_LEFTSHOULDER,  // 13
+            STATE_CONF_BUTTON_RIGHTSHOULDER, // 14
+            STATE_CONF_AXIS_LEFTSTICK_X,     // 15
+            STATE_CONF_AXIS_LEFTSTICK_Y,     // 16
+            STATE_CONF_AXIS_RIGHTSTICK_X,    // 17
+            STATE_CONF_AXIS_RIGHTSTICK_Y,    // 18
+            STATE_CONF_AXIS_LEFTTRIGGER,     // 19
+            STATE_CONF_AXIS_RIGHTTRIGGER,    // 20
+            STATE_CONF_BUTTON_LEFTTRIGGER,   // 21
+            STATE_CONF_BUTTON_RIGHTTRIGGER,  // 22
+            STATE_CONF_SKIP_ITEM,            // 23
+            STATE_CONF_MAX                   // 24
         };
 
         enum ButtonCodes
         {
             BUTTON_INVALID = -1,
-            BUTTON_A,               // 0
-            BUTTON_B,               //1
-            BUTTON_X,               //2
-            BUTTON_Y,               //3
-            BUTTON_BACK,            //4
-            BUTTON_GUIDE,           //5
-            BUTTON_START,           //6
-            BUTTON_LEFTSTICK,       //7
-            BUTTON_RIGHTSTICK,      //8
-            BUTTON_LEFTSHOULDER,    //9
-            BUTTON_RIGHTSHOULDER,   //10
-            BUTTON_DPAD_UP,         //11
-            BUTTON_DPAD_DOWN,       //12
-            BUTTON_DPAD_LEFT,       //13
-            BUTTON_DPAD_RIGHT,      //14
-            BUTTON_MAX              //15
+            BUTTON_A,             // 0
+            BUTTON_B,             // 1
+            BUTTON_X,             // 2
+            BUTTON_Y,             // 3
+            BUTTON_BACK,          // 4
+            BUTTON_GUIDE,         // 5
+            BUTTON_START,         // 6
+            BUTTON_LEFTSTICK,     // 7
+            BUTTON_RIGHTSTICK,    // 8
+            BUTTON_LEFTSHOULDER,  // 9
+            BUTTON_RIGHTSHOULDER, // 10
+            BUTTON_DPAD_UP,       // 11
+            BUTTON_DPAD_DOWN,     // 12
+            BUTTON_DPAD_LEFT,     // 13
+            BUTTON_DPAD_RIGHT,    // 14
+            BUTTON_MAX            // 15
         };
 
         enum ControllerID
@@ -117,7 +116,6 @@ namespace GfxRenderEngine
         };
 
     public:
-
         ControllerConfiguration() {}
         ~ControllerConfiguration() {}
 
@@ -137,15 +135,13 @@ namespace GfxRenderEngine
         int GetConfigurationStep() { return m_ReportedState; }
         std::string GetDatabaseEntry() const { return m_DatabaseEntry; }
 
-    private: 
-
+    private:
         bool CheckAxis(int cmd);
         bool CheckTrigger(int cmd);
         void SetControllerConfText(std::string text1, std::string text2 = "");
         void SetMapping(void);
 
     private:
-
         std::string m_Text1, m_Text2;
         bool m_UpdateControllerText;
 
@@ -171,6 +167,5 @@ namespace GfxRenderEngine
         bool m_MappingCreated;
         int m_ReportedState;
         std::string m_DatabaseEntry;
-
     };
-}
+} // namespace GfxRenderEngine

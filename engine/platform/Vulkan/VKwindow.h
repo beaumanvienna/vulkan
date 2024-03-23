@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -26,7 +26,6 @@
 
 #include "engine.h"
 #include "platform/window.h"
-#include "scene/entity.h"
 
 #include "VKcore.h"
 #include "VKswapChain.h"
@@ -43,7 +42,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         VK_Window(const WindowProperties& props);
         virtual ~VK_Window() override;
 
@@ -53,13 +51,16 @@ namespace GfxRenderEngine
         bool InitGLFW();
         virtual void Shutdown() override;
         void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
-        VkExtent2D GetExtent() { return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)}; }
+        VkExtent2D GetExtent()
+        {
+            return {static_cast<uint>(m_WindowProperties.m_Width), static_cast<uint>(m_WindowProperties.m_Height)};
+        }
         void* GetBackendWindow() const override { return (void*)m_Window; }
 
         void OnUpdate() override;
-        uint GetWidth()  const override { return m_WindowProperties.m_Width; }
+        uint GetWidth() const override { return m_WindowProperties.m_Width; }
         uint GetHeight() const override { return m_WindowProperties.m_Height; }
-        uint GetDesktopWidth()  const override { return m_DesktopWidth; }
+        uint GetDesktopWidth() const override { return m_DesktopWidth; }
         uint GetDesktopHeight() const override { return m_DesktopHeight; }
 
         void SetEventCallback(const EventCallbackFunction& callback) override;
@@ -82,11 +83,9 @@ namespace GfxRenderEngine
         void ResetWindowResizedFlag() { m_WindowProperties.m_FramebufferResized = false; }
 
     private:
-
         void CreateWindow();
 
     private:
-
         GLFWwindow* m_Window;
 
         struct WindowData
@@ -95,7 +94,7 @@ namespace GfxRenderEngine
             int m_Width;
             int m_Height;
             float m_AspectRatio;
-            //int m_VSync;
+            // int m_VSync;
             EventCallbackFunction m_EventCallback;
             double m_MousePosX;
             double m_MousePosY;
@@ -117,6 +116,5 @@ namespace GfxRenderEngine
         int m_WindowPositionX, m_WindowPositionY;
         bool m_AllowCursor;
         uint m_DesktopWidth, m_DesktopHeight;
-
     };
-}
+} // namespace GfxRenderEngine

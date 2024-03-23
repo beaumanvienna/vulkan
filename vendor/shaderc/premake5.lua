@@ -1,7 +1,7 @@
 project "shaderc"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -59,7 +59,7 @@ project "shaderc"
 project "shaderc_util"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -123,7 +123,7 @@ project "shaderc_util"
 project "SPIRV-Tools-opt"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -299,7 +299,7 @@ project "SPIRV-Tools-opt"
 project "SPIRV-Tools"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -438,7 +438,7 @@ project "SPIRV-Tools"
 project "MachineIndependent"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -539,7 +539,7 @@ project "MachineIndependent"
 project "OSDependent"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -597,7 +597,7 @@ project "OSDependent"
 project "GenericCodeGen"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -654,7 +654,7 @@ project "GenericCodeGen"
 project "OGLCompiler"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")
@@ -699,7 +699,7 @@ project "OGLCompiler"
 project "SPIRV"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir ("bin/%{prj.name}")
     objdir ("bin-int/%{prj.name}")

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,15 +12,15 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-   This file is based on 
+   This file is based on
    github.com/blurrypiano/littleVulkanEngine/blob/master/littleVulkanEngine/imguiDemo/lve_imgui.cpp
    License: MIT */
 
@@ -41,17 +41,15 @@ namespace GfxRenderEngine
 
     class VK_Imgui : public Imgui
     {
-        public:
+    public:
+        VK_Imgui(VkRenderPass renderPass, uint imageCount);
+        virtual ~VK_Imgui() override;
 
-            VK_Imgui(VkRenderPass renderPass, uint imageCount);
-            virtual ~VK_Imgui() override;
+        virtual void NewFrame() override;
+        virtual void Render(VkCommandBuffer commandBuffer) override;
+        virtual void Run() override;
 
-            virtual void NewFrame() override;
-            virtual void Render(VkCommandBuffer commandBuffer)  override;
-            virtual void Run()  override;
-
-        private:
-
-            VkDescriptorPool m_DescriptorPool;
+    private:
+        VkDescriptorPool m_DescriptorPool;
     };
-}
+} // namespace GfxRenderEngine

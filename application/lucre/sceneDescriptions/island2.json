@@ -1,0 +1,700 @@
+{
+    "file format identifier": 1.2,
+    "description": "fastgltf testing",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "fastgltf files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/lights/gltf/lights.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.084, 0.084, 0.084
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            1.59788, 2.135, 4.63639
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.084, 0.084, 0.084
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            3.62845, 2.135, 4.7302
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/lights/gltf/crate.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            2.27164, 2.076, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            2.254, 2.076, 4.647
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            6, 2.74592, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            6.3, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            6.6, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            6.9, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.2, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.5, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.8, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            8.1, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            7.8, 2.746, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            8.1, 2.746, 4.012
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/Kaya/gltf/Kaya.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.299999, 0.299998, 0.299999
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.583, 2.132, 4.10075
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.299999, 0.299998, 0.299999
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.349, 2.132, 4.15033
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island2.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            7.2, 7.2, 7.2
+                        ],
+                        "rotation":
+                        [
+                            2.15439e-08, -0.117642, 1.16075e-08
+                        ],
+                        "translation":
+                        [
+                            -0.221573, -1.10685, 1.17507
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.341708, 0.341708, 0.341708
+                        ],
+                        "rotation":
+                        [
+                            0, -0.00120295, 0
+                        ],
+                        "translation":
+                        [
+                            -0.806495, 2.55043, 4.33114
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.342, 0.342, 0.342
+                        ],
+                        "rotation":
+                        [
+                            0, -1.05649, 0
+                        ],
+                        "translation":
+                        [
+                            1.24491, 2.55043, 4.27373
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.341708, 0.341708, 0.341708
+                        ],
+                        "rotation":
+                        [
+                            0, -0.646684, 0
+                        ],
+                        "translation":
+                        [
+                            3.36217, 2.55043, 4.30936
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.342, 0.342, 0.342
+                        ],
+                        "rotation":
+                        [
+                            0, -1.05649, 0
+                        ],
+                        "translation":
+                        [
+                            5, 2.55043, 4.2638
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/diorama/diorama flipped.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.341708, 0.341708, 0.341708
+                        ],
+                        "rotation":
+                        [
+                            0, 0.37646, 0
+                        ],
+                        "translation":
+                        [
+                            9.1858, 2.55043, 3.83862
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.342, 0.342, 0.342
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            11.4788, 2.55043, 4.2638
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.164, 0.164, 0.164
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.323, 2, 4.8
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.232654, 0.23265, 0.232652
+                        ],
+                        "rotation":
+                        [
+                            0, 0.791235, 0
+                        ],
+                        "translation":
+                        [
+                            -2.37619, 1.7154, 2.936
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.233, 0.233, 0.233
+                        ],
+                        "rotation":
+                        [
+                            0, 0.785398, 0
+                        ],
+                        "translation":
+                        [
+                            -2.68948, 1.76626, 3.61797
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island3.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.325976, 0.896592, 4.16285
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            3.57587, 0.896592, 4.15888
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            7.46612, 0.896592, 4.2591
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            13.1041, 13.104, 17.0461
+                        ],
+                        "rotation":
+                        [
+                            3.14159, -1.54504, -3.14159
+                        ],
+                        "translation":
+                        [
+                            11.3567, 0.896592, 4.35931
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/cactus/cactus.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.159, 0.159, 0.159
+                        ],
+                        "rotation":
+                        [
+                            -0.182574, 0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.292384, 1.79905, 0.233312
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.213, 0.213, 0.213
+                        ],
+                        "rotation":
+                        [
+                            -0.103002, 0, 0
+                        ],
+                        "translation":
+                        [
+                            0.426615, 1.96924, 1.19718
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.299999, 0.299998, 0.299999
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 2.53518e-06, -3.14159
+                        ],
+                        "translation":
+                        [
+                            0.150009, 1.79451, 0.359188
+                        ]
+                    },
+                    "nodes":
+                    [
+                        {
+                            "name": "guybrush object",
+                            "walkSpeed": 0.2,
+                            "rigidBody": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.038, 0.038, 0.038
+                        ],
+                        "rotation":
+                        [
+                            -0.698132, -0.698132, 0.174533
+                        ],
+                        "translation":
+                        [
+                            2.27413, 5.61954, -3.7331
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/pirateship/pirateship.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            10.0308, 1.6, -43.7987
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            17.575, 1.35333, -63.2978
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

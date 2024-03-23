@@ -1,4 +1,4 @@
-/* Controller Copyright (c) 2021 Controller Development Team 
+/* Controller Copyright (c) 2021 Controller Development Team
    https://github.com/beaumanvienna/gfxRenderController
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -38,7 +38,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         static const int MAX_NUMBER_OF_CONTROLLERS = 4;
         static const int ANALOG_DEAD_ZONE = 15000;
 
@@ -70,22 +69,22 @@ namespace GfxRenderEngine
         enum ControllerCode
         {
             BUTTON_INVALID = -1,
-            BUTTON_A,               // 0
-            BUTTON_B,               //1
-            BUTTON_X,               //2
-            BUTTON_Y,               //3
-            BUTTON_BACK,            //4
-            BUTTON_GUIDE,           //5
-            BUTTON_START,           //6
-            BUTTON_LEFTSTICK,       //7
-            BUTTON_RIGHTSTICK,      //8
-            BUTTON_LEFTSHOULDER,    //9
-            BUTTON_RIGHTSHOULDER,   //10
-            BUTTON_DPAD_UP,         //11
-            BUTTON_DPAD_DOWN,       //12
-            BUTTON_DPAD_LEFT,       //13
-            BUTTON_DPAD_RIGHT,      //14
-            BUTTON_MAX              //15
+            BUTTON_A,             // 0
+            BUTTON_B,             // 1
+            BUTTON_X,             // 2
+            BUTTON_Y,             // 3
+            BUTTON_BACK,          // 4
+            BUTTON_GUIDE,         // 5
+            BUTTON_START,         // 6
+            BUTTON_LEFTSTICK,     // 7
+            BUTTON_RIGHTSTICK,    // 8
+            BUTTON_LEFTSHOULDER,  // 9
+            BUTTON_RIGHTSHOULDER, // 10
+            BUTTON_DPAD_UP,       // 11
+            BUTTON_DPAD_DOWN,     // 12
+            BUTTON_DPAD_LEFT,     // 13
+            BUTTON_DPAD_RIGHT,    // 14
+            BUTTON_MAX            // 15
         };
 
         Controller();
@@ -106,14 +105,21 @@ namespace GfxRenderEngine
         bool CheckControllerIsSupported(int indexID);
         bool CheckMapping(SDL_JoystickGUID guid, bool& mappingOK, std::string& name);
         bool FindGuidInFile(std::string& filename, char* text2match, int length, std::string* lineRet);
-        bool FindGuidInFile(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, char* text2match, int length, std::string* lineRet);
+        bool FindGuidInFile(const char* path /* GNU */, int resourceID /* MSVC */,
+                            const std::string& resourceClass /* MSVC */, char* text2match, int length, std::string* lineRet);
         bool AddControllerToInternalDB(std::string entry);
         void RemoveDuplicatesInDB(void);
         int GetActiveController() { return m_ActiveController; }
         void EventLoop(SDL_Event& SDLevent);
         void ConfigEventLoop(SDL_Event& SDLevent);
-        void SetNormalEventLoop() { m_EventLoop = [this](SDL_Event& SDLevent) { EventLoop(SDLevent); };}
-        void SetConfigEventLoop() { m_EventLoop = [this](SDL_Event& SDLevent) { ConfigEventLoop(SDLevent); };}
+        void SetNormalEventLoop()
+        {
+            m_EventLoop = [this](SDL_Event& SDLevent) { EventLoop(SDLevent); };
+        }
+        void SetConfigEventLoop()
+        {
+            m_EventLoop = [this](SDL_Event& SDLevent) { ConfigEventLoop(SDLevent); };
+        }
         void StartConfig(int controllerID);
         bool ConfigIsRunning() const { return m_ControllerConfiguration.IsRunning(); }
         int GetConfigurationStep() { return m_ControllerConfiguration.GetConfigurationStep(); }
@@ -125,15 +131,12 @@ namespace GfxRenderEngine
         void SetEventCallback(const EventCallbackFunction& callback);
 
     public:
-
         static ControllerConfiguration m_ControllerConfiguration;
 
     private:
-
         static constexpr auto DEBOUNCE_TIME = 500ms;
 
     private:
-
         bool m_Initialzed;
         EventCallbackFunction m_EventCallback;
         std::string m_Gamecontrollerdb, m_InternalDB;
@@ -160,4 +163,4 @@ namespace GfxRenderEngine
 
         std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeStamp;
     };
-}
+} // namespace GfxRenderEngine

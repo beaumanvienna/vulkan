@@ -36,9 +36,8 @@ namespace GfxRenderEngine
 {
 
     FbxBuilder::FbxBuilder(const std::string& filepath, Scene& scene)
-        : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()},
-          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
-          m_InstanceCount{0}, m_InstanceIndex{0}, m_FbxScene{nullptr},
+        : m_Filepath{filepath}, m_SkeletalAnimation{0}, m_Registry{scene.GetRegistry()}, m_SceneGraph{scene.GetSceneGraph()},
+          m_Dictionary{scene.GetDictionary()}, m_InstanceCount{0}, m_InstanceIndex{0}, m_FbxScene{nullptr},
           m_FbxNoBuiltInTangents{false}, m_MaterialFeatures{0}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
@@ -47,11 +46,8 @@ namespace GfxRenderEngine
     bool FbxBuilder::LoadFbx(uint const instanceCount, int const sceneID)
     {
         Assimp::Importer importer;
-        m_FbxScene = importer.ReadFile( m_Filepath,
-            aiProcess_CalcTangentSpace       |
-            aiProcess_Triangulate            |
-            aiProcess_JoinIdenticalVertices  |
-            aiProcess_SortByPType);
+        m_FbxScene = importer.ReadFile(m_Filepath, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
+                                                       aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
         if (m_FbxScene == nullptr)
         {
@@ -80,7 +76,7 @@ namespace GfxRenderEngine
 
         // PASS 2 (for all instances)
         m_InstanceCount = instanceCount;
-        for(m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
+        for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.create();
@@ -126,7 +122,7 @@ namespace GfxRenderEngine
         }
 
         int hasMeshIndex = m_HasMesh.size();
-        m_HasMesh.push_back(localHasMesh); //reserve space in m_HasMesh, so that ProcessNode can find it
+        m_HasMesh.push_back(localHasMesh); // reserve space in m_HasMesh, so that ProcessNode can find it
 
         // do any of the child nodes have a mesh?
         uint childNodeCount = fbxNodePtr->mNumChildren;
@@ -144,7 +140,7 @@ namespace GfxRenderEngine
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
         uint currentNode = parentNode;
 
-        if (m_HasMesh[hasMeshIndex]) 
+        if (m_HasMesh[hasMeshIndex])
         {
             if (fbxNodePtr->mNumMeshes)
             {
@@ -159,9 +155,9 @@ namespace GfxRenderEngine
                     if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
                     {
                         auto scale = transform.GetScale();
-                        transform.SetScale({scale.x/100.0f, scale.y/100.0f, scale.z/100.0f});
+                        transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
                         auto translation = transform.GetTranslation();
-                        transform.SetTranslation({translation.x/100.0f, translation.y/100.0f, translation.z/100.0f});
+                        transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
                     }
                     m_Registry.emplace<TransformComponent>(entity, transform);
                 }
@@ -187,7 +183,8 @@ namespace GfxRenderEngine
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
 
         auto entity = m_Registry.create();
-        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
+                         "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
 
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
@@ -197,15 +194,15 @@ namespace GfxRenderEngine
         if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
         {
             auto scale = transform.GetScale();
-            transform.SetScale({scale.x/100.0f, scale.y/100.0f, scale.z/100.0f});
+            transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
             auto translation = transform.GetTranslation();
-            transform.SetTranslation({translation.x/100.0f, translation.y/100.0f, translation.z/100.0f});
+            transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
         }
 
         // *** Instancing ***
         // create instance tag for first game object;
         // and collect further instances in it.
-        // The renderer can loop over all instance tags 
+        // The renderer can loop over all instance tags
         // to retrieve the corresponding game objects.
 
         if (!m_InstanceIndex)
@@ -214,14 +211,16 @@ namespace GfxRenderEngine
             instanceTag.m_Instances.push_back(entity);
             m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
             instanceTag.m_InstanceBuffer = m_InstanceBuffer;
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                                                          transform.GetNormalMatrix());
             m_Registry.emplace<InstanceTag>(entity, instanceTag);
             transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
             m_InstancedObjects.push_back(entity);
 
             // create model for 1st instance
             LoadVertexDataFbx(fbxNodePtr);
-            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(), m_Filepath, nodeName);
+            LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
+                          m_Filepath, nodeName);
             for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
             {
                 uint fbxMeshIndex = fbxNodePtr->mMeshes[meshIndex];
@@ -299,7 +298,8 @@ namespace GfxRenderEngine
             entt::entity instance = m_InstancedObjects[m_RenderObject++];
             InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
             instanceTag.m_Instances.push_back(entity);
-            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+            instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                                                          transform.GetNormalMatrix());
             transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
         }
 
@@ -322,10 +322,10 @@ namespace GfxRenderEngine
             texture = Texture::Create();
             loadSucess = texture->Init(filepath, useSRGB);
         }
-        else if (EngineCore::FileExists(m_Basepath+filepath) && !EngineCore::IsDirectory(m_Basepath+filepath))
+        else if (EngineCore::FileExists(m_Basepath + filepath) && !EngineCore::IsDirectory(m_Basepath + filepath))
         {
             texture = Texture::Create();
-            loadSucess = texture->Init(m_Basepath+filepath, useSRGB);
+            loadSucess = texture->Init(m_Basepath + filepath, useSRGB);
         }
         else
         {
@@ -334,9 +334,9 @@ namespace GfxRenderEngine
 
         if (loadSucess)
         {
-            #ifdef DEBUG
-                texture->SetFilename(filepath);
-            #endif
+#ifdef DEBUG
+            texture->SetFilename(filepath);
+#endif
             mapIndex = m_Images.size();
             m_Images.push_back(texture);
         }
@@ -433,24 +433,24 @@ namespace GfxRenderEngine
 
     void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial)
     {
-        {  // diffuse
+        { // diffuse
             aiColor3D diffuseColor;
             if (fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == aiReturn_SUCCESS)
             {
-                engineMaterial.m_DiffuseColor.r  = diffuseColor.r;
-                engineMaterial.m_DiffuseColor.g  = diffuseColor.g;
-                engineMaterial.m_DiffuseColor.b  = diffuseColor.b;
+                engineMaterial.m_DiffuseColor.r = diffuseColor.r;
+                engineMaterial.m_DiffuseColor.g = diffuseColor.g;
+                engineMaterial.m_DiffuseColor.b = diffuseColor.b;
             }
             else
             {
                 engineMaterial.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
             }
         }
-        {  // roughness
+        { // roughness
             float roughnessFactor;
             if (fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == aiReturn_SUCCESS)
             {
-                engineMaterial.m_Roughness  = roughnessFactor;
+                engineMaterial.m_Roughness = roughnessFactor;
             }
             else
             {
@@ -458,23 +458,23 @@ namespace GfxRenderEngine
             }
         }
 
-        {  // metallic
+        { // metallic
             float metallicFactor;
             if (fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, metallicFactor) == aiReturn_SUCCESS)
             {
-                engineMaterial.m_Metallic  = metallicFactor;
+                engineMaterial.m_Metallic = metallicFactor;
             }
             else if (fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
             {
-                engineMaterial.m_Metallic  = metallicFactor;
+                engineMaterial.m_Metallic = metallicFactor;
             }
             else
             {
-                engineMaterial.m_Metallic  = 0.886f;
+                engineMaterial.m_Metallic = 0.886f;
             }
         }
 
-        {  // emissive
+        { // emissive
             aiColor3D emission;
             auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
             if (result == aiReturn_SUCCESS && (emission.r > 0 || emission.g > 0 || emission.b > 0))
@@ -493,7 +493,7 @@ namespace GfxRenderEngine
         for (uint fbxMaterialIndex = 0; fbxMaterialIndex < numMaterials; ++fbxMaterialIndex)
         {
             const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
-            //PrintMaps(fbxMaterial);
+            // PrintMaps(fbxMaterial);
 
             Material engineMaterial{};
             engineMaterial.m_Features = m_SkeletalAnimation;
@@ -543,7 +543,8 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex, int vertexColorSet, uint uvSet)
+    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex,
+                                       int vertexColorSet, uint uvSet)
     {
         const aiMesh* mesh = m_FbxScene->mMeshes[fbxMeshIndex];
 
@@ -565,12 +566,12 @@ namespace GfxRenderEngine
 
         ModelSubmesh& submesh = m_Submeshes[meshIndex];
         submesh.m_FirstVertex = numVerticesBefore;
-        submesh.m_FirstIndex  = numIndicesBefore;
+        submesh.m_FirstIndex = numIndicesBefore;
         submesh.m_VertexCount = numVertices;
-        submesh.m_IndexCount  = numIndices;
+        submesh.m_IndexCount = numIndices;
         submesh.m_InstanceCount = m_InstanceCount;
 
-        bool hasPosition = mesh->HasPositions(); 
+        bool hasPosition = mesh->HasPositions();
         bool hasNormals = mesh->HasNormals();
         bool hasTangents = mesh->HasTangentsAndBitangents();
         bool hasUVs = mesh->HasTextureCoords(uvSet);
@@ -582,7 +583,7 @@ namespace GfxRenderEngine
         for (uint fbxVertexIndex = 0; fbxVertexIndex < numVertices; ++fbxVertexIndex)
         {
             Vertex& vertex = m_Vertices[vertexIndex];
-            vertex.m_Amplification  = 1.0f;
+            vertex.m_Amplification = 1.0f;
 
             if (hasPosition)
             { // position (guaranteed to always be there)
@@ -640,10 +641,22 @@ namespace GfxRenderEngine
         aiMatrix4x4 t = fbxNodePtr->mTransformation;
         glm::mat4 m;
 
-        m[0][0] = (float)t.a1; m[0][1] = (float)t.b1;  m[0][2] = (float)t.c1; m[0][3] = (float)t.d1;
-        m[1][0] = (float)t.a2; m[1][1] = (float)t.b2;  m[1][2] = (float)t.c2; m[1][3] = (float)t.d2;
-        m[2][0] = (float)t.a3; m[2][1] = (float)t.b3;  m[2][2] = (float)t.c3; m[2][3] = (float)t.d3;
-        m[3][0] = (float)t.a4; m[3][1] = (float)t.b4;  m[3][2] = (float)t.c4; m[3][3] = (float)t.d4;
+        m[0][0] = (float)t.a1;
+        m[0][1] = (float)t.b1;
+        m[0][2] = (float)t.c1;
+        m[0][3] = (float)t.d1;
+        m[1][0] = (float)t.a2;
+        m[1][1] = (float)t.b2;
+        m[1][2] = (float)t.c2;
+        m[1][3] = (float)t.d2;
+        m[2][0] = (float)t.a3;
+        m[2][1] = (float)t.b3;
+        m[2][2] = (float)t.c3;
+        m[2][3] = (float)t.d3;
+        m[3][0] = (float)t.a4;
+        m[3][1] = (float)t.b4;
+        m[3][2] = (float)t.c4;
+        m[3][3] = (float)t.d4;
 
         return m;
     }
@@ -659,7 +672,7 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
             submesh.m_MaterialProperties.m_Roughness = 0.5f;
-            submesh.m_MaterialProperties.m_Metallic  = 0.1f;
+            submesh.m_MaterialProperties.m_Metallic = 0.1f;
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (no material found)", materialIndex);
             return;
@@ -673,14 +686,13 @@ namespace GfxRenderEngine
         auto& material = m_Materials[materialIndex];
         // assign only those material features that are actually needed in the renderer
         submesh.m_MaterialProperties.m_NormalMapIntensity = material.m_NormalMapIntensity;
-        submesh.m_MaterialProperties.m_Roughness          = material.m_Roughness;
-        submesh.m_MaterialProperties.m_Metallic           = material.m_Metallic;
-        submesh.m_MaterialProperties.m_EmissiveStrength   = material.m_EmissiveStrength;
+        submesh.m_MaterialProperties.m_Roughness = material.m_Roughness;
+        submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
+        submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
 
-        uint pbrFeatures = material.m_Features & (
-                Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | 
-                Material::HAS_METALLIC_MAP | Material::HAS_ROUGHNESS_METALLIC_MAP | 
-                Material::HAS_SKELETAL_ANIMATION);
+        uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
+                                                  Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP |
+                                                  Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
         if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
@@ -689,131 +701,158 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            uint normalMapIndex  = material.m_NormalMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            uint normalMapIndex  = material.m_NormalMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP |
+                                 Material::HAS_METALLIC_MAP))
         {
-            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
-            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
-            uint metallicMapIndex  = material.m_MetallicMapIndex;
+            uint metallicMapIndex = material.m_MetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(metallicMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
-        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP |
+                                 Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
-            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
-            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
-            uint metallicMapIndex  = material.m_MetallicMapIndex;
+            uint metallicMapIndex = material.m_MetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(metallicMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2MapInstanced, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2MapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
             LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
         }
-        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
+        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP |
+                                Material::HAS_METALLIC_MAP))
         {
-            uint diffuseMapIndex   = material.m_DiffuseMapIndex;
-            uint normalMapIndex    = material.m_NormalMapIndex;
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
-            uint metallicMapIndex  = material.m_MetallicMapIndex;
+            uint metallicMapIndex = material.m_MetallicMapIndex;
 
             CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
             CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(metallicMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex], m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x{1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -823,12 +862,14 @@ namespace GfxRenderEngine
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else
         {
@@ -839,7 +880,8 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrNoMap;
             }
 
-            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap, features: 0x{1:x}", materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
 
         // emissive materials
@@ -849,28 +891,33 @@ namespace GfxRenderEngine
             if (material.m_Features & Material::HAS_EMISSIVE_MAP)
             {
                 uint emissiveMapIndex = material.m_EmissiveMapIndex;
-                CORE_ASSERT(emissiveMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
+                CORE_ASSERT(emissiveMapIndex < m_Images.size(),
+                            "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
                 {
                     std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
                     std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, buffers);
+                    auto materialDescriptor =
+                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, buffers);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                     m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
                 }
 
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex, material.m_Features);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex,
+                              material.m_Features);
             }
             else // emissive vertex color
             {
                 { // create material descriptor
                     std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, buffers);
+                    auto materialDescriptor =
+                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, buffers);
                     submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                     m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
                 }
 
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex, material.m_Features);
+                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex,
+                              material.m_Features);
             }
         }
     }
@@ -918,17 +965,17 @@ namespace GfxRenderEngine
             {
                 case 0:
                     position1 = vertex.m_Position;
-                    uv1  = vertex.m_UV;
+                    uv1 = vertex.m_UV;
                     vertexIndex1 = index;
                     break;
                 case 1:
                     position2 = vertex.m_Position;
-                    uv2  = vertex.m_UV;
+                    uv2 = vertex.m_UV;
                     vertexIndex2 = index;
                     break;
                 case 2:
                     position3 = vertex.m_Position;
-                    uv3  = vertex.m_UV;
+                    uv3 = vertex.m_UV;
                     vertexIndex3 = index;
 
                     glm::vec3 edge1 = position2 - position1;
@@ -962,7 +1009,8 @@ namespace GfxRenderEngine
                     tangent.x = factor * (dV2 * E1x - dV1 * E2x);
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
-                    if (tangent.x==0.0f && tangent.y==0.0f && tangent.z==0.0f) tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+                    if (tangent.x == 0.0f && tangent.y == 0.0f && tangent.z == 0.0f)
+                        tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;
@@ -988,39 +1036,59 @@ namespace GfxRenderEngine
     {
         auto materialName = fbxMaterial->GetName();
         LOG_CORE_ERROR("material name: {0}", std::string(materialName.C_Str()));
-        LOG_CORE_CRITICAL("aiTextureType_NONE                  = {0}", fbxMaterial->GetTextureCount(aiTextureType_NONE             ));
-        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE               = {0}", fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE          ));
-        LOG_CORE_CRITICAL("aiTextureType_SPECULAR              = {0}", fbxMaterial->GetTextureCount(aiTextureType_SPECULAR         ));
-        LOG_CORE_CRITICAL("aiTextureType_AMBIENT               = {0}", fbxMaterial->GetTextureCount(aiTextureType_AMBIENT          ));
-        LOG_CORE_CRITICAL("aiTextureType_EMISSIVE              = {0}", fbxMaterial->GetTextureCount(aiTextureType_EMISSIVE         ));
-        LOG_CORE_CRITICAL("aiTextureType_HEIGHT                = {0}", fbxMaterial->GetTextureCount(aiTextureType_HEIGHT           ));
-        LOG_CORE_CRITICAL("aiTextureType_NORMALS               = {0}", fbxMaterial->GetTextureCount(aiTextureType_NORMALS          ));
-        LOG_CORE_CRITICAL("aiTextureType_SHININESS             = {0}", fbxMaterial->GetTextureCount(aiTextureType_SHININESS        ));
-        LOG_CORE_CRITICAL("aiTextureType_OPACITY               = {0}", fbxMaterial->GetTextureCount(aiTextureType_OPACITY          ));
-        LOG_CORE_CRITICAL("aiTextureType_DISPLACEMENT          = {0}", fbxMaterial->GetTextureCount(aiTextureType_DISPLACEMENT     ));
-        LOG_CORE_CRITICAL("aiTextureType_LIGHTMAP              = {0}", fbxMaterial->GetTextureCount(aiTextureType_LIGHTMAP         ));
-        LOG_CORE_CRITICAL("aiTextureType_REFLECTION            = {0}", fbxMaterial->GetTextureCount(aiTextureType_REFLECTION       ));
-        LOG_CORE_CRITICAL("aiTextureType_BASE_COLOR            = {0}", fbxMaterial->GetTextureCount(aiTextureType_BASE_COLOR       ));
-        LOG_CORE_CRITICAL("aiTextureType_NORMAL_CAMERA         = {0}", fbxMaterial->GetTextureCount(aiTextureType_NORMAL_CAMERA    ));
-        LOG_CORE_CRITICAL("aiTextureType_EMISSION_COLOR        = {0}", fbxMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR   ));
-        LOG_CORE_CRITICAL("aiTextureType_METALNESS             = {0}", fbxMaterial->GetTextureCount(aiTextureType_METALNESS        ));
-        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE_ROUGHNESS     = {0}", fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS));
-        LOG_CORE_CRITICAL("aiTextureType_AMBIENT_OCCLUSION     = {0}", fbxMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION));
-        LOG_CORE_CRITICAL("aiTextureType_SHEEN                 = {0}", fbxMaterial->GetTextureCount(aiTextureType_SHEEN            ));
-        LOG_CORE_CRITICAL("aiTextureType_CLEARCOAT             = {0}", fbxMaterial->GetTextureCount(aiTextureType_CLEARCOAT        ));
-        LOG_CORE_CRITICAL("aiTextureType_TRANSMISSION          = {0}", fbxMaterial->GetTextureCount(aiTextureType_TRANSMISSION     ));
-        LOG_CORE_CRITICAL("aiTextureType_UNKNOWN               = {0}", fbxMaterial->GetTextureCount(aiTextureType_UNKNOWN          ));
+        LOG_CORE_CRITICAL("aiTextureType_NONE                  = {0}", fbxMaterial->GetTextureCount(aiTextureType_NONE));
+        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE               = {0}", fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE));
+        LOG_CORE_CRITICAL("aiTextureType_SPECULAR              = {0}", fbxMaterial->GetTextureCount(aiTextureType_SPECULAR));
+        LOG_CORE_CRITICAL("aiTextureType_AMBIENT               = {0}", fbxMaterial->GetTextureCount(aiTextureType_AMBIENT));
+        LOG_CORE_CRITICAL("aiTextureType_EMISSIVE              = {0}", fbxMaterial->GetTextureCount(aiTextureType_EMISSIVE));
+        LOG_CORE_CRITICAL("aiTextureType_HEIGHT                = {0}", fbxMaterial->GetTextureCount(aiTextureType_HEIGHT));
+        LOG_CORE_CRITICAL("aiTextureType_NORMALS               = {0}", fbxMaterial->GetTextureCount(aiTextureType_NORMALS));
+        LOG_CORE_CRITICAL("aiTextureType_SHININESS             = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_SHININESS));
+        LOG_CORE_CRITICAL("aiTextureType_OPACITY               = {0}", fbxMaterial->GetTextureCount(aiTextureType_OPACITY));
+        LOG_CORE_CRITICAL("aiTextureType_DISPLACEMENT          = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_DISPLACEMENT));
+        LOG_CORE_CRITICAL("aiTextureType_LIGHTMAP              = {0}", fbxMaterial->GetTextureCount(aiTextureType_LIGHTMAP));
+        LOG_CORE_CRITICAL("aiTextureType_REFLECTION            = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_REFLECTION));
+        LOG_CORE_CRITICAL("aiTextureType_BASE_COLOR            = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_BASE_COLOR));
+        LOG_CORE_CRITICAL("aiTextureType_NORMAL_CAMERA         = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_NORMAL_CAMERA));
+        LOG_CORE_CRITICAL("aiTextureType_EMISSION_COLOR        = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR));
+        LOG_CORE_CRITICAL("aiTextureType_METALNESS             = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_METALNESS));
+        LOG_CORE_CRITICAL("aiTextureType_DIFFUSE_ROUGHNESS     = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS));
+        LOG_CORE_CRITICAL("aiTextureType_AMBIENT_OCCLUSION     = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION));
+        LOG_CORE_CRITICAL("aiTextureType_SHEEN                 = {0}", fbxMaterial->GetTextureCount(aiTextureType_SHEEN));
+        LOG_CORE_CRITICAL("aiTextureType_CLEARCOAT             = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_CLEARCOAT));
+        LOG_CORE_CRITICAL("aiTextureType_TRANSMISSION          = {0}",
+                          fbxMaterial->GetTextureCount(aiTextureType_TRANSMISSION));
+        LOG_CORE_CRITICAL("aiTextureType_UNKNOWN               = {0}", fbxMaterial->GetTextureCount(aiTextureType_UNKNOWN));
 
         float factor;
-        LOG_CORE_CRITICAL("AI_MATKEY_BASE_COLOR                = {0}", fbxMaterial->Get(AI_MATKEY_BASE_COLOR, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_ROUGHNESS_FACTOR          = {0}", fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_METALLIC_FACTOR           = {0}", fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_DIFFUSE             = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_EMISSIVE            = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_USE_EMISSIVE_MAP          = {0}", fbxMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_EMISSIVE_INTENSITY        = {0}", fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_SPECULAR            = {0}", fbxMaterial->Get(AI_MATKEY_COLOR_SPECULAR, factor) == aiReturn_SUCCESS);
-        LOG_CORE_CRITICAL("AI_MATKEY_REFLECTIVITY              = {0}", fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_BASE_COLOR                = {0}",
+                          fbxMaterial->Get(AI_MATKEY_BASE_COLOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_ROUGHNESS_FACTOR          = {0}",
+                          fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_METALLIC_FACTOR           = {0}",
+                          fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_DIFFUSE             = {0}",
+                          fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_EMISSIVE            = {0}",
+                          fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_USE_EMISSIVE_MAP          = {0}",
+                          fbxMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_EMISSIVE_INTENSITY        = {0}",
+                          fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_COLOR_SPECULAR            = {0}",
+                          fbxMaterial->Get(AI_MATKEY_COLOR_SPECULAR, factor) == aiReturn_SUCCESS);
+        LOG_CORE_CRITICAL("AI_MATKEY_REFLECTIVITY              = {0}",
+                          fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, factor) == aiReturn_SUCCESS);
 
         uint numProperties = fbxMaterial->mNumProperties;
         for (uint propertyIndex = 0; propertyIndex < numProperties; ++propertyIndex)
@@ -1030,4 +1098,4 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("key: {0}", key);
         }
     }
-}
+} // namespace GfxRenderEngine

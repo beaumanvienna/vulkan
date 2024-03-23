@@ -57,11 +57,5 @@ resources/nsis/marleyInstaller.exe
 *.app
 
 renderdoc.cap
-/main.scene
-/night.scene
-/beach.scene
-/splash.scene
-/settings.scene
-/night.json
-/beach.json
-/dessert.json
+/*.scene
+/*.json

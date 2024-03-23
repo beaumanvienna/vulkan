@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include <limits>
@@ -33,29 +33,37 @@ namespace LucreApp
     KeyboardInputController::KeyboardInputController(const KeyboardInputControllerSpec& spec)
         : m_MoveSpeed{spec.m_MoveSpeed}, m_LookSpeed{spec.m_LookSpeed}
     {
-  
-        m_MomentumX.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
-        m_MomentumY.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
-        m_MomentumZ.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/8);
+
+        m_MomentumX.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/ 8);
+        m_MomentumY.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/ 8);
+        m_MomentumZ.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/ 8);
     }
 
     void KeyboardInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
     {
-
         glm::vec3 rotate{0};
-        if (Input::IsKeyPressed(LOOK_RIGHT)) rotate.y -= 1.f;
-        if (Input::IsKeyPressed(LOOK_LEFT))  rotate.y += 1.f;
-        if (Input::IsKeyPressed(LOOK_UP))    rotate.x -= 1.f;
-        if (Input::IsKeyPressed(LOOK_DOWN))  rotate.x += 1.f;
+        if (Input::IsKeyPressed(LOOK_RIGHT))
+            rotate.y -= 1.f;
+        if (Input::IsKeyPressed(LOOK_LEFT))
+            rotate.y += 1.f;
+        if (Input::IsKeyPressed(LOOK_UP))
+            rotate.x += 1.f;
+        if (Input::IsKeyPressed(LOOK_DOWN))
+            rotate.x -= 1.f;
 
         if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
         {
-            transform.SetRotation(transform.GetRotation() + m_LookSpeed * (float)timestep * glm::normalize(rotate));
+            transform.AddRotation(m_LookSpeed * (float)timestep * glm::normalize(rotate));
         }
 
         // limit pitch values between about +/- 85ish degrees
-        transform.SetRotationX(glm::clamp(transform.GetRotation().x, -1.5f, 1.5f));
-        transform.SetRotationY(glm::mod(transform.GetRotation().y, glm::two_pi<float>()));
+        {
+            float rotationX = transform.GetRotation().x;
+            if (std::abs(rotationX) > 1.5f)
+            {
+                transform.SetRotationX(glm::clamp(rotationX, -1.5f, 1.5f));
+            }
+        }
 
         float yaw = transform.GetRotation().y;
         const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
@@ -65,21 +73,27 @@ namespace LucreApp
         float x = 0.f;
         float y = 0.f;
         float z = 0.f;
-        if (Input::IsKeyPressed(MOVE_FORWARD))  z += 1.f;
-        if (Input::IsKeyPressed(MOVE_BACKWARD)) z -= 1.f;
-        if (Input::IsKeyPressed(MOVE_RIGHT))    x += 1.f;
-        if (Input::IsKeyPressed(MOVE_LEFT))     x -= 1.f;
-        if (Input::IsKeyPressed(MOVE_UP))       y += 1.f;
-        if (Input::IsKeyPressed(MOVE_DOWN))     y -= 1.f;
+        if (Input::IsKeyPressed(MOVE_FORWARD))
+            z += 1.f;
+        if (Input::IsKeyPressed(MOVE_BACKWARD))
+            z -= 1.f;
+        if (Input::IsKeyPressed(MOVE_RIGHT))
+            x += 1.f;
+        if (Input::IsKeyPressed(MOVE_LEFT))
+            x -= 1.f;
+        if (Input::IsKeyPressed(MOVE_UP))
+            y += 1.f;
+        if (Input::IsKeyPressed(MOVE_DOWN))
+            y -= 1.f;
 
         glm::vec3 moveDir{0.f};
         moveDir -= forwardDir * m_MomentumZ.Get(z, timestep);
-        moveDir += rightDir   * m_MomentumX.Get(x, timestep);
-        moveDir -= upDir      * m_MomentumY.Get(y, timestep);
+        moveDir += rightDir * m_MomentumX.Get(x, timestep);
+        moveDir -= upDir * m_MomentumY.Get(y, timestep);
 
         if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
         {
             transform.SetTranslation(transform.GetTranslation() + m_MoveSpeed * timestep * moveDir);
         }
     }
-}
+} // namespace LucreApp
