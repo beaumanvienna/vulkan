@@ -5,6 +5,29 @@
     "fastgltf files":
     [
         {
+            "filename": "application/lucre/models/dancing/gltf/Dancing Michelle.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.41, 0.41, 0.41
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            3.03369, 2.09252, 3.85279
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/models/external_3D_files/lights/gltf/lights.glb",
             "instances":
             [
@@ -34,11 +57,11 @@
                         ],
                         "rotation":
                         [
-                            0, 0, 0
+                            0, -0, 0
                         ],
                         "translation":
                         [
-                            3.62845, 2.135, 4.7302
+                            4.82848, 2.135, 4.65983
                         ]
                     }
                 }
@@ -251,6 +274,40 @@
                             8.1, 2.746, 4.012
                         ]
                     }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            5.7, 2.5, 4.012
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.31, 0.31, 0.31
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            5.7, 2.11099, 4.012
+                        ]
+                    }
                 }
             ]
         },
@@ -364,28 +421,11 @@
                         ],
                         "rotation":
                         [
-                            0, -0.646684, 0
+                            6.8895e-07, -1.15574, -2.40102e-07
                         ],
                         "translation":
                         [
-                            3.36217, 2.55043, 4.30936
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.342, 0.342, 0.342
-                        ],
-                        "rotation":
-                        [
-                            0, -1.05649, 0
-                        ],
-                        "translation":
-                        [
-                            5, 2.55043, 4.2638
+                            8.42154, 2.55043, 4.03893
                         ]
                     }
                 }
@@ -404,28 +444,11 @@
                         ],
                         "rotation":
                         [
-                            0, 0.37646, 0
+                            0, 0.679343, 0
                         ],
                         "translation":
                         [
-                            9.1858, 2.55043, 3.83862
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.342, 0.342, 0.342
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            11.4788, 2.55043, 4.2638
+                            5.1284, 2.55043, 3.93682
                         ]
                     }
                 }
@@ -690,7 +713,33 @@
                         ],
                         "translation":
                         [
-                            17.575, 1.35333, -63.2978
+                            0.919629, 1.61309, -63.3036
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/dancing/fbx/Dancing Michelle.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.41, 0.41, 0.41
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.473659, 2.09252, 4.48397
                         ]
                     }
                 }

@@ -121,18 +121,21 @@ namespace LucreApp
                 }
                 return;
             }
-            TimePoint currentTime = Engine::m_Engine->GetTime();
-            Duration timeElapsedTotal = currentTime - m_StartTime;
-            if (timeElapsedTotal > m_Duration)
+            Duration timeElapsedTotal;
             {
-                if (m_Loop)
+                TimePoint currentTime = Engine::m_Engine->GetTime();
+                timeElapsedTotal = currentTime - m_StartTime;
+                if (timeElapsedTotal > m_Duration)
                 {
-                    m_StartTime = Engine::m_Engine->GetTime();
-                }
-                else
-                {
-                    m_IsRunning = false;
-                    return;
+                    if (m_Loop)
+                    {
+                        m_StartTime = Engine::m_Engine->GetTime();
+                    }
+                    else
+                    {
+                        m_IsRunning = false;
+                        return;
+                    }
                 }
             }
             {

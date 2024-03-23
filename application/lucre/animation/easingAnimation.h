@@ -41,7 +41,8 @@ namespace LucreApp
 
         void Run(float time, float& speed)
         {
-            float value = m_Offset + (m_Invert ? EasingFunction(1.0f - time) : EasingFunction(time));
+            float t = std::clamp(time, 0.0f, 1.0f);
+            float value = m_Offset + (m_Invert ? EasingFunction(1.0f - t) : EasingFunction(t));
             speed = std::clamp(value, m_RangeLow, m_RangeHigh);
         };
         std::string const& GetName() const { return m_Name; }

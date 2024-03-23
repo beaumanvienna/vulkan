@@ -36,6 +36,16 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
 
+typedef uint8_t uchar;
+typedef uint16_t uint16;
+typedef uint32_t uint;
+typedef int64_t int64;
+typedef uint64_t uint64;
+typedef void (*GenericCallback)();
+
+using namespace std::chrono_literals;
+using namespace GfxRenderEngine;
+
 int engine(int argc, char* argv[]);
 
 #undef far
@@ -47,8 +57,18 @@ int engine(int argc, char* argv[]);
 #define ASSERT(x) \
     if (!(x))     \
         std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
+
 #define MEMBER_SIZE(type, member) sizeof(type::member)
+
 #define BIT(x) (1 << (x))
+
+#define CORE_ASSERT(x, str) \
+    if (!(x))               \
+    LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
+
+#define APP_ASSERT(x, str) \
+    if (!(x))              \
+    LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
 
 #define LOG_CORE_TRACE(...) GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
 #define LOG_CORE_INFO(...) GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
@@ -62,28 +82,3 @@ int engine(int argc, char* argv[]);
 #define LOG_APP_ERROR(...) GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
 #define LOG_APP_CRITICAL(...) GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
 
-#define CORE_ASSERT(x, str) \
-    if (!(x))               \
-    LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-#define APP_ASSERT(x, str) \
-    if (!(x))              \
-    LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-
-typedef uint8_t uchar;
-typedef uint16_t uint16;
-typedef uint32_t uint;
-typedef int64_t int64;
-typedef uint64_t uint64;
-typedef void (*GenericCallback)();
-
-using namespace std::chrono_literals;
-using namespace GfxRenderEngine;
-
-#define ENUM_CLASS_BITOPS(T)                                                                 \
-    static inline T operator|(const T& lhs, const T& rhs) { return T((int)lhs | (int)rhs); } \
-    static inline T& operator|=(T& lhs, const T& rhs)                                        \
-    {                                                                                        \
-        lhs = lhs | rhs;                                                                     \
-        return lhs;                                                                          \
-    }                                                                                        \
-    static inline bool operator&(const T& lhs, const T& rhs) { return ((int)lhs & (int)rhs) != 0; }
