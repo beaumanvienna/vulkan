@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -88,7 +88,6 @@ namespace GfxRenderEngine
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
-                    joint.m_GlobalGltfNodeIndex = globalGltfNodeIndex;
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
@@ -129,6 +128,7 @@ namespace GfxRenderEngine
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
             }
+            // m_Skeleton->Traverse();
 
             // create a buffer to be used in the shader for the joint matrices
             // The gltf model has multiple animations, all applied to the same skeleton

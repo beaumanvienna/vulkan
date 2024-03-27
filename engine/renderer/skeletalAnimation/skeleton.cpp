@@ -39,11 +39,16 @@ namespace GfxRenderEngine
         void Skeleton::Traverse(Joint const& joint, uint indent)
         {
             std::string indentStr(indent, ' ');
-            size_t numberOfChildern = joint.m_Children.size();
-            LOG_CORE_INFO("{0}m_GlobalGltfNodeIndex: {1}, localIndex: {2}, m_Parent: {3}, m_Children.size(): {4}", indentStr,
-                          joint.m_GlobalGltfNodeIndex, m_GlobalGltfNodeToJointIndex[joint.m_GlobalGltfNodeIndex],
-                          joint.m_ParentJoint, numberOfChildern);
-            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            size_t numberOfChildren = joint.m_Children.size();
+            LOG_CORE_INFO("{0}name: {1}, m_Parent: {2}, m_Children.size(): {3}", indentStr, joint.m_Name,
+                          joint.m_ParentJoint, numberOfChildren);
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
+            {
+                int jointIndex = joint.m_Children[childIndex];
+                LOG_CORE_INFO("{0}child {1}: index: {2}", indentStr, childIndex, jointIndex);
+            }
+
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 int jointIndex = joint.m_Children[childIndex];
                 Traverse(m_Joints[jointIndex], indent + 1);
@@ -97,8 +102,8 @@ namespace GfxRenderEngine
             }
 
             // update children
-            size_t numberOfChildern = currentJoint.m_Children.size();
-            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            size_t numberOfChildren = currentJoint.m_Children.size();
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 int childJoint = currentJoint.m_Children[childIndex];
                 UpdateJoint(childJoint);

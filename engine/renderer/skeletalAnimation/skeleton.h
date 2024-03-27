@@ -46,8 +46,6 @@ namespace GfxRenderEngine
 
         struct Joint
         {
-            // node index from the gltf nodes std::vector
-            int m_GlobalGltfNodeIndex;
             std::string m_Name;
 
             // undeformed / initial

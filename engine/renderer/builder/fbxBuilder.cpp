@@ -1022,16 +1022,6 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadSkeletonsFbx()
-    {
-        // to be implemented
-    }
-
-    void FbxBuilder::LoadJoint(int globalFbxNodeIndex, int parentJoint)
-    {
-        // to be implemented
-    }
-
     void FbxBuilder::PrintMaps(const aiMaterial* fbxMaterial)
     {
         auto materialName = fbxMaterial->GetName();

@@ -267,7 +267,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(300.0f);
+            skyboxTransform.SetScale(250.0f);
         }
         { // directional lights
             {
@@ -345,10 +345,6 @@ namespace LucreApp
                 {
                     float speedXY[ANIMATE_X_Y] = {0.0f, 0.0f};
                     m_EasingAnimation[light].Run(speedXY);
-                    if (std::abs(speedXY[0]) > 25.0f || std::abs(speedXY[1]) > 25.0f)
-                    {
-                        LOG_APP_CRITICAL("easing animation fault, {0} {1}, light: {2}", speedXY[0], speedXY[1], light);
-                    }
                     auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
                     float speedFactor = timestep * 2.0f;
                     transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});

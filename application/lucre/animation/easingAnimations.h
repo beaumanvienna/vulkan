@@ -112,6 +112,10 @@ namespace LucreApp
         void Stop() { m_IsRunning = false; }
         void Run(float speedXY[dimensions])
         {
+            for (uint index = 0; index < dimensions; ++index)
+            {
+                speedXY[index] = 0.0f;
+            }
             if (!m_IsRunning)
             {
                 if (m_PrintNotRunning)

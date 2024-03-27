@@ -88,7 +88,6 @@ namespace GfxRenderEngine
                 {
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
-                    joint.m_GlobalGltfNodeIndex = globalGltfNodeIndex;
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
