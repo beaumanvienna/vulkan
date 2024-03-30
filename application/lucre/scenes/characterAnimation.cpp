@@ -22,7 +22,6 @@
 
 #include "characterAnimation.h"
 #include "scene/components.h"
-#include "auxiliary/debug.h"
 #include "platform/input.h"
 
 namespace LucreApp

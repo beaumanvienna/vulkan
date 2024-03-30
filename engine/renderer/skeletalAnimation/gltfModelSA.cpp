@@ -91,39 +91,8 @@ namespace GfxRenderEngine
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
-                    // set up node transform (either TRS or from directy from "matrix")
-                    // the fields are set to defaults in the constructor
-                    // in case they cannot be found in the gltf model
-                    auto& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
-
-                    if (gltfNode.translation.size() ==
-                        3) // std::vector<double> gltfmodel.node.translation; // size must be 0 or 3
-                    {
-                        joint.m_DeformedNodeTranslation = glm::make_vec3(gltfNode.translation.data());
-                    }
-
-                    if (gltfNode.rotation.size() == 4) // std::vector<double> gltfmodel.node.rotation; // size must be 0 or 4
-                    {
-                        glm::quat q = glm::make_quat(gltfNode.rotation.data());
-                        joint.m_DeformedNodeRotation = glm::mat4(q);
-                    }
-
-                    if (gltfNode.scale.size() == 3) // std::vector<double> gltfmodel.node.scale; // size must be 0 or 3
-                    {
-                        joint.m_DeformedNodeScale = glm::make_vec3(gltfNode.scale.data());
-                    }
-
-                    if (gltfNode.matrix.size() == 16) // std::vector<double> gltfmodel.node.matrix; // size must be 0 or 16
-                    {
-                        joint.m_UndefomedNodeMatrix = glm::make_mat4x4(gltfNode.matrix.data());
-                    }
-                    else
-                    {
-                        joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
-                    }
-
                     // set up map "global node" to "joint index"
-                    m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
+                    m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
                 }
 
                 int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
@@ -262,14 +231,16 @@ namespace GfxRenderEngine
         }
 
         if (m_Animations->Size())
+        {
             m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
+        }
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
     void GltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
-        int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
+        int currentJoint = m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint
 
         joint.m_ParentJoint = parentJoint;
@@ -282,7 +253,7 @@ namespace GfxRenderEngine
             for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 uint globalGltfNodeIndexForChild = m_GltfModel.nodes[globalGltfNodeIndex].children[childIndex];
-                joint.m_Children[childIndex] = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndexForChild];
+                joint.m_Children[childIndex] = m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndexForChild];
                 LoadJoint(globalGltfNodeIndexForChild, currentJoint);
             }
         }

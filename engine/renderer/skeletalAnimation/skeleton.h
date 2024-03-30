@@ -47,11 +47,6 @@ namespace GfxRenderEngine
         struct Joint
         {
             std::string m_Name;
-
-            // undeformed / initial
-            // transform for world coordinate system
-            glm::mat4 m_UndefomedNodeMatrix{1.0f}; // a.k.a undefomed bind matrix
-            // joint coordinate system
             glm::mat4 m_InverseBindMatrix; // a.k.a undeformed inverse node matrix
 
             // deformed / animated
@@ -68,8 +63,7 @@ namespace GfxRenderEngine
                 // dynamically called once per frame
                 return glm::translate(glm::mat4(1.0f), m_DeformedNodeTranslation) * // T
                        glm::mat4(m_DeformedNodeRotation) *                          // R
-                       glm::scale(glm::mat4(1.0f), m_DeformedNodeScale) *           // S
-                       m_UndefomedNodeMatrix;
+                       glm::scale(glm::mat4(1.0f), m_DeformedNodeScale);            // S
             }
 
             // parents and children for the tree hierachy
@@ -87,7 +81,7 @@ namespace GfxRenderEngine
             bool m_IsAnimated = true;
             std::string m_Name;
             std::vector<Joint> m_Joints;
-            std::map<int, int> m_GlobalGltfNodeToJointIndex;
+            std::map<int, int> m_GlobalNodeToJointIndex;
             ShaderData m_ShaderData;
         };
     } // namespace Armature

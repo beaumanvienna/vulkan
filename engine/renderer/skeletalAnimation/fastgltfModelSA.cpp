@@ -25,7 +25,6 @@
 #include "gtc/quaternion.hpp"
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
-
 #include "renderer/builder/fastgltfBuilder.h"
 
 namespace GfxRenderEngine
@@ -91,40 +90,12 @@ namespace GfxRenderEngine
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
                     joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
 
-                    // set up node transform (either TRS or from directy from "matrix")
-                    // the fields are set to defaults in the constructor
-                    // in case they cannot be found in the gltf model
-                    fastgltf::Node& gltfNode = m_GltfModel.nodes[globalGltfNodeIndex];
-                    std::visit(
-                        fastgltf::visitor{[&](auto& arg) // default branch if image data is not supported
-                                          { LOG_CORE_CRITICAL("not supported default branch (LoadTransformationMatrix) "); },
-                                          [&](fastgltf::TRS& TRS)
-                                          {
-                                              // scale
-                                              joint.m_DeformedNodeScale =
-                                                  glm::vec3(TRS.scale[0], TRS.scale[1], TRS.scale[2]);
-                                              // rotation
-                                              {
-                                                  // note the order w, x, y, z
-                                                  glm::quat q(TRS.rotation[3], TRS.rotation[0], TRS.rotation[1],
-                                                              TRS.rotation[2]);
-                                                  joint.m_DeformedNodeRotation = glm::mat4(q);
-                                              }
-                                              // translation
-                                              joint.m_DeformedNodeTranslation =
-                                                  glm::vec3(TRS.translation[0], TRS.translation[1], TRS.translation[2]);
-                                              // undeformed node matrix
-                                              joint.m_UndefomedNodeMatrix = glm::mat4(1.0f);
-                                          },
-                                          [&](fastgltf::Node::TransformMatrix& matrix)
-                                          { joint.m_UndefomedNodeMatrix = glm::make_mat4x4(matrix.data()); }},
-                        gltfNode.transform);
-
                     // set up map "global node" to "joint index"
-                    m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
+                    m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
                 }
 
-                int rootJoint = glTFSkin.joints[0]; // the here always works but the gltf field skins.skeleton can be ignored
+                int rootJoint = glTFSkin.joints[0]; // the code here always works
+                                                    // but the gltf field skins.skeleton can be ignored
 
                 LoadJoint(rootJoint, Armature::NO_PARENT);
             }
@@ -258,17 +229,62 @@ namespace GfxRenderEngine
                 }
             }
             m_Animations->Push(animation);
+            LOG_CORE_INFO("fastgltf:******************** numberOfChannels: {0} ********************",
+                          gltfAnimation.channels.size());
+            LOG_CORE_INFO("fastgltf:******************** numberOfSamplers: {0} ********************",
+                          gltfAnimation.samplers.size());
+            for (auto& channel : animation->m_Channels)
+            {
+                // struct Channel
+                //{
+                //     Path m_Path;
+                //     int m_SamplerIndex;
+                //     int m_Node;
+                // };
+                int samplerIndex = channel.m_SamplerIndex;
+                auto& sampler = animation->m_Samplers[samplerIndex];
+                // struct Sampler
+                //{
+                //     std::vector<float> m_Timestamps;
+                //     std::vector<glm::vec4> m_TRSoutputValuesToBeInterpolated;
+                //     InterpolationMethod m_Interpolation;
+                LOG_APP_INFO("sampler.m_Timestamps.size(): {0}", sampler.m_Timestamps.size());
+                LOG_APP_INFO("sampler.m_TRSoutputValuesToBeInterpolated.size(): {0}",
+                             sampler.m_TRSoutputValuesToBeInterpolated.size());
+                switch (sampler.m_Interpolation)
+                {
+                    case SkeletalAnimation::InterpolationMethod::LINEAR:
+                    {
+                        LOG_APP_INFO("LINEAR");
+                        break;
+                    }
+                    case SkeletalAnimation::InterpolationMethod::STEP:
+                    {
+                        LOG_APP_INFO("STEP");
+                        break;
+                    }
+                    case SkeletalAnimation::InterpolationMethod::CUBICSPLINE:
+                    {
+                        LOG_APP_INFO("CUBICSPLINE");
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
         }
 
         if (m_Animations->Size())
+        {
             m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
+        }
     }
 
     // recursive function via global gltf nodes (which have children)
     // tree structure links (local) skeleton joints
     void FastgltfBuilder::LoadJoint(int globalGltfNodeIndex, int parentJoint)
     {
-        int currentJoint = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndex];
+        int currentJoint = m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndex];
         auto& joint = m_Skeleton->m_Joints[currentJoint]; // a reference to the current joint
 
         joint.m_ParentJoint = parentJoint;
@@ -281,7 +297,7 @@ namespace GfxRenderEngine
             for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 uint globalGltfNodeIndexForChild = m_GltfModel.nodes[globalGltfNodeIndex].children[childIndex];
-                joint.m_Children[childIndex] = m_Skeleton->m_GlobalGltfNodeToJointIndex[globalGltfNodeIndexForChild];
+                joint.m_Children[childIndex] = m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndexForChild];
                 LoadJoint(globalGltfNodeIndexForChild, currentJoint);
             }
         }

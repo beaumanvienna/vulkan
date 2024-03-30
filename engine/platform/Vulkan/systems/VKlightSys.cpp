@@ -25,7 +25,6 @@
 
 #include "systems/VKlightSys.h"
 #include "auxiliary/instrumentation.h"
-#include "auxiliary/debug.h"
 
 #include "VKswapChain.h"
 #include "VKrenderPass.h"

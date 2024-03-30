@@ -56,7 +56,7 @@ namespace GfxRenderEngine
         for (auto& channel : m_Channels)
         {
             auto& sampler = m_Samplers[channel.m_SamplerIndex];
-            int jointIndex = skeleton.m_GlobalGltfNodeToJointIndex[channel.m_Node];
+            int jointIndex = skeleton.m_GlobalNodeToJointIndex[channel.m_Node];
             auto& joint = skeleton.m_Joints[jointIndex]; // the joint to be animated
 
             for (size_t i = 0; i < sampler.m_Timestamps.size() - 1; i++)

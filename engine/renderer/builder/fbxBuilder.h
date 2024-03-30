@@ -91,7 +91,6 @@ namespace GfxRenderEngine
         // skeletal animation
     private:
         void LoadSkeletonsFbx();
-        void LoadJoint(int globalFbxNodeIndex, int parentJoint);
         uint m_SkeletalAnimation;
 
     public:

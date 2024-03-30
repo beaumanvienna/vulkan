@@ -21,7 +21,6 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "renderer/skeletalAnimation/skeleton.h"
-#include "auxiliary/debug.h"
 
 namespace GfxRenderEngine
 {
