@@ -229,49 +229,6 @@ namespace GfxRenderEngine
                 }
             }
             m_Animations->Push(animation);
-            LOG_CORE_INFO("fastgltf:******************** numberOfChannels: {0} ********************",
-                          gltfAnimation.channels.size());
-            LOG_CORE_INFO("fastgltf:******************** numberOfSamplers: {0} ********************",
-                          gltfAnimation.samplers.size());
-            for (auto& channel : animation->m_Channels)
-            {
-                // struct Channel
-                //{
-                //     Path m_Path;
-                //     int m_SamplerIndex;
-                //     int m_Node;
-                // };
-                int samplerIndex = channel.m_SamplerIndex;
-                auto& sampler = animation->m_Samplers[samplerIndex];
-                // struct Sampler
-                //{
-                //     std::vector<float> m_Timestamps;
-                //     std::vector<glm::vec4> m_TRSoutputValuesToBeInterpolated;
-                //     InterpolationMethod m_Interpolation;
-                LOG_APP_INFO("sampler.m_Timestamps.size(): {0}", sampler.m_Timestamps.size());
-                LOG_APP_INFO("sampler.m_TRSoutputValuesToBeInterpolated.size(): {0}",
-                             sampler.m_TRSoutputValuesToBeInterpolated.size());
-                switch (sampler.m_Interpolation)
-                {
-                    case SkeletalAnimation::InterpolationMethod::LINEAR:
-                    {
-                        LOG_APP_INFO("LINEAR");
-                        break;
-                    }
-                    case SkeletalAnimation::InterpolationMethod::STEP:
-                    {
-                        LOG_APP_INFO("STEP");
-                        break;
-                    }
-                    case SkeletalAnimation::InterpolationMethod::CUBICSPLINE:
-                    {
-                        LOG_APP_INFO("CUBICSPLINE");
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
         }
 
         if (m_Animations->Size())
