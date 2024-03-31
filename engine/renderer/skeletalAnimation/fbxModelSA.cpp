@@ -105,7 +105,7 @@ namespace GfxRenderEngine
                 // does the node name correspond to a bone name?
                 std::string nodeName = node->mName.C_Str();
                 bool isBone = nameToBoneIndex.contains(nodeName);
-                LOG_APP_INFO("nodeName: {0}, isBone: {1}", nodeName, isBone);
+
                 int parentForChildren = parent;
                 if (isBone)
                 {
@@ -144,8 +144,27 @@ namespace GfxRenderEngine
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {
             aiAnimation& fbxAnimation = *m_FbxScene->mAnimations[animationIndex];
-            std::string name(fbxAnimation.mName.C_Str());
-            std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(name);
+
+            std::string animationName(fbxAnimation.mName.C_Str());
+            // the asset importer includes animations twice,
+            // as "armature|name" and "name"
+            if (animationName.find("|") != std::string::npos)
+            {
+                continue;
+            }
+            std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(animationName);
+
+            // animation speed
+            double ticksPerSecond = 0.0;
+            if (fbxAnimation.mTicksPerSecond > std::numeric_limits<float>::epsilon())
+            {
+                ticksPerSecond = fbxAnimation.mTicksPerSecond;
+            }
+            else
+            {
+                LOG_CORE_ERROR("no speed information found in fbx file");
+                ticksPerSecond = 30.0;
+            }
 
             {
                 uint channelAndSamplerIndex = 0;
@@ -215,7 +234,7 @@ namespace GfxRenderEngine
                                     aiVector3D& value = fbxChannel.mPositionKeys[key].mValue;
                                     sampler.m_TRSoutputValuesToBeInterpolated[key] =
                                         glm::vec4(vec3AssetImporterToGlm(value), 0.0f);
-                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime;
+                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
                                 }
 
                                 animation->m_Samplers.push_back(sampler);
@@ -231,7 +250,7 @@ namespace GfxRenderEngine
                                 {
                                     aiQuaternion& value = fbxChannel.mRotationKeys[key].mValue;
                                     sampler.m_TRSoutputValuesToBeInterpolated[key] = quaternionAssetImporterToGlmVec4(value);
-                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime;
+                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
                                 }
 
                                 animation->m_Samplers.push_back(sampler);
@@ -248,7 +267,7 @@ namespace GfxRenderEngine
                                     aiVector3D& value = fbxChannel.mScalingKeys[key].mValue;
                                     sampler.m_TRSoutputValuesToBeInterpolated[key] =
                                         glm::vec4(vec3AssetImporterToGlm(value), 0.0f);
-                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime;
+                                    sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
                                 }
 
                                 animation->m_Samplers.push_back(sampler);
@@ -268,6 +287,7 @@ namespace GfxRenderEngine
                     animation->SetLastKeyFrameTime(sampler.m_Timestamps.back());
                 }
             }
+
             m_Animations->Push(animation);
         }
 

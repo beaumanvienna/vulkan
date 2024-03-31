@@ -571,55 +571,57 @@ namespace GfxRenderEngine
         submesh.m_IndexCount = numIndices;
         submesh.m_InstanceCount = m_InstanceCount;
 
-        bool hasPosition = mesh->HasPositions();
-        bool hasNormals = mesh->HasNormals();
-        bool hasTangents = mesh->HasTangentsAndBitangents();
-        bool hasUVs = mesh->HasTextureCoords(uvSet);
-        bool hasColors = mesh->HasVertexColors(vertexColorSet);
+        { // vertices
+            bool hasPosition = mesh->HasPositions();
+            bool hasNormals = mesh->HasNormals();
+            bool hasTangents = mesh->HasTangentsAndBitangents();
+            bool hasUVs = mesh->HasTextureCoords(uvSet);
+            bool hasColors = mesh->HasVertexColors(vertexColorSet);
 
-        m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
+            m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
 
-        uint vertexIndex = numVerticesBefore;
-        for (uint fbxVertexIndex = 0; fbxVertexIndex < numVertices; ++fbxVertexIndex)
-        {
-            Vertex& vertex = m_Vertices[vertexIndex];
-            vertex.m_Amplification = 1.0f;
-
-            if (hasPosition)
-            { // position (guaranteed to always be there)
-                aiVector3D& positionFbx = mesh->mVertices[fbxVertexIndex];
-                vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
-            }
-
-            if (hasNormals) // normals
+            uint vertexIndex = numVerticesBefore;
+            for (uint fbxVertexIndex = 0; fbxVertexIndex < numVertices; ++fbxVertexIndex)
             {
-                aiVector3D& normalFbx = mesh->mNormals[fbxVertexIndex];
-                vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
-            }
+                Vertex& vertex = m_Vertices[vertexIndex];
+                vertex.m_Amplification = 1.0f;
 
-            if (hasTangents) // tangents
-            {
-                aiVector3D& tangentFbx = mesh->mTangents[fbxVertexIndex];
-                vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
-            }
+                if (hasPosition)
+                { // position (guaranteed to always be there)
+                    aiVector3D& positionFbx = mesh->mVertices[fbxVertexIndex];
+                    vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
+                }
 
-            if (hasUVs) // uv coordinates
-            {
-                aiVector3D& uvFbx = mesh->mTextureCoords[uvSet][fbxVertexIndex];
-                vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
-            }
+                if (hasNormals) // normals
+                {
+                    aiVector3D& normalFbx = mesh->mNormals[fbxVertexIndex];
+                    vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
+                }
 
-            if (hasColors) // vertex colors
-            {
-                aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
-                vertex.m_Color = glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b);
+                if (hasTangents) // tangents
+                {
+                    aiVector3D& tangentFbx = mesh->mTangents[fbxVertexIndex];
+                    vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
+                }
+
+                if (hasUVs) // uv coordinates
+                {
+                    aiVector3D& uvFbx = mesh->mTextureCoords[uvSet][fbxVertexIndex];
+                    vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
+                }
+
+                if (hasColors) // vertex colors
+                {
+                    aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
+                    vertex.m_Color = glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b);
+                }
+                else
+                {
+                    uint materialIndex = mesh->mMaterialIndex;
+                    vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
+                }
+                ++vertexIndex;
             }
-            else
-            {
-                uint materialIndex = mesh->mMaterialIndex;
-                vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
-            }
-            ++vertexIndex;
         }
 
         // Indices
@@ -632,6 +634,61 @@ namespace GfxRenderEngine
                 m_Indices[index + 1] = face.mIndices[1];
                 m_Indices[index + 2] = face.mIndices[2];
                 index += 3;
+            }
+        }
+
+        // bone indices and bone weights
+        {
+            uint numberOfBones = mesh->mNumBones;
+            std::vector<uint> numberOfBonesBoundtoVertex;
+            numberOfBonesBoundtoVertex.resize(m_Vertices.size(), 0);
+            for (uint boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
+            {
+                aiBone& bone = *mesh->mBones[boneIndex];
+                uint numberOfWeights = bone.mNumWeights;
+
+                // loop over vertices that are bound to that bone
+                for (uint weightIndex = 0; weightIndex < numberOfWeights; ++weightIndex)
+                {
+                    uint vertexId = bone.mWeights[weightIndex].mVertexId;
+                    CORE_ASSERT(vertexId < m_Vertices.size(), "memory violation");
+                    float weight = bone.mWeights[weightIndex].mWeight;
+                    switch (numberOfBonesBoundtoVertex[vertexId])
+                    {
+                        case 0:
+                            m_Vertices[vertexId].m_JointIds.x = boneIndex;
+                            m_Vertices[vertexId].m_Weights.x = weight;
+                            break;
+                        case 1:
+                            m_Vertices[vertexId].m_JointIds.y = boneIndex;
+                            m_Vertices[vertexId].m_Weights.y = weight;
+                            break;
+                        case 2:
+                            m_Vertices[vertexId].m_JointIds.z = boneIndex;
+                            m_Vertices[vertexId].m_Weights.z = weight;
+                            break;
+                        case 3:
+                            m_Vertices[vertexId].m_JointIds.w = boneIndex;
+                            m_Vertices[vertexId].m_Weights.w = weight;
+                            break;
+                        default:
+                            break;
+                    }
+                    // track how many times this bone was hit
+                    // (up to four bones can be bound to a vertex)
+                    ++numberOfBonesBoundtoVertex[vertexId];
+                }
+            }
+            // normalize weights
+            for (uint vertexIndex = 0; vertexIndex < m_Vertices.size(); ++vertexIndex)
+            {
+                glm::vec4& boneWeights = m_Vertices[vertexIndex].m_Weights;
+                float weightSum = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
+                if (weightSum > std::numeric_limits<float>::epsilon())
+                {
+                    m_Vertices[vertexIndex].m_Weights = glm::vec4(boneWeights.x / weightSum, boneWeights.y / weightSum,
+                                                                  boneWeights.z / weightSum, boneWeights.w / weightSum);
+                }
             }
         }
     }
@@ -761,6 +818,31 @@ namespace GfxRenderEngine
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
+            }
+
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
+        }
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP |
+                                 Material::HAS_SKELETAL_ANIMATION))
+        {
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
+            uint roughnessMapIndex = material.m_RoughnessMapIndex;
+
+            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+            CORE_ASSERT(normalMapIndex < m_Images.size(), "FbxBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
+                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
+                                                               m_Images[roughnessMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessSAMapInstanced, textures, buffers);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessSAMap;
             }
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}", materialIndex,

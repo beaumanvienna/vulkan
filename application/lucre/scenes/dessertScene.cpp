@@ -168,31 +168,51 @@ namespace LucreApp
             }
         }
 
-        m_NonPlayableCharacter2 =
+        m_NonPlayableCharacters[NPC::Character2] =
             m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::0::Scene::Kaya Body_Mesh");
-        if (m_NonPlayableCharacter2 != entt::null)
+        if (m_NonPlayableCharacters[NPC::Character2] != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character2]);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
             animations.Start();
         }
 
-        m_NonPlayableCharacter3 =
+        m_NonPlayableCharacters[NPC::Character3] =
             m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::1::Scene::Kaya Body_Mesh");
-        if (m_NonPlayableCharacter3 != entt::null)
+        if (m_NonPlayableCharacters[NPC::Character3] != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character3]);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
             animations.Start();
         }
 
-        m_NonPlayableCharacter1 =
+        m_NonPlayableCharacters[NPC::Character1] =
             m_Dictionary.Retrieve("application/lucre/models/dancing/gltf/Dancing Michelle.glb::0::Scene::Michelle");
-        if (m_NonPlayableCharacter1 != entt::null)
+        if (m_NonPlayableCharacters[NPC::Character1] != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter1);
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character1]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
+
+        m_NonPlayableCharacters[NPC::Character4] =
+            m_Dictionary.Retrieve("application/lucre/models/dancing/fbx/Dancing Michelle.fbx::0::Michelle");
+        if (m_NonPlayableCharacters[NPC::Character4] != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character4]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start(1 /*rumba dance*/);
+        }
+
+        m_NonPlayableCharacters[NPC::Character5] =
+            m_Dictionary.Retrieve("/home/beaumanvienna/dev/skeletalAnimation/man/model.dae::0::Cube");
+        if (m_NonPlayableCharacters[NPC::Character5] != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character5]);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
             animations.Start();
@@ -275,7 +295,7 @@ namespace LucreApp
                     m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb0 not found");
+                    LOG_APP_INFO("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
@@ -295,7 +315,7 @@ namespace LucreApp
                     m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb1 not found");
+                    LOG_APP_INFO("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
 

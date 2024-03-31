@@ -108,9 +108,23 @@ namespace LucreApp
         std::shared_ptr<GamepadInputController> m_GamepadInputController;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
+        enum NPC // non-playable characters
+        {
+            Character1 = 0,
+            Character2,
+            Character3,
+            Character4,
+            Character5,
+            Character6,
+            Character7,
+            Character8,
+            Character9,
+            Character10,
+            MaxNPC
+        };
         // game objects
         entt::entity m_Skybox;
-        entt::entity m_NonPlayableCharacter1, m_NonPlayableCharacter2, m_NonPlayableCharacter3;
+        entt::entity m_NonPlayableCharacters[NPC::MaxNPC];
         entt::entity m_Lightbulb0, m_Lightbulb1, m_Guybrush, m_Water;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_Camera[CameraTypes::MaxCameraTypes];

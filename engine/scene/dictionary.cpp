@@ -56,7 +56,7 @@ namespace GfxRenderEngine
 
     void Dictionary::List() const
     {
-        LOG_CORE_WARN("listing dictionary:");
+        LOG_CORE_INFO("listing dictionary:");
         for (auto& it: m_DictStr2GameObject)
         {
             LOG_CORE_INFO("key: `{0}`, value: `{1}`", it.first, it.second);

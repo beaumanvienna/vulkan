@@ -245,7 +245,7 @@ namespace LucreApp
                     m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb0 not found");
+                    LOG_APP_INFO("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
@@ -271,7 +271,7 @@ namespace LucreApp
                     m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb1 not found");
+                    LOG_APP_INFO("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
 
