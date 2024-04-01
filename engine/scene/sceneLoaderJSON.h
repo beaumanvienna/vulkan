@@ -57,6 +57,7 @@ namespace GfxRenderEngine
             Gltf::GltfFiles m_GltfFiles;
             Gltf::GltfFiles m_FastgltfFiles;
             Fbx::FbxFiles m_FbxFiles;
+            Fbx::FbxFiles m_UFbxFiles;
             Obj::ObjFiles m_ObjFiles;
         };
 
@@ -64,7 +65,7 @@ namespace GfxRenderEngine
         void Deserialize(std::string& filepath);
 
         void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene);
-        void ParseFbxFile(ondemand::object fbxFileJSON);
+        void ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx);
         void ParseObjFile(ondemand::object objFileJSON);
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
         void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,

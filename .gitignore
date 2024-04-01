@@ -4,6 +4,7 @@ application/lucre/models/funkyKong
 application/lucre/models/dancing
 application/lucre/models/guybrush_animated_gltf
 application/lucre/models/Kaya
+application/lucre/models/sonic
 vendor/VulkanSDK
 *.spv
 bin
@@ -61,3 +62,4 @@ resources/nsis/marleyInstaller.exe
 renderdoc.cap
 /*.scene
 /*.json
+dessert._*

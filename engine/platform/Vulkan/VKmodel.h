@@ -31,6 +31,7 @@
 #include "renderer/builder/builder.h"
 #include "renderer/builder/gltfBuilder.h"
 #include "renderer/builder/fastgltfBuilder.h"
+#include "renderer/builder/ufbxBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
 #include "scene/material.h"
 #include "scene/scene.h"
@@ -67,6 +68,7 @@ namespace GfxRenderEngine
         VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder);
         VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder);
         VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder);
+        VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder);
         virtual ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;

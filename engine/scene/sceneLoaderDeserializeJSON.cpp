@@ -127,7 +127,22 @@ namespace GfxRenderEngine
 
                 for (auto fbxFileJSON : fbxFiles)
                 {
-                    ParseFbxFile(fbxFileJSON);
+                    ParseFbxFile(fbxFileJSON, false /*asset importer*/);
+                }
+            }
+            else if (sceneObjectKey == "ufbx files")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
+                ondemand::array fbxFiles = sceneObject.value().get_array();
+                {
+                    int fbxFileCount = fbxFiles.count_elements();
+                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file")
+                                      : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                }
+
+                for (auto fbxFileJSON : fbxFiles)
+                {
+                    ParseFbxFile(fbxFileJSON, true /*ufbx*/);
                 }
             }
             else
@@ -250,7 +265,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::ParseFbxFile(ondemand::object fbxFileJSON)
+    void SceneLoaderJSON::ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx)
     {
         std::string fbxFilename;
 
@@ -280,9 +295,16 @@ namespace GfxRenderEngine
                 // get array of fbx file instances
                 ondemand::array instances = fbxFileObject.value();
                 int instanceCount = instances.count_elements();
-
-                FbxBuilder builder(fbxFilename, m_Scene);
-                loadSuccessful = builder.LoadFbx(instanceCount);
+                if (ufbx)
+                {
+                    UFbxBuilder builder(fbxFilename, m_Scene);
+                    loadSuccessful = builder.LoadFbx(instanceCount);
+                }
+                else
+                {
+                    FbxBuilder builder(fbxFilename, m_Scene);
+                    loadSuccessful = builder.LoadFbx(instanceCount);
+                }
                 if (loadSuccessful)
                 {
                     Fbx::FbxFile fbxFile(fbxFilename);

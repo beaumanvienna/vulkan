@@ -1,27 +1,23 @@
 
 -- Team Engine 2024
 
-project "fastgltf"
+project "ufbx"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
 
-    targetdir "fastgltf/bin/%{cfg.buildcfg}"
-    objdir ("fastgltf/bin-int/%{cfg.buildcfg}")
+    targetdir "ufbx/bin/%{cfg.buildcfg}"
+    objdir ("ufbx/bin-int/%{cfg.buildcfg}")
 
     files
     {
-        "fastgltf/src/**.cpp",
-        "fastgltf/include/**.h"
+        "ufbx/**.c",
+        "ufbx/**.h"
     }
 
     includedirs
     {
-        "glm",
-        "spdlog/include/",
-        "fastgltf/include",
-        "simdjson",
-        "../engine",
+        "ufbx"
     }
 
     filter "system:linux"

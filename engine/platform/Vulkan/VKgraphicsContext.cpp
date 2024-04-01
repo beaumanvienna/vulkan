@@ -106,5 +106,12 @@ namespace GfxRenderEngine
         return model;
     }
 
+    std::shared_ptr<Model> VK_Context::LoadModel(const UFbxBuilder& builder)
+    {
+        ASSERT(VK_Core::m_Device != nullptr);
+        auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
+        return model;
+    }
+
     bool VK_Context::MultiThreadingSupport() const { return VK_Core::m_Device->MultiThreadingSupport(); }
 } // namespace GfxRenderEngine

@@ -176,6 +176,7 @@ project "engine"
     include "vendor/glfw.lua"
     include "vendor/yaml.lua"
     include "vendor/fastgltf.lua"
+    include "vendor/ufbx.lua"
     include "vendor/atlas"
     include "vendor/shaderc.lua"
     if ((os.host() ~= "macosx")) then

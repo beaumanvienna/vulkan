@@ -63,6 +63,7 @@ project "lucre"
         "engine",
         "yaml-cpp",
         "fastgltf",
+        "ufbx",
         "box2d",
         "shaderc",
         "shaderc_util",

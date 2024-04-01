@@ -51,19 +51,19 @@ namespace GfxRenderEngine
 
         if (m_FbxScene == nullptr)
         {
-            LOG_CORE_CRITICAL("LoadFbx error: {0}", m_Filepath);
+            LOG_CORE_CRITICAL("FbxBuilder::LoadFbx error: {0}", m_Filepath);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (!m_FbxScene->mNumMeshes)
         {
-            LOG_CORE_CRITICAL("LoadFbx: no meshes found in {0}", m_Filepath);
+            LOG_CORE_CRITICAL("FbxBuilder::LoadFbx: no meshes found in {0}", m_Filepath);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (sceneID > Fbx::FBX_NOT_USED) // a scene ID was provided
         {
-            LOG_CORE_WARN("LoadFbx: scene ID for fbx not supported (in file {0})", m_Filepath);
+            LOG_CORE_WARN("FbxBuilder::LoadFbx: scene ID for fbx not supported (in file {0})", m_Filepath);
         }
 
         LoadSkeletonsFbx();
