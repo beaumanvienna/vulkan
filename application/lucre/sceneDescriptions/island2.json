@@ -5,6 +5,604 @@
     "fastgltf files":
     [
         {
+            "filename": "application/lucre/models/sonic/spring.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, -3.14159
+                        ],
+                        "translation":
+                        [
+                            39.8721, 2.44696, -1.96717
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/ring.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, -3.14159
+                        ],
+                        "translation":
+                        [
+                            39.8703, 4.60422, 3.22114
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, -3.14159
+                        ],
+                        "translation":
+                        [
+                            39.8704, 4.604, 2.87474
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, -3.14159
+                        ],
+                        "translation":
+                        [
+                            39.8704, 4.75026, 3.04388
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/goalpost.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -1.5708, 0
+                        ],
+                        "translation":
+                        [
+                            39.8737, 2.60561, -6.6231
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/robotnic.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            50.303, 1.34102, -5.48323
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/wasp.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            50.2998, 3.34358, 3.71556
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/gnd1.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40, 3.55196, 7.42623
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.0001, 3.56335, 1.68477
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/gnd3.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            39.9993, 2.41437, 9.39646
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.57045, -7.62939e-07
+                        ],
+                        "translation":
+                        [
+                            39.9958, 2.43326, -0.298032
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/gnd4.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.0623, 4.069, 5.86401
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.9342, 4.069, 4.86296
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.062, 4.069, 3.87342
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.934, 4.069, 2.88169
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.0606, 2.08961, 10.822
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 1.52588e-06
+                        ],
+                        "translation":
+                        [
+                            39.9312, 2.072, -3.87218
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.0661, 2.08961, -4.87125
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.57045, -7.6261e-07
+                        ],
+                        "translation":
+                        [
+                            40.035, 2.07201, -1.74244
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.57045, -7.62939e-07
+                        ],
+                        "translation":
+                        [
+                            40.0367, 2.07201, -6.57827
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/sonic/block.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.1303, 2.89044, 5.90779
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8806, 2.89, 4.91119
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.1353, 2.89, 3.90693
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8662, 2.89, 2.90427
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.1303, 1.89024, 5.90779
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8806, 1.89, 4.91119
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.1353, 1.89, 3.90693
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8662, 1.89, 2.90427
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.1296, 1.89024, 7.8944
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8813, 1.89, 6.90459
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            40.136, 1.89907, 1.90365
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.57045, 3.79329e-07
+                        ],
+                        "translation":
+                        [
+                            39.8655, 1.90149, 0.904003
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/models/dancing/gltf/Dancing Michelle.glb",
             "instances":
             [
@@ -62,6 +660,75 @@
                         "translation":
                         [
                             4.82848, 2.135, 4.65983
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/funkyKong/donkey-kong/donkey_kong.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.262398, 0.2624, 0.262398
+                        ],
+                        "rotation":
+                        [
+                            1.90735e-07, -1.57045, 1.90735e-07
+                        ],
+                        "translation":
+                        [
+                            40.0999, 4.37033, 4.0351
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/funkyKong/gltf/funkyKong.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.32226, 0.32226, 0.32226
+                        ],
+                        "rotation":
+                        [
+                            0, -1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            39.9052, 4.33415, 5.27396
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/funkyKong/sports car/sports car.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140524, 0.140524, 0.140525
+                        ],
+                        "rotation":
+                        [
+                            0.0698759, 0.745057, 2.17927e-07
+                        ],
+                        "translation":
+                        [
+                            -3.51248, 1.86894, 3.96417
                         ]
                     }
                 }
