@@ -47,21 +47,22 @@ namespace GfxRenderEngine
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        // void LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
-        // void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex,
-        //                        int vertexColorSet = 0, uint uvSet = 0);
+        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr);
+        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const meshIndex);
 
-        void LoadMaterialsFbx();
-        bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
-        /// void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
-        // bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
+        void LoadMaterials();
+        void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,
+                          Material& engineMaterial);
+        void LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB);
+
         void AssignMaterial(ModelSubmesh& submesh, uint const materialIndex);
-        // glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
-        void PrintMaps(const ufbx_material* fbxMaterial);
+        void LoadTransformationMatrix(const ufbx_node* fbxNodePtr, glm::vec3& scale, glm::quat& rotation,
+                                      glm::vec3& translation);
+        void PrintProperties(const ufbx_material* fbxMaterial);
 
-        // bool MarkNode(const aiNode* fbxNodePtr);
-        // void ProcessNode(const aiNode* fbxNodePtr, uint const parentNode, uint& hasMeshIndex);
-        // uint CreateGameObject(const aiNode* fbxNodePtr, uint const parentNode);
+        bool MarkNode(const ufbx_node* fbxNodePtr);
+        void ProcessNode(const ufbx_node* fbxNodePtr, uint const parentNode, uint& hasMeshIndex);
+        uint CreateGameObject(const ufbx_node* fbxNodePtr, uint const parentNode);
 
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
         void CalculateTangents();

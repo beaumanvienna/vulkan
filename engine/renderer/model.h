@@ -82,19 +82,22 @@ namespace GfxRenderEngine
             HAS_EMISSIVE_MAP = 0x1 << 0x5,
             HAS_SKELETAL_ANIMATION = 0x1 << 0x6
         };
-        glm::vec3 m_DiffuseColor;
-        glm::vec3 m_EmissiveFactor;
+        // constant material properties
+        glm::vec3 m_DiffuseColor{0.5f, 0.5f, 1.0f};
+        glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
+        float m_NormalMapIntensity{1.0f};
+        float m_Roughness{0.1};
+        float m_Metallic{0.5};
+        float m_EmissiveStrength{0.0f};
+        // map indices
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
         uint m_RoughnessMapIndex;
         uint m_MetallicMapIndex;
         uint m_RoughnessMetallicMapIndex;
         uint m_EmissiveMapIndex;
+        // feature bits
         uint m_Features;
-        float m_NormalMapIntensity;
-        float m_Roughness;
-        float m_Metallic;
-        float m_EmissiveStrength;
     };
 
     struct MaterialProperties

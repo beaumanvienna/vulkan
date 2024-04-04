@@ -42,7 +42,7 @@ namespace GfxRenderEngine
     {
         float m_Roughness;
         float m_Metallic;
-        glm::vec3 m_EmissiveFactor;
+        glm::vec3 m_EmissiveColor;
         float m_EmissiveStrength;
     };
 

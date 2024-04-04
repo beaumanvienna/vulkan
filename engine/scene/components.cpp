@@ -50,6 +50,11 @@ namespace GfxRenderEngine
     {
     }
 
+    TransformComponent::TransformComponent(glm::vec3& scale, glm::quat& rotation, glm::vec3& translation)
+        : m_Scale(scale), m_Rotation(glm::eulerAngles(rotation)), m_Translation(translation), m_Dirty(true)
+    {
+    }
+
     TransformComponent::TransformComponent(const glm::mat4& mat4) { SetMat4Local(mat4); }
 
     void TransformComponent::SetMat4Local(const glm::mat4& mat4)

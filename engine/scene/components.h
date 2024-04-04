@@ -48,6 +48,7 @@ namespace GfxRenderEngine
     public:
         TransformComponent();
         TransformComponent(const glm::mat4& mat4);
+        TransformComponent(glm::vec3& scale, glm::quat& rotation, glm::vec3& translation);
 
         void SetScale(const glm::vec3& scale);
         void SetScale(const float scale);

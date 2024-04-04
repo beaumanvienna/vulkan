@@ -532,7 +532,7 @@ namespace GfxRenderEngine
                 glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
                 if (emissiveFactor != glm::vec3(0, 0, 0))
                 {
-                    material.m_EmissiveFactor = emissiveFactor;
+                    material.m_EmissiveColor = emissiveFactor;
                     material.m_EmissiveStrength = emissiveFactor.r;
                 }
             }

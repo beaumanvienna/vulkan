@@ -616,7 +616,7 @@ namespace GfxRenderEngine
             {
                 // emissive factor
                 glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
-                material.m_EmissiveFactor = emissiveFactor;
+                material.m_EmissiveColor = emissiveFactor;
 
                 // emissive strength
                 // set the emissive strength only if an emissive texture was provided or an emissive vertex color via
@@ -628,7 +628,7 @@ namespace GfxRenderEngine
                 if (emissiveMaterial)
                 {
                     // simplified (only using 1st component of emissive factor, instead of all three)
-                    material.m_EmissiveStrength = glTFMaterial.emissiveStrength * material.m_EmissiveFactor.r;
+                    material.m_EmissiveStrength = glTFMaterial.emissiveStrength * material.m_EmissiveColor.r;
                 }
                 else
                 {
