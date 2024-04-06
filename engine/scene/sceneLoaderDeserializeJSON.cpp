@@ -90,8 +90,8 @@ namespace GfxRenderEngine
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
-                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file")
-                                       : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
+                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file (tinygltf)")
+                                       : LOG_CORE_INFO("loading {0} gltf files (tinygltf)", gltfFileCount);
                 }
 
                 for (auto gltfFileJSON : gltfFiles)
@@ -121,8 +121,8 @@ namespace GfxRenderEngine
                 ondemand::array fbxFiles = sceneObject.value().get_array();
                 {
                     int fbxFileCount = fbxFiles.count_elements();
-                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file")
-                                      : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file (asset importer)")
+                                      : LOG_CORE_INFO("loading {0} fbx files (asset importer)", fbxFileCount);
                 }
 
                 for (auto fbxFileJSON : fbxFiles)
@@ -136,8 +136,8 @@ namespace GfxRenderEngine
                 ondemand::array fbxFiles = sceneObject.value().get_array();
                 {
                     int fbxFileCount = fbxFiles.count_elements();
-                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file")
-                                      : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file (ufbx)")
+                                      : LOG_CORE_INFO("loading {0} fbx files (ufbx)", fbxFileCount);
                 }
 
                 for (auto fbxFileJSON : fbxFiles)

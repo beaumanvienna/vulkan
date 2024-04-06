@@ -479,13 +479,14 @@ namespace GfxRenderEngine
         m_MaterialFeatures = 0;
         m_FbxNoBuiltInTangents = false;
 
-        uint numMeshes = fbxNodePtr->mesh->material_parts.count;
-        if (numMeshes)
+        ufbx_mesh& fbxMesh = *fbxNodePtr->mesh; // mesh for this node, contains submeshes
+        uint numSubmeshes = fbxMesh.material_parts.count;
+        if (numSubmeshes)
         {
-            m_Submeshes.resize(numMeshes);
-            for (uint meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
+            m_Submeshes.resize(numSubmeshes);
+            for (uint submeshIndex = 0; submeshIndex < numSubmeshes; ++submeshIndex)
             {
-                LoadVertexDataFbx(fbxNodePtr, meshIndex);
+                LoadVertexDataFbx(fbxNodePtr, submeshIndex);
             }
             if (m_FbxNoBuiltInTangents) // at least one mesh did not have tangents
             {
@@ -495,10 +496,11 @@ namespace GfxRenderEngine
         }
     }
 
-    void UFbxBuilder::LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const meshIndex)
+    void UFbxBuilder::LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const submeshIndex)
     {
-        const ufbx_mesh_part& fbxSubmesh = fbxNodePtr->mesh->material_parts[meshIndex];
-        auto& fbxMesh = m_FbxScene->meshes[fbxSubmesh.index];
+        ufbx_mesh& fbxMesh = *fbxNodePtr->mesh; // mesh for this node, contains submeshes
+        const ufbx_mesh_part& fbxSubmesh = fbxNodePtr->mesh->material_parts[submeshIndex];
+        size_t numFaces = fbxSubmesh.num_faces;
 
         if (!(fbxSubmesh.num_triangles))
         {
@@ -506,80 +508,87 @@ namespace GfxRenderEngine
             return;
         }
 
-        const uint numVertices = fbxMesh->num_vertices;
-        const uint numIndices = fbxMesh->num_indices;
-
         size_t numVerticesBefore = m_Vertices.size();
         size_t numIndicesBefore = m_Indices.size();
-        m_Vertices.resize(numVerticesBefore + numVertices);
-        m_Indices.resize(numIndicesBefore + numIndices);
 
-        ModelSubmesh& submesh = m_Submeshes[0];
+        ModelSubmesh& submesh = m_Submeshes[submeshIndex];
         submesh.m_FirstVertex = numVerticesBefore;
         submesh.m_FirstIndex = numIndicesBefore;
-        submesh.m_VertexCount = numVertices;
-        submesh.m_IndexCount = numIndices;
+        // submesh.m_VertexCount = 0;
+        submesh.m_IndexCount = 0;
         submesh.m_InstanceCount = m_InstanceCount;
 
+        ufbx_vec3& fbxBaseColor = fbxNodePtr->materials[submeshIndex]->pbr.base_color.value_vec3;
+        glm::vec3 diffuseColor(fbxBaseColor.x, fbxBaseColor.y, fbxBaseColor.z);
+
         { // vertices
-            bool hasPosition = fbxMesh->vertex_position.exists;
-            bool hasNormals = fbxMesh->vertex_normal.exists;
-            bool hasTangents = fbxMesh->vertex_tangent.exists;
-            bool hasUVs = fbxMesh->uv_sets.count;
-            bool hasVertexColors = fbxMesh->vertex_color.exists;
+            bool hasPosition = fbxMesh.vertex_position.exists;
+            bool hasNormals = fbxMesh.vertex_normal.exists;
+            bool hasTangents = fbxMesh.vertex_tangent.exists;
+            bool hasUVs = fbxMesh.uv_sets.count;
+            bool hasVertexColors = fbxMesh.vertex_color.exists;
 
             m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
-
-            uint vertexIndex = numVerticesBefore;
-
-            for (uint fbxVertexIndex = 0; fbxVertexIndex < numVertices; ++fbxVertexIndex)
+            for (size_t fbxFaceIndex = 0; fbxFaceIndex < numFaces; ++fbxFaceIndex)
             {
-                Vertex& vertex = m_Vertices[vertexIndex];
-                vertex.m_Amplification = 1.0f;
-
-                if (hasPosition) // position
+                ufbx_face& fbxFace = fbxMesh.faces[fbxSubmesh.face_indices.data[fbxFaceIndex]];
+                size_t numTriangleIndices = fbxMesh.max_face_triangles * 3;
+                std::vector<uint> triangleIndicesBuffer(numTriangleIndices);
+                size_t numTriangles =
+                    ufbx_triangulate_face(triangleIndicesBuffer.data(), numTriangleIndices, &fbxMesh, fbxFace);
+                size_t numVerticesPerFace = 3 * numTriangles;
+                for (uint vertexPerFace = 0; vertexPerFace < numVerticesPerFace; ++vertexPerFace)
                 {
-                    ufbx_vec3& positionFbx = fbxMesh->vertices[fbxVertexIndex];
-                    vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
-                }
+                    uint triangleIndex = triangleIndicesBuffer[vertexPerFace];
+                    uint fbxVertexIndex = fbxMesh.vertex_indices[triangleIndex];
+                    Vertex vertex{};
+                    vertex.m_Amplification = 1.0f;
+                    vertex.m_Color = diffuseColor;
 
-                if (hasNormals) // normals
-                {
-                    ufbx_vec3& normalFbx = fbxMesh->vertex_normal[fbxVertexIndex];
-                    vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
-                }
+                    if (hasPosition) // position
+                    {
+                        ufbx_vec3& positionFbx = fbxMesh.vertices[fbxVertexIndex];
+                        vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
+                    }
 
-                if (hasTangents) // tangents
-                {
-                    ufbx_vec3& tangentFbx = fbxMesh->vertex_tangent[fbxVertexIndex];
-                    vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
-                }
+                    if (hasNormals) // normals
+                    {
+                        ufbx_vec3& normalFbx = fbxMesh.vertex_normal[fbxVertexIndex];
+                        vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
+                    }
 
-                if (hasUVs) // uv coordinates
-                {
-                    ufbx_vec2& uvFbx = fbxMesh->vertex_uv[fbxVertexIndex];
-                    vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
-                }
+                    if (hasTangents) // tangents
+                    {
+                        ufbx_vec3& tangentFbx = fbxMesh.vertex_tangent[fbxVertexIndex];
+                        vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
+                    }
 
-                if (hasVertexColors) // vertex colors
-                {
-                    ufbx_vec4& colorFbx = fbxMesh->vertex_color[fbxVertexIndex];
-                    vertex.m_Color = glm::vec3(colorFbx.x, colorFbx.y, colorFbx.z);
-                }
+                    if (hasUVs) // uv coordinates
+                    {
+                        ufbx_vec2& uvFbx = fbxMesh.vertex_uv[fbxVertexIndex];
+                        vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
+                    }
 
-                ++vertexIndex;
+                    if (hasVertexColors) // vertex colors
+                    {
+                        ufbx_vec4& colorFbx = fbxMesh.vertex_color[fbxVertexIndex];
+                        vertex.m_Color = glm::vec3(colorFbx.x, colorFbx.y, colorFbx.z);
+                    }
+                    m_Vertices.push_back(vertex);
+                }
             }
         }
+        submesh.m_VertexCount = m_Vertices.size() - numVerticesBefore;
 
         // Indices
-        {
-            uint globalIndex = numIndicesBefore;
-            for (uint it = 0; it < numIndices; ++it)
-            {
-                m_Indices[globalIndex] = fbxMesh->vertex_indices[it];
-                ++globalIndex;
-            }
-        }
+        //{
+        //    uint globalIndex = numIndicesBefore;
+        //    for (uint it = 0; it < numIndices; ++it)
+        //    {
+        //        m_Indices[globalIndex] = fbxMesh.vertex_indices[it];
+        //        ++globalIndex;
+        //    }
+        //}
 
         //    // bone indices and bone weights
         //    {

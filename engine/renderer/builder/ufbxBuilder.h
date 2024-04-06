@@ -48,7 +48,7 @@ namespace GfxRenderEngine
 
     private:
         void LoadVertexDataFbx(const ufbx_node* fbxNodePtr);
-        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const meshIndex);
+        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const submeshIndex);
 
         void LoadMaterials();
         void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,
