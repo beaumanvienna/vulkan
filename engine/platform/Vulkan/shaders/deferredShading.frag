@@ -345,5 +345,6 @@ void main()
     color = ACESFilm(color);
 
     outColor = albedo * vec4(color, 1.0);
+    //outColor = vec4(normal, 1.0);
 
 }
