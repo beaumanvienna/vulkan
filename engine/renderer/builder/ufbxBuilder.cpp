@@ -206,7 +206,6 @@ namespace GfxRenderEngine
         {
             // map fbx to gltf
             transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
-            transform.AddRotation({TransformComponent::DEGREES_90, 0.0f, 0.0f});
             transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
         }
         // *** Instancing ***
@@ -554,11 +553,10 @@ namespace GfxRenderEngine
                     vertex.m_Amplification = 1.0f;
                     vertex.m_Color = diffuseColor;
 
-                    // fbx is rotated by 90 degrees around x
                     if (hasPosition) // position
                     {
                         ufbx_vec3& positionFbx = fbxMesh.vertices[fbxVertexIndex];
-                        vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.z, -positionFbx.y);
+                        vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
                     }
 
                     if (hasNormals) // normals
@@ -566,7 +564,7 @@ namespace GfxRenderEngine
                         CORE_ASSERT(fbxNormalIndex < fbxMesh.vertex_normal.values.count,
                                     "LoadVertexDataFbx: memory violation normals");
                         ufbx_vec3& normalFbx = fbxMesh.vertex_normal.values.data[fbxNormalIndex];
-                        vertex.m_Normal = glm::vec3(normalFbx.x, normalFbx.z, -normalFbx.y);
+                        vertex.m_Normal = glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z);
                     }
 
                     if (hasTangents) // tangents
@@ -574,7 +572,7 @@ namespace GfxRenderEngine
                         CORE_ASSERT(fbxTangentIndex < fbxMesh.vertex_tangent.values.count,
                                     "LoadVertexDataFbx: memory violation tangents");
                         ufbx_vec3& tangentFbx = fbxMesh.vertex_tangent.values.data[fbxTangentIndex];
-                        vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.z, -tangentFbx.y);
+                        vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
                     }
 
                     if (hasUVs) // uv coordinates
