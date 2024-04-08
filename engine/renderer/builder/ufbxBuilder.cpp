@@ -88,23 +88,9 @@ namespace GfxRenderEngine
         m_InstanceCount = instanceCount;
         for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
         {
-            // create group game object(s) for all instances to apply transform from JSON file to
-            auto entity = m_Registry.create();
-
-            std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
-            auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
-            auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
-            uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(groupNode);
-
-            {
-                TransformComponent transform{};
-                m_Registry.emplace<TransformComponent>(entity, transform);
-            }
-
             uint hasMeshIndex = Fbx::FBX_ROOT_NODE;
             m_RenderObject = 0;
-            ProcessNode(m_FbxScene->root_node, groupNode, hasMeshIndex);
+            ProcessNode(m_FbxScene->root_node, SceneGraph::ROOT_NODE, hasMeshIndex);
         }
         ufbx_free_scene(m_FbxScene);
         return Fbx::FBX_LOAD_SUCCESS;
@@ -138,9 +124,18 @@ namespace GfxRenderEngine
         return localHasMesh;
     }
 
-    void UFbxBuilder::ProcessNode(const ufbx_node* fbxNodePtr, uint const parentNode, uint& hasMeshIndex)
+    void UFbxBuilder::ProcessNode(const ufbx_node* fbxNodePtr, uint parentNode, uint& hasMeshIndex)
     {
-        std::string nodeName(fbxNodePtr->name.data);
+        std::string nodeName;
+        if (fbxNodePtr == m_FbxScene->root_node)
+        {
+            nodeName = fbxNodePtr->name.length ? fbxNodePtr->name.data : "root";
+        }
+        else
+        {
+            nodeName = fbxNodePtr->name.length ? fbxNodePtr->name.data : "group node";
+        }
+
         uint currentNode = parentNode;
 
         if (m_HasMesh[hasMeshIndex])
@@ -159,17 +154,24 @@ namespace GfxRenderEngine
                     glm::vec3 translation;
                     LoadTransformationMatrix(fbxNodePtr, scale, rotation, translation);
                     TransformComponent transform(scale, rotation, translation);
-                    if (fbxNodePtr->parent == m_FbxScene->root_node)
-                    {
-                        transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
-                        transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
-                    }
+
                     m_Registry.emplace<TransformComponent>(entity, transform);
                 }
 
                 // create scene graph node and add to parent
-                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                std::string shortName;
+                std::string longName;
+                if (fbxNodePtr == m_FbxScene->root_node)
+                { // special name in scene graph for root node
+                    std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
+                    shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
+                    longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+                }
+                else
+                {
+                    shortName = "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                    longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                }
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
             }
@@ -202,10 +204,11 @@ namespace GfxRenderEngine
         TransformComponent transform(scale, rotation, translation);
         if (fbxNodePtr->parent == m_FbxScene->root_node)
         {
+            // map fbx to gltf
             transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
+            transform.AddRotation({TransformComponent::DEGREES_90, 0.0f, 0.0f});
             transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
         }
-
         // *** Instancing ***
         // create instance tag for first game object;
         // and collect further instances in it.
@@ -533,44 +536,58 @@ namespace GfxRenderEngine
             {
                 ufbx_face& fbxFace = fbxMesh.faces[fbxSubmesh.face_indices.data[fbxFaceIndex]];
                 size_t numTriangleIndices = fbxMesh.max_face_triangles * 3;
-                std::vector<uint> triangleIndicesBuffer(numTriangleIndices);
+                std::vector<uint> verticesPerFaceIndexBuffer(numTriangleIndices);
                 size_t numTriangles =
-                    ufbx_triangulate_face(triangleIndicesBuffer.data(), numTriangleIndices, &fbxMesh, fbxFace);
+                    ufbx_triangulate_face(verticesPerFaceIndexBuffer.data(), numTriangleIndices, &fbxMesh, fbxFace);
                 size_t numVerticesPerFace = 3 * numTriangles;
                 for (uint vertexPerFace = 0; vertexPerFace < numVerticesPerFace; ++vertexPerFace)
                 {
-                    uint triangleIndex = triangleIndicesBuffer[vertexPerFace];
-                    uint fbxVertexIndex = fbxMesh.vertex_indices[triangleIndex];
+                    // if the face is a quad, then 2 triangles, numVerticesPerFace = 6
+                    uint vertexPerFaceIndex = verticesPerFaceIndexBuffer[vertexPerFace];
+
+                    uint fbxVertexIndex = fbxMesh.vertex_indices[vertexPerFaceIndex];
+                    uint fbxNormalIndex = fbxMesh.vertex_normal.indices[vertexPerFaceIndex];
+                    uint fbxTangentIndex = fbxMesh.vertex_tangent.indices[vertexPerFaceIndex];
+                    uint fbxUVIndex = fbxMesh.vertex_uv.indices[vertexPerFaceIndex];
+
                     Vertex vertex{};
                     vertex.m_Amplification = 1.0f;
                     vertex.m_Color = diffuseColor;
 
+                    // fbx is rotated by 90 degrees around x
                     if (hasPosition) // position
                     {
                         ufbx_vec3& positionFbx = fbxMesh.vertices[fbxVertexIndex];
-                        vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
+                        vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.z, -positionFbx.y);
                     }
 
                     if (hasNormals) // normals
                     {
-                        ufbx_vec3& normalFbx = fbxMesh.vertex_normal[fbxVertexIndex];
-                        vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
+                        CORE_ASSERT(fbxNormalIndex < fbxMesh.vertex_normal.values.count,
+                                    "LoadVertexDataFbx: memory violation normals");
+                        ufbx_vec3& normalFbx = fbxMesh.vertex_normal.values.data[fbxNormalIndex];
+                        vertex.m_Normal = glm::vec3(normalFbx.x, normalFbx.z, -normalFbx.y);
                     }
 
                     if (hasTangents) // tangents
                     {
-                        ufbx_vec3& tangentFbx = fbxMesh.vertex_tangent[fbxVertexIndex];
-                        vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
+                        CORE_ASSERT(fbxTangentIndex < fbxMesh.vertex_tangent.values.count,
+                                    "LoadVertexDataFbx: memory violation tangents");
+                        ufbx_vec3& tangentFbx = fbxMesh.vertex_tangent.values.data[fbxTangentIndex];
+                        vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.z, -tangentFbx.y);
                     }
 
                     if (hasUVs) // uv coordinates
                     {
-                        ufbx_vec2& uvFbx = fbxMesh.vertex_uv[fbxVertexIndex];
+                        CORE_ASSERT(fbxUVIndex < fbxMesh.vertex_uv.values.count,
+                                    "LoadVertexDataFbx: memory violation uv coordinates");
+                        ufbx_vec2& uvFbx = fbxMesh.vertex_uv.values.data[fbxVertexIndex];
                         vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
                     }
 
                     if (hasVertexColors) // vertex colors
                     {
+#warning "add base factor"
                         ufbx_vec4& colorFbx = fbxMesh.vertex_color[fbxVertexIndex];
                         vertex.m_Color = glm::vec3(colorFbx.x, colorFbx.y, colorFbx.z);
                     }

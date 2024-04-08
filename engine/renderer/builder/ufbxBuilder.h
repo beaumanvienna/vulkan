@@ -61,7 +61,7 @@ namespace GfxRenderEngine
         void PrintProperties(const ufbx_material* fbxMaterial);
 
         bool MarkNode(const ufbx_node* fbxNodePtr);
-        void ProcessNode(const ufbx_node* fbxNodePtr, uint const parentNode, uint& hasMeshIndex);
+        void ProcessNode(const ufbx_node* fbxNodePtr, uint parentNode, uint& hasMeshIndex);
         uint CreateGameObject(const ufbx_node* fbxNodePtr, uint const parentNode);
 
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);

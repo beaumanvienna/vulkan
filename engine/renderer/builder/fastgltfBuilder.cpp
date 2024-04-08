@@ -683,6 +683,7 @@ namespace GfxRenderEngine
             // Vertices
             {
                 const float* positionBuffer = nullptr;
+                const float* colorBuffer = nullptr;
                 const float* normalsBuffer = nullptr;
                 const float* tangentsBuffer = nullptr;
                 const float* texCoordsBuffer = nullptr;
@@ -697,6 +698,13 @@ namespace GfxRenderEngine
                     auto componentType =
                         LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.findAttribute("POSITION")->second],
                                             positionBuffer, &vertexCount);
+                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
+                }
+                // Get buffer data for vertex color
+                if (glTFPrimitive.findAttribute("COLOR_0") != glTFPrimitive.attributes.end())
+                {
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second], colorBuffer, &vertexCount);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
@@ -748,6 +756,8 @@ namespace GfxRenderEngine
                     Vertex vertex{};
                     vertex.m_Amplification = 1.0f;
                     auto position = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
+                    auto vertexColor = colorBuffer ? glm::make_vec4(&colorBuffer[v * 4]) : glm::vec4(1.0f);
+
                     vertex.m_Position = glm::vec3(position.x, position.y, position.z);
                     vertex.m_Normal =
                         glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
@@ -757,7 +767,7 @@ namespace GfxRenderEngine
 
                     auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_UV = uv;
-                    vertex.m_Color = diffuseColor;
+                    vertex.m_Color = vertexColor * glm::vec4(diffuseColor, 1.0f);
                     if (jointsBuffer && weightsBuffer)
                     {
                         switch (getGLComponentType(jointsBufferDataType))
