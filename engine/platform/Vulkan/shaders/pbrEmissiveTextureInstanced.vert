@@ -61,7 +61,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 1, binding = 1) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[256];
 } uboInstanced;
 
 layout(push_constant) uniform Push
@@ -73,7 +73,7 @@ layout(push_constant) uniform Push
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);

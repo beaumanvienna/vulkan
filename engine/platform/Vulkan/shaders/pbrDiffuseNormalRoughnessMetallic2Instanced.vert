@@ -64,7 +64,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 1, binding = 4) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[256];
 } uboInstanced;
 
 layout(location = 0)  out  vec3  fragPosition;
@@ -74,8 +74,8 @@ layout(location = 3)  out  vec3  fragTangent;
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 normalMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_NormalMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);

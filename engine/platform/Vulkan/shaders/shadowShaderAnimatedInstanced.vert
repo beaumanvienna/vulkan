@@ -46,7 +46,7 @@ layout(set = 1, binding = 0) uniform SkeletalAnimationShaderData
 
 layout(set = 1, binding = 1) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[256];
 } uboInstanced;
 
 void main()
@@ -69,7 +69,7 @@ void main()
     }
 
     // projection * view * model * position
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
     vec4 positionWorld = modelMatrix * animatedPosition;
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
 }

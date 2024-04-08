@@ -74,7 +74,7 @@ layout(set = 1, binding = 1) uniform SkeletalAnimationShaderData
 
 layout(set = 1, binding = 2) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[256];
 } uboInstanced;
 
 layout(location = 0)  out  vec3  fragPosition;
@@ -107,8 +107,8 @@ void main()
         jointTransform     += jointMatrix * weights[i];
     }
 
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 instanceNormalMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_NormalMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 instanceNormalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
 
     // projection * view * model * position
     vec4 positionWorld = modelMatrix * animatedPosition;
