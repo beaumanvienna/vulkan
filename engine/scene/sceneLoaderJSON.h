@@ -92,6 +92,7 @@ namespace GfxRenderEngine
         void SerializeVec3(int indent, std::string name, glm::vec3 const& vec3, bool noComma = false);
 
         void SerializeFbxFiles(int indent, bool noComma);
+        void SerializeUFbxFiles(int indent, bool noComma);
         void SerializeFbxFile(int indent, Fbx::FbxFile const& fbxFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Fbx::Instance> const& instances);
         void SerializeInstance(int indent, Fbx::Instance const& instance, bool noComma);

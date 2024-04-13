@@ -39,6 +39,7 @@ namespace GfxRenderEngine
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
         size_t fastgltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
         size_t fbxFileCount = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene.size();
+        size_t ufbxFileCount = m_SceneDescriptionFile.m_UFbxFiles.m_FbxFilesFromScene.size();
         size_t objFileCount = m_SceneDescriptionFile.m_ObjFiles.m_ObjFilesFromScene.size();
 
         std::string indentStr(indent, ' ');
@@ -50,20 +51,25 @@ namespace GfxRenderEngine
 
         if (fastgltfFileCount) // fastgltf
         {
-            bool noComma = (gltfFileCount == 0) && (fbxFileCount == 0);
+            bool noComma = (gltfFileCount == 0) && (fbxFileCount == 0) && (ufbxFileCount == 0) && (objFileCount == 0);
             SerializeFastgltfFiles(indent, noComma);
         }
         if (gltfFileCount) // gltf
         {
-            bool noComma = (fbxFileCount == 0);
+            bool noComma = (fbxFileCount == 0) && (ufbxFileCount == 0) && (objFileCount == 0);
             SerializeGltfFiles(indent, noComma);
         }
         if (fbxFileCount) // fbx
         {
-            bool noComma = (objFileCount == 0);
+            bool noComma = (ufbxFileCount == 0) && (objFileCount == 0);
             SerializeFbxFiles(indent, noComma);
         }
-        if (objFileCount) // fbx
+        if (ufbxFileCount) // ufbx
+        {
+            bool noComma = (objFileCount == 0);
+            SerializeUFbxFiles(indent, noComma);
+        }
+        if (objFileCount) // obj
         {
             SerializeObjFiles(indent);
         }
@@ -237,6 +243,23 @@ namespace GfxRenderEngine
         size_t fbxFileCount = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene.size();
         size_t fbxFileIndex = 0;
         for (auto& fbxFile : m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene)
+        {
+            bool noCommaLocal = ((fbxFileIndex + 1) == fbxFileCount);
+            SerializeFbxFile(indent, fbxFile, noCommaLocal);
+            ++fbxFileIndex;
+        }
+        m_OutputFile << indentStr << "]" << (noComma ? "" : ",") << "\n";
+    }
+
+    void SceneLoaderJSON::SerializeUFbxFiles(int indent, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"ufbx files\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t fbxFileCount = m_SceneDescriptionFile.m_UFbxFiles.m_FbxFilesFromScene.size();
+        size_t fbxFileIndex = 0;
+        for (auto& fbxFile : m_SceneDescriptionFile.m_UFbxFiles.m_FbxFilesFromScene)
         {
             bool noCommaLocal = ((fbxFileIndex + 1) == fbxFileCount);
             SerializeFbxFile(indent, fbxFile, noCommaLocal);

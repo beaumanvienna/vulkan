@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -42,7 +42,7 @@ namespace GfxRenderEngine
         FastgltfBuilder() = delete;
         FastgltfBuilder(const std::string& filepath, Scene& scene);
 
-        bool LoadGltf(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
+        bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
 
     public:
         std::vector<uint> m_Indices{};
@@ -51,10 +51,10 @@ namespace GfxRenderEngine
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        void LoadImagesGltf();
-        void LoadMaterialsGltf();
-        void LoadVertexDataGltf(uint const meshIndex);
-        bool GetImageFormatGltf(uint const imageIndex);
+        void LoadImages();
+        void LoadMaterials();
+        void LoadVertexData(uint const meshIndex);
+        bool GetImageFormat(uint const imageIndex);
         void AssignMaterial(ModelSubmesh& submesh, int const materialIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
         void CalculateTangents();

@@ -196,12 +196,12 @@ namespace GfxRenderEngine
                 if (fast)
                 {
                     FastgltfBuilder builder(gltfFilename, m_Scene);
-                    loadSuccessful = builder.LoadGltf(instanceCount, sceneID);
+                    loadSuccessful = builder.Load(instanceCount, sceneID);
                 }
                 else
                 {
                     GltfBuilder builder(gltfFilename, m_Scene);
-                    loadSuccessful = builder.LoadGltf(instanceCount, sceneID);
+                    loadSuccessful = builder.Load(instanceCount, sceneID);
                 }
                 if (loadSuccessful)
                 {
@@ -269,7 +269,9 @@ namespace GfxRenderEngine
     {
         std::string fbxFilename;
 
-        std::vector<Fbx::FbxFile>& fbxFilesFromScene = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene;
+        std::vector<Fbx::FbxFile>* fbxFilesFromScene = ufbx ? &m_SceneDescriptionFile.m_UFbxFiles.m_FbxFilesFromScene
+                                                            : &m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene;
+
         bool loadSuccessful = false;
 
         for (auto fbxFileObject : fbxFileJSON)
@@ -298,17 +300,17 @@ namespace GfxRenderEngine
                 if (ufbx)
                 {
                     UFbxBuilder builder(fbxFilename, m_Scene);
-                    loadSuccessful = builder.LoadFbx(instanceCount);
+                    loadSuccessful = builder.Load(instanceCount);
                 }
                 else
                 {
                     FbxBuilder builder(fbxFilename, m_Scene);
-                    loadSuccessful = builder.LoadFbx(instanceCount);
+                    loadSuccessful = builder.Load(instanceCount);
                 }
                 if (loadSuccessful)
                 {
                     Fbx::FbxFile fbxFile(fbxFilename);
-                    fbxFilesFromScene.push_back(fbxFile);
+                    fbxFilesFromScene[0].push_back(fbxFile);
                 }
                 else
                 {
@@ -322,7 +324,7 @@ namespace GfxRenderEngine
                     return;
                 }
 
-                std::vector<Fbx::Instance>& fbxFileInstances = fbxFilesFromScene.back().m_Instances;
+                std::vector<Fbx::Instance>& fbxFileInstances = fbxFilesFromScene[0].back().m_Instances;
                 fbxFileInstances.resize(instanceCount);
 
                 {

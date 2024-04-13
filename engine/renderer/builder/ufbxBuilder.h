@@ -38,7 +38,7 @@ namespace GfxRenderEngine
         UFbxBuilder() = delete;
         UFbxBuilder(const std::string& filepath, Scene& scene);
 
-        bool LoadFbx(uint const instanceCount = 1, int const sceneID = Fbx::FBX_NOT_USED);
+        bool Load(uint const instanceCount = 1, int const sceneID = Fbx::FBX_NOT_USED);
 
     public:
         std::vector<uint> m_Indices{};
@@ -47,8 +47,8 @@ namespace GfxRenderEngine
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr);
-        void LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const submeshIndex);
+        void LoadVertexData(const ufbx_node* fbxNodePtr);
+        void LoadVertexData(const ufbx_node* fbxNodePtr, uint const submeshIndex);
 
         void LoadMaterials();
         void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,
@@ -72,6 +72,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         ufbx_scene* m_FbxScene;
         std::vector<Material> m_Materials;
+        std::unordered_map<std::string, uint> m_MaterialNameToIndex;
         uint m_MaterialFeatures;
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;

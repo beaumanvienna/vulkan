@@ -38,7 +38,7 @@ namespace GfxRenderEngine
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
 
-    bool GltfBuilder::LoadGltf(uint const instanceCount, int const sceneID)
+    bool GltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
         stbi_set_flip_vertically_on_load(false);
 
@@ -47,14 +47,14 @@ namespace GfxRenderEngine
 
             if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
             {
-                LOG_CORE_CRITICAL("LoadGltf errors: {0}, warnings: {1}", err, warn);
+                LOG_CORE_CRITICAL("Load errors: {0}, warnings: {1}", err, warn);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
         }
 
         if (!m_GltfModel.meshes.size())
         {
-            LOG_CORE_CRITICAL("LoadGltf: no meshes found in {0}", m_Filepath);
+            LOG_CORE_CRITICAL("Load: no meshes found in {0}", m_Filepath);
             return Gltf::GLTF_LOAD_FAILURE;
         }
 
@@ -63,14 +63,14 @@ namespace GfxRenderEngine
             // check if valid
             if ((m_GltfModel.scenes.size() - 1) < static_cast<size_t>(sceneID))
             {
-                LOG_CORE_CRITICAL("LoadGltf: scene not found in {0}", m_Filepath);
+                LOG_CORE_CRITICAL("Load: scene not found in {0}", m_Filepath);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
         }
 
-        LoadImagesGltf();
+        LoadImages();
         LoadSkeletonsGltf();
-        LoadMaterialsGltf();
+        LoadMaterials();
 
         // PASS 1
         // mark gltf nodes to receive a game object ID if they have a mesh or any child has
@@ -245,7 +245,7 @@ namespace GfxRenderEngine
             m_InstancedObjects.push_back(entity);
 
             // create model for 1st instance
-            LoadVertexDataGltf(meshIndex);
+            LoadVertexData(meshIndex);
             LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
                           m_Filepath, nodeName);
             { // assign material
@@ -436,7 +436,7 @@ namespace GfxRenderEngine
         return filter;
     }
 
-    void GltfBuilder::LoadImagesGltf()
+    void GltfBuilder::LoadImages()
     {
         m_ImageOffset = m_Images.size();
         size_t numImages = m_GltfModel.images.size();
@@ -476,7 +476,7 @@ namespace GfxRenderEngine
             auto texture = Texture::Create();
             int minFilter = GetMinFilter(imageIndex);
             int magFilter = GetMinFilter(imageIndex);
-            bool imageFormat = GetImageFormatGltf(imageIndex);
+            bool imageFormat = GetImageFormat(imageIndex);
             texture->Init(glTFImage.width, glTFImage.height, imageFormat, buffer, minFilter, magFilter);
 #ifdef DEBUG
             texture->SetFilename(imageFilepath);
@@ -485,7 +485,7 @@ namespace GfxRenderEngine
         }
     }
 
-    bool GltfBuilder::GetImageFormatGltf(uint const imageIndex)
+    bool GltfBuilder::GetImageFormat(uint const imageIndex)
     {
         for (uint i = 0; i < m_GltfModel.materials.size(); i++)
         {
@@ -512,7 +512,7 @@ namespace GfxRenderEngine
         return Texture::USE_UNORM;
     }
 
-    void GltfBuilder::LoadMaterialsGltf()
+    void GltfBuilder::LoadMaterials()
     {
         size_t numMaterials = m_GltfModel.materials.size();
         m_Materials.resize(numMaterials);
@@ -563,7 +563,7 @@ namespace GfxRenderEngine
 
             if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
             {
-                material.m_DiffuseColor = glm::make_vec3(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
+                material.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
             }
             if (glTFMaterial.pbrMetallicRoughness.baseColorTexture.index != Gltf::GLTF_NOT_USED)
             {
@@ -599,7 +599,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void GltfBuilder::LoadVertexDataGltf(uint const meshIndex)
+    void GltfBuilder::LoadVertexData(uint const meshIndex)
     {
         // handle vertex data
         m_Vertices.clear();
@@ -621,18 +621,19 @@ namespace GfxRenderEngine
             uint vertexCount = 0;
             uint indexCount = 0;
 
-            glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+            glm::vec4 diffuseColor(1.0f);
             if (glTFPrimitive.material != Gltf::GLTF_NOT_USED)
             {
                 if (!(static_cast<size_t>(glTFPrimitive.material) < m_Materials.size()))
                 {
-                    LOG_CORE_CRITICAL("LoadVertexDataGltf: glTFPrimitive.material must be less than m_Materials.size()");
+                    LOG_CORE_CRITICAL("LoadVertexData: glTFPrimitive.material must be less than m_Materials.size()");
                 }
                 diffuseColor = m_Materials[glTFPrimitive.material].m_DiffuseColor;
             }
             // Vertices
             {
                 const float* positionBuffer = nullptr;
+                const float* colorBuffer = nullptr;
                 const float* normalsBuffer = nullptr;
                 const float* tangentsBuffer = nullptr;
                 const float* texCoordsBuffer = nullptr;
@@ -647,6 +648,13 @@ namespace GfxRenderEngine
                     auto componentType =
                         LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.attributes.find("POSITION")->second],
                                             positionBuffer, &vertexCount);
+                    CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
+                }
+                // Get buffer data for vertex color
+                if (glTFPrimitive.attributes.find("COLOR_0") != glTFPrimitive.attributes.end())
+                {
+                    auto componentType = LoadAccessor<float>(
+                        m_GltfModel.accessors[glTFPrimitive.attributes.find("COLOR_0")->second], colorBuffer);
                     CORE_ASSERT(componentType == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
@@ -708,7 +716,8 @@ namespace GfxRenderEngine
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
                     vertex.m_UV = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                    vertex.m_Color = diffuseColor;
+                    auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[v * 3]) : glm::vec3(1.0f);
+                    vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
                     if (jointsBuffer && weightsBuffer)
                     {
                         switch (jointsBufferDataType)
@@ -741,7 +750,6 @@ namespace GfxRenderEngine
                 // calculate tangents
                 if (!tangentsBuffer)
                 {
-                    LOG_CORE_CRITICAL("no tangents in gltf file found, calculating tangents manually");
                     CalculateTangents();
                 }
             }

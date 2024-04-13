@@ -27,7 +27,7 @@
 #include "engine/platform/Vulkan/pointlights.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 1) in vec3  color;
+layout(location = 1) in vec4  color;
 layout(location = 2) in vec3  normal;
 layout(location = 6) in vec3  tangent;
 
@@ -62,7 +62,7 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0)  out  vec3  fragColor;
+layout(location = 0)  out  vec4  fragColor;
 layout(location = 1)  out  vec3  fragPosition;
 layout(location = 2)  out  vec3  fragNormal;
 layout(location = 4)  out  vec3  fragTangent;

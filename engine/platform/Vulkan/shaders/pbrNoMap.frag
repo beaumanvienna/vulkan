@@ -26,7 +26,7 @@
 #version 450
 #include "engine/platform/Vulkan/pointlights.h"
 
-layout(location = 0)       in  vec3  fragColor;
+layout(location = 0)       in  vec4  fragColor;
 layout(location = 1)       in  vec3  fragPosition;
 layout(location = 2)       in  vec3  fragNormal;
 layout(location = 4)       in  vec3  fragTangent;
@@ -81,7 +81,6 @@ void main()
     outPosition = vec4(fragPosition, 1.0);
     outNormal   = vec4(N, 1.0);
 
-    vec4 col    = vec4(fragColor, 1.0);
-    outColor    = col;
+    outColor    = fragColor;
     outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 }

@@ -43,31 +43,32 @@ namespace GfxRenderEngine
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
 
-    bool FbxBuilder::LoadFbx(uint const instanceCount, int const sceneID)
+    bool FbxBuilder::Load(uint const instanceCount, int const sceneID)
     {
         Assimp::Importer importer;
-        m_FbxScene = importer.ReadFile(m_Filepath, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
-                                                       aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+        m_FbxScene =
+            importer.ReadFile(m_Filepath, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
+                                              aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
         if (m_FbxScene == nullptr)
         {
-            LOG_CORE_CRITICAL("FbxBuilder::LoadFbx error: {0}", m_Filepath);
+            LOG_CORE_CRITICAL("FbxBuilder::Load error: {0}", m_Filepath);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (!m_FbxScene->mNumMeshes)
         {
-            LOG_CORE_CRITICAL("FbxBuilder::LoadFbx: no meshes found in {0}", m_Filepath);
+            LOG_CORE_CRITICAL("FbxBuilder::Load: no meshes found in {0}", m_Filepath);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (sceneID > Fbx::FBX_NOT_USED) // a scene ID was provided
         {
-            LOG_CORE_WARN("FbxBuilder::LoadFbx: scene ID for fbx not supported (in file {0})", m_Filepath);
+            LOG_CORE_WARN("FbxBuilder::Load: scene ID for fbx not supported (in file {0})", m_Filepath);
         }
 
         LoadSkeletonsFbx();
-        LoadMaterialsFbx();
+        LoadMaterials();
 
         // PASS 1
         // mark Fbx nodes to receive a game object ID if they have a mesh or any child has
@@ -218,7 +219,7 @@ namespace GfxRenderEngine
             m_InstancedObjects.push_back(entity);
 
             // create model for 1st instance
-            LoadVertexDataFbx(fbxNodePtr);
+            LoadVertexData(fbxNodePtr);
             LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
                           m_Filepath, nodeName);
             for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
@@ -312,7 +313,7 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    bool FbxBuilder::LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB)
+    bool FbxBuilder::LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB)
     {
         std::shared_ptr<Texture> texture;
         bool loadSucess = false;
@@ -329,7 +330,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            LOG_CORE_CRITICAL("bool FbxBuilder::LoadImageFbx(): file '{0}' not found", filepath);
+            LOG_CORE_CRITICAL("bool FbxBuilder::LoadImage(): file '{0}' not found", filepath);
         }
 
         if (loadSucess)
@@ -356,32 +357,32 @@ namespace GfxRenderEngine
 
             if (getTexture == aiReturn_SUCCESS)
             {
-                bool loadImageFbx = false;
+                bool loadImage = false;
                 switch (textureType)
                 {
                     case aiTextureType_DIFFUSE:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_DiffuseMapIndex, Texture::USE_SRGB);
+                        loadImage = LoadImage(filepath, engineMaterial.m_DiffuseMapIndex, Texture::USE_SRGB);
                         break;
                     }
                     case aiTextureType_NORMALS:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_NormalMapIndex, Texture::USE_UNORM);
+                        loadImage = LoadImage(filepath, engineMaterial.m_NormalMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_SHININESS: // assimp XD
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_RoughnessMapIndex, Texture::USE_UNORM);
+                        loadImage = LoadImage(filepath, engineMaterial.m_RoughnessMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_METALNESS:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_MetallicMapIndex, Texture::USE_UNORM);
+                        loadImage = LoadImage(filepath, engineMaterial.m_MetallicMapIndex, Texture::USE_UNORM);
                         break;
                     }
                     case aiTextureType_EMISSIVE:
                     {
-                        loadImageFbx = LoadImageFbx(filepath, engineMaterial.m_EmissiveMapIndex, Texture::USE_SRGB);
+                        loadImage = LoadImage(filepath, engineMaterial.m_EmissiveMapIndex, Texture::USE_SRGB);
                         break;
                     }
                     default:
@@ -389,7 +390,7 @@ namespace GfxRenderEngine
                         CORE_ASSERT(false, "texture type not recognized");
                     }
                 }
-                if (loadImageFbx)
+                if (loadImage)
                 {
                     loadedSuccessfully = true;
                     switch (textureType)
@@ -440,10 +441,11 @@ namespace GfxRenderEngine
                 engineMaterial.m_DiffuseColor.r = diffuseColor.r;
                 engineMaterial.m_DiffuseColor.g = diffuseColor.g;
                 engineMaterial.m_DiffuseColor.b = diffuseColor.b;
+                engineMaterial.m_DiffuseColor.a = 1.0f; // not sure why assimp doesn't support alpha
             }
             else
             {
-                engineMaterial.m_DiffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+                engineMaterial.m_DiffuseColor = glm::vec4(1.0f);
             }
         }
         { // roughness
@@ -474,19 +476,30 @@ namespace GfxRenderEngine
             }
         }
 
-        { // emissive
+        { // emissive color
             aiColor3D emission;
             auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
             if (result == aiReturn_SUCCESS && (emission.r > 0 || emission.g > 0 || emission.b > 0))
             {
-                engineMaterial.m_EmissiveStrength = (emission.r + emission.g + emission.b) / 3.0f;
+                engineMaterial.m_EmissiveStrength = 1.0f;
+                engineMaterial.m_EmissiveColor = glm::vec3(emission.r, emission.g, emission.b);
+            }
+        }
+
+        { // emissive strength
+            float emissiveStrength;
+            auto result = fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveStrength);
+            if (result == aiReturn_SUCCESS)
+            {
+                engineMaterial.m_EmissiveStrength = emissiveStrength;
+                engineMaterial.m_EmissiveColor *= emissiveStrength;
             }
         }
 
         engineMaterial.m_NormalMapIntensity = 1.0f;
     }
 
-    void FbxBuilder::LoadMaterialsFbx()
+    void FbxBuilder::LoadMaterials()
     {
         m_Materials.clear();
         uint numMaterials = m_FbxScene->mNumMaterials;
@@ -505,7 +518,7 @@ namespace GfxRenderEngine
 
             if (LoadMap(fbxMaterial, aiTextureType_EMISSIVE, engineMaterial))
             {
-                engineMaterial.m_EmissiveStrength = 0.35f;
+                engineMaterial.m_EmissiveStrength = 1.0f;
             }
             else
             {
@@ -518,7 +531,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
+    void FbxBuilder::LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
     {
         // handle vertex data
         m_Vertices.clear();
@@ -533,7 +546,7 @@ namespace GfxRenderEngine
             m_Submeshes.resize(numMeshes);
             for (uint meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
             {
-                LoadVertexDataFbx(fbxNodePtr, meshIndex, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
+                LoadVertexData(fbxNodePtr, meshIndex, fbxNodePtr->mMeshes[meshIndex], vertexColorSet, uvSet);
             }
             if (m_FbxNoBuiltInTangents) // at least one mesh did not have tangents
             {
@@ -543,15 +556,15 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex,
-                                       int vertexColorSet, uint uvSet)
+    void FbxBuilder::LoadVertexData(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex,
+                                    int vertexColorSet, uint uvSet)
     {
         const aiMesh* mesh = m_FbxScene->mMeshes[fbxMeshIndex];
 
         // only triangle mesh supported
         if (!(mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE))
         {
-            LOG_CORE_CRITICAL("FbxBuilder::LoadVertexDataFbx: only triangle meshes are supported");
+            LOG_CORE_CRITICAL("FbxBuilder::LoadVertexData: only triangle meshes are supported");
             return;
         }
 
@@ -572,11 +585,14 @@ namespace GfxRenderEngine
         submesh.m_InstanceCount = m_InstanceCount;
 
         { // vertices
-            bool hasPosition = mesh->HasPositions();
+            bool hasPositions = mesh->HasPositions();
             bool hasNormals = mesh->HasNormals();
             bool hasTangents = mesh->HasTangentsAndBitangents();
             bool hasUVs = mesh->HasTextureCoords(uvSet);
             bool hasColors = mesh->HasVertexColors(vertexColorSet);
+
+            CORE_ASSERT(hasPositions, "no postions found in " + m_Filepath);
+            CORE_ASSERT(hasNormals, "no normals found in " + m_Filepath);
 
             m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
 
@@ -586,7 +602,7 @@ namespace GfxRenderEngine
                 Vertex& vertex = m_Vertices[vertexIndex];
                 vertex.m_Amplification = 1.0f;
 
-                if (hasPosition)
+                if (hasPositions)
                 { // position (guaranteed to always be there)
                     aiVector3D& positionFbx = mesh->mVertices[fbxVertexIndex];
                     vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
@@ -595,7 +611,7 @@ namespace GfxRenderEngine
                 if (hasNormals) // normals
                 {
                     aiVector3D& normalFbx = mesh->mNormals[fbxVertexIndex];
-                    vertex.m_Normal = glm::normalize(glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z));
+                    vertex.m_Normal = glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z);
                 }
 
                 if (hasTangents) // tangents
@@ -610,15 +626,21 @@ namespace GfxRenderEngine
                     vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
                 }
 
-                if (hasColors) // vertex colors
+                // vertex colors
                 {
-                    aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
-                    vertex.m_Color = glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b);
-                }
-                else
-                {
+                    glm::vec4 vertexColor;
                     uint materialIndex = mesh->mMaterialIndex;
-                    vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
+                    if (hasColors)
+                    {
+                        aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
+                        glm::vec3 linearColor = glm::pow(glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b), glm::vec3(2.2f));
+                        vertexColor = glm::vec4(linearColor.r, linearColor.g, linearColor.b, colorFbx.a);
+                        vertex.m_Color = vertexColor * m_Materials[materialIndex].m_DiffuseColor;
+                    }
+                    else
+                    {
+                        vertex.m_Color = m_Materials[materialIndex].m_DiffuseColor;
+                    }
                 }
                 ++vertexIndex;
             }

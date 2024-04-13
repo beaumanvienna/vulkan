@@ -60,7 +60,7 @@ namespace GfxRenderEngine
 
         // index 0, 0.0f,  1.0f
         vertex[0] = {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f},
+                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y},
                      amplification,
@@ -71,7 +71,7 @@ namespace GfxRenderEngine
 
         // index 1, 1.0f,  1.0f
         vertex[1] = {/*pos*/ {1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f},
+                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y},
                      amplification,
@@ -82,7 +82,7 @@ namespace GfxRenderEngine
 
         // index 2, 1.0f,  0.0f
         vertex[2] = {/*pos*/ {1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f},
+                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y},
                      amplification,
@@ -93,7 +93,7 @@ namespace GfxRenderEngine
 
         // index 3, 0.0f,  0.0f
         vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f},
+                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y},
                      amplification,
@@ -124,7 +124,7 @@ namespace GfxRenderEngine
 
         Vertex vertex[4]{// index 0, 0.0f,  1.0f
                          {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {0.0f, 1.0f},
                           1.0f /*amplification*/,
@@ -135,7 +135,7 @@ namespace GfxRenderEngine
 
                          // index 1, 1.0f,  1.0f
                          {/*pos*/ {1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {1.0f, 1.0f},
                           1.0f /*amplification*/,
@@ -146,7 +146,7 @@ namespace GfxRenderEngine
 
                          // index 2, 1.0f,  0.0f
                          {/*pos*/ {1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {1.0f, 0.0f},
                           1.0f /*amplification*/,
@@ -157,7 +157,7 @@ namespace GfxRenderEngine
 
                          // index 3, 0.0f,  0.0f
                          {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {0.0f, 0.0f},
                           1.0f /*amplification*/,
@@ -211,7 +211,7 @@ namespace GfxRenderEngine
             for (uint i = 0; i < VERTEX_COUNT; i++)
             {
                 Vertex vertex = {/*pos*/ cubemapVertices[i],
-                                 /*col*/ {0.0f, 0.0f, 0.0f},
+                                 /*col*/ {0.0f, 0.0f, 0.0f, 1.0f},
                                  /*norm*/ {0.0f, 0.0f, 0.0f},
                                  /*uv*/ {0.0f, 0.0f},
                                  /* amplification */ 0.0f,
@@ -303,6 +303,7 @@ namespace GfxRenderEngine
                         attrib.colors[3 * index.vertex_index + 0],
                         attrib.colors[3 * index.vertex_index + 1],
                         attrib.colors[3 * index.vertex_index + 2],
+                        1.0f
                     };
                 }
 

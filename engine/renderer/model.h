@@ -57,7 +57,7 @@ namespace GfxRenderEngine
     struct Vertex
     {
         glm::vec3 m_Position;
-        glm::vec3 m_Color;
+        glm::vec4 m_Color;
         glm::vec3 m_Normal;
         glm::vec2 m_UV;
         float m_Amplification;
@@ -83,7 +83,7 @@ namespace GfxRenderEngine
             HAS_SKELETAL_ANIMATION = 0x1 << 0x6
         };
         // constant material properties
-        glm::vec3 m_DiffuseColor{0.5f, 0.5f, 1.0f};
+        glm::vec4 m_DiffuseColor{1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
         float m_NormalMapIntensity{1.0f};
         float m_Roughness{0.1};

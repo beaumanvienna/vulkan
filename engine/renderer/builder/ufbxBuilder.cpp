@@ -41,7 +41,7 @@ namespace GfxRenderEngine
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
 
-    bool UFbxBuilder::LoadFbx(uint const instanceCount, int const sceneID)
+    bool UFbxBuilder::Load(uint const instanceCount, int const sceneID)
     {
         ufbx_load_opts opts{};
         opts.load_external_files = true;
@@ -61,19 +61,19 @@ namespace GfxRenderEngine
         {
             char buffer[1024];
             ufbx_format_error(buffer, sizeof(buffer), &error);
-            LOG_CORE_CRITICAL("UFbxBuilder::LoadFbx error: file: {0}, error: {1}", m_Filepath, buffer);
+            LOG_CORE_CRITICAL("UFbxBuilder::Load error: file: {0}, error: {1}", m_Filepath, buffer);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (!m_FbxScene->meshes.count)
         {
-            LOG_CORE_CRITICAL("UFbxBuilder::LoadFbx: no meshes found in {0}", m_Filepath);
+            LOG_CORE_CRITICAL("UFbxBuilder::Load: no meshes found in {0}", m_Filepath);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
         if (sceneID > Fbx::FBX_NOT_USED) // a scene ID was provided
         {
-            LOG_CORE_WARN("UFbxBuilder::LoadFbx: scene ID for fbx not supported (in file {0})", m_Filepath);
+            LOG_CORE_WARN("UFbxBuilder::Load: scene ID for fbx not supported (in file {0})", m_Filepath);
         }
 
         LoadSkeletonsFbx();
@@ -154,7 +154,12 @@ namespace GfxRenderEngine
                     glm::vec3 translation;
                     LoadTransformationMatrix(fbxNodePtr, scale, rotation, translation);
                     TransformComponent transform(scale, rotation, translation);
-
+                    if (fbxNodePtr->parent == m_FbxScene->root_node)
+                    {
+                        // map fbx to gltf
+                        transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
+                        transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
+                    }
                     m_Registry.emplace<TransformComponent>(entity, transform);
                 }
 
@@ -227,13 +232,13 @@ namespace GfxRenderEngine
             m_InstancedObjects.push_back(entity);
 
             // create model for 1st instance
-            LoadVertexDataFbx(fbxNodePtr);
+            LoadVertexData(fbxNodePtr);
             LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
                           m_Filepath, nodeName);
             for (uint meshIndex = 0; meshIndex < fbxNodePtr->mesh->material_parts.count; ++meshIndex)
             {
-                auto& submesh = fbxNodePtr->mesh->material_parts.data[meshIndex];
-                uint fbxMeshIndex = submesh.index;
+                std::string materialName = fbxNodePtr->mesh->materials.data[meshIndex]->name.data;
+                uint fbxMeshIndex = m_MaterialNameToIndex[materialName];
                 AssignMaterial(m_Submeshes[meshIndex], fbxMeshIndex);
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
@@ -367,9 +372,12 @@ namespace GfxRenderEngine
                     }
                     else // constant material property
                     {
-                        engineMaterial.m_DiffuseColor.r = materialMap.value_vec3.x;
-                        engineMaterial.m_DiffuseColor.g = materialMap.value_vec3.y;
-                        engineMaterial.m_DiffuseColor.b = materialMap.value_vec3.z;
+                        const ufbx_material_map& baseFactorMaterialMap = fbxMaterial->pbr.base_factor;
+                        float baseFactor = baseFactorMaterialMap.has_value ? baseFactorMaterialMap.value_real : 1.0f;
+                        engineMaterial.m_DiffuseColor.r = materialMap.value_vec4.x * baseFactor;
+                        engineMaterial.m_DiffuseColor.g = materialMap.value_vec4.y * baseFactor;
+                        engineMaterial.m_DiffuseColor.b = materialMap.value_vec4.z * baseFactor;
+                        engineMaterial.m_DiffuseColor.a = materialMap.value_vec4.w;
                     }
                 }
                 break;
@@ -468,11 +476,12 @@ namespace GfxRenderEngine
             LoadMaterial(fbxMaterial, UFBX_MATERIAL_PBR_EMISSION_COLOR, engineMaterial);
             LoadMaterial(fbxMaterial, UFBX_MATERIAL_PBR_EMISSION_FACTOR, engineMaterial);
 
+            m_MaterialNameToIndex[fbxMaterial->name.data] = fbxMaterialIndex;
             m_Materials.push_back(engineMaterial);
         }
     }
 
-    void UFbxBuilder::LoadVertexDataFbx(const ufbx_node* fbxNodePtr)
+    void UFbxBuilder::LoadVertexData(const ufbx_node* fbxNodePtr)
     {
         // handle vertex data
         m_Vertices.clear();
@@ -488,17 +497,16 @@ namespace GfxRenderEngine
             m_Submeshes.resize(numSubmeshes);
             for (uint submeshIndex = 0; submeshIndex < numSubmeshes; ++submeshIndex)
             {
-                LoadVertexDataFbx(fbxNodePtr, submeshIndex);
+                LoadVertexData(fbxNodePtr, submeshIndex);
             }
             if (m_FbxNoBuiltInTangents) // at least one mesh did not have tangents
             {
-                LOG_CORE_CRITICAL("no tangents in fbx file found, calculating tangents manually");
                 CalculateTangents();
             }
         }
     }
 
-    void UFbxBuilder::LoadVertexDataFbx(const ufbx_node* fbxNodePtr, uint const submeshIndex)
+    void UFbxBuilder::LoadVertexData(const ufbx_node* fbxNodePtr, uint const submeshIndex)
     {
         ufbx_mesh& fbxMesh = *fbxNodePtr->mesh; // mesh for this node, contains submeshes
         const ufbx_mesh_part& fbxSubmesh = fbxNodePtr->mesh->material_parts[submeshIndex];
@@ -506,7 +514,7 @@ namespace GfxRenderEngine
 
         if (!(fbxSubmesh.num_triangles))
         {
-            LOG_CORE_CRITICAL("UFbxBuilder::LoadVertexDataFbx: only triangle meshes are supported");
+            LOG_CORE_CRITICAL("UFbxBuilder::LoadVertexData: only triangle meshes are supported");
             return;
         }
 
@@ -520,12 +528,15 @@ namespace GfxRenderEngine
         submesh.m_IndexCount = 0;
         submesh.m_InstanceCount = m_InstanceCount;
 
-        ufbx_vec3& fbxBaseColor = fbxNodePtr->materials[submeshIndex]->pbr.base_color.value_vec3;
-        glm::vec3 diffuseColor(fbxBaseColor.x, fbxBaseColor.y, fbxBaseColor.z);
+        glm::vec4 diffuseColor;
+        {
+            ufbx_material_map& baseColorMap = fbxNodePtr->materials[submeshIndex]->pbr.base_color;
+            diffuseColor = baseColorMap.has_value ? glm::vec4(baseColorMap.value_vec4.x, baseColorMap.value_vec4.y,
+                                                              baseColorMap.value_vec4.z, baseColorMap.value_vec4.w)
+                                                  : glm::vec4(1.0f);
+        }
 
         { // vertices
-            bool hasPosition = fbxMesh.vertex_position.exists;
-            bool hasNormals = fbxMesh.vertex_normal.exists;
             bool hasTangents = fbxMesh.vertex_tangent.exists;
             bool hasUVs = fbxMesh.uv_sets.count;
             bool hasVertexColors = fbxMesh.vertex_color.exists;
@@ -544,50 +555,55 @@ namespace GfxRenderEngine
                     // if the face is a quad, then 2 triangles, numVerticesPerFace = 6
                     uint vertexPerFaceIndex = verticesPerFaceIndexBuffer[vertexPerFace];
 
-                    uint fbxVertexIndex = fbxMesh.vertex_indices[vertexPerFaceIndex];
-                    uint fbxNormalIndex = fbxMesh.vertex_normal.indices[vertexPerFaceIndex];
-                    uint fbxTangentIndex = fbxMesh.vertex_tangent.indices[vertexPerFaceIndex];
-                    uint fbxUVIndex = fbxMesh.vertex_uv.indices[vertexPerFaceIndex];
-
                     Vertex vertex{};
                     vertex.m_Amplification = 1.0f;
-                    vertex.m_Color = diffuseColor;
 
-                    if (hasPosition) // position
+                    // position
+                    uint fbxVertexIndex = fbxMesh.vertex_indices[vertexPerFaceIndex];
                     {
                         ufbx_vec3& positionFbx = fbxMesh.vertices[fbxVertexIndex];
                         vertex.m_Position = glm::vec3(positionFbx.x, positionFbx.y, positionFbx.z);
                     }
 
-                    if (hasNormals) // normals
+                    // normals, always defined if `ufbx_load_opts.generate_missing_normals` is used
                     {
+                        uint fbxNormalIndex = fbxMesh.vertex_normal.indices[vertexPerFaceIndex];
                         CORE_ASSERT(fbxNormalIndex < fbxMesh.vertex_normal.values.count,
-                                    "LoadVertexDataFbx: memory violation normals");
+                                    "LoadVertexData: memory violation normals");
                         ufbx_vec3& normalFbx = fbxMesh.vertex_normal.values.data[fbxNormalIndex];
                         vertex.m_Normal = glm::vec3(normalFbx.x, normalFbx.y, normalFbx.z);
                     }
-
-                    if (hasTangents) // tangents
+                    if (hasTangents) // tangents (check `tangent space` in Blender when exporting fbx)
                     {
+                        uint fbxTangentIndex = fbxMesh.vertex_tangent.indices[vertexPerFaceIndex];
                         CORE_ASSERT(fbxTangentIndex < fbxMesh.vertex_tangent.values.count,
-                                    "LoadVertexDataFbx: memory violation tangents");
+                                    "LoadVertexData: memory violation tangents");
                         ufbx_vec3& tangentFbx = fbxMesh.vertex_tangent.values.data[fbxTangentIndex];
                         vertex.m_Tangent = glm::vec3(tangentFbx.x, tangentFbx.y, tangentFbx.z);
                     }
 
                     if (hasUVs) // uv coordinates
                     {
+                        uint fbxUVIndex = fbxMesh.vertex_uv.indices[vertexPerFaceIndex];
                         CORE_ASSERT(fbxUVIndex < fbxMesh.vertex_uv.values.count,
-                                    "LoadVertexDataFbx: memory violation uv coordinates");
-                        ufbx_vec2& uvFbx = fbxMesh.vertex_uv.values.data[fbxVertexIndex];
+                                    "LoadVertexData: memory violation uv coordinates");
+                        ufbx_vec2& uvFbx = fbxMesh.vertex_uv.values.data[fbxUVIndex];
                         vertex.m_UV = glm::vec2(uvFbx.x, uvFbx.y);
                     }
 
                     if (hasVertexColors) // vertex colors
                     {
-#warning "add base factor"
-                        ufbx_vec4& colorFbx = fbxMesh.vertex_color[fbxVertexIndex];
-                        vertex.m_Color = glm::vec3(colorFbx.x, colorFbx.y, colorFbx.z);
+                        uint fbxColorIndex = fbxMesh.vertex_color.indices[vertexPerFaceIndex];
+                        ufbx_vec4& colorFbx = fbxMesh.vertex_color.values.data[fbxColorIndex];
+
+                        // convert from sRGB to linear
+                        glm::vec3 linearColor = glm::pow(glm::vec3(colorFbx.x, colorFbx.y, colorFbx.z), glm::vec3(2.2f));
+                        glm::vec4 vertexColor(linearColor.x, linearColor.y, linearColor.z, colorFbx.w);
+                        vertex.m_Color = vertexColor * diffuseColor;
+                    }
+                    else
+                    {
+                        vertex.m_Color = diffuseColor;
                     }
                     m_Vertices.push_back(vertex);
                 }
@@ -834,9 +850,8 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO(
-                "material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x { 1 : x } ",
-                materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features: 0x {1:x} ",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP |
                                  Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
@@ -864,9 +879,8 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
             }
 
-            LOG_CORE_INFO(
-                "material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features:0x { 1 : x } ",
-                materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features:0x {1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP))
         {
@@ -898,9 +912,8 @@ namespace GfxRenderEngine
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
             }
 
-            LOG_CORE_INFO(
-                "material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features:0x { 1 : x } ",
-                materialIndex, material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features:0x {1:x}",
+                          materialIndex, material.m_Features);
         }
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
@@ -1074,24 +1087,16 @@ namespace GfxRenderEngine
     {
         const char* materialName = fbxMaterial->name.data;
         size_t numberOfTextures = fbxMaterial->textures.count;
-        LOG_CORE_INFO("material name: {0}, number of textures: {1}", materialName, numberOfTextures);
+        LOG_CORE_WARN("material name: {0}, number of textures: {1}", materialName, numberOfTextures);
 
         // lambda to print a property
-        enum class ValueType
-        {
-            noType,
-            typeFloat,
-            typeVec2,
-            typeVec3,
-            typeVec4
-        };
-        auto printProperty = [&](std::string const& str, ufbx_material_map const& materialMap, ValueType valueType)
+        auto printProperty = [&](std::string const& str, ufbx_material_map const& materialMap)
         {
             bool hasValue = materialMap.has_value;
             bool hasTexture = materialMap.texture;
+            std::string message = str + ": ";
             if (hasValue)
             {
-                std::string message = str + ": ";
                 if (hasTexture)
                 {
                     std::string filename(materialMap.texture->filename.data);
@@ -1100,27 +1105,32 @@ namespace GfxRenderEngine
                 else
                 {
                     message += "constant value found ";
-                    switch (valueType)
+                    switch (materialMap.value_components)
                     {
-                        case ValueType::typeFloat:
+                        case 0:
+                        {
+                            message += "component value is zero";
+                            break;
+                        }
+                        case 1:
                         {
                             message += std::to_string(materialMap.value_real);
                             break;
                         }
-                        case ValueType::typeVec2:
+                        case 2:
                         {
                             message +=
                                 std::to_string(materialMap.value_vec2.x) + " " + std::to_string(materialMap.value_vec2.y);
                             break;
                         }
-                        case ValueType::typeVec3:
+                        case 3:
                         {
                             message += std::to_string(materialMap.value_vec3.x) + " " +
                                        std::to_string(materialMap.value_vec3.y) + " " +
                                        std::to_string(materialMap.value_vec3.z);
                             break;
                         }
-                        case ValueType::typeVec4:
+                        case 4:
                         {
                             message += std::to_string(materialMap.value_vec4.x) + " " +
                                        std::to_string(materialMap.value_vec4.y) + " " +
@@ -1129,20 +1139,25 @@ namespace GfxRenderEngine
                             break;
                         }
                         default:
+                            message += "component value out of range";
                             break;
                     }
                 }
-                LOG_CORE_INFO(message);
             }
+            else
+            {
+                message += "no value found";
+            }
+            LOG_CORE_INFO(message);
         };
 
-        printProperty("baseFactor", fbxMaterial->pbr.base_factor, ValueType::typeFloat);
-        printProperty("baseColor", fbxMaterial->pbr.base_color, ValueType::typeVec3);
-        printProperty("roughness", fbxMaterial->pbr.roughness, ValueType::typeFloat);
-        printProperty("metalness", fbxMaterial->pbr.metalness, ValueType::typeFloat);
-        printProperty("diffuseRoughness", fbxMaterial->pbr.diffuse_roughness, ValueType::typeFloat);
-        printProperty("normalMap", fbxMaterial->pbr.normal_map, ValueType::noType);
-        printProperty("emissiveColor", fbxMaterial->pbr.emission_color, ValueType::typeVec3);
-        printProperty("emissiveFactor", fbxMaterial->pbr.emission_factor, ValueType::typeFloat);
+        printProperty("baseFactor", fbxMaterial->pbr.base_factor);
+        printProperty("baseColor", fbxMaterial->pbr.base_color);
+        printProperty("roughness", fbxMaterial->pbr.roughness);
+        printProperty("metalness", fbxMaterial->pbr.metalness);
+        printProperty("diffuseRoughness", fbxMaterial->pbr.diffuse_roughness);
+        printProperty("normalMap", fbxMaterial->pbr.normal_map);
+        printProperty("emissiveColor", fbxMaterial->pbr.emission_color);
+        printProperty("emissiveFactor", fbxMaterial->pbr.emission_factor);
     }
 } // namespace GfxRenderEngine

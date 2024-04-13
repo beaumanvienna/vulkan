@@ -38,7 +38,7 @@ namespace GfxRenderEngine
         FbxBuilder() = delete;
         FbxBuilder(const std::string& filepath, Scene& scene);
 
-        bool LoadFbx(uint const instanceCount = 1, int const sceneID = Fbx::FBX_NOT_USED);
+        bool Load(uint const instanceCount = 1, int const sceneID = Fbx::FBX_NOT_USED);
 
     public:
         std::vector<uint> m_Indices{};
@@ -47,12 +47,12 @@ namespace GfxRenderEngine
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        void LoadVertexDataFbx(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
-        void LoadVertexDataFbx(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex,
-                               int vertexColorSet = 0, uint uvSet = 0);
+        void LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
+        void LoadVertexData(const aiNode* fbxNodePtr, uint const meshIndex, uint const fbxMeshIndex, int vertexColorSet = 0,
+                            uint uvSet = 0);
 
-        void LoadMaterialsFbx();
-        bool LoadImageFbx(std::string& filepath, uint& mapIndex, bool useSRGB);
+        void LoadMaterials();
+        bool LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB);
         void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
         bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
         void AssignMaterial(ModelSubmesh& submesh, uint const materialIndex);

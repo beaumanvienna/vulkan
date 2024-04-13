@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,7 +38,7 @@ namespace GfxRenderEngine
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
 
-    bool FastgltfBuilder::LoadGltf(uint const instanceCount, int const sceneID)
+    bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
         stbi_set_flip_vertically_on_load(false);
 
@@ -73,7 +73,7 @@ namespace GfxRenderEngine
 
         if (!m_GltfModel.meshes.size() && !m_GltfModel.lights.size() && !m_GltfModel.cameras.size())
         {
-            LOG_CORE_CRITICAL("LoadGltf: no meshes found in {0}", m_Filepath);
+            LOG_CORE_CRITICAL("Load: no meshes found in {0}", m_Filepath);
             return Gltf::GLTF_LOAD_FAILURE;
         }
 
@@ -82,14 +82,14 @@ namespace GfxRenderEngine
             // check if valid
             if ((m_GltfModel.scenes.size() - 1) < static_cast<size_t>(sceneID))
             {
-                LOG_CORE_CRITICAL("LoadGltf: scene not found in {0}", m_Filepath);
+                LOG_CORE_CRITICAL("Load: scene not found in {0}", m_Filepath);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
         }
 
-        LoadImagesGltf();
+        LoadImages();
         LoadSkeletonsGltf();
-        LoadMaterialsGltf();
+        LoadMaterials();
 
         // PASS 1
         // mark gltf nodes to receive a game object ID if they have a mesh or any child has
@@ -263,7 +263,7 @@ namespace GfxRenderEngine
                 m_InstancedObjects.push_back(entity);
 
                 // create model for 1st instance
-                LoadVertexDataGltf(meshIndex);
+                LoadVertexData(meshIndex);
                 LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(),
                               m_Indices.size(), m_Filepath, nodeName);
                 { // assign material
@@ -425,7 +425,7 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    bool FastgltfBuilder::GetImageFormatGltf(uint const imageIndex)
+    bool FastgltfBuilder::GetImageFormat(uint const imageIndex)
     {
         for (fastgltf::Material& material : m_GltfModel.materials)
         {
@@ -438,7 +438,7 @@ namespace GfxRenderEngine
                     return Texture::USE_SRGB;
                 }
             }
-            else if (material.emissiveTexture.has_value())
+            if (material.emissiveTexture.has_value())
             {
                 uint emissiveTextureIndex = material.emissiveTexture.value().textureIndex;
                 auto& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
@@ -480,7 +480,7 @@ namespace GfxRenderEngine
         return static_cast<int>(filter);
     }
 
-    void FastgltfBuilder::LoadImagesGltf()
+    void FastgltfBuilder::LoadImages()
     {
         size_t numImages = m_GltfModel.images.size();
         m_Images.resize(numImages);
@@ -510,7 +510,7 @@ namespace GfxRenderEngine
 
                         int minFilter = GetMinFilter(imageIndex);
                         int magFilter = GetMinFilter(imageIndex);
-                        bool imageFormat = GetImageFormatGltf(imageIndex);
+                        bool imageFormat = GetImageFormat(imageIndex);
                         texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
                         stbi_image_free(buffer);
@@ -526,7 +526,7 @@ namespace GfxRenderEngine
 
                         int minFilter = GetMinFilter(imageIndex);
                         int magFilter = GetMinFilter(imageIndex);
-                        bool imageFormat = GetImageFormatGltf(imageIndex);
+                        bool imageFormat = GetImageFormat(imageIndex);
                         texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
                         stbi_image_free(buffer);
@@ -554,7 +554,7 @@ namespace GfxRenderEngine
 
                                     int minFilter = GetMinFilter(imageIndex);
                                     int magFilter = GetMinFilter(imageIndex);
-                                    bool imageFormat = GetImageFormatGltf(imageIndex);
+                                    bool imageFormat = GetImageFormat(imageIndex);
                                     texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
                                     stbi_image_free(buffer);
@@ -570,7 +570,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void FastgltfBuilder::LoadMaterialsGltf()
+    void FastgltfBuilder::LoadMaterials()
     {
         size_t numMaterials = m_GltfModel.materials.size();
         m_Materials.resize(numMaterials);
@@ -585,7 +585,7 @@ namespace GfxRenderEngine
 
             // diffuse color
             {
-                material.m_DiffuseColor = glm::make_vec3(glTFMaterial.pbrData.baseColorFactor.data());
+                material.m_DiffuseColor = glm::make_vec4(glTFMaterial.pbrData.baseColorFactor.data());
             }
 
             // diffuse map aka basecolor aka albedo
@@ -649,7 +649,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void FastgltfBuilder::LoadVertexDataGltf(uint const meshIndex)
+    void FastgltfBuilder::LoadVertexData(uint const meshIndex)
     {
         // handle vertex data
         m_Vertices.clear();
@@ -670,13 +670,14 @@ namespace GfxRenderEngine
 
             size_t vertexCount = 0;
             size_t indexCount = 0;
+            size_t colorCount = 0;
 
-            glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 1.0f);
+            glm::vec4 diffuseColor = glm::vec4(1.0f);
             if (glTFPrimitive.materialIndex.has_value())
             {
                 size_t materialIndex = glTFPrimitive.materialIndex.value();
                 CORE_ASSERT(materialIndex < m_Materials.size(),
-                            "LoadVertexDataGltf: glTFPrimitive.materialIndex must be less than m_Materials.size()");
+                            "LoadVertexData: glTFPrimitive.materialIndex must be less than m_Materials.size()");
                 diffuseColor = m_Materials[materialIndex].m_DiffuseColor;
             }
 
@@ -704,7 +705,7 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("COLOR_0") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second], colorBuffer, &vertexCount);
+                        m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second], colorBuffer, &colorCount);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex normals
@@ -756,7 +757,7 @@ namespace GfxRenderEngine
                     Vertex vertex{};
                     vertex.m_Amplification = 1.0f;
                     auto position = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
-                    auto vertexColor = colorBuffer ? glm::make_vec4(&colorBuffer[v * 4]) : glm::vec4(1.0f);
+                    auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[v * 3]) : glm::vec3(1.0f);
 
                     vertex.m_Position = glm::vec3(position.x, position.y, position.z);
                     vertex.m_Normal =
@@ -767,7 +768,8 @@ namespace GfxRenderEngine
 
                     auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_UV = uv;
-                    vertex.m_Color = vertexColor * glm::vec4(diffuseColor, 1.0f);
+                    vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
+
                     if (jointsBuffer && weightsBuffer)
                     {
                         switch (getGLComponentType(jointsBufferDataType))
@@ -800,7 +802,6 @@ namespace GfxRenderEngine
                 // calculate tangents
                 if (!tangentsBuffer)
                 {
-                    LOG_CORE_CRITICAL("no tangents in gltf file found, calculating tangents manually");
                     CalculateTangents();
                 }
             }
@@ -1231,7 +1232,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::PrintAssetError(fastgltf::Error assetErrorCode)
     {
-        LOG_CORE_CRITICAL("FastgltfBuilder::LoadGltf: couldn't load {0}", m_Filepath);
+        LOG_CORE_CRITICAL("FastgltfBuilder::Load: couldn't load {0}", m_Filepath);
         switch (assetErrorCode)
         {
             case fastgltf::Error::None:
@@ -1241,7 +1242,7 @@ namespace GfxRenderEngine
             }
             case fastgltf::Error::InvalidPath:
             {
-                LOG_CORE_CRITICAL("error code: The glTF directory passed to loadGLTF is invalid.");
+                LOG_CORE_CRITICAL("error code: The glTF directory passed to Load is invalid.");
                 break;
             }
             case fastgltf::Error::MissingExtensions:

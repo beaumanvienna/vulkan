@@ -32,7 +32,7 @@ layout(location = 4)       out vec4 outEmissive;
 
 void main()
 {
-    vec3 fragColor = texture(emissiveMap, fragUV).rgb;
-    if (fragColor == vec3(0,0,0)) discard;
-    outEmissive    = vec4(fragColor, 1.0) * fragEmissiveStrength;
+    vec4 fragColor = texture(emissiveMap, fragUV);
+    if (fragColor == vec4(0,0,0,0)) discard;
+    outEmissive    = fragColor * fragEmissiveStrength;
 }
