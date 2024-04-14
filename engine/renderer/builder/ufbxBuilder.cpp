@@ -614,73 +614,42 @@ namespace GfxRenderEngine
                 }
             }
         }
-        submesh.m_VertexCount = m_Vertices.size() - numVerticesBefore;
 
-        // Indices
-        //{
-        //    uint globalIndex = numIndicesBefore;
-        //    for (uint it = 0; it < numIndices; ++it)
-        //    {
-        //        m_Indices[globalIndex] = fbxMesh.vertex_indices[it];
-        //        ++globalIndex;
-        //    }
-        //}
+        // resolve indices
+        // A face has four vertices, while above loop generates at least six vertices for per face)
+        {
+            // get number of all vertices created from above (faces * trianglesPerFace * 3)
+            uint submeshAllVertices = m_Vertices.size() - numVerticesBefore;
 
-        //    // bone indices and bone weights
-        //    {
-        //        uint numberOfBones = mesh->mNumBones;
-        //        std::vector<uint> numberOfBonesBoundtoVertex;
-        //        numberOfBonesBoundtoVertex.resize(m_Vertices.size(), 0);
-        //        for (uint boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
-        //        {
-        //            aiBone& bone = *mesh->mBones[boneIndex];
-        //            uint numberOfWeights = bone.mNumWeights;
-        //
-        //            // loop over vertices that are bound to that bone
-        //            for (uint weightIndex = 0; weightIndex < numberOfWeights; ++weightIndex)
-        //            {
-        //                uint vertexId = bone.mWeights[weightIndex].mVertexId;
-        //                CORE_ASSERT(vertexId < m_Vertices.size(), "memory violation");
-        //                float weight = bone.mWeights[weightIndex].mWeight;
-        //                switch (numberOfBonesBoundtoVertex[vertexId])
-        //                {
-        //                    case 0:
-        //                        m_Vertices[vertexId].m_JointIds.x = boneIndex;
-        //                        m_Vertices[vertexId].m_Weights.x = weight;
-        //                        break;
-        //                    case 1:
-        //                        m_Vertices[vertexId].m_JointIds.y = boneIndex;
-        //                        m_Vertices[vertexId].m_Weights.y = weight;
-        //                        break;
-        //                    case 2:
-        //                        m_Vertices[vertexId].m_JointIds.z = boneIndex;
-        //                        m_Vertices[vertexId].m_Weights.z = weight;
-        //                        break;
-        //                    case 3:
-        //                        m_Vertices[vertexId].m_JointIds.w = boneIndex;
-        //                        m_Vertices[vertexId].m_Weights.w = weight;
-        //                        break;
-        //                    default:
-        //                        break;
-        //                }
-        //                // track how many times this bone was hit
-        //                // (up to four bones can be bound to a vertex)
-        //                ++numberOfBonesBoundtoVertex[vertexId];
-        //            }
-        //        }
-        //        // normalize weights
-        //        for (uint vertexIndex = 0; vertexIndex < m_Vertices.size(); ++vertexIndex)
-        //        {
-        //            glm::vec4& boneWeights = m_Vertices[vertexIndex].m_Weights;
-        //            float weightSum = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
-        //            if (weightSum > std::numeric_limits<float>::epsilon())
-        //            {
-        //                m_Vertices[vertexIndex].m_Weights = glm::vec4(boneWeights.x / weightSum, boneWeights.y / weightSum,
-        //                                                              boneWeights.z / weightSum, boneWeights.w /
-        //                                                              weightSum);
-        //            }
-        //        }
-        //    }
+            // create a ufbx vertex stream with data pointing to the first vertex of this submesh
+            // (m_vertices is for all submeshes)
+            ufbx_vertex_stream streams;
+            streams.data = &m_Vertices[numVerticesBefore];
+            streams.vertex_count = submeshAllVertices;
+            streams.vertex_size = sizeof(Vertex);
+
+            // index buffer: add space for all new vertices from above
+            m_Indices.resize(numIndicesBefore + submeshAllVertices);
+
+            // ufbx_generate_indices() will rearrange m_Vertices (via streams.data) and fill m_Indices
+            ufbx_error ufbxError;
+            size_t numVertices = ufbx_generate_indices(&streams, 1 /*size_t num_streams*/, &m_Indices[numIndicesBefore],
+                                                       submeshAllVertices, nullptr, &ufbxError);
+
+            // handle error
+            if (ufbxError.type != UFBX_ERROR_NONE)
+            {
+                char buffer[1024];
+                ufbx_format_error(buffer, sizeof(buffer), &ufbxError);
+                LOG_CORE_CRITICAL("UFbxBuilder: creation of index buffer failed, file: {0}, error: {1},  node: {2}",
+                                  m_Filepath, buffer, fbxNodePtr->name.data);
+            }
+
+            // m_Vertices can be downsized now
+            m_Vertices.resize(numVerticesBefore + numVertices);
+            submesh.m_VertexCount = numVertices;
+            submesh.m_IndexCount = submeshAllVertices;
+        }
     }
 
     void UFbxBuilder::LoadTransformationMatrix(const ufbx_node* fbxNodePtr, glm::vec3& scale, glm::quat& rotation,
