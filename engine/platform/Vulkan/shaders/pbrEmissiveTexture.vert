@@ -28,6 +28,7 @@ layout(location = 3) in vec2  uv;
 
 layout(location = 0)  out  vec2  fragUV;
 layout(location = 1)  out  float fragEmissiveStrength;
+layout(location = 2)  out  vec4  fragEmissiveColor;
 
 struct PointLight
 {
@@ -58,6 +59,7 @@ layout(push_constant) uniform Push
 {
     mat4 m_ModelMatrix;
     mat4 m_NormalMatrix;
+    vec4 m_EmissiveColor;
 } push;
 
 
@@ -68,4 +70,5 @@ void main()
 
     fragUV = uv;
     fragEmissiveStrength = push.m_NormalMatrix[3].w;
+    fragEmissiveColor = push.m_EmissiveColor;
 }

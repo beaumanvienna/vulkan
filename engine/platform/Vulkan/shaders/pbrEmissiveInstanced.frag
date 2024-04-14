@@ -24,6 +24,7 @@
 
 layout(location = 0)       in  vec4  fragColor;
 
+layout(location = 2)       out vec4 outColor;
 layout(location = 4)       out vec4 outEmissive;
 
 layout(push_constant) uniform Push
@@ -32,10 +33,11 @@ layout(push_constant) uniform Push
     float m_Metallic;
     float m_NormalMapIntensity;
     float m_EmissiveStrength;
+    vec4  m_EmissiveColor;
 } push;
 
 void main()
 {
-    if (fragColor == vec4(0,0,0,0)) discard;
-    outEmissive    = fragColor * push.m_EmissiveStrength;
+    outColor = fragColor;
+    outEmissive = push.m_EmissiveColor * push.m_EmissiveStrength;
 }

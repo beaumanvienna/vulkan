@@ -457,7 +457,22 @@ namespace GfxRenderEngine
                 submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
 
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
+            {
+                VK_PushConstantDataEmissive push{};
+                push.m_ModelMatrix = transform.GetMat4Global();
+                push.m_NormalMatrix = transform.GetNormalMatrix();
+
+                push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+                push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
+                push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
+                push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
+
+                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
+
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataEmissive), &push);
+            }
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -473,7 +488,19 @@ namespace GfxRenderEngine
             }
 
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
+            {
+                VK_PushConstantDataEmissiveInstanced push{};
+
+                push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
+                push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
+                push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
+                push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
+
+                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
+
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataEmissiveInstanced), &push);
+            }
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -489,7 +516,22 @@ namespace GfxRenderEngine
             }
 
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
+            {
+                VK_PushConstantDataEmissiveTexture push{};
+                push.m_ModelMatrix = transform.GetMat4Global();
+                push.m_NormalMatrix = transform.GetNormalMatrix();
+
+                push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
+                push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
+                push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
+                push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
+
+                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
+
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataEmissiveTexture), &push);
+            }
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
@@ -505,7 +547,18 @@ namespace GfxRenderEngine
             }
 
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
+            {
+                VK_PushConstantDataEmissiveTextureInstanced push{};
+
+                push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
+                push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
+                push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
+                push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
+                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
+
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataEmissiveTextureInstanced), &push);
+            }
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }

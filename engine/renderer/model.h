@@ -88,7 +88,7 @@ namespace GfxRenderEngine
         float m_NormalMapIntensity{1.0f};
         float m_Roughness{0.1};
         float m_Metallic{0.5};
-        float m_EmissiveStrength{0.0f};
+        float m_EmissiveStrength{1.0f};
         // map indices
         uint m_DiffuseMapIndex;
         uint m_NormalMapIndex;
@@ -106,6 +106,7 @@ namespace GfxRenderEngine
         float m_Roughness;
         float m_Metallic;
         float m_EmissiveStrength;
+        glm::vec4 m_EmissiveColor;
     };
 
     struct Submesh

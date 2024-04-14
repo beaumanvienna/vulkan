@@ -525,26 +525,21 @@ namespace GfxRenderEngine
             material.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
             material.m_Metallic = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             material.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
-            material.m_EmissiveStrength = 0;
 
+            // emissive color
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
-                glm::vec3 emissiveFactor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
-                if (emissiveFactor != glm::vec3(0, 0, 0))
-                {
-                    material.m_EmissiveColor = emissiveFactor;
-                    material.m_EmissiveStrength = emissiveFactor.r;
-                }
+                material.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
             }
+            // emissive texture
             if (glTFMaterial.emissiveTexture.index != Gltf::GLTF_NOT_USED)
             {
                 int emissiveTextureIndex = glTFMaterial.emissiveTexture.index;
                 tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
                 material.m_EmissiveMapIndex = emissiveTexture.source;
                 material.m_Features |= Material::HAS_EMISSIVE_MAP;
-                if (!material.m_EmissiveStrength)
-                    material.m_EmissiveStrength = 1;
             }
+            // emissive strength
             {
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
                 if (it != glTFMaterial.extensions.end())
@@ -862,6 +857,7 @@ namespace GfxRenderEngine
         submesh.m_MaterialProperties.m_Roughness = material.m_Roughness;
         submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
         submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
+        submesh.m_MaterialProperties.m_EmissiveColor = glm::vec4(material.m_EmissiveColor, 1.0f);
 
         uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
                                                   Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);
@@ -1064,41 +1060,36 @@ namespace GfxRenderEngine
         }
 
         // emissive materials
-        if (material.m_EmissiveStrength != 0)
+        if (material.m_Features & Material::HAS_EMISSIVE_MAP) // emissive texture
         {
-            // emissive texture
-            if (material.m_Features & Material::HAS_EMISSIVE_MAP)
-            {
-                uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
-                CORE_ASSERT(emissiveMapIndex < m_Images.size(),
-                            "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
+            uint emissiveMapIndex = m_ImageOffset + material.m_EmissiveMapIndex;
+            CORE_ASSERT(emissiveMapIndex < m_Images.size(),
+                        "GltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
 
-                { // create material descriptor
-                    std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor =
-                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
-                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                }
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
-
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex,
-                              material.m_Features);
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
-            else // emissive vertex color
-            {
-                { // create material descriptor
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
 
-                    std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
-                    auto materialDescriptor =
-                        MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
-                    submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-                }
-                m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
-
-                LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex,
-                              material.m_Features);
+            LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
+        }
+        else if (material.m_EmissiveColor * material.m_EmissiveStrength != glm::vec3(0.0f, 0.0f, 0.0f)) // emissive color
+        {
+            { // create material descriptor
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced, instanceUbo);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
             }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissive;
+
+            LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
     }
 

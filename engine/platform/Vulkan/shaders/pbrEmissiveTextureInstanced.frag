@@ -35,11 +35,12 @@ layout(push_constant) uniform Push
     float m_Metallic;
     float m_NormalMapIntensity;
     float m_EmissiveStrength;
+    vec4  m_EmissiveColor;
 } push;
 
 void main()
 {
     vec4 fragColor = texture(emissiveMap, fragUV);
     if (fragColor == vec4(0,0,0,0)) discard;
-    outEmissive    = fragColor * push.m_EmissiveStrength;
+    outEmissive    = fragColor * push.m_EmissiveColor * push.m_EmissiveStrength;
 }
