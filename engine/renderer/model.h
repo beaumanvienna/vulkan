@@ -107,6 +107,7 @@ namespace GfxRenderEngine
         float m_Metallic;
         float m_EmissiveStrength;
         glm::vec4 m_EmissiveColor;
+        glm::vec4 m_BaseColorFactor;
     };
 
     struct Submesh

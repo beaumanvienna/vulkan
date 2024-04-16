@@ -60,6 +60,7 @@ layout(push_constant) uniform Push
 {
     mat4 m_ModelMatrix;
     mat4 m_NormalMatrix;
+    vec4 m_BaseColorFactor;
 } push;
 
 layout(location = 0)  out  vec3  fragPosition;

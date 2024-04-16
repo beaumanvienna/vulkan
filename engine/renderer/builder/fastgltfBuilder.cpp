@@ -676,7 +676,8 @@ namespace GfxRenderEngine
                 const uint* jointsBuffer = nullptr;
                 const float* weightsBuffer = nullptr;
 
-                fastgltf::ComponentType jointsBufferDataType = fastgltf::ComponentType::Invalid;
+                fastgltf::ComponentType jointsBufferComponentType = fastgltf::ComponentType::Invalid;
+                fastgltf::ComponentType colorBufferComponentType = fastgltf::ComponentType::Invalid;
 
                 // Get buffer data for vertex positions
                 if (glTFPrimitive.findAttribute("POSITION") != glTFPrimitive.attributes.end())
@@ -689,10 +690,12 @@ namespace GfxRenderEngine
                 // Get buffer data for vertex color
                 if (glTFPrimitive.findAttribute("COLOR_0") != glTFPrimitive.attributes.end())
                 {
-                    auto componentType = LoadAccessor<float>(
+                    colorBufferComponentType = LoadAccessor<float>(
                         m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second], colorBuffer, &colorCount);
-                    CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
+                    auto glComponentType = fastgltf::getGLComponentType(colorBufferComponentType);
+                    CORE_ASSERT(glComponentType == GL_FLOAT, "unexpected component type " + std::to_string(glComponentType));
                 }
+
                 // Get buffer data for vertex normals
                 if (glTFPrimitive.findAttribute("NORMAL") != glTFPrimitive.attributes.end())
                 {
@@ -719,11 +722,11 @@ namespace GfxRenderEngine
                 // Get buffer data for joints
                 if (glTFPrimitive.findAttribute("JOINTS_0") != glTFPrimitive.attributes.end())
                 {
-                    jointsBufferDataType = LoadAccessor<uint>(
+                    jointsBufferComponentType = LoadAccessor<uint>(
                         m_GltfModel.accessors[glTFPrimitive.findAttribute("JOINTS_0")->second], jointsBuffer);
-                    CORE_ASSERT((fastgltf::getGLComponentType(jointsBufferDataType) == GL_BYTE) ||
-                                    (fastgltf::getGLComponentType(jointsBufferDataType) == GL_UNSIGNED_BYTE),
-                                "unexpected component type");
+                    auto glComponentType = fastgltf::getGLComponentType(jointsBufferComponentType);
+                    CORE_ASSERT((glComponentType == GL_BYTE) || (glComponentType == GL_UNSIGNED_BYTE),
+                                "unexpected component type " + std::to_string(glComponentType));
                 }
                 // Get buffer data for joint weights
                 if (glTFPrimitive.findAttribute("WEIGHTS_0") != glTFPrimitive.attributes.end())
@@ -743,6 +746,7 @@ namespace GfxRenderEngine
                     vertex.m_Amplification = 1.0f;
                     auto position = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
                     auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[v * 3]) : glm::vec3(1.0f);
+                    vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
 
                     vertex.m_Position = glm::vec3(position.x, position.y, position.z);
                     vertex.m_Normal =
@@ -753,11 +757,10 @@ namespace GfxRenderEngine
 
                     auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     vertex.m_UV = uv;
-                    vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
 
                     if (jointsBuffer && weightsBuffer)
                     {
-                        switch (getGLComponentType(jointsBufferDataType))
+                        switch (getGLComponentType(jointsBufferComponentType))
                         {
                             case GL_BYTE:
                             case GL_UNSIGNED_BYTE:
@@ -870,6 +873,7 @@ namespace GfxRenderEngine
         submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
         submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
         submesh.m_MaterialProperties.m_EmissiveColor = glm::vec4(material.m_EmissiveColor, 1.0f);
+        submesh.m_MaterialProperties.m_BaseColorFactor = material.m_DiffuseColor;
 
         uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
                                                   Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION);

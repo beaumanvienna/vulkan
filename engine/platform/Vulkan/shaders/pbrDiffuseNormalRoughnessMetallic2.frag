@@ -70,6 +70,7 @@ layout(push_constant) uniform Push
 {
     mat4 m_ModelMatrix;
     mat4 m_NormalMatrix;
+    vec4 m_BaseColorFactor;
 } push;
 
 void main()
@@ -89,7 +90,7 @@ void main()
     normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
     outNormal   = vec4(normalize(TBN * normalTangentSpace), 1.0);
 
-    vec4 col    = texture(diffuseMap, fragUV);
+    vec4 col    = texture(diffuseMap, fragUV) * push.m_BaseColorFactor;
     if (col.w < 0.5)
     {
         discard;

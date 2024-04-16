@@ -30,6 +30,7 @@ namespace GfxRenderEngine
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
+        glm::vec4 m_BaseColorFactor;
     };
 
     struct VK_PushConstantDataGenericInstanced
@@ -38,6 +39,7 @@ namespace GfxRenderEngine
         float m_Metallic;
         float m_NormalMapIntensity;
         float m_EmissiveStrength;
+        glm::vec4 m_BaseColorFactor;
     };
 
     struct VK_PushConstantDataEmissive

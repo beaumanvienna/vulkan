@@ -69,6 +69,7 @@ layout(push_constant) uniform Push
     float m_Metallic;
     float m_NormalMapIntensity;
     float m_EmissiveStrength;
+    vec4 m_BaseColorFactor;
 } push;
 
 void main()
@@ -85,7 +86,7 @@ void main()
     outNormal   = vec4(N, 1.0);
 
 
-    vec4 col    = texture(diffuseMap, fragUV);
+    vec4 col    = texture(diffuseMap, fragUV) * push.m_BaseColorFactor;
     if (col.w < 0.5)
     {
         discard;

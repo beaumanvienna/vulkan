@@ -441,11 +441,6 @@ namespace GfxRenderEngine
                 engineMaterial.m_DiffuseColor.r = diffuseColor.r;
                 engineMaterial.m_DiffuseColor.g = diffuseColor.g;
                 engineMaterial.m_DiffuseColor.b = diffuseColor.b;
-                engineMaterial.m_DiffuseColor.a = 1.0f; // not sure why assimp doesn't support alpha
-            }
-            else
-            {
-                engineMaterial.m_DiffuseColor = glm::vec4(1.0f);
             }
         }
         { // roughness
@@ -759,6 +754,7 @@ namespace GfxRenderEngine
         submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
         submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
         submesh.m_MaterialProperties.m_EmissiveColor = glm::vec4(material.m_EmissiveColor, 1.0f);
+        submesh.m_MaterialProperties.m_BaseColorFactor = material.m_DiffuseColor;
 
         uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
                                                   Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP |

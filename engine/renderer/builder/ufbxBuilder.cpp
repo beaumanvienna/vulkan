@@ -364,20 +364,24 @@ namespace GfxRenderEngine
                 ufbx_material_map const& materialMap = fbxMaterial->pbr.base_color;
                 if (materialMap.has_value)
                 {
+                    const ufbx_material_map& baseFactorMaterialMap = fbxMaterial->pbr.base_factor;
+                    float baseFactor = baseFactorMaterialMap.has_value ? baseFactorMaterialMap.value_real : 1.0f;
                     if (materialMap.texture)
                     {
                         std::string filename(materialMap.texture->filename.data);
                         LoadImage(filename, engineMaterial.m_DiffuseMapIndex, Texture::USE_SRGB);
                         engineMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                        engineMaterial.m_DiffuseColor.r = baseFactor;
+                        engineMaterial.m_DiffuseColor.g = baseFactor;
+                        engineMaterial.m_DiffuseColor.b = baseFactor;
+                        engineMaterial.m_DiffuseColor.a = baseFactor;
                     }
                     else // constant material property
                     {
-                        const ufbx_material_map& baseFactorMaterialMap = fbxMaterial->pbr.base_factor;
-                        float baseFactor = baseFactorMaterialMap.has_value ? baseFactorMaterialMap.value_real : 1.0f;
                         engineMaterial.m_DiffuseColor.r = materialMap.value_vec4.x * baseFactor;
                         engineMaterial.m_DiffuseColor.g = materialMap.value_vec4.y * baseFactor;
                         engineMaterial.m_DiffuseColor.b = materialMap.value_vec4.z * baseFactor;
-                        engineMaterial.m_DiffuseColor.a = materialMap.value_vec4.w;
+                        engineMaterial.m_DiffuseColor.a = materialMap.value_vec4.w * baseFactor;
                     }
                 }
                 break;
@@ -697,6 +701,7 @@ namespace GfxRenderEngine
         submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
         submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
         submesh.m_MaterialProperties.m_EmissiveColor = glm::vec4(material.m_EmissiveColor, 1.0f);
+        submesh.m_MaterialProperties.m_BaseColorFactor = material.m_DiffuseColor;
 
         uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
                                                   Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP |
