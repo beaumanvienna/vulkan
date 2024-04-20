@@ -43,25 +43,25 @@ namespace GfxRenderEngine
 
     bool UFbxBuilder::Load(uint const instanceCount, int const sceneID)
     {
-        ufbx_load_opts opts{};
-        opts.load_external_files = true;
-        opts.ignore_missing_external_files = true;
-        opts.generate_missing_normals = true;
-        opts.target_axes = {
+        ufbx_load_opts loadOptions{};
+        loadOptions.load_external_files = true;
+        loadOptions.ignore_missing_external_files = true;
+        loadOptions.generate_missing_normals = true;
+        loadOptions.target_axes = {
             .right = UFBX_COORDINATE_AXIS_POSITIVE_X,
             .up = UFBX_COORDINATE_AXIS_POSITIVE_Y,
             .front = UFBX_COORDINATE_AXIS_POSITIVE_Z,
         };
-        opts.target_unit_meters = 1.0f;
+        loadOptions.target_unit_meters = 1.0f;
 
-        ufbx_error error;
-        m_FbxScene = ufbx_load_file(m_Filepath.c_str(), &opts, &error);
+        ufbx_error ufbxError;
+        m_FbxScene = ufbx_load_file(m_Filepath.c_str(), &loadOptions, &ufbxError);
 
         if (m_FbxScene == nullptr)
         {
-            char buffer[1024];
-            ufbx_format_error(buffer, sizeof(buffer), &error);
-            LOG_CORE_CRITICAL("UFbxBuilder::Load error: file: {0}, error: {1}", m_Filepath, buffer);
+            char errorBuffer[512];
+            ufbx_format_error(errorBuffer, sizeof(errorBuffer), &ufbxError);
+            LOG_CORE_CRITICAL("UFbxBuilder::Load error: file: {0}, error: {1}", m_Filepath, errorBuffer);
             return Fbx::FBX_LOAD_FAILURE;
         }
 
@@ -210,6 +210,7 @@ namespace GfxRenderEngine
         if (fbxNodePtr->parent == m_FbxScene->root_node)
         {
             // map fbx to gltf
+            // use ufbx_scene_settings.unit_meters
             transform.SetScale({scale.x / 100.0f, scale.y / 100.0f, scale.z / 100.0f});
             transform.SetTranslation({translation.x / 100.0f, translation.y / 100.0f, translation.z / 100.0f});
         }
@@ -549,6 +550,11 @@ namespace GfxRenderEngine
             bool hasTangents = fbxMesh.vertex_tangent.exists;
             bool hasUVs = fbxMesh.uv_sets.count;
             bool hasVertexColors = fbxMesh.vertex_color.exists;
+            ufbx_skin_deformer* fbxSkin = nullptr;
+            if (fbxMesh.skin_deformers.count)
+            {
+                fbxSkin = fbxMesh.skin_deformers.data[0];
+            }
 
             m_FbxNoBuiltInTangents = m_FbxNoBuiltInTangents || (!hasTangents);
             for (size_t fbxFaceIndex = 0; fbxFaceIndex < numFaces; ++fbxFaceIndex)
@@ -614,6 +620,49 @@ namespace GfxRenderEngine
                     {
                         vertex.m_Color = diffuseColor;
                     }
+                    if (fbxSkin)
+                    {
+                        ufbx_skin_vertex skinVertex = fbxSkin->vertices[fbxVertexIndex];
+                        size_t numWeights =
+                            skinVertex.num_weights < MAX_JOINT_INFLUENCE ? skinVertex.num_weights : MAX_JOINT_INFLUENCE;
+
+                        for (size_t weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+                        {
+                            ufbx_skin_weight skinWeight = fbxSkin->weights.data[skinVertex.weight_begin + weightIndex];
+                            int jointIndex = skinWeight.cluster_index;
+                            float weight = skinWeight.weight;
+
+                            switch (weightIndex)
+                            {
+                                case 0:
+                                    vertex.m_JointIds.x = jointIndex;
+                                    vertex.m_Weights.x = weight;
+                                    break;
+                                case 1:
+                                    vertex.m_JointIds.y = jointIndex;
+                                    vertex.m_Weights.y = weight;
+                                    break;
+                                case 2:
+                                    vertex.m_JointIds.z = jointIndex;
+                                    vertex.m_Weights.z = weight;
+                                    break;
+                                case 3:
+                                    vertex.m_JointIds.w = jointIndex;
+                                    vertex.m_Weights.w = weight;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        { // normalize weights
+                            float weightSum =
+                                vertex.m_Weights.x + vertex.m_Weights.y + vertex.m_Weights.z + vertex.m_Weights.w;
+                            if (weightSum > std::numeric_limits<float>::epsilon())
+                            {
+                                vertex.m_Weights = vertex.m_Weights / weightSum;
+                            }
+                        }
+                    }
                     m_Vertices.push_back(vertex);
                 }
             }
@@ -643,10 +692,10 @@ namespace GfxRenderEngine
             // handle error
             if (ufbxError.type != UFBX_ERROR_NONE)
             {
-                char buffer[1024];
-                ufbx_format_error(buffer, sizeof(buffer), &ufbxError);
+                char errorBuffer[512];
+                ufbx_format_error(errorBuffer, sizeof(errorBuffer), &ufbxError);
                 LOG_CORE_CRITICAL("UFbxBuilder: creation of index buffer failed, file: {0}, error: {1},  node: {2}",
-                                  m_Filepath, buffer, fbxNodePtr->name.data);
+                                  m_Filepath, errorBuffer, fbxNodePtr->name.data);
             }
 
             // m_Vertices can be downsized now

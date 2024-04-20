@@ -32,270 +32,254 @@ namespace GfxRenderEngine
 {
     void UFbxBuilder::LoadSkeletonsFbx()
     {
-        // uint numberOfSkeletons = 0;
-        // uint meshIndex = 0;
-        //// iterate over all meshes and check if they have a skeleton
-        // for (uint index = 0; index < m_FbxScene->mNumMeshes; ++index)
-        //{
-        //     aiMesh* mesh = m_FbxScene->mMeshes[index];
-        //     if (mesh->mNumBones)
-        //     {
-        //         ++numberOfSkeletons;
-        //         meshIndex = index;
-        //     }
-        // }
-        // if (!numberOfSkeletons)
-        //{
-        //     return;
-        // }
-        //
-        // if (numberOfSkeletons > 1)
-        //{
-        //     LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin {0}.",
-        //                   numberOfSkeletons - 1);
-        // }
-        //
-        // m_Animations = std::make_shared<SkeletalAnimations>();
-        // m_Skeleton = std::make_shared<Armature::Skeleton>();
-        // std::unordered_map<std::string, int> nameToBoneIndex;
-        //
-        //// load skeleton
-        //{
-        //
-        //    aiMesh* mesh = m_FbxScene->mMeshes[meshIndex];
-        //    size_t numberOfJoints = mesh->mNumBones;
-        //    auto& joints =
-        //        m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
-        //
-        //    joints.resize(numberOfJoints);
-        //    m_Skeleton->m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
-        //
-        //    // set up map to find the names of bones when traversing the node hierarchy
-        //    // by iterating the mBones array of the mesh
-        //    for (uint boneIndex = 0; boneIndex < numberOfJoints; ++boneIndex)
-        //    {
-        //        aiBone* bone = mesh->mBones[boneIndex];
-        //        std::string boneName = bone->mName.C_Str();
-        //        nameToBoneIndex[boneName] = boneIndex;
-        //
-        //        // compatibility code with glTF loader; needed in skeletalAnimation.cpp
-        //        // m_Channels.m_Node must be set up accordingly
-        //        m_Skeleton->m_GlobalNodeToJointIndex[boneIndex] = boneIndex;
-        //    }
-        //
-        //    // lambda to convert aiMatrix4x4 to glm::mat4
-        //    auto mat4AssetImporterToGlm = [](aiMatrix4x4 const& mat4AssetImporter)
-        //    {
-        //        glm::mat4 mat4Glm;
-        //        for (uint glmRow = 0; glmRow < 4; ++glmRow)
-        //        {
-        //            for (uint glmColumn = 0; glmColumn < 4; ++glmColumn)
-        //            {
-        //                mat4Glm[glmColumn][glmRow] = mat4AssetImporter[glmRow][glmColumn];
-        //            }
-        //        }
-        //        return mat4Glm;
-        //    };
-        //
-        //    // recursive lambda to traverse fbx node hierarchy
-        //    std::function<void(aiNode*, uint&, int)> traverseNodeHierarchy = [&](aiNode* node, uint& jointIndex, int
-        //    parent)
-        //    {
-        //        size_t numberOfChildren = node->mNumChildren;
-        //
-        //        // does the node name correspond to a bone name?
-        //        std::string nodeName = node->mName.C_Str();
-        //        bool isBone = nameToBoneIndex.contains(nodeName);
-        //
-        //        int parentForChildren = parent;
-        //        if (isBone)
-        //        {
-        //            parentForChildren = jointIndex;
-        //            joints[jointIndex].m_Name = nodeName;
-        //            uint boneIndex = nameToBoneIndex[nodeName];
-        //            aiBone* bone = mesh->mBones[boneIndex];
-        //            joints[jointIndex].m_InverseBindMatrix = mat4AssetImporterToGlm(bone->mOffsetMatrix);
-        //            joints[jointIndex].m_ParentJoint = parent;
-        //            ++jointIndex;
-        //        }
-        //        for (uint childIndex = 0; childIndex < numberOfChildren; ++childIndex)
-        //        {
-        //            if (isBone)
-        //            {
-        //                std::string childNodeName = node->mChildren[childIndex]->mName.C_Str();
-        //                bool childIsBone = nameToBoneIndex.contains(childNodeName);
-        //                if (childIsBone)
-        //                {
-        //                    joints[parentForChildren].m_Children.push_back(jointIndex);
-        //                }
-        //            }
-        //            traverseNodeHierarchy(node->mChildren[childIndex], jointIndex, parentForChildren);
-        //        }
-        //    };
-        //    uint jointIndex = 0;
-        //    traverseNodeHierarchy(m_FbxScene->mRootNode, jointIndex, Armature::NO_PARENT);
-        //    // m_Skeleton->Traverse();
-        //
-        //    int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
-        //    m_ShaderData = Buffer::Create(bufferSize);
-        //    m_ShaderData->MapBuffer();
-        //}
-        //
-        // size_t numberOfAnimations = m_FbxScene->mNumAnimations;
-        // for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
-        //{
-        //    aiAnimation& fbxAnimation = *m_FbxScene->mAnimations[animationIndex];
-        //
-        //    std::string animationName(fbxAnimation.mName.C_Str());
-        //    // the asset importer includes animations twice,
-        //    // as "armature|name" and "name"
-        //    if (animationName.find("|") != std::string::npos)
-        //    {
-        //        continue;
-        //    }
-        //    std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(animationName);
-        //
-        //    // animation speed
-        //    double ticksPerSecond = 0.0;
-        //    if (fbxAnimation.mTicksPerSecond > std::numeric_limits<float>::epsilon())
-        //    {
-        //        ticksPerSecond = fbxAnimation.mTicksPerSecond;
-        //    }
-        //    else
-        //    {
-        //        LOG_CORE_ERROR("no speed information found in fbx file");
-        //        ticksPerSecond = 30.0;
-        //    }
-        //
-        //    {
-        //        uint channelAndSamplerIndex = 0;
-        //        uint numberOfFbxChannels = fbxAnimation.mNumChannels;
-        //        for (uint fbxChannelIndex = 0; fbxChannelIndex < numberOfFbxChannels; ++fbxChannelIndex)
-        //        {
-        //            aiNodeAnim& fbxChannel = *fbxAnimation.mChannels[fbxChannelIndex];
-        //            std::string fbxChannelName(fbxChannel.mNodeName.C_Str());
-        //
-        //            // use fbx channels that actually belong to bones
-        //            bool isBone = nameToBoneIndex.contains(fbxChannelName);
-        //            if (isBone)
-        //            {
-        //                // helper lambdas to convert asset importer formats to glm
-        //                auto vec3AssetImporterToGlm = [](aiVector3D const& vec3AssetImporter)
-        //                { return glm::vec3(vec3AssetImporter.x, vec3AssetImporter.y, vec3AssetImporter.z); };
-        //
-        //                auto quaternionAssetImporterToGlmVec4 = [](aiQuaternion const& quaternionAssetImporter)
-        //                {
-        //                    glm::vec4 vec4GLM;
-        //                    vec4GLM.x = quaternionAssetImporter.x;
-        //                    vec4GLM.y = quaternionAssetImporter.y;
-        //                    vec4GLM.z = quaternionAssetImporter.z;
-        //                    vec4GLM.w = quaternionAssetImporter.w;
-        //
-        //                    return vec4GLM;
-        //                };
-        //
-        //                // Each node of the skeleton has channels that point to samplers
-        //                { // set up channels
-        //                    {
-        //                        SkeletalAnimation::Channel channel;
-        //                        channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
-        //                        channel.m_SamplerIndex = channelAndSamplerIndex + 0;
-        //                        channel.m_Node = nameToBoneIndex[fbxChannelName];
-        //
-        //                        animation->m_Channels.push_back(channel);
-        //                    }
-        //                    {
-        //                        SkeletalAnimation::Channel channel;
-        //                        channel.m_Path = SkeletalAnimation::Path::ROTATION;
-        //                        channel.m_SamplerIndex = channelAndSamplerIndex + 1;
-        //                        channel.m_Node = nameToBoneIndex[fbxChannelName];
-        //
-        //                        animation->m_Channels.push_back(channel);
-        //                    }
-        //                    {
-        //                        SkeletalAnimation::Channel channel;
-        //                        channel.m_Path = SkeletalAnimation::Path::SCALE;
-        //                        channel.m_SamplerIndex = channelAndSamplerIndex + 2;
-        //                        channel.m_Node = nameToBoneIndex[fbxChannelName];
-        //
-        //                        animation->m_Channels.push_back(channel);
-        //                    }
-        //                }
-        //
-        //                { // set up samplers
-        //                    {
-        //                        uint numberOfKeys = fbxChannel.mNumPositionKeys;
-        //
-        //                        SkeletalAnimation::Sampler sampler;
-        //                        sampler.m_Timestamps.resize(numberOfKeys);
-        //                        sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
-        //                        sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
-        //                        for (uint key = 0; key < numberOfKeys; ++key)
-        //                        {
-        //                            aiVector3D& value = fbxChannel.mPositionKeys[key].mValue;
-        //                            sampler.m_TRSoutputValuesToBeInterpolated[key] =
-        //                                glm::vec4(vec3AssetImporterToGlm(value), 0.0f);
-        //                            sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
-        //                        }
-        //
-        //                        animation->m_Samplers.push_back(sampler);
-        //                    }
-        //                    {
-        //                        uint numberOfKeys = fbxChannel.mNumRotationKeys;
-        //
-        //                        SkeletalAnimation::Sampler sampler;
-        //                        sampler.m_Timestamps.resize(numberOfKeys);
-        //                        sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
-        //                        sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
-        //                        for (uint key = 0; key < numberOfKeys; ++key)
-        //                        {
-        //                            aiQuaternion& value = fbxChannel.mRotationKeys[key].mValue;
-        //                            sampler.m_TRSoutputValuesToBeInterpolated[key] =
-        //                            quaternionAssetImporterToGlmVec4(value); sampler.m_Timestamps[key] =
-        //                            fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
-        //                        }
-        //
-        //                        animation->m_Samplers.push_back(sampler);
-        //                    }
-        //                    {
-        //                        uint numberOfKeys = fbxChannel.mNumScalingKeys;
-        //
-        //                        SkeletalAnimation::Sampler sampler;
-        //                        sampler.m_Timestamps.resize(numberOfKeys);
-        //                        sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
-        //                        sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
-        //                        for (uint key = 0; key < numberOfKeys; ++key)
-        //                        {
-        //                            aiVector3D& value = fbxChannel.mScalingKeys[key].mValue;
-        //                            sampler.m_TRSoutputValuesToBeInterpolated[key] =
-        //                                glm::vec4(vec3AssetImporterToGlm(value), 0.0f);
-        //                            sampler.m_Timestamps[key] = fbxChannel.mPositionKeys[key].mTime / ticksPerSecond;
-        //                        }
-        //
-        //                        animation->m_Samplers.push_back(sampler);
-        //                    }
-        //                }
-        //                channelAndSamplerIndex += 3;
-        //            }
-        //        }
-        //    }
-        //
-        //    if (animation->m_Samplers.size()) // at least one sampler found
-        //    {
-        //        auto& sampler = animation->m_Samplers[0];
-        //        if (sampler.m_Timestamps.size() >= 2) // samplers have at least 2 keyframes to interpolate in between
-        //        {
-        //            animation->SetFirstKeyFrameTime(sampler.m_Timestamps[0]);
-        //            animation->SetLastKeyFrameTime(sampler.m_Timestamps.back());
-        //        }
-        //    }
-        //
-        //    m_Animations->Push(animation);
-        //}
-        //
-        // if (m_Animations->Size())
-        //{
-        //    m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
-        //}
+        uint numberOfSkeletons = 0;
+        uint meshIndex = 0;
+        // iterate over all meshes and check if they have a skeleton
+        for (uint index = 0; index < m_FbxScene->meshes.count; ++index)
+        {
+            ufbx_mesh& mesh = *m_FbxScene->meshes.data[index];
+            if (mesh.skin_deformers.count)
+            {
+                ++numberOfSkeletons;
+                meshIndex = index;
+            }
+        }
+        if (!numberOfSkeletons)
+        {
+            return;
+        }
+
+        if (numberOfSkeletons > 1)
+        {
+            LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using mesh {0}.",
+                          numberOfSkeletons - 1);
+        }
+
+        m_Animations = std::make_shared<SkeletalAnimations>();
+        m_Skeleton = std::make_shared<Armature::Skeleton>();
+        std::unordered_map<std::string, int> nameToJointIndex;
+
+        // load skeleton
+        {
+            ufbx_mesh& mesh = *m_FbxScene->meshes.data[meshIndex];
+            ufbx_skin_deformer& fbxSkin = *mesh.skin_deformers.data[0];
+            size_t numberOfJoints = fbxSkin.clusters.count;
+            auto& joints =
+                m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+
+            joints.resize(numberOfJoints);
+            m_Skeleton->m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
+
+            // set up map to find the names of joints when traversing the node hierarchy
+            // by iterating the clsuetrs array of the mesh
+            for (uint jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+            {
+                ufbx_skin_cluster& joint = *fbxSkin.clusters.data[jointIndex];
+                std::string jointName = joint.name.data;
+                nameToJointIndex[jointName] = jointIndex;
+
+                // compatibility code with glTF loader; needed in skeletalAnimation.cpp
+                // m_Channels.m_Node must be set up accordingly
+                m_Skeleton->m_GlobalNodeToJointIndex[jointIndex] = jointIndex;
+            }
+
+            // lambda to convert ufbx_matrix to glm::mat4
+            auto mat4UfbxToGlm = [](ufbx_matrix const& mat4Ufbx)
+            {
+                glm::mat4 mat4Glm;
+                for (uint column = 0; column < 4; ++column)
+                {
+                    mat4Glm[column].x = mat4Ufbx.cols[column].x;
+                    mat4Glm[column].y = mat4Ufbx.cols[column].y;
+                    mat4Glm[column].z = mat4Ufbx.cols[column].z;
+                    mat4Glm[column].w = column < 3 ? 0.0f : 1.0f;
+                }
+                return mat4Glm;
+            };
+
+            // recursive lambda to traverse fbx node hierarchy
+            std::function<void(ufbx_node*, uint&, int)> traverseNodeHierarchy =
+                [&](ufbx_node* node, uint& jointIndex, int parent)
+            {
+                size_t numberOfChildren = node->children.count;
+
+                // does the node name correspond to a joint name?
+                std::string nodeName = node->name.data;
+                bool isJoint = nameToJointIndex.contains(nodeName);
+
+                int parentForChildren = parent;
+                if (isJoint)
+                {
+                    parentForChildren = jointIndex;
+                    joints[jointIndex].m_Name = nodeName;
+                    uint boneIndex = nameToJointIndex[nodeName];
+                    ufbx_skin_cluster& joint = *fbxSkin.clusters.data[boneIndex];
+                    joints[jointIndex].m_InverseBindMatrix = mat4UfbxToGlm(joint.geometry_to_bone);
+                    joints[jointIndex].m_ParentJoint = parent;
+                    ++jointIndex;
+                }
+                for (uint childIndex = 0; childIndex < numberOfChildren; ++childIndex)
+                {
+                    if (isJoint)
+                    {
+                        std::string childNodeName = node->children.data[childIndex]->name.data;
+                        bool childIsJoint = nameToJointIndex.contains(childNodeName);
+                        if (childIsJoint)
+                        {
+                            joints[parentForChildren].m_Children.push_back(jointIndex);
+                        }
+                    }
+                    traverseNodeHierarchy(node->children.data[childIndex], jointIndex, parentForChildren);
+                }
+            };
+            uint jointIndex = 0;
+            traverseNodeHierarchy(m_FbxScene->root_node, jointIndex, Armature::NO_PARENT);
+            // m_Skeleton->Traverse();
+
+            int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
+            m_ShaderData = Buffer::Create(bufferSize);
+            m_ShaderData->MapBuffer();
+        }
+
+        size_t numberOfAnimations = m_FbxScene->anim_stacks.count;
+        for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
+        {
+            ufbx_anim_stack& fbxAnimation = *m_FbxScene->anim_stacks.data[animationIndex];
+
+            std::string animationName(fbxAnimation.name.data);
+            // the fbx includes animations twice,
+            // as "armature|name" and "name"
+            if (animationName.find("|") != std::string::npos)
+            {
+                continue;
+            }
+            LOG_CORE_INFO("name of animation: {0}", animationName);
+            std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(animationName);
+
+            animation->SetFirstKeyFrameTime(fbxAnimation.time_begin);
+            animation->SetLastKeyFrameTime(fbxAnimation.time_end);
+
+            ufbx_bake_opts bakeOptions = {};
+            ufbx_error ufbxError;
+            ufbx_unique_ptr<ufbx_baked_anim> fbxBakedAnim{
+                ufbx_bake_anim(m_FbxScene, fbxAnimation.anim, &bakeOptions, &ufbxError)};
+            if (!fbxBakedAnim)
+            {
+                char errorBuffer[512];
+                ufbx_format_error(errorBuffer, sizeof(errorBuffer), &ufbxError);
+                CORE_ASSERT(false, "failed to bake animation, " + std::string(errorBuffer));
+                return;
+            }
+
+            // helper lambdas to convert asset importer formats to glm
+            auto vec3UfbxToGlm = [](ufbx_vec3 const& vec3Ufbx) { return glm::vec3(vec3Ufbx.x, vec3Ufbx.y, vec3Ufbx.z); };
+            auto quaternionUfbxToGlmVec4 = [](ufbx_quat const& quaternionUfbx)
+            {
+                glm::vec4 vec4GLM;
+                vec4GLM.x = quaternionUfbx.x;
+                vec4GLM.y = quaternionUfbx.y;
+                vec4GLM.z = quaternionUfbx.z;
+                vec4GLM.w = quaternionUfbx.w;
+                return vec4GLM;
+            };
+
+            uint channelAndSamplerIndex = 0;
+            for (const ufbx_baked_node& fbxChannel : fbxBakedAnim->nodes)
+            {
+                const uint nodeIndex = fbxChannel.typed_id;
+                std::string fbxChannelName(m_FbxScene->nodes[nodeIndex]->name.data);
+                // use fbx channels that actually belong to joints
+                bool isJoint = nameToJointIndex.contains(fbxChannelName);
+                if (isJoint)
+                {
+                    // Each node of the skeleton has channels that point to samplers
+                    { // set up channels
+                        {
+                            SkeletalAnimation::Channel channel;
+                            channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
+                            channel.m_SamplerIndex = channelAndSamplerIndex + 0;
+                            channel.m_Node = nameToJointIndex[fbxChannelName];
+
+                            animation->m_Channels.push_back(channel);
+                        }
+                        {
+                            SkeletalAnimation::Channel channel;
+                            channel.m_Path = SkeletalAnimation::Path::ROTATION;
+                            channel.m_SamplerIndex = channelAndSamplerIndex + 1;
+                            channel.m_Node = nameToJointIndex[fbxChannelName];
+
+                            animation->m_Channels.push_back(channel);
+                        }
+                        {
+                            SkeletalAnimation::Channel channel;
+                            channel.m_Path = SkeletalAnimation::Path::SCALE;
+                            channel.m_SamplerIndex = channelAndSamplerIndex + 2;
+                            channel.m_Node = nameToJointIndex[fbxChannelName];
+
+                            animation->m_Channels.push_back(channel);
+                        }
+                    }
+
+                    { // set up samplers
+                        {
+                            uint numberOfKeys = fbxChannel.translation_keys.count;
+
+                            SkeletalAnimation::Sampler sampler;
+                            sampler.m_Timestamps.resize(numberOfKeys);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
+                            sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
+                            for (uint key = 0; key < numberOfKeys; ++key)
+                            {
+                                ufbx_vec3& value = fbxChannel.translation_keys.data[key].value;
+                                sampler.m_TRSoutputValuesToBeInterpolated[key] = glm::vec4(vec3UfbxToGlm(value), 0.0f);
+                                sampler.m_Timestamps[key] = fbxChannel.translation_keys.data[key].time;
+                            }
+
+                            animation->m_Samplers.push_back(sampler);
+                        }
+                        {
+                            uint numberOfKeys = fbxChannel.rotation_keys.count;
+
+                            SkeletalAnimation::Sampler sampler;
+                            sampler.m_Timestamps.resize(numberOfKeys);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
+                            sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
+                            for (uint key = 0; key < numberOfKeys; ++key)
+                            {
+                                ufbx_quat& value = fbxChannel.rotation_keys.data[key].value;
+                                sampler.m_TRSoutputValuesToBeInterpolated[key] = quaternionUfbxToGlmVec4(value);
+                                sampler.m_Timestamps[key] = fbxChannel.rotation_keys.data[key].time;
+                            }
+
+                            animation->m_Samplers.push_back(sampler);
+                        }
+                        {
+                            uint numberOfKeys = fbxChannel.scale_keys.count;
+
+                            SkeletalAnimation::Sampler sampler;
+                            sampler.m_Timestamps.resize(numberOfKeys);
+                            sampler.m_TRSoutputValuesToBeInterpolated.resize(numberOfKeys);
+                            sampler.m_Interpolation = SkeletalAnimation::InterpolationMethod::LINEAR;
+                            for (uint key = 0; key < numberOfKeys; ++key)
+                            {
+                                ufbx_vec3& value = fbxChannel.scale_keys.data[key].value;
+                                sampler.m_TRSoutputValuesToBeInterpolated[key] = glm::vec4(vec3UfbxToGlm(value), 0.0f);
+                                sampler.m_Timestamps[key] = fbxChannel.scale_keys.data[key].time;
+                            }
+
+                            animation->m_Samplers.push_back(sampler);
+                        }
+                    }
+                    channelAndSamplerIndex += 3;
+                }
+            }
+
+            m_Animations->Push(animation);
+        }
+
+        if (m_Animations->Size())
+        {
+            m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
+        }
     }
 } // namespace GfxRenderEngine
