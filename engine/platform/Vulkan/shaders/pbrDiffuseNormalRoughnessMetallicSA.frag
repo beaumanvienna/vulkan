@@ -67,8 +67,10 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(push_constant) uniform Push
 {
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
+    float m_Roughness;
+    float m_Metallic;
+    float m_NormalMapIntensity;
+    float m_EmissiveStrength;
     vec4 m_BaseColorFactor;
 } push;
 
@@ -84,7 +86,7 @@ void main()
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
 
-    float normalMapIntensity  = push.m_NormalMatrix[3].z;
+    float normalMapIntensity  = push.m_NormalMapIntensity;
     vec3 normalTangentSpace = texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
     normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
     outNormal   = vec4(normalize(TBN * normalTangentSpace), 1.0);

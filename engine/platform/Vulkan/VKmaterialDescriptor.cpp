@@ -385,12 +385,12 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture>& normalMap = textures[1];
                 std::shared_ptr<Texture>& roughnessMetallicMap = textures[2];
                 std::shared_ptr<Buffer>& skeletalAnimationUBO = buffers[0];
-                std::shared_ptr<Buffer>& ubo = buffers[1];
+                std::shared_ptr<Buffer>& uboInstanced = buffers[1];
 
-                auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
-                auto bufferInstanced = static_cast<VK_Buffer*>(ubo.get());
+                auto bufferSA = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
+                auto bufferInstanced = static_cast<VK_Buffer*>(uboInstanced.get());
                 VkDescriptorBufferInfo bufferInfoInstanced = bufferInstanced->DescriptorInfo();
-                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                VkDescriptorBufferInfo bufferInfoSA = bufferSA->DescriptorInfo();
                 {
                     std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
                         VK_DescriptorSetLayout::Builder()
@@ -398,17 +398,20 @@ namespace GfxRenderEngine
                             .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                             .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                             .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                            .AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                             .Build();
 
-                    auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
-                    auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
-                    auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfoDiffuse = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfoNormal = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfoRoughnessMetallic =
+                        static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
 
                     VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                        .WriteImage(0, imageInfo0)
-                        .WriteImage(1, imageInfo1)
-                        .WriteImage(2, imageInfo2)
-                        .WriteBuffer(3, bufferInfo)
+                        .WriteImage(0, imageInfoDiffuse)
+                        .WriteImage(1, imageInfoNormal)
+                        .WriteImage(2, imageInfoRoughnessMetallic)
+                        .WriteBuffer(3, bufferInfoSA)
+                        .WriteBuffer(4, bufferInfoInstanced)
                         .Build(m_DescriptorSet);
                 }
 
@@ -420,7 +423,7 @@ namespace GfxRenderEngine
                             .Build();
 
                     VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                        .WriteBuffer(0, bufferInfo)
+                        .WriteBuffer(0, bufferInfoSA)
                         .WriteBuffer(1, bufferInfoInstanced)
                         .Build(m_ShadowDescriptorSet);
                 }

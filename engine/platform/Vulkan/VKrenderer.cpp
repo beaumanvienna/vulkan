@@ -219,6 +219,7 @@ namespace GfxRenderEngine
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                             VK_SHADER_STAGE_ALL_GRAPHICS)                                       // roughness metallic map
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for animation
+                .AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
                 .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> noMapInstancedDescriptorSetLayout =

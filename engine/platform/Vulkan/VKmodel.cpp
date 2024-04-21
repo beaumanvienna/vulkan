@@ -678,7 +678,7 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }

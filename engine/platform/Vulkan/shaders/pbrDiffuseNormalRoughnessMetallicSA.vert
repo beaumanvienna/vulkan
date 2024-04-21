@@ -48,6 +48,12 @@ struct DirectionalLight
     vec4 m_Color;     // w is intensity
 };
 
+struct InstanceData
+{
+    mat4 m_ModelMatrix;
+    mat4 m_NormalMatrix;
+};
+
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     mat4 m_Projection;
@@ -66,12 +72,10 @@ layout(set = 1, binding = 3) uniform SkeletalAnimationShaderData
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
-layout(push_constant) uniform Push
+layout(set = 1, binding = 4) uniform InstanceUniformBuffer
 {
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-    vec4 m_BaseColorFactor;
-} push;
+    InstanceData m_InstanceData[256];
+} uboInstanced;
 
 layout(location = 0)  out  vec3  fragPosition;
 layout(location = 1)  out  vec2  fragUV;
@@ -97,12 +101,15 @@ void main()
         jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
     }
 
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 instanceNormalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+
     // projection * view * model * position
-    vec4 positionWorld = push.m_ModelMatrix * animatedPosition;
+    vec4 positionWorld = modelMatrix * animatedPosition;
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
     fragPosition       = positionWorld.xyz;
 
-    mat3 normalMatrix  = transpose(inverse(mat3(jointTransform)));
+    mat3 normalMatrix  = transpose(inverse(mat3(instanceNormalMatrix) * mat3(jointTransform)));
     fragNormal  = normalize(normalMatrix * normal);
     fragTangent = normalize(normalMatrix * tangent);
 
