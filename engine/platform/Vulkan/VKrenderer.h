@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -57,6 +57,7 @@
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
+#include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys2.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSysInstanced.h"
 #include "systems/VKpbrDiffuseNormalRoughnessMetallicSys2Instanced.h"
 #include "systems/VKpbrDiffuseNormalSysInstanced.h"
@@ -183,6 +184,8 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2> m_RenderSystemPbrDiffuseNormalRoughnessMetallic2;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA>
             m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA;
+        std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicSA2>
+            m_RenderSystemPbrDiffuseNormalRoughnessMetallicSA2;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced>
             m_RenderSystemPbrDiffuseNormalRoughnessMetallicInstanced;
         std::unique_ptr<VK_RenderSystemPbrDiffuseNormalRoughnessMetallic2Instanced>

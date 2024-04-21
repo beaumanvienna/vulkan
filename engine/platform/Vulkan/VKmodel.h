@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -117,8 +117,7 @@ namespace GfxRenderEngine
                           const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
         void DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform,
                                  const VkPipelineLayout& pipelineLayout, float emissiveStrength = 0.f);
-        void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                                      const VkPipelineLayout& pipelineLayout);
+        void DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
                                                      const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,

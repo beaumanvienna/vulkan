@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -705,13 +705,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,
+    void VK_Model::DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo,
                                                             const VkPipelineLayout& pipelineLayout)
     {
         for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
+            PushConstants(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }

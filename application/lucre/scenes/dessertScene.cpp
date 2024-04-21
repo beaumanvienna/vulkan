@@ -205,7 +205,7 @@ namespace LucreApp
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character4]);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
-            animations.Start(1 /*rumba dance*/);
+            animations.Start(0 /*dancing 1*/);
         }
 
         m_NonPlayableCharacters[NPC::Character5] =
