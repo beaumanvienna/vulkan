@@ -385,8 +385,11 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture>& normalMap = textures[1];
                 std::shared_ptr<Texture>& roughnessMetallicMap = textures[2];
                 std::shared_ptr<Buffer>& skeletalAnimationUBO = buffers[0];
+                std::shared_ptr<Buffer>& ubo = buffers[1];
 
                 auto buffer = static_cast<VK_Buffer*>(skeletalAnimationUBO.get());
+                auto bufferInstanced = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfoInstanced = bufferInstanced->DescriptorInfo();
                 VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
                 {
                     std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
@@ -413,10 +416,12 @@ namespace GfxRenderEngine
                     std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
                         VK_DescriptorSetLayout::Builder()
                             .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                            .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                             .Build();
 
                     VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
                         .WriteBuffer(0, bufferInfo)
+                        .WriteBuffer(1, bufferInfoInstanced)
                         .Build(m_ShadowDescriptorSet);
                 }
                 break;

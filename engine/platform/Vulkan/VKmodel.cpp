@@ -772,6 +772,14 @@ namespace GfxRenderEngine
         {
             DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
+        {
+            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
+        {
+            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
     }
 
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,

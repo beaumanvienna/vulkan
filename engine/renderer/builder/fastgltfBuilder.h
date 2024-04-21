@@ -102,6 +102,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
+        bool m_WindingOrderClockwise;
 
         // scene graph
         uint m_InstanceCount;

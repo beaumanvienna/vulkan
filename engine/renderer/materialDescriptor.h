@@ -60,9 +60,7 @@ namespace GfxRenderEngine
             MtPbrDiffuseNormalRoughnessMetallicSA2Map = 0x1 << 0x13,          // 524288
             MtPbrDiffuseNormalRoughnessMetallicMapInstanced = 0x1 << 0x14,    // 1048576
             MtPbrDiffuseNormalRoughnessMetallic2MapInstanced = 0x1 << 0x15,   // 2097152
-            MtPbrDiffuseNormalRoughnessMetallicSAMapInstanced = 0x1 << 0x16,  // 4194304
-            MtPbrDiffuseNormalRoughnessMetallicSA2MapInstanced = 0x1 << 0x17, // 8388608
-            MtCubemap = 0x1 << 0x18                                           // 16777216
+            MtCubemap = 0x1 << 0x16                                           // 4194304
         };
 
         static constexpr uint ALL_PBR_MATERIALS =

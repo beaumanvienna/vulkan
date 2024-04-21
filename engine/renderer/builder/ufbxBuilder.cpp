@@ -54,6 +54,7 @@ namespace GfxRenderEngine
         };
         loadOptions.target_unit_meters = 1.0f;
 
+        // load raw data of the file (can be fbx or obj)
         ufbx_error ufbxError;
         m_FbxScene = ufbx_load_file(m_Filepath.c_str(), &loadOptions, &ufbxError);
 
@@ -903,7 +904,7 @@ namespace GfxRenderEngine
                                                                m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
-                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2MapInstanced, textures, buffers);
+                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
                 m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
             }
