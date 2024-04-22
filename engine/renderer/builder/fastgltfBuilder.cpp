@@ -26,6 +26,7 @@
 #include "core.h"
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/materialDescriptor.h"
+#include "auxiliary/instrumentation.h"
 #include "auxiliary/file.h"
 
 namespace GfxRenderEngine
@@ -40,6 +41,7 @@ namespace GfxRenderEngine
 
     bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
+        PROFILE_SCOPE("FastgltfBuilder::Load");
         stbi_set_flip_vertically_on_load(false);
 
         { // load from file

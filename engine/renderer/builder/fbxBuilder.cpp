@@ -28,6 +28,7 @@
 #include "core.h"
 #include "renderer/builder/fbxBuilder.h"
 #include "renderer/materialDescriptor.h"
+#include "auxiliary/instrumentation.h"
 #include "auxiliary/file.h"
 
 #include "VKmodel.h"
@@ -45,6 +46,7 @@ namespace GfxRenderEngine
 
     bool FbxBuilder::Load(uint const instanceCount, int const sceneID)
     {
+        PROFILE_SCOPE("FbxBuilder::Load");
         Assimp::Importer importer;
         m_FbxScene =
             importer.ReadFile(m_Filepath, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |

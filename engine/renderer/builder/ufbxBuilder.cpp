@@ -26,6 +26,7 @@
 #include "core.h"
 #include "renderer/builder/ufbxBuilder.h"
 #include "renderer/materialDescriptor.h"
+#include "auxiliary/instrumentation.h"
 #include "auxiliary/file.h"
 
 #include "VKmodel.h"
@@ -43,6 +44,7 @@ namespace GfxRenderEngine
 
     bool UFbxBuilder::Load(uint const instanceCount, int const sceneID)
     {
+        PROFILE_SCOPE("UFbxBuilder::Load ");
         ufbx_load_opts loadOptions{};
         loadOptions.load_external_files = true;
         loadOptions.ignore_missing_external_files = true;

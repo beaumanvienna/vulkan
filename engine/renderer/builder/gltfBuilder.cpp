@@ -26,6 +26,7 @@
 #include "core.h"
 #include "renderer/builder/gltfBuilder.h"
 #include "renderer/materialDescriptor.h"
+#include "auxiliary/instrumentation.h"
 #include "auxiliary/file.h"
 
 namespace GfxRenderEngine
@@ -40,14 +41,33 @@ namespace GfxRenderEngine
 
     bool GltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
+        PROFILE_SCOPE("GltfBuilder::Load");
         stbi_set_flip_vertically_on_load(false);
-
+        auto extension = EngineCore::GetFileExtension(m_Filepath);
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        LOG_APP_CRITICAL("{0} ext: {1}", m_Filepath, extension);
         { // load from file
             std::string warn, err;
-
-            if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
+            if (extension == ".glb")
             {
-                LOG_CORE_CRITICAL("Load errors: {0}, warnings: {1}", err, warn);
+                if (!m_GltfLoader.LoadBinaryFromFile(&m_GltfModel, &err, &warn, m_Filepath))
+                {
+                    LOG_CORE_CRITICAL("Load errors glb: {0}, warnings: {1}", err, warn);
+                    return Gltf::GLTF_LOAD_FAILURE;
+                }
+            }
+            else if (extension == ".gltf")
+            {
+                if (!m_GltfLoader.LoadASCIIFromFile(&m_GltfModel, &err, &warn, m_Filepath))
+                {
+                    LOG_CORE_CRITICAL("Load errors gltf: {0}, warnings: {1}", err, warn);
+                    return Gltf::GLTF_LOAD_FAILURE;
+                }
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("Load errors: unrecognized extension {0}", extension);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
         }
