@@ -36,6 +36,8 @@
 #include "keyboardInputController.h"
 #include "characterAnimation.h"
 
+#include "animation/easingAnimations.h"
+
 namespace LucreApp
 {
     class NightScene : public Scene
@@ -76,6 +78,7 @@ namespace LucreApp
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
+        std::shared_ptr<GamepadInputController> m_GamepadInputController;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
@@ -92,6 +95,18 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
+        static constexpr int NUMBER_OF_MOVING_CAMERAS = 1;
+        enum CameraAnimation
+        {
+            X = 0,
+            Z,
+            CAMROT,
+            ANIMATE_X_Z_CAMROT
+        };
+        static constexpr bool INVERT_EASE = true;
+        std::array<EasingAnimations<ANIMATE_X_Z_CAMROT>, NUMBER_OF_MOVING_CAMERAS> m_EasingAnimation;
+        void AssignAnimation(EasingAnimations<ANIMATE_X_Z_CAMROT>& easingAnimation);
+        bool m_RunCameraAnimation;
 
     private:
         struct BananaComponent

@@ -110,7 +110,7 @@ namespace LucreApp
             }
         }
         void Stop() { m_IsRunning = false; }
-        void Run(float speedXY[dimensions])
+        bool Run(float speedXY[dimensions])
         {
             for (uint index = 0; index < dimensions; ++index)
             {
@@ -123,7 +123,7 @@ namespace LucreApp
                     m_PrintNotRunning = false;
                     LOG_APP_INFO("EasingAnimations not running; start it or set loop flag");
                 }
-                return;
+                return m_IsRunning;
             }
             Duration timeElapsedTotal;
             {
@@ -138,7 +138,7 @@ namespace LucreApp
                     else
                     {
                         m_IsRunning = false;
-                        return;
+                        return m_IsRunning;
                     }
                 }
             }
@@ -155,6 +155,7 @@ namespace LucreApp
                     }
                 }
             }
+            return m_IsRunning;
         }
 
     private:

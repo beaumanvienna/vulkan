@@ -34,12 +34,14 @@
 #include "nightScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
+#include "animation/easingFunctions.h"
 
 namespace LucreApp
 {
 
     NightScene::NightScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_LaunchVolcanoTimer(1500)
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_LaunchVolcanoTimer(1500),
+          m_RunCameraAnimation{false}
     {
     }
 
@@ -69,6 +71,14 @@ namespace LucreApp
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
             m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
+
+            GamepadInputControllerSpec gamepadInputControllerSpec{};
+            m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
+
+            for (auto& easingAnimation : m_EasingAnimation)
+            {
+                AssignAnimation(easingAnimation);
+            }
         }
 
         StartScripts();
@@ -317,12 +327,30 @@ namespace LucreApp
 
     void NightScene::OnUpdate(const Timestep& timestep)
     {
+        if (m_RunCameraAnimation)
+        {
+            static auto animateCamera = [&]()
+            {
+                float speedXZCamRot[ANIMATE_X_Z_CAMROT] = {0.0f, 0.0f};
+                m_RunCameraAnimation = m_EasingAnimation[0].Run(speedXZCamRot);
+                if (m_RunCameraAnimation)
+                {
+                    auto& transform = m_Registry.get<TransformComponent>(m_Camera);
+                    float speedFactor = timestep;
+                    transform.AddTranslation({speedXZCamRot[X] * speedFactor, 0.0f, speedXZCamRot[Z] * speedFactor});
+                    transform.SetRotationY(speedXZCamRot[CAMROT]);
+                }
+            };
+
+            animateCamera();
+        }
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetView(cameraTransform.GetMat4Global());
         }
 
@@ -377,6 +405,33 @@ namespace LucreApp
                 zoomFactor -= l_Event.GetY() * 0.1f;
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
+            });
+
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
+            {
+                switch (l_Event.GetKeyCode())
+                {
+                    case ENGINE_KEY_N:
+                    {
+                        break;
+                    }
+                    case ENGINE_KEY_B:
+                    {
+                        m_RunCameraAnimation = !m_RunCameraAnimation;
+                        if (m_RunCameraAnimation)
+                        {
+                            {
+                                auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+                                cameraTransform.SetTranslation({0.1f, 2.7f, 12.4f});
+                                cameraTransform.SetRotation({-0.055f, 0.0f, 0.0f});
+                            }
+                            m_EasingAnimation[0].Start();
+                        }
+                        break;
+                    }
+                }
+                return false;
             });
     }
 
@@ -504,5 +559,51 @@ namespace LucreApp
         {
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
+    }
+
+    void NightScene::AssignAnimation(EasingAnimations<ANIMATE_X_Z_CAMROT>& easingAnimation)
+    {
+        float speed = 1.44f;
+        float s = 1.0f; // time stretch
+        // go forward: z speed from -0.2f * speed to -1.2 * speed
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseConstant>("1 X Constant", 0.0f /*scale*/, 0.0f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationZ =
+                std::make_shared<EaseInOutQuart>("1 Z EaseInOutQuart", speed * -1.0f /*scale*/, speed * -0.2f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationCamRot =
+                std::make_shared<EaseConstant>("1 C Constant", 0.0f /*scale*/, 0.0f /*offset*/);
+
+            EasingAnimations<ANIMATE_X_Z_CAMROT>::AnimationsXY animation(s * 2s, {animationX, animationZ, animationCamRot});
+            easingAnimation.PushAnimation(animation);
+        }
+
+        // turn right: z speed -1.2 * speed
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("1 X Constant", speed * 0.1f /*scale*/, 0.0f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationZ =
+                std::make_shared<EaseConstant>("1 Z Constant", 0.0f /*scale*/, speed * -1.2f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationCamRot = std::make_shared<EaseInOutQuart>(
+                "1 C EaseInOutQuart", -TransformComponent::DEGREES_90 / 2.0f /*scale*/, 0.0f /*offset*/);
+
+            EasingAnimations<ANIMATE_X_Z_CAMROT>::AnimationsXY animation(s * 5s, {animationX, animationZ, animationCamRot});
+            easingAnimation.PushAnimation(animation);
+        }
+
+        // turn right: z speed from -1.2 * speed to 0
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("1 X Constant", -speed * 0.1f /*scale*/, speed * 0.1f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationZ =
+                std::make_shared<EaseInOutQuart>("2 Z EaseInOutQuart", speed * 1.2f /*scale*/, -speed * 1.2f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationCamRot =
+                std::make_shared<EaseInOutQuart>("1 C EaseInOutQuart", -TransformComponent::DEGREES_90 / 2.0f /*scale*/,
+                                                 -TransformComponent::DEGREES_90 / 2.0f /*offset*/);
+
+            EasingAnimations<ANIMATE_X_Z_CAMROT>::AnimationsXY animation(s * 5s, {animationX, animationZ, animationCamRot});
+            easingAnimation.PushAnimation(animation);
+        }
+        easingAnimation.SetLoop(false);
     }
 } // namespace LucreApp
