@@ -77,11 +77,12 @@ namespace GfxRenderEngine
             CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
             const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
             auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
-            std::visit(fastgltf::visitor{[&](auto& arg) // default branch if image data is not supported
+            std::visit(fastgltf::visitor{[&](auto& arg) // default branch if data is not supported
                                          { LOG_CORE_CRITICAL("not supported default branch (LoadAccessor) "); },
-                                         [&](fastgltf::sources::Array& vector) {
-                                             pointer =
-                                                 reinterpret_cast<const T*>(vector.bytes.data() + bufferView.byteOffset);
+                                         [&](fastgltf::sources::Array& vector)
+                                         {
+                                             size_t dataOffset = bufferView.byteOffset + accessor.byteOffset;
+                                             pointer = reinterpret_cast<const T*>(vector.bytes.data() + dataOffset);
                                          }},
                        buffer.data);
             if (count)

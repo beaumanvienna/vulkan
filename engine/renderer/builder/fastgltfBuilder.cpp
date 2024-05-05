@@ -742,22 +742,22 @@ namespace GfxRenderEngine
                 uint numVerticesBefore = m_Vertices.size();
                 m_Vertices.resize(numVerticesBefore + vertexCount);
                 uint vertexIndex = numVerticesBefore;
-                for (size_t v = 0; v < vertexCount; v++)
+                for (size_t vertexIterator = 0; vertexIterator < vertexCount; ++vertexIterator)
                 {
                     Vertex vertex{};
                     vertex.m_Amplification = 1.0f;
-                    auto position = positionBuffer ? glm::make_vec3(&positionBuffer[v * 3]) : glm::vec3(0.0f);
-                    auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[v * 3]) : glm::vec3(1.0f);
+                    auto position = positionBuffer ? glm::make_vec3(&positionBuffer[vertexIterator * 3]) : glm::vec3(0.0f);
+                    auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[vertexIterator * 3]) : glm::vec3(1.0f);
                     vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
 
                     vertex.m_Position = glm::vec3(position.x, position.y, position.z);
-                    vertex.m_Normal =
-                        glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vertex.m_Normal = glm::normalize(
+                        glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[vertexIterator * 3]) : glm::vec3(0.0f)));
 
-                    glm::vec4 t = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
+                    glm::vec4 t = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[vertexIterator * 4]) : glm::vec4(0.0f);
                     vertex.m_Tangent = glm::vec3(t.x, t.y, t.z) * t.w;
 
-                    auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
+                    auto uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[vertexIterator * 2]) : glm::vec3(0.0f);
                     vertex.m_UV = uv;
 
                     if (jointsBuffer && weightsBuffer)
@@ -766,24 +766,24 @@ namespace GfxRenderEngine
                         {
                             case GL_BYTE:
                             case GL_UNSIGNED_BYTE:
-                                vertex.m_JointIds =
-                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int8_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds = glm::ivec4(
+                                    glm::make_vec4(&(reinterpret_cast<const int8_t*>(jointsBuffer)[vertexIterator * 4])));
                                 break;
                             case GL_SHORT:
                             case GL_UNSIGNED_SHORT:
-                                vertex.m_JointIds =
-                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int16_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds = glm::ivec4(
+                                    glm::make_vec4(&(reinterpret_cast<const int16_t*>(jointsBuffer)[vertexIterator * 4])));
                                 break;
                             case GL_INT:
                             case GL_UNSIGNED_INT:
-                                vertex.m_JointIds =
-                                    glm::ivec4(glm::make_vec4(&(reinterpret_cast<const int32_t*>(jointsBuffer)[v * 4])));
+                                vertex.m_JointIds = glm::ivec4(
+                                    glm::make_vec4(&(reinterpret_cast<const int32_t*>(jointsBuffer)[vertexIterator * 4])));
                                 break;
                             default:
                                 LOG_CORE_CRITICAL("data type of joints buffer not found");
                                 break;
                         }
-                        vertex.m_Weights = glm::make_vec4(&weightsBuffer[v * 4]);
+                        vertex.m_Weights = glm::make_vec4(&weightsBuffer[vertexIterator * 4]);
                     }
                     m_Vertices[vertexIndex] = vertex;
                     ++vertexIndex;

@@ -699,57 +699,6 @@
                         ],
                         "translation":
                         [
-                            60, 0, 0
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, 0, 0
-                        ],
-                        "translation":
-                        [
-                            64, 0, 0
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            18, 0.999979, 1
-                        ],
-                        "rotation":
-                        [
-                            0, 0, -0.00783988
-                        ],
-                        "translation":
-                        [
-                            81.5387, -0.204103, 0
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, 0, 0
-                        ],
-                        "translation":
-                        [
                             -4, 0, 0
                         ]
                     }
@@ -974,57 +923,6 @@
                             -56, 0, 0
                         ]
                     }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, 0, 0
-                        ],
-                        "translation":
-                        [
-                            -60, 0, 0
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, 0, 0
-                        ],
-                        "translation":
-                        [
-                            -64, 0, 0
-                        ]
-                    }
-                },
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            18, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0.0108685
-                        ],
-                        "translation":
-                        [
-                            -118.655, -0.621609, 0
-                        ]
-                    }
                 }
             ]
         },
@@ -1222,7 +1120,7 @@
             ]
         }
     ],
-    "fbx files":
+    "ufbx files":
     [
         {
             "filename": "application/lucre/models/external_3D_files/Wooden Crate/Wooden Crate.fbx",
