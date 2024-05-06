@@ -43,7 +43,7 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Images;
+        std::vector<std::shared_ptr<Texture>> m_Textures;
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:

@@ -41,11 +41,11 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Images{};
+        std::vector<std::shared_ptr<Texture>> m_Textures{};
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        void LoadImages();
+        void LoadTextures();
         void LoadMaterials();
         void LoadVertexData(uint const meshIndex);
         bool GetImageFormat(uint const imageIndex);
@@ -88,7 +88,7 @@ namespace GfxRenderEngine
         std::vector<Material> m_Materials;
         uint m_MaterialFeatures;
 
-        uint m_ImageOffset;
+        uint m_TextureOffset;
 
         // scene graph
         uint m_InstanceCount;

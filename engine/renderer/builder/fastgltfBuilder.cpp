@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         { // load from file
             auto path = std::filesystem::path{m_Filepath};
 
+            // glTF files list their required extensions
             constexpr auto extensions =
                 fastgltf::Extensions::KHR_mesh_quantization | fastgltf::Extensions::KHR_materials_emissive_strength |
                 fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_transform;
@@ -89,7 +90,7 @@ namespace GfxRenderEngine
             }
         }
 
-        LoadImages();
+        LoadTextures();
         LoadSkeletonsGltf();
         LoadMaterials();
 
@@ -482,13 +483,13 @@ namespace GfxRenderEngine
         return static_cast<int>(filter);
     }
 
-    void FastgltfBuilder::LoadImages()
+    void FastgltfBuilder::LoadTextures()
     {
-        size_t numImages = m_GltfModel.images.size();
-        m_Images.resize(numImages);
+        size_t numTextures = m_GltfModel.images.size();
+        m_Textures.resize(numTextures);
 
         // retrieve all images from the glTF file
-        for (uint imageIndex = 0; imageIndex < numImages; ++imageIndex)
+        for (uint imageIndex = 0; imageIndex < numTextures; ++imageIndex)
         {
             fastgltf::Image& glTFImage = m_GltfModel.images[imageIndex];
             auto texture = Texture::Create();
@@ -511,7 +512,7 @@ namespace GfxRenderEngine
                         CORE_ASSERT(nrChannels == 4, "wrong number of channels");
 
                         int minFilter = GetMinFilter(imageIndex);
-                        int magFilter = GetMinFilter(imageIndex);
+                        int magFilter = GetMagFilter(imageIndex);
                         bool imageFormat = GetImageFormat(imageIndex);
                         texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
@@ -527,7 +528,7 @@ namespace GfxRenderEngine
                         CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
 
                         int minFilter = GetMinFilter(imageIndex);
-                        int magFilter = GetMinFilter(imageIndex);
+                        int magFilter = GetMagFilter(imageIndex);
                         bool imageFormat = GetImageFormat(imageIndex);
                         texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
@@ -555,7 +556,7 @@ namespace GfxRenderEngine
                                     CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
 
                                     int minFilter = GetMinFilter(imageIndex);
-                                    int magFilter = GetMinFilter(imageIndex);
+                                    int magFilter = GetMagFilter(imageIndex);
                                     bool imageFormat = GetImageFormat(imageIndex);
                                     texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
 
@@ -568,7 +569,7 @@ namespace GfxRenderEngine
                 },
                 glTFImage.data);
 
-            m_Images[imageIndex] = texture;
+            m_Textures[imageIndex] = texture;
         }
     }
 
@@ -582,10 +583,10 @@ namespace GfxRenderEngine
 
             Material material{};
             material.m_Features = m_SkeletalAnimation;
-            material.m_Roughness = glTFMaterial.pbrData.roughnessFactor;
-            material.m_Metallic = glTFMaterial.pbrData.metallicFactor;
 
-            // diffuse color
+            // diffuse color aka base color factor
+            // used as constant color, if no diffuse texture is provided
+            // else, multiplied in the shader with each sample from the diffuse texture
             {
                 material.m_DiffuseColor = glm::make_vec4(glTFMaterial.pbrData.baseColorFactor.data());
             }
@@ -607,6 +608,12 @@ namespace GfxRenderEngine
                 material.m_Features |= Material::HAS_NORMAL_MAP;
             }
 
+            // constant values for roughness and metallicness
+            {
+                material.m_Roughness = glTFMaterial.pbrData.roughnessFactor;
+                material.m_Metallic = glTFMaterial.pbrData.metallicFactor;
+            }
+
             if (glTFMaterial.pbrData.metallicRoughnessTexture.has_value())
             {
                 int metallicRoughnessMapIndex = glTFMaterial.pbrData.metallicRoughnessTexture.value().textureIndex;
@@ -614,9 +621,10 @@ namespace GfxRenderEngine
                 material.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
-            // emissive color
+            // emissive color and emissive strength
             {
                 material.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                material.m_EmissiveStrength = glTFMaterial.emissiveStrength;
             }
 
             // emissive texture
@@ -625,11 +633,6 @@ namespace GfxRenderEngine
                 uint emissiveTextureIndex = glTFMaterial.emissiveTexture.value().textureIndex;
                 material.m_EmissiveMapIndex = m_GltfModel.textures[emissiveTextureIndex].imageIndex.value();
                 material.m_Features |= Material::HAS_EMISSIVE_MAP;
-            }
-
-            // emissive strength
-            {
-                material.m_EmissiveStrength = glTFMaterial.emissiveStrength;
             }
 
             m_Materials[materialIndex] = material;
@@ -799,27 +802,16 @@ namespace GfxRenderEngine
             // Indices
             if (glTFPrimitive.indicesAccessor.has_value())
             {
-                {
-                    auto& accessor = m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()];
-                    indexCount = accessor.count;
+                auto& accessor = m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()];
+                indexCount = accessor.count;
 
-                    // append indices for submesh to global index array
-                    size_t globalIndicesOffset = m_Indices.size();
-                    m_Indices.resize(m_Indices.size() + indexCount);
-
-                    std::vector<uint> submeshIndices;
-                    submeshIndices.resize(indexCount);
-
-                    fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor,
-                                                             [&](uint submeshIndex, size_t iterator)
-                                                             { submeshIndices[iterator] = submeshIndex; });
-
-                    // copy submesh indices into global index array
-                    uint* src = submeshIndices.data();
-                    uint* dest = m_Indices.data() + globalIndicesOffset;
-                    uint length = indexCount * sizeof(uint);
-                    memcpy(dest, src, length);
-                }
+                // append indices for submesh to global index array
+                size_t globalIndicesOffset = m_Indices.size();
+                m_Indices.resize(m_Indices.size() + indexCount);
+                uint* destination = m_Indices.data() + globalIndicesOffset;
+                fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor,
+                                                         [&](uint submeshIndex, size_t iterator)
+                                                         { destination[iterator] = submeshIndex; });
             }
 
             submesh.m_VertexCount = vertexCount;
@@ -895,11 +887,11 @@ namespace GfxRenderEngine
         else if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, instanceUbo);
@@ -913,11 +905,11 @@ namespace GfxRenderEngine
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseSAMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: vdiffuseSAMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
@@ -932,13 +924,13 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, instanceUbo);
@@ -953,13 +945,13 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
@@ -977,16 +969,16 @@ namespace GfxRenderEngine
             uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Textures.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced, textures, instanceUbo);
@@ -1004,16 +996,16 @@ namespace GfxRenderEngine
             uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Textures.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap, textures, buffers);
@@ -1033,16 +1025,16 @@ namespace GfxRenderEngine
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Images.size()");
-            CORE_ASSERT(roughnessMetallicMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex            < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex             < m_Textures.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex  < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMetallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMetallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap, textures, buffers);
@@ -1056,11 +1048,11 @@ namespace GfxRenderEngine
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMap, textures, buffers);
                 submesh.m_MaterialDescriptors.push_back(materialDescriptor);
@@ -1087,11 +1079,11 @@ namespace GfxRenderEngine
         if (material.m_Features & Material::HAS_EMISSIVE_MAP) // emissive texture
         {
             uint emissiveMapIndex = material.m_EmissiveMapIndex;
-            CORE_ASSERT(emissiveMapIndex < m_Images.size(),
-                        "FastgltfBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
+            CORE_ASSERT(emissiveMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: emissiveMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[emissiveMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, instanceUbo);

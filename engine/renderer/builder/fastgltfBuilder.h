@@ -47,11 +47,11 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Images{};
+        std::vector<std::shared_ptr<Texture>> m_Textures{};
         std::vector<ModelSubmesh> m_Submeshes{};
 
     private:
-        void LoadImages();
+        void LoadTextures();
         void LoadMaterials();
         void LoadVertexData(uint const meshIndex);
         bool GetImageFormat(uint const imageIndex);
@@ -75,23 +75,23 @@ namespace GfxRenderEngine
                                                                    fastgltf::AccessorType* type = nullptr)
         {
             CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
+
             const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
             auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
-            std::visit(fastgltf::visitor{[&](auto& arg) // default branch if data is not supported
-                                         { LOG_CORE_CRITICAL("not supported default branch (LoadAccessor) "); },
-                                         [&](fastgltf::sources::Array& vector)
-                                         {
-                                             size_t dataOffset = bufferView.byteOffset + accessor.byteOffset;
-                                             pointer = reinterpret_cast<const T*>(vector.bytes.data() + dataOffset);
-                                         }},
-                       buffer.data);
+
+            const fastgltf::sources::Array* vector = std::get_if<fastgltf::sources::Array>(&buffer.data);
+            CORE_ASSERT(vector, "FastgltfBuilder::LoadAccessor: unsupported data type");
+
+            size_t dataOffset = bufferView.byteOffset + accessor.byteOffset;
+            pointer = reinterpret_cast<const T*>(vector->bytes.data() + dataOffset);
+
             if (count)
             {
-                count[0] = accessor.count;
+                *count = accessor.count;
             }
             if (type)
             {
-                type[0] = accessor.type;
+                *type = accessor.type;
             }
             return accessor.componentType;
         }

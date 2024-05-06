@@ -73,7 +73,7 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         CopySubmeshes(builder.m_Submeshes);
-        m_Images = std::move(builder.m_Images);
+        m_Textures = std::move(builder.m_Textures);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
@@ -87,7 +87,7 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         CopySubmeshes(builder.m_Submeshes);
-        m_Images = std::move(builder.m_Images);
+        m_Textures = std::move(builder.m_Textures);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
@@ -101,7 +101,7 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         CopySubmeshes(builder.m_Submeshes);
-        m_Images = std::move(builder.m_Images);
+        m_Textures = std::move(builder.m_Textures);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);
@@ -115,7 +115,7 @@ namespace GfxRenderEngine
         : m_Device(device), m_HasIndexBuffer{false}
     {
         CopySubmeshes(builder.m_Submeshes);
-        m_Images = std::move(builder.m_Images);
+        m_Textures = std::move(builder.m_Textures);
 
         m_Skeleton = std::move(builder.m_Skeleton);
         m_Animations = std::move(builder.m_Animations);

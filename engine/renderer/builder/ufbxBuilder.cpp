@@ -353,8 +353,8 @@ namespace GfxRenderEngine
 
         if (loadSucess)
         {
-            mapIndex = m_Images.size();
-            m_Images.push_back(texture);
+            mapIndex = m_Textures.size();
+            m_Textures.push_back(texture);
         }
     }
 
@@ -761,10 +761,10 @@ namespace GfxRenderEngine
         if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
@@ -778,11 +778,11 @@ namespace GfxRenderEngine
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
         {
             uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseSAMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseSAMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseSAMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseSAMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
@@ -797,11 +797,11 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures, buffers);
@@ -816,11 +816,11 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size()");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures, buffers);
@@ -838,15 +838,15 @@ namespace GfxRenderEngine
             uint normalMapIndex = material.m_NormalMapIndex;
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size() ");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Images.size() ");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessSAMapInstanced, textures, buffers);
@@ -865,16 +865,16 @@ namespace GfxRenderEngine
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
             uint metallicMapIndex = material.m_MetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Images.size() ");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Images.size() ");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
+            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMapIndex], m_Textures[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
@@ -893,17 +893,17 @@ namespace GfxRenderEngine
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
             uint metallicMapIndex = material.m_MetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size() ");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Images.size() ");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
+            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMapIndex], m_Textures[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map, textures, buffers);
@@ -926,17 +926,17 @@ namespace GfxRenderEngine
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
             uint metallicMapIndex = material.m_MetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Images.size() ");
-            CORE_ASSERT(normalMapIndex < m_Images.size(), " UFbxBuilder::AssignMaterial: normalMapIndex < m_Images.size() ");
-            CORE_ASSERT(roughnessMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Images.size()");
-            CORE_ASSERT(metallicMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size() ");
+            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
+            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex], m_Images[normalMapIndex],
-                                                               m_Images[roughnessMapIndex], m_Images[metallicMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMapIndex], m_Textures[metallicMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor = MaterialDescriptor::Create(
                     MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
@@ -950,10 +950,10 @@ namespace GfxRenderEngine
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Images.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Images.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size()");
 
             { // create material descriptor
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[diffuseMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
@@ -981,11 +981,11 @@ namespace GfxRenderEngine
         if (material.m_Features & Material::HAS_EMISSIVE_MAP) // emissive texture
         {
             uint emissiveMapIndex = material.m_EmissiveMapIndex;
-            CORE_ASSERT(emissiveMapIndex < m_Images.size(),
-                        "UFbxBuilder::AssignMaterial: emissiveMapIndex < m_Images.size()");
+            CORE_ASSERT(emissiveMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: emissiveMapIndex < m_Textures.size()");
 
             {
-                std::vector<std::shared_ptr<Texture>> textures{m_Images[emissiveMapIndex]};
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[emissiveMapIndex]};
                 std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
                 auto materialDescriptor =
                     MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures, buffers);

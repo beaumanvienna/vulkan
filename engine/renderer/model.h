@@ -143,7 +143,7 @@ namespace GfxRenderEngine
         static float m_NormalMapIntensity;
 
     protected:
-        std::vector<std::shared_ptr<Texture>> m_Images;
+        std::vector<std::shared_ptr<Texture>> m_Textures;
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
 
         // skeletal animation
