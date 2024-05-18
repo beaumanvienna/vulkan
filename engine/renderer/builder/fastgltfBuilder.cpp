@@ -534,7 +534,7 @@ namespace GfxRenderEngine
 
                         stbi_image_free(buffer);
                     },
-                    [&](fastgltf::sources::BufferView& view)
+                    [&](fastgltf::sources::BufferView& view) // load from buffer view
                     {
                         auto& bufferView = m_GltfModel.bufferViews[view.bufferViewIndex];
                         auto& bufferFromBufferView = m_GltfModel.buffers[bufferView.bufferIndex];

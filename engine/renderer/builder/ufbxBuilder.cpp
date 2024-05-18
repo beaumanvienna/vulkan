@@ -761,7 +761,8 @@ namespace GfxRenderEngine
         if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
@@ -797,8 +798,10 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
@@ -816,8 +819,10 @@ namespace GfxRenderEngine
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
             uint normalMapIndex = material.m_NormalMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial:normalMapIndex < m_Textures.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex]};
@@ -840,7 +845,8 @@ namespace GfxRenderEngine
 
             CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
             CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
 
@@ -865,8 +871,10 @@ namespace GfxRenderEngine
             uint roughnessMapIndex = material.m_RoughnessMapIndex;
             uint metallicMapIndex = material.m_MetallicMapIndex;
 
-            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size() ");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
             CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
             CORE_ASSERT(metallicMapIndex < m_Textures.size(),
@@ -895,7 +903,8 @@ namespace GfxRenderEngine
 
             CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        " UFbxBuilder::AssignMaterial: normalMapIndex <m_Textures.size() ");
             CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
             CORE_ASSERT(metallicMapIndex < m_Textures.size(),
@@ -928,7 +937,8 @@ namespace GfxRenderEngine
 
             CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size() ");
-            CORE_ASSERT(normalMapIndex < m_Textures.size(), " UFbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size() ");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        " UFbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size() ");
             CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
                         "UFbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
             CORE_ASSERT(metallicMapIndex < m_Textures.size(),
@@ -950,7 +960,8 @@ namespace GfxRenderEngine
         else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
         {
             uint diffuseMapIndex = material.m_DiffuseMapIndex;
-            CORE_ASSERT(diffuseMapIndex < m_Textures.size(), "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size()");
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "UFbxBuilder::AssignMaterial: diffuseMapIndex <m_Textures.size()");
 
             { // create material descriptor
                 std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};

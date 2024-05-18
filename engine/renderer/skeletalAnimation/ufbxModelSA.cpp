@@ -57,30 +57,30 @@ namespace GfxRenderEngine
 
         m_Animations = std::make_shared<SkeletalAnimations>();
         m_Skeleton = std::make_shared<Armature::Skeleton>();
-        std::unordered_map<std::string, int> nameToJointIndex;
+        std::unordered_map<std::string, int> nameToBoneIndex;
 
         // load skeleton
         {
             ufbx_mesh& mesh = *m_FbxScene->meshes.data[meshIndex];
             ufbx_skin_deformer& fbxSkin = *mesh.skin_deformers.data[0];
-            size_t numberOfJoints = fbxSkin.clusters.count;
-            auto& joints =
-                m_Skeleton->m_Joints; // just a reference to the joints std::vector of that skeleton (to make code easier)
+            size_t numberOfBones = fbxSkin.clusters.count;
+            auto& bones =
+                m_Skeleton->m_Joints; // just a reference to the bones std::vector of that skeleton (to make code easier)
 
-            joints.resize(numberOfJoints);
-            m_Skeleton->m_ShaderData.m_FinalJointsMatrices.resize(numberOfJoints);
+            bones.resize(numberOfBones);
+            m_Skeleton->m_ShaderData.m_FinalJointsMatrices.resize(numberOfBones);
 
-            // set up map to find the names of joints when traversing the node hierarchy
+            // set up map to find the names of Bones when traversing the node hierarchy
             // by iterating the clsuetrs array of the mesh
-            for (uint jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
+            for (uint boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
             {
-                ufbx_skin_cluster& joint = *fbxSkin.clusters.data[jointIndex];
-                std::string jointName = joint.name.data;
-                nameToJointIndex[jointName] = jointIndex;
+                ufbx_skin_cluster& bone = *fbxSkin.clusters.data[boneIndex];
+                std::string boneName = bone.name.data;
+                nameToBoneIndex[boneName] = boneIndex;
 
                 // compatibility code with glTF loader; needed in skeletalAnimation.cpp
                 // m_Channels.m_Node must be set up accordingly
-                m_Skeleton->m_GlobalNodeToJointIndex[jointIndex] = jointIndex;
+                m_Skeleton->m_GlobalNodeToJointIndex[boneIndex] = boneIndex;
             }
 
             // lambda to convert ufbx_matrix to glm::mat4
@@ -98,45 +98,40 @@ namespace GfxRenderEngine
             };
 
             // recursive lambda to traverse fbx node hierarchy
-            std::function<void(ufbx_node*, uint&, int)> traverseNodeHierarchy =
-                [&](ufbx_node* node, uint& jointIndex, int parent)
+            std::function<void(ufbx_node*, uint)> traverseNodeHierarchy = [&](ufbx_node* node, uint parent)
             {
                 size_t numberOfChildren = node->children.count;
-
-                // does the node name correspond to a joint name?
+                uint boneIndex = parent;
+                // does the node name correspond to a bone name?
                 std::string nodeName = node->name.data;
-                bool isJoint = nameToJointIndex.contains(nodeName);
+                bool isBone = nameToBoneIndex.contains(nodeName);
 
-                int parentForChildren = parent;
-                if (isJoint)
+                if (isBone)
                 {
-                    parentForChildren = jointIndex;
-                    joints[jointIndex].m_Name = nodeName;
-                    uint boneIndex = nameToJointIndex[nodeName];
-                    ufbx_skin_cluster& joint = *fbxSkin.clusters.data[boneIndex];
-                    joints[jointIndex].m_InverseBindMatrix = mat4UfbxToGlm(joint.geometry_to_bone);
-                    joints[jointIndex].m_ParentJoint = parent;
-                    ++jointIndex;
+                    boneIndex = nameToBoneIndex[nodeName];
+                    bones[boneIndex].m_Name = nodeName;
+                    ufbx_skin_cluster& bone = *fbxSkin.clusters.data[boneIndex];
+                    bones[boneIndex].m_InverseBindMatrix = mat4UfbxToGlm(bone.geometry_to_bone);
+                    bones[boneIndex].m_ParentJoint = parent;
                 }
                 for (uint childIndex = 0; childIndex < numberOfChildren; ++childIndex)
                 {
-                    if (isJoint)
+                    if (isBone)
                     {
                         std::string childNodeName = node->children.data[childIndex]->name.data;
-                        bool childIsJoint = nameToJointIndex.contains(childNodeName);
-                        if (childIsJoint)
+                        bool childIsBone = nameToBoneIndex.contains(childNodeName);
+                        if (childIsBone)
                         {
-                            joints[parentForChildren].m_Children.push_back(jointIndex);
+                            bones[boneIndex].m_Children.push_back(nameToBoneIndex[childNodeName]);
                         }
                     }
-                    traverseNodeHierarchy(node->children.data[childIndex], jointIndex, parentForChildren);
+                    traverseNodeHierarchy(node->children.data[childIndex], boneIndex);
                 }
             };
-            uint jointIndex = 0;
-            traverseNodeHierarchy(m_FbxScene->root_node, jointIndex, Armature::NO_PARENT);
+            traverseNodeHierarchy(m_FbxScene->root_node, Armature::NO_PARENT);
             // m_Skeleton->Traverse();
 
-            int bufferSize = numberOfJoints * sizeof(glm::mat4); // in bytes
+            int bufferSize = numberOfBones * sizeof(glm::mat4); // in bytes
             m_ShaderData = Buffer::Create(bufferSize);
             m_ShaderData->MapBuffer();
         }
@@ -188,9 +183,9 @@ namespace GfxRenderEngine
             {
                 const uint nodeIndex = fbxChannel.typed_id;
                 std::string fbxChannelName(m_FbxScene->nodes[nodeIndex]->name.data);
-                // use fbx channels that actually belong to joints
-                bool isJoint = nameToJointIndex.contains(fbxChannelName);
-                if (isJoint)
+                // use fbx channels that actually belong to bones
+                bool isBone = nameToBoneIndex.contains(fbxChannelName);
+                if (isBone)
                 {
                     // Each node of the skeleton has channels that point to samplers
                     { // set up channels
@@ -198,7 +193,7 @@ namespace GfxRenderEngine
                             SkeletalAnimation::Channel channel;
                             channel.m_Path = SkeletalAnimation::Path::TRANSLATION;
                             channel.m_SamplerIndex = channelAndSamplerIndex + 0;
-                            channel.m_Node = nameToJointIndex[fbxChannelName];
+                            channel.m_Node = nameToBoneIndex[fbxChannelName];
 
                             animation->m_Channels.push_back(channel);
                         }
@@ -206,7 +201,7 @@ namespace GfxRenderEngine
                             SkeletalAnimation::Channel channel;
                             channel.m_Path = SkeletalAnimation::Path::ROTATION;
                             channel.m_SamplerIndex = channelAndSamplerIndex + 1;
-                            channel.m_Node = nameToJointIndex[fbxChannelName];
+                            channel.m_Node = nameToBoneIndex[fbxChannelName];
 
                             animation->m_Channels.push_back(channel);
                         }
@@ -214,7 +209,7 @@ namespace GfxRenderEngine
                             SkeletalAnimation::Channel channel;
                             channel.m_Path = SkeletalAnimation::Path::SCALE;
                             channel.m_SamplerIndex = channelAndSamplerIndex + 2;
-                            channel.m_Node = nameToJointIndex[fbxChannelName];
+                            channel.m_Node = nameToBoneIndex[fbxChannelName];
 
                             animation->m_Channels.push_back(channel);
                         }
