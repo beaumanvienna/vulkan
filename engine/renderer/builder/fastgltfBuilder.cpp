@@ -289,6 +289,11 @@ namespace GfxRenderEngine
                 m_Model = Engine::m_Engine->LoadModel(*this);
 
                 // material tags (can have multiple tags)
+                if (m_MaterialFeatures & MaterialDescriptor::MtPbrMap)
+                {
+                    PbrMapTag pbrMapTag{};
+                    m_Registry.emplace<PbrMapTag>(entity, pbrMapTag);
+                }
                 if (m_MaterialFeatures & MaterialDescriptor::MtPbrNoMap)
                 {
                     PbrNoMapTag pbrNoMapTag{};
@@ -809,8 +814,7 @@ namespace GfxRenderEngine
                 size_t globalIndicesOffset = m_Indices.size();
                 m_Indices.resize(m_Indices.size() + indexCount);
                 uint* destination = m_Indices.data() + globalIndicesOffset;
-                fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor,
-                                                         [&](uint submeshIndex, size_t iterator)
+                fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor, [&](uint submeshIndex, size_t iterator)
                                                          { destination[iterator] = submeshIndex; });
             }
 
@@ -988,6 +992,36 @@ namespace GfxRenderEngine
 
             LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic, features: 0x{1:x}",
                           materialIndex, material.m_Features);
+        }
+        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
+                                 Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_EMISSIVE_MAP))
+        {
+            uint diffuseMapIndex = material.m_DiffuseMapIndex;
+            uint normalMapIndex = material.m_NormalMapIndex;
+            uint roughnessMetallicMapIndex = material.m_RoughnessMetallicMapIndex;
+            uint emissiveMapIndex = material.m_EmissiveMapIndex;
+
+            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: diffuseMapIndex not < m_Textures.size()");
+            CORE_ASSERT(normalMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: normalMapIndex not < m_Textures.size()");
+            CORE_ASSERT(roughnessMetallicMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: roughnessMetallicMapIndex not < m_Textures.size()");
+            CORE_ASSERT(emissiveMapIndex < m_Textures.size(),
+                        "FastgltfBuilder::AssignMaterial: emissiveMapIndex not < m_Textures.size()");
+
+            { // create material descriptor
+                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex], m_Textures[normalMapIndex],
+                                                               m_Textures[roughnessMetallicMapIndex],
+                                                               m_Textures[emissiveMapIndex]};
+                std::vector<std::shared_ptr<Buffer>> instanceUbo{m_InstanceBuffer->GetBuffer()};
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrMap, textures, instanceUbo);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+            }
+            m_MaterialFeatures |= MaterialDescriptor::MtPbrMap;
+
+            LOG_CORE_INFO("material assigned: material index {0}, PbrMap, features: 0x{1:x}", materialIndex,
+                          material.m_Features);
         }
         else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
                                  Material::HAS_ROUGHNESS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))

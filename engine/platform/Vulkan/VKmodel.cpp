@@ -158,6 +158,11 @@ namespace GfxRenderEngine
 
                 switch (materialType)
                 {
+                    case MaterialDescriptor::MtPbrMap:
+                    {
+                        m_SubmeshesPbrMap.push_back(vkSubmesh);
+                        break;
+                    }
                     case MaterialDescriptor::MtPbrNoMap:
                     {
                         m_SubmeshesPbrNoMap.push_back(vkSubmesh);
@@ -343,8 +348,15 @@ namespace GfxRenderEngine
     {
         auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
-        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2,
-                                descriptorSets.data(), 0, nullptr);
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                pipelineLayout,                  // VkPipelineLayout       layout,
+                                0,                               // uint32_t               firstSet,
+                                2,                               // uint32_t               descriptorSetCount,
+                                descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                0,                               // uint32_t               dynamicOffsetCount,
+                                nullptr                          // const uint32_t*        pDynamicOffsets);
+        );
     }
 
     // single-instance
@@ -381,6 +393,22 @@ namespace GfxRenderEngine
 
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                            sizeof(VK_PushConstantDataGenericInstanced), &push);
+    }
+
+    void VK_Model::PushConstantsMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                    VK_Submesh const& submesh)
+    {
+        VK_PushConstantDataMap push{};
+
+        push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
+        push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
+        push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
+        push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
+        push.m_BaseColorFactor = submesh.m_MaterialProperties.m_BaseColorFactor;
+        push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
+
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(VK_PushConstantDataMap), &push);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
@@ -454,7 +482,6 @@ namespace GfxRenderEngine
     {
         for (auto& submesh : m_SubmeshesPbrEmissive)
         {
-
             if (emissiveStrength)
             {
                 submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
@@ -583,6 +610,16 @@ namespace GfxRenderEngine
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             PushConstants(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
+    void VK_Model::DrawMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for (auto& submesh : m_SubmeshesPbrMap)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            PushConstantsMap(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }

@@ -41,6 +41,7 @@
 #include "systems/VKlightSys.h"
 #include "systems/VKguiRenderSys.h"
 
+#include "systems/VKpbrMapSys.h"
 #include "systems/VKpbrNoMapSys.h"
 #include "systems/VKpbrDiffuseSys.h"
 #include "systems/VKpbrEmissiveSys.h"
@@ -162,8 +163,9 @@ namespace GfxRenderEngine
         };
         std::unique_ptr<VK_RenderPass> m_RenderPass;
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
-
         std::unique_ptr<VK_RenderSystemShadow> m_RenderSystemShadow;
+
+        std::unique_ptr<VK_RenderSystemPbrMap> m_RenderSystemPbrMap;
         std::unique_ptr<VK_RenderSystemPbrNoMap> m_RenderSystemPbrNoMap;
         std::unique_ptr<VK_RenderSystemPbrDiffuse> m_RenderSystemPbrDiffuse;
         std::unique_ptr<VK_RenderSystemPbrEmissive> m_RenderSystemPbrEmissive;

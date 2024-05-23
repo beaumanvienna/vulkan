@@ -630,6 +630,52 @@ namespace GfxRenderEngine
                 }
                 break;
             }
+            case MaterialType::MtPbrMap:
+            {
+                std::shared_ptr<Texture>& diffuseMap = textures[0];
+                std::shared_ptr<Texture>& normalMap = textures[1];
+                std::shared_ptr<Texture>& roughnessMetallicMap = textures[2];
+                std::shared_ptr<Texture>& emissiveMap = textures[3];
+                std::shared_ptr<Buffer>& ubo = buffers[0];
+
+                auto buffer = static_cast<VK_Buffer*>(ubo.get());
+                VkDescriptorBufferInfo bufferInfo = buffer->DescriptorInfo();
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
+                        VK_DescriptorSetLayout::Builder()
+                            .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                            .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                            .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                            .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                            .AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                            .Build();
+
+                    auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfo3 = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteImage(0, imageInfo0)
+                        .WriteImage(1, imageInfo1)
+                        .WriteImage(2, imageInfo2)
+                        .WriteImage(3, imageInfo3)
+                        .WriteBuffer(4, bufferInfo)
+                        .Build(m_DescriptorSet);
+                }
+
+                {
+                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
+                        VK_DescriptorSetLayout::Builder()
+                            .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                            .Build();
+
+                    VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
+                        .WriteBuffer(0, bufferInfo)
+                        .Build(m_ShadowDescriptorSet);
+                }
+                break;
+            }
             case MaterialType::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced: // fbx files have 4 textures (grey scale
                                                                                  // images for metallic and roughness
                                                                                  // textures)

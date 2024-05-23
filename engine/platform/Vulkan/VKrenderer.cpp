@@ -252,6 +252,19 @@ namespace GfxRenderEngine
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // shader data for instances
                 .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> mapDescriptorSetLayout =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // diffuse color map
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // normal map
+                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // roughness metallic map
+                .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT)                                     // emissive map
+                .AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> diffuseNormalRoughnessMetallicInstancedDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS) // color map
@@ -339,6 +352,9 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalInstanced = {
             m_GlobalDescriptorSetLayout, diffuseNormalInstancedDescriptorSetLayout->GetDescriptorSetLayout()};
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsMap = {m_GlobalDescriptorSetLayout,
+                                                                      mapDescriptorSetLayout->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuseNormalRoughnessMetallicInstanced = {
             m_GlobalDescriptorSetLayout,
@@ -442,6 +458,10 @@ namespace GfxRenderEngine
 
         m_RenderSystemPbrNoMap =
             std::make_unique<VK_RenderSystemPbrNoMap>(m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
+
+        m_RenderSystemPbrMap =
+            std::make_unique<VK_RenderSystemPbrMap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsMap);
+
         m_RenderSystemPbrDiffuse =
             std::make_unique<VK_RenderSystemPbrDiffuse>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
         m_RenderSystemPbrEmissive =
@@ -1006,6 +1026,7 @@ namespace GfxRenderEngine
             auto& registry = scene.GetRegistry();
 
             // 3D objects
+            m_RenderSystemPbrMap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrNoMap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuse->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrDiffuseSA->RenderEntities(m_FrameInfo, registry);
@@ -1150,6 +1171,8 @@ namespace GfxRenderEngine
                     // 3D
                     "pointLight.vert",
                     "pointLight.frag",
+                    "pbrMap.vert",
+                    "pbrMap.frag",
                     "pbrNoMap.vert",
                     "pbrNoMap.frag",
                     "pbrDiffuse.vert",

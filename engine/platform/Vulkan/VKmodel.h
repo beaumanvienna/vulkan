@@ -81,6 +81,8 @@ namespace GfxRenderEngine
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
         void PushConstants(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
+        void PushConstantsMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                              VK_Submesh const& submesh);
         void PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform,
                            const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh);
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
@@ -105,6 +107,7 @@ namespace GfxRenderEngine
                                           float emissiveStrength = 0.f);
 
         void DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform, const VkPipelineLayout& pipelineLayout);
+        void DrawMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
                             const VkPipelineLayout& pipelineLayout);
         void DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
@@ -153,6 +156,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
         uint m_IndexCount;
 
+        std::vector<VK_Submesh> m_SubmeshesPbrMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrNoMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrEmissive{};
         std::vector<VK_Submesh> m_SubmeshesPbrDiffuseMap{};

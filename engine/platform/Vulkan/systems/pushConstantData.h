@@ -42,6 +42,16 @@ namespace GfxRenderEngine
         glm::vec4 m_BaseColorFactor;
     };
 
+    struct VK_PushConstantDataMap
+    {
+        float m_Roughness;
+        float m_Metallic;
+        float m_NormalMapIntensity;
+        float m_EmissiveStrength;
+        glm::vec4 m_BaseColorFactor;
+        glm::vec4 m_EmissiveColor;
+    };
+
     struct VK_PushConstantDataEmissive
     {
         glm::mat4 m_ModelMatrix{1.0f};

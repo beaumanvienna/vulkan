@@ -38,33 +38,34 @@ namespace GfxRenderEngine
     public:
         enum MaterialType
         {
-            MtPbrNoMap = 0x1 << 0x00,                                         // 1
-            MtPbrEmissive = 0x1 << 0x01,                                      // 2
-            MtPbrDiffuseMap = 0x1 << 0x02,                                    // 4
-            MtPbrDiffuseSAMap = 0x1 << 0x03,                                  // 8
-            MtPbrNoMapInstanced = 0x1 << 0x04,                                // 16
-            MtPbrEmissiveTexture = 0x1 << 0x05,                               // 32
-            MtPbrDiffuseNormalMap = 0x1 << 0x06,                              // 64
-            MtPbrEmissiveInstanced = 0x1 << 0x07,                             // 128
-            MtPbrDiffuseNormalSAMap = 0x1 << 0x08,                            // 256
-            MtPbrDiffuseMapInstanced = 0x1 << 0x09,                           // 512
-            MtPbrDiffuseSAMapInstanced = 0x1 << 0x0a,                         // 1024
-            MtPbrEmissiveTextureInstanced = 0x1 << 0x0b,                      // 2048
-            MtPbrDiffuseNormalMapInstanced = 0x1 << 0x0c,                     // 4096
-            MtPbrDiffuseNormalRoughnessSAMap = 0x1 << 0x0d,                   // 8192
-            MtPbrDiffuseNormalSAMapInstanced = 0x1 << 0x0e,                   // 16384
-            MtPbrDiffuseNormalRoughnessMetallicMap = 0x1 << 0x0f,             // 32768
-            MtPbrDiffuseNormalRoughnessMetallic2Map = 0x1 << 0x10,            // 65536
-            MtPbrDiffuseNormalRoughnessMetallicSAMap = 0x1 << 0x11,           // 131072
-            MtPbrDiffuseNormalRoughnessSAMapInstanced = 0x1 << 0x12,          // 262144
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map = 0x1 << 0x13,          // 524288
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced = 0x1 << 0x14,    // 1048576
-            MtPbrDiffuseNormalRoughnessMetallic2MapInstanced = 0x1 << 0x15,   // 2097152
-            MtCubemap = 0x1 << 0x16                                           // 4194304
+            MtPbrMap = 0x1 << 0x00,                                         // 1
+            MtPbrNoMap = 0x1 << 0x01,                                       // 2
+            MtPbrEmissive = 0x1 << 0x02,                                    // 4
+            MtPbrDiffuseMap = 0x1 << 0x03,                                  // 8
+            MtPbrDiffuseSAMap = 0x1 << 0x04,                                // 16
+            MtPbrNoMapInstanced = 0x1 << 0x05,                              // 32
+            MtPbrEmissiveTexture = 0x1 << 0x06,                             // 64
+            MtPbrDiffuseNormalMap = 0x1 << 0x07,                            // 128
+            MtPbrEmissiveInstanced = 0x1 << 0x08,                           // 256
+            MtPbrDiffuseNormalSAMap = 0x1 << 0x09,                          // 512
+            MtPbrDiffuseMapInstanced = 0x1 << 0x0a,                         // 1024
+            MtPbrDiffuseSAMapInstanced = 0x1 << 0x0b,                       // 2048
+            MtPbrEmissiveTextureInstanced = 0x1 << 0x0c,                    // 4096
+            MtPbrDiffuseNormalMapInstanced = 0x1 << 0x0d,                   // 8192
+            MtPbrDiffuseNormalRoughnessSAMap = 0x1 << 0x0e,                 // 16384
+            MtPbrDiffuseNormalSAMapInstanced = 0x1 << 0x0f,                 // 32768
+            MtPbrDiffuseNormalRoughnessMetallicMap = 0x1 << 0x10,           // 65536
+            MtPbrDiffuseNormalRoughnessMetallic2Map = 0x1 << 0x11,          // 131072
+            MtPbrDiffuseNormalRoughnessMetallicSAMap = 0x1 << 0x12,         // 262144
+            MtPbrDiffuseNormalRoughnessSAMapInstanced = 0x1 << 0x13,        // 524288
+            MtPbrDiffuseNormalRoughnessMetallicSA2Map = 0x1 << 0x14,        // 1048576
+            MtPbrDiffuseNormalRoughnessMetallicMapInstanced = 0x1 << 0x15,  // 2097152
+            MtPbrDiffuseNormalRoughnessMetallic2MapInstanced = 0x1 << 0x16, // 4194304
+            MtCubemap = 0x1 << 0x17                                         // 8388608
         };
 
         static constexpr uint ALL_PBR_MATERIALS =
-            MaterialType::MtPbrNoMap + MaterialType::MtPbrEmissive + MaterialType::MtPbrDiffuseMap +
+            MaterialType::MtPbrMap + MaterialType::MtPbrNoMap + MaterialType::MtPbrEmissive + MaterialType::MtPbrDiffuseMap +
             MaterialType::MtPbrDiffuseSAMap + MaterialType::MtPbrNoMapInstanced + MaterialType::MtPbrEmissiveTexture +
             MaterialType::MtPbrDiffuseNormalMap + MaterialType::MtPbrEmissiveInstanced +
             MaterialType::MtPbrDiffuseNormalSAMap + MaterialType::MtPbrDiffuseMapInstanced +

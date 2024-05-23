@@ -223,6 +223,11 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
+    struct PbrMapTag
+    {
+        uint m_Tag{0};
+    };
+
     struct PbrDiffuseTag
     {
         uint m_Tag{0};
