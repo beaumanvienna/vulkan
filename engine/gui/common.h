@@ -290,8 +290,8 @@ namespace GfxRenderEngine
         NKCODE_LEFTBRACE = 221,
         NKCODE_RIGHTBRACE = 222,
 
-        // Ouya buttons. Just here for reference, they map straight to regular android buttons
-        // and will be mapped the same way.
+        // Ouya buttons. Just here for reference, they map straight to regular android
+        // buttons and will be mapped the same way.
         NKCODE_OUYA_BUTTON_A = 97,
         NKCODE_OUYA_BUTTON_DPAD_DOWN = 20,
         NKCODE_OUYA_BUTTON_DPAD_LEFT = 21,

@@ -26,6 +26,9 @@
 #include "auxiliary/hash.h"
 #include "core.h"
 #include "renderer/builder/builder.h"
+#include "scene/scene.h"
+
+#include "stb_image.h"
 
 #include "VKmodel.h"
 
@@ -44,6 +47,213 @@ namespace std
 
 namespace GfxRenderEngine
 {
+
+    void Builder::PopulateTerrainData(const std::vector<std::vector<float>>& heightMap)
+    {
+        float scale = 0.1f;      // Scale for the grid spacing
+        float heightScale = 1.f; // Scale for the height values
+        size_t rows = heightMap.size();
+        size_t cols = heightMap.empty() ? 0 : heightMap[0].size();
+        Vertex vertex{};
+        for (size_t z = 0; z < rows; ++z)
+        {
+            for (size_t x = 0; x < cols; ++x)
+            {
+                vertex.m_Position = glm::vec3(x * scale, heightMap[z][x] * heightScale, z * scale);
+                std::cout << vertex.m_Position.x << " " << vertex.m_Position.y << " " << vertex.m_Position.z << std::endl;
+                vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
+                vertex.m_UV = glm::vec2(0.f, 0.f);
+                vertex.m_Tangent = glm::vec3(1.0F);
+                vertex.m_JointIds = glm::ivec4(0.f);
+                vertex.m_Weights = glm::vec4(0.0f);
+
+                //--------
+
+                glm::vec3 sumNormals(0.0f);
+                // Neighbors
+                glm::vec3 left = x > 0 ? glm::vec3(-1.0f, heightMap[z][x - 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
+                glm::vec3 right =
+                    x < rows - 1 ? glm::vec3(1.0f, heightMap[z][x + 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
+                glm::vec3 down = z > 0 ? glm::vec3(0.0f, heightMap[z - 1][x] - heightMap[z][x], -1.0f) : glm::vec3(0.0f);
+                glm::vec3 up = z < rows - 1 ? glm::vec3(0.0f, heightMap[z + 1][x] - heightMap[z][x], 1.0f) : glm::vec3(0.0f);
+
+                // Cross products to compute normals
+                if (x > 0 && z > 0)
+                    sumNormals += glm::cross(left, down);
+                if (x < rows - 1 && z > 0)
+                    sumNormals += glm::cross(down, right);
+                if (x < rows - 1 && z < rows - 1)
+                    sumNormals += glm::cross(right, up);
+                if (x > 0 && z < rows - 1)
+                    sumNormals += glm::cross(up, left);
+
+                vertex.m_Normal = glm::normalize(sumNormals);
+                m_Vertices.push_back(vertex);
+            }
+        }
+        for (size_t z = 0; z < rows - 1; ++z)
+        {
+            for (size_t x = 0; x < cols - 1; ++x)
+            {
+
+                uint32_t topLeft = z * cols + x;
+
+                uint32_t topRight = topLeft + 1;
+                uint32_t bottomLeft = (z + 1) * cols + x;
+                uint32_t bottomRight = bottomLeft + 1;
+
+                m_Indices.push_back(topLeft);
+                m_Indices.push_back(bottomLeft);
+                m_Indices.push_back(topRight);
+                m_Indices.push_back(topRight);
+                m_Indices.push_back(bottomLeft);
+                m_Indices.push_back(bottomRight);
+            }
+        }
+    }
+    entt::entity Builder::LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene)
+    {
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Cubemaps.clear();
+        int m_Width, m_Height, m_BytesPerPixel;
+        uchar* m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 0);
+        std::vector<std::vector<float>> terrainData(m_Height, std::vector<float>(m_Width));
+        if (m_LocalBuffer)
+        {
+            LOG_CORE_CRITICAL("Texture: load file {0}", filepath);
+            std::cout << "buffer size: " << sizeof(m_LocalBuffer) << std::endl
+                      << "width: " << m_Width << std::endl
+                      << "height: " << m_Height << std::endl
+                      << "bytes per pixel: " << m_BytesPerPixel << std::endl;
+            for (int i = 0; i < m_Height; i++)
+            {
+                for (int j = 0; j < m_Width; j++)
+                {
+                    std::cout << static_cast<float>(m_LocalBuffer[i * m_Width + j]) << " ";
+                    terrainData[i][j] = static_cast<float>(m_LocalBuffer[i * m_Width + j]) / 127.0f;
+                }
+                std::cout << std::endl;
+            }
+            stbi_image_free(m_LocalBuffer);
+
+            PopulateTerrainData(terrainData);
+
+            ModelSubmesh submesh{};
+            submesh.m_FirstIndex = 0;
+            submesh.m_FirstVertex = 0;
+            submesh.m_IndexCount = m_Indices.size();
+            submesh.m_VertexCount = m_Vertices.size();
+
+            { // create material descriptor
+                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+            }
+            submesh.m_MaterialProperties.m_Roughness = 0.5f;
+            submesh.m_MaterialProperties.m_Metallic = 0.1f;
+            submesh.m_MaterialProperties.m_NormalMapIntensity = 1.0f;
+
+            m_Submeshes.push_back(submesh);
+
+            // create game object
+            auto model = Engine::m_Engine->LoadModel(*this);
+            entt::entity entity;
+            {
+                auto& registry = scene.GetRegistry();
+                auto& sceneGraph = scene.GetSceneGraph();
+                auto& dictionary = scene.GetDictionary();
+
+                entity = registry.create();
+                MeshComponent mesh{"terrain", model};
+                registry.emplace<MeshComponent>(entity, mesh);
+                TransformComponent transform{};
+                registry.emplace<TransformComponent>(entity, transform);
+                PbrMaterialTag pbrMaterialTag{};
+                registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+
+                uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
+                sceneGraph.GetRoot().AddChild(groupNode);
+            }
+            return entity;
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", filepath);
+        }
+        LOG_CORE_CRITICAL("I am here hello", filepath);
+
+        return entt::null;
+    }
+    entt::entity Builder::LoadTerrainHeightMap(const std::string& filepath, Scene& scene)
+    {
+
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Cubemaps.clear();
+        std::ifstream file(filepath, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open())
+        {
+            throw std::runtime_error("failed to open file: " + filepath);
+        }
+        size_t fileSize = static_cast<size_t>(file.tellg());
+        size_t floatCount = fileSize / sizeof(float);
+
+        std::vector<float> buffer(floatCount);
+        file.seekg(0);
+        file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+        file.close();
+
+        uint32_t terrainSize = static_cast<uint32_t>(sqrt(floatCount));
+        std::vector<std::vector<float>> terrainData(terrainSize, std::vector<float>(terrainSize));
+        for (size_t i = 0; i < terrainSize; ++i)
+        {
+            for (size_t j = 0; j < terrainSize; ++j)
+            {
+                terrainData[i][j] = buffer[i * terrainSize + j];
+            }
+        }
+        //---------------------
+        // PopulateTerrainData(terrainData);
+
+        ModelSubmesh submesh{};
+        submesh.m_FirstIndex = 0;
+        submesh.m_FirstVertex = 0;
+        submesh.m_IndexCount = m_Indices.size();
+        submesh.m_VertexCount = m_Vertices.size();
+
+        { // create material descriptor
+            auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
+            submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+        }
+        submesh.m_MaterialProperties.m_Roughness = 0.5f;
+        submesh.m_MaterialProperties.m_Metallic = 0.1f;
+        submesh.m_MaterialProperties.m_NormalMapIntensity = 1.0f;
+
+        m_Submeshes.push_back(submesh);
+
+        // create game object
+        auto model = Engine::m_Engine->LoadModel(*this);
+        entt::entity entity;
+        {
+            auto& registry = scene.GetRegistry();
+            auto& sceneGraph = scene.GetSceneGraph();
+            auto& dictionary = scene.GetDictionary();
+
+            entity = registry.create();
+            MeshComponent mesh{"terrain", model};
+            registry.emplace<MeshComponent>(entity, mesh);
+            TransformComponent transform{};
+            registry.emplace<TransformComponent>(entity, transform);
+            PbrMaterialTag pbrMaterialTag{};
+            registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+
+            uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
+            sceneGraph.GetRoot().AddChild(groupNode);
+        }
+        return entity;
+    }
+
     void Builder::LoadSprite(Sprite const& sprite, float const amplification, int const unlit, glm::vec4 const& color)
     {
         m_Vertices.clear();

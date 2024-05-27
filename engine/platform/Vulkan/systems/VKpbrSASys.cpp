@@ -25,6 +25,8 @@
 #include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
+#include "VKrenderPass.h"
+#include "VKswapChain.h"
 
 #include "systems/VKpbrSASys.h"
 

@@ -23,15 +23,14 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "auxiliary/math.h"
 #include "core.h"
 #include "events/event.h"
 #include "events/keyEvent.h"
 #include "events/mouseEvent.h"
-#include "resources/resources.h"
 #include "gui/Common/UI/screen.h"
-#include "auxiliary/math.h"
+#include "resources/resources.h"
 
-#include "dessertScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
 #include "animation/easingFunctions.h"

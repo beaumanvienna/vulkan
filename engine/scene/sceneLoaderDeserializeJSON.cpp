@@ -20,8 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "core.h"
 #include "auxiliary/file.h"
+#include "core.h"
 #include "scene/sceneLoaderJSON.h"
 
 namespace GfxRenderEngine
@@ -65,11 +65,20 @@ namespace GfxRenderEngine
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number");
 
                 // only check major version of "file format identifier"
+                // todo: Ask to JC: is the format identifier 1.3 or 1.2.1?
                 m_SceneDescriptionFile.m_FileFormatIdentifier = sceneObject.value().get_double();
                 CORE_ASSERT(
                     (std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
                     "The scene description major version does not match");
             }
+            else if (sceneObjectKey == "terrainPngPath")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "Terrain path must be string");
+                std::string_view terrainPath = sceneObject.value().get_string();
+                m_SceneDescriptionFile.m_TerrainPngPath = std::string(terrainPath);
+                LOG_CORE_INFO("Terrain PNG Path: {0}", m_SceneDescriptionFile.m_TerrainPngPath);
+            }
+
             else if (sceneObjectKey == "description")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string");

@@ -20,8 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "core.h"
 #include "UI/common.h"
+#include "core.h"
 #include "gui/common.h"
 
 namespace LucreApp

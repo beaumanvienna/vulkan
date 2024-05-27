@@ -23,6 +23,7 @@
 #pragma once
 
 #include "renderer/model.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
@@ -32,6 +33,9 @@ namespace GfxRenderEngine
     public:
         Builder() = default;
 
+        void LoadModelObjWavefront(const std::string& filepath, int fragAmplification = 1.0);
+        entt::entity LoadTerrainHeightMap(const std::string& filepath, Scene& scene);
+        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
         void LoadParticle(const glm::vec4& color);
         void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
                         glm::vec4 const& color = glm::vec4(1.0f));
@@ -39,6 +43,7 @@ namespace GfxRenderEngine
 
     private:
         void CalculateTangents();
+        void PopulateTerrainData(const std::vector<std::vector<float>>& heightMap);
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
     public:

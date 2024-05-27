@@ -25,13 +25,14 @@
 #include "gameState.h"
 
 #include "core.h"
-#include "scenes/splashScene.h"
-#include "scenes/mainScene.h"
-#include "scenes/cutScene.h"
 #include "scenes/beachScene.h"
-#include "scenes/nightScene.h"
+#include "scenes/cutScene.h"
 #include "scenes/dessertScene.h"
+#include "scenes/mainScene.h"
+#include "scenes/nightScene.h"
 #include "scenes/settingsScene.h"
+#include "scenes/splashScene.h"
+#include "scenes/terrainScene.h"
 
 namespace LucreApp
 {
@@ -100,6 +101,11 @@ namespace LucreApp
                 str = "State::DESSERT";
                 break;
             }
+            case State::TERRAIN:
+            {
+                str = "State::TERRAIN";
+                break;
+            }
             case State::SETTINGS:
             {
                 str = "State::SETTINGS";
@@ -165,6 +171,15 @@ namespace LucreApp
                 break;
             }
             case State::DESSERT:
+            {
+                if (GetScene()->IsFinished())
+                {
+                    // game over
+                    Engine::m_Engine->Shutdown();
+                }
+                break;
+            }
+            case State::TERRAIN:
             {
                 if (GetScene()->IsFinished())
                 {
@@ -309,6 +324,7 @@ namespace LucreApp
                 }
                 break;
             }
+
             case State::NIGHT:
             {
                 auto lambda = [&]()
@@ -346,6 +362,29 @@ namespace LucreApp
                 {
                     std::thread loadDessertSceneThread(lambda);
                     loadDessertSceneThread.detach();
+                }
+                else
+                {
+                    lambda();
+                }
+                break;
+            }
+            case State::TERRAIN:
+            {
+                auto lambda = [=]()
+                {
+                    // todo: use the json format
+                    auto scenePtr =
+                        std::make_shared<TerrainScene>("terrain.json", "application/lucre/sceneDescriptions/terrain.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                if (Engine::m_Engine->MultiThreadingSupport())
+                {
+                    std::thread loadTerrainSceneThread(lambda);
+                    loadTerrainSceneThread.detach();
                 }
                 else
                 {

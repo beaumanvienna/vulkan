@@ -22,8 +22,8 @@
 
 #include <string>
 
-#include "stb_image.h"
 #include "core.h"
+#include "stb_image.h"
 
 #include "VKcore.h"
 #include "VKtexture.h"
@@ -207,7 +207,8 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
             if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to allocate image memory in 'void VK_Texture::CreateImage'");
+                LOG_CORE_CRITICAL("failed to allocate image memory in 'void "
+                                  "VK_Texture::CreateImage'");
             }
         }
 
@@ -293,8 +294,9 @@ namespace GfxRenderEngine
         // Create a texture sampler
         // In Vulkan, textures are accessed by samplers
         // This separates sampling information from texture data.
-        // This means you could have multiple sampler objects for the same texture with different settings
-        // Note: Similar to the samplers available with OpenGL 3.3
+        // This means you could have multiple sampler objects for the same
+        // texture with different settings Note: Similar to the samplers
+        // available with OpenGL 3.3
         VkSamplerCreateInfo samplerCreateInfo{};
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerCreateInfo.magFilter = m_MagFilter;

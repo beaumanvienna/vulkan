@@ -46,6 +46,7 @@ namespace LucreApp
         m_SpritesheetScene2Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_2_R), 4 /* frames */);
         m_SpritesheetScene3Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_3_R), 4 /* frames */);
         m_SpritesheetScene4Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_4_R), 4 /* frames */);
+        m_SpritesheetScene5Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_5_R), 4 /* frames */);
     }
 
     void MainScreen::OnDetach() {}
@@ -123,11 +124,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
             m_Scene1Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
                                                    new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
@@ -146,11 +147,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
             m_Scene2Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
                                                    new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
@@ -169,11 +170,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetScene3Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetScene3Button.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetScene3Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
             m_Scene3Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
                                                    new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
@@ -192,11 +193,11 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetScene4Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetScene4Button.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetScene4Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
             m_Scene4Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
                                                    new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
@@ -209,17 +210,39 @@ namespace LucreApp
         }
         m_Scene4Button->OnClick.Handle(this, &MainScreen::Scene4Click);
         topline->Add(m_Scene4Button);
-        topline->Add(new SCREEN_UI::Spacer(horizontalSpacerTopline, 0.0f));
+        topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_IconSpacer, 0.0f));
 
+        // scene 5 button
+        if (CoreSettings::m_UITheme == THEME_RETRO)
+        {
+            icon = Sprite2D(m_SpritesheetScene5Button.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
+            icon_active = Sprite2D(m_SpritesheetScene5Button.GetSprite(BUTTON_4_STATES_FOCUSED));
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
+            icon_depressed = Sprite2D(m_SpritesheetScene5Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
+
+            m_Scene5Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        else
+        {
+            icon = Sprite2D(m_Spritesheet->GetSprite(I_GEAR));
+            icon.SetScale(UI::m_Common->m_IconScale);
+            m_Scene5Button = new SCREEN_UI::Choice(icon, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+        }
+        m_Scene5Button->OnClick.Handle(this, &MainScreen::Scene5Click);
+        topline->Add(m_Scene5Button);
+        topline->Add(new SCREEN_UI::Spacer(horizontalSpacerTopline, 0.0f));
         // settings button
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
             m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
                                                      new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
@@ -253,9 +276,9 @@ namespace LucreApp
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             icon = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_NOT_FOCUSED));
-            icon.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_active = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED));
-            icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
+            icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
             m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
@@ -335,6 +358,15 @@ namespace LucreApp
         if (Lucre::m_Application->GetState() != GameState::State::DESSERT)
         {
             SceneChangedEvent event(GameState::State::DESSERT);
+            Lucre::m_Application->OnAppEvent(event);
+        }
+        return SCREEN_UI::EVENT_DONE;
+    }
+    SCREEN_UI::EventReturn MainScreen::Scene5Click(SCREEN_UI::EventParams& e)
+    {
+        if (Lucre::m_Application->GetState() != GameState::State::TERRAIN)
+        {
+            SceneChangedEvent event(GameState::State::TERRAIN);
             Lucre::m_Application->OnAppEvent(event);
         }
         return SCREEN_UI::EVENT_DONE;

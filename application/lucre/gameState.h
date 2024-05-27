@@ -46,6 +46,7 @@ namespace LucreApp
             BEACH,
             NIGHT,
             DESSERT,
+            TERRAIN,
             MAX_STATES
         };
 
@@ -54,8 +55,8 @@ namespace LucreApp
 
         void Start();
         void Stop();
-        Scene* OnUpdate();
-        void OnEvent(Event& event);
+        Scene *OnUpdate();
+        void OnEvent(Event &event);
 
         void EnableUserInput(bool enable);
 
@@ -71,11 +72,11 @@ namespace LucreApp
         State GetNextState() const { return m_NextState; }
         bool UserInputIsInabled() const { return m_UserInputEnabled; }
 
-        Scene* GetScene();
-        Scene* GetScene(State state);
-        Scene* GetNextScene();
+        Scene *GetScene();
+        Scene *GetScene(State state);
+        Scene *GetNextScene();
         void DestroyScene(const State state);
-        void SetupScene(const State state, const std::shared_ptr<Scene>& scene);
+        void SetupScene(const State state, const std::shared_ptr<Scene> &scene);
 
     private:
         void Load(State state);
