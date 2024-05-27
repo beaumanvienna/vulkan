@@ -61,10 +61,8 @@ namespace GfxRenderEngine
             {
                 vertex.m_Position = glm::vec3(x * scale, heightMap[z][x] * heightScale, z * scale);
                 std::cout << vertex.m_Position.x << " " << vertex.m_Position.y << " " << vertex.m_Position.z << std::endl;
-                vertex.m_Color = glm::vec3(0.f, 0.f, heightMap[z][x] / 3);
+                vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
                 vertex.m_UV = glm::vec2(0.f, 0.f);
-                vertex.m_Amplification = 0.f;
-                vertex.m_Unlit = 0;
                 vertex.m_Tangent = glm::vec3(1.0F);
                 vertex.m_JointIds = glm::ivec4(0.f);
                 vertex.m_Weights = glm::vec4(0.0f);
@@ -170,8 +168,8 @@ namespace GfxRenderEngine
                 registry.emplace<MeshComponent>(entity, mesh);
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
-                PbrNoMapTag pbrNoMapTag{};
-                registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+                PbrMaterialTag pbrMaterialTag{};
+                registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
 
                 uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
                 sceneGraph.GetRoot().AddChild(groupNode);
@@ -247,8 +245,8 @@ namespace GfxRenderEngine
             registry.emplace<MeshComponent>(entity, mesh);
             TransformComponent transform{};
             registry.emplace<TransformComponent>(entity, transform);
-            PbrNoMapTag pbrNoMapTag{};
-            registry.emplace<PbrNoMapTag>(entity, pbrNoMapTag);
+            PbrMaterialTag pbrMaterialTag{};
+            registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
 
             uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
             sceneGraph.GetRoot().AddChild(groupNode);
