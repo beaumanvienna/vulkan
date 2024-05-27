@@ -63,4 +63,4 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "BlacklistedDevice", m_BlacklistedDevice);
         LOG_CORE_INFO("CoreSettings: key '{0}', value is {1}", "UITheme", m_UITheme);
     }
-}
+} // namespace GfxRenderEngine

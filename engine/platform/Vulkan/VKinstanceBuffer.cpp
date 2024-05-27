@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,14 +12,14 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
    Encapsulates a vulkan buffer
    Based on https://github.com/blurrypiano/littleVulkanEngine/blob/main/src/lve_buffer.cpp
    Initially based off VulkanBuffer by Sascha Willems -
@@ -29,23 +29,20 @@
 
 namespace GfxRenderEngine
 {
-    VK_InstanceBuffer::VK_InstanceBuffer(uint numInstances)
-      : m_NumInstances(numInstances), m_Dirty{true}
+    VK_InstanceBuffer::VK_InstanceBuffer(uint numInstances) : m_NumInstances(numInstances), m_Dirty{true}
     {
         m_Ubo = std::make_shared<VK_Buffer>(numInstances * sizeof(InstanceData));
         m_Ubo->MapBuffer();
         m_DataInstances.resize(numInstances);
     }
 
-    VK_InstanceBuffer::~VK_InstanceBuffer()
-    {
-    }
+    VK_InstanceBuffer::~VK_InstanceBuffer() {}
 
     void VK_InstanceBuffer::SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix)
     {
         CORE_ASSERT(index < m_NumInstances, "out of bounds");
 
-        m_DataInstances[index].m_Transform = mat4Global;
+        m_DataInstances[index].m_ModelMatrix = mat4Global;
         m_DataInstances[index].m_NormalMatrix = normalMatrix;
 
         m_Dirty = true;
@@ -62,8 +59,9 @@ namespace GfxRenderEngine
         }
     }
 
-    std::shared_ptr<Buffer> VK_InstanceBuffer::GetUbo()
-    {
-        return m_Ubo;
-    }
-}
+    std::shared_ptr<Buffer> VK_InstanceBuffer::GetBuffer() { return m_Ubo; }
+
+    const glm::mat4& VK_InstanceBuffer::GetModelMatrix(uint index) { return m_DataInstances[index].m_ModelMatrix; }
+
+    const glm::mat4& VK_InstanceBuffer::GetNormalMatrix(uint index) { return m_DataInstances[index].m_NormalMatrix; }
+} // namespace GfxRenderEngine

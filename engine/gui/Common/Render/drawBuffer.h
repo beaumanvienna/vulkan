@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -33,12 +33,12 @@
 
 namespace GfxRenderEngine
 {
-    #define COLOR(i) (((i&0xFF) << 16) | (i & 0xFF00) | ((i & 0xFF0000) >> 16) | 0xFF000000)
+#define COLOR(i) (((i & 0xFF) << 16) | (i & 0xFF00) | ((i & 0xFF0000) >> 16) | 0xFF000000)
     typedef unsigned int Color;
 
     struct SCREEN_Atlas;
 
-    enum 
+    enum
     {
         ALIGN_LEFT = 0,
         ALIGN_RIGHT = 16,
@@ -64,12 +64,12 @@ namespace GfxRenderEngine
         FLAG_ELLIPSIZE_TEXT = 16384,
     };
 
-    namespace SCREEN_Draw 
+    namespace SCREEN_Draw
     {
         class SCREEN_Pipeline;
     }
 
-    struct GradientStop 
+    struct GradientStop
     {
         float t;
         uint32_t color;
@@ -77,33 +77,38 @@ namespace GfxRenderEngine
 
     class SCREEN_TextDrawer;
 
-    class SCREEN_DrawBuffer 
+    class SCREEN_DrawBuffer
     {
     public:
         SCREEN_DrawBuffer()
-        { 
-            m_Renderer = Engine::m_Engine->GetRenderer(); 
+        {
+            m_Renderer = Engine::m_Engine->GetRenderer();
             fontscalex = 1.0f;
             fontscaley = 1.0f;
         }
         ~SCREEN_DrawBuffer();
 
         bool MeasureImage(const Sprite& sprite, float& w, float& h);
-        void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF), int align = ALIGN_TOPLEFT);
+        void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF),
+                       int align = ALIGN_TOPLEFT);
         void DrawImageStretch(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF));
-        void DrawImageStretch(const Sprite& sprite, const Bounds &bounds, Color color = COLOR(0xFFFFFF));
+        void DrawImageStretch(const Sprite& sprite, const Bounds& bounds, Color color = COLOR(0xFFFFFF));
         void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform);
-        void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, Color color);
-        void DrawImage4Grid(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF), float corner_scale = 1.0);
-        void MeasureText(FontID font, const char *text, float *w, float *h);
-        void MeasureTextCount(FontID font, const char *text, int count, float *w, float *h);
-        void MeasureTextRect(FontID font, const char *text, int count, const Bounds &bounds, float *w, float *h, int align = 0);
-        void DrawTextRect(FontID font, const char *text, float x, float y, float w, float h, Color color = 0xFFFFFFFF, int align = 0);
-        void DrawText(FontID font, const char *text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
+        void DrawTexRect(std::shared_ptr<Texture> texture, float x1, float y1, float x2, float y2, float u1, float v1,
+                         float u2, float v2, Color color);
+        void DrawImage4Grid(const Sprite& sprite, float x1, float y1, float x2, float y2, Color color = COLOR(0xFFFFFF),
+                            float corner_scale = 1.0);
+        void MeasureText(FontID font, const char* text, float* w, float* h);
+        void MeasureTextCount(FontID font, const char* text, int count, float* w, float* h);
+        void MeasureTextRect(FontID font, const char* text, int count, const Bounds& bounds, float* w, float* h,
+                             int align = 0);
+        void DrawTextRect(FontID font, const char* text, float x, float y, float w, float h, Color color = 0xFFFFFFFF,
+                          int align = 0);
+        void DrawText(FontID font, const char* text, float x, float y, Color color = 0xFFFFFFFF, int align = 0);
 
         void SetFontScale(float xs, float ys);
 
-        static void DoAlign(int flags, float *x, float *y, float *w, float *h);
+        static void DoAlign(int flags, float* x, float* y, float* w, float* h);
 
         float fontscalex;
         float fontscaley;
@@ -112,4 +117,4 @@ namespace GfxRenderEngine
     private:
         glm::vec4 ConvertColor(Color color);
     };
-}
+} // namespace GfxRenderEngine

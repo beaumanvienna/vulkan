@@ -11,7 +11,7 @@ workspace "vulkanRenderEngine"
 
 project "lucre"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
@@ -38,6 +38,7 @@ project "lucre"
         "resources",
         "vendor/spdlog/include",
         "vendor/yaml-cpp/include",
+        "vendor/fastgltf/include",
         "vendor/assetImporter/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
@@ -61,6 +62,8 @@ project "lucre"
     {
         "engine",
         "yaml-cpp",
+        "fastgltf",
+        "ufbx",
         "box2d",
         "shaderc",
         "shaderc_util",
@@ -78,6 +81,20 @@ project "lucre"
     prebuildcommands
     {
     }
+
+    if os.host() == "linux" then
+        USE_PULSEAUDIO = true
+    end
+    if USE_PULSEAUDIO then
+        links
+        {
+            "libpamanager"
+        }
+        defines
+        {
+            "PULSEAUDIO"
+        }
+    end
 
     filter "system:linux"
 
@@ -104,7 +121,6 @@ project "lucre"
             "X11",
             "Xrandr",
             "Xi",
-            "libpamanager",
             "pulse",
             "glib-2.0",
             "gio-2.0",
@@ -258,8 +274,12 @@ project "lucre"
         os.rmdir("./vendor/shaderc/bin")
         os.rmdir("./vendor/shaderc/bin-int")
         os.rmdir("./vendor/yaml-cpp/build")
+        os.rmdir("./vendor/fastgltf/build")
         print("done.")
     end
 
-    include "engine.lua"
+    if USE_PULSEAUDIO then
+        include "vendor/pamanager/libpamanager/libpamanager.lua"
+    end
 
+    include "engine.lua"

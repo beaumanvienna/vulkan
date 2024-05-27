@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -37,9 +37,7 @@ namespace LucreApp
     bool SettingsScreen::m_IsCreditsScreen = false;
     bool SettingsScreen::m_IsCintrollerSetupScreen = false;
 
-    SettingsScreen::SettingsScreen()
-        : m_Spritesheet{Lucre::m_Spritesheet}
-    {}
+    SettingsScreen::SettingsScreen() : m_Spritesheet{Lucre::m_Spritesheet} {}
 
     SettingsScreen::~SettingsScreen()
     {
@@ -48,7 +46,7 @@ namespace LucreApp
     }
 
     void SettingsScreen::OnAttach()
-    { 
+    {
         m_SpritesheetTab.AddSpritesheetRow(m_Spritesheet->GetSprite(I_TAB_R), 2 /* frames */, TAB_SCALE);
         m_SpritesheetBack.AddSpritesheetRow(m_Spritesheet->GetSprite(I_BACK_R), 4 /* frames */);
         m_LastTab = 0;
@@ -56,7 +54,7 @@ namespace LucreApp
         SetSoundCallback();
     }
 
-    bool SettingsScreen::key(const SCREEN_KeyInput &key)
+    bool SettingsScreen::key(const SCREEN_KeyInput& key)
     {
         if (m_ControllerSetup->IsRunning())
         {
@@ -80,7 +78,7 @@ namespace LucreApp
     {
         PROFILE_FUNCTION();
         using namespace SCREEN_UI;
-        auto ge  = GetI18NCategory("General");
+        auto ge = GetI18NCategory("General");
 
         root_ = new AnchorLayout(new LayoutParams(FILL_PARENT, FILL_PARENT));
         root_->SetTag("setting screen root");
@@ -90,14 +88,18 @@ namespace LucreApp
         root_->Add(verticalLayout);
 
         // info message
-        m_SettingsInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new AnchorLayoutParams(UI::m_Common->m_AvailableWidth - 6 * UI::m_Common->m_IconWidth, WRAP_CONTENT, 4 * UI::m_Common->m_IconWidth, 0.0f, NONE, NONE));
+        m_SettingsInfo =
+            new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT,
+                            new AnchorLayoutParams(UI::m_Common->m_AvailableWidth - 6 * UI::m_Common->m_IconWidth,
+                                                   WRAP_CONTENT, 4 * UI::m_Common->m_IconWidth, 0.0f, NONE, NONE));
         m_SettingsInfo->SetBottomCutoff(UI::m_Common->m_AvailableHeight - UI::m_Common->m_IconHeight);
 
         root_->Add(m_SettingsInfo);
 
         verticalLayout->Add(new Spacer(UI::m_Common->m_TabMargin));
 
-        m_TabHolder = new TabHolder(ORIENT_HORIZONTAL, UI::m_Common->m_StripSize, new LinearLayoutParams(1.0f), UI::m_Common->m_TabMargin);
+        m_TabHolder = new TabHolder(ORIENT_HORIZONTAL, UI::m_Common->m_StripSize, new LinearLayoutParams(1.0f),
+                                    UI::m_Common->m_TabMargin);
         m_TabHolder->SetTag("m_TabHolder");
         verticalLayout->Add(m_TabHolder);
 
@@ -116,12 +118,13 @@ namespace LucreApp
             icon_depressed.SetScale(UI::m_Common->m_TabIconScaleRetro);
             icon_depressed_inactive = Sprite2D(m_SpritesheetTab.GetSprite(BUTTON_2_STATES_NOT_FOCUSED));
             icon_depressed_inactive.SetScale(UI::m_Common->m_TabIconScaleRetro);
-            m_TabHolder->SetIcon(icon,icon_active,icon_depressed,icon_depressed_inactive);
+            m_TabHolder->SetIcon(icon, icon_active, icon_depressed, icon_depressed_inactive);
         }
 
         // back button
         Choice* backButton;
-        LinearLayout* horizontalLayoutBack = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, UI::m_Common->m_IconHeight));
+        LinearLayout* horizontalLayoutBack =
+            new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(FILL_PARENT, UI::m_Common->m_IconHeight));
         horizontalLayoutBack->SetTag("horizontalLayoutBack");
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
@@ -131,7 +134,8 @@ namespace LucreApp
             icon_active.SetScale(UI::m_Common->m_IconScaleRetro);
             icon_depressed = Sprite2D(m_SpritesheetBack.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
-            backButton = new Choice(icon, icon_active, icon_depressed, new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
+            backButton = new Choice(icon, icon_active, icon_depressed,
+                                    new LayoutParams(UI::m_Common->m_IconWidth, UI::m_Common->m_IconHeight));
         }
         else
         {
@@ -151,11 +155,13 @@ namespace LucreApp
         // -------- general --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutGeneral = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutGeneral =
+            new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         m_TabHolder->AddTab(ge->T("General"), horizontalLayoutGeneral);
         horizontalLayoutGeneral->Add(new Spacer(UI::m_Common->m_TabMarginLeftRight));
 
-        ViewGroup* generalSettingsScroll = new ScrollView(ORIENT_VERTICAL, new LinearLayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        ViewGroup* generalSettingsScroll =
+            new ScrollView(ORIENT_VERTICAL, new LinearLayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutGeneral->Add(generalSettingsScroll);
         generalSettingsScroll->SetTag("GeneralSettings");
         LinearLayout* generalSettings = new LinearLayout(ORIENT_VERTICAL);
@@ -165,62 +171,61 @@ namespace LucreApp
 
         // -------- toggle fullscreen --------
         m_EnableFullscreen = Engine::m_Engine->IsFullscreen();
-        CheckBox* vToggleFullscreen = generalSettings->Add(new CheckBox(&m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
+        CheckBox* vToggleFullscreen =
+            generalSettings->Add(new CheckBox(&m_EnableFullscreen, ge->T("Fullscreen", "Fullscreen"), "",
+                                              new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
         vToggleFullscreen->OnClick.Handle(this, &SettingsScreen::OnFullscreenToggle);
 
         // -------- system sounds --------
-        CheckBox* vSystemSounds = generalSettings->Add(new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"),"", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
-        vSystemSounds->OnClick.Add([=](EventParams &e) 
-        {
-            return SCREEN_UI::EVENT_CONTINUE;
-        });
+        CheckBox* vSystemSounds = generalSettings->Add(
+            new CheckBox(&CoreSettings::m_EnableSystemSounds, ge->T("Enable system sounds", "Enable system sounds"), "",
+                         new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
+        vSystemSounds->OnClick.Add([=](EventParams& e) { return SCREEN_UI::EVENT_CONTINUE; });
 
         // desktop volume
         m_GlobalVolume = Sound::GetDesktopVolume();
         const int VOLUME_OFF = 0;
         const int VOLUME_MAX = 100;
 
-        SCREEN_PopupSliderChoice* volume = generalSettings->Add(new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "", new LayoutParams(FILL_PARENT,UI::m_Common->m_SettingsBar)));
+        SCREEN_PopupSliderChoice* volume = generalSettings->Add(
+            new SCREEN_PopupSliderChoice(&m_GlobalVolume, VOLUME_OFF, VOLUME_MAX, ge->T("Global Volume"), "",
+                                         new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
         m_GlobalVolumeEnabled = true;
         volume->SetEnabledPtr(&m_GlobalVolumeEnabled);
         volume->SetZeroLabel(ge->T("Mute"));
 
-        volume->OnChange.Add([=](EventParams &e) 
-        {
-            Sound::SetDesktopVolume(m_GlobalVolume);
-            return SCREEN_UI::EVENT_CONTINUE;
-        });
+        volume->OnChange.Add(
+            [this](EventParams& e)
+            {
+                Sound::SetDesktopVolume(m_GlobalVolume);
+                return SCREEN_UI::EVENT_CONTINUE;
+            });
 
-        // audio device list
-        #ifdef LINUX
-            float widthSelectAudioDevice = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
-            std::vector<std::string>& audioDeviceList = Sound::GetOutputDeviceList();
-            m_AudioDevice = Sound::GetDefaultOutputDevice();
-            auto selectAudioDevice = new SCREEN_PopupMultiChoiceDynamic(&m_AudioDevice,
-                                                                        ge->T("Device"),
-                                                                        audioDeviceList,
-                                                                        nullptr,
-                                                                        screenManager(),
-                                                                        new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar), widthSelectAudioDevice);
-            SCREEN_PopupMultiChoiceDynamic* audioDevice = generalSettings->Add(selectAudioDevice);
-            audioDevice->OnChoice.Handle(this, &SettingsScreen::OnAudioDevice);
-        #endif
+// audio device list
+#ifdef LINUX
+        float widthSelectAudioDevice = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
+        std::vector<std::string>& audioDeviceList = Sound::GetOutputDeviceList();
+        m_AudioDevice = Sound::GetDefaultOutputDevice();
+        auto selectAudioDevice = new SCREEN_PopupMultiChoiceDynamic(
+            &m_AudioDevice, ge->T("Device"), audioDeviceList, nullptr, screenManager(),
+            new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar), widthSelectAudioDevice);
+        SCREEN_PopupMultiChoiceDynamic* audioDevice = generalSettings->Add(selectAudioDevice);
+        audioDevice->OnChoice.Handle(this, &SettingsScreen::OnAudioDevice);
+#endif
 
         // -------- theme --------
-        static const char* uiTheme[] = 
-        {
-            "Retro",
-            "Plain"
-        };
+        static const char* uiTheme[] = {"Retro", "Plain"};
 
-        SCREEN_PopupMultiChoice* uiThemeChoice = generalSettings->Add(new SCREEN_PopupMultiChoice(&CoreSettings::m_UITheme, ge->T("Theme"),
-            uiTheme, 0, ARRAY_SIZE(uiTheme), ge->GetName(), screenManager(), new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
+        SCREEN_PopupMultiChoice* uiThemeChoice = generalSettings->Add(new SCREEN_PopupMultiChoice(
+            &CoreSettings::m_UITheme, ge->T("Theme"), uiTheme, 0, ARRAY_SIZE(uiTheme), ge->GetName(), screenManager(),
+            new LayoutParams(FILL_PARENT, UI::m_Common->m_SettingsBar)));
         uiThemeChoice->OnChoice.Handle(this, &SettingsScreen::OnThemeChanged);
 
         // -------- controller setup --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutController = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutController =
+            new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutController->SetTag("horizontalLayoutController");
         m_TabHolder->AddTab(ge->T("Controller"), horizontalLayoutController);
 
@@ -228,16 +233,18 @@ namespace LucreApp
 
         m_ControllerSetup = new ControllerSetup(m_Spritesheet);
         horizontalLayoutController->Add(m_ControllerSetup);
-        m_ControllerSetup->OnMappingSuccessful.Add([=](EventParams &e) 
-        {
-            m_SettingsInfo->Show("Mapping successful", e.v);
-            return SCREEN_UI::EVENT_CONTINUE;
-        });
+        m_ControllerSetup->OnMappingSuccessful.Add(
+            [this](EventParams& e)
+            {
+                m_SettingsInfo->Show("Mapping successful", e.v);
+                return SCREEN_UI::EVENT_CONTINUE;
+            });
 
         // -------- credits --------
 
         // horizontal layout for margins
-        LinearLayout* horizontalLayoutCredits = new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
+        LinearLayout* horizontalLayoutCredits =
+            new LinearLayout(ORIENT_HORIZONTAL, new LayoutParams(UI::m_Common->m_TabLayoutWidth, FILL_PARENT));
         horizontalLayoutCredits->SetTag("horizontalLayoutCredits");
         m_TabHolder->AddTab(ge->T("Credits"), horizontalLayoutCredits);
 
@@ -273,19 +280,19 @@ namespace LucreApp
         SCREEN_UIScreen::update();
     }
 
-    SCREEN_UI::EventReturn SettingsScreen::OnFullscreenToggle(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn SettingsScreen::OnFullscreenToggle(SCREEN_UI::EventParams& e)
     {
         Engine::m_Engine->ToggleFullscreen();
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn SettingsScreen::OnThemeChanged(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn SettingsScreen::OnThemeChanged(SCREEN_UI::EventParams& e)
     {
         UI::m_ScreenManager->RecreateAllViews();
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn SettingsScreen::OnAudioDevice(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn SettingsScreen::OnAudioDevice(SCREEN_UI::EventParams& e)
     {
         auto audioDevice = m_AudioDevice.substr(0, 60);
         std::vector<std::string>& audioDeviceList = Sound::GetOutputDeviceList();
@@ -302,11 +309,11 @@ namespace LucreApp
 
     void SettingsScreen::SetSoundCallback()
     {
-        #ifdef LINUX
+        #ifdef PULSEAUDIO
             Sound::SetCallback([=](const LibPAmanager::Event& event)
             {
                 UI::m_ScreenManager->RecreateAllViews();
             });
         #endif
     }
-}
+} // namespace LucreApp

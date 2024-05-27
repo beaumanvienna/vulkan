@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gui/Common/Data/Text/i18n.h"
@@ -30,14 +30,11 @@ namespace GfxRenderEngine
 {
     SCREEN_I18NRepo SCREEN_i18nrepo;
 
-    SCREEN_I18NRepo::~SCREEN_I18NRepo()
-    {
-        Clear();
-    }
+    SCREEN_I18NRepo::~SCREEN_I18NRepo() { Clear(); }
 
-    //std::string SCREEN_I18NRepo::LanguageID() {
-    //    return languageID_;
-    //}
+    // std::string SCREEN_I18NRepo::LanguageID() {
+    //     return languageID_;
+    // }
 
     void SCREEN_I18NRepo::Clear()
     {
@@ -49,7 +46,7 @@ namespace GfxRenderEngine
         cats_.clear();
     }
 
-    const char *SCREEN_I18NCategory::T(const char *key, const char *def)
+    const char* SCREEN_I18NCategory::T(const char* key, const char* def)
     {
         if (!key)
         {
@@ -79,17 +76,17 @@ namespace GfxRenderEngine
         }
     }
 
-    //void SCREEN_I18NCategory::SetMap(const std::map<std::string, std::string> &m) {
-    //    for (auto iter = m.begin(); iter != m.end(); ++iter) {
-    //        if (map_.find(iter->first) == map_.end()) {
-    //            std::string text = SCREEN_ReplaceAll(iter->second, "\\n", "\n");
-    //            map_[iter->first] = I18NEntry(text);
+    // void SCREEN_I18NCategory::SetMap(const std::map<std::string, std::string> &m) {
+    //     for (auto iter = m.begin(); iter != m.end(); ++iter) {
+    //         if (map_.find(iter->first) == map_.end()) {
+    //             std::string text = SCREEN_ReplaceAll(iter->second, "\\n", "\n");
+    //             map_[iter->first] = I18NEntry(text);
     ////            INFO_LOG(SYSTEM, "Language entry: %s -> %s", iter->first.c_str(), text.c_str());
     //        }
     //    }
     //}
     //
-    std::shared_ptr<SCREEN_I18NCategory> SCREEN_I18NRepo::GetCategory(const char *category)
+    std::shared_ptr<SCREEN_I18NCategory> SCREEN_I18NRepo::GetCategory(const char* category)
     {
         std::lock_guard<std::mutex> guard(catsLock_);
         auto iter = cats_.find(category);
@@ -99,28 +96,28 @@ namespace GfxRenderEngine
         }
         else
         {
-            SCREEN_I18NCategory *c = new SCREEN_I18NCategory(this, category);
+            SCREEN_I18NCategory* c = new SCREEN_I18NCategory(this, category);
             cats_[category].reset(c);
             return cats_[category];
         }
     }
 
-    //std::string SCREEN_I18NRepo::GetIniPath(const std::string &languageID) const {
-    //    return "lang/" + languageID + ".ini";
-    //}
+    // std::string SCREEN_I18NRepo::GetIniPath(const std::string &languageID) const {
+    //     return "lang/" + languageID + ".ini";
+    // }
     //
-    //bool SCREEN_I18NRepo::IniExists(const std::string &languageID) const {
-    //    FileInfo info;
-    //    if (!SCREEN_VFSGetFileInfo(GetIniPath(languageID).c_str(), &info))
-    //        return false;
-    //    if (!info.exists)
-    //        return false;
-    //    return true;
-    //}
+    // bool SCREEN_I18NRepo::IniExists(const std::string &languageID) const {
+    //     FileInfo info;
+    //     if (!SCREEN_VFSGetFileInfo(GetIniPath(languageID).c_str(), &info))
+    //         return false;
+    //     if (!info.exists)
+    //         return false;
+    //     return true;
+    // }
     //
-    //bool SCREEN_I18NRepo::LoadIni(const std::string &languageID, const std::string &overridePath) {
-    //    SCREEN_IniFile ini;
-    //    std::string iniPath;
+    // bool SCREEN_I18NRepo::LoadIni(const std::string &languageID, const std::string &overridePath) {
+    //     SCREEN_IniFile ini;
+    //     std::string iniPath;
     //
     ////    INFO_LOG(SYSTEM, "Loading lang ini %s", iniPath.c_str());
     //    if (!overridePath.empty()) {
@@ -147,44 +144,45 @@ namespace GfxRenderEngine
     //    return true;
     //}
     //
-    //SCREEN_I18NCategory *SCREEN_I18NRepo::LoadSection(const SCREEN_Section *section, const char *name) {
+    // SCREEN_I18NCategory *SCREEN_I18NRepo::LoadSection(const SCREEN_Section *section, const char *name) {
     //    SCREEN_I18NCategory *cat = new SCREEN_I18NCategory(this, name);
     //    std::map<std::string, std::string> sectionMap = section->ToMap();
     //    cat->SetMap(sectionMap);
     //    return cat;
     //}
     //
-    //// This is a very light touched save variant - it won't overwrite 
+    //// This is a very light touched save variant - it won't overwrite
     //// anything, only create new entries.
-    //void SCREEN_I18NRepo::SaveIni(const std::string &languageID) {
-    //    SCREEN_IniFile ini;
-    //    ini.Load(GetIniPath(languageID));
-    //    std::lock_guard<std::mutex> guard(catsLock_);
-    //    for (auto iter = cats_.begin(); iter != cats_.end(); ++iter) {
-    //        std::string categoryName = iter->first;
-    //        SCREEN_Section *section = ini.GetOrCreateSection(categoryName.c_str());
-    //        SaveSection(ini, section, iter->second);
-    //    }
-    //    ini.Save(GetIniPath(languageID));
-    //}
+    // void SCREEN_I18NRepo::SaveIni(const std::string &languageID) {
+    //     SCREEN_IniFile ini;
+    //     ini.Load(GetIniPath(languageID));
+    //     std::lock_guard<std::mutex> guard(catsLock_);
+    //     for (auto iter = cats_.begin(); iter != cats_.end(); ++iter) {
+    //         std::string categoryName = iter->first;
+    //         SCREEN_Section *section = ini.GetOrCreateSection(categoryName.c_str());
+    //         SaveSection(ini, section, iter->second);
+    //     }
+    //     ini.Save(GetIniPath(languageID));
+    // }
     //
-    //void SCREEN_I18NRepo::SaveSection(SCREEN_IniFile &ini, SCREEN_Section *section, std::shared_ptr<SCREEN_I18NCategory> cat) {
-    //    const std::map<std::string, std::string> &missed = cat->Missed();
+    // void SCREEN_I18NRepo::SaveSection(SCREEN_IniFile &ini, SCREEN_Section *section, std::shared_ptr<SCREEN_I18NCategory>
+    // cat) {
+    //     const std::map<std::string, std::string> &missed = cat->Missed();
     //
-    //    for (auto iter = missed.begin(); iter != missed.end(); ++iter) {
-    //        if (!section->Exists(iter->first.c_str())) {
-    //            std::string text = SCREEN_ReplaceAll(iter->second, "\n", "\\n");
-    //            section->Set(iter->first, text);
-    //        }
-    //    }
+    //     for (auto iter = missed.begin(); iter != missed.end(); ++iter) {
+    //         if (!section->Exists(iter->first.c_str())) {
+    //             std::string text = SCREEN_ReplaceAll(iter->second, "\n", "\\n");
+    //             section->Set(iter->first, text);
+    //         }
+    //     }
     //
-    //    const std::map<std::string, I18NEntry> &entries = cat->GetMap();
-    //    for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
-    //        std::string text = SCREEN_ReplaceAll(iter->second.text, "\n", "\\n");
-    //        section->Set(iter->first, text);
-    //    }
+    //     const std::map<std::string, I18NEntry> &entries = cat->GetMap();
+    //     for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
+    //         std::string text = SCREEN_ReplaceAll(iter->second.text, "\n", "\\n");
+    //         section->Set(iter->first, text);
+    //     }
     //
-    //    cat->ClearMissed();
-    //}
+    //     cat->ClearMissed();
+    // }
     //
-}
+} // namespace GfxRenderEngine

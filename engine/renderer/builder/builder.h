@@ -33,25 +33,26 @@ namespace GfxRenderEngine
     public:
         Builder() = default;
 
-        void LoadModelObjWavefront(const std::string &filepath, int fragAmplification = 1.0);
-        entt::entity LoadTerrainHeightMap(const std::string &filepath, Scene &scene);
-        entt::entity LoadTerrainHeightMapPNG(const std::string &filepath, Scene &scene);
-        void LoadParticle(const glm::vec4 &color);
-        void LoadSprite(Sprite const &sprite, float const amplification = 0.0f, int const unlit = 0, glm::vec4 const &color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(const std::vector<std::string> &faces, entt::registry &registry);
+        void LoadModelObjWavefront(const std::string& filepath, int fragAmplification = 1.0);
+        entt::entity LoadTerrainHeightMap(const std::string& filepath, Scene& scene);
+        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
+        void LoadParticle(const glm::vec4& color);
+        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
+                        glm::vec4 const& color = glm::vec4(1.0f));
+        entt::entity LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry);
 
     private:
         void CalculateTangents();
-        void PopulateTerrainData(const std::vector<std::vector<float>> &heightMap);
-        void CalculateTangentsFromIndexBuffer(const std::vector<uint> &indices);
+        void PopulateTerrainData(const std::vector<std::vector<float>>& heightMap);
+        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
 
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<ModelSubmesh> m_Submeshes{};
+        std::vector<Submesh> m_Submeshes{};
 
         // cubemap
         std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
         std::vector<Submesh> m_CubemapSubmeshes{};
     };
-}
+} // namespace GfxRenderEngine

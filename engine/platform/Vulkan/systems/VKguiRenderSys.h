@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -55,7 +55,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         VK_RenderSystemGUIRenderer(VkRenderPass renderPass, VK_DescriptorSetLayout& globalDescriptorSetLayout);
         ~VK_RenderSystemGUIRenderer();
 
@@ -63,19 +62,17 @@ namespace GfxRenderEngine
         VK_RenderSystemGUIRenderer& operator=(const VK_RenderSystemGUIRenderer&) = delete;
 
         void RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& modelViewProjectionMatrix);
-        void RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& position, const glm::vec4& color, const float textureID = 1.0f);
+        void RenderSprite(const VK_FrameInfo& frameInfo, const Sprite& sprite, const glm::mat4& position,
+                          const glm::vec4& color, const float textureID = 1.0f);
 
     private:
-
         void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
         void CreatePipeline(VkRenderPass renderPass);
 
     private:
-
         const uint m_VertexCount = 6;
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
         std::unique_ptr<VK_Pipeline> m_Pipeline2;
-
     };
-}
+} // namespace GfxRenderEngine

@@ -269,47 +269,39 @@ namespace GfxRenderEngine
 
         // index 0, 0.0f,  1.0f
         vertex[0] = {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f},
+                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y},
-                     amplification,
-                     unlit,
                      /*tangent*/ glm::vec3(0.0),
                      glm::ivec4(0.0),
-                     glm::vec4(0.0)};
+                     glm::vec4(0.0f)};
 
         // index 1, 1.0f,  1.0f
         vertex[1] = {/*pos*/ {1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f},
+                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y},
-                     amplification,
-                     unlit,
                      /*tangent*/ glm::vec3(0.0),
                      glm::ivec4(0.0),
-                     glm::vec4(0.0)};
+                     glm::vec4(0.0f)};
 
         // index 2, 1.0f,  0.0f
         vertex[2] = {/*pos*/ {1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f},
+                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y},
-                     amplification,
-                     unlit,
                      /*tangent*/ glm::vec3(0.0),
                      glm::ivec4(0.0),
-                     glm::vec4(0.0)};
+                     glm::vec4(0.0f)};
 
         // index 3, 0.0f,  0.0f
         vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f},
+                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
                      /*norm*/ {0.0f, 0.0f, 1.0f},
                      /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y},
-                     amplification,
-                     unlit,
                      /*tangent*/ glm::vec3(0.0),
                      glm::ivec4(0.0),
-                     glm::vec4(0.0)};
+                     glm::vec4(0.0f)};
 
         for (int i = 0; i < 4; i++)
             m_Vertices.push_back(vertex[i]);
@@ -333,47 +325,39 @@ namespace GfxRenderEngine
 
         Vertex vertex[4]{// index 0, 0.0f,  1.0f
                          {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {0.0f, 1.0f},
-                          1.0f /*amplification*/,
-                          0 /*unlit*/,
                           /*tangent*/ glm::vec3(0.0),
                           glm::ivec4(0.0),
-                          glm::vec4(0.0)},
+                          glm::vec4(0.0f)},
 
                          // index 1, 1.0f,  1.0f
                          {/*pos*/ {1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {1.0f, 1.0f},
-                          1.0f /*amplification*/,
-                          0 /*unlit*/,
                           /*tangent*/ glm::vec3(0.0),
                           glm::ivec4(0.0),
-                          glm::vec4(0.0)},
+                          glm::vec4(0.0f)},
 
                          // index 2, 1.0f,  0.0f
                          {/*pos*/ {1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {1.0f, 0.0f},
-                          1.0f /*amplification*/,
-                          0 /*unlit*/,
                           /*tangent*/ glm::vec3(0.0),
                           glm::ivec4(0.0),
-                          glm::vec4(0.0)},
+                          glm::vec4(0.0f)},
 
                          // index 3, 0.0f,  0.0f
                          {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z},
+                          {color.x, color.y, color.z, 1.0f},
                           /*norm*/ {0.0f, 0.0f, -1.0f},
                           /*uv*/ {0.0f, 0.0f},
-                          1.0f /*amplification*/,
-                          0 /*unlit*/,
                           /*tangent*/ glm::vec3(0.0),
                           glm::ivec4(0.0),
-                          glm::vec4(0.0)}};
+                          glm::vec4(0.0f)}};
         for (int i = 0; i < 4; i++)
             m_Vertices.push_back(vertex[i]);
 
@@ -418,11 +402,12 @@ namespace GfxRenderEngine
             for (uint i = 0; i < VERTEX_COUNT; i++)
             {
                 Vertex vertex = {/*pos*/ cubemapVertices[i],
-                                 /*col*/ {0.0f, 0.0f, 0.0f},
+                                 /*col*/ {0.0f, 0.0f, 0.0f, 1.0f},
                                  /*norm*/ {0.0f, 0.0f, 0.0f},
                                  /*uv*/ {0.0f, 0.0f},
-                                 /* amplification */ 0.0f,    0 /*unlit*/,
-                                 /*tangent*/ glm::vec3(0.0),  glm::ivec4(0.0), glm::vec4(0.0)};
+                                 /*tangent*/ glm::vec3(0.0),
+                                 glm::ivec4(0.0),
+                                 glm::vec4(0.0f)};
                 m_Vertices.push_back(vertex);
             }
         }
@@ -442,13 +427,13 @@ namespace GfxRenderEngine
         }
 
         {
-            ModelSubmesh submesh{};
+            Submesh submesh{};
             submesh.m_FirstVertex = 0;
             submesh.m_VertexCount = VERTEX_COUNT;
 
             { // create material descriptor
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
-                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
+                submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
             }
             m_Submeshes.push_back(submesh);
         }
@@ -466,93 +451,6 @@ namespace GfxRenderEngine
         }
 
         return entity;
-    }
-
-    void Builder::LoadModelObjWavefront(const std::string& filepath, int fragAmplification)
-    {
-        tinyobj::attrib_t attrib;
-        std::vector<tinyobj::shape_t> shapes;
-        std::vector<tinyobj::material_t> materials;
-        std::string warn, err;
-
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
-        {
-            LOG_CORE_CRITICAL("LoadModel errors: {0}, warnings: {1}", err, warn);
-        }
-
-        m_Vertices.clear();
-        m_Indices.clear();
-
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-
-        for (const auto& shape : shapes)
-        {
-            for (const auto& index : shape.mesh.indices)
-            {
-                Vertex vertex{};
-                vertex.m_Amplification = fragAmplification;
-
-                if (index.vertex_index >= 0)
-                {
-                    vertex.m_Position = {
-                        attrib.vertices[3 * index.vertex_index + 0],
-                        -attrib.vertices[3 * index.vertex_index + 1],
-                        attrib.vertices[3 * index.vertex_index + 2],
-                    };
-
-                    vertex.m_Color = {
-                        attrib.colors[3 * index.vertex_index + 0],
-                        attrib.colors[3 * index.vertex_index + 1],
-                        attrib.colors[3 * index.vertex_index + 2],
-                    };
-                }
-
-                if (index.normal_index >= 0)
-                {
-                    vertex.m_Normal = {
-                        attrib.normals[3 * index.normal_index + 0],
-                        -attrib.normals[3 * index.normal_index + 1],
-                        attrib.normals[3 * index.normal_index + 2],
-                    };
-                }
-
-                if (index.texcoord_index >= 0)
-                {
-                    vertex.m_UV = {
-                        attrib.texcoords[2 * index.texcoord_index + 0],
-                        attrib.texcoords[2 * index.texcoord_index + 1],
-                    };
-                }
-
-                if (uniqueVertices.count(vertex) == 0)
-                {
-                    uniqueVertices[vertex] = static_cast<uint>(m_Vertices.size());
-                    m_Vertices.push_back(vertex);
-                }
-                m_Indices.push_back(uniqueVertices[vertex]);
-            }
-        }
-
-        {
-            ModelSubmesh submesh{};
-            submesh.m_FirstIndex = 0;
-            submesh.m_FirstVertex = 0;
-            submesh.m_IndexCount = m_Indices.size();
-            submesh.m_VertexCount = m_Vertices.size();
-
-            { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
-                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-            }
-            submesh.m_MaterialProperties.m_Roughness = 0.5f;
-            submesh.m_MaterialProperties.m_Metallic = 0.1f;
-
-            m_Submeshes.push_back(submesh);
-        }
-
-        // calculate tangents
-        CalculateTangents();
-        LOG_CORE_INFO("Vertex count: {0}, Index count: {1} ({2})", m_Vertices.size(), m_Indices.size(), filepath);
     }
 
     void Builder::CalculateTangents()
@@ -643,7 +541,9 @@ namespace GfxRenderEngine
                     tangent.y = factor * (dV2 * E1y - dV1 * E2y);
                     tangent.z = factor * (dV2 * E1z - dV1 * E2z);
                     if (tangent.x == 0.0f && tangent.y == 0.0f && tangent.z == 0.0f)
+                    {
                         tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+                    }
 
                     m_Vertices[vertexIndex1].m_Tangent = tangent;
                     m_Vertices[vertexIndex2].m_Tangent = tangent;

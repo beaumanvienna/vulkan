@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -28,8 +28,11 @@
 namespace LucreApp
 {
     GamepadInputController::GamepadInputController(const GamepadInputControllerSpec& spec)
-        : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}
-    {}
+        : m_Deadzone{spec.m_Deadzone}, m_Sensitivity{spec.m_Sensitivity}, m_MoveSpeed{spec.m_MoveSpeed},
+          m_LookSpeed{spec.m_LookSpeed}
+    {
+        m_Momentum.Set(/*absoluteMaxValue*/ 5.f, /*attackTime*/ 1.f, /*decayTime*/ 1.f, /*falloff*/ 8);
+    }
 
     void GamepadInputController::GetTransform(TransformComponent& transform, bool scale)
     {
@@ -49,8 +52,9 @@ namespace LucreApp
         // right
         if (scale)
         {
-            glm::vec2 controllerAxisInputRight = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
-    
+            glm::vec2 controllerAxisInputRight =
+                Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
+
             if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
             {
                 transform.SetScaleX(transform.GetScale().x - controllerAxisInputRight.y * m_Sensitivity);
@@ -69,4 +73,41 @@ namespace LucreApp
             transform.SetTranslationZ(transform.GetTranslation().z - m_Sensitivity);
         }
     }
-}
+
+    void GamepadInputController::MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform)
+    {
+
+        glm::vec2 controllerAxisInputRight =
+            Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
+
+        // rotate
+        if (std::abs(controllerAxisInputRight.x) > m_Deadzone)
+        {
+            float rotate = -controllerAxisInputRight.x;
+            transform.AddRotationY(m_LookSpeed * (float)timestep * rotate);
+            transform.SetRotationY(glm::mod(transform.GetRotation().y, glm::two_pi<float>()));
+        }
+
+        // translate
+        {
+            float translate = 0.0f;
+            if (std::abs(controllerAxisInputRight.y) > m_Deadzone)
+            {
+                translate = controllerAxisInputRight.y;
+            }
+
+            float yaw = transform.GetRotation().y;
+            const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
+            const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
+            const glm::vec3 upDir{0.f, -1.f, 0.f};
+
+            glm::vec3 moveDir{0.0f};
+            moveDir -= forwardDir * m_Momentum.Get(translate, timestep);
+
+            if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
+            {
+                transform.AddTranslation(m_MoveSpeed * timestep * moveDir);
+            }
+        }
+    }
+} // namespace LucreApp

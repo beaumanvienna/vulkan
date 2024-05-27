@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,22 +12,20 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
 
-
 #include "engine.h"
 #include "scene/scene.h"
-#include "scene/entity.h"
 #include "scene/components.h"
-#include "scene/sceneLoader.h"
+#include "scene/sceneLoaderJSON.h"
 #include "scene/particleSystem.h"
 #include "sprite/spriteAnimation.h"
 #include "renderer/renderer.h"
@@ -49,7 +47,6 @@ namespace LucreApp
     {
 
     public:
-
         MainScene(const std::string& filepath, const std::string& alternativeFilepath);
         ~MainScene() override {}
 
@@ -66,7 +63,6 @@ namespace LucreApp
         virtual void StartScripts() override;
 
     private:
-
         void LoadModels();
         void ResetScene();
         void InitPhysics();
@@ -78,11 +74,10 @@ namespace LucreApp
         void ApplyDebugSettings();
 
     private:
-
         static constexpr float POINT_LIGHT_INTENSITY = 2.7f;
 
         std::shared_ptr<Renderer> m_Renderer;
-        SceneLoader m_SceneLoader;
+        SceneLoaderJSON m_SceneLoaderJSON;
 
         // the camera is keyboard-controlled
         std::shared_ptr<CameraController> m_CameraController;
@@ -114,8 +109,6 @@ namespace LucreApp
         SpriteSheet m_SpritesheetSmoke;
 
     private:
-
-
         struct BananaComponent
         {
             bool m_IsOnTheGround;
@@ -129,4 +122,4 @@ namespace LucreApp
             bool m_Rotated;
         };
     };
-}
+} // namespace LucreApp

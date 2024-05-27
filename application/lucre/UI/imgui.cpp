@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,14 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
-
 
 #include "gtc/type_ptr.hpp"
 #include "gtx/matrix_decompose.hpp"
@@ -36,43 +35,46 @@
 
 namespace LucreApp
 {
-    int   ImGUI::m_SelectedModel = 0;
-    int   ImGUI::m_MaxModels = 0;
+    int ImGUI::m_SelectedModel = 0;
+    int ImGUI::m_SelectedModelPrevious = -1;
+    int ImGUI::m_MaxModels = 0;
     EnttV ImGUI::m_VisibleModels;
-    int   ImGUI::m_SelectedGameObject = 0;
+    int ImGUI::m_SelectedGameObject = 0;
+    const char* ImGUI::m_CurrentItem = nullptr;
 
     float ImGUI::m_Roughness = 0.1f;
-    bool  ImGUI::m_UseRoughness = false;
+    bool ImGUI::m_UseRoughness = false;
     float ImGUI::m_Metallic = 0.5f;
-    bool  ImGUI::m_UseMetallic = false;
+    bool ImGUI::m_UseMetallic = false;
     float ImGUI::m_NormalMapIntensity = 0.9f;
-    bool  ImGUI::m_UseNormalMapIntensity = false;
+    bool ImGUI::m_UseNormalMapIntensity = false;
     float ImGUI::m_PointLightIntensity = 1.0f;
     float ImGUI::m_AmbientLightIntensity = 0.1f;
-    bool  ImGUI::m_UseAmbientLightIntensity = false;
-    bool  ImGUI::m_UsePointLightIntensity = false;
-    bool  ImGUI::m_UseScale = false;
-    bool  ImGUI::m_UseRotate = false;
-    bool  ImGUI::m_UseTranslate = false;
-    bool  ImGUI::m_ShowDebugShadowMap = false;
-    bool  ImGUI::m_UseEmissiveStrength = false;
+    bool ImGUI::m_UseAmbientLightIntensity = false;
+    bool ImGUI::m_UsePointLightIntensity = false;
+    bool ImGUI::m_UseScale = false;
+    bool ImGUI::m_UseRotate = false;
+    bool ImGUI::m_UseTranslate = false;
+    bool ImGUI::m_ShowDebugShadowMap = false;
+    bool ImGUI::m_UseEmissiveStrength = false;
     float ImGUI::m_EmissiveStrength = 0.35;
-    bool  ImGUI::m_UseAnimation = false;
-    bool  ImGUI::m_RepeatAnimation = false;
+    bool ImGUI::m_UseAnimation = false;
+    bool ImGUI::m_RepeatAnimation = false;
 
     void ImGUI::DebugWindow()
     {
 
-        if (!m_VisibleModels.size()) return;
+        if (!m_VisibleModels.size())
+            return;
 
         entt::entity entity = static_cast<entt::entity>(0);
         ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
-        uint contextWidth  = Engine::m_Engine->GetWindowWidth();
+        uint contextWidth = Engine::m_Engine->GetWindowWidth();
         uint contextHeight = Engine::m_Engine->GetWindowHeight();
 
-        auto  currentScene = Lucre::m_Application->GetScene();
-        auto& camera       = currentScene->GetCamera();
-        auto& registry     = currentScene->GetRegistry();
+        auto currentScene = Lucre::m_Application->GetScene();
+        auto& camera = currentScene->GetCamera();
+        auto& registry = currentScene->GetRegistry();
 
         ImGui::SetWindowPos(ImVec2(0, 0));
         ImGui::SetWindowSize(ImVec2(contextWidth, contextHeight));
@@ -93,17 +95,16 @@ namespace LucreApp
             ImGui::SliderInt(gameObjectLabel.c_str(), &m_SelectedModel, 0, m_MaxModels);
         }
 
-        static int selectedModelPrevious = m_SelectedModel;
-        static const char* currentItem = nullptr;
-        if (m_SelectedModel != selectedModelPrevious)
+        if (m_SelectedModel != m_SelectedModelPrevious)
         {
             // reset animations drop down
-            selectedModelPrevious = m_SelectedModel;
+            m_SelectedModelPrevious = m_SelectedModel;
             m_SelectedGameObject = 0;
             m_UseAnimation = false;
             m_RepeatAnimation = false;
-            currentItem = nullptr;
+            m_CurrentItem = nullptr;
         }
+        m_SelectedModelPrevious = m_SelectedModel;
 
         {
             uint node = currentScene->GetTreeNodeIndex(entity);
@@ -111,7 +112,7 @@ namespace LucreApp
             TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
-        if (registry.all_of<PbrMaterial>(static_cast<entt::entity>(m_SelectedGameObject)))
+        if (registry.all_of<PbrMaterialTag>(static_cast<entt::entity>(m_SelectedGameObject)))
         {
             // emission strength
             ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
@@ -130,10 +131,10 @@ namespace LucreApp
             {
                 items[itemIndex++] = animation.GetName().c_str();
             }
-            
-            if (!currentItem)
+
+            if (!m_CurrentItem)
             {
-                currentItem = items[0];
+                m_CurrentItem = items[0];
             }
 
             ImGui::Checkbox("use###007", &m_UseAnimation);
@@ -141,23 +142,25 @@ namespace LucreApp
             ImGui::Checkbox("repeat###001", &m_RepeatAnimation);
             ImGui::SameLine();
 
-            if (ImGui::BeginCombo("##combo", currentItem)) // The 2nd parameter is the label previewed before opening the combo
+            if (ImGui::BeginCombo("##combo",
+                                  m_CurrentItem)) // The 2nd parameter is the label previewed before opening the combo
             {
                 for (size_t index = 0; index < numberOfAnimations; ++index)
                 {
-                    bool isSelected = (currentItem == items[index]);
+                    bool isSelected = (m_CurrentItem == items[index]);
                     if (ImGui::Selectable(items[index], isSelected))
                     {
-                        currentItem = items[index];
+                        m_CurrentItem = items[index];
                         if (m_UseAnimation)
                         {
-                            animations.Start(currentItem);
+                            animations.Start(m_CurrentItem);
                             animations.SetRepeat(m_RepeatAnimation);
                         }
                     }
                     if (isSelected)
                     {
-                        ImGui::SetItemDefaultFocus(); // set initial focus when opening the combo (scrolling + for keyboard navigation support)
+                        ImGui::SetItemDefaultFocus(); // set initial focus when opening the combo (scrolling + for keyboard
+                                                      // navigation support)
                     }
                 }
                 ImGui::EndCombo();
@@ -165,32 +168,19 @@ namespace LucreApp
 
             ImGui::SameLine();
             ImGui::Text("select animation");
-
         }
 
         auto guizmoMode = GetGuizmoMode();
-        
+
         {
             entt::entity gameObject = m_SelectedGameObject ? static_cast<entt::entity>(m_SelectedGameObject) : entity;
 
             if (m_UseEmissiveStrength)
             {
-                bool found = false;
+                if (registry.all_of<PbrMaterialTag>(gameObject))
                 {
-                    if (registry.all_of<PbrEmissiveTag>(gameObject))
-                    {
-                        found = true;
-                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(gameObject);
-                        pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
-                    }
-                }
-                if (!found)
-                {
-                    if (registry.all_of<PbrEmissiveTextureTag>(gameObject))
-                    {
-                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(gameObject);
-                        pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
-                    }
+                    auto& pbrMaterialTag = registry.get<PbrMaterialTag>(gameObject);
+                    pbrMaterialTag.m_EmissiveStrength = m_EmissiveStrength;
                 }
             }
 
@@ -209,8 +199,8 @@ namespace LucreApp
 
                 glm::mat4 mat4 = transform.GetMat4Global();
 
-                ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix),
-                     guizmoMode, ImGuizmo::LOCAL, glm::value_ptr(mat4));
+                ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projectionMatrix), guizmoMode,
+                                     ImGuizmo::LOCAL, glm::value_ptr(mat4));
 
                 // global = parent * local
                 // local = inv_parent * global
@@ -224,7 +214,6 @@ namespace LucreApp
                 glm::decompose(mat4Local, scale, rotation, translation, skew, perspective);
                 glm::vec3 rotationEuler = glm::eulerAngles(rotation);
 
-     
                 if (ImGuizmo::IsUsing())
                 {
                     transform.SetTranslation(translation);
@@ -233,13 +222,13 @@ namespace LucreApp
                 }
             }
 
-            glm::vec3 actualTranslation   = transform.GetTranslation();
+            glm::vec3 actualTranslation = transform.GetTranslation();
             glm::vec3 actualRotationEuler = transform.GetRotation() * 180.0f / glm::pi<float>();
-            glm::vec3 actualScale         = transform.GetScale();
+            glm::vec3 actualScale = transform.GetScale();
 
             ImGui::InputFloat3("Translation", glm::value_ptr(actualTranslation));
-            ImGui::InputFloat3("Rotation",    glm::value_ptr(actualRotationEuler));
-            ImGui::InputFloat3("Scale",       glm::value_ptr(actualScale));
+            ImGui::InputFloat3("Rotation", glm::value_ptr(actualRotationEuler));
+            ImGui::InputFloat3("Scale", glm::value_ptr(actualScale));
 
             float minimumChange = 0.000001f;
 
@@ -308,6 +297,9 @@ namespace LucreApp
     void ImGUI::SetupSlider(Scene* scene)
     {
         m_SelectedModel = 0;
+        m_SelectedModelPrevious = -1;
+        m_CurrentItem = nullptr;
+
         m_VisibleModels.clear();
         TreeNode& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
 
@@ -328,12 +320,12 @@ namespace LucreApp
             m_VisibleModels.push_back({label, entity});
         }
 
-        m_MaxModels = m_VisibleModels.size()-1;
+        m_MaxModels = m_VisibleModels.size() - 1;
     }
 
     void ImGUI::TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const maxDepth)
     {
-        TraverseObjectTree(scene, nodeIndex, 0/*uint depth*/, maxDepth); // start with depth 0
+        TraverseObjectTree(scene, nodeIndex, 0 /*uint depth*/, maxDepth); // start with depth 0
     }
 
     void ImGUI::TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const depth, uint const maxDepth)
@@ -346,12 +338,15 @@ namespace LucreApp
             std::string label = "entity " + std::to_string(gameObject) + " " + node.GetName();
 
             uint numberOfChildren = node.Children();
-            if ((numberOfChildren) && (depth != (maxDepth-1)))
+            if ((numberOfChildren) && (depth != (maxDepth - 1)))
             {
                 if (ImGui::TreeNodeEx(label.c_str()))
                 {
                     ImGui::SameLine();
-                    if (ImGui::SmallButton("edit")) { m_SelectedGameObject = gameObject; }
+                    if (ImGui::SmallButton("edit"))
+                    {
+                        m_SelectedGameObject = gameObject;
+                    }
                     for (uint index = 0; index < node.Children(); ++index)
                     {
                         TraverseObjectTree(scene, node.GetChild(index), depth + 1, maxDepth);
@@ -361,12 +356,15 @@ namespace LucreApp
             }
             else
             {
-                ImGui::TreeNodeEx(label.c_str(), /*ImGuiTreeNodeFlags_NoTreePushOnOpen | */ImGuiTreeNodeFlags_Leaf);
+                ImGui::TreeNodeEx(label.c_str(), /*ImGuiTreeNodeFlags_NoTreePushOnOpen | */ ImGuiTreeNodeFlags_Leaf);
                 ImGui::SameLine();
-                if (ImGui::SmallButton("edit")) { m_SelectedGameObject = gameObject; }
+                if (ImGui::SmallButton("edit"))
+                {
+                    m_SelectedGameObject = gameObject;
+                }
                 ImGui::TreePop();
             }
             ImGui::PopID();
         }
     }
-}
+} // namespace LucreApp

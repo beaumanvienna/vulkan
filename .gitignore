@@ -1,11 +1,10 @@
-application/lucre/models/node hierarchy
-application/lucre/models/Wooden\ Crate
-night.json
-dessert.json
 .vscode
 .DS_Store
+application/lucre/models/funkyKong
+application/lucre/models/dancing
 application/lucre/models/guybrush_animated_gltf
 application/lucre/models/Kaya
+application/lucre/models/sonic
 vendor/VulkanSDK
 *.spv
 bin
@@ -60,17 +59,7 @@ resources/nsis/marleyInstaller.exe
 *.out
 *.app
 
-emulators/mednafen/aclocal.m4
-emulators/mednafen/ar-lib
-emulators/mednafen/compile
-emulators/mednafen/configure
-emulators/mednafen/depcomp
-emulators/mednafen/install-sh
-emulators/mednafen/missing
-application/lucre/models/dont_upload
 renderdoc.cap
-main.scene
-night.scene
-beach.scene
-splash.scene
-settings.scene
+/*.scene
+/*.json
+dessert._*

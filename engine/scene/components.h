@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -33,23 +33,21 @@
 
 namespace GfxRenderEngine
 {
-    constexpr int MAX_LIGHTS = 128;
     class Model;
 
     class TransformComponent
     {
 
     public:
-
-        static constexpr float DEGREES_0   = 0.0f;
-        static constexpr float DEGREES_90  = glm::pi<float>() / 2.0f;
+        static constexpr float DEGREES_0 = 0.0f;
+        static constexpr float DEGREES_90 = glm::pi<float>() / 2.0f;
         static constexpr float DEGREES_180 = glm::pi<float>();
         static constexpr float DEGREES_270 = glm::pi<float>() * 1.5f;
 
     public:
-
         TransformComponent();
         TransformComponent(const glm::mat4& mat4);
+        TransformComponent(glm::vec3& scale, glm::quat& rotation, glm::vec3& translation);
 
         void SetScale(const glm::vec3& scale);
         void SetScale(const float scale);
@@ -71,32 +69,27 @@ namespace GfxRenderEngine
         void AddTranslation(const glm::vec3& deltaTranslation);
         void AddTranslationX(const float deltaTranslation);
 
-
         // the getters must be const; only the setters have write access
-        const glm::vec3& GetScale() { return m_Scale; }
-        const glm::vec3& GetRotation() { return m_Rotation; }
-        const glm::vec3& GetTranslation() { return m_Translation; }
+        const glm::vec3& GetScale() const { return m_Scale; }
+        const glm::vec3& GetRotation() const { return m_Rotation; }
+        const glm::vec3& GetTranslation() const { return m_Translation; }
 
         void SetMat4Local(const glm::mat4& mat4);
         void SetMat4Global(const glm::mat4& parent);
 
         const glm::mat4& GetMat4Local();
         const glm::mat4& GetMat4Global();
-        const glm::mat3& GetNormalMatrix();
+        const glm::mat4& GetNormalMatrix();
         const glm::mat4& GetParent();
-        void  SetDirtyFlag();
-        bool  GetDirtyFlag() const;
-        bool  GetDirtyFlagInstanced() const;
-        void  ResetDirtyFlagInstanced();
+        void SetDirtyFlag();
+        bool GetDirtyFlag() const;
+        void SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex);
 
     private:
-
         void RecalculateMatrices();
 
     private:
-
         bool m_Dirty{true};
-        bool m_DirtyInstanced{true};
 
         // local
         glm::vec3 m_Scale = glm::vec3{1.0f};
@@ -106,17 +99,18 @@ namespace GfxRenderEngine
 
         // global
         glm::mat4 m_Mat4Global = glm::mat4(1.0f);
-        glm::mat3 m_NormalMatrix = glm::mat4(1.0f);
+        glm::mat4 m_NormalMatrix = glm::mat4(1.0f);
         glm::mat4 m_Parent = glm::mat4(1.0f);
 
+        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
+        uint m_InstanceIndex;
     };
 
     class MeshComponent
     {
 
     public:
-
-        MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled = true);
+        MeshComponent(std::string const& name, std::shared_ptr<Model> model, bool enabled = true);
         MeshComponent(std::shared_ptr<Model> model, bool enabled = true);
 
         std::string m_Name;
@@ -124,9 +118,7 @@ namespace GfxRenderEngine
         bool m_Enabled{false};
 
     private:
-
         static uint m_DefaultNameTagCounter;
-
     };
 
     struct PointLightComponent
@@ -145,17 +137,42 @@ namespace GfxRenderEngine
         int m_RenderPass{0};
     };
 
+    struct OrthographicCameraComponent
+    {
+        OrthographicCameraComponent(float xmag, float ymag, float zfar, float znear)
+            : m_XMag(xmag), m_YMag(ymag), m_ZFar(zfar), m_ZNear(znear)
+        {
+        }
+        OrthographicCameraComponent() = delete;
+        float m_XMag;
+        float m_YMag;
+        float m_ZFar;
+        float m_ZNear;
+    };
+
+    struct PerspectiveCameraComponent
+    {
+        PerspectiveCameraComponent(float aspectRatio, float yfov, float zfar, float znear)
+            : m_AspectRatio(aspectRatio), m_YFov(yfov), m_ZFar(zfar), m_ZNear(znear)
+        {
+        }
+        PerspectiveCameraComponent() = delete;
+        float m_AspectRatio;
+        float m_YFov;
+        float m_ZFar;
+        float m_ZNear;
+    };
+
     struct RigidbodyComponent
     {
         enum Type
-        { 
+        {
             STATIC,
             DYNAMIC
         };
 
         Type m_Type = Type::STATIC;
         void* m_Body = nullptr;
-
     };
 
     class NativeScript;
@@ -179,70 +196,15 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
-    struct PbrMaterial
+    struct PbrMaterialTag
     {
-        uint m_Tag{0};
+        float m_EmissiveStrength{1.f};
     };
 
     struct InstanceTag
     {
         std::vector<entt::entity> m_Instances;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
-    };
-
-    struct PbrEmissiveTag
-    {
-        float m_EmissiveStrength{0.f};
-    };
-
-    struct PbrEmissiveTextureTag
-    {
-        float m_EmissiveStrength{0.f};
-    };
-
-    struct PbrNoMapTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallic2Tag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicSA2Tag
-    {
-        uint m_Tag{0};
     };
 
     struct CubemapComponent
@@ -254,4 +216,4 @@ namespace GfxRenderEngine
     {
         uint m_Tag{0};
     };
-}
+} // namespace GfxRenderEngine

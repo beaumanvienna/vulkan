@@ -49,11 +49,9 @@ namespace LucreApp
         m_SpritesheetScene5Button.AddSpritesheetRow(m_Spritesheet->GetSprite(I_SCENE_No_5_R), 4 /* frames */);
     }
 
-    void MainScreen::OnDetach()
-    {
-    }
+    void MainScreen::OnDetach() {}
 
-    bool MainScreen::key(const SCREEN_KeyInput &key)
+    bool MainScreen::key(const SCREEN_KeyInput& key)
     {
         if (!m_OffButton)
             return false;
@@ -92,23 +90,31 @@ namespace LucreApp
         root_ = new SCREEN_UI::AnchorLayout(new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
         root_->SetTag("root_");
 
-        SCREEN_UI::LinearLayout *verticalLayout = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_VERTICAL, new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
+        SCREEN_UI::LinearLayout* verticalLayout = new SCREEN_UI::LinearLayout(
+            SCREEN_UI::ORIENT_VERTICAL, new SCREEN_UI::LayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::FILL_PARENT));
         verticalLayout->SetTag("verticalLayout");
         root_->Add(verticalLayout);
 
-        m_MainInfo = new InfoMessage(ALIGN_CENTER | FLAG_WRAP_TEXT, new SCREEN_UI::AnchorLayoutParams(UI::m_Common->m_AvailableWidth - UI::m_Common->m_MarginLeftRight * 3 - 2 * UI::m_Common->m_IconWidth - UI::m_Common->m_IconSpacer,
-                                                                                                      SCREEN_UI::WRAP_CONTENT, UI::m_Common->m_MarginLeftRight, 0.0f, SCREEN_UI::NONE, SCREEN_UI::NONE));
+        m_MainInfo = new InfoMessage(
+            ALIGN_CENTER | FLAG_WRAP_TEXT,
+            new SCREEN_UI::AnchorLayoutParams(UI::m_Common->m_AvailableWidth - UI::m_Common->m_MarginLeftRight * 3 -
+                                                  2 * UI::m_Common->m_IconWidth - UI::m_Common->m_IconSpacer,
+                                              SCREEN_UI::WRAP_CONTENT, UI::m_Common->m_MarginLeftRight, 0.0f,
+                                              SCREEN_UI::NONE, SCREEN_UI::NONE));
         // root_->Add(m_MainInfo);
 
         verticalLayout->Add(new SCREEN_UI::Spacer(UI::m_Common->m_MarginLeftRight));
 
         // top line
-        SCREEN_UI::LinearLayout *topline = new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_HORIZONTAL, new SCREEN_UI::LinearLayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::WRAP_CONTENT));
+        SCREEN_UI::LinearLayout* topline =
+            new SCREEN_UI::LinearLayout(SCREEN_UI::ORIENT_HORIZONTAL,
+                                        new SCREEN_UI::LinearLayoutParams(SCREEN_UI::FILL_PARENT, SCREEN_UI::WRAP_CONTENT));
         topline->SetTag("topLine");
         verticalLayout->Add(topline);
 
         topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_MarginLeftRight, 0.0f));
-        float horizontalSpacerTopline = UI::m_Common->m_AvailableWidth - 6 * UI::m_Common->m_IconWidth - 2 * UI::m_Common->m_IconSpacer - 1 * UI::m_Common->m_MarginLeftRight;
+        float horizontalSpacerTopline = UI::m_Common->m_AvailableWidth - 6 * UI::m_Common->m_IconWidth -
+                                        4 * UI::m_Common->m_IconSpacer - 2 * UI::m_Common->m_MarginLeftRight;
 
         Sprite2D icon;
         Sprite2D icon_active;
@@ -124,7 +130,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetScene1Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_Scene1Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_Scene1Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -146,7 +153,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetScene2Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_Scene2Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_Scene2Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -168,7 +176,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetScene3Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_Scene3Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_Scene3Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -190,7 +199,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetScene4Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_Scene4Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_Scene4Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -212,7 +222,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetScene5Button.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_Scene5Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_Scene5Button = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                   new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -233,7 +244,8 @@ namespace LucreApp
             icon_depressed = Sprite2D(m_SpritesheetSettings.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
             icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
 
-            m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
+            m_SettingsButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                     new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()));
         }
         else
         {
@@ -243,14 +255,16 @@ namespace LucreApp
         }
 
         m_SettingsButton->OnClick.Handle(this, &MainScreen::SettingsClick);
-        m_SettingsButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
-                                          {
-            if (!m_ToolTipsShown[MAIN_SETTINGS])
+        m_SettingsButton->OnHighlight.Add(
+            [&](SCREEN_UI::EventParams& e)
             {
-                m_ToolTipsShown[MAIN_SETTINGS] = true;
-                //m_MainInfo->Show(ma->T("Settings", "Settings"), e.v);
-            }
-            return SCREEN_UI::EVENT_CONTINUE; });
+                if (!m_ToolTipsShown[MAIN_SETTINGS])
+                {
+                    m_ToolTipsShown[MAIN_SETTINGS] = true;
+                    // m_MainInfo->Show(ma->T("Settings", "Settings"), e.v);
+                }
+                return SCREEN_UI::EVENT_CONTINUE;
+            });
         topline->Add(m_SettingsButton);
         topline->Add(new SCREEN_UI::Spacer(UI::m_Common->m_IconSpacer, 0.0f));
         if (m_SetFocus)
@@ -266,8 +280,9 @@ namespace LucreApp
             icon_active = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED));
             icon_active.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
             icon_depressed = Sprite2D(m_SpritesheetOff.GetSprite(BUTTON_4_STATES_FOCUSED_DEPRESSED));
-            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro * 0.5f);
-            m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed, new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()), true);
+            icon_depressed.SetScale(UI::m_Common->m_IconScaleRetro);
+            m_OffButton = new SCREEN_UI::Choice(icon, icon_active, icon_depressed,
+                                                new SCREEN_UI::LayoutParams(icon.GetWidth(), icon.GetHeight()), true);
         }
         else
         {
@@ -277,31 +292,29 @@ namespace LucreApp
         }
         m_OffButton->OnClick.Handle(this, &MainScreen::OffClick);
         m_OffButton->OnHold.Handle(this, &MainScreen::OffHold);
-        m_OffButton->OnHighlight.Add([=](SCREEN_UI::EventParams &e)
-                                     {
-            if (!m_ToolTipsShown[MAIN_OFF])
+        m_OffButton->OnHighlight.Add(
+            [&](SCREEN_UI::EventParams& e)
             {
-                m_ToolTipsShown[MAIN_OFF] = true;
-                //m_MainInfo->Show(ma->T("Off", "Off: exit Lucre; keep this button pressed to switch the computer off"), e.v);
-            }
-            return SCREEN_UI::EVENT_CONTINUE; });
+                if (!m_ToolTipsShown[MAIN_OFF])
+                {
+                    m_ToolTipsShown[MAIN_OFF] = true;
+                    // m_MainInfo->Show(ma->T("Off", "Off: exit Lucre; keep this button pressed to switch the computer off"),
+                    // e.v);
+                }
+                return SCREEN_UI::EVENT_CONTINUE;
+            });
         topline->Add(m_OffButton);
 
         LOG_APP_INFO("UI: views for main screen created");
     }
 
-    void MainScreen::onFinish(DialogResult result)
-    {
-    }
+    void MainScreen::onFinish(DialogResult result) {}
 
-    void MainScreen::update()
-    {
-        SCREEN_UIScreen::update();
-    }
+    void MainScreen::update() { SCREEN_UIScreen::update(); }
 
-    SCREEN_UI::EventReturn MainScreen::SettingsClick(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::SettingsClick(SCREEN_UI::EventParams& e)
     {
-        SettingsScreen *settingsScreen = new SettingsScreen();
+        SettingsScreen* settingsScreen = new SettingsScreen();
         settingsScreen->OnAttach();
         SceneChangedEvent event(GameState::State::SETTINGS);
         Lucre::m_Application->OnAppEvent(event);
@@ -310,7 +323,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::Scene1Click(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::Scene1Click(SCREEN_UI::EventParams& e)
     {
         if (Lucre::m_Application->GetState() != GameState::State::MAIN)
         {
@@ -320,7 +333,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::Scene2Click(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::Scene2Click(SCREEN_UI::EventParams& e)
     {
         if (Lucre::m_Application->GetState() != GameState::State::BEACH)
         {
@@ -330,7 +343,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::Scene3Click(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::Scene3Click(SCREEN_UI::EventParams& e)
     {
         if (Lucre::m_Application->GetState() != GameState::State::NIGHT)
         {
@@ -340,7 +353,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::Scene4Click(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::Scene4Click(SCREEN_UI::EventParams& e)
     {
         if (Lucre::m_Application->GetState() != GameState::State::DESSERT)
         {
@@ -349,7 +362,7 @@ namespace LucreApp
         }
         return SCREEN_UI::EVENT_DONE;
     }
-    SCREEN_UI::EventReturn MainScreen::Scene5Click(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::Scene5Click(SCREEN_UI::EventParams& e)
     {
         if (Lucre::m_Application->GetState() != GameState::State::TERRAIN)
         {
@@ -359,7 +372,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::OffClick(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::OffClick(SCREEN_UI::EventParams& e)
     {
         auto ma = GetI18NCategory("System");
         auto offClick = new OffDialog(ma->T("Exit Lucre?"), OFFDIAG_QUIT);
@@ -373,7 +386,7 @@ namespace LucreApp
         return SCREEN_UI::EVENT_DONE;
     }
 
-    SCREEN_UI::EventReturn MainScreen::OffHold(SCREEN_UI::EventParams &e)
+    SCREEN_UI::EventReturn MainScreen::OffHold(SCREEN_UI::EventParams& e)
     {
         auto ma = GetI18NCategory("System");
         auto offDiag = new OffDialog(ma->T("Switch off computer?"), OFFDIAG_SHUTDOWN);
@@ -386,4 +399,4 @@ namespace LucreApp
 
         return SCREEN_UI::EVENT_DONE;
     }
-}
+} // namespace LucreApp

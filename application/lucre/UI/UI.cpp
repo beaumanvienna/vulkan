@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <cmath>
@@ -64,7 +64,7 @@ namespace LucreApp
         Engine::m_Engine->PushOverlay(m_UIControllerAnimation);
     }
 
-    void UI::OnDetach() 
+    void UI::OnDetach()
     {
         m_MainScreen->OnDetach();
         m_ScreenManager.reset();
@@ -119,24 +119,25 @@ namespace LucreApp
 
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event) 
+        dispatcher.Dispatch<ControllerButtonPressedEvent>(
+            [this](ControllerButtonPressedEvent l_Event)
             {
                 Key(KEY_DOWN, l_Event.GetControllerButton(), DEVICE_ID_PAD_0);
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<ControllerButtonReleasedEvent>([this](ControllerButtonReleasedEvent l_Event) 
+        dispatcher.Dispatch<ControllerButtonReleasedEvent>(
+            [this](ControllerButtonReleasedEvent l_Event)
             {
                 Key(KEY_UP, l_Event.GetControllerButton(), DEVICE_ID_PAD_0);
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent l_Event) 
+        dispatcher.Dispatch<MouseButtonPressedEvent>(
+            [this](MouseButtonPressedEvent l_Event)
             {
                 bool clicked = false;
-                if (l_Event.GetButton() == MouseButtonEvent::Left) 
+                if (l_Event.GetButton() == MouseButtonEvent::Left)
                 {
                     // output context coordinates adjusted for orthographic projection
                     float contextPositionX = l_Event.GetX();
@@ -149,13 +150,13 @@ namespace LucreApp
                     clicked = Touch(flags, x, y, deviceID);
                 }
                 return clicked;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<MouseButtonReleasedEvent>([this](MouseButtonReleasedEvent l_Event) 
+        dispatcher.Dispatch<MouseButtonReleasedEvent>(
+            [this](MouseButtonReleasedEvent l_Event)
             {
                 bool clicked = false;
-                if (l_Event.GetMouseButton() == MouseButtonEvent::Left) 
+                if (l_Event.GetMouseButton() == MouseButtonEvent::Left)
                 {
                     int flags = TOUCH_UP | TOUCH_MOUSE;
                     float x = 0.0f;
@@ -164,32 +165,31 @@ namespace LucreApp
                     return Touch(flags, x, y, deviceID);
                 }
                 return clicked;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent l_Event) 
+        dispatcher.Dispatch<MouseScrolledEvent>(
+            [this](MouseScrolledEvent l_Event)
             {
                 int flags = TOUCH_WHEEL;
                 float x = 0.0f;
                 float y = l_Event.GetY();
                 int deviceID = 0;
                 return Touch(flags, x, y, deviceID);
-            }
-        );
+            });
 
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event) 
-            { 
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
+            {
                 Key(KEY_DOWN, l_Event.GetKeyCode(), DEVICE_ID_KEYBOARD);
                 return false;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<KeyReleasedEvent>([this](KeyReleasedEvent l_Event) 
-            { 
+        dispatcher.Dispatch<KeyReleasedEvent>(
+            [this](KeyReleasedEvent l_Event)
+            {
                 Key(KEY_UP, l_Event.GetKeyCode(), DEVICE_ID_KEYBOARD);
                 return false;
-            }
-        );
+            });
     }
 
     bool UI::Touch(int flags, float x, float y, int deviceID)
@@ -220,7 +220,8 @@ namespace LucreApp
 
     void UI::Axis()
     {
-        if (!Input::GetControllerCount()) return;
+        if (!Input::GetControllerCount())
+            return;
         glm::vec2 controllerAxisInput = Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::RIGHT_STICK);
 
         SCREEN_AxisInput axis;
@@ -229,12 +230,12 @@ namespace LucreApp
         if (std::abs(controllerAxisInput.x) > std::abs(controllerAxisInput.y))
         {
             axis.axisId = Controller::RIGHT_STICK_HORIZONTAL;
-            axis.value  = controllerAxisInput.x;
+            axis.value = controllerAxisInput.x;
         }
         else
         {
             axis.axisId = Controller::RIGHT_STICK_VERTICAL;
-            axis.value  = controllerAxisInput.y;
+            axis.value = controllerAxisInput.y;
         }
         m_ScreenManager->axis(axis);
     }
@@ -248,7 +249,7 @@ namespace LucreApp
 
     void UI::Health(const float health)
     {
-        //draw health bar
+        // draw health bar
         Sprite whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
         float x1 = 32.0f * UI::m_Common->m_ScaleAll;
         float y1 = 8.0f * UI::m_Common->m_ScaleAll;
@@ -257,7 +258,7 @@ namespace LucreApp
         Color colorForeground = 0xFF442a28;
         Color colorBackground = 0xC0000000;
 
-        Draw()->DrawImageStretch(whiteSprite, x1-2.0f, y1-2.0f, x2+2.0f, y2+2.0f, colorBackground);
-        Draw()->DrawImageStretch(whiteSprite, x1, y1, x1 + (x2-x1)*health/100.0f, y2, colorForeground);
+        Draw()->DrawImageStretch(whiteSprite, x1 - 2.0f, y1 - 2.0f, x2 + 2.0f, y2 + 2.0f, colorBackground);
+        Draw()->DrawImageStretch(whiteSprite, x1, y1, x1 + (x2 - x1) * health / 100.0f, y2, colorForeground);
     }
-}
+} // namespace LucreApp

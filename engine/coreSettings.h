@@ -34,8 +34,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        CoreSettings(SettingsManager *settingsManager)
-            : m_SettingsManager(settingsManager) {}
+        CoreSettings(SettingsManager* settingsManager) : m_SettingsManager(settingsManager) {}
 
         void InitDefaults();
         void RegisterSettings();
@@ -49,6 +48,6 @@ namespace GfxRenderEngine
         static int m_UITheme;
 
     private:
-        SettingsManager *m_SettingsManager;
+        SettingsManager* m_SettingsManager;
     };
-}
+} // namespace GfxRenderEngine

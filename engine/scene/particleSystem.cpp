@@ -27,7 +27,7 @@
 
 namespace GfxRenderEngine
 {
-    ParticleSystem::ParticleSystem(uint poolSize, SpriteSheet* spritesheet, float amplification, int unlit)
+    ParticleSystem::ParticleSystem(uint poolSize, SpriteSheet* spritesheet, float amplification)
         : m_ParticlePool{poolSize}, m_PoolIndex{0}, m_Spritesheet{spritesheet}
     {
         ASSERT(poolSize);
@@ -38,7 +38,7 @@ namespace GfxRenderEngine
             Builder builder{};
 
             auto sprite = m_Spritesheet->GetSprite(i);
-            builder.LoadSprite(sprite, amplification, unlit);
+            builder.LoadSprite(sprite, amplification);
             auto model = Engine::m_Engine->LoadModel(builder);
             MeshComponent mesh{"particle animation", model};
             mesh.m_Enabled = false;

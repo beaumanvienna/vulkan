@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -35,15 +35,15 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 2; // refers to calculated frames in between vsync (not at the same time!)
+        static constexpr int MAX_FRAMES_IN_FLIGHT =
+            2; // refers to calculated frames in between vsync (not at the same time!)
 
         VK_SwapChain(VkExtent2D windowExtent);
         VK_SwapChain(VkExtent2D windowExtent, std::shared_ptr<VK_SwapChain> previous);
         ~VK_SwapChain();
 
-        VK_SwapChain(const VK_SwapChain &) = delete;
-        VK_SwapChain& operator=(const VK_SwapChain &) = delete;
+        VK_SwapChain(const VK_SwapChain&) = delete;
+        VK_SwapChain& operator=(const VK_SwapChain&) = delete;
 
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
 
@@ -58,12 +58,11 @@ namespace GfxRenderEngine
             return static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height);
         }
 
-        VkResult AcquireNextImage(uint *imageIndex);
-        VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint *imageIndex);
+        VkResult AcquireNextImage(uint* imageIndex);
+        VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex);
         bool CompareSwapFormats(const VK_SwapChain& swapChain) const;
 
     private:
-
         void Init();
         void CreateSwapChain();
         void CreateImageViews();
@@ -71,9 +70,9 @@ namespace GfxRenderEngine
         void CreateSyncObjects();
 
         // Helper functions
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
@@ -93,4 +92,4 @@ namespace GfxRenderEngine
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
     };
-}
+} // namespace GfxRenderEngine

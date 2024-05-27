@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,16 +12,15 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "renderer/skeletalAnimation/skeleton.h"
-#include "auxiliary/debug.h"
 
 namespace GfxRenderEngine
 {
@@ -33,26 +32,25 @@ namespace GfxRenderEngine
             uint indent = 0;
             std::string indentStr(indent, ' ');
             auto& joint = m_Joints[0]; // root joint
-            Traverse(joint, indent+1);
+            Traverse(joint, indent + 1);
         }
 
         void Skeleton::Traverse(Joint const& joint, uint indent)
         {
             std::string indentStr(indent, ' ');
-            size_t numberOfChildern = joint.m_Children.size();
-            LOG_CORE_INFO
-            (
-                            "{0}m_GlobalGltfNodeIndex: {1}, localIndex: {2}, m_Parent: {3}, m_Children.size(): {4}", 
-                            indentStr,
-                            joint.m_GlobalGltfNodeIndex,
-                            m_GlobalGltfNodeToJointIndex[joint.m_GlobalGltfNodeIndex],
-                            joint.m_ParentJoint,
-                            numberOfChildern
-            );
-            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            size_t numberOfChildren = joint.m_Children.size();
+            LOG_CORE_INFO("{0}name: {1}, m_Parent: {2}, m_Children.size(): {3}", indentStr, joint.m_Name,
+                          joint.m_ParentJoint, numberOfChildren);
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 int jointIndex = joint.m_Children[childIndex];
-                Traverse(m_Joints[jointIndex], indent+1);
+                LOG_CORE_INFO("{0}child {1}: index: {2}", indentStr, childIndex, jointIndex);
+            }
+
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
+            {
+                int jointIndex = joint.m_Children[childIndex];
+                Traverse(m_Joints[jointIndex], indent + 1);
             }
         }
 
@@ -82,7 +80,8 @@ namespace GfxRenderEngine
                 // STEP 3: bring back into model space
                 for (int16_t jointIndex = 0; jointIndex < numberOfJoints; ++jointIndex)
                 {
-                    m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_InverseBindMatrix;
+                    m_ShaderData.m_FinalJointsMatrices[jointIndex] =
+                        m_ShaderData.m_FinalJointsMatrices[jointIndex] * m_Joints[jointIndex].m_InverseBindMatrix;
                 }
             }
         }
@@ -97,16 +96,17 @@ namespace GfxRenderEngine
             int16_t parentJoint = currentJoint.m_ParentJoint;
             if (parentJoint != Armature::NO_PARENT)
             {
-                m_ShaderData.m_FinalJointsMatrices[jointIndex] = m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
+                m_ShaderData.m_FinalJointsMatrices[jointIndex] =
+                    m_ShaderData.m_FinalJointsMatrices[parentJoint] * m_ShaderData.m_FinalJointsMatrices[jointIndex];
             }
 
             // update children
-            size_t numberOfChildern = currentJoint.m_Children.size();
-            for (size_t childIndex = 0; childIndex < numberOfChildern; ++childIndex)
+            size_t numberOfChildren = currentJoint.m_Children.size();
+            for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
                 int childJoint = currentJoint.m_Children[childIndex];
                 UpdateJoint(childJoint);
             }
         }
-    }
-}
+    } // namespace Armature
+} // namespace GfxRenderEngine

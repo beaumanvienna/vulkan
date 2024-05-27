@@ -24,10 +24,10 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#define MAX_LIGHTS 128
+#include "engine/platform/Vulkan/pointlights.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 1) in vec3  color;
+layout(location = 1) in vec4  color;
 layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
 layout(location = 4) in float amplification;
@@ -66,7 +66,7 @@ layout(push_constant) uniform Push
     mat4 m_NormalMatrix;
 } push;
 
-layout(location = 0) out vec3  fragColor;
+layout(location = 0) out vec4  fragColor;
 layout(location = 1) out vec3  fragPositionWorld;
 layout(location = 2) out vec3  fragMormalWorld;
 layout(location = 3) out vec2  fragUV;

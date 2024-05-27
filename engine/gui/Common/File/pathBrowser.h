@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -47,26 +47,23 @@ namespace GfxRenderEngine
         SCREEN_PathBrowser(std::string path) { SetPath(path); }
         ~SCREEN_PathBrowser();
 
-        void SetPath(const std::string &path);
+        void SetPath(const std::string& path);
         bool IsListingReady();
-        bool GetListing(std::vector<File::FileInfo> &fileInfo, const char *filter = nullptr, bool *cancel = nullptr);
-        void Navigate(const std::string &path);
+        bool GetListing(std::vector<File::FileInfo>& fileInfo, const char* filter = nullptr, bool* cancel = nullptr);
+        void Navigate(const std::string& path);
 
-        std::string GetPath() const 
-        {
-            return m_Path;
-        }
-        std::string GetFriendlyPath() const 
+        std::string GetPath() const { return m_Path; }
+        std::string GetFriendlyPath() const
         {
             std::string str = GetPath();
-            #ifndef _MSC_VER
-            char *home = getenv("HOME");
+#ifndef _MSC_VER
+            char* home = getenv("HOME");
             if (home != nullptr && !strncmp(str.c_str(), home, strlen(home)))
             {
                 str = str.substr(strlen(home));
                 str.insert(0, 1, '~');
             }
-            #endif  
+#endif
             return str;
         }
 
@@ -83,4 +80,4 @@ namespace GfxRenderEngine
         bool pendingStop_ = false;
         bool ready_ = false;
     };
-}
+} // namespace GfxRenderEngine

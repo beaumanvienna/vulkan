@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "engine.h"
@@ -57,21 +57,25 @@ namespace GfxRenderEngine
         subpass.pPreserveAttachments = nullptr;
 
         // dependencies
-        std::array<VkSubpassDependency, 2> subpassDependencies {};
-        subpassDependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;                               // Index of the render pass being depended upon by dstSubpass
-        subpassDependencies[0].dstSubpass      = 0;                                                 // The index of the render pass depending on srcSubpass
-        subpassDependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;             // What pipeline stage must have completed for the dependency
-        subpassDependencies[0].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;     // What pipeline stage is waiting on the dependency
-        subpassDependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;                         // What access scopes influence the dependency
-        subpassDependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;              // What access scopes are waiting on the dependency
-        subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;                       // Other configuration about the dependency
+        std::array<VkSubpassDependency, 2> subpassDependencies{};
+        subpassDependencies[0].srcSubpass =
+            VK_SUBPASS_EXTERNAL;               // Index of the render pass being depended upon by dstSubpass
+        subpassDependencies[0].dstSubpass = 0; // The index of the render pass depending on srcSubpass
+        subpassDependencies[0].srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // What pipeline stage must have completed for the dependency
+        subpassDependencies[0].dstStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;                // What pipeline stage is waiting on the dependency
+        subpassDependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT; // What access scopes influence the dependency
+        subpassDependencies[0].dstAccessMask =
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // What access scopes are waiting on the dependency
+        subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Other configuration about the dependency
 
-        subpassDependencies[1].srcSubpass      = 0;
-        subpassDependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
-        subpassDependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        subpassDependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        subpassDependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        subpassDependencies[1].dstAccessMask   = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+        subpassDependencies[1].srcSubpass = 0;
+        subpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        subpassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        subpassDependencies[1].dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
         subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkRenderPassCreateInfo renderPassInfo = {};
@@ -89,8 +93,5 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_BloomRenderPass::~VK_BloomRenderPass()
-    {
-        vkDestroyRenderPass(VK_Core::m_Device->Device(), m_RenderPass, nullptr);
-    }
-}
+    VK_BloomRenderPass::~VK_BloomRenderPass() { vkDestroyRenderPass(VK_Core::m_Device->Device(), m_RenderPass, nullptr); }
+} // namespace GfxRenderEngine

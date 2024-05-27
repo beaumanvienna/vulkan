@@ -1,6 +1,6 @@
 ﻿/* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,24 +15,21 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gui/Common/UI/tween.h"
 #include "gui/Common/UI/viewGroup.h"
 
-
 namespace GfxRenderEngine
 {
 
-
-    template <typename T>
-    static T clamp(T f, T low, T high) 
+    template <typename T> static T clamp(T f, T low, T high)
     {
         if (f < low)
         {
@@ -45,7 +42,7 @@ namespace GfxRenderEngine
         return f;
     }
 
-    uint32_t colorBlend(uint32_t rgb1, uint32_t rgb2, float alpha) 
+    uint32_t colorBlend(uint32_t rgb1, uint32_t rgb2, float alpha)
     {
         float invAlpha = (1.0f - alpha);
         int r = (int)(((rgb1 >> 0) & 0xFF) * alpha + ((rgb2 >> 0) & 0xFF) * invAlpha);
@@ -60,10 +57,9 @@ namespace GfxRenderEngine
         return c;
     }
 
-
-    namespace SCREEN_UI 
+    namespace SCREEN_UI
     {
-        void Tween::Apply(View *view) 
+        void Tween::Apply(View* view)
         {
             if (!valid_)
             {
@@ -78,7 +74,7 @@ namespace GfxRenderEngine
             float pos = Position();
             DoApply(view, pos);
 
-            if (finishApplied_) 
+            if (finishApplied_)
             {
                 SCREEN_UI::EventParams e{};
                 e.v = view;
@@ -88,9 +84,9 @@ namespace GfxRenderEngine
         }
 
         template <typename Value>
-        void TweenBase<Value>::PersistData(PersistStatus status, std::string anonId, PersistMap &storage) 
+        void TweenBase<Value>::PersistData(PersistStatus status, std::string anonId, PersistMap& storage)
         {
-            struct TweenData 
+            struct TweenData
             {
                 float start;
                 float duration;
@@ -100,14 +96,14 @@ namespace GfxRenderEngine
                 bool valid;
             };
 
-            PersistBuffer &buffer = storage["TweenBase::" + anonId];
+            PersistBuffer& buffer = storage["TweenBase::" + anonId];
 
-            switch (status) 
+            switch (status)
             {
                 case SCREEN_UI::PERSIST_SAVE:
                     buffer.resize(sizeof(TweenData) / sizeof(int));
                     {
-                        TweenData &data = *(TweenData *)&buffer[0];
+                        TweenData& data = *(TweenData*)&buffer[0];
                         data.start = start_;
                         data.duration = duration_;
                         data.delay = delay_;
@@ -117,9 +113,9 @@ namespace GfxRenderEngine
                     }
                     break;
                 case SCREEN_UI::PERSIST_RESTORE:
-                    if (buffer.size() >= sizeof(TweenData) / sizeof(int)) 
+                    if (buffer.size() >= sizeof(TweenData) / sizeof(int))
                     {
-                        TweenData data = *(TweenData *)&buffer[0];
+                        TweenData data = *(TweenData*)&buffer[0];
                         start_ = data.start;
                         duration_ = data.duration;
                         delay_ = data.delay;
@@ -131,44 +127,41 @@ namespace GfxRenderEngine
             }
         }
 
-        template void TweenBase<uint32_t>::PersistData(PersistStatus status, std::string anonId, PersistMap &storage);
-        template void TweenBase<Visibility>::PersistData(PersistStatus status, std::string anonId, PersistMap &storage);
-        template void TweenBase<Point>::PersistData(PersistStatus status, std::string anonId, PersistMap &storage);
+        template void TweenBase<uint32_t>::PersistData(PersistStatus status, std::string anonId, PersistMap& storage);
+        template void TweenBase<Visibility>::PersistData(PersistStatus status, std::string anonId, PersistMap& storage);
+        template void TweenBase<Point>::PersistData(PersistStatus status, std::string anonId, PersistMap& storage);
 
-        uint32_t ColorTween::Current(float pos) 
+        uint32_t ColorTween::Current(float pos) { return colorBlend(to_, from_, pos); }
+
+        //    void TextColorTween::DoApply(View *view, float pos)
+        //    {
+        //        TextView *tv = (TextView *)view;
+        //        tv->SetTextColor(Current(pos));
+        //    }
+
+        void CallbackColorTween::DoApply(View* view, float pos)
         {
-            return colorBlend(to_, from_, pos);
-        }
-
-    //    void TextColorTween::DoApply(View *view, float pos) 
-    //    {
-    //        TextView *tv = (TextView *)view;
-    //        tv->SetTextColor(Current(pos));
-    //    }
-
-        void CallbackColorTween::DoApply(View *view, float pos) 
-        {
-            if (callback_) 
+            if (callback_)
             {
                 callback_(view, Current(pos));
             }
         }
 
-    //    void VisibilityTween::DoApply(View *view, float pos) 
-    //    {
-    //        view->SetVisibility(Current(pos));
-    //    }
-    //
-    //    Visibility VisibilityTween::Current(float p) 
-    //    {
-    //        if (from_ == V_VISIBLE && p < 1.0f)
-    //            return from_;
-    //        if (to_ == V_VISIBLE && p > 0.0f)
-    //            return to_;
-    //        return p >= 1.0f ? to_ : from_;
-    //    }
+        //    void VisibilityTween::DoApply(View *view, float pos)
+        //    {
+        //        view->SetVisibility(Current(pos));
+        //    }
+        //
+        //    Visibility VisibilityTween::Current(float p)
+        //    {
+        //        if (from_ == V_VISIBLE && p < 1.0f)
+        //            return from_;
+        //        if (to_ == V_VISIBLE && p > 0.0f)
+        //            return to_;
+        //        return p >= 1.0f ? to_ : from_;
+        //    }
 
-        void AnchorTranslateTween::DoApply(View *view, float pos) 
+        void AnchorTranslateTween::DoApply(View* view, float pos)
         {
             Point cur = Current(pos);
 
@@ -179,11 +172,11 @@ namespace GfxRenderEngine
             view->ReplaceLayoutParams(lp);
         }
 
-        Point AnchorTranslateTween::Current(float p) 
+        Point AnchorTranslateTween::Current(float p)
         {
             float inv = 1.0f - p;
             return Point(from_.x * inv + to_.x * p, from_.y * inv + to_.y * p);
         }
 
-    }  // namespace
-}
+    } // namespace SCREEN_UI
+} // namespace GfxRenderEngine

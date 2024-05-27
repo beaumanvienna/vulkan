@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -22,10 +22,11 @@
 #version 450
 
 #include "engine/renderer/skeletalAnimation/joints.h"
+#include "engine/platform/Vulkan/material.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 7) in ivec4 jointIds;
-layout(location = 8) in vec4  weights;
+layout(location = 5) in ivec4 jointIds;
+layout(location = 6) in vec4  weights;
 
 struct InstanceData
 {
@@ -46,7 +47,7 @@ layout(set = 1, binding = 0) uniform SkeletalAnimationShaderData
 
 layout(set = 1, binding = 1) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
 
 void main()
@@ -69,7 +70,7 @@ void main()
     }
 
     // projection * view * model * position
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
     vec4 positionWorld = modelMatrix * animatedPosition;
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
 }

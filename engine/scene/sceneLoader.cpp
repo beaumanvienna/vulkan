@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+// the YAML loader is deprecated, use the JSON loader
+
 #include <fstream>
 
 #include "scene/sceneLoader.h"
@@ -63,7 +65,7 @@ namespace GfxRenderEngine
             {
                 LOG_CORE_INFO("Scene loader found {0}", filename);
                 GltfBuilder builder(filename, m_Scene);
-                sucessful = builder.LoadGltf();
+                sucessful = builder.Load();
 
                 if (sucessful)
                 {
@@ -175,7 +177,7 @@ namespace GfxRenderEngine
                 {
                     LOG_CORE_INFO("Scene loader found {0}", filename);
                     GltfBuilder builder(filename, m_Scene);
-                    sucessful = builder.LoadGltf();
+                    sucessful = builder.Load();
                 }
                 else
                 {

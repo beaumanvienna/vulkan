@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    Encapsulates a vulkan buffer to hold the model and normal matrix for instanced rendering
@@ -34,11 +34,10 @@
 
 namespace GfxRenderEngine
 {
-    class VK_InstanceBuffer: public InstanceBuffer
+    class VK_InstanceBuffer : public InstanceBuffer
     {
 
     public:
-
         VK_InstanceBuffer(uint numInstances);
         virtual ~VK_InstanceBuffer();
 
@@ -46,14 +45,15 @@ namespace GfxRenderEngine
         VK_InstanceBuffer& operator=(const VK_InstanceBuffer&) = delete;
 
         virtual void SetInstanceData(uint index, glm::mat4 const& mat4Global, glm::mat4 const& normalMatrix) override;
-        virtual std::shared_ptr<Buffer> GetUbo() override;
+        virtual const glm::mat4& GetModelMatrix(uint index) override;
+        virtual const glm::mat4& GetNormalMatrix(uint index) override;
+        virtual std::shared_ptr<Buffer> GetBuffer() override;
         void Update();
 
     private:
-
         struct InstanceData
         {
-            glm::mat4 m_Transform;
+            glm::mat4 m_ModelMatrix;
             glm::mat4 m_NormalMatrix;
         };
 
@@ -61,6 +61,5 @@ namespace GfxRenderEngine
         bool m_Dirty;
         std::vector<InstanceData> m_DataInstances;
         std::shared_ptr<VK_Buffer> m_Ubo;
-
     };
-}
+} // namespace GfxRenderEngine

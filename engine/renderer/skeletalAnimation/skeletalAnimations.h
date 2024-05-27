@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -35,30 +35,26 @@ namespace GfxRenderEngine
     {
 
     public:
-
         using pSkeletalAnimation = std::shared_ptr<SkeletalAnimation>;
 
         struct Iterator // used for range-based loops to traverse the array elements in m_AnimationsVector
         {
-            Iterator(pSkeletalAnimation* pointer);                 // iterator points to an array element of m_AnimationsVector
-            Iterator& operator++();                                // pre increment operator (next element)
-            bool operator!=(const Iterator& rightHandSide);        // unequal operator
-            SkeletalAnimation& operator*();                        // dereference operator
+            Iterator(pSkeletalAnimation* pointer);          // iterator points to an array element of m_AnimationsVector
+            Iterator& operator++();                         // pre increment operator (next element)
+            bool operator!=(const Iterator& rightHandSide); // unequal operator
+            SkeletalAnimation& operator*();                 // dereference operator
 
         private:
-
             pSkeletalAnimation* m_Pointer;
         };
 
-    public:                                                         // iterator functions to traverse Array
-
-        Iterator begin();                                           // see Iterator struct above
+    public:               // iterator functions to traverse Array
+        Iterator begin(); // see Iterator struct above
         Iterator end();
         SkeletalAnimation& operator[](std::string const& animation);
         SkeletalAnimation& operator[](uint index);
 
     public:
-
         SkeletalAnimations();
 
         size_t Size() const { return m_Animations.size(); }
@@ -66,7 +62,7 @@ namespace GfxRenderEngine
 
         void Start(std::string const& animation); // by name
         void Start(size_t index);                 // by index
-        void Start() { Start(0); };                // start animation 0
+        void Start() { Start(0); };               // start animation 0
         void Stop();
         void SetRepeat(bool repeat);
         void SetRepeatAll(bool repeat);
@@ -79,12 +75,10 @@ namespace GfxRenderEngine
         int GetIndex(std::string const& animation);
 
     private:
-
         std::map<std::string, std::shared_ptr<SkeletalAnimation>> m_Animations;
         std::vector<std::shared_ptr<SkeletalAnimation>> m_AnimationsVector;
         SkeletalAnimation* m_CurrentAnimation;
         uint m_FrameCounter;
         std::map<std::string, int> m_NameToIndex;
-
     };
-}
+} // namespace GfxRenderEngine

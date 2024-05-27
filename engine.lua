@@ -2,13 +2,13 @@
 project "engine"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
     defines
     {
-        "ENGINE_VERSION=\"0.8.6\"",
+        "ENGINE_VERSION=\"0.8.8\"",
         "PROFILING"
     }
 
@@ -45,6 +45,7 @@ project "engine"
         "vendor/shaderc/libshaderc/include/shaderc/",
         "vendor/shaderc/libshaderc/include/",
         "vendor/assetImporter/include",
+        "vendor/fastgltf/include",
         "vendor/yaml-cpp/include",
         "vendor/tinyObjLoader",
         "vendor/box2d/include",
@@ -64,6 +65,13 @@ project "engine"
     {
         "MultiProcessorCompile"
     }
+
+    if USE_PULSEAUDIO then
+        defines
+        {
+            "PULSEAUDIO"
+        }
+    end
 
     filter "system:linux"
 
@@ -167,6 +175,8 @@ project "engine"
 
     include "vendor/glfw.lua"
     include "vendor/yaml.lua"
+    include "vendor/fastgltf.lua"
+    include "vendor/ufbx.lua"
     include "vendor/atlas"
     include "vendor/shaderc.lua"
     if ((os.host() ~= "macosx")) then
@@ -175,12 +185,6 @@ project "engine"
     end
     include "vendor/box2d"
     include "vendor/assetImporter"
-
-    if os.host() == "linux" then
-
-        include "vendor/pamanager/libpamanager/libpamanager.lua"
-
-    end
 
     if ( (os.host() == "linux") or (os.host() == "windows" and _ACTION == "gmake2")  or (os.host() == "macosx" and _ACTION == "gmake2")) then
 

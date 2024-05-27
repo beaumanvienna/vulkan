@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -20,6 +20,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#include "engine/platform/Vulkan/material.h"
 
 layout(location = 0) in vec3  position;
 
@@ -37,12 +38,12 @@ struct InstanceData
 
 layout(set = 1, binding = 0) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanaceData[256];
+    InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanaceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);

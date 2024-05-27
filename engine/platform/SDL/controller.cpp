@@ -37,18 +37,14 @@ namespace GfxRenderEngine
 
     ControllerConfiguration Controller::m_ControllerConfiguration;
 
-    Controller::Controller()
-        : m_Initialzed(false)
+    Controller::Controller() : m_Initialzed(false)
     {
         m_Gamecontrollerdb = "resources/sdl/gamecontrollerdb.txt";
 
         SetNormalEventLoop();
     }
 
-    Controller::~Controller()
-    {
-        CloseAllControllers();
-    }
+    Controller::~Controller() { CloseAllControllers(); }
 
     void Controller::StartConfig(int controllerID)
     {
@@ -56,10 +52,7 @@ namespace GfxRenderEngine
         m_ControllerConfiguration.Start(controllerID);
     }
 
-    void Controller::SetEventCallback(const EventCallbackFunction& callback)
-    {
-        m_EventCallback = callback;
-    }
+    void Controller::SetEventCallback(const EventCallbackFunction& callback) { m_EventCallback = callback; }
 
     bool Controller::Start()
     {
@@ -67,31 +60,33 @@ namespace GfxRenderEngine
 
         m_InternalDB = Engine::m_Engine->GetConfigFilePath() + "internalDB.txt";
 
-        if( SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0 )
+        if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
         {
             LOG_CORE_WARN("Could not initialize SDL game controller subsystem");
         }
         else
         {
-            if( SDL_GameControllerAddMappingsFromFile(m_InternalDB.c_str()) != -1 )
+            if (SDL_GameControllerAddMappingsFromFile(m_InternalDB.c_str()) != -1)
             {
                 LOG_CORE_INFO("{0} found", m_InternalDB);
             }
 
             // load file from memory
             size_t fileSize;
-            void* data = (void*) ResourceSystem::GetDataPointer(fileSize, "/text/sdl/gamecontrollerdb.txt", IDR_SD_LCTRL_DB, "TEXT");
+            void* data =
+                (void*)ResourceSystem::GetDataPointer(fileSize, "/text/sdl/gamecontrollerdb.txt", IDR_SD_LCTRL_DB, "TEXT");
 
             SDL_RWops* sdlRWOps = SDL_RWFromMem(data, fileSize);
-            if( SDL_GameControllerAddMappingsFromRW(sdlRWOps, 1) != -1 )
+            if (SDL_GameControllerAddMappingsFromRW(sdlRWOps, 1) != -1)
             {
                 m_Initialzed = true;
             }
             else
             {
                 // load file from disk
-                LOG_CORE_WARN("Could not load gamecontrollerdb.txt from memory, trying to load '{0}' from disk", m_Gamecontrollerdb);
-                if( SDL_GameControllerAddMappingsFromFile(m_Gamecontrollerdb.c_str()) != -1 )
+                LOG_CORE_WARN("Could not load gamecontrollerdb.txt from memory, trying to load '{0}' from disk",
+                              m_Gamecontrollerdb);
+                if (SDL_GameControllerAddMappingsFromFile(m_Gamecontrollerdb.c_str()) != -1)
                 {
                     m_Initialzed = true;
                 }
@@ -113,17 +108,17 @@ namespace GfxRenderEngine
     {
         LOG_CORE_INFO("Restarting controller subsystem");
         CloseAllControllers();
-        SDL_QuitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER);
+        SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
         return Start();
     }
 
     void Controller::OnUpdate()
     {
-        //Event handler
+        // Event handler
         SDL_Event SDLevent;
 
-        //Handle events on queue
-        while( SDL_PollEvent( &SDLevent ) != 0 )
+        // Handle events on queue
+        while (SDL_PollEvent(&SDLevent) != 0)
         {
             m_EventLoop(SDLevent);
         }
@@ -158,9 +153,9 @@ namespace GfxRenderEngine
             }
             case SDL_CONTROLLERAXISMOTION:
             {
-                //int indexID = m_InstanceToIndex[SDLevent.caxis.which];
-                //int axis = SDLevent.caxis.axis;
-                //int value = SDLevent.caxis.value;
+                // int indexID = m_InstanceToIndex[SDLevent.caxis.which];
+                // int axis = SDLevent.caxis.axis;
+                // int value = SDLevent.caxis.value;
                 break;
             }
             case SDL_JOYBUTTONDOWN:
@@ -181,16 +176,16 @@ namespace GfxRenderEngine
             }
             case SDL_JOYAXISMOTION:
             {
-                //int indexID = m_InstanceToIndex[SDLevent.jaxis.which];
-                //int axis = SDLevent.jaxis.axis;
-                //int value = SDLevent.jaxis.value;
+                // int indexID = m_InstanceToIndex[SDLevent.jaxis.which];
+                // int axis = SDLevent.jaxis.axis;
+                // int value = SDLevent.jaxis.value;
                 break;
             }
             case SDL_JOYHATMOTION:
             {
-                //int indexID = m_InstanceToIndex[SDLevent.jhat.which];
-                //int hat = SDLevent.jhat.hat;
-                //int value = SDLevent.jhat.value;
+                // int indexID = m_InstanceToIndex[SDLevent.jhat.which];
+                // int hat = SDLevent.jhat.hat;
+                // int value = SDLevent.jhat.value;
                 break;
             }
             case SDL_JOYBALLMOTION:
@@ -221,7 +216,7 @@ namespace GfxRenderEngine
                 RemoveDuplicatesInDB();
 
                 int ret = SDL_GameControllerAddMappingsFromFile(m_InternalDB.c_str());
-                if ( ret == -1 )
+                if (ret == -1)
                 {
                     LOG_CORE_CRITICAL("Warning: Unable to open internal controller database: {0}", m_InternalDB);
                 }
@@ -243,7 +238,8 @@ namespace GfxRenderEngine
             m_TimeStamp = Engine::m_Engine->GetTime();
             auto timeSinceLastEvent = m_TimeStamp - previousTimeStamp;
             discardEvent = timeSinceLastEvent < DEBOUNCE_TIME;
-            if (discardEvent) return;
+            if (discardEvent)
+                return;
         }
 
         switch (SDLevent.type)
@@ -273,7 +269,7 @@ namespace GfxRenderEngine
 
                 if (abs(value) > 16384)
                 {
-                    m_ControllerConfiguration.StatemachineConfAxis(axis,(value < 0));
+                    m_ControllerConfiguration.StatemachineConfAxis(axis, (value < 0));
                 }
                 break;
             }
@@ -283,8 +279,7 @@ namespace GfxRenderEngine
                 int hat = SDLevent.jhat.hat;
                 int value = SDLevent.jhat.value;
 
-                if ( (value == SDL_HAT_UP)   || (value == SDL_HAT_DOWN) || \
-                        (value == SDL_HAT_LEFT) || (value == SDL_HAT_RIGHT) )
+                if ((value == SDL_HAT_UP) || (value == SDL_HAT_DOWN) || (value == SDL_HAT_LEFT) || (value == SDL_HAT_RIGHT))
                 {
                     m_ControllerConfiguration.StatemachineConfHat(hat, value);
                 }
@@ -301,16 +296,16 @@ namespace GfxRenderEngine
 
     void Controller::PrintJoyInfo(int indexID)
     {
-        SDL_Joystick *joy = SDL_JoystickOpen(indexID);
+        SDL_Joystick* joy = SDL_JoystickOpen(indexID);
         char guidStr[1024];
-        //const char* name = SDL_JoystickName(joy);
-        //int num_axes = SDL_JoystickNumAxes(joy);
-        //int num_buttons = SDL_JoystickNumButtons(joy);
-        //int num_hats = SDL_JoystickNumHats(joy);
-        //int num_balls = SDL_JoystickNumBalls(joy);
+        // const char* name = SDL_JoystickName(joy);
+        // int num_axes = SDL_JoystickNumAxes(joy);
+        // int num_buttons = SDL_JoystickNumButtons(joy);
+        // int num_hats = SDL_JoystickNumHats(joy);
+        // int num_balls = SDL_JoystickNumBalls(joy);
         int instance = SDL_JoystickInstanceID(joy);
-        char *mapping;
-        SDL_GameController *gameCtrl;
+        char* mapping;
+        SDL_GameController* gameCtrl;
 
         SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
 
@@ -318,21 +313,25 @@ namespace GfxRenderEngine
 
         if (SDL_IsGameController(indexID))
         {
-        LOG_CORE_INFO("Index: {0}, Instance: {1}, Name: {2}, Number of axes: {3}, Number of buttons: {4}, Number of balls: {5}, compatible game controller",
-            indexID, instance, SDL_JoystickNameForIndex(indexID), SDL_JoystickNumAxes(joy), SDL_JoystickNumButtons(joy), SDL_JoystickNumBalls(joy));
+            LOG_CORE_INFO("Index: {0}, Instance: {1}, Name: {2}, Number of axes: {3}, Number of buttons: {4}, Number of "
+                          "balls: {5}, compatible game controller",
+                          indexID, instance, SDL_JoystickNameForIndex(indexID), SDL_JoystickNumAxes(joy),
+                          SDL_JoystickNumButtons(joy), SDL_JoystickNumBalls(joy));
 
             gameCtrl = SDL_GameControllerOpen(indexID);
             mapping = SDL_GameControllerMapping(gameCtrl);
             if (mapping)
             {
-                //LOG_CORE_INFO("Mapped as: {0}", mapping);
+                // LOG_CORE_INFO("Mapped as: {0}", mapping);
                 SDL_free(mapping);
             }
         }
         else
         {
-            LOG_CORE_ERROR("Index: {0}, Instance: {1}, Name: {2}, Number of axes: {3}, Number of buttons: {4}, Number of balls: {5} ",
-            indexID, instance, SDL_JoystickNameForIndex(indexID), SDL_JoystickNumAxes(joy), SDL_JoystickNumButtons(joy), SDL_JoystickNumBalls(joy));
+            LOG_CORE_ERROR(
+                "Index: {0}, Instance: {1}, Name: {2}, Number of axes: {3}, Number of buttons: {4}, Number of balls: {5} ",
+                indexID, instance, SDL_JoystickNameForIndex(indexID), SDL_JoystickNumAxes(joy), SDL_JoystickNumButtons(joy),
+                SDL_JoystickNumBalls(joy));
             LOG_CORE_ERROR("Index {0} is not a compatible controller", indexID);
         }
     }
@@ -340,10 +339,11 @@ namespace GfxRenderEngine
     void Controller::AddController(int indexID)
     {
         ControllerData controller;
-        SDL_Joystick *joy;
+        SDL_Joystick* joy;
         joy = SDL_JoystickOpen(indexID);
 
-        if (joy) {
+        if (joy)
+        {
             if (CheckControllerIsSupported(indexID))
             {
                 controller.m_IndexID = indexID;
@@ -352,7 +352,7 @@ namespace GfxRenderEngine
 
                 std::string joystickName = SDL_JoystickNameForIndex(indexID);
                 transform(joystickName.begin(), joystickName.end(), joystickName.begin(),
-                    [](unsigned char c){ return tolower(c); });
+                          [](unsigned char c) { return tolower(c); });
                 controller.m_Name = joystickName;
 
                 // mapping
@@ -363,19 +363,18 @@ namespace GfxRenderEngine
                 {
                     controller.m_GameController = SDL_GameControllerOpen(indexID);
 
-                    char *mappingString;
+                    char* mappingString;
                     mappingString = SDL_GameControllerMapping(controller.m_GameController);
                     if (mappingString)
                     {
                         std::string str = mappingString;
                         SDL_free(mappingString);
-                        //remove guid
-                        str = str.substr(str.find(",")+1,str.length()-(str.find(",")+1));
+                        // remove guid
+                        str = str.substr(str.find(",") + 1, str.length() - (str.find(",") + 1));
                         // extract name from db
-                        str = str.substr(0,str.find(","));
+                        str = str.substr(0, str.find(","));
 
-                        transform(str.begin(), str.end(), str.begin(),
-                            [](unsigned char c){ return tolower(c); });
+                        transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
 
                         controller.m_NameDB = str;
                     }
@@ -385,12 +384,12 @@ namespace GfxRenderEngine
                     LOG_CORE_ERROR("Index {0} is not a compatible controller", indexID);
                 }
                 LOG_CORE_INFO("Adding controller index: {0}, instance: {1}, name: {2}, name in gamecontrollerdb.txt: {3}",
-                        controller.m_IndexID, controller.m_InstanceID, controller.m_Name,
-                        (controller.m_MappingOK ? controller.m_NameDB : "not found"));
+                              controller.m_IndexID, controller.m_InstanceID, controller.m_Name,
+                              (controller.m_MappingOK ? controller.m_NameDB : "not found"));
 
                 LOG_CORE_INFO("number of axes: {0}, number of buttons: {1}, number of balls: {2}, {3}",
-                        SDL_JoystickNumAxes(joy), SDL_JoystickNumButtons(joy), SDL_JoystickNumBalls(joy),
-                        (controller.m_MappingOK ? "mapping ok (compatible game controller)" : "mapping not ok"));
+                              SDL_JoystickNumAxes(joy), SDL_JoystickNumButtons(joy), SDL_JoystickNumBalls(joy),
+                              (controller.m_MappingOK ? "mapping ok (compatible game controller)" : "mapping not ok"));
 
                 LOG_CORE_INFO("active controllers: {0}", SDL_NumJoysticks());
                 m_Controllers.push_back(controller);
@@ -443,27 +442,24 @@ namespace GfxRenderEngine
         return controller->m_Joystick;
     }
 
-    void Controller::CloseAllControllers()
-    {
-        m_Controllers.clear();
-    }
+    void Controller::CloseAllControllers() { m_Controllers.clear(); }
 
     bool Controller::CheckControllerIsSupported(int indexID)
     {
-        SDL_Joystick *joy = SDL_JoystickOpen(indexID);
+        SDL_Joystick* joy = SDL_JoystickOpen(indexID);
 
-        bool ok= false;
+        bool ok = false;
         std::string unsupported = "Nintendo Wii";
         std::string name = SDL_JoystickName(joy);
 
         // check for unsupported
         if (name.find(unsupported) != std::string::npos)
         {
-            printf("not supported, ignoring controller: %s\n",name.c_str());
+            printf("not supported, ignoring controller: %s\n", name.c_str());
         }
         else
         {
-            ok=true;
+            ok = true;
         }
         return ok;
     }
@@ -475,17 +471,17 @@ namespace GfxRenderEngine
 
         mappingOK = false;
 
-        //set up guidStr
+        // set up guidStr
         SDL_JoystickGetGUIDString(guid, guidStr, sizeof(guidStr));
 
-        if (FindGuidInFile(m_InternalDB, guidStr,32,&line))
+        if (FindGuidInFile(m_InternalDB, guidStr, 32, &line))
         {
             LOG_CORE_INFO("GUID found in internal db");
             mappingOK = true;
             return mappingOK;
         }
 
-        //check public db
+        // check public db
         mappingOK = FindGuidInFile("/text/sdl/gamecontrollerdb.txt", IDR_SD_LCTRL_DB, "TEXT", guidStr, 32, &line);
 
         if (mappingOK)
@@ -496,28 +492,29 @@ namespace GfxRenderEngine
         {
             std::string lineOriginal;
             LOG_CORE_WARN("GUID {0} not found in public db", guidStr);
-            for (int i=27;i>18;i--)
+            for (int i = 27; i > 18; i--)
             {
 
-                //search in public db for similar
+                // search in public db for similar
                 mappingOK = FindGuidInFile("/text/sdl/gamecontrollerdb.txt", IDR_SD_LCTRL_DB, "TEXT", guidStr, i, &line);
 
                 if (mappingOK)
                 {
-                    mappingOK=false; // found but loading could fail
+                    mappingOK = false; // found but loading could fail
                     // initialize controller with this line
                     lineOriginal = line;
 
                     // mapping string after 2nd comma
                     int pos = line.find(",");
-                    append = line.substr(pos+1,line.length()-pos-1);
+                    append = line.substr(pos + 1, line.length() - pos - 1);
                     pos = append.find(",");
-                    append = append.substr(pos+1,append.length()-pos-1);
+                    append = append.substr(pos + 1, append.length() - pos - 1);
 
-                    if (name.length()>45) name = name.substr(0,45);
+                    if (name.length() > 45)
+                        name = name.substr(0, 45);
 
-                    //assemble final entry
-                    std::string entry=guidStr;
+                    // assemble final entry
+                    std::string entry = guidStr;
                     entry += "," + name + "," + append;
 
                     if (AddControllerToInternalDB(entry))
@@ -525,16 +522,17 @@ namespace GfxRenderEngine
                         RemoveDuplicatesInDB();
 
                         int ret = SDL_GameControllerAddMappingsFromFile(m_InternalDB.c_str());
-                        if ( ret == -1 )
+                        if (ret == -1)
                         {
-                            LOG_CORE_WARN( "Warning: Unable to open '{0}' ", m_InternalDB);
-                        } else
+                            LOG_CORE_WARN("Warning: Unable to open '{0}' ", m_InternalDB);
+                        }
+                        else
                         {
-                            mappingOK=true; // now ok
+                            mappingOK = true; // now ok
                             // reset SDL
-                            //closeAllJoy();
-                            //SDL_QuitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER);
-                            //initJoy();
+                            // closeAllJoy();
+                            // SDL_QuitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER);
+                            // initJoy();
                         }
                     }
 
@@ -543,7 +541,7 @@ namespace GfxRenderEngine
             }
             if (mappingOK)
             {
-                LOG_CORE_WARN("{0}: trying to load mapping from closest match: {1}",guidStr, lineOriginal);
+                LOG_CORE_WARN("{0}: trying to load mapping from closest match: {1}", guidStr, lineOriginal);
             }
         }
         return mappingOK;
@@ -560,12 +558,13 @@ namespace GfxRenderEngine
 
         if (internal_db_input_filehandle.is_open())
         {
-            while ( getline (internal_db_input_filehandle,line))
+            while (getline(internal_db_input_filehandle, line))
             {
                 internal_db_entries.push_back(line);
             }
             internal_db_input_filehandle.close();
-        } else
+        }
+        else
         {
             LOG_CORE_INFO("Creating internal game controller database {0}", filename);
         }
@@ -578,10 +577,10 @@ namespace GfxRenderEngine
         }
         else
         {
-            internal_db_output_filehandle << entry << + "\n";
+            internal_db_output_filehandle << entry << +"\n";
             for (size_t i = 0; i < internal_db_entries.size(); i++)
             {
-                internal_db_output_filehandle << internal_db_entries[i] << + "\n";
+                internal_db_output_filehandle << internal_db_entries[i] << +"\n";
             }
             internal_db_output_filehandle.close();
             ok = true;
@@ -610,17 +609,17 @@ namespace GfxRenderEngine
         }
         else
         {
-            while ( getline (internalDB,line))
+            while (getline(internalDB, line))
             {
                 found = false;
                 if (line.find(",") != std::string::npos)
                 {
-                    guidStr = line.substr(0,line.find(","));
-                    for (size_t i = 0;i < guidVec.size();i++)
+                    guidStr = line.substr(0, line.find(","));
+                    for (size_t i = 0; i < guidVec.size(); i++)
                     {
-                        if (guidVec[i]==guidStr)
+                        if (guidVec[i] == guidStr)
                         {
-                            found=true;
+                            found = true;
                             break;
                         }
                     }
@@ -642,9 +641,9 @@ namespace GfxRenderEngine
             }
             else
             {
-                for (size_t i=0;i < entryVec.size();i++)
+                for (size_t i = 0; i < entryVec.size(); i++)
                 {
-                    internal_db_output_filehandle << entryVec[i] << + "\n";
+                    internal_db_output_filehandle << entryVec[i] << +"\n";
                 }
                 internal_db_output_filehandle.close();
             }
@@ -657,18 +656,18 @@ namespace GfxRenderEngine
         bool ok = false;
         std::string line;
         std::string guidStr = text2match;
-        std::string text = guidStr.substr(0,length);
+        std::string text = guidStr.substr(0, length);
 
         *lineRet = "";
 
-        std::ifstream fileHandle (file);
+        std::ifstream fileHandle(file);
         if (!fileHandle.is_open())
         {
-            LOG_CORE_INFO("Could not open file: findGuidInFile({0},{1},{2})",filename, text2match, length);
+            LOG_CORE_INFO("Could not open file: findGuidInFile({0},{1},{2})", filename, text2match, length);
         }
         else
         {
-            while ( getline (fileHandle,line) && !ok)
+            while (getline(fileHandle, line) && !ok)
             {
                 if (line.find(text.c_str()) == 0)
                 {
@@ -683,18 +682,20 @@ namespace GfxRenderEngine
         return ok;
     }
 
-    bool Controller::FindGuidInFile(const char* path /* GNU */, int resourceID /* MSVC */, const std::string& resourceClass /* MSVC */, char* text2match, int length, std::string* lineRet)
+    bool Controller::FindGuidInFile(const char* path /* GNU */, int resourceID /* MSVC */,
+                                    const std::string& resourceClass /* MSVC */, char* text2match, int length,
+                                    std::string* lineRet)
     {
         bool ok = false;
         std::string line;
         std::string guidStr = text2match;
-        std::string text = guidStr.substr(0,length);
+        std::string text = guidStr.substr(0, length);
 
         *lineRet = "";
 
         memoryStream controllerDataBase{"/text/sdl/gamecontrollerdb.txt", IDR_SD_LCTRL_DB, "TEXT"};
 
-        while ( getline (controllerDataBase,line) && !ok)
+        while (getline(controllerDataBase, line) && !ok)
         {
             if (line.find(text.c_str()) == 0)
             {
@@ -711,7 +712,7 @@ namespace GfxRenderEngine
     {
         char guidStr[64];
         SDL_JoystickGUID guidSDL;
-        SDL_Joystick *joy = nullptr;
+        SDL_Joystick* joy = nullptr;
 
         for (auto controller = m_Controllers.begin(); controller != m_Controllers.end(); controller++)
         {
@@ -740,24 +741,19 @@ namespace GfxRenderEngine
         return "";
     }
 
-    Controller::ControllerData::ControllerData() :
-                m_Joystick(nullptr),
-                m_GameController(nullptr),
-                m_InstanceID(-1),
-                m_IndexID(-1),
-                m_Name(""),
-                m_NameDB(""),
-                m_MappingOK(false)
+    Controller::ControllerData::ControllerData()
+        : m_Joystick(nullptr), m_GameController(nullptr), m_InstanceID(-1), m_IndexID(-1), m_Name(""), m_NameDB(""),
+          m_MappingOK(false)
     {
-
     }
 
     Controller::ControllerData::~ControllerData()
     {
         if (m_Joystick)
         {
-            LOG_CORE_INFO("Removing controller index: {0}, instance: {1}, name: {2}, name in gamecontrollerdb.txt: {3}", m_IndexID, m_InstanceID, m_Name, m_NameDB);
-            SDL_JoystickClose( m_Joystick );
+            LOG_CORE_INFO("Removing controller index: {0}, instance: {1}, name: {2}, name in gamecontrollerdb.txt: {3}",
+                          m_IndexID, m_InstanceID, m_Name, m_NameDB);
+            SDL_JoystickClose(m_Joystick);
         }
     }
-}
+} // namespace GfxRenderEngine

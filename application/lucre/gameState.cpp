@@ -39,7 +39,7 @@ namespace LucreApp
 
     GameState::GameState()
         : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH}, m_InputIdle{false},
-          m_UserInputEnabled{false}
+          m_UserInputEnabled{false}, m_DeleteScene{State::NULL_STATE}
     {
         memset(m_StateLoaded, false, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }
@@ -55,7 +55,7 @@ namespace LucreApp
 #ifdef MACOSX
         SetNextState(State::CUTSCENE);
 #else
-        SetNextState(State::TERRAIN);
+        SetNextState(State::DESSERT);
 #endif
     }
 
@@ -66,6 +66,11 @@ namespace LucreApp
         std::string str;
         switch (state)
         {
+            case State::NULL_STATE:
+            {
+                str = "State::NULL_STATE";
+                break;
+            }
             case State::SPLASH:
             {
                 str = "State::SPLASH";
@@ -127,11 +132,15 @@ namespace LucreApp
             }
             case State::CUTSCENE:
             {
-                if (GetScene()->IsFinished() && IsLoaded(GetNextState()))
+                if (GetScene()->IsFinished())
                 {
-                    SetState(GetNextState());
+                    if (IsLoaded(GetNextState()))
+                    {
+                        SetState(GetNextState());
+                    }
                 }
                 DeleteScene();
+                LoadNextState();
                 break;
             }
             case State::MAIN:
@@ -187,6 +196,7 @@ namespace LucreApp
                 }
                 break;
             }
+            case State::NULL_STATE:
             case State::MAX_STATES:
             {
                 break;
@@ -207,8 +217,21 @@ namespace LucreApp
     void GameState::SetNextState(State state)
     {
         m_NextState = state;
-        if (!IsLoaded(state))
+        if (!IsLoaded(state) && m_DeleteScene == State::NULL_STATE)
+        {
             Load(state);
+        }
+    }
+
+    void GameState::LoadNextState()
+    {
+        if (!IsLoaded(m_NextState))
+        {
+            if (m_DeleteScene == State::NULL_STATE)
+            {
+                Load(m_NextState);
+            }
+        }
     }
 
     void GameState::PrepareDeleteScene()
@@ -259,10 +282,10 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr =
-                        std::make_shared<MainScene>("main.scene", "application/lucre/sceneDescriptions/main.scene");
+                        std::make_shared<MainScene>("main.json", "application/lucre/sceneDescriptions/main.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -281,10 +304,10 @@ namespace LucreApp
             }
             case State::BEACH:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr =
-                        std::make_shared<BeachScene>("beach.scene", "application/lucre/sceneDescriptions/beach.scene");
+                        std::make_shared<BeachScene>("beach.json", "application/lucre/sceneDescriptions/beach.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();
@@ -304,7 +327,7 @@ namespace LucreApp
 
             case State::NIGHT:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr =
                         std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
@@ -326,7 +349,7 @@ namespace LucreApp
             }
             case State::DESSERT:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     auto scenePtr =
                         std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
@@ -429,5 +452,6 @@ namespace LucreApp
         std::lock_guard lock(m_Mutex);
         m_StateLoaded[static_cast<int>(state)] = false;
         m_Scenes[static_cast<int>(state)] = nullptr;
+        m_DeleteScene = State::NULL_STATE;
     }
 } // namespace LucreApp

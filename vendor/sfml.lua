@@ -5,7 +5,7 @@
 project "sfml"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     targetdir "sfml/build/lib"
     objdir    "sfml/build/obj"

@@ -1,0 +1,41 @@
+{
+    "configurations":
+    [
+        {
+            "name": "Linux",
+            "includePath":
+            [
+                "application",
+                "application/lucre",
+                "engine",
+                "vendor",
+                "vendor/imgui",
+                "resources",
+                "vendor/spdlog/include",
+                "vendor/yaml-cpp/include",
+                "vendor/fastgltf/include",
+                ".",
+                "engine/platform/Vulkan",
+                "vendor/assetImporter/include",
+                "vendor/tinyObjLoader",
+                "vendor/fastgltf/include/",
+                "vendor/box2d/include",
+                "vendor/entt/include",
+                "vendor/simdjson",
+                "vendor/json",
+                "vendor/glm",
+                "vendor/stb",
+                "vendor/pamanager/libpamanager/src",
+                "vendor/sdl/include",
+                "resources/atlas",
+                "/usr/include/glib-2.0",
+                "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
+            ],
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

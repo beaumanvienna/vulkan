@@ -41,39 +41,36 @@ namespace GfxRenderEngine
         struct NeighborResult
         {
             NeighborResult() : view(0), score(0) {}
-            NeighborResult(View *v, float s) : view(v), score(s) {}
+            NeighborResult(View* v, float s) : view(v), score(s) {}
 
-            View *view;
+            View* view;
             float score;
         };
 
         class ViewGroup : public View
         {
         public:
-            ViewGroup(LayoutParams *layoutParams = 0)
-                : View(layoutParams)
-            {}
+            ViewGroup(LayoutParams* layoutParams = 0) : View(layoutParams) {}
             virtual ~ViewGroup();
 
-            virtual bool Key(const SCREEN_KeyInput &input) override;
-            virtual bool Touch(const SCREEN_TouchInput &input) override;
-            virtual void Axis(const SCREEN_AxisInput &input) override;
+            virtual bool Key(const SCREEN_KeyInput& input) override;
+            virtual bool Touch(const SCREEN_TouchInput& input) override;
+            virtual void Axis(const SCREEN_AxisInput& input) override;
 
-            virtual void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override = 0;
+            virtual void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override = 0;
             virtual void Layout() override = 0;
             virtual void Update() override;
-            virtual void Query(float x, float y, std::vector<View *> &list) override;
+            virtual void Query(float x, float y, std::vector<View*>& list) override;
 
             virtual void DeviceLost() override;
-            virtual void DeviceRestored(SCREEN_Draw::SCREEN_DrawContext *draw) override;
+            virtual void DeviceRestored(SCREEN_Draw::SCREEN_DrawContext* draw) override;
 
-            virtual void Draw(SCREEN_UIContext &dc) override;
+            virtual void Draw(SCREEN_UIContext& dc) override;
 
             virtual float GetContentWidth() const { return 0.0f; }
             virtual float GetContentHeight() const { return 0.0f; }
 
-            template <class T>
-            T *Add(T *view)
+            template <class T> T* Add(T* view)
             {
                 std::lock_guard<std::mutex> guard(modifyLock_);
                 views_.push_back(view);
@@ -81,22 +78,22 @@ namespace GfxRenderEngine
             }
 
             virtual bool SetFocus() override;
-            virtual bool SubviewFocused(View *view) override;
-            virtual void RemoveSubview(View *view);
+            virtual bool SubviewFocused(View* view) override;
+            virtual void RemoveSubview(View* view);
 
-            void SetDefaultFocusView(View *view) { defaultFocusView_ = view; }
-            View *GetDefaultFocusView() { return defaultFocusView_; }
+            void SetDefaultFocusView(View* view) { defaultFocusView_ = view; }
+            View* GetDefaultFocusView() { return defaultFocusView_; }
 
-            NeighborResult FindNeighbor(View *view, FocusDirection direction, NeighborResult best);
+            NeighborResult FindNeighbor(View* view, FocusDirection direction, NeighborResult best);
 
             virtual bool CanBeFocused() const override { return false; }
             virtual bool IsViewGroup() const override { return true; }
 
-            virtual void SetBG(const Drawable &bg) { bg_ = bg; }
+            virtual void SetBG(const Drawable& bg) { bg_ = bg; }
 
             virtual void Clear();
-            void PersistData(PersistStatus status, std::string anonId, PersistMap &storage) override;
-            View *GetViewByIndex(int index) { return views_[index]; }
+            void PersistData(PersistStatus status, std::string anonId, PersistMap& storage) override;
+            View* GetViewByIndex(int index) { return views_[index]; }
             int GetNumSubviews() const { return (int)views_.size(); }
             void SetHasDropShadow(bool has) { hasDropShadow_ = has; }
             void SetDropShadowExpand(float s) { dropShadowExpand_ = s; }
@@ -109,8 +106,8 @@ namespace GfxRenderEngine
 
         protected:
             std::mutex modifyLock_;
-            std::vector<View *> views_;
-            View *defaultFocusView_ = nullptr;
+            std::vector<View*> views_;
+            View* defaultFocusView_ = nullptr;
             Drawable bg_;
             float dropShadowExpand_ = 0.0f;
             bool hasDropShadow_ = false;
@@ -120,7 +117,7 @@ namespace GfxRenderEngine
         class FrameLayout : public ViewGroup
         {
         public:
-            void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             void Layout() override;
         };
 
@@ -131,58 +128,73 @@ namespace GfxRenderEngine
 
         public:
             AnchorLayoutParams(Size w, Size h, float l, float t, float r, float b, bool c = false)
-                : LayoutParams(w, h, LP_ANCHOR), left(l), top(t), right(r), bottom(b), center(c) {}
+                : LayoutParams(w, h, LP_ANCHOR), left(l), top(t), right(r), bottom(b), center(c)
+            {
+            }
 
             AnchorLayoutParams(Size w, Size h, bool c = false)
-                : LayoutParams(w, h, LP_ANCHOR), left(0), top(0), right(NONE), bottom(NONE), center(c) {}
+                : LayoutParams(w, h, LP_ANCHOR), left(0), top(0), right(NONE), bottom(NONE), center(c)
+            {
+            }
 
             AnchorLayoutParams(float l, float t, float r, float b, bool c = false)
-                : LayoutParams(WRAP_CONTENT, WRAP_CONTENT, LP_ANCHOR), left(l), top(t), right(r), bottom(b), center(c) {}
+                : LayoutParams(WRAP_CONTENT, WRAP_CONTENT, LP_ANCHOR), left(l), top(t), right(r), bottom(b), center(c)
+            {
+            }
 
             float left, top, right, bottom;
             bool center;
 
-            static LayoutParamsType StaticType()
-            {
-                return LP_ANCHOR;
-            }
+            static LayoutParamsType StaticType() { return LP_ANCHOR; }
         };
 
         class AnchorLayout : public ViewGroup
         {
         public:
-            AnchorLayout(LayoutParams *layoutParams = 0) : ViewGroup(layoutParams), overflow_(true) {}
-            void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            AnchorLayout(LayoutParams* layoutParams = 0) : ViewGroup(layoutParams), overflow_(true) {}
+            void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             void Layout() override;
-            void Overflow(bool allow) {
-                overflow_ = allow;
-            }
+            void Overflow(bool allow) { overflow_ = allow; }
             std::string Describe() const override { return "AnchorLayout: " + View::Describe(); }
 
         private:
-            void MeasureViews(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert);
+            void MeasureViews(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert);
             bool overflow_;
         };
 
         class LinearLayoutParams : public LayoutParams
         {
         public:
-            LinearLayoutParams()
-                : LayoutParams(LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), hasMargins_(false) {}
+            LinearLayoutParams() : LayoutParams(LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), hasMargins_(false) {}
             explicit LinearLayoutParams(float wgt, Gravity grav = G_TOPLEFT)
-                : LayoutParams(LP_LINEAR), weight(wgt), gravity(grav), hasMargins_(false) {}
-            LinearLayoutParams(float wgt, const Margins &mgn)
-                : LayoutParams(LP_LINEAR), weight(wgt), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true) {}
+                : LayoutParams(LP_LINEAR), weight(wgt), gravity(grav), hasMargins_(false)
+            {
+            }
+            LinearLayoutParams(float wgt, const Margins& mgn)
+                : LayoutParams(LP_LINEAR), weight(wgt), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true)
+            {
+            }
             LinearLayoutParams(Size w, Size h, float wgt = 0.0f, Gravity grav = G_TOPLEFT)
-                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(grav), hasMargins_(false) {}
-            LinearLayoutParams(Size w, Size h, float wgt, Gravity grav, const Margins &mgn)
-                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(grav), margins(mgn), hasMargins_(true) {}
-            LinearLayoutParams(Size w, Size h, const Margins &mgn)
-                : LayoutParams(w, h, LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true) {}
-            LinearLayoutParams(Size w, Size h, float wgt, const Margins &mgn)
-                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true) {}
-            LinearLayoutParams(const Margins &mgn)
-                : LayoutParams(WRAP_CONTENT, WRAP_CONTENT, LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true) {}
+                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(grav), hasMargins_(false)
+            {
+            }
+            LinearLayoutParams(Size w, Size h, float wgt, Gravity grav, const Margins& mgn)
+                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(grav), margins(mgn), hasMargins_(true)
+            {
+            }
+            LinearLayoutParams(Size w, Size h, const Margins& mgn)
+                : LayoutParams(w, h, LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true)
+            {
+            }
+            LinearLayoutParams(Size w, Size h, float wgt, const Margins& mgn)
+                : LayoutParams(w, h, LP_LINEAR), weight(wgt), gravity(G_TOPLEFT), margins(mgn), hasMargins_(true)
+            {
+            }
+            LinearLayoutParams(const Margins& mgn)
+                : LayoutParams(WRAP_CONTENT, WRAP_CONTENT, LP_LINEAR), weight(0.0f), gravity(G_TOPLEFT), margins(mgn),
+                  hasMargins_(true)
+            {
+            }
 
             float weight;
             Gravity gravity;
@@ -190,9 +202,7 @@ namespace GfxRenderEngine
 
             bool HasMargins() const { return hasMargins_; }
 
-            static LayoutParamsType StaticType() {
-                return LP_LINEAR;
-            }
+            static LayoutParamsType StaticType() { return LP_LINEAR; }
 
         private:
             bool hasMargins_;
@@ -201,16 +211,22 @@ namespace GfxRenderEngine
         class LinearLayout : public ViewGroup
         {
         public:
-            LinearLayout(Orientation orientation, LayoutParams *layoutParams = 0)
-                : ViewGroup(layoutParams), orientation_(orientation), defaultMargins_(0), spacing_(0) {}
+            LinearLayout(Orientation orientation, LayoutParams* layoutParams = 0)
+                : ViewGroup(layoutParams), orientation_(orientation), defaultMargins_(0), spacing_(0)
+            {
+            }
 
-            void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             void Layout() override;
             void SetSpacing(float spacing) { spacing_ = spacing; }
-            std::string Describe() const override { return (orientation_ == ORIENT_HORIZONTAL ? "LinearLayoutHoriz: " : "LinearLayoutVert: ") + View::Describe(); }
+            std::string Describe() const override
+            {
+                return (orientation_ == ORIENT_HORIZONTAL ? "LinearLayoutHoriz: " : "LinearLayoutVert: ") + View::Describe();
+            }
 
         protected:
             Orientation orientation_;
+
         private:
             Margins defaultMargins_;
             float spacing_;
@@ -218,9 +234,14 @@ namespace GfxRenderEngine
 
         struct GridLayoutSettings
         {
-            GridLayoutSettings() : orientation(ORIENT_HORIZONTAL), columnWidth(100), rowHeight(50), spacing(5), fillCells(false) {}
+            GridLayoutSettings()
+                : orientation(ORIENT_HORIZONTAL), columnWidth(100), rowHeight(50), spacing(5), fillCells(false)
+            {
+            }
             GridLayoutSettings(int colW, int colH, int spac = 5)
-                : orientation(ORIENT_HORIZONTAL), columnWidth(colW), rowHeight(colH), spacing(spac), fillCells(false) {}
+                : orientation(ORIENT_HORIZONTAL), columnWidth(colW), rowHeight(colH), spacing(spac), fillCells(false)
+            {
+            }
 
             Orientation orientation;
             int columnWidth;
@@ -232,9 +253,9 @@ namespace GfxRenderEngine
         class GridLayout : public ViewGroup
         {
         public:
-            GridLayout(GridLayoutSettings settings, LayoutParams *layoutParams = 0);
+            GridLayout(GridLayoutSettings settings, LayoutParams* layoutParams = 0);
 
-            void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             void Layout() override;
             std::string Describe() const override { return "GridLayout: " + View::Describe(); }
 
@@ -246,15 +267,17 @@ namespace GfxRenderEngine
         class ScrollView : public ViewGroup
         {
         public:
-            ScrollView(Orientation orientation, LayoutParams *layoutParams = 0, bool exactly = false)
-                : ViewGroup(layoutParams), orientation_(orientation), vert_type_exactly_(exactly) {}
+            ScrollView(Orientation orientation, LayoutParams* layoutParams = 0, bool exactly = false)
+                : ViewGroup(layoutParams), orientation_(orientation), vert_type_exactly_(exactly)
+            {
+            }
 
-            void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             void Layout() override;
 
-            bool Key(const SCREEN_KeyInput &input) override;
-            bool Touch(const SCREEN_TouchInput &touch) override;
-            void Draw(SCREEN_UIContext &dc) override;
+            bool Key(const SCREEN_KeyInput& input) override;
+            bool Touch(const SCREEN_TouchInput& touch) override;
+            void Draw(SCREEN_UIContext& dc) override;
             std::string Describe() const override { return "ScrollView: " + View::Describe(); }
 
             void ScrollTo(float newScrollPos);
@@ -264,8 +287,8 @@ namespace GfxRenderEngine
             bool CanScroll() const;
             void Update() override;
 
-            bool SubviewFocused(View *view) override;
-            void PersistData(PersistStatus status, std::string anonId, PersistMap &storage) override;
+            bool SubviewFocused(View* view) override;
+            void PersistData(PersistStatus status, std::string anonId, PersistMap& storage) override;
             void SetVisibility(Visibility visibility) override;
 
             void SetScrollToTop(bool t) { scrollToTopOnSizeChange_ = t; }
@@ -294,20 +317,21 @@ namespace GfxRenderEngine
         class ChoiceStrip : public LinearLayout
         {
         public:
-            ChoiceStrip(Orientation orientation, LayoutParams *layoutParams = 0);
+            ChoiceStrip(Orientation orientation, LayoutParams* layoutParams = 0);
 
-            void AddChoice(const std::string &title);
-            void AddChoice(const std::string &title, const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive, const std::string &text);
+            void AddChoice(const std::string& title);
+            void AddChoice(const std::string& title, const Sprite& icon, const Sprite& icon_active,
+                           const Sprite& icon_depressed, const Sprite& icon_depressed_inactive, const std::string& text);
 
             int GetSelection() const { return selected_; }
             void SetSelection(int sel);
             void HighlightChoice(unsigned int choice);
 
-            virtual bool Touch(const SCREEN_TouchInput &input) override;
-            bool Key(const SCREEN_KeyInput &input) override;
+            virtual bool Touch(const SCREEN_TouchInput& input) override;
+            bool Key(const SCREEN_KeyInput& input) override;
 
             void SetTopTabs(bool tabs) { topTabs_ = tabs; }
-            void Draw(SCREEN_UIContext &dc) override;
+            void Draw(SCREEN_UIContext& dc) override;
             bool AnyTabHasFocus(int& tab);
             void SetEnabled(int tab);
             void disableAllTabs();
@@ -317,31 +341,30 @@ namespace GfxRenderEngine
             Event OnChoice;
 
         private:
-            StickyChoice *Choice(int index);
-            EventReturn OnChoiceClick(EventParams &e);
+            StickyChoice* Choice(int index);
+            EventReturn OnChoiceClick(EventParams& e);
             int selected_;
             bool topTabs_;
         };
 
-
         class TabHolder : public LinearLayout
         {
         public:
-            TabHolder(Orientation orientation, float stripSize, LayoutParams *layoutParams = 0, float leftMargin = 0.0f);
+            TabHolder(Orientation orientation, float stripSize, LayoutParams* layoutParams = 0, float leftMargin = 0.0f);
 
-            template <class T>
-            T *AddTab(const std::string &title, T *tabContents)
+            template <class T> T* AddTab(const std::string& title, T* tabContents)
             {
-                AddTabContents(title, (View *)tabContents);
+                AddTabContents(title, (View*)tabContents);
                 return tabContents;
             }
 
             std::string Describe() const override { return "TabHolder: " + View::Describe(); }
-            void PersistData(PersistStatus status, std::string anonId, PersistMap &storage) override;
+            void PersistData(PersistStatus status, std::string anonId, PersistMap& storage) override;
 
             int GetCurrentTab() const { return currentTab_; }
             void SetCurrentTab(int tab, bool skipTween = false);
-            void SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed, const Sprite& icon_depressed_inactive);
+            void SetIcon(const Sprite& icon, const Sprite& icon_active, const Sprite& icon_depressed,
+                         const Sprite& icon_depressed_inactive);
 
             bool HasFocus(int& tab);
             void enableAllTabs();
@@ -354,53 +377,55 @@ namespace GfxRenderEngine
             Sprite m_Icon_active;
             Sprite m_Icon_depressed;
             Sprite m_Icon_depressed_inactive;
-            void AddTabContents(const std::string &title, View *tabContents);
-            EventReturn OnTabClick(EventParams &e);
+            void AddTabContents(const std::string& title, View* tabContents);
+            EventReturn OnTabClick(EventParams& e);
 
-            ChoiceStrip *tabStrip_ = nullptr;
-            ScrollView *tabScroll_ = nullptr;
-            AnchorLayout *contents_ = nullptr;
+            ChoiceStrip* tabStrip_ = nullptr;
+            ScrollView* tabScroll_ = nullptr;
+            AnchorLayout* contents_ = nullptr;
 
             float stripSize_;
             int currentTab_ = 0;
-            std::vector<View *> tabs_;
-            std::vector<AnchorTranslateTween *> tabTweens_;
+            std::vector<View*> tabs_;
+            std::vector<AnchorTranslateTween*> tabTweens_;
         };
 
         class ListAdaptor
         {
         public:
             virtual ~ListAdaptor() {}
-            virtual View *CreateItemView(int index, float width = 800.0f) = 0;
+            virtual View* CreateItemView(int index, float width = 800.0f) = 0;
             virtual int GetNumItems() = 0;
-            virtual bool AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback) { return false; }
+            virtual bool AddEventCallback(View* view, std::function<EventReturn(EventParams&)> callback) { return false; }
             virtual std::string GetTitle(int index) const { return ""; }
-            virtual void SetSelected(int sel) { }
+            virtual void SetSelected(int sel) {}
             virtual int GetSelected() { return -1; }
         };
 
         class ChoiceListAdaptor : public ListAdaptor
         {
         public:
-            ChoiceListAdaptor(const char *items[], int numItems) : items_(items), numItems_(numItems) {}
-            virtual View *CreateItemView(int index, float width = 800.0f);
+            ChoiceListAdaptor(const char* items[], int numItems) : items_(items), numItems_(numItems) {}
+            virtual View* CreateItemView(int index, float width = 800.0f);
             virtual int GetNumItems() { return numItems_; }
-            virtual bool AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback);
+            virtual bool AddEventCallback(View* view, std::function<EventReturn(EventParams&)> callback);
 
         private:
-            const char **items_;
+            const char** items_;
             int numItems_;
         };
-
 
         class StringVectorListAdaptor : public ListAdaptor
         {
         public:
             StringVectorListAdaptor() : selected_(-1) {}
-            StringVectorListAdaptor(const std::vector<std::string> &items, int selected = -1) : items_(items), selected_(selected) {}
-            virtual View *CreateItemView(int index, float width = 800.0f) override;
+            StringVectorListAdaptor(const std::vector<std::string>& items, int selected = -1)
+                : items_(items), selected_(selected)
+            {
+            }
+            virtual View* CreateItemView(int index, float width = 800.0f) override;
             virtual int GetNumItems() override { return (int)items_.size(); }
-            virtual bool AddEventCallback(View *view, std::function<EventReturn(EventParams&)> callback) override;
+            virtual bool AddEventCallback(View* view, std::function<EventReturn(EventParams&)> callback) override;
             void SetSelected(int sel) override { selected_ = sel; }
             virtual std::string GetTitle(int index) const override { return items_[index]; }
             virtual int GetSelected() override { return selected_; }
@@ -413,23 +438,24 @@ namespace GfxRenderEngine
         class ListView : public ScrollView
         {
         public:
-            ListView(ListAdaptor *a, float popupWidth, std::set<int> hidden = std::set<int>(), LayoutParams *layoutParams = 0);
+            ListView(ListAdaptor* a, float popupWidth, std::set<int> hidden = std::set<int>(),
+                     LayoutParams* layoutParams = 0);
 
             int GetSelected() { return adaptor_->GetSelected(); }
-            virtual void Measure(const SCREEN_UIContext &dc, MeasureSpec horiz, MeasureSpec vert) override;
+            virtual void Measure(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert) override;
             virtual void SetMaxHeight(float mh) { maxHeight_ = mh; }
             Event OnChoice;
             std::string Describe() const override { return "ListView: " + View::Describe(); }
 
         private:
             void CreateAllItems();
-            EventReturn OnItemCallback(int num, EventParams &e);
-            ListAdaptor *adaptor_;
-            LinearLayout *linLayout_;
+            EventReturn OnItemCallback(int num, EventParams& e);
+            ListAdaptor* adaptor_;
+            LinearLayout* linLayout_;
             float maxHeight_;
             std::set<int> hidden_;
             float m_Width;
         };
 
-    }
-}
+    } // namespace SCREEN_UI
+} // namespace GfxRenderEngine

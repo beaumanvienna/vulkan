@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -99,13 +99,41 @@ namespace GfxRenderEngine
                 ondemand::array gltfFiles = sceneObject.value().get_array();
                 {
                     int gltfFileCount = gltfFiles.count_elements();
-                    gltfFileCount == 1 ? LOG_CORE_INFO("loading 1 gltf file")
-                                       : LOG_CORE_INFO("loading {0} gltf files", gltfFileCount);
+                    if (gltfFileCount == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 gltf file (tinygltf)");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} gltf files (tinygltf)", gltfFileCount);
+                    }
                 }
 
                 for (auto gltfFileJSON : gltfFiles)
                 {
-                    ParseGltfFile(gltfFileJSON);
+                    ParseGltfFile(gltfFileJSON, false /*tinygltf loader*/,
+                                  m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene);
+                }
+            }
+            else if (sceneObjectKey == "fastgltf files")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
+                ondemand::array gltfFiles = sceneObject.value().get_array();
+                {
+                    int gltfFileCount = gltfFiles.count_elements();
+                    if (gltfFileCount == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 gltf file (fastgltf)");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} gltf files (fastgltf)", gltfFileCount);
+                    }
+                }
+
+                for (auto gltfFileJSON : gltfFiles)
+                {
+                    ParseGltfFile(gltfFileJSON, true /*fast*/, m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene);
                 }
             }
             else if (sceneObjectKey == "fbx files")
@@ -114,28 +142,56 @@ namespace GfxRenderEngine
                 ondemand::array fbxFiles = sceneObject.value().get_array();
                 {
                     int fbxFileCount = fbxFiles.count_elements();
-                    fbxFileCount == 1 ? LOG_CORE_INFO("loading 1 fbx file")
-                                      : LOG_CORE_INFO("loading {0} fbx files", fbxFileCount);
+                    if (fbxFileCount == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 fbx file (asset importer)");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} fbx files (asset importer)", fbxFileCount);
+                    }
                 }
 
                 for (auto fbxFileJSON : fbxFiles)
                 {
-                    ParseFbxFile(fbxFileJSON);
+                    ParseFbxFile(fbxFileJSON, false /*asset importer*/);
+                }
+            }
+            else if (sceneObjectKey == "ufbx files")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
+                ondemand::array fbxFiles = sceneObject.value().get_array();
+                {
+                    int fbxFileCount = fbxFiles.count_elements();
+                    if (fbxFileCount == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 fbx file (ufbx)");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} fbx files (ufbx)", fbxFileCount);
+                    }
+                }
+
+                for (auto fbxFileJSON : fbxFiles)
+                {
+                    ParseFbxFile(fbxFileJSON, true /*ufbx*/);
                 }
             }
             else
             {
-                LOG_CORE_CRITICAL("unrecognized scene object");
+                LOG_CORE_CRITICAL("unrecognized scene object '" + std::string(sceneObjectKey) + "'");
             }
         }
     }
 
-    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON)
+    void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast,
+                                        std::vector<Gltf::GltfFile>& gltfFilesFromScene)
     {
         std::string gltfFilename;
-
-        std::vector<Gltf::GltfFile>& gltfFilesFromScene = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
         bool loadSuccessful = false;
+        int sceneID = Gltf::GLTF_NOT_USED;
+        bool instanceFieldFound = false;
 
         for (auto gltfFileObject : gltfFileJSON)
         {
@@ -155,14 +211,31 @@ namespace GfxRenderEngine
                     return;
                 }
             }
+            else if (gltfFileObjectKey == "sceneID")
+            {
+                if (instanceFieldFound)
+                {
+                    LOG_CORE_ERROR("place sceneID before instances in the scene description file");
+                }
+                sceneID = static_cast<int>(gltfFileObject.value().get_uint64());
+            }
             else if (gltfFileObjectKey == "instances")
             {
+                instanceFieldFound = true;
                 // get array of gltf file instances
                 ondemand::array instances = gltfFileObject.value();
                 int instanceCount = instances.count_elements();
 
-                GltfBuilder builder(gltfFilename, m_Scene);
-                loadSuccessful = builder.LoadGltf(instanceCount);
+                if (fast)
+                {
+                    FastgltfBuilder builder(gltfFilename, m_Scene);
+                    loadSuccessful = builder.Load(instanceCount, sceneID);
+                }
+                else
+                {
+                    GltfBuilder builder(gltfFilename, m_Scene);
+                    loadSuccessful = builder.Load(instanceCount, sceneID);
+                }
                 if (loadSuccessful)
                 {
                     Gltf::GltfFile gltfFile(gltfFilename);
@@ -170,7 +243,7 @@ namespace GfxRenderEngine
                 }
                 else
                 {
-                    LOG_CORE_ERROR("gltf file did not load properly: {0}", gltfFilename);
+                    LOG_CORE_CRITICAL("gltf file did not load properly: {0}", gltfFilename);
                     return;
                 }
 
@@ -207,7 +280,7 @@ namespace GfxRenderEngine
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array),
                                             "type must be object");
-                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
+                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance, instanceIndex);
                             }
                             else
                             {
@@ -225,11 +298,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void SceneLoaderJSON::ParseFbxFile(ondemand::object fbxFileJSON)
+    void SceneLoaderJSON::ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx)
     {
         std::string fbxFilename;
 
-        std::vector<Fbx::FbxFile>& fbxFilesFromScene = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene;
+        std::vector<Fbx::FbxFile>* fbxFilesFromScene = ufbx ? &m_SceneDescriptionFile.m_UFbxFiles.m_FbxFilesFromScene
+                                                            : &m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene;
+
         bool loadSuccessful = false;
 
         for (auto fbxFileObject : fbxFileJSON)
@@ -255,13 +330,20 @@ namespace GfxRenderEngine
                 // get array of fbx file instances
                 ondemand::array instances = fbxFileObject.value();
                 int instanceCount = instances.count_elements();
-
-                FbxBuilder builder(fbxFilename, m_Scene);
-                loadSuccessful = builder.LoadFbx(instanceCount);
+                if (ufbx)
+                {
+                    UFbxBuilder builder(fbxFilename, m_Scene);
+                    loadSuccessful = builder.Load(instanceCount);
+                }
+                else
+                {
+                    FbxBuilder builder(fbxFilename, m_Scene);
+                    loadSuccessful = builder.Load(instanceCount);
+                }
                 if (loadSuccessful)
                 {
                     Fbx::FbxFile fbxFile(fbxFilename);
-                    fbxFilesFromScene.push_back(fbxFile);
+                    fbxFilesFromScene[0].push_back(fbxFile);
                 }
                 else
                 {
@@ -275,7 +357,7 @@ namespace GfxRenderEngine
                     return;
                 }
 
-                std::vector<Fbx::Instance>& fbxFileInstances = fbxFilesFromScene.back().m_Instances;
+                std::vector<Fbx::Instance>& fbxFileInstances = fbxFilesFromScene[0].back().m_Instances;
                 fbxFileInstances.resize(instanceCount);
 
                 {
@@ -319,8 +401,8 @@ namespace GfxRenderEngine
         // transform
         TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
         glm::vec3 scale{1.0f};
-        glm::vec3 rotation{1.0f};
-        glm::vec3 translation{1.0f};
+        glm::vec3 rotation{0.0f};
+        glm::vec3 translation{0.0f};
 
         for (auto transformComponent : transformJSON)
         {
@@ -352,7 +434,7 @@ namespace GfxRenderEngine
     }
 
     void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename,
-                                         Gltf::Instance& gltfFileInstance)
+                                         Gltf::Instance& gltfFileInstance, uint instanceIndex)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount)
@@ -391,7 +473,8 @@ namespace GfxRenderEngine
                     std::string_view scriptComponentStringView = nodeObject.value().get_string();
                     gltfNode.m_ScriptComponent = std::string(scriptComponentStringView);
 
-                    std::string fullEntityName = gltfFilename + std::string("::" + gltfNode.m_Name);
+                    std::string fullEntityName =
+                        gltfFilename + "::" + std::to_string(instanceIndex) + "::" + gltfNode.m_Name;
                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                     if (gameObject != entt::null)
                     {
@@ -403,8 +486,7 @@ namespace GfxRenderEngine
                     }
                     else
                     {
-                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene "
-                                      "description",
+                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description",
                                       scriptComponentStringView, fullEntityName);
                     }
                 }

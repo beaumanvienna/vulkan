@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "core.h"
@@ -39,18 +39,17 @@ namespace LucreApp
 
         m_Renderer = Engine::m_Engine->GetRenderer();
 
-        // create orthogonal camera 
-        m_CameraController = std::make_shared<CameraController>(Camera::ORTHOGRAPHIC_PROJECTION);
+        // create orthogonal camera
+        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
+                                                                -2.0f /*ZFar*/);
+        m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);
         auto& camera = m_CameraController->GetCamera();
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
         camera.SetViewDirection(position, direction);
 
         // walk
-        m_SpritesheetWalk.AddSpritesheetRow
-        (
-            Lucre::m_Spritesheet->GetSprite(I_WALK),
-            WALK_ANIMATION_SPRITES /* frames */
+        m_SpritesheetWalk.AddSpritesheetRow(Lucre::m_Spritesheet->GetSprite(I_WALK), WALK_ANIMATION_SPRITES /* frames */
         );
         m_WalkAnimation.Create(150ms /* per frame */, &m_SpritesheetWalk);
         m_WalkAnimation.Start();
@@ -64,7 +63,7 @@ namespace LucreApp
             MeshComponent mesh{"walk animation", model};
             mesh.m_Enabled = false;
 
-            m_Guybrush[i] = CreateEntity();
+            m_Guybrush[i] = m_Registry.create();
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
@@ -84,7 +83,7 @@ namespace LucreApp
             MeshComponent mesh{"logo", model};
             mesh.m_Enabled = true;
 
-            m_Logo = CreateEntity();
+            m_Logo = m_Registry.create();
             m_Registry.emplace<MeshComponent>(m_Logo, mesh);
 
             TransformComponent transform{};
@@ -98,20 +97,20 @@ namespace LucreApp
 
     void SplashScene::Init()
     {
-        m_InitialPositionX  = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
-        m_EndPositionX      = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
-        m_WindowWidth       = static_cast<float>(Engine::m_Engine->GetWindowWidth());
-        m_WindowHeight      = static_cast<float>(Engine::m_Engine->GetWindowHeight());
+        m_InitialPositionX = -static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 0.1f;
+        m_EndPositionX = static_cast<float>(Engine::m_Engine->GetWindowWidth()) * 1.1f;
+        m_WindowWidth = static_cast<float>(Engine::m_Engine->GetWindowWidth());
+        m_WindowHeight = static_cast<float>(Engine::m_Engine->GetWindowHeight());
 
         // walk
-        float scaleHero     = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
-        
+        float scaleHero = m_WindowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
+
         m_GuybrushWalkDelta = m_WindowHeight * 0.16f;
         for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
         {
             auto sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
             sprite.SetScale(scaleHero);
-            float width  = sprite.GetWidth();
+            float width = sprite.GetWidth();
             float height = sprite.GetHeight();
 
             auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
@@ -121,18 +120,16 @@ namespace LucreApp
 
         // logo
         {
-            float width  = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetWidth();
+            float width = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetWidth();
             float height = Lucre::m_Spritesheet->GetSprite(I_LUCRE).GetHeight();
             float scale = m_WindowHeight / height * 0.2f;
             auto& transform = m_Registry.get<TransformComponent>(m_Logo);
             transform.SetScale({scale * width, scale * height, 0.0f});
-            transform.SetTranslation(glm::vec3{m_WindowWidth/2.0f, m_WindowHeight * 0.3f, 0.0f});
+            transform.SetTranslation(glm::vec3{m_WindowWidth / 2.0f, m_WindowHeight * 0.3f, 0.0f});
         }
     }
 
-    void SplashScene::Stop()
-    {
-    }
+    void SplashScene::Stop() {}
 
     void SplashScene::OnUpdate(const Timestep& timestep)
     {
@@ -162,12 +159,13 @@ namespace LucreApp
             {
                 previousFrame = m_WalkAnimation.GetCurrentFrame();
             }
-            float frameTranslationX = 0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * m_WalkAnimation.GetCurrentFrame();
+            float frameTranslationX =
+                0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * m_WalkAnimation.GetCurrentFrame();
 
             for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
-                transform.SetTranslationX(frameTranslationX+walkOffset);
+                transform.SetTranslationX(frameTranslationX + walkOffset);
             }
         }
 
@@ -185,25 +183,25 @@ namespace LucreApp
         // scene must switch to gui renderpass
         m_Renderer->GUIRenderpass(&SCREEN_ScreenManager::m_CameraController->GetCamera());
         m_Renderer->Submit2D(&m_CameraController->GetCamera(), m_Registry);
-
     }
 
     void SplashScene::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
-        dispatcher.Dispatch<KeyPressedEvent>([this](KeyPressedEvent l_Event)
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
             {
-                switch(l_Event.GetKeyCode())
+                switch (l_Event.GetKeyCode())
                 {
                     case ENGINE_KEY_ESCAPE:
                         m_IsRunning = false;
                         break;
                 }
                 return true;
-            }
-        );
+            });
 
-        dispatcher.Dispatch<ControllerButtonPressedEvent>([this](ControllerButtonPressedEvent l_Event)
+        dispatcher.Dispatch<ControllerButtonPressedEvent>(
+            [this](ControllerButtonPressedEvent l_Event)
             {
                 switch (l_Event.GetControllerButton())
                 {
@@ -212,8 +210,7 @@ namespace LucreApp
                         break;
                 }
                 return false;
-            }
-        );
+            });
     }
 
     void SplashScene::OnResize()
@@ -221,4 +218,4 @@ namespace LucreApp
         m_CameraController->SetProjection();
         Init();
     }
-}
+} // namespace LucreApp

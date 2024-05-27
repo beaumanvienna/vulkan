@@ -1,6 +1,6 @@
 /* Copyright (c) 2013-2020 PPSSPP project
    https://github.com/hrydgard/ppsspp/blob/master/LICENSE.TXT
-   
+
    Engine Copyright (c) 2021-2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -15,12 +15,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include <cstdarg>
@@ -30,7 +30,7 @@
 
 namespace GfxRenderEngine
 {
-    // void SCREEN_truncate_cpy(char *dest, size_t destSize, const char *src) 
+    // void SCREEN_truncate_cpy(char *dest, size_t destSize, const char *src)
     // {
     //     size_t len = strlen(src);
     //     if (len >= destSize - 1) {
@@ -41,19 +41,19 @@ namespace GfxRenderEngine
     //         dest[len] = '\0';
     //     }
     // }
-    // 
-    // long SCREEN_parseHexLong(std::string s) 
+    //
+    // long SCREEN_parseHexLong(std::string s)
     // {
     //     long value = 0;
-    // 
+    //
     //     if (s.substr(0,2) == "0x") {
     //         //s = s.substr(2);
     //     }
     //     value = strtoul(s.c_str(),0, 0);
     //     return value;
     // }
-    // 
-    // long SCREEN_parseLong(std::string s) 
+    //
+    // long SCREEN_parseLong(std::string s)
     // {
     //     long value = 0;
     //     if (s.substr(0,2) == "0x") {
@@ -64,11 +64,11 @@ namespace GfxRenderEngine
     //     }
     //     return value;
     // }
-    // 
+    //
     // bool SCREEN_PCharArrayFromFormatV(char* out, int outsize, const char* format, va_list args)
     // {
     //     int writtenCount = vsnprintf(out, outsize, format, args);
-    // 
+    //
     //     if (writtenCount > 0 && writtenCount < outsize)
     //     {
     //         out[writtenCount] = '\0';
@@ -80,12 +80,13 @@ namespace GfxRenderEngine
     //         return false;
     //     }
     // }
-    // 
-    // bool SCREEN_PSplitPath(const std::string& full_path, std::string* _pPath, std::string* _pFilename, std::string* _pExtension)
+    //
+    // bool SCREEN_PSplitPath(const std::string& full_path, std::string* _pPath, std::string* _pFilename, std::string*
+    // _pExtension)
     // {
     //     if (full_path.empty())
     //         return false;
-    // 
+    //
     //     size_t dir_end = full_path.find_last_of("/");
     //     if (std::string::npos == dir_end)
     //     {
@@ -95,77 +96,77 @@ namespace GfxRenderEngine
     //     {
     //         dir_end += 1;
     //     }
-    // 
+    //
     //     size_t fname_end = full_path.rfind('.');
     //     if (fname_end < dir_end || std::string::npos == fname_end)
     //     {
     //         fname_end = full_path.size();
     //     }
-    // 
+    //
     //     if (_pPath)
     //     {
     //         *_pPath = full_path.substr(0, dir_end);
     //     }
-    // 
+    //
     //     if (_pFilename)
     //     {
     //         *_pFilename = full_path.substr(dir_end, fname_end - dir_end);
     //     }
-    // 
+    //
     //     if (_pExtension)
     //     {
     //         *_pExtension = full_path.substr(fname_end);
     //     }
-    // 
+    //
     //     return true;
     // }
-    // 
-    // std::string SCREEN_GetFilenameFromPath(std::string full_path) 
+    //
+    // std::string SCREEN_GetFilenameFromPath(std::string full_path)
     // {
     //     size_t pos;
     // #ifdef _WIN32
     //     pos = full_path.rfind('\\');
-    //     if (pos != std::string::npos) 
+    //     if (pos != std::string::npos)
     //     {
     //         return full_path.substr(pos + 1);
     //     }
     // #endif
     //     pos = full_path.rfind('/');
-    //     if (pos != std::string::npos) 
+    //     if (pos != std::string::npos)
     //     {
     //         return full_path.substr(pos + 1);
     //     }
-    // 
+    //
     //     return full_path;
     // }
-    // 
-    // std::string SCREEN_LineNumberString(const std::string &str) 
+    //
+    // std::string SCREEN_LineNumberString(const std::string &str)
     // {
     //     std::stringstream input(str);
     //     std::stringstream output;
     //     std::string line;
-    // 
+    //
     //     int lineNumber = 1;
-    //     while (std::getline(input, line)) 
+    //     while (std::getline(input, line))
     //     {
     //         output << std::setw(4) << lineNumber++ << ":  " << line << std::endl;
     //     }
-    // 
+    //
     //     return output.str();
     // }
-    // 
-    // void SCREEN_SkipSpace(const char **ptr) 
+    //
+    // void SCREEN_SkipSpace(const char **ptr)
     // {
-    //     while (**ptr && isspace(**ptr)) 
+    //     while (**ptr && isspace(**ptr))
     //     {
     //         (*ptr)++;
     //     }
     // }
-    // 
-    // void SCREEN_DataToHexString(const uint8_t *data, size_t size, std::string *output) 
+    //
+    // void SCREEN_DataToHexString(const uint8_t *data, size_t size, std::string *output)
     // {
     //     Buffer buffer;
-    //     for (size_t i = 0; i < size; i++) 
+    //     for (size_t i = 0; i < size; i++)
     //     {
     //         if (i && !(i & 15))
     //             buffer.Printf("\n");
@@ -173,17 +174,18 @@ namespace GfxRenderEngine
     //     }
     //     buffer.TakeAll(output);
     // }
-    // 
-    // void SCREEN_DataToHexString(const char* prefix, uint32_t startAddr, const uint8_t* data, size_t size, std::string* output) 
+    //
+    // void SCREEN_DataToHexString(const char* prefix, uint32_t startAddr, const uint8_t* data, size_t size, std::string*
+    // output)
     // {
     //     Buffer buffer;
     //     size_t i = 0;
-    //     for (; i < size; i++) 
+    //     for (; i < size; i++)
     //     {
-    //         if (i && !(i & 15)) 
+    //         if (i && !(i & 15))
     //         {
     //             buffer.Printf(" ");
-    //             for (size_t j = i - 16; j < i; j++) 
+    //             for (size_t j = i - 16; j < i; j++)
     //             {
     //                 buffer.Printf("%c", ((data[j] < 0x20) || (data[j] > 0x7e)) ? 0x2e : data[j]);
     //             }
@@ -195,43 +197,44 @@ namespace GfxRenderEngine
     //         }
     //         buffer.Printf("%02x ", data[i]);
     //     }
-    //     if (size & 15) 
+    //     if (size & 15)
     //     {
     //         size_t padded_size = ((size - 1) | 15) + 1;
-    //         for (size_t j = size; j < padded_size; j++) 
+    //         for (size_t j = size; j < padded_size; j++)
     //         {
     //             buffer.Printf("   ");
     //         }
     //         buffer.Printf(" ");
-    //         for (size_t j = size & ~UINT64_C(0xF); j < size; j++) 
+    //         for (size_t j = size & ~UINT64_C(0xF); j < size; j++)
     //         {
     //             buffer.Printf("%c", ((data[j] < 0x20) || (data[j] > 0x7e)) ? 0x2e : data[j]);
     //         }
     //     }
     //     buffer.TakeAll(output);
     // }
-    // 
+    //
     std::string SCREEN_PStringFromFormat(const char* format, ...)
     {
         va_list args;
         std::string temp = "";
 
-        #ifdef _WIN32
-            LOG_CORE_CRITICAL("fix me (does not compile under Windows std::string SCREEN_PStringFromFormat(const char* format, ...)");
-        #else
-            char *buf = nullptr;
+#ifdef _WIN32
+        LOG_CORE_CRITICAL(
+            "fix me (does not compile under Windows std::string SCREEN_PStringFromFormat(const char* format, ...)");
+#else
+        char* buf = nullptr;
 
-            va_start(args, format);
-            if (vasprintf(&buf, format, args) < 0)
-                buf = nullptr;
-            va_end(args);
+        va_start(args, format);
+        if (vasprintf(&buf, format, args) < 0)
+            buf = nullptr;
+        va_end(args);
 
-            if (buf != nullptr) 
-            {
-                temp = buf;
-                free(buf);
-            }
-        #endif
+        if (buf != nullptr)
+        {
+            temp = buf;
+            free(buf);
+        }
+#endif
 
         return temp;
     }
@@ -246,13 +249,13 @@ namespace GfxRenderEngine
     // std::string SCREEN_StripSpaces(const std::string &str)
     // {
     //     const size_t s = str.find_first_not_of(" \t\r\n");
-    // 
+    //
     //     if (str.npos != s)
     //         return str.substr(s, str.find_last_not_of(" \t\r\n") - s + 1);
     //     else
     //         return "";
     // }
-    // 
+    //
     // std::string SCREEN_StripQuotes(const std::string& s)
     // {
     //     if (s.size() && '\"' == s[0] && '\"' == *s.rbegin())
@@ -273,11 +276,11 @@ namespace GfxRenderEngine
             }
         }
 
-        if (next == 0) 
+        if (next == 0)
         {
             output.push_back(str);
-        } 
-        else if (next < str.length()) 
+        }
+        else if (next < str.length())
         {
             output.push_back(str.substr(next));
         }
@@ -287,16 +290,16 @@ namespace GfxRenderEngine
     // {
     //     size_t next = 0;
     //     bool even = 0;
-    //     for (size_t pos = 0, len = str.length(); pos < len; ++pos) 
+    //     for (size_t pos = 0, len = str.length(); pos < len; ++pos)
     //     {
-    //         if (str[pos] == '\"' || str[pos] == '\'') 
+    //         if (str[pos] == '\"' || str[pos] == '\'')
     //         {
-    //             if (even) 
+    //             if (even)
     //             {
     //                 output.push_back(str.substr(next, pos - next));
     //                 even = 0;
-    //             } 
-    //             else 
+    //             }
+    //             else
     //             {
     //                 even = 1;
     //             }
@@ -326,4 +329,4 @@ namespace GfxRenderEngine
         }
         return result;
     }
-}
+} // namespace GfxRenderEngine

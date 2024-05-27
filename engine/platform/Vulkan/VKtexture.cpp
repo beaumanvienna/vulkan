@@ -331,10 +331,9 @@ namespace GfxRenderEngine
         view.viewType = VK_IMAGE_VIEW_TYPE_2D;
         view.format = m_ImageFormat;
         view.components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-        // A subresource range describes the set of mip levels (and array
-        // layers) that can be accessed through this image view It's possible to
-        // create multiple image views for a single image referring to different
-        // (and/or overlapping) ranges of the image
+        // A subresource range describes the set of mip levels (and array layers) that can be accessed through this image
+        // view It's possible to create multiple image views for a single image referring to different (and/or overlapping)
+        // ranges of the image
         view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         view.subresourceRange.baseMipLevel = 0;
         view.subresourceRange.baseArrayLayer = 0;
@@ -362,14 +361,14 @@ namespace GfxRenderEngine
 
     void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data)
     {
-        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, "
-                          "uint height, uint bytesPerPixel, const void* data)");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, uint height, uint "
+                          "bytesPerPixel, const void* data)");
     }
 
     void VK_Texture::Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data)
     {
-        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, "
-                          "uint height, int dataFormat, int type, const void* data)");
+        LOG_CORE_CRITICAL("not implemented void VK_Texture::Blit(uint x, uint y, uint width, uint height, int dataFormat, "
+                          "int type, const void* data)");
     }
 
     void VK_Texture::Resize(uint width, uint height)

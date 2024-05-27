@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,13 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
@@ -37,29 +37,22 @@ namespace GfxRenderEngine
     {
 
     public:
-
         inline int GetKeyCode() const { return m_KeyCode; }
 
         EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyboard);
 
     protected:
-        KeyEvent(int keyCode)
-            : m_KeyCode(keyCode) {}
+        KeyEvent(int keyCode) : m_KeyCode(keyCode) {}
 
     private:
-
         int m_KeyCode;
-
     };
 
     class KeyPressedEvent : public KeyEvent
     {
 
     public:
-        KeyPressedEvent(int keyCode)
-            : KeyEvent(keyCode)
-        {
-        }
+        KeyPressedEvent(int keyCode) : KeyEvent(keyCode) {}
 
         EVENT_CLASS_TYPE(KeyPressed);
 
@@ -69,17 +62,13 @@ namespace GfxRenderEngine
             str << "KeyPressedEvent: m_KeyCode: " << GetKeyCode();
             return str.str();
         }
-
     };
 
     class KeyReleasedEvent : public KeyEvent
     {
 
     public:
-        KeyReleasedEvent(int keyCode)
-            : KeyEvent(keyCode)
-        {
-        }
+        KeyReleasedEvent(int keyCode) : KeyEvent(keyCode) {}
 
         EVENT_CLASS_TYPE(KeyReleased);
 
@@ -89,6 +78,5 @@ namespace GfxRenderEngine
             str << "KeyReleasedEvent: m_KeyCode: " << GetKeyCode();
             return str.str();
         }
-
     };
-}
+} // namespace GfxRenderEngine

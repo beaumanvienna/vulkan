@@ -24,7 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#extension GL_GOOGLE_include_directive : enable
+
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/shadowMapping.h"
 
@@ -345,5 +345,6 @@ void main()
     color = ACESFilm(color);
 
     outColor = albedo * vec4(color, 1.0);
+    //outColor = vec4(normal, 1.0);
 
 }

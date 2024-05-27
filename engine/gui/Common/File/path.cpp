@@ -31,7 +31,7 @@
 
 namespace GfxRenderEngine
 {
-    Path::Path(const std::string &str)
+    Path::Path(const std::string& str)
     {
         if (str.empty())
         {
@@ -49,19 +49,19 @@ namespace GfxRenderEngine
         Init(str);
     }
 
-    #ifdef _WIN32
-    Path::Path(const std::wstring &str)
+#ifdef _WIN32
+    Path::Path(const std::wstring& str)
     {
         type_ = PathType::NATIVE;
         Init(ConvertWStringToUTF8(str));
     }
-    #endif
+#endif
 
-    void Path::Init(const std::string &str)
+    void Path::Init(const std::string& str)
     {
         m_Path = str;
 
-    #ifdef _WIN32
+#ifdef _WIN32
         for (size_t i = 0; i < m_Path.size(); i++)
         {
             if (m_Path[i] == '\\')
@@ -69,7 +69,7 @@ namespace GfxRenderEngine
                 m_Path[i] = '/';
             }
         }
-    #endif
+#endif
 
         if (type_ == PathType::NATIVE && m_Path.size() > 1 && m_Path.back() == '/')
         {
@@ -77,7 +77,7 @@ namespace GfxRenderEngine
         }
     }
 
-    Path Path::operator /(const std::string &subdir) const
+    Path Path::operator/(const std::string& subdir) const
     {
 
         if (subdir.empty())
@@ -98,17 +98,11 @@ namespace GfxRenderEngine
         return Path(fullPath);
     }
 
-    void Path::operator /=(const std::string &subdir)
-    {
-        *this = *this / subdir;
-    }
+    void Path::operator/=(const std::string& subdir) { *this = *this / subdir; }
 
-    Path Path::WithExtraExtension(const std::string &ext) const
-    {
-        return Path(m_Path + ext);
-    }
+    Path Path::WithExtraExtension(const std::string& ext) const { return Path(m_Path + ext); }
 
-    Path Path::WithReplacedExtension(const std::string &oldExtension, const std::string &newExtension) const
+    Path Path::WithReplacedExtension(const std::string& oldExtension, const std::string& newExtension) const
     {
         if (endsWithNoCase(m_Path, oldExtension))
         {
@@ -121,7 +115,7 @@ namespace GfxRenderEngine
         }
     }
 
-    Path Path::WithReplacedExtension(const std::string &newExtension) const
+    Path Path::WithReplacedExtension(const std::string& newExtension) const
     {
 
         if (m_Path.empty())
@@ -144,7 +138,7 @@ namespace GfxRenderEngine
         return m_Path;
     }
 
-    static std::string GetExtFromString(const std::string &str)
+    static std::string GetExtFromString(const std::string& str)
     {
         size_t pos = str.rfind(".");
         if (pos == std::string::npos)
@@ -164,11 +158,7 @@ namespace GfxRenderEngine
         return ext;
     }
 
-    std::string Path::GetFileExtension() const
-    {
-
-        return GetExtFromString(m_Path);
-    }
+    std::string Path::GetFileExtension() const { return GetExtFromString(m_Path); }
 
     std::string Path::GetDirectory() const
     {
@@ -192,12 +182,12 @@ namespace GfxRenderEngine
                 return "/";
             }
             return m_Path.substr(0, pos);
-    #ifdef _WIN32
-        } 
+#ifdef _WIN32
+        }
         else if (m_Path.size() == 2 && m_Path[1] == ':')
         {
             return "/";
-    #endif
+#endif
         }
         else
         {
@@ -210,12 +200,11 @@ namespace GfxRenderEngine
         return m_Path;
     }
 
-    bool Path::FilePathContains(const std::string &needle) const
+    bool Path::FilePathContains(const std::string& needle) const
     {
         std::string haystack;
         if (type_ == PathType::CONTENT_URI)
         {
-
         }
         else
         {
@@ -224,7 +213,7 @@ namespace GfxRenderEngine
         return haystack.find(needle) != std::string::npos;
     }
 
-    bool Path::StartsWith(const Path &other) const
+    bool Path::StartsWith(const Path& other) const
     {
         if (type_ != other.type_)
         {
@@ -233,12 +222,9 @@ namespace GfxRenderEngine
         return startsWith(m_Path, other.m_Path);
     }
 
-    const std::string &Path::ToString() const
-    {
-        return m_Path;
-    }
+    const std::string& Path::ToString() const { return m_Path; }
 
-    #ifdef _WIN32
+#ifdef _WIN32
     std::wstring Path::ToWString() const
     {
         std::wstring w = ConvertUTF8ToWString(m_Path);
@@ -251,13 +237,9 @@ namespace GfxRenderEngine
         }
         return w;
     }
-    #endif
+#endif
 
-    std::string Path::ToVisualString() const
-    {
-
-        return m_Path;
-    }
+    std::string Path::ToVisualString() const { return m_Path; }
 
     bool Path::CanNavigateUp() const
     {
@@ -291,13 +273,13 @@ namespace GfxRenderEngine
             return Path(m_Path);
         }
 
-    #ifdef _WIN32
+#ifdef _WIN32
         if (m_Path[1] == ':')
         {
             std::string path = m_Path.substr(0, 2);
             return Path(path);
         }
-    #endif
+#endif
 
         return Path("/");
     }
@@ -317,19 +299,19 @@ namespace GfxRenderEngine
         {
             return true;
         }
-    #ifdef _WIN32
+#ifdef _WIN32
         else if (m_Path.size() > 3 && m_Path[1] == ':')
         {
             return true;
         }
-    #endif
+#endif
         else
         {
             return false;
         }
     }
 
-    std::string Path::PathTo(const Path &other)
+    std::string Path::PathTo(const Path& other)
     {
         if (!other.StartsWith(*this))
         {
@@ -349,4 +331,4 @@ namespace GfxRenderEngine
 
         return diff;
     }
-}
+} // namespace GfxRenderEngine

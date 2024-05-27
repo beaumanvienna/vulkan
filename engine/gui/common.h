@@ -58,8 +58,8 @@ namespace GfxRenderEngine
     {
         NKCODE_BUTTON_CROSS = 23,      // trackpad or X button(Xperia Play) is pressed
         NKCODE_BUTTON_CROSS_PS3 = 96,  // PS3 X button is pressed
-        NKCODE_BUTTON_CIRCLE = 1004,   // Special custom keycode generated from 'O' button by our java
-                                       // code. Or 'O' button if Alt is pressed (TODO)
+        NKCODE_BUTTON_CIRCLE = 1004,   // Special custom keycode generated from 'O' button by our java code. Or 'O' button if
+                                       // Alt is pressed (TODO)
         NKCODE_BUTTON_CIRCLE_PS3 = 97, // PS3 O button is pressed
         NKCODE_BUTTON_SQUARE = 99,     // Square button(Xperia Play) is pressed
         NKCODE_BUTTON_TRIANGLE = 100,  // 'Triangle button(Xperia Play) is pressed

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,13 +12,13 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    The code in this file is based on and inspired by the project
    https://github.com/TheCherno/Hazel. The license of this prject can
@@ -39,7 +39,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         LayerStack();
         ~LayerStack();
 
@@ -48,7 +47,7 @@ namespace GfxRenderEngine
         void PushOverlay(Layer* overlay);
         void PopOverlay(Layer* overlay);
 
-        int GetStackSize() const { return m_Layers.size();}
+        int GetStackSize() const { return m_Layers.size(); }
         void Shutdown();
 
         std::vector<Layer*>::iterator begin() { return m_Layers.begin(); }
@@ -57,14 +56,12 @@ namespace GfxRenderEngine
         std::vector<Layer*>::reverse_iterator rend() { return m_Layers.rend(); }
 
         std::vector<Layer*>::const_iterator begin() const { return m_Layers.begin(); }
-        std::vector<Layer*>::const_iterator end()    const { return m_Layers.end(); }
+        std::vector<Layer*>::const_iterator end() const { return m_Layers.end(); }
         std::vector<Layer*>::const_reverse_iterator rbegin() const { return m_Layers.rbegin(); }
         std::vector<Layer*>::const_reverse_iterator rend() const { return m_Layers.rend(); }
 
-    private: 
-
+    private:
         std::vector<Layer*> m_Layers;
         uint m_LayerInsertIndex;
-
     };
-}
+} // namespace GfxRenderEngine

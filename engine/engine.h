@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #pragma once
@@ -36,6 +36,16 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
 
+typedef uint8_t uchar;
+typedef uint16_t uint16;
+typedef uint32_t uint;
+typedef int64_t int64;
+typedef uint64_t uint64;
+typedef void (*GenericCallback)();
+
+using namespace std::chrono_literals;
+using namespace GfxRenderEngine;
+
 int engine(int argc, char* argv[]);
 
 #undef far
@@ -44,43 +54,49 @@ int engine(int argc, char* argv[]);
 #undef CreateDirectory
 #undef CreateWindow
 
-#define ASSERT(x) if (!(x)) std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
+#define ASSERT(x) \
+    if (!(x))     \
+        std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
+
 #define MEMBER_SIZE(type, member) sizeof(type::member)
+
 #define BIT(x) (1 << (x))
 
-#define LOG_CORE_TRACE(...)     GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
-#define LOG_CORE_INFO(...)      GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
-#define LOG_CORE_WARN(...)      GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
-#define LOG_CORE_ERROR(...)     GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
-#define LOG_CORE_CRITICAL(...)  GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
-
-#define LOG_APP_TRACE(...)      GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
-#define LOG_APP_INFO(...)       GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
-#define LOG_APP_WARN(...)       GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
-#define LOG_APP_ERROR(...)      GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
-#define LOG_APP_CRITICAL(...)   GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
-
-#define CORE_ASSERT(x, str) if (!(x)) LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-#define APP_ASSERT(x, str) if (!(x)) LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-
-typedef uint8_t  uchar;
-typedef uint16_t  uint16;
-typedef uint32_t uint;
-typedef int64_t  int64;
-typedef uint64_t uint64;
-typedef void (*GenericCallback) ();
-
-using namespace std::chrono_literals;
-using namespace GfxRenderEngine;
-
-#define ENUM_CLASS_BITOPS(T) \
-    static inline T operator |(const T &lhs, const T &rhs) { \
-        return T((int)lhs | (int)rhs); \
-    } \
-    static inline T &operator |= (T &lhs, const T &rhs) { \
-        lhs = lhs | rhs; \
-        return lhs; \
-    } \
-    static inline bool operator &(const T &lhs, const T &rhs) { \
-        return ((int)lhs & (int)rhs) != 0; \
-    }
+// logging
+#ifndef DISTRIBUTION_BUILD
+    #define LOGGING_AND_ASSERTS
+#endif
+#ifdef LOGGING_AND_ASSERTS
+    #define CORE_ASSERT(x, str) \
+        if (!(x))               \
+        LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
+    
+    #define APP_ASSERT(x, str) \
+        if (!(x))              \
+        LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
+    
+    #define LOG_CORE_TRACE(...) GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
+    #define LOG_CORE_INFO(...) GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
+    #define LOG_CORE_WARN(...) GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
+    #define LOG_CORE_ERROR(...) GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
+    #define LOG_CORE_CRITICAL(...) GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
+    
+    #define LOG_APP_TRACE(...) GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
+    #define LOG_APP_INFO(...) GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
+    #define LOG_APP_WARN(...) GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
+    #define LOG_APP_ERROR(...) GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
+    #define LOG_APP_CRITICAL(...) GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
+#else
+    #define CORE_ASSERT(x, str) {}
+    #define APP_ASSERT(x, str) {}
+    #define LOG_CORE_TRACE(...) {}
+    #define LOG_CORE_INFO(...) {}
+    #define LOG_CORE_WARN(...) {}
+    #define LOG_CORE_ERROR(...) {}
+    #define LOG_CORE_CRITICAL(...) {}
+    #define LOG_APP_TRACE(...) {}
+    #define LOG_APP_INFO(...) {}
+    #define LOG_APP_WARN(...) {}
+    #define LOG_APP_ERROR(...) {}
+    #define LOG_APP_CRITICAL(...) {}
+#endif

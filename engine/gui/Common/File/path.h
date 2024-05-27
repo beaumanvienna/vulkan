@@ -32,28 +32,25 @@ namespace GfxRenderEngine
     enum class PathType
     {
         UNDEFINED = 0,
-        NATIVE = 1,  
-        CONTENT_URI = 2,  
-        HTTP = 3,  
+        NATIVE = 1,
+        CONTENT_URI = 2,
+        HTTP = 3,
     };
 
     class Path
     {
     private:
-        void Init(const std::string &str);
+        void Init(const std::string& str);
 
     public:
         Path() : type_(PathType::UNDEFINED) {}
-        explicit Path(const std::string &str);
+        explicit Path(const std::string& str);
 
-    #ifdef _WIN32
-        explicit Path(const std::wstring &str);
-    #endif
+#ifdef _WIN32
+        explicit Path(const std::wstring& str);
+#endif
 
-        PathType Type() const
-        {
-            return type_;
-        }
+        PathType Type() const { return type_; }
 
         bool Valid() const { return !m_Path.empty(); }
         bool IsRoot() const { return m_Path == "/"; }
@@ -64,39 +61,33 @@ namespace GfxRenderEngine
             type_ = PathType::UNDEFINED;
             m_Path.clear();
         }
-        size_t size() const
-        {
-            return m_Path.size();
-        }
+        size_t size() const { return m_Path.size(); }
 
-        const char *c_str() const
-        {
-            return m_Path.c_str();
-        }
+        const char* c_str() const { return m_Path.c_str(); }
 
         bool IsAbsolute() const;
 
         // returns a path extended with a subdirectory
-        Path operator /(const std::string &subdir) const;
+        Path operator/(const std::string& subdir) const;
 
         // navigates down into a subdir
-        void operator /=(const std::string &subdir);
+        void operator/=(const std::string& subdir);
 
         // file extension manipulation
-        Path WithExtraExtension(const std::string &ext) const;
-        Path WithReplacedExtension(const std::string &oldExtension, const std::string &newExtension) const;
-        Path WithReplacedExtension(const std::string &newExtension) const;
+        Path WithExtraExtension(const std::string& ext) const;
+        Path WithReplacedExtension(const std::string& oldExtension, const std::string& newExtension) const;
+        Path WithReplacedExtension(const std::string& newExtension) const;
 
         // removes the last component
         std::string GetFilename() const;
         std::string GetFileExtension() const;
         std::string GetDirectory() const;
 
-        const std::string &ToString() const;
+        const std::string& ToString() const;
 
-    #ifdef _WIN32
+#ifdef _WIN32
         std::wstring ToWString() const;
-    #endif
+#endif
 
         std::string ToVisualString() const;
 
@@ -106,30 +97,20 @@ namespace GfxRenderEngine
         // navigates as far up as possible from this path
         Path GetRootVolume() const;
 
-        std::string PathTo(const Path &child);
+        std::string PathTo(const Path& child);
 
-        bool operator ==(const Path &other) const
-        {
-            return m_Path == other.m_Path && type_ == other.type_;
-        }
-        bool operator !=(const Path &other) const
-        {
-            return m_Path != other.m_Path || type_ != other.type_;
-        }
+        bool operator==(const Path& other) const { return m_Path == other.m_Path && type_ == other.type_; }
+        bool operator!=(const Path& other) const { return m_Path != other.m_Path || type_ != other.type_; }
 
-        bool FilePathContains(const std::string &needle) const;
+        bool FilePathContains(const std::string& needle) const;
 
-        bool StartsWith(const Path &other) const;
+        bool StartsWith(const Path& other) const;
 
-        bool operator <(const Path &other) const
-        {
-            return m_Path < other.m_Path;
-        }
+        bool operator<(const Path& other) const { return m_Path < other.m_Path; }
 
     private:
-
         std::string m_Path;
 
         PathType type_;
     };
-}
+} // namespace GfxRenderEngine

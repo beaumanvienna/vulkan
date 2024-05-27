@@ -36,9 +36,9 @@ namespace LucreApp
     {
 
     public:
-        MainScreen(SpriteSheet *spritesheet) { m_Spritesheet = spritesheet; }
+        MainScreen(SpriteSheet* spritesheet) { m_Spritesheet = spritesheet; }
         virtual ~MainScreen() {}
-        bool key(const SCREEN_KeyInput &key) override;
+        bool key(const SCREEN_KeyInput& key) override;
         void OnAttach();
         void OnDetach();
         void update() override;
@@ -48,14 +48,13 @@ namespace LucreApp
     protected:
         void CreateViews() override;
 
-        SCREEN_UI::EventReturn SettingsClick(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn Scene1Click(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn Scene2Click(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn Scene3Click(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn Scene4Click(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn Scene5Click(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams &e);
-        SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams &e);
+        SCREEN_UI::EventReturn SettingsClick(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene1Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene2Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene3Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene4Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams& e);
 
     private:
         enum toolTipID
@@ -66,19 +65,18 @@ namespace LucreApp
         };
 
     private:
-        SCREEN_UI::Choice *m_OffButton = nullptr;
-        SCREEN_UI::Choice *m_SettingsButton = nullptr;
-        SCREEN_UI::Choice *m_Scene1Button = nullptr;
-        SCREEN_UI::Choice *m_Scene2Button = nullptr;
-        SCREEN_UI::Choice *m_Scene3Button = nullptr;
-        SCREEN_UI::Choice *m_Scene4Button = nullptr;
-        SCREEN_UI::Choice *m_Scene5Button = nullptr;
-        InfoMessage *m_MainInfo = nullptr;
+        SCREEN_UI::Choice* m_OffButton = nullptr;
+        SCREEN_UI::Choice* m_SettingsButton = nullptr;
+        SCREEN_UI::Choice* m_Scene1Button = nullptr;
+        SCREEN_UI::Choice* m_Scene2Button = nullptr;
+        SCREEN_UI::Choice* m_Scene3Button = nullptr;
+        SCREEN_UI::Choice* m_Scene4Button = nullptr;
+        InfoMessage* m_MainInfo = nullptr;
 
         bool m_SetFocus = true;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 
-        SpriteSheet *m_Spritesheet = nullptr;
+        SpriteSheet* m_Spritesheet = nullptr;
         SpriteSheet m_SpritesheetSettings;
         SpriteSheet m_SpritesheetOff;
         SpriteSheet m_SpritesheetScene1Button;
@@ -87,4 +85,4 @@ namespace LucreApp
         SpriteSheet m_SpritesheetScene4Button;
         SpriteSheet m_SpritesheetScene5Button;
     };
-}
+} // namespace LucreApp

@@ -1,7 +1,7 @@
 project "assetImporter"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 
@@ -36,7 +36,7 @@ project "assetImporter"
         "ASSIMP_BUILD_NO_IRR_IMPORTER",
         "ASSIMP_BUILD_NO_Q3D_IMPORTER",
         "ASSIMP_BUILD_NO_B3D_IMPORTER",
-        "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
+        -- "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
         "ASSIMP_BUILD_NO_TERRAGEN_IMPORTER",
         "ASSIMP_BUILD_NO_CSM_IMPORTER",
         "ASSIMP_BUILD_NO_3D_IMPORTER",
@@ -100,6 +100,8 @@ project "assetImporter"
         "code/Common/**",
         "code/Material/**",
         "code/PostProcessing/**",
+        "code/AssetLib/Collada/**",
+        "contrib/unzip/**",
     }
 
     includedirs
@@ -111,6 +113,7 @@ project "assetImporter"
         "contrib/rapidjson/include",
         "contrib/unzip/",
         "contrib/zlib/",
+        "contrib/pugixml/src/",
     }
 
     flags
@@ -150,7 +153,7 @@ project "assetImporter"
 project "zlibstatic"
     kind "StaticLib"
     language "C"
-    cppdialect "C++17"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
     objdir ("bin-int/%{cfg.buildcfg}")
 

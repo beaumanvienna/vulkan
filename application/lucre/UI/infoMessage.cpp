@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team 
+/* Engine Copyright (c) 2021 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -37,11 +37,11 @@ namespace LucreApp
         m_TextView = Add(new SCREEN_UI::TextView("", align, false, new LinearLayoutParams(1.0, Margins(0, 10))));
         Add(new SCREEN_UI::Spacer(10.0f));
 
-        m_ContextWidth  = Engine::m_Engine->GetWindowWidth();
+        m_ContextWidth = Engine::m_Engine->GetWindowWidth();
         m_ContextHeight = Engine::m_Engine->GetWindowHeight();
     }
 
-    void InfoMessage::Show(const std::string &text, SCREEN_UI::View* refView)
+    void InfoMessage::Show(const std::string& text, SCREEN_UI::View* refView)
     {
         if (refView)
         {
@@ -49,11 +49,13 @@ namespace LucreApp
             const SCREEN_UI::AnchorLayoutParams* lp = GetLayoutParams()->As<SCREEN_UI::AnchorLayoutParams>();
             if (b.y >= m_CutOffY)
             {
-                ReplaceLayoutParams(new SCREEN_UI::AnchorLayoutParams(lp->width, lp->height, lp->left, 20.0f, lp->right, lp->bottom, lp->center));
+                ReplaceLayoutParams(new SCREEN_UI::AnchorLayoutParams(lp->width, lp->height, lp->left, 20.0f, lp->right,
+                                                                      lp->bottom, lp->center));
             }
             else
             {
-                ReplaceLayoutParams(new SCREEN_UI::AnchorLayoutParams(lp->width, lp->height, lp->left, m_ContextHeight - 80.0f - 40.0f, lp->right, lp->bottom, lp->center));
+                ReplaceLayoutParams(new SCREEN_UI::AnchorLayoutParams(
+                    lp->width, lp->height, lp->left, m_ContextHeight - 80.0f - 40.0f, lp->right, lp->bottom, lp->center));
             }
         }
         m_TextView->SetText(text);
@@ -61,10 +63,10 @@ namespace LucreApp
         m_TimeToShow = std::max(1.5, m_TextView->GetText().size() * 0.05);
     }
 
-    void InfoMessage::Draw(SCREEN_UIContext &dc)
+    void InfoMessage::Draw(SCREEN_UIContext& dc)
     {
         static constexpr double FADE_TIME = 1.0;
-        static constexpr float  MAX_ALPHA = 0.9f;
+        static constexpr float MAX_ALPHA = 0.9f;
         double sinceShow;
         float alpha;
 
@@ -99,4 +101,4 @@ namespace LucreApp
         m_TextView->SetShadow(false);
         ViewGroup::Draw(dc);
     }
-}
+} // namespace LucreApp

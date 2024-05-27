@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team 
+/* Engine Copyright (c) 2023 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -34,7 +34,6 @@ namespace GfxRenderEngine
     {
 
     public:
-
         enum class SubPasses3D
         {
             SUBPASS_GEOMETRY = 0,
@@ -81,17 +80,21 @@ namespace GfxRenderEngine
             NUMBER_OF_ATTACHMENTS
         };
 
-        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = (int)RenderTargets3D::NUMBER_OF_ATTACHMENTS - (int)RenderTargets3D::ATTACHMENT_GBUFFER_POSITION;
-        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS = (int)RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS - (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR;
-        static constexpr int NUMBER_OF_POSTPROCESSING_OUPUT_ATTACHMENTS = (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR; // 1st input attachment == number of output attachments
+        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS =
+            (int)RenderTargets3D::NUMBER_OF_ATTACHMENTS - (int)RenderTargets3D::ATTACHMENT_GBUFFER_POSITION;
+        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS =
+            (int)RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS -
+            (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR;
+        static constexpr int NUMBER_OF_POSTPROCESSING_OUPUT_ATTACHMENTS =
+            (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR; // 1st input attachment == number of output
+                                                                             // attachments
 
     public:
-
         VK_RenderPass(VK_SwapChain* swapChain);
         ~VK_RenderPass();
 
-        VK_RenderPass(const VK_RenderPass &) = delete;
-        VK_RenderPass& operator=(const VK_RenderPass &) = delete;
+        VK_RenderPass(const VK_RenderPass&) = delete;
+        VK_RenderPass& operator=(const VK_RenderPass&) = delete;
 
         VkImageView GetImageViewColorAttachment() { return m_ColorAttachmentView; }
         VkImageView GetImageViewGBufferPosition() { return m_GBufferPositionView; }
@@ -114,7 +117,6 @@ namespace GfxRenderEngine
         VkExtent2D GetExtent() const { return m_RenderPassExtent; }
 
     private:
-
         void CreateColorAttachmentResources();
         void CreateDepthResources();
 
@@ -131,7 +133,6 @@ namespace GfxRenderEngine
         void DestroyGBuffers();
 
     private:
-
         std::shared_ptr<VK_Device> m_Device;
         VK_SwapChain* m_SwapChain;
         VkExtent2D m_RenderPassExtent;
@@ -175,4 +176,4 @@ namespace GfxRenderEngine
         VkRenderPass m_PostProcessingRenderPass;
         VkRenderPass m_GUIRenderPass;
     };
-}
+} // namespace GfxRenderEngine

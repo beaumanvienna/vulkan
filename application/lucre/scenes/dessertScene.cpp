@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -33,15 +33,17 @@
 
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
-#include "dessertScene.h"
+#include "animation/easingFunctions.h"
 
 namespace LucreApp
 {
 
     DessertScene::DessertScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_LaunchVolcanoTimer(1500)
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_RunLightAnimation{true}
     {
     }
+
+    DessertScene::~DessertScene() {}
 
     void DessertScene::Start()
     {
@@ -52,42 +54,86 @@ namespace LucreApp
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
         { // set up camera
-            m_CameraController = std::make_shared<CameraController>();
 
-            m_Camera = CreateEntity();
+            float aspectRatio = 1.777f;
+            float yfov = 0.51f;
+            float znear = 0.1f;
+            float zfar = 500.0f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
+            m_CameraControllers[CameraTypes::DefaultCamera]->GetCamera().SetName("default camera");
+            m_Camera[CameraTypes::DefaultCamera] = m_Registry.create();
             TransformComponent cameraTransform{};
-            m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::DefaultCamera], cameraTransform);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera[CameraTypes::DefaultCamera], "defaultCamera", "defaultCamera",
+                                                      m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
             m_KeyboardInputController = std::make_shared<KeyboardInputController>(keyboardInputControllerSpec);
+
+            GamepadInputControllerSpec gamepadInputControllerSpec{};
+            m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
         }
 
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
 
-        // get characters and start all animations
-        m_NonPlayableCharacter1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
-                                                        "monkey01/monkey01.gltf::0::root");
-        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/"
-                                       "CesiumManAnimations.gltf::0::Scene::Cesium_Man");
-        if (m_Hero != entt::null)
+        m_Camera[CameraTypes::AttachedToLight] =
+            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lights/gltf/lights.glb::0::Scene::Camera");
+        // set up 2nd camera
+        if (m_Camera[CameraTypes::AttachedToLight] != entt::null)
         {
-            if (m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
+            auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToLight]);
+            m_CameraControllers[CameraTypes::AttachedToLight] = std::make_shared<CameraController>(cameraComponent);
+            m_CameraControllers[CameraTypes::AttachedToLight]->GetCamera().SetName("camera attached to light");
+        }
+        // set up moving lights
+        {
+            int lightsIndex = 0;
+            for (int index = 0; index < 3; ++index)
             {
-                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
-                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-                animations.SetRepeatAll(true);
-                animations.Start();
+                m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.glb::0::Scene::LightModel" +
+                    std::to_string(index + 1));
+                ++lightsIndex;
             }
-            else
+            for (int index = 0; index < 3; ++index)
             {
-                LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Hero));
+                m_MovingLights[lightsIndex] = m_Dictionary.Retrieve(
+                    "application/lucre/models/external_3D_files/lights/gltf/lights.glb::1::Scene::LightModel" +
+                    std::to_string(index + 1));
+                ++lightsIndex;
+            }
+            if (m_MovingLights[0] != entt::null)
+            {
+                for (auto& easingAnimation : m_EasingAnimation)
+                {
+                    AssignAnimation(easingAnimation);
+                }
             }
         }
-        m_Guybrush = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/"
-                                           "guybrush.gltf::0::Scene::guybrush object");
+
+        {
+            auto sceneLights = m_Dictionary.Retrieve("SceneLights");
+            if (sceneLights != entt::null)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(sceneLights);
+                transform.SetTranslation({0.0f, 0.5f, 2.0f});
+            }
+        }
+        m_Water = m_Dictionary.Retrieve(
+            "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
+        if (m_Water == entt::null)
+            m_Water = m_Dictionary.Retrieve(
+                "application/lucre/models/external_3D_files/Island scene/gltf/Island2.glb::0::Scene::Water");
+
+        // get characters and start all animations
+        m_Guybrush = m_Dictionary.Retrieve(
+            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -111,22 +157,8 @@ namespace LucreApp
                 auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/guybrush_animated_gltf/animation/"
-                                                           "guybrush.gltf::0::Scene::Armature");
-
-                m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
-                m_CharacterAnimation->Start();
-            }
-        }
-        else
-        {
-            if ((m_Hero != entt::null) && m_Registry.all_of<SkeletalAnimationTag>(m_Hero))
-            {
-                auto& mesh = m_Registry.get<MeshComponent>(m_Hero);
-                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-
-                entt::entity model = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/"
-                                                           "animations/CesiumManAnimations.gltf::0::root");
+                entt::entity model = m_Dictionary.Retrieve(
+                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
                 if (model != entt::null)
                 {
                     m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
@@ -135,29 +167,59 @@ namespace LucreApp
             }
         }
 
-        m_NonPlayableCharacter2 = m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/"
-                                                        "Kaya.gltf::0::Scene::Kaya Body_Mesh");
-        if (m_NonPlayableCharacter2 != entt::null)
+        m_NonPlayableCharacters[NPC::Character2] =
+            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::0::Scene::Kaya Body_Mesh");
+        if (m_NonPlayableCharacters[NPC::Character2] != entt::null)
         {
-            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character2]);
             SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
             animations.SetRepeatAll(true);
             animations.Start();
         }
 
-        // m_NonPlayableCharacter3 =
-        // m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.gltf::1::Scene::Kaya
-        // Body_Mesh"); if (m_NonPlayableCharacter3 != entt::null)
-        //{
-        //     auto& mesh =
-        //     m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
-        //     SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-        //     animations.SetRepeatAll(true);
-        //     animations.Start();
-        // }
-
+        m_NonPlayableCharacters[NPC::Character3] =
+            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::1::Scene::Kaya Body_Mesh");
+        if (m_NonPlayableCharacters[NPC::Character3] != entt::null)
         {
-            // place static lights for beach scene
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character3]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
+
+        m_NonPlayableCharacters[NPC::Character1] =
+            m_Dictionary.Retrieve("application/lucre/models/dancing/gltf/Dancing Michelle.glb::0::Scene::Michelle");
+        if (m_NonPlayableCharacters[NPC::Character1] != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character1]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
+
+        m_NonPlayableCharacters[NPC::Character4] =
+            m_Dictionary.Retrieve("application/lucre/models/dancing/fbx/Dancing Michelle.fbx::0::Michelle");
+        if (m_NonPlayableCharacters[NPC::Character4] != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character4]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start(0 /*dancing 1*/);
+        }
+
+        m_NonPlayableCharacters[NPC::Character5] =
+            m_Dictionary.Retrieve("/home/beaumanvienna/dev/skeletalAnimation/man/model.dae::0::Cube");
+        if (m_NonPlayableCharacters[NPC::Character5] != entt::null)
+        {
+            auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character5]);
+            SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+            animations.SetRepeatAll(true);
+            animations.Start();
+        }
+
+        if (m_Water == entt::null)
+        {
+            // place static lights
             float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 1.785f;
@@ -169,9 +231,23 @@ namespace LucreApp
             for (size_t i = 0; i < lightPositions.size(); i++)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
+                m_Registry.emplace<Group2>(entity, true);
+            }
+        }
+        else
+        {
+            // place static light(s) for beach scene
+            float intensity = 0.05f;
+            float lightRadius = 0.1f;
+            std::vector<glm::vec3> lightPositions = {{4.756, 1.894, 2.127}};
+
+            for (size_t i = 0; i < lightPositions.size(); i++)
+            {
+                auto entity = CreatePointLight(intensity, lightRadius);
+                auto& transform = m_Registry.get<TransformComponent>(entity);
+                transform.SetTranslation(lightPositions[i]);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -184,27 +260,6 @@ namespace LucreApp
             auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
-        }
-
-        {
-            m_LaunchVolcanoTimer.SetEventCallback(
-                [](uint in, void* data)
-                {
-                    std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
-                    Engine::m_Engine->QueueEvent(event);
-                    return 0u;
-                });
-            m_LaunchVolcanoTimer.Start();
-
-            // volcano smoke animation
-            int poolSize = 50;
-            m_SpritesheetSmoke.AddSpritesheetTile(Lucre::m_Spritesheet->GetSprite(I_VOLCANO_SMOKE),
-                                                  "volcano smoke sprite sheet", 8, 8, /* rows, columns */
-                                                  0,                                  /* margin */
-                                                  0.01f                               /* scale) */
-            );
-            m_VolcanoSmoke =
-                std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/, 1 /*unlit*/);
         }
     }
 
@@ -231,41 +286,35 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(250.0f);
         }
         { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/"
-                                                     "lightBulb.gltf::0::root");
+                m_Lightbulb0 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb0 not found");
+                    LOG_APP_INFO("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
-                    transform.SetScale({0.00999978, 0.0100001, 0.0100001});
+                    transform.SetScale({0.01, 0.01, 0.01});
                     transform.SetRotation({-0.888632, -0.571253, -0.166816});
                     transform.SetTranslation({1.5555, 4, -4.13539});
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
-                m_LightView0 = std::make_shared<Camera>();
-                float left = -4.0f;
-                float right = 4.0f;
-                float bottom = -4.0f;
-                float top = 4.0f;
-                float near = 0.1f;
-                float far = 10.0f;
-                m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+
+                m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 SetLightView(m_Lightbulb0, m_LightView0);
             }
 
             {
-                m_Lightbulb1 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/"
-                                                     "lightBulb2.gltf::0::root");
+                m_Lightbulb1 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
-                    LOG_APP_CRITICAL("m_Lightbulb1 not found");
+                    LOG_APP_INFO("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.create();
                     TransformComponent transform{};
 
@@ -275,7 +324,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
-                m_LightView1 = std::make_shared<Camera>();
+                m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -20.0f;
                 float right = 20.0f;
                 float bottom = -14.0f;
@@ -290,18 +339,7 @@ namespace LucreApp
 
     void DessertScene::LoadScripts() {}
 
-    void DessertScene::StartScripts()
-    {
-        auto duck = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
-                                          "duck/duck.gltf::0::SceneWithDuck::duck");
-        if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
-        {
-            auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
-
-            duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
-            LOG_APP_INFO("scripts loaded");
-        }
-    }
+    void DessertScene::StartScripts() {}
 
     void DessertScene::Stop()
     {
@@ -311,29 +349,105 @@ namespace LucreApp
 
     void DessertScene::OnUpdate(const Timestep& timestep)
     {
+        if (m_RunLightAnimation)
+        {
+            static TimePoint sceneStartTime = Engine::m_Engine->GetTime();
+            auto animateLight = [&](bool& isRunning, int light, Duration delay)
+            {
+                TimePoint currenTime = Engine::m_Engine->GetTime();
+                if (!isRunning && (currenTime - sceneStartTime > delay))
+                {
+                    isRunning = true;
+                    m_EasingAnimation[light].Start();
+                }
+                if (isRunning)
+                {
+                    float speedXY[ANIMATE_X_Y] = {0.0f, 0.0f};
+                    m_EasingAnimation[light].Run(speedXY);
+                    auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[light]);
+                    float speedFactor = timestep * 2.0f;
+                    transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
+                }
+            };
+
+            int light = 0;
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 3s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 2s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 1s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 3s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 2s);
+                ++light;
+            }
+            if (m_MovingLights[light] != entt::null)
+            {
+                static bool isRunning = false;
+                animateLight(isRunning, light, 1s);
+                ++light;
+            }
+        }
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
-            auto view = m_Registry.view<TransformComponent>();
-            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
+        }
+
+        if (m_Water != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Water);
+            transform.AddRotation({0.0f, 0.1f * timestep, 0.0f});
         }
 
         AnimateHero(timestep);
         if (m_CharacterAnimation)
+        {
             m_CharacterAnimation->OnUpdate(timestep);
+        }
+
+        {
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
+            float scaleX = lightbulbTransform.GetScale().x;
+            float left = -400.0f * scaleX;
+            float right = 400.0f * scaleX;
+            float bottom = -400.0f * scaleX;
+            float top = 400.0f * scaleX;
+            float near = 10.0f * scaleX;
+            float far = 1000.0f * scaleX;
+            m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+        }
         SetLightView(m_Lightbulb0, m_LightView0);
         SetLightView(m_Lightbulb1, m_LightView1);
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
         SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
-        // volcano
-        EmitVolcanoSmoke();
-        m_VolcanoSmoke->OnUpdate(timestep);
-
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->BeginFrame(&m_CameraControllers.GetActiveCameraController()->GetCamera());
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
@@ -351,7 +465,7 @@ namespace LucreApp
 
         // transparent objects
         m_Renderer->NextSubpass();
-        m_Renderer->TransparencyPass(m_Registry, m_VolcanoSmoke.get());
+        m_Renderer->TransparencyPass(m_Registry);
 
         // post processing
         m_Renderer->PostProcessingRenderpass();
@@ -367,24 +481,50 @@ namespace LucreApp
         dispatcher.Dispatch<MouseScrolledEvent>(
             [this](MouseScrolledEvent l_Event)
             {
-                auto zoomFactor = m_CameraController->GetZoomFactor();
+                auto zoomFactor = m_CameraControllers.GetActiveCameraController()->GetZoomFactor();
                 zoomFactor -= l_Event.GetY() * 0.1f;
-                m_CameraController->SetZoomFactor(zoomFactor);
+                m_CameraControllers.GetActiveCameraController()->SetZoomFactor(zoomFactor);
                 return true;
+            });
+
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent l_Event)
+            {
+                switch (l_Event.GetKeyCode())
+                {
+                    case ENGINE_KEY_N:
+                    {
+                        ++m_CameraControllers;
+                        break;
+                    }
+                    case ENGINE_KEY_R:
+                    {
+                        m_RunLightAnimation = true;
+                        auto& transform = m_Registry.get<TransformComponent>(m_MovingLights[0]);
+                        transform.SetTranslation({0.0f, 0.0f, 0.0f});
+                        m_EasingAnimation[0].Start();
+                        break;
+                    }
+                }
+                return false;
             });
     }
 
-    void DessertScene::OnResize() { m_CameraController->SetProjection(); }
+    void DessertScene::OnResize() { m_CameraControllers.SetProjectionAll(); }
 
     void DessertScene::ResetScene()
     {
-        m_CameraController->SetZoomFactor(1.0f);
-        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+        m_CameraControllers.SetActiveCameraController(CameraTypes::DefaultCamera);
+        m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
-        cameraTransform.SetTranslation({0.459809f, 3.27545f, 9.53199f});
-        cameraTransform.SetRotation({0.177945f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({0.0f, 3.0f, 10.0f});
+        cameraTransform.SetRotation({0.0f, 0.0f, 0.0f});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraControllers[CameraTypes::DefaultCamera]->SetView(cameraTransform.GetMat4Local());
     }
 
     void DessertScene::RotateLights(const Timestep& timestep)
@@ -400,32 +540,7 @@ namespace LucreApp
         }
     }
 
-    void DessertScene::AnimateHero(const Timestep& timestep)
-    {
-        if (m_NonPlayableCharacter1 == entt::null)
-            return;
-
-        auto& heroTransform = m_Registry.get<TransformComponent>(m_NonPlayableCharacter1);
-
-        static float deltaX = 0.5f;
-        static float deltaY = 0.5f;
-        static float deltaZ = 0.5f;
-
-        constexpr float DEFORM_X_SPEED = 0.2f;
-        static float deformX = DEFORM_X_SPEED;
-
-        if (deltaX > 0.55f)
-        {
-            deformX = -DEFORM_X_SPEED;
-        }
-        else if (deltaX < 0.45f)
-        {
-            deformX = DEFORM_X_SPEED;
-        }
-
-        deltaX += deformX * timestep;
-        heroTransform.SetScale({deltaX, deltaY, deltaZ});
-    }
+    void DessertScene::AnimateHero(const Timestep& timestep) {}
 
     void DessertScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
@@ -448,38 +563,6 @@ namespace LucreApp
         directionalLightComponent.m_RenderPass = renderpass;
     }
 
-    void DessertScene::EmitVolcanoSmoke()
-    {
-        static auto start = Engine::m_Engine->GetTime();
-        if ((Engine::m_Engine->GetTime() - start) > 1000ms)
-        {
-            start = Engine::m_Engine->GetTime();
-
-            ParticleSystem::Specification spec = {
-                {4.09f, 2.641f, -1.338f}, // glm::vec3 m_Position
-                {0.0f, 0.0125f, 0.0f},    // glm::vec3 m_Velocity
-                {0.0f, 0.0f, 0.0f},       // glm::vec3 m_Acceleration
-
-                {0.0f, TransformComponent::DEGREES_90, 0.0f}, // glm::vec3 m_Rotation
-                {0.0f, 0.0f, 0.0f},                           // float m_RotationSpeed
-
-                {1.0f, 1.0f, 1.0f, 1.0f}, // glm::vec4 m_StartColor
-                {1.0f, 1.0f, 1.0f, 0.0f}, // glm::vec4 m_EndColor
-
-                {0.005f}, // float m_StartSize
-                {0.07f},  // float m_FinalSize
-
-                {6s}, // Timestep m_LifeTime
-            };
-
-            ParticleSystem::Specification variation{};
-            variation.m_Position = {0.0001f, 0.0f, 0.0f}; // a little x against z-fighting
-            variation.m_Velocity = {0.0f, 0.002f, 0.0f};
-            variation.m_Rotation = {0.0f, 0.5f, 0.0f};
-            m_VolcanoSmoke->Emit(spec, variation);
-        }
-    }
-
     void DessertScene::ApplyDebugSettings()
     {
         if (ImGUI::m_UseNormalMapIntensity)
@@ -496,4 +579,215 @@ namespace LucreApp
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
         }
     }
+
+    Camera& DessertScene::GetCamera() { return m_CameraControllers.GetActiveCameraController()->GetCamera(); }
+
+    std::shared_ptr<CameraController>& DessertScene::CameraControllers::GetActiveCameraController()
+    {
+        return m_CameraController[m_ActiveCamera];
+    }
+
+    std::shared_ptr<CameraController>& DessertScene::CameraControllers::operator[](int index)
+    {
+        if ((index >= CameraTypes::MaxCameraTypes))
+        {
+            LOG_APP_ERROR("wrong camera indexed");
+        }
+        return m_CameraController[index];
+    }
+
+    DessertScene::CameraControllers& DessertScene::CameraControllers::operator++()
+    {
+        int maxChecks = static_cast<int>(CameraTypes::MaxCameraTypes);
+        int nextActiveCamera = m_ActiveCamera;
+        for (int iterator = 0; iterator < maxChecks; ++iterator)
+        {
+            ++nextActiveCamera;
+            if (nextActiveCamera < maxChecks)
+            {
+                if (m_CameraController[nextActiveCamera])
+                {
+                    m_ActiveCamera = nextActiveCamera;
+                    break;
+                }
+            }
+            else
+            {
+                // default camera is always there
+                m_ActiveCamera = static_cast<int>(CameraTypes::DefaultCamera);
+                break;
+            }
+        }
+        LOG_APP_INFO("switching to camera {0}", m_ActiveCamera);
+        return *this;
+    }
+
+    std::shared_ptr<CameraController>& DessertScene::CameraControllers::SetActiveCameraController(CameraTypes cameraType)
+    {
+        return SetActiveCameraController(static_cast<int>(cameraType));
+    }
+
+    std::shared_ptr<CameraController>& DessertScene::CameraControllers::SetActiveCameraController(int index)
+    {
+        if ((index < static_cast<int>(CameraTypes::MaxCameraTypes)) && m_CameraController[index])
+        {
+            m_ActiveCamera = index;
+        }
+        else
+        {
+            LOG_APP_ERROR("couldn't change camera");
+        }
+        return m_CameraController[m_ActiveCamera];
+    }
+
+    void DessertScene::CameraControllers::SetProjectionAll()
+    {
+        for (uint index = 0; index < CameraTypes::MaxCameraTypes; ++index)
+        {
+            if (m_CameraController[index])
+            {
+                m_CameraController[index]->SetProjection();
+            }
+        }
+    }
+
+    void DessertScene::AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation)
+    {
+        float speedOffset = 1.0f;
+        float speed = 1.0f;
+        float speedXLeft = -speed;
+        float s = 1.0f; // time stretch
+        // go left (x: from -1 to -2; y: 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("1 X EaseInOutQuart", -speedOffset /*scale*/, speedXLeft /*offset*/);
+            std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("1 Y Constant", 0.0f, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left and up (x: -2, y: from 0 to 2)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseConstant>("2 X Constant", -speedOffset + speedXLeft /*scale*/, 0.0f /*offset*/);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("2 Y EaseInOutQuart", 0.0f, 2.0f * speed);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left and up (x: -2, y: from 2 to 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseConstant>("3 X Constant", -speedOffset + speedXLeft, 0.0f);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("3 Y EaseInOutQuart", 0.0f, 2.0f * speed, INVERT_EASE);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left and down (x: -2, y from 0 to -2)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseConstant>("4 X Constant", -speedOffset + speedXLeft, 0.0f);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("4 Y EaseInOutQuart", 0.0f, -2.0f * speed);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left and down (x: -2, y from -2 to 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseConstant>("5 X Constant", -speedOffset + speedXLeft, 0.0f);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("5 Y EaseInOutQuart", 0.0f, -2.0f * speed, INVERT_EASE);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        /////////// go up
+        // go left vertical (x: -2 to 0, y: 0 to 2)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("6 X EaseInOutQuart", 0.0f, -speedOffset + speedXLeft, INVERT_EASE);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("6 Y EaseInOutQuart", 0.0f, 2 * speed);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go straight up (x: 0, y: 2)
+        {
+            std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("7 X EaseConstant", 0.0f, 0.0f);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseConstant>("7 Y EaseConstant", 0.0f, 2.0f * speed);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 2s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        /////////// go right
+        // go right horizontally (x: 0 to 2, y: 2 to 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("8 X EaseInOutQuart", 0.0f, 2.0f * speed);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("8 Y EaseInOutQuart", 0.0f, 2.0f * speed, INVERT_EASE);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go right fast (X: 2 to 20, y:0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("9 X EaseInOutQuart", 2.0f * speedOffset, 18.0f * speed);
+            std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("9 Y EaseConstant", 0.0f, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go right and slow down (x: 20 to 2, y:0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("10 X EaseInOutQuart", 2 * speedOffset, 20.0f * speed, INVERT_EASE);
+            std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("10 Y EaseConstant", 0.0f, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 0.5s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go down (x: 2 to 0, y: 0 to -2)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("11 X EaseInOutQuart", 0.0f, 2.0f * speed, INVERT_EASE);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("11 Y EaseInOutQuart", 0.0f, -2.0f * speed);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go straight down (x: 0, y: -2)
+        {
+            std::shared_ptr<EasingAnimation> animationX = std::make_shared<EaseConstant>("12 X EaseConstant", 0.0f, 0.0f);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseConstant>("12 Y EaseConstant", -2.0f * speed, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 2s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left (x: 0 to -2, y: -2 to 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("13 X EaseInOutQuart", 0.0f, -2.0f * speed);
+            std::shared_ptr<EasingAnimation> animationY =
+                std::make_shared<EaseInOutQuart>("13 Y EaseInOutQuart", 0.0f, -2.0f * speed, INVERT_EASE);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 1s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go straight left (x: -2 to -6, y: 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("14 X EaseInOutQuart", -2.0f * speedOffset, -4.0f * speed);
+            std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("14 Y EaseConstant", 0.0f, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 0.7s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        // go left, slow down (x: -6 to -1, y: 0)
+        {
+            std::shared_ptr<EasingAnimation> animationX =
+                std::make_shared<EaseInOutQuart>("15 X EaseInOutQuart", -speedOffset, -5.0f * speed, INVERT_EASE);
+            std::shared_ptr<EasingAnimation> animationY = std::make_shared<EaseConstant>("15 Y EaseConstant", 0.0f, 0.0f);
+            EasingAnimations<ANIMATE_X_Y>::AnimationsXY animation(s * 3s, {animationX, animationY});
+            easingAnimation.PushAnimation(animation);
+        }
+        easingAnimation.SetLoop(true);
+    }
+
 } // namespace LucreApp

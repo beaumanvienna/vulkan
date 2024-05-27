@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "renderer/rendererAPI.h"
@@ -27,62 +27,13 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType)
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialTypes materialType,
+                                                                   Material::MaterialTextures& textures,
+                                                                   Material::MaterialBuffers& buffers)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
 
-        switch(RendererAPI::GetAPI())
-        {
-            case RendererAPI::VULKAN:
-                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType);
-                break;
-            default:
-                materialDescriptor = nullptr;
-                break;
-        }
-
-        return materialDescriptor;
-    }
-
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::vector<std::shared_ptr<Buffer>>& buffers)
-    {
-        std::shared_ptr<MaterialDescriptor> materialDescriptor;
-
-        switch(RendererAPI::GetAPI())
-        {
-            case RendererAPI::VULKAN:
-                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, buffers);
-                break;
-            default:
-                materialDescriptor = nullptr;
-                break;
-        }
-
-        return materialDescriptor;
-    }
-
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures)
-    {
-        std::shared_ptr<MaterialDescriptor> materialDescriptor;
-
-        switch(RendererAPI::GetAPI())
-        {
-            case RendererAPI::VULKAN:
-                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, textures);
-                break;
-            default:
-                materialDescriptor = nullptr;
-                break;
-        }
-
-        return materialDescriptor;
-    }
-
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::vector<std::shared_ptr<Texture>>& textures, std::vector<std::shared_ptr<Buffer>>& buffers)
-    {
-        std::shared_ptr<MaterialDescriptor> materialDescriptor;
-
-        switch(RendererAPI::GetAPI())
+        switch (RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
                 materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, textures, buffers);
@@ -95,11 +46,12 @@ namespace GfxRenderEngine
         return materialDescriptor;
     }
 
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap)
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialTypes materialType,
+                                                                   std::shared_ptr<Cubemap> const& cubemap)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
 
-        switch(RendererAPI::GetAPI())
+        switch (RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
                 materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, cubemap);
@@ -111,4 +63,4 @@ namespace GfxRenderEngine
 
         return materialDescriptor;
     }
-}
+} // namespace GfxRenderEngine
