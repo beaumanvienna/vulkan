@@ -28,7 +28,7 @@
 #include "renderer/buffer.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
-// #include "renderer/renderer.h"
+#include "scene/material.h"
 
 namespace GfxRenderEngine
 {
@@ -36,62 +36,23 @@ namespace GfxRenderEngine
     class MaterialDescriptor
     {
     public:
-        enum MaterialType
+        enum MaterialTypes
         {
-            MtPbrMap = 0x1 << 0x00,                                         // 1
-            MtPbrNoMap = 0x1 << 0x01,                                       // 2
-            MtPbrEmissive = 0x1 << 0x02,                                    // 4
-            MtPbrDiffuseMap = 0x1 << 0x03,                                  // 8
-            MtPbrDiffuseSAMap = 0x1 << 0x04,                                // 16
-            MtPbrNoMapInstanced = 0x1 << 0x05,                              // 32
-            MtPbrEmissiveTexture = 0x1 << 0x06,                             // 64
-            MtPbrDiffuseNormalMap = 0x1 << 0x07,                            // 128
-            MtPbrEmissiveInstanced = 0x1 << 0x08,                           // 256
-            MtPbrDiffuseNormalSAMap = 0x1 << 0x09,                          // 512
-            MtPbrDiffuseMapInstanced = 0x1 << 0x0a,                         // 1024
-            MtPbrDiffuseSAMapInstanced = 0x1 << 0x0b,                       // 2048
-            MtPbrEmissiveTextureInstanced = 0x1 << 0x0c,                    // 4096
-            MtPbrDiffuseNormalMapInstanced = 0x1 << 0x0d,                   // 8192
-            MtPbrDiffuseNormalRoughnessSAMap = 0x1 << 0x0e,                 // 16384
-            MtPbrDiffuseNormalSAMapInstanced = 0x1 << 0x0f,                 // 32768
-            MtPbrDiffuseNormalRoughnessMetallicMap = 0x1 << 0x10,           // 65536
-            MtPbrDiffuseNormalRoughnessMetallic2Map = 0x1 << 0x11,          // 131072
-            MtPbrDiffuseNormalRoughnessMetallicSAMap = 0x1 << 0x12,         // 262144
-            MtPbrDiffuseNormalRoughnessSAMapInstanced = 0x1 << 0x13,        // 524288
-            MtPbrDiffuseNormalRoughnessMetallicSA2Map = 0x1 << 0x14,        // 1048576
-            MtPbrDiffuseNormalRoughnessMetallicMapInstanced = 0x1 << 0x15,  // 2097152
-            MtPbrDiffuseNormalRoughnessMetallic2MapInstanced = 0x1 << 0x16, // 4194304
-            MtCubemap = 0x1 << 0x17                                         // 8388608
+            MtPbr = 0x1 << 0x00,   // 1
+            MtCubemap = 0x1 << 0x1 // 2
         };
-
-        static constexpr uint ALL_PBR_MATERIALS =
-            MaterialType::MtPbrMap + MaterialType::MtPbrNoMap + MaterialType::MtPbrEmissive + MaterialType::MtPbrDiffuseMap +
-            MaterialType::MtPbrDiffuseSAMap + MaterialType::MtPbrNoMapInstanced + MaterialType::MtPbrEmissiveTexture +
-            MaterialType::MtPbrDiffuseNormalMap + MaterialType::MtPbrEmissiveInstanced +
-            MaterialType::MtPbrDiffuseNormalSAMap + MaterialType::MtPbrDiffuseMapInstanced +
-            MaterialType::MtPbrDiffuseSAMapInstanced + MaterialType::MtPbrEmissiveTextureInstanced +
-            MaterialType::MtPbrDiffuseNormalMapInstanced + MaterialType::MtPbrDiffuseNormalSAMapInstanced +
-            MaterialType::MtPbrDiffuseNormalRoughnessSAMap + MaterialType::MtPbrDiffuseNormalRoughnessSAMapInstanced +
-            MaterialType::MtPbrDiffuseNormalRoughnessMetallicMap + MaterialType::MtPbrDiffuseNormalRoughnessMetallic2Map +
-            MaterialType::MtPbrDiffuseNormalRoughnessMetallicSAMap +
-            MaterialType::MtPbrDiffuseNormalRoughnessMetallicSA2Map +
-            MaterialType::MtPbrDiffuseNormalRoughnessMetallicMapInstanced;
+        static constexpr uint ALL_PBR_MATERIALS = MaterialTypes::MtPbr;
 
     public:
         virtual ~MaterialDescriptor() = default;
 
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType,
-                                                          std::vector<std::shared_ptr<Buffer>>& buffers);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType,
-                                                          std::vector<std::shared_ptr<Texture>>& textures);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType,
-                                                          std::vector<std::shared_ptr<Texture>>& textures,
-                                                          std::vector<std::shared_ptr<Buffer>>& buffers);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialType materialType,
+        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialTypes materialType,
+                                                          Material::MaterialTextures& textures,
+                                                          Material::MaterialBuffers& buffers);
+        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialTypes materialType,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 
     public:
-        virtual MaterialType GetMaterialType() const = 0;
+        virtual MaterialDescriptor::MaterialTypes GetMaterialType() const = 0;
     };
 } // namespace GfxRenderEngine

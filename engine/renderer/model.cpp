@@ -53,11 +53,5 @@ namespace GfxRenderEngine
 
     float Model::m_NormalMapIntensity = 1.0f;
 
-    bool Vertex::operator==(const Vertex& other) const
-    {
-        return (m_Position == other.m_Position) && (m_Color == other.m_Color) && (m_Normal == other.m_Normal) &&
-               (m_UV == other.m_UV) && (m_Amplification == other.m_Amplification) && (m_Unlit == other.m_Unlit);
-    }
-
     SkeletalAnimations& Model::GetAnimations() { return *(m_Animations.get()); }
 } // namespace GfxRenderEngine

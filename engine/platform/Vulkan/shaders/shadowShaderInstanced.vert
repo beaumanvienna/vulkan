@@ -20,6 +20,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#include "engine/platform/Vulkan/material.h"
 
 layout(location = 0) in vec3  position;
 
@@ -37,7 +38,7 @@ struct InstanceData
 
 layout(set = 1, binding = 0) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanceData[256];
+    InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
 
 void main()

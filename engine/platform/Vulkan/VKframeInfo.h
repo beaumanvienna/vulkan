@@ -26,6 +26,7 @@
 
 #include "renderer/camera.h"
 #include "scene/components.h"
+#include "pointlights.h"
 
 namespace GfxRenderEngine
 {

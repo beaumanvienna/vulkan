@@ -291,9 +291,6 @@ namespace GfxRenderEngine
             m_Animations->Push(animation);
         }
 
-        if (m_Animations->Size())
-        {
-            m_SkeletalAnimation = Material::HAS_SKELETAL_ANIMATION;
-        }
+        m_SkeletalAnimation = (m_Animations->Size()) ? true : false;
     }
 } // namespace GfxRenderEngine

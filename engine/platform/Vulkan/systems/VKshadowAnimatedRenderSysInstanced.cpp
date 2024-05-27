@@ -107,9 +107,12 @@ namespace GfxRenderEngine
                     VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
                     instanceBuffer->Update();
                 }
-                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())
-                    ->DrawShadowAnimatedInstanced(frameInfo, m_PipelineLayout, shadowDescriptorSet);
+                if (mesh.m_Enabled)
+                {
+                    static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
+                    static_cast<VK_Model*>(mesh.m_Model.get())
+                        ->DrawShadowAnimatedInstanced(frameInfo, m_PipelineLayout, shadowDescriptorSet);
+                }
             }
         }
     }

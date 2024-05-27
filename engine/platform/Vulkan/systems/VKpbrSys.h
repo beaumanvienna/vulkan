@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,17 +38,15 @@
 
 namespace GfxRenderEngine
 {
-    class VK_RenderSystemPbrDiffuseNormalRoughnessMetallic
+    class VK_RenderSystemPbr
     {
 
     public:
-        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic(VkRenderPass renderPass,
-                                                         std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrDiffuseNormalRoughnessMetallic();
+        VK_RenderSystemPbr(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbr();
 
-        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallic&) = delete;
-        VK_RenderSystemPbrDiffuseNormalRoughnessMetallic&
-        operator=(const VK_RenderSystemPbrDiffuseNormalRoughnessMetallic&) = delete;
+        VK_RenderSystemPbr(const VK_RenderSystemPbr&) = delete;
+        VK_RenderSystemPbr& operator=(const VK_RenderSystemPbr&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 

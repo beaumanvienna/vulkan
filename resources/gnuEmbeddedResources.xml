@@ -13,28 +13,16 @@
         <file>../engine/platform/Vulkan/shaders/spriteRenderer.frag</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrNoMap.vert</file>
+        <file>../engine/platform/Vulkan/shaders/pbr.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrNoMap.frag</file>
+        <file>../engine/platform/Vulkan/shaders/pbr.frag</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuse.vert</file>
+        <file>../engine/platform/Vulkan/shaders/pbrSA.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuse.frag</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormal.vert</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormal.frag</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.vert</file>
-    </gresource>
-    <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrDiffuseNormalRoughnessMetallic.frag</file>
+        <file>../engine/platform/Vulkan/shaders/pbrSA.frag</file>
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/deferredShading.vert</file>
@@ -67,10 +55,16 @@
         <file>../engine/platform/Vulkan/shaders/skybox.frag</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/shadowShader.vert</file>
+        <file>../engine/platform/Vulkan/shaders/shadowShaderInstanced.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/shadowShader.frag</file>
+        <file>../engine/platform/Vulkan/shaders/shadowShaderInstanced.frag</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/shadowShaderAnimatedInstanced.vert</file>
+    </gresource>
+    <gresource prefix="/text/">
+        <file>../engine/platform/Vulkan/shaders/shadowShaderAnimatedInstanced.frag</file>
     </gresource>
     <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/debug.vert</file>

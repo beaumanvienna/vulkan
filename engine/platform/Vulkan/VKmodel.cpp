@@ -26,15 +26,6 @@
 #include "VKmaterialDescriptor.h"
 #include "VKrenderer.h"
 
-#include "systems/VKpbrNoMapSys.h"
-#include "systems/VKpbrDiffuseSys.h"
-#include "systems/VKpbrEmissiveSys.h"
-#include "systems/VKpbrDiffuseNormalSys.h"
-#include "systems/VKpbrDiffuseNormalSASys.h"
-#include "systems/VKpbrEmissiveTextureSys.h"
-#include "systems/VKpbrDiffuseNormalRoughnessMetallicSys.h"
-#include "systems/VKpbrDiffuseNormalRoughnessMetallicSASys.h"
-#include "systems/VKshadowRenderSys.h"
 #include "systems/pushConstantData.h"
 
 namespace GfxRenderEngine
@@ -59,70 +50,45 @@ namespace GfxRenderEngine
         attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Color)});
         attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Normal)});
         attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, m_UV)});
-        attributeDescriptions.push_back({4, 0, VK_FORMAT_R32_SFLOAT, offsetof(Vertex, m_Amplification)});
-        attributeDescriptions.push_back({5, 0, VK_FORMAT_R32_SINT, offsetof(Vertex, m_Unlit)});
-        attributeDescriptions.push_back({6, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Tangent)});
-        attributeDescriptions.push_back({7, 0, VK_FORMAT_R32G32B32A32_SINT, offsetof(Vertex, m_JointIds)});
-        attributeDescriptions.push_back({8, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_Weights)});
+        attributeDescriptions.push_back({4, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, m_Tangent)});
+        attributeDescriptions.push_back({5, 0, VK_FORMAT_R32G32B32A32_SINT, offsetof(Vertex, m_JointIds)});
+        attributeDescriptions.push_back({6, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_Weights)});
 
         return attributeDescriptions;
     }
 
+#define INIT_GLTF_AND_FBX_MODEL(x)                                                      \
+    CopySubmeshes(builder.m_Submeshes);                                                 \
+    m_Textures = std::move(builder.m_Textures); /*used to manage lifetime of textures*/ \
+    m_Skeleton = std::move(builder.m_Skeleton);                                         \
+    m_Animations = std::move(builder.m_Animations);                                     \
+    m_ShaderDataUbo = builder.m_ShaderData;                                             \
+    CreateVertexBuffer(std::move(builder.m_Vertices));                                  \
+    CreateIndexBuffer(std::move(builder.m_Indices));
+
     // VK_Model
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder)
-        : m_Device(device), m_HasIndexBuffer{false}
-    {
-        CopySubmeshes(builder.m_Submeshes);
-        m_Textures = std::move(builder.m_Textures);
-
-        m_Skeleton = std::move(builder.m_Skeleton);
-        m_Animations = std::move(builder.m_Animations);
-        m_ShaderDataUbo = builder.m_ShaderData;
-
-        CreateVertexBuffers(std::move(builder.m_Vertices));
-        CreateIndexBuffers(std::move(builder.m_Indices));
-    }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        CopySubmeshes(builder.m_Submeshes);
-        m_Textures = std::move(builder.m_Textures);
-
-        m_Skeleton = std::move(builder.m_Skeleton);
-        m_Animations = std::move(builder.m_Animations);
-        m_ShaderDataUbo = builder.m_ShaderData;
-
-        CreateVertexBuffers(std::move(builder.m_Vertices));
-        CreateIndexBuffers(std::move(builder.m_Indices));
-    }
-
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder)
-        : m_Device(device), m_HasIndexBuffer{false}
-    {
-        CopySubmeshes(builder.m_Submeshes);
-        m_Textures = std::move(builder.m_Textures);
-
-        m_Skeleton = std::move(builder.m_Skeleton);
-        m_Animations = std::move(builder.m_Animations);
-        m_ShaderDataUbo = builder.m_ShaderData;
-
-        CreateVertexBuffers(std::move(builder.m_Vertices));
-        CreateIndexBuffers(std::move(builder.m_Indices));
+        INIT_GLTF_AND_FBX_MODEL();
     }
 
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        CopySubmeshes(builder.m_Submeshes);
-        m_Textures = std::move(builder.m_Textures);
+        INIT_GLTF_AND_FBX_MODEL();
+    }
 
-        m_Skeleton = std::move(builder.m_Skeleton);
-        m_Animations = std::move(builder.m_Animations);
-        m_ShaderDataUbo = builder.m_ShaderData;
+    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder)
+        : m_Device(device), m_HasIndexBuffer{false}
+    {
+        INIT_GLTF_AND_FBX_MODEL();
+    }
 
-        CreateVertexBuffers(std::move(builder.m_Vertices));
-        CreateIndexBuffers(std::move(builder.m_Indices));
+    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder)
+        : m_Device(device), m_HasIndexBuffer{false}
+    {
+        INIT_GLTF_AND_FBX_MODEL();
     }
 
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder) : m_Device(device), m_HasIndexBuffer{false}
@@ -130,184 +96,61 @@ namespace GfxRenderEngine
         CopySubmeshes(builder.m_Submeshes);
         m_Cubemaps = std::move(builder.m_Cubemaps);
 
-        CreateVertexBuffers(std::move(builder.m_Vertices));
-        CreateIndexBuffers(std::move(builder.m_Indices));
+        CreateVertexBuffer(std::move(builder.m_Vertices));
+        CreateIndexBuffer(std::move(builder.m_Indices));
     }
 
     VK_Model::~VK_Model() {}
 
-    VK_Submesh::VK_Submesh(ModelSubmesh const& modelSubmesh, uint materialDescriptorIndex)
-        : Submesh{modelSubmesh.m_FirstIndex,  modelSubmesh.m_FirstVertex,   modelSubmesh.m_IndexCount,
-                  modelSubmesh.m_VertexCount, modelSubmesh.m_InstanceCount, modelSubmesh.m_MaterialProperties},
-          m_MaterialDescriptor(
-              *(static_cast<VK_MaterialDescriptor*>(modelSubmesh.m_MaterialDescriptors[materialDescriptorIndex].get())))
+    VK_Submesh::VK_Submesh(Submesh const& submesh)
+        : Submesh{submesh.m_FirstIndex,  submesh.m_FirstVertex,   submesh.m_IndexCount,
+                  submesh.m_VertexCount, submesh.m_InstanceCount, submesh.m_Material},
+          m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(submesh.m_Material.m_MaterialDescriptor.get())))
     {
     }
 
-    void VK_Model::CopySubmeshes(std::vector<ModelSubmesh> const& modelSubmeshes)
+    void VK_Model::CopySubmeshes(std::vector<Submesh> const& submeshes)
     {
-        for (auto& modelSubmesh : modelSubmeshes)
+        for (auto& submesh : submeshes)
         {
-            uint numMaterialDescriptors = modelSubmesh.m_MaterialDescriptors.size();
-            for (uint materialDescriptorIndex = 0; materialDescriptorIndex < numMaterialDescriptors;
-                 ++materialDescriptorIndex)
+            VK_Submesh vkSubmesh(submesh);
+
+            MaterialDescriptor::MaterialTypes materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+
+            switch (materialType)
             {
-                VK_Submesh vkSubmesh(modelSubmesh, materialDescriptorIndex);
-
-                MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
-
-                switch (materialType)
+                case MaterialDescriptor::MaterialTypes::MtPbr:
                 {
-                    case MaterialDescriptor::MtPbrMap:
-                    {
-                        m_SubmeshesPbrMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrNoMap:
-                    {
-                        m_SubmeshesPbrNoMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrNoMapInstanced:
-                    {
-                        m_SubmeshesPbrNoMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrEmissive:
-                    {
-                        m_SubmeshesPbrEmissive.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrEmissiveInstanced:
-                    {
-                        m_SubmeshesPbrEmissiveInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseMap:
-                    {
-                        m_SubmeshesPbrDiffuseMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseMapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseSAMap:
-                    {
-                        m_SubmeshesPbrDiffuseSAMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseSAMapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseSAMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrEmissiveTexture:
-                    {
-                        m_SubmeshesPbrEmissiveTexture.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrEmissiveTextureInstanced:
-                    {
-                        m_SubmeshesPbrEmissiveTextureInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalMap:
-                    {
-                        m_SubmeshesPbrDiffuseNormalMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalMapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseNormalMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalSAMap:
-                    {
-                        m_SubmeshesPbrDiffuseNormalSAMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseNormalSAMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMap:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicMapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSAMap:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map:
-                    {
-                        m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map.push_back(vkSubmesh);
-                        break;
-                    }
-                    case MaterialDescriptor::MtCubemap:
-                    {
-                        m_SubmeshesCubemap.push_back(vkSubmesh);
-                        break;
-                    }
-                    default:
-                    {
-                        CORE_ASSERT(false, "unkown material type");
-                        break;
-                    }
+                    m_SubmeshesPbrMap.push_back(vkSubmesh);
+                    break;
+                }
+                case MaterialDescriptor::MaterialTypes::MtCubemap:
+                {
+                    m_SubmeshesCubemap.push_back(vkSubmesh);
+                    break;
+                }
+                default:
+                {
+                    CORE_ASSERT(false, "unkown material type");
+                    break;
                 }
             }
         }
     }
 
-    void VK_Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
-    {
-        m_VertexCount = static_cast<uint>(vertices.size());
-        ASSERT(m_VertexCount >= 3); // at least one triangle
-        VkDeviceSize bufferSize = sizeof(Vertex) * m_VertexCount;
-        uint vertexSize = sizeof(vertices[0]);
+    void VK_Model::CreateVertexBuffer(const std::vector<Vertex>& vertices) { CreateVertexBuffer<Vertex>(vertices); }
 
-        VK_Buffer stagingBuffer{vertexSize, m_VertexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-        stagingBuffer.Map();
-        stagingBuffer.WriteToBuffer((void*)vertices.data());
-
-        m_VertexBuffer = std::make_unique<VK_Buffer>(vertexSize, m_VertexCount,
-                                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_VertexBuffer->GetBuffer(), bufferSize);
-    }
-
-    void VK_Model::CreateIndexBuffers(const std::vector<uint>& indices)
+    void VK_Model::CreateIndexBuffer(const std::vector<uint>& indices)
     {
         m_IndexCount = static_cast<uint>(indices.size());
-        VkDeviceSize bufferSize = sizeof(uint) * m_IndexCount;
         m_HasIndexBuffer = (m_IndexCount > 0);
-        uint indexSize = sizeof(indices[0]);
-
         if (!m_HasIndexBuffer)
         {
             return;
         }
+
+        VkDeviceSize bufferSize = sizeof(uint) * m_IndexCount;
+        uint indexSize = sizeof(indices[0]);
 
         VK_Buffer stagingBuffer{indexSize, m_IndexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
@@ -359,56 +202,12 @@ namespace GfxRenderEngine
         );
     }
 
-    // single-instance
-    void VK_Model::PushConstants(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                 const VkPipelineLayout& pipelineLayout, VK_Submesh const& submesh)
-    {
-        VK_PushConstantDataGeneric push{};
-        push.m_ModelMatrix = transform.GetMat4Global();
-        push.m_NormalMatrix = transform.GetNormalMatrix();
-
-        push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-        push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-        push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-        push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
-
-        push.m_BaseColorFactor = submesh.m_MaterialProperties.m_BaseColorFactor;
-
-        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(VK_PushConstantDataGeneric),
-                           &push);
-    }
-
     // multi-instance
-    void VK_Model::PushConstants(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                 VK_Submesh const& submesh)
-    {
-        VK_PushConstantDataGenericInstanced push{};
-
-        push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
-        push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
-        push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-        push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
-        push.m_BaseColorFactor = submesh.m_MaterialProperties.m_BaseColorFactor;
-
-        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(VK_PushConstantDataGenericInstanced), &push);
-    }
-
-    void VK_Model::PushConstantsMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+    void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                     VK_Submesh const& submesh)
     {
-        VK_PushConstantDataMap push{};
-
-        push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
-        push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
-        push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-        push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
-        push.m_BaseColorFactor = submesh.m_MaterialProperties.m_BaseColorFactor;
-        push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
-
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(VK_PushConstantDataMap), &push);
+                           sizeof(Material::PbrMaterial), &submesh.m_Material.m_PbrMaterial);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
@@ -457,403 +256,36 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawNoMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                             const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrNoMap)
-        {
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawNoMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawEmissive(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                const VkPipelineLayout& pipelineLayout, float emissiveStrength)
-    {
-        for (auto& submesh : m_SubmeshesPbrEmissive)
-        {
-            if (emissiveStrength)
-            {
-                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
-            }
-
-            {
-                VK_PushConstantDataEmissive push{};
-                push.m_ModelMatrix = transform.GetMat4Global();
-                push.m_NormalMatrix = transform.GetNormalMatrix();
-
-                push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-                push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-                push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-                push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
-
-                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
-
-                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout,
-                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(VK_PushConstantDataEmissive), &push);
-            }
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawEmissiveInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                         float emissiveStrength)
-    {
-        for (auto& submesh : m_SubmeshesPbrEmissiveInstanced)
-        {
-            if (emissiveStrength)
-            {
-                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
-            }
-
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            {
-                VK_PushConstantDataEmissiveInstanced push{};
-
-                push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
-                push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
-                push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-                push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
-
-                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
-
-                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(VK_PushConstantDataEmissiveInstanced), &push);
-            }
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawEmissiveTexture(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                       const VkPipelineLayout& pipelineLayout, float emissiveStrength)
-    {
-        for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
-        {
-            if (emissiveStrength)
-            {
-                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
-            }
-
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            {
-                VK_PushConstantDataEmissiveTexture push{};
-                push.m_ModelMatrix = transform.GetMat4Global();
-                push.m_NormalMatrix = transform.GetNormalMatrix();
-
-                push.m_NormalMatrix[3].x = submesh.m_MaterialProperties.m_Roughness;
-                push.m_NormalMatrix[3].y = submesh.m_MaterialProperties.m_Metallic;
-                push.m_NormalMatrix[3].z = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-                push.m_NormalMatrix[3].w = submesh.m_MaterialProperties.m_EmissiveStrength;
-
-                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
-
-                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout,
-                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(VK_PushConstantDataEmissiveTexture), &push);
-            }
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawEmissiveTextureInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                                float emissiveStrength)
-    {
-        for (auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
-        {
-            if (emissiveStrength)
-            {
-                submesh.m_MaterialProperties.m_EmissiveStrength = emissiveStrength;
-            }
-
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            {
-                VK_PushConstantDataEmissiveTextureInstanced push{};
-
-                push.m_Roughness = submesh.m_MaterialProperties.m_Roughness;
-                push.m_Metallic = submesh.m_MaterialProperties.m_Metallic;
-                push.m_NormalMapIntensity = submesh.m_MaterialProperties.m_NormalMapIntensity * m_NormalMapIntensity;
-                push.m_EmissiveStrength = submesh.m_MaterialProperties.m_EmissiveStrength;
-                push.m_EmissiveColor = submesh.m_MaterialProperties.m_EmissiveColor;
-
-                vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(VK_PushConstantDataEmissiveTextureInstanced), &push);
-            }
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                  const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawMap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for (auto& submesh : m_SubmeshesPbrMap)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstantsMap(frameInfo, pipelineLayout, submesh);
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                    const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseSAMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseSAMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                        const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                          const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalSAMapInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalSAMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                                         const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicMapInstanced(const VK_FrameInfo& frameInfo,
-                                                                  const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicSAMap(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                                           const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallic2Map(const VK_FrameInfo& frameInfo, TransformComponent& transform,
-                                                          const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2Map)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, transform, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallic2MapInstanced(const VK_FrameInfo& frameInfo,
-                                                                   const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawDiffuseNormalRoughnessMetallicSA2Map(const VK_FrameInfo& frameInfo,
-                                                            const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
-            PushConstants(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawShadow(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbrNoMap)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrEmissive)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrEmissiveTexture)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseMap)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMap)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMap)
-        {
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::DrawShadowAnimated(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                      const VkDescriptorSet& shadowDescriptorSet)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseSAMap)
-        {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
-        {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalSAMap)
-        {
-            DrawAnimatedShadowInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-    }
-
-    void VK_Model::DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                               const VkDescriptorSet& shadowDescriptorSet)
-    {
-        for (auto& submesh : m_SubmeshesPbrDiffuseSAMapInstanced)
-        {
-            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalSAMapInstanced)
-        {
-            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSAMap)
-        {
-            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicSA2Map)
-        {
-            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
     }
 
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                        const VkDescriptorSet& shadowDescriptorSet)
     {
-        for (auto& submesh : m_SubmeshesPbrNoMapInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrEmissiveInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrEmissiveTextureInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseMapInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalMapInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallicMapInstanced)
-        {
-            DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
-        }
-        for (auto& submesh : m_SubmeshesPbrDiffuseNormalRoughnessMetallic2MapInstanced)
+        for (auto& submesh : m_SubmeshesPbrMap)
         {
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }
     }
 
-    void VK_Model::DrawAnimatedShadowInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
-                                              VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
+    void VK_Model::DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                               const VkDescriptorSet& shadowDescriptorSet)
+    {
+        for (auto& submesh : m_SubmeshesPbrSAMap)
+        {
+            DrawAnimatedShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
+        }
+    }
+
+    void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
+                                               VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
     {
         VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
@@ -865,17 +297,6 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawAnimatedShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
                                                        VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
-    {
-        VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
-        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2,
-                                descriptorSets.data(), 0, nullptr);
-
-        DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-    }
-
-    void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
-                                               VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
     {
         VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};

@@ -1,4 +1,8 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
+   https://github.com/beaumanvienna/vulkan
+   *
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -22,26 +26,63 @@
 #version 450
 
 #include "engine/renderer/skeletalAnimation/joints.h"
+#include "engine/platform/Vulkan/pointlights.h"
+#include "engine/platform/Vulkan/material.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 7) in ivec4 jointIds;
-layout(location = 8) in vec4  weights;
+layout(location = 1) in vec3  color;
+layout(location = 2) in vec3  normal;
+layout(location = 3) in vec2  uv;
+layout(location = 4) in vec3  tangent;
+layout(location = 5) in ivec4 jointIds;
+layout(location = 6) in vec4  weights;
 
-layout(set = 0, binding = 0) uniform ShadowUniformBuffer
+struct PointLight
+{
+    vec4 m_Position;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
+
+struct DirectionalLight
+{
+    vec4 m_Direction;  // ignore w
+    vec4 m_Color;     // w is intensity
+};
+
+struct InstanceData
+{
+    mat4 m_ModelMatrix;
+    mat4 m_NormalMatrix;
+};
+
+layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     mat4 m_Projection;
     mat4 m_View;
+
+    // point light
+    vec4 m_AmbientLightColor;
+    PointLight m_PointLights[MAX_LIGHTS];
+    DirectionalLight m_DirectionalLight;
+    int m_NumberOfActivePointLights;
+    int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 1, binding = 0) uniform SkeletalAnimationShaderData
+layout(set = 1, binding = 6) uniform InstanceUniformBuffer
+{
+    InstanceData m_InstanceData[MAX_INSTANCE];
+} uboInstanced;
+
+layout(set = 1, binding = 7) uniform SkeletalAnimationShaderData
 {
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
-layout(push_constant) uniform Push
-{
-    mat4 m_ModelMatrix;
-} push;
+layout(location = 0)  out  vec3  fragPosition;
+layout(location = 1)  out  vec3  fragColor;
+layout(location = 2)  out  vec3  fragNormal;
+layout(location = 3)  out  vec2  fragUV;
+layout(location = 4)  out  vec3  fragTangent;
 
 void main()
 {
@@ -62,7 +103,17 @@ void main()
         jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
     }
 
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 instanceNormalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+
     // projection * view * model * position
-    vec4 positionWorld = push.m_ModelMatrix * animatedPosition;
+    vec4 positionWorld = modelMatrix * animatedPosition;
     gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
+    fragPosition       = positionWorld.xyz;
+
+    mat3 normalMatrix  = transpose(inverse(mat3(instanceNormalMatrix) * mat3(jointTransform)));
+    fragNormal  = normalize(normalMatrix * normal);
+    fragTangent = normalize(normalMatrix * tangent);
+
+    fragUV = uv;
 }

@@ -44,18 +44,18 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Textures;
-        std::vector<ModelSubmesh> m_Submeshes{};
+        std::vector<Submesh> m_Submeshes{};
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
     private:
         void LoadVertexData(const ufbx_node* fbxNodePtr);
         void LoadVertexData(const ufbx_node* fbxNodePtr, uint const submeshIndex);
 
         void LoadMaterials();
-        void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,
-                          Material& engineMaterial);
-        void LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB);
+        void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty, int materialIndex);
+        std::shared_ptr<Texture> LoadTexture(std::string& filepath, bool useSRGB);
 
-        void AssignMaterial(ModelSubmesh& submesh, uint const materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex);
         void LoadTransformationMatrix(const ufbx_node* fbxNodePtr, glm::vec3& scale, glm::quat& rotation,
                                       glm::vec3& translation);
         void PrintProperties(const ufbx_material* fbxMaterial);
@@ -73,7 +73,6 @@ namespace GfxRenderEngine
         ufbx_scene* m_FbxScene;
         std::vector<Material> m_Materials;
         std::unordered_map<std::string, uint> m_MaterialNameToIndex;
-        uint m_MaterialFeatures;
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
@@ -93,7 +92,7 @@ namespace GfxRenderEngine
         // skeletal animation
     private:
         void LoadSkeletonsFbx();
-        uint m_SkeletalAnimation;
+        bool m_SkeletalAnimation;
 
     public:
         std::shared_ptr<Armature::Skeleton> m_Skeleton;

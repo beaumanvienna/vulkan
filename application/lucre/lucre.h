@@ -30,6 +30,7 @@
 #include "renderer/cursor.h"
 #include "renderer/cameraController.h"
 #include "sprite/spritesheet.h"
+#include "engine/platform/Vulkan/pointlights.h"
 
 #include "application.h"
 #include "appSettings.h"

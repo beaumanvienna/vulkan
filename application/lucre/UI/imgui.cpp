@@ -112,7 +112,7 @@ namespace LucreApp
             TraverseObjectTree(*currentScene, node, maxDepth);
         }
 
-        if (registry.all_of<PbrMaterial>(static_cast<entt::entity>(m_SelectedGameObject)))
+        if (registry.all_of<PbrMaterialTag>(static_cast<entt::entity>(m_SelectedGameObject)))
         {
             // emission strength
             ImGui::Checkbox("use###006", &m_UseEmissiveStrength);
@@ -177,22 +177,10 @@ namespace LucreApp
 
             if (m_UseEmissiveStrength)
             {
-                bool found = false;
+                if (registry.all_of<PbrMaterialTag>(gameObject))
                 {
-                    if (registry.all_of<PbrEmissiveTag>(gameObject))
-                    {
-                        found = true;
-                        auto& pbrEmissiveTag = registry.get<PbrEmissiveTag>(gameObject);
-                        pbrEmissiveTag.m_EmissiveStrength = m_EmissiveStrength;
-                    }
-                }
-                if (!found)
-                {
-                    if (registry.all_of<PbrEmissiveTextureTag>(gameObject))
-                    {
-                        auto& pbrEmissiveTextureTag = registry.get<PbrEmissiveTextureTag>(gameObject);
-                        pbrEmissiveTextureTag.m_EmissiveStrength = m_EmissiveStrength;
-                    }
+                    auto& pbrMaterialTag = registry.get<PbrMaterialTag>(gameObject);
+                    pbrMaterialTag.m_EmissiveStrength = m_EmissiveStrength;
                 }
             }
 

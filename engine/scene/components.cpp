@@ -35,7 +35,7 @@ namespace GfxRenderEngine
 {
     uint MeshComponent::m_DefaultNameTagCounter = 0;
 
-    MeshComponent::MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled)
+    MeshComponent::MeshComponent(std::string const& name, std::shared_ptr<Model> model, bool enabled)
         : m_Name{name}, m_Model{model}, m_Enabled{enabled}
     {
     }

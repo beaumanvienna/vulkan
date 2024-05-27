@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,16 +38,15 @@
 
 namespace GfxRenderEngine
 {
-    class VK_RenderSystemPbrEmissiveInstanced
+    class VK_RenderSystemPbrSA
     {
 
     public:
-        VK_RenderSystemPbrEmissiveInstanced(VkRenderPass renderPass,
-                                            std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrEmissiveInstanced();
+        VK_RenderSystemPbrSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrSA();
 
-        VK_RenderSystemPbrEmissiveInstanced(const VK_RenderSystemPbrEmissiveInstanced&) = delete;
-        VK_RenderSystemPbrEmissiveInstanced& operator=(const VK_RenderSystemPbrEmissiveInstanced&) = delete;
+        VK_RenderSystemPbrSA(const VK_RenderSystemPbrSA&) = delete;
+        VK_RenderSystemPbrSA& operator=(const VK_RenderSystemPbrSA&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
 

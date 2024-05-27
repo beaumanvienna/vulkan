@@ -1,5 +1,8 @@
 /* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
+   *
+   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
+   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -18,44 +21,19 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#pragma once
+// material
+#define GLSL_HAS_VERTEX_COLOR (0x1 << 0x0)
+#define GLSL_HAS_DIFFUSE_MAP (0x1 << 0x1)
+#define GLSL_HAS_NORMAL_MAP (0x1 << 0x2)
+#define GLSL_HAS_ROUGHNESS_MAP (0x1 << 0x3)
+#define GLSL_HAS_METALLIC_MAP (0x1 << 0x4)
+#define GLSL_HAS_ROUGHNESS_METALLIC_MAP (0x1 << 0x5)
+#define GLSL_HAS_EMISSIVE_COLOR (0x1 << 0x6)
+#define GLSL_HAS_EMISSIVE_MAP (0x1 << 0x7)
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
+// shader properties
+#define GLSL_HAS_SKELETAL_ANIMATION (0x1 << 0x0)
 
-#include "engine.h"
-#include "renderer/camera.h"
-#include "scene/scene.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
-
-namespace GfxRenderEngine
-{
-    class VK_RenderSystemPbrMap
-    {
-
-    public:
-        VK_RenderSystemPbrMap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrMap();
-
-        VK_RenderSystemPbrMap(const VK_RenderSystemPbrMap&) = delete;
-        VK_RenderSystemPbrMap& operator=(const VK_RenderSystemPbrMap&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
-
-    private:
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-    };
-} // namespace GfxRenderEngine
+#define MAX_INSTANCE 64

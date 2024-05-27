@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Textures;
-        std::vector<ModelSubmesh> m_Submeshes{};
+        std::vector<Submesh> m_Submeshes{};
 
     private:
         void LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet = 0, uint uvSet = 0);
@@ -55,7 +55,7 @@ namespace GfxRenderEngine
         bool LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB);
         void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
         bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
-        void AssignMaterial(ModelSubmesh& submesh, uint const materialIndex);
+        void AssignMaterial(Submesh& submesh, uint const materialIndex);
         glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
         void PrintMaps(const aiMaterial* fbxMaterial);
 
@@ -91,7 +91,7 @@ namespace GfxRenderEngine
         // skeletal animation
     private:
         void LoadSkeletonsFbx();
-        uint m_SkeletalAnimation;
+        bool m_SkeletalAnimation;
 
     public:
         std::shared_ptr<Armature::Skeleton> m_Skeleton;

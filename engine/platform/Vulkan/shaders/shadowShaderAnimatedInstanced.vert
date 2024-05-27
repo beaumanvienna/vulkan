@@ -22,10 +22,11 @@
 #version 450
 
 #include "engine/renderer/skeletalAnimation/joints.h"
+#include "engine/platform/Vulkan/material.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 7) in ivec4 jointIds;
-layout(location = 8) in vec4  weights;
+layout(location = 5) in ivec4 jointIds;
+layout(location = 6) in vec4  weights;
 
 struct InstanceData
 {
@@ -46,7 +47,7 @@ layout(set = 1, binding = 0) uniform SkeletalAnimationShaderData
 
 layout(set = 1, binding = 1) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanceData[256];
+    InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
 
 void main()

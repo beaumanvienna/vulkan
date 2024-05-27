@@ -42,14 +42,15 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
-        std::vector<ModelSubmesh> m_Submeshes{};
+        std::vector<Submesh> m_Submeshes{};
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
     private:
         void LoadTextures();
         void LoadMaterials();
         void LoadVertexData(uint const meshIndex);
         bool GetImageFormat(uint const imageIndex);
-        void AssignMaterial(ModelSubmesh& submesh, int const materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
@@ -70,11 +71,11 @@ namespace GfxRenderEngine
                 reinterpret_cast<const T*>(&(m_GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
             if (count)
             {
-                count[0] = static_cast<uint>(accessor.count);
+                *count = static_cast<uint>(accessor.count);
             }
             if (type)
             {
-                type[0] = accessor.type;
+                *type = accessor.type;
             }
             return accessor.componentType;
         }
@@ -86,8 +87,6 @@ namespace GfxRenderEngine
         tinygltf::TinyGLTF m_GltfLoader;
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
-        uint m_MaterialFeatures;
-
         uint m_TextureOffset;
 
         // scene graph
@@ -108,7 +107,7 @@ namespace GfxRenderEngine
     private:
         void LoadSkeletonsGltf();
         void LoadJoint(int globalGltfNodeIndex, int parentJoint);
-        uint m_SkeletalAnimation;
+        bool m_SkeletalAnimation;
 
     public:
         std::shared_ptr<Armature::Skeleton> m_Skeleton;

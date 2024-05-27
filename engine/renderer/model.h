@@ -53,61 +53,15 @@
 
 namespace GfxRenderEngine
 {
-
-    struct Vertex
+    struct Vertex // 3D, with animation
     {
-        glm::vec3 m_Position;
-        glm::vec4 m_Color;
-        glm::vec3 m_Normal;
-        glm::vec2 m_UV;
-        float m_Amplification;
-        int m_Unlit;
-        glm::vec3 m_Tangent;
-        glm::ivec4 m_JointIds;
-        glm::vec4 m_Weights;
-
-        bool operator==(const Vertex& other) const;
-    };
-
-    struct Material
-    {
-        enum Bitfield
-        {
-            NO_MAP = 0x0,
-            HAS_DIFFUSE_MAP = 0x1 << 0x0,
-            HAS_NORMAL_MAP = 0x1 << 0x1,
-            HAS_ROUGHNESS_MAP = 0x1 << 0x2,
-            HAS_METALLIC_MAP = 0x1 << 0x3,
-            HAS_ROUGHNESS_METALLIC_MAP = 0x1 << 0x4,
-            HAS_EMISSIVE_MAP = 0x1 << 0x5,
-            HAS_SKELETAL_ANIMATION = 0x1 << 0x6
-        };
-        // constant material properties
-        glm::vec4 m_DiffuseColor{1.0f, 1.0f, 1.0f, 1.0f};
-        glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
-        float m_NormalMapIntensity{1.0f};
-        float m_Roughness{0.1};
-        float m_Metallic{0.5};
-        float m_EmissiveStrength{1.0f};
-        // map indices
-        uint m_DiffuseMapIndex;
-        uint m_NormalMapIndex;
-        uint m_RoughnessMapIndex;
-        uint m_MetallicMapIndex;
-        uint m_RoughnessMetallicMapIndex;
-        uint m_EmissiveMapIndex;
-        // feature bits
-        uint m_Features;
-    };
-
-    struct MaterialProperties
-    {
-        float m_NormalMapIntensity;
-        float m_Roughness;
-        float m_Metallic;
-        float m_EmissiveStrength;
-        glm::vec4 m_EmissiveColor;
-        glm::vec4 m_BaseColorFactor;
+        glm::vec3 m_Position;    // layout(location = 0)
+        glm::vec4 m_Color;       // layout(location = 1)
+        glm::vec3 m_Normal;      // layout(location = 2)
+        glm::vec2 m_UV;          // layout(location = 3)
+        glm::vec3 m_Tangent;     // layout(location = 4)
+        glm::ivec4 m_JointIds;   // layout(location = 5)
+        glm::vec4 m_Weights;     // layout(location = 6)
     };
 
     struct Submesh
@@ -117,12 +71,7 @@ namespace GfxRenderEngine
         uint m_IndexCount;
         uint m_VertexCount;
         uint m_InstanceCount;
-        MaterialProperties m_MaterialProperties;
-    };
-
-    struct ModelSubmesh : public Submesh
-    {
-        std::vector<std::shared_ptr<MaterialDescriptor>> m_MaterialDescriptors;
+        Material m_Material;
     };
 
     class Model
@@ -135,8 +84,8 @@ namespace GfxRenderEngine
         Model(const Model&) = delete;
         Model& operator=(const Model&) = delete;
 
-        virtual void CreateVertexBuffers(const std::vector<Vertex>& vertices) = 0;
-        virtual void CreateIndexBuffers(const std::vector<uint>& indices) = 0;
+        virtual void CreateVertexBuffer(const std::vector<Vertex>& vertices) = 0;
+        virtual void CreateIndexBuffer(const std::vector<uint>& indices) = 0;
 
         SkeletalAnimations& GetAnimations();
 

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,34 +22,31 @@
 
 #include "VKcore.h"
 #include "VKswapChain.h"
+#include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrNoMapSys.h"
-#include "systems/pushConstantData.h"
+#include "systems/VKpbrSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbrNoMap::VK_RenderSystemPbrNoMap(VkRenderPass renderPass,
-                                                     VK_DescriptorSetLayout& globalDescriptorSetLayout)
+    VK_RenderSystemPbr::VK_RenderSystemPbr(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        CreatePipelineLayout(globalDescriptorSetLayout.GetDescriptorSetLayout());
+        CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbrNoMap::~VK_RenderSystemPbrNoMap()
+    VK_RenderSystemPbr::~VK_RenderSystemPbr()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbrNoMap::CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout)
+    void VK_RenderSystemPbr::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalDescriptorSetLayout};
+        pushConstantRange.size = sizeof(Material::PbrMaterial);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -64,9 +61,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbrNoMap::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbr::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "no pipeline layout");
 
         PipelineConfigInfo pipelineConfig{};
 
@@ -90,26 +87,27 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrNoMap.vert.spv",
-                                                   "bin-int/pbrNoMap.frag.spv", pipelineConfig);
+        m_Pipeline =
+            std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbr.vert.spv", "bin-int/pbr.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemPbrNoMap::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbr::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
     {
-        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
-                                &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrNoMapTag>(entt::exclude<InstanceTag>);
-        for (auto entity : view)
+        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(entt::exclude<SkeletalAnimationTag>);
+        for (auto mainInstance : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            auto& mesh = view.get<MeshComponent>(entity);
-
+            auto& mesh = view.get<MeshComponent>(mainInstance);
+            { // update instance buffer on the GPU
+                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+                instanceBuffer->Update();
+            }
             if (mesh.m_Enabled)
             {
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawNoMap(frameInfo, transform, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawPbr(frameInfo, m_PipelineLayout);
             }
         }
     }

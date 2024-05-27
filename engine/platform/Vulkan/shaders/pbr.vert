@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
    *
    * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
@@ -25,18 +25,13 @@
 
 #version 450
 #include "engine/platform/Vulkan/pointlights.h"
+#include "engine/platform/Vulkan/material.h"
 
-layout(set = 1, binding = 0) uniform sampler2D diffuseMap;
-
-layout(location = 0)       in  vec3  fragPosition;
-layout(location = 1)       in  vec3  fragNormal;
-layout(location = 2)       in  vec2  fragUV;
-layout(location = 3)       in  vec3  fragTangent;
-
-layout(location = 0)       out vec4 outPosition;
-layout(location = 1)       out vec4 outNormal;
-layout(location = 2)       out vec4 outColor;
-layout(location = 3)       out vec4 outMaterial;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  color;
+layout(location = 2) in vec3  normal;
+layout(location = 3) in vec2  uv;
+layout(location = 4) in vec3  tangent;
 
 struct PointLight
 {
@@ -48,6 +43,12 @@ struct DirectionalLight
 {
     vec4 m_Direction;  // ignore w
     vec4 m_Color;     // w is intensity
+};
+
+struct InstanceData
+{
+    mat4 m_ModelMatrix;
+    mat4 m_NormalMatrix;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -63,32 +64,30 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant) uniform Push
+layout(set = 1, binding = 6) uniform InstanceUniformBuffer
 {
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-    vec4 m_BaseColorFactor;
-} push;
+    InstanceData m_InstanceData[MAX_INSTANCE];
+} uboInstanced;
+
+layout(location = 0)  out  vec3  fragPosition;
+layout(location = 1)  out  vec3  fragColor;
+layout(location = 2)  out  vec3  fragNormal;
+layout(location = 3)  out  vec2  fragUV;
+layout(location = 4)  out  vec3  fragTangent;
 
 void main()
 {
-    float roughness           = push.m_NormalMatrix[3].x;
-    float metallic            = push.m_NormalMatrix[3].y;
-    float normalMapIntensity  = push.m_NormalMatrix[3].z;
+    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
+    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
 
-    outPosition = vec4(fragPosition, 1.0);
-    vec3 N = normalize(fragNormal);
-    vec3 T = normalize(fragTangent);
-    // Gram Schmidt
-    T = normalize(T - dot(T, N) * N);
-    outNormal   = vec4(N, 1.0);
+    // projection * view * model * position
+    gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);
 
+    vec4 positionWorld = modelMatrix * vec4(position, 1.0);
+    fragPosition = positionWorld.xyz;
+    fragNormal = mat3(normalMatrix) * normal;
+    fragTangent = mat3(normalMatrix) * tangent;
 
-    vec4 col    = texture(diffuseMap, fragUV) * push.m_BaseColorFactor;
-    if (col.w < 0.5)
-    {
-        discard;
-    }
-    outColor    = col;
-    outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
+    fragUV = uv;
+    fragColor = color;
 }

@@ -33,7 +33,6 @@
 
 namespace GfxRenderEngine
 {
-    constexpr int MAX_LIGHTS = 128;
     class Model;
 
     class TransformComponent
@@ -111,7 +110,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        MeshComponent(std::string name, std::shared_ptr<Model> model, bool enabled = true);
+        MeshComponent(std::string const& name, std::shared_ptr<Model> model, bool enabled = true);
         MeshComponent(std::shared_ptr<Model> model, bool enabled = true);
 
         std::string m_Name;
@@ -197,75 +196,15 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
-    struct PbrMaterial
+    struct PbrMaterialTag
     {
-        uint m_Tag{0};
+        float m_EmissiveStrength{1.f};
     };
 
     struct InstanceTag
     {
         std::vector<entt::entity> m_Instances;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
-    };
-
-    struct PbrEmissiveTag
-    {
-        float m_EmissiveStrength{0.f};
-    };
-
-    struct PbrEmissiveTextureTag
-    {
-        float m_EmissiveStrength{0.f};
-    };
-
-    struct PbrNoMapTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrMapTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicTag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallic2Tag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicSATag
-    {
-        uint m_Tag{0};
-    };
-
-    struct PbrDiffuseNormalRoughnessMetallicSA2Tag
-    {
-        uint m_Tag{0};
     };
 
     struct CubemapComponent

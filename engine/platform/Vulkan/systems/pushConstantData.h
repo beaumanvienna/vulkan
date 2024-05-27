@@ -30,57 +30,5 @@ namespace GfxRenderEngine
     {
         glm::mat4 m_ModelMatrix{1.0f};
         glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-        glm::vec4 m_BaseColorFactor;
-    };
-
-    struct VK_PushConstantDataGenericInstanced
-    {
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-        float m_EmissiveStrength;
-        glm::vec4 m_BaseColorFactor;
-    };
-
-    struct VK_PushConstantDataMap
-    {
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-        float m_EmissiveStrength;
-        glm::vec4 m_BaseColorFactor;
-        glm::vec4 m_EmissiveColor;
-    };
-
-    struct VK_PushConstantDataEmissive
-    {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-        glm::vec4 m_EmissiveColor;
-    };
-
-    struct VK_PushConstantDataEmissiveInstanced
-    {
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-        float m_EmissiveStrength;
-        glm::vec4 m_EmissiveColor;
-    };
-
-    struct VK_PushConstantDataEmissiveTexture
-    {
-        glm::mat4 m_ModelMatrix{1.0f};
-        glm::mat4 m_NormalMatrix{1.0f}; // 4x4 because of alignment
-        glm::vec4 m_EmissiveColor;
-    };
-
-    struct VK_PushConstantDataEmissiveTextureInstanced
-    {
-        float m_Roughness;
-        float m_Metallic;
-        float m_NormalMapIntensity;
-        float m_EmissiveStrength;
-        glm::vec4 m_EmissiveColor;
     };
 } // namespace GfxRenderEngine

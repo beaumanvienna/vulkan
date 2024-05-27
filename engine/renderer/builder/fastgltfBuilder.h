@@ -48,14 +48,14 @@ namespace GfxRenderEngine
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
-        std::vector<ModelSubmesh> m_Submeshes{};
+        std::vector<Submesh> m_Submeshes{};
 
     private:
         void LoadTextures();
         void LoadMaterials();
         void LoadVertexData(uint const meshIndex);
         bool GetImageFormat(uint const imageIndex);
-        void AssignMaterial(ModelSubmesh& submesh, int const materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
@@ -102,8 +102,7 @@ namespace GfxRenderEngine
         fastgltf::Asset m_GltfModel;
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
-        uint m_MaterialFeatures;
-        bool m_WindingOrderClockwise;
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
         // scene graph
         uint m_InstanceCount;
@@ -123,7 +122,7 @@ namespace GfxRenderEngine
     private:
         void LoadSkeletonsGltf();
         void LoadJoint(int globalGltfNodeIndex, int parentJoint);
-        uint m_SkeletalAnimation;
+        bool m_SkeletalAnimation;
 
     public:
         std::shared_ptr<Armature::Skeleton> m_Skeleton;
