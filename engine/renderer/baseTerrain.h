@@ -1,5 +1,7 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
+
+   Author: Mantar (https://github.com/AhmetErenLacinbala)
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -21,37 +23,22 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
-
-#include "renderer/model.h"
-#include "scene/scene.h"
+#include "engine.h"
+#include <string>
+#include <vector>
 
 namespace GfxRenderEngine
 {
-    class Builder
+    class BaseTerrain
     {
-
     public:
-        Builder() = default;
-
-        void LoadModelObjWavefront(const std::string& filepath, int fragAmplification = 1.0);
-        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
-        void LoadParticle(glm::vec4 const& color);
-        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
-                        glm::vec4 const& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry);
+        BaseTerrain(std::string const& filepath);
+        std::vector<std::vector<float>> m_TerrainData;
 
     private:
-        void CalculateTangents();
-        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
-
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
-
-        // cubemap
-        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<Submesh> m_CubemapSubmeshes{};
+        std::string m_Filepath;
+        void ReadFile(std::string const& filepath);
+        uint m_TerrainSize{0};
     };
+
 } // namespace GfxRenderEngine

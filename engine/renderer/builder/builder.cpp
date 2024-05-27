@@ -48,7 +48,7 @@ namespace std
 namespace GfxRenderEngine
 {
 
-    void Builder::PopulateTerrainData(const std::vector<std::vector<float>>& heightMap)
+    void Builder::PopulateTerrainData(std::vector<std::vector<float>> const& heightMap)
     {
         float scale = 0.1f;      // Scale for the grid spacing
         float heightScale = 1.f; // Scale for the height values
@@ -60,11 +60,10 @@ namespace GfxRenderEngine
             for (size_t x = 0; x < cols; ++x)
             {
                 vertex.m_Position = glm::vec3(x * scale, heightMap[z][x] * heightScale, z * scale);
-                std::cout << vertex.m_Position.x << " " << vertex.m_Position.y << " " << vertex.m_Position.z << std::endl;
                 vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
                 vertex.m_UV = glm::vec2(0.f, 0.f);
-                vertex.m_Tangent = glm::vec3(1.0F);
-                vertex.m_JointIds = glm::ivec4(0.f);
+                vertex.m_Tangent = glm::vec3(1.0f);
+                vertex.m_JointIds = glm::ivec4(0);
                 vertex.m_Weights = glm::vec4(0.0f);
 
                 //--------
@@ -111,68 +110,79 @@ namespace GfxRenderEngine
             }
         }
     }
-    entt::entity Builder::LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene)
+    entt::entity Builder::LoadTerrainHeightMapPNG(std::string const& filepath, Scene& scene)
     {
-        m_Vertices.clear();
-        m_Indices.clear();
-        m_Cubemaps.clear();
-        int m_Width, m_Height, m_BytesPerPixel;
-        uchar* m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 0);
-        std::vector<std::vector<float>> terrainData(m_Height, std::vector<float>(m_Width));
-        if (m_LocalBuffer)
+        int width, height, bytesPerPixel;
+        uchar* localBuffer = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, 0);
+        std::vector<std::vector<float>> terrainData(height, std::vector<float>(width));
+        if (localBuffer)
         {
-            LOG_CORE_CRITICAL("Texture: load file {0}", filepath);
-            std::cout << "buffer size: " << sizeof(m_LocalBuffer) << std::endl
-                      << "width: " << m_Width << std::endl
-                      << "height: " << m_Height << std::endl
-                      << "bytes per pixel: " << m_BytesPerPixel << std::endl;
-            for (int i = 0; i < m_Height; i++)
+            for (int i = 0; i < height; ++i)
             {
-                for (int j = 0; j < m_Width; j++)
+                for (int j = 0; j < width; ++j)
                 {
-                    std::cout << static_cast<float>(m_LocalBuffer[i * m_Width + j]) << " ";
-                    terrainData[i][j] = static_cast<float>(m_LocalBuffer[i * m_Width + j]) / 127.0f;
+                    terrainData[i][j] = static_cast<float>(localBuffer[i * width + j]) / 127.0f;
                 }
-                std::cout << std::endl;
             }
-            stbi_image_free(m_LocalBuffer);
+            stbi_image_free(localBuffer);
 
             PopulateTerrainData(terrainData);
 
-            ModelSubmesh submesh{};
-            submesh.m_FirstIndex = 0;
-            submesh.m_FirstVertex = 0;
-            submesh.m_IndexCount = m_Indices.size();
-            submesh.m_VertexCount = m_Vertices.size();
-
-            { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
-                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-            }
-            submesh.m_MaterialProperties.m_Roughness = 0.5f;
-            submesh.m_MaterialProperties.m_Metallic = 0.1f;
-            submesh.m_MaterialProperties.m_NormalMapIntensity = 1.0f;
-
-            m_Submeshes.push_back(submesh);
-
             // create game object
-            auto model = Engine::m_Engine->LoadModel(*this);
             entt::entity entity;
+            std::shared_ptr<InstanceBuffer> instanceBuffer;
             {
                 auto& registry = scene.GetRegistry();
                 auto& sceneGraph = scene.GetSceneGraph();
                 auto& dictionary = scene.GetDictionary();
 
                 entity = registry.create();
-                MeshComponent mesh{"terrain", model};
-                registry.emplace<MeshComponent>(entity, mesh);
                 TransformComponent transform{};
                 registry.emplace<TransformComponent>(entity, transform);
                 PbrMaterialTag pbrMaterialTag{};
                 registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
 
+                InstanceTag instanceTag;
+                instanceTag.m_Instances.push_back(entity);
+                const uint numberOfInstances = 1;
+                const uint indexOfFirstInstance = 0;
+                instanceBuffer = InstanceBuffer::Create(numberOfInstances);
+                instanceTag.m_InstanceBuffer = instanceBuffer;
+                instanceTag.m_InstanceBuffer->SetInstanceData(indexOfFirstInstance, transform.GetMat4Global(),
+                                                              transform.GetNormalMatrix());
+                registry.emplace<InstanceTag>(entity, instanceTag);
+                transform.SetInstance(instanceTag.m_InstanceBuffer, indexOfFirstInstance);
+
                 uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
                 sceneGraph.GetRoot().AddChild(groupNode);
+
+                Submesh submesh{};
+                submesh.m_FirstIndex = 0;
+                submesh.m_FirstVertex = 0;
+                submesh.m_IndexCount = m_Indices.size();
+                submesh.m_VertexCount = m_Vertices.size();
+                submesh.m_InstanceCount = 1;
+
+                submesh.m_Material.m_PbrMaterial.m_Roughness = 0.5f;
+                submesh.m_Material.m_PbrMaterial.m_Metallic = 0.1f;
+                submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
+
+                { // create material descriptor
+                    Material::MaterialTextures materialTextures;
+                    Material::MaterialBuffers materialBuffers;
+
+                    materialBuffers[Material::INSTANCE_BUFFER_INDEX] = instanceBuffer->GetBuffer();
+                    auto materialDescriptor =
+                        MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures, materialBuffers);
+                    submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                }
+                m_Submeshes.push_back(submesh);
+                auto model = Engine::m_Engine->LoadModel(*this);
+                MeshComponent mesh{"terrain", model};
+                registry.emplace<MeshComponent>(entity, mesh);
+            }
+
+            {
             }
             return entity;
         }
@@ -180,78 +190,8 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", filepath);
         }
-        LOG_CORE_CRITICAL("I am here hello", filepath);
 
         return entt::null;
-    }
-    entt::entity Builder::LoadTerrainHeightMap(const std::string& filepath, Scene& scene)
-    {
-
-        m_Vertices.clear();
-        m_Indices.clear();
-        m_Cubemaps.clear();
-        std::ifstream file(filepath, std::ios::ate | std::ios::binary);
-
-        if (!file.is_open())
-        {
-            throw std::runtime_error("failed to open file: " + filepath);
-        }
-        size_t fileSize = static_cast<size_t>(file.tellg());
-        size_t floatCount = fileSize / sizeof(float);
-
-        std::vector<float> buffer(floatCount);
-        file.seekg(0);
-        file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
-        file.close();
-
-        uint32_t terrainSize = static_cast<uint32_t>(sqrt(floatCount));
-        std::vector<std::vector<float>> terrainData(terrainSize, std::vector<float>(terrainSize));
-        for (size_t i = 0; i < terrainSize; ++i)
-        {
-            for (size_t j = 0; j < terrainSize; ++j)
-            {
-                terrainData[i][j] = buffer[i * terrainSize + j];
-            }
-        }
-        //---------------------
-        // PopulateTerrainData(terrainData);
-
-        ModelSubmesh submesh{};
-        submesh.m_FirstIndex = 0;
-        submesh.m_FirstVertex = 0;
-        submesh.m_IndexCount = m_Indices.size();
-        submesh.m_VertexCount = m_Vertices.size();
-
-        { // create material descriptor
-            auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMap);
-            submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        }
-        submesh.m_MaterialProperties.m_Roughness = 0.5f;
-        submesh.m_MaterialProperties.m_Metallic = 0.1f;
-        submesh.m_MaterialProperties.m_NormalMapIntensity = 1.0f;
-
-        m_Submeshes.push_back(submesh);
-
-        // create game object
-        auto model = Engine::m_Engine->LoadModel(*this);
-        entt::entity entity;
-        {
-            auto& registry = scene.GetRegistry();
-            auto& sceneGraph = scene.GetSceneGraph();
-            auto& dictionary = scene.GetDictionary();
-
-            entity = registry.create();
-            MeshComponent mesh{"terrain", model};
-            registry.emplace<MeshComponent>(entity, mesh);
-            TransformComponent transform{};
-            registry.emplace<TransformComponent>(entity, transform);
-            PbrMaterialTag pbrMaterialTag{};
-            registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
-
-            uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
-            sceneGraph.GetRoot().AddChild(groupNode);
-        }
-        return entity;
     }
 
     void Builder::LoadSprite(Sprite const& sprite, float const amplification, int const unlit, glm::vec4 const& color)
@@ -312,7 +252,7 @@ namespace GfxRenderEngine
         m_Indices.push_back(3);
     }
 
-    void Builder::LoadParticle(const glm::vec4& color)
+    void Builder::LoadParticle(glm::vec4 const& color)
     {
         m_Vertices.clear();
         m_Indices.clear();
@@ -367,7 +307,7 @@ namespace GfxRenderEngine
         m_Indices.push_back(3);
     }
 
-    entt::entity Builder::LoadCubemap(const std::vector<std::string>& faces, entt::registry& registry)
+    entt::entity Builder::LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry)
     {
         entt::entity entity;
         static constexpr uint VERTEX_COUNT = 36;
@@ -473,7 +413,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void Builder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
+    void Builder::CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices)
     {
         uint cnt = 0;
         uint vertexIndex1 = 0;

@@ -91,7 +91,7 @@ namespace LucreApp
                                                      {-3.2, height1, 0.7},    {-6.1, height1, 0.7},  {2.7, height1, 0.7},
                                                      {5.6, height1, 0.7}};
 
-            for (size_t i = 0; i < lightPositions.size(); i++)
+            for (size_t i = 0; i < lightPositions.size(); ++i)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
                 auto& transform = m_Registry.get<TransformComponent>(entity);

@@ -1,6 +1,6 @@
 {
     "file format identifier": 1.2,
-    "description": "dessert scene",
+    "description": "terrain scene",
     "author": "Copyright (c) 2023 Engine Development Team",
     "terrainPngPath": "application/lucre/models/assets/terrain/heightmap.png",
     "fastgltf files":
@@ -83,7 +83,7 @@
             ]
         }
     ],
-    "fbx files":
+    "ufbx files":
     [
         {
             "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",

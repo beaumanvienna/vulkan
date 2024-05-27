@@ -31,6 +31,7 @@
 #include "gui/Common/UI/screen.h"
 #include "resources/resources.h"
 
+#include "dessertScene.h"
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
 #include "animation/easingFunctions.h"

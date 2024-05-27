@@ -27,7 +27,6 @@
 #include "renderer/cubemap.h"
 #include "renderer/renderer.h"
 #include "scene/components.h"
-#include "scene/entity.h"
 #include "scene/scene.h"
 #include "scene/sceneLoader.h"
 #include "scene/sceneLoaderJSON.h"
@@ -86,7 +85,7 @@ namespace LucreApp
         entt::entity m_PointLight[MAX_LIGHTS];
 
         //------
-        void loadTerrain();
+        void LoadTerrain();
         //------
 
         // some game objects can be controlled with a gamepad

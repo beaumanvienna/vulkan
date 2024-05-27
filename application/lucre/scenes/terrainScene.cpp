@@ -51,12 +51,21 @@ namespace LucreApp
         ImGUI::m_AmbientLightIntensity = 0.177;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
-        { // set up camera
-            m_CameraController = std::make_shared<CameraController>();
+        {
+            // set up camera
+            float aspectRatio = 1.777f;
+            float yfov = 0.51f;
+            float znear = 0.1f;
+            float zfar = 500.0f;
 
-            m_Camera = CreateEntity();
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
+
+            m_Camera = m_Registry.create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
+            m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -77,12 +86,11 @@ namespace LucreApp
             float height1 = 0.4f;
             std::vector<glm::vec3> lightPositions = {{5.6, height1, 0.7}};
 
-            for (size_t i = 0; i < lightPositions.size(); i++)
+            for (size_t i = 0; i < lightPositions.size(); ++i)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
-                TransformComponent transform{};
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(lightPositions[i]);
-                m_Registry.emplace<TransformComponent>(entity, transform);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
@@ -100,17 +108,14 @@ namespace LucreApp
         m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(this);
         LoadModels();
-        loadTerrain();
+        LoadTerrain();
         LoadScripts();
     }
 
-    void TerrainScene::loadTerrain()
+    void TerrainScene::LoadTerrain()
     {
         Builder builder;
         builder.LoadTerrainHeightMapPNG(m_SceneLoaderJSON.GetTerrainPath(), *this);
-        // terrain =
-        // builder.LoadTerrainHeightMap("application/lucre/models/assets/terrain/heightmap.save",
-        // *this);
         auto view = m_Registry.view<TransformComponent>();
         auto& terrainTransform = view.get<TransformComponent>(terrain);
         terrainTransform.SetScale(1.0f);
@@ -128,7 +133,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(20.0f);
+            skyboxTransform.SetScale(250.0f);
         }
         {
             {
@@ -145,7 +150,7 @@ namespace LucreApp
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
-                m_LightView0 = std::make_shared<Camera>();
+                m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 float left = -4.0f;
                 float right = 4.0f;
                 float bottom = -4.0f;
