@@ -239,11 +239,11 @@ namespace GfxRenderEngine
             LoadVertexData(fbxNodePtr);
             LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
                           m_Filepath, nodeName);
-            for (uint meshIndex = 0; meshIndex < fbxNodePtr->mesh->material_parts.count; ++meshIndex)
+            for (uint submeshIndex = 0; submeshIndex < fbxNodePtr->mesh->material_parts.count; ++submeshIndex)
             {
-                std::string materialName = fbxNodePtr->mesh->materials.data[meshIndex]->name.data;
-                uint fbxMeshIndex = m_MaterialNameToIndex[materialName];
-                AssignMaterial(m_Submeshes[meshIndex], fbxMeshIndex);
+                std::string materialName = fbxNodePtr->mesh->materials.data[submeshIndex]->name.data;
+                uint materialIndex = m_MaterialNameToIndex[materialName];
+                AssignMaterial(m_Submeshes[submeshIndex], materialIndex);
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
 
@@ -278,7 +278,7 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    std::shared_ptr<Texture> UFbxBuilder::LoadTexture(std::string& filepath, bool useSRGB)
+    std::shared_ptr<Texture> UFbxBuilder::LoadTexture(std::string const& filepath, bool useSRGB)
     {
         std::shared_ptr<Texture> texture;
         bool loadSucess = false;
@@ -301,8 +301,9 @@ namespace GfxRenderEngine
         if (loadSucess)
         {
             m_Textures.push_back(texture);
+            return texture;
         }
-        return texture;
+        return nullptr;
     }
 
     void UFbxBuilder::LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,

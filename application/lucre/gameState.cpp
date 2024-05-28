@@ -371,7 +371,7 @@ namespace LucreApp
             }
             case State::TERRAIN:
             {
-                auto lambda = [=]()
+                auto lambda = [&]()
                 {
                     // todo: use the json format
                     auto scenePtr =

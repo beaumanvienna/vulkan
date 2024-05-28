@@ -53,7 +53,7 @@ namespace GfxRenderEngine
 
         void LoadMaterials();
         void LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty, int materialIndex);
-        std::shared_ptr<Texture> LoadTexture(std::string& filepath, bool useSRGB);
+        std::shared_ptr<Texture> LoadTexture(std::string const& filepath, bool useSRGB);
 
         void AssignMaterial(Submesh& submesh, int const materialIndex);
         void LoadTransformationMatrix(const ufbx_node* fbxNodePtr, glm::vec3& scale, glm::quat& rotation,

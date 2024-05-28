@@ -182,8 +182,6 @@ namespace GfxRenderEngine
                 registry.emplace<MeshComponent>(entity, mesh);
             }
 
-            {
-            }
             return entity;
         }
         else

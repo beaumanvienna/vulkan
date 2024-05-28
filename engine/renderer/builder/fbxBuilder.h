@@ -52,10 +52,10 @@ namespace GfxRenderEngine
                             uint uvSet = 0);
 
         void LoadMaterials();
-        bool LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB);
-        void LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial);
-        bool LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial);
-        void AssignMaterial(Submesh& submesh, uint const materialIndex);
+        std::shared_ptr<Texture> LoadTexture(std::string const& filepath, bool useSRGB);
+        void LoadProperties(const aiMaterial* fbxMaterial, Material::PbrMaterial& pbrMaterial);
+        void LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, int materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex);
         glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
         void PrintMaps(const aiMaterial* fbxMaterial);
 
@@ -71,7 +71,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
-        uint m_MaterialFeatures;
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;

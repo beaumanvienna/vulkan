@@ -39,7 +39,7 @@ namespace GfxRenderEngine
     FbxBuilder::FbxBuilder(const std::string& filepath, Scene& scene)
         : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
           m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}, m_InstanceCount{0}, m_InstanceIndex{0},
-          m_FbxScene{nullptr}, m_FbxNoBuiltInTangents{false}, m_MaterialFeatures{0}
+          m_FbxScene{nullptr}, m_FbxNoBuiltInTangents{false}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
     }
@@ -224,10 +224,10 @@ namespace GfxRenderEngine
             LoadVertexData(fbxNodePtr);
             LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(), m_Indices.size(),
                           m_Filepath, nodeName);
-            for (uint meshIndex = 0; meshIndex < fbxNodePtr->mNumMeshes; ++meshIndex)
+            for (uint submeshIndex = 0; submeshIndex < fbxNodePtr->mNumMeshes; ++submeshIndex)
             {
-                uint fbxMeshIndex = fbxNodePtr->mMeshes[meshIndex];
-                AssignMaterial(m_Submeshes[meshIndex], m_FbxScene->mMeshes[fbxMeshIndex]->mMaterialIndex);
+                uint fbxMeshIndex = fbxNodePtr->mMeshes[submeshIndex];
+                AssignMaterial(m_Submeshes[submeshIndex], m_FbxScene->mMeshes[fbxMeshIndex]->mMaterialIndex);
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
 
@@ -262,7 +262,7 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    bool FbxBuilder::LoadImage(std::string& filepath, uint& mapIndex, bool useSRGB)
+    std::shared_ptr<Texture> FbxBuilder::LoadTexture(std::string const& filepath, bool useSRGB)
     {
         std::shared_ptr<Texture> texture;
         bool loadSucess = false;
@@ -279,198 +279,181 @@ namespace GfxRenderEngine
         }
         else
         {
-            LOG_CORE_CRITICAL("bool FbxBuilder::LoadImage(): file '{0}' not found", filepath);
+            LOG_CORE_CRITICAL("bool FbxBuilder::LoadTexture(): file '{0}' not found", filepath);
         }
 
         if (loadSucess)
         {
-#ifdef DEBUG
-            texture->SetFilename(filepath);
-#endif
-            mapIndex = m_Textures.size();
             m_Textures.push_back(texture);
+            return texture;
         }
-        return loadSucess;
+        return nullptr;
     }
 
-    bool FbxBuilder::LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, Material& engineMaterial)
+    void FbxBuilder::LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, int materialIndex)
     {
-        bool loadedSuccessfully = false;
-        //        uint textureCount = fbxMaterial->GetTextureCount(textureType);
-        //        if (textureCount)
-        //        {
-        //            aiString aiFilepath;
-        //            auto getTexture = fbxMaterial->GetTexture(textureType, 0 /* first map*/, &aiFilepath);
-        //            std::string fbxFilepath(aiFilepath.C_Str());
-        //            std::string filepath(fbxFilepath);
-        //            if (getTexture == aiReturn_SUCCESS)
-        //            {
-        //                bool loadImage = false;
-        //                switch (textureType)
-        //                {
-        //                    case aiTextureType_DIFFUSE:
-        //                    {
-        //                        loadImage = LoadImage(filepath, engineMaterial.m_DiffuseMapIndex, Texture::USE_SRGB);
-        //                        break;
-        //                    }
-        //                    case aiTextureType_NORMALS:
-        //                    {
-        //                        loadImage = LoadImage(filepath, engineMaterial.m_NormalMapIndex, Texture::USE_UNORM);
-        //                        break;
-        //                    }
-        //                    case aiTextureType_SHININESS: // assimp XD
-        //                    {
-        //                        loadImage = LoadImage(filepath, engineMaterial.m_RoughnessMapIndex, Texture::USE_UNORM);
-        //                        break;
-        //                    }
-        //                    case aiTextureType_METALNESS:
-        //                    {
-        //                        loadImage = LoadImage(filepath, engineMaterial.m_MetallicMapIndex, Texture::USE_UNORM);
-        //                        break;
-        //                    }
-        //                    case aiTextureType_EMISSIVE:
-        //                    {
-        //                        loadImage = LoadImage(filepath, engineMaterial.m_EmissiveMapIndex, Texture::USE_SRGB);
-        //                        break;
-        //                    }
-        //                    default:
-        //                    {
-        //                        CORE_ASSERT(false, "texture type not recognized");
-        //                    }
-        //                }
-        //                if (loadImage)
-        //                {
-        //                    loadedSuccessfully = true;
-        //                    switch (textureType)
-        //                    {
-        //                        case aiTextureType_DIFFUSE:
-        //                        {
-        //                            engineMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
-        //                            break;
-        //                        }
-        //                        case aiTextureType_NORMALS:
-        //                        {
-        //                            engineMaterial.m_Features |= Material::HAS_NORMAL_MAP;
-        //                            break;
-        //                        }
-        //                        case aiTextureType_SHININESS: // assimp XD
-        //                        {
-        //                            engineMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
-        //                            break;
-        //                        }
-        //                        case aiTextureType_METALNESS:
-        //                        {
-        //                            engineMaterial.m_Features |= Material::HAS_METALLIC_MAP;
-        //                            break;
-        //                        }
-        //                        case aiTextureType_EMISSIVE:
-        //                        {
-        //                            engineMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
-        //                            break;
-        //                        }
-        //                        default:
-        //                        {
-        //                            // checked above
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        return loadedSuccessfully;
+        uint textureCount = fbxMaterial->GetTextureCount(textureType);
+        if (!textureCount)
+        {
+            return;
+        }
+
+        Material& material = m_Materials[materialIndex];
+        Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
+        Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
+
+        aiString aiFilepath;
+        auto getTexture = fbxMaterial->GetTexture(textureType, 0 /* first map*/, &aiFilepath);
+        std::string fbxFilepath(aiFilepath.C_Str());
+        std::string filepath(fbxFilepath);
+        if (getTexture == aiReturn_SUCCESS)
+        {
+            switch (textureType)
+            {
+                // LoadTexture is inside switch statement for sRGB and UNORM
+                case aiTextureType_DIFFUSE:
+                {
+                    auto texture = LoadTexture(filepath, Texture::USE_SRGB);
+                    if (texture)
+                    {
+                        materialTextures[Material::DIFFUSE_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                    }
+                    break;
+                }
+                case aiTextureType_NORMALS:
+                {
+                    auto texture = LoadTexture(filepath, Texture::USE_UNORM);
+                    if (texture)
+                    {
+                        materialTextures[Material::NORMAL_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                    }
+                    break;
+                }
+                case aiTextureType_SHININESS: // assimp XD
+                {
+                    auto texture = LoadTexture(filepath, Texture::USE_UNORM);
+                    if (texture)
+                    {
+                        materialTextures[Material::ROUGHNESS_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
+                    }
+                    break;
+                }
+                case aiTextureType_METALNESS:
+                {
+                    auto texture = LoadTexture(filepath, Texture::USE_UNORM);
+                    if (texture)
+                    {
+                        materialTextures[Material::METALLIC_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_METALLIC_MAP;
+                    }
+                    break;
+                }
+                case aiTextureType_EMISSIVE:
+                {
+                    auto texture = LoadTexture(filepath, Texture::USE_SRGB);
+                    if (texture)
+                    {
+                        materialTextures[Material::EMISSIVE_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_COLOR;
+                    }
+                    break;
+                }
+                default:
+                {
+                    CORE_ASSERT(false, "texture type not recognized");
+                }
+            }
+        }
     }
 
-    void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, Material& engineMaterial)
+    void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, Material::PbrMaterial& pbrMaterial)
     {
-        //        { // diffuse
-        //            aiColor3D diffuseColor;
-        //            if (fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_DiffuseColor.r = diffuseColor.r;
-        //                engineMaterial.m_DiffuseColor.g = diffuseColor.g;
-        //                engineMaterial.m_DiffuseColor.b = diffuseColor.b;
-        //            }
-        //        }
-        //        { // roughness
-        //            float roughnessFactor;
-        //            if (fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_Roughness = roughnessFactor;
-        //            }
-        //            else
-        //            {
-        //                engineMaterial.m_Roughness = 0.1f;
-        //            }
-        //        }
-        //
-        //        { // metallic
-        //            float metallicFactor;
-        //            if (fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, metallicFactor) == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_Metallic = metallicFactor;
-        //            }
-        //            else if (fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_Metallic = metallicFactor;
-        //            }
-        //            else
-        //            {
-        //                engineMaterial.m_Metallic = 0.886f;
-        //            }
-        //        }
-        //
-        //        { // emissive color
-        //            aiColor3D emission;
-        //            auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
-        //            if (result == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_EmissiveColor = glm::vec3(emission.r, emission.g, emission.b);
-        //            }
-        //        }
-        //
-        //        { // emissive strength
-        //            float emissiveStrength;
-        //            auto result = fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveStrength);
-        //            if (result == aiReturn_SUCCESS)
-        //            {
-        //                engineMaterial.m_EmissiveStrength = emissiveStrength;
-        //            }
-        //        }
-        //
-        //        engineMaterial.m_NormalMapIntensity = 1.0f;
+        { // diffuse
+            aiColor3D diffuseColor;
+            if (fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_DiffuseColor.r = diffuseColor.r;
+                pbrMaterial.m_DiffuseColor.g = diffuseColor.g;
+                pbrMaterial.m_DiffuseColor.b = diffuseColor.b;
+            }
+        }
+        { // roughness
+            float roughnessFactor;
+            if (fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_Roughness = roughnessFactor;
+            }
+            else
+            {
+                pbrMaterial.m_Roughness = 0.1f;
+            }
+        }
+
+        { // metallic
+            float metallicFactor;
+            if (fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, metallicFactor) == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_Metallic = metallicFactor;
+            }
+            else if (fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_Metallic = metallicFactor;
+            }
+            else
+            {
+                pbrMaterial.m_Metallic = 0.886f;
+            }
+        }
+
+        { // emissive color
+            aiColor3D emission;
+            auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
+            if (result == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_EmissiveColor = glm::vec3(emission.r, emission.g, emission.b);
+            }
+        }
+
+        { // emissive strength
+            float emissiveStrength;
+            auto result = fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveStrength);
+            if (result == aiReturn_SUCCESS)
+            {
+                pbrMaterial.m_EmissiveStrength = emissiveStrength;
+            }
+        }
+
+        pbrMaterial.m_NormalMapIntensity = 1.0f;
     }
 
     void FbxBuilder::LoadMaterials()
     {
-        m_Materials.clear();
         uint numMaterials = m_FbxScene->mNumMaterials;
-        for (uint fbxMaterialIndex = 0; fbxMaterialIndex < numMaterials; ++fbxMaterialIndex)
+        m_Materials.resize(numMaterials);
+        m_MaterialTextures.resize(numMaterials);
+        for (uint materialIndex = 0; materialIndex < numMaterials; ++materialIndex)
         {
-            const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[fbxMaterialIndex];
+            const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[materialIndex];
             // PrintMaps(fbxMaterial);
 
-            Material engineMaterial{};
+            Material& material = m_Materials[materialIndex];
 
-            LoadMap(fbxMaterial, aiTextureType_DIFFUSE, engineMaterial);
-            LoadMap(fbxMaterial, aiTextureType_NORMALS, engineMaterial);
-            LoadMap(fbxMaterial, aiTextureType_SHININESS, engineMaterial);
-            LoadMap(fbxMaterial, aiTextureType_METALNESS, engineMaterial);
-            LoadMap(fbxMaterial, aiTextureType_EMISSIVE, engineMaterial);
+            LoadMap(fbxMaterial, aiTextureType_DIFFUSE, materialIndex);
+            LoadMap(fbxMaterial, aiTextureType_NORMALS, materialIndex);
+            LoadMap(fbxMaterial, aiTextureType_SHININESS, materialIndex);
+            LoadMap(fbxMaterial, aiTextureType_METALNESS, materialIndex);
+            LoadMap(fbxMaterial, aiTextureType_EMISSIVE, materialIndex);
 
-            LoadProperties(fbxMaterial, engineMaterial);
-
-            m_Materials.push_back(engineMaterial);
+            LoadProperties(fbxMaterial, material.m_PbrMaterial);
         }
     }
 
     void FbxBuilder::LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
     {
         // handle vertex data
-        m_Vertices.clear();
-        m_Indices.clear();
-        m_Submeshes.clear();
-        m_MaterialFeatures = 0;
-
         m_FbxNoBuiltInTangents = false;
         uint numMeshes = fbxNodePtr->mNumMeshes;
         if (numMeshes)
@@ -671,326 +654,43 @@ namespace GfxRenderEngine
         return m;
     }
 
-    void FbxBuilder::AssignMaterial(Submesh& submesh, uint const materialIndex)
+    void FbxBuilder::AssignMaterial(Submesh& submesh, int const materialIndex)
     {
-        //        if (!m_FbxScene->mNumMaterials)
-        //        {
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced,
-        //                buffers); submesh.m_MaterialDescriptors.push_back(materialDescriptor); m_MaterialFeatures |=
-        //                MaterialDescriptor::MtPbrNoMap;
-        //            }
-        //            submesh.m_MaterialProperties.m_Roughness = 0.5f;
-        //            submesh.m_MaterialProperties.m_Metallic = 0.1f;
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap (no material found)", materialIndex);
-        //            return;
-        //        }
-        //
-        //        if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
-        //        {
-        //            LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
-        //        }
-        //
-        //        auto& material = m_Materials[materialIndex];
-        //        // assign only those material features that are actually needed in the renderer
-        //        submesh.m_MaterialProperties.m_NormalMapIntensity = material.m_NormalMapIntensity;
-        //        submesh.m_MaterialProperties.m_Roughness = material.m_Roughness;
-        //        submesh.m_MaterialProperties.m_Metallic = material.m_Metallic;
-        //        submesh.m_MaterialProperties.m_EmissiveStrength = material.m_EmissiveStrength;
-        //        submesh.m_MaterialProperties.m_EmissiveColor = glm::vec4(material.m_EmissiveColor, 1.0f);
-        //        submesh.m_MaterialProperties.m_BaseColorFactor = material.m_DiffuseColor;
-        //
-        //        uint pbrFeatures = material.m_Features & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
-        //                                                  Material::HAS_ROUGHNESS_MAP | Material::HAS_METALLIC_MAP |
-        //                                                  Material::HAS_ROUGHNESS_METALLIC_MAP |
-        //                                                  Material::HAS_SKELETAL_ANIMATION);
-        //        if (pbrFeatures == Material::HAS_DIFFUSE_MAP)
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_SKELETAL_ANIMATION))
-        //        {
-        //            uint diffuseSAMapIndex = material.m_DiffuseMapIndex;
-        //            CORE_ASSERT(diffuseSAMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseSAMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseSAMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseSAMapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseSAMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseSA, features: 0x{1:x}", materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex]}; std::vector<std::shared_ptr<Buffer>>
-        //                buffers{m_InstanceBuffer->GetBuffer()}; auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalMapInstanced, textures,
-        //                    buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormal, features: 0x{1:x}",
-        //            materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP |
-        //        Material::HAS_SKELETAL_ANIMATION))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex]}; std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData,
-        //                m_InstanceBuffer->GetBuffer()}; auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseNormalSAMapInstanced, textures,
-        //                    buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalSAMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}",
-        //            materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP
-        //        |
-        //                                 Material::HAS_SKELETAL_ANIMATION))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            uint roughnessMapIndex = material.m_RoughnessMapIndex;
-        //
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex],
-        //                                                               m_Textures[roughnessMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(
-        //                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessSAMapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessSAMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalSA, features: 0x{1:x}",
-        //            materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP
-        //        |
-        //                                 Material::HAS_METALLIC_MAP))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            uint roughnessMapIndex = material.m_RoughnessMapIndex;
-        //            uint metallicMapIndex = material.m_MetallicMapIndex;
-        //
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex],
-        //                                                               m_Textures[roughnessMapIndex],
-        //                                                               m_Textures[metallicMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(
-        //                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features:
-        //            0x{1:x}",
-        //                          materialIndex, material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP
-        //        |
-        //                                 Material::HAS_METALLIC_MAP | Material::HAS_SKELETAL_ANIMATION))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            uint roughnessMapIndex = material.m_RoughnessMapIndex;
-        //            uint metallicMapIndex = material.m_MetallicMapIndex;
-        //
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex],
-        //                                                               m_Textures[roughnessMapIndex],
-        //                                                               m_Textures[metallicMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_ShaderData, m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(
-        //                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallicSA2Map;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallicSA2, features:
-        //            0x{1:x}",
-        //                          materialIndex, material.m_Features);
-        //        }
-        //        else if (pbrFeatures == (Material::HAS_DIFFUSE_MAP | Material::HAS_ROUGHNESS_MAP |
-        //        Material::HAS_METALLIC_MAP))
-        //        {
-        //            LOG_CORE_CRITICAL("material diffuseRoughnessMetallic not supported");
-        //        }
-        //        else if (pbrFeatures & (Material::HAS_DIFFUSE_MAP | Material::HAS_NORMAL_MAP | Material::HAS_ROUGHNESS_MAP
-        //        |
-        //                                Material::HAS_METALLIC_MAP))
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            uint normalMapIndex = material.m_NormalMapIndex;
-        //            uint roughnessMapIndex = material.m_RoughnessMapIndex;
-        //            uint metallicMapIndex = material.m_MetallicMapIndex;
-        //
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(normalMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: normalMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(roughnessMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: roughnessMapIndex < m_Textures.size()");
-        //            CORE_ASSERT(metallicMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: metallicMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex],
-        //                m_Textures[normalMapIndex],
-        //                                                               m_Textures[roughnessMapIndex],
-        //                                                               m_Textures[metallicMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(
-        //                    MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2MapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseNormalRoughnessMetallic2Map;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuseNormalRoughnessMetallic2, features:
-        //            0x{1:x}",
-        //                          materialIndex, material.m_Features);
-        //        }
-        //        else if (pbrFeatures & Material::HAS_DIFFUSE_MAP)
-        //        {
-        //            uint diffuseMapIndex = material.m_DiffuseMapIndex;
-        //            CORE_ASSERT(diffuseMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: diffuseMapIndex < m_Textures.size()");
-        //
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[diffuseMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrDiffuseMapInstanced, textures, buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrDiffuseMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrDiffuse, features: 0x{1:x}", materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else
-        //        {
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrNoMapInstanced,
-        //                buffers); submesh.m_MaterialDescriptors.push_back(materialDescriptor); m_MaterialFeatures |=
-        //                MaterialDescriptor::MtPbrNoMap;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrNoMap, features: 0x{1:x}", materialIndex,
-        //                          material.m_Features);
-        //        }
-        //
-        //        // emissive materials
-        //        if (material.m_Features & Material::HAS_EMISSIVE_MAP) // emissive texture
-        //        {
-        //            uint emissiveMapIndex = material.m_EmissiveMapIndex;
-        //            CORE_ASSERT(emissiveMapIndex < m_Textures.size(),
-        //                        "FbxBuilder::AssignMaterial: emissiveMapIndex < m_Textures.size()");
-        //
-        //            {
-        //                std::vector<std::shared_ptr<Texture>> textures{m_Textures[emissiveMapIndex]};
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor =
-        //                    MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveTextureInstanced, textures,
-        //                    buffers);
-        //                submesh.m_MaterialDescriptors.push_back(materialDescriptor);
-        //                m_MaterialFeatures |= MaterialDescriptor::MtPbrEmissiveTexture;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrEmissiveTexture, features: 0x{1:x}",
-        //            materialIndex,
-        //                          material.m_Features);
-        //        }
-        //        else if (material.m_EmissiveColor * material.m_EmissiveStrength != glm::vec3(0.0f, 0.0f, 0.0f)) // emissive
-        //        color
-        //        {
-        //            { // create material descriptor
-        //                std::vector<std::shared_ptr<Buffer>> buffers{m_InstanceBuffer->GetBuffer()};
-        //                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbrEmissiveInstanced,
-        //                buffers); submesh.m_MaterialDescriptors.push_back(materialDescriptor); m_MaterialFeatures |=
-        //                MaterialDescriptor::MtPbrEmissive;
-        //            }
-        //
-        //            LOG_CORE_INFO("material assigned: material index {0}, PbrEmissive, features: 0x{1:x}", materialIndex,
-        //                          material.m_Features);
-        //        }
+        if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
+        {
+            LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
+        }
+
+        Material material{}; // create from defaults
+        Material::MaterialTextures materialTextures;
+
+        // material
+        if (materialIndex != Gltf::GLTF_NOT_USED)
+        {
+            material = m_Materials[materialIndex];
+            materialTextures = m_MaterialTextures[materialIndex];
+        }
+
+        // buffers
+        Material::MaterialBuffers materialBuffers;
+        {
+            std::shared_ptr<Buffer> instanceUbo{m_InstanceBuffer->GetBuffer()};
+            materialBuffers[Material::INSTANCE_BUFFER_INDEX] = instanceUbo;
+            if (m_SkeletalAnimation)
+            {
+                materialBuffers[Material::SKELETAL_ANIMATION_BUFFER_INDEX] = m_ShaderData;
+            }
+        }
+
+        // create material descriptor
+
+        material.m_MaterialDescriptor =
+            MaterialDescriptor::Create(MaterialDescriptor::MaterialTypes::MtPbr, materialTextures, materialBuffers);
+
+        // assign
+        submesh.m_Material = material;
+
+        LOG_CORE_INFO("material assigned (fastgltf): material index {0}", materialIndex);
     }
 
     void FbxBuilder::CalculateTangents()
