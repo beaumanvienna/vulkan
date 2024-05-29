@@ -15,7 +15,7 @@ Features:
 - Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
 - Point lights, directional lights with shadows, and deferred shading, instancing of models on the GPU
 - Post-processing (Bloom), skeletal animations
-- Scene management with scene descriptions, background loading, scene saving, and attachable scripts
+- Scene management with scene descriptions, background loading, and scene saving
 - Sound support and desktop volume settings (Linux only)
 - Hotplug gamepad support based on SDL2 and a controller database
 - Cross-platform resource system (Windows/Linux)
