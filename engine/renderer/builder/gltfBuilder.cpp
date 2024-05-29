@@ -582,6 +582,10 @@ namespace GfxRenderEngine
     // handle vertex data
     void GltfBuilder::LoadVertexData(uint const meshIndex)
     {
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Submeshes.clear();
+
         uint numPrimitives = m_GltfModel.meshes[meshIndex].primitives.size();
         m_Submeshes.resize(numPrimitives);
 

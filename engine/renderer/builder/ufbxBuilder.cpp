@@ -442,9 +442,13 @@ namespace GfxRenderEngine
         }
     }
 
+    // handle vertex data
     void UFbxBuilder::LoadVertexData(const ufbx_node* fbxNodePtr)
     {
-        // handle vertex data
+        m_Vertices.clear();
+        m_Indices.clear();
+        m_Submeshes.clear();
+
         m_FbxNoBuiltInTangents = false;
 
         ufbx_mesh& fbxMesh = *fbxNodePtr->mesh; // mesh for this node, contains submeshes
