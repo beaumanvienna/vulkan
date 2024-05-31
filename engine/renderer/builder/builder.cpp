@@ -112,11 +112,13 @@ namespace GfxRenderEngine
     }
     entt::entity Builder::LoadTerrainHeightMapPNG(std::string const& filepath, Scene& scene)
     {
+        m_Vertices.clear();
+        m_Indices.clear();
         int width, height, bytesPerPixel;
         uchar* localBuffer = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, 0);
-        std::vector<std::vector<float>> terrainData(height, std::vector<float>(width));
         if (localBuffer)
         {
+            std::vector<std::vector<float>> terrainData(height, std::vector<float>(width));
             for (int i = 0; i < height; ++i)
             {
                 for (int j = 0; j < width; ++j)
@@ -136,13 +138,13 @@ namespace GfxRenderEngine
                 auto& sceneGraph = scene.GetSceneGraph();
                 auto& dictionary = scene.GetDictionary();
 
+                // create game object
                 entity = registry.create();
                 TransformComponent transform{};
-                registry.emplace<TransformComponent>(entity, transform);
                 PbrMaterialTag pbrMaterialTag{};
-                registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
-
                 InstanceTag instanceTag;
+
+                // create instance buffer
                 instanceTag.m_Instances.push_back(entity);
                 const uint numberOfInstances = 1;
                 const uint indexOfFirstInstance = 0;
@@ -150,11 +152,16 @@ namespace GfxRenderEngine
                 instanceTag.m_InstanceBuffer = instanceBuffer;
                 instanceTag.m_InstanceBuffer->SetInstanceData(indexOfFirstInstance, transform.GetMat4Global(),
                                                               transform.GetNormalMatrix());
-                registry.emplace<InstanceTag>(entity, instanceTag);
                 transform.SetInstance(instanceTag.m_InstanceBuffer, indexOfFirstInstance);
 
-                uint groupNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
-                sceneGraph.GetRoot().AddChild(groupNode);
+                // push into ECS
+                registry.emplace<TransformComponent>(entity, transform);
+                registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+                registry.emplace<InstanceTag>(entity, instanceTag);
+
+                // add to scene graph
+                uint newNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
+                sceneGraph.GetRoot().AddChild(newNode);
 
                 Submesh submesh{};
                 submesh.m_FirstIndex = 0;
@@ -166,6 +173,7 @@ namespace GfxRenderEngine
                 submesh.m_Material.m_PbrMaterial.m_Roughness = 0.5f;
                 submesh.m_Material.m_PbrMaterial.m_Metallic = 0.1f;
                 submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
+                submesh.m_Material.m_PbrMaterial.m_Features = Material::HAS_VERTEX_COLOR;
 
                 { // create material descriptor
                     Material::MaterialTextures materialTextures;

@@ -128,9 +128,6 @@ namespace LucreApp
         }
         m_Water = m_Dictionary.Retrieve(
             "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
-        if (m_Water == entt::null)
-            m_Water = m_Dictionary.Retrieve(
-                "application/lucre/models/external_3D_files/Island scene/gltf/Island2.glb::0::Scene::Water");
 
         // get characters and start all animations
         m_Guybrush = m_Dictionary.Retrieve(

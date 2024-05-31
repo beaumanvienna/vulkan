@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     TerrainScene::TerrainScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
     {
     }
 
@@ -98,8 +98,50 @@ namespace LucreApp
             float intensity = 5.0f;
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
+            m_DirectionalLight1 = CreateDirectionalLight(intensity, color);
             auto& directionalLightComponent0 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight0);
+            auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
             m_DirectionalLights.push_back(&directionalLightComponent0);
+            m_DirectionalLights.push_back(&directionalLightComponent1);
+        }
+
+        m_Water = m_Dictionary.Retrieve(
+            "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
+
+        // get characters and start all animations
+        m_Guybrush = m_Dictionary.Retrieve(
+            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
+        if (m_Guybrush != entt::null)
+        {
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                animations.SetRepeatAll(true);
+                animations.Start();
+            }
+            else
+            {
+                LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Guybrush));
+            }
+        }
+
+        // start gamepad-based control for characters
+        if (m_Guybrush != entt::null)
+        {
+            if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
+            {
+                auto& mesh = m_Registry.get<MeshComponent>(m_Guybrush);
+                SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+
+                entt::entity model = m_Dictionary.Retrieve(
+                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
+                if (model != entt::null)
+                {
+                    m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
+                    m_CharacterAnimation->Start();
+                }
+            }
         }
     }
 
@@ -115,11 +157,14 @@ namespace LucreApp
     void TerrainScene::LoadTerrain()
     {
         Builder builder;
-        builder.LoadTerrainHeightMapPNG(m_SceneLoaderJSON.GetTerrainPath(), *this);
-        auto view = m_Registry.view<TransformComponent>();
-        auto& terrainTransform = view.get<TransformComponent>(terrain);
-        terrainTransform.SetScale(1.0f);
-        terrainTransform.SetTranslation({-5.0f, 0.0f, -5.0f});
+        m_Terrain = builder.LoadTerrainHeightMapPNG(m_SceneLoaderJSON.GetTerrainPath(), *this);
+        if (m_Terrain != entt::null)
+        {
+            auto view = m_Registry.view<TransformComponent>();
+            auto& terrainTransform = view.get<TransformComponent>(m_Terrain);
+            terrainTransform.SetScale(0.054f);
+            terrainTransform.SetTranslation({-0.576f, 2.33f, -0.117f});
+        }
     }
     void TerrainScene::LoadModels()
     {
@@ -135,30 +180,51 @@ namespace LucreApp
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
             skyboxTransform.SetScale(250.0f);
         }
-        {
+        { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/"
-                                                     "lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
+                    LOG_APP_INFO("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.create();
                     TransformComponent transform{};
 
-                    transform.SetScale({0.00999978, 0.0100001, 0.0100001});
+                    transform.SetScale({0.01, 0.01, 0.01});
                     transform.SetRotation({-0.888632, -0.571253, -0.166816});
                     transform.SetTranslation({1.5555, 4, -4.13539});
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
                 }
+
                 m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
-                float left = -4.0f;
-                float right = 4.0f;
-                float bottom = -4.0f;
-                float top = 4.0f;
-                float near = 0.1f;
-                float far = 10.0f;
-                m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb0, m_LightView0);
+            }
+
+            {
+                m_Lightbulb1 =
+                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                if (m_Lightbulb1 == entt::null)
+                {
+                    LOG_APP_INFO("m_Lightbulb1 not found");
+                    m_Lightbulb1 = m_Registry.create();
+                    TransformComponent transform{};
+
+                    transform.SetScale({0.00999934, 0.00999997, 0.00999993});
+                    transform.SetRotation({-1.11028, -0.546991, 0.165967});
+                    transform.SetTranslation({6, 6.26463, -14.1572});
+
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
+                }
+                m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
+                float left = -20.0f;
+                float right = 20.0f;
+                float bottom = -14.0f;
+                float top = 14.0f;
+                float near = 0.1f;
+                float far = 40.0f;
+                m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+                SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
     }
@@ -181,14 +247,40 @@ namespace LucreApp
             auto& cameraTransform = view.get<TransformComponent>(m_Camera);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_CameraController->SetView(cameraTransform.GetMat4Global());
         }
 
+        if (m_Water != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Water);
+            transform.AddRotation({0.0f, 0.1f * timestep, 0.0f});
+        }
+
+        if (m_CharacterAnimation)
+        {
+            m_CharacterAnimation->OnUpdate(timestep);
+        }
+
+        {
+            auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
+            float scaleX = lightbulbTransform.GetScale().x;
+            float left = -400.0f * scaleX;
+            float right = 400.0f * scaleX;
+            float bottom = -400.0f * scaleX;
+            float top = 400.0f * scaleX;
+            float near = 10.0f * scaleX;
+            float far = 1000.0f * scaleX;
+            m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+        }
         SetLightView(m_Lightbulb0, m_LightView0);
+        SetLightView(m_Lightbulb1, m_LightView1);
         SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
+        SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
         m_Renderer->Renderpass3D(m_Registry);
@@ -234,10 +326,13 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-0.8f, 2.0f, 2.30515f});
+        cameraTransform.SetTranslation({-0.8f, 3.0f, 23.0f});
         cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
 
-        m_CameraController->SetViewYXZ(cameraTransform.GetTranslation(), cameraTransform.GetRotation());
+        // global camera transform is not yet available
+        // because UpdateTransformCache didn't run yet
+        // for default camera: global == local transform
+        m_CameraController->SetView(cameraTransform.GetMat4Local());
     }
 
     void TerrainScene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)

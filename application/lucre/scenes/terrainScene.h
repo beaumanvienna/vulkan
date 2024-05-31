@@ -33,6 +33,7 @@
 
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
+#include "characterAnimation.h"
 #include "lucre.h"
 
 namespace LucreApp
@@ -60,8 +61,6 @@ namespace LucreApp
     private:
         void LoadModels();
         void ResetScene();
-        void RotateLights(const Timestep& timestep);
-        void AnimateHero(const Timestep& timestep);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
         void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
                                  const std::shared_ptr<Camera>& lightView, int renderpass);
@@ -79,9 +78,9 @@ namespace LucreApp
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_Lightbulb0, terrain;
+        entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1, m_Terrain, m_Water, m_Guybrush;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
-        entt::entity m_DirectionalLight0;
+        entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_PointLight[MAX_LIGHTS];
 
         //------
@@ -90,17 +89,11 @@ namespace LucreApp
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
-        TransformComponent m_GamepadInput;
+
+        // animation
+        std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
 
     private:
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
-        struct Group1
-        {
-            bool m_Rotated;
-        };
         struct Group2
         {
             bool m_Rotated;

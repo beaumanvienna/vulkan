@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     BeachScene::BeachScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
     {
     }
 

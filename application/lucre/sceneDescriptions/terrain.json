@@ -1,12 +1,12 @@
 {
     "file format identifier": 1.2,
     "description": "terrain scene",
-    "author": "Copyright (c) 2023 Engine Development Team",
+    "author": "Copyright (c) 2024 Engine Development Team",
     "terrainPngPath": "application/lucre/models/assets/terrain/heightmap.png",
     "fastgltf files":
     [
         {
-            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.gltf",
+            "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
             "instances":
             [
                 {
@@ -37,7 +37,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island10.gltf",
+            "filename": "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb",
             "instances":
             [
                 {

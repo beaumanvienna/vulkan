@@ -39,8 +39,8 @@ namespace LucreApp
 {
 
     MainScene::MainScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_GamepadInput{}, m_Fire{false}, m_StartTimer{true},
-          m_LaunchVolcanoTimer(1000), m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_Fire{false}, m_StartTimer{true}, m_LaunchVolcanoTimer(1000),
+          m_SceneLoaderJSON{*this}
     {
     }
 

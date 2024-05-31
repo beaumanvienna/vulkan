@@ -82,7 +82,6 @@ namespace LucreApp
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
-        TransformComponent m_GamepadInput;
 
     private:
         struct BananaComponent
