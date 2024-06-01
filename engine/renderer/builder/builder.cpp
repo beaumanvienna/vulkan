@@ -54,40 +54,65 @@ namespace GfxRenderEngine
         float heightScale = 1.f; // Scale for the height values
         size_t rows = heightMap.size();
         size_t cols = heightMap.empty() ? 0 : heightMap[0].size();
-        Vertex vertex{};
+        m_Vertices.resize(rows * cols);
+        size_t vertexCounter = 0;
+
         for (size_t z = 0; z < rows; ++z)
         {
             for (size_t x = 0; x < cols; ++x)
             {
-                vertex.m_Position = glm::vec3(x * scale, heightMap[z][x] * heightScale, z * scale);
+                Vertex& vertex = m_Vertices[vertexCounter];
+                ++vertexCounter;
+
+                float originY = heightMap[z][x] * heightScale;
+
+                vertex.m_Position = glm::vec3(x * scale, originY, z * scale);
                 vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
                 vertex.m_UV = glm::vec2(0.f, 0.f);
                 vertex.m_Tangent = glm::vec3(1.0f);
                 vertex.m_JointIds = glm::ivec4(0);
                 vertex.m_Weights = glm::vec4(0.0f);
 
-                //--------
-
+                // compute normals via neighbors
+                //     up
+                // left O right
+                //    down
                 glm::vec3 sumNormals(0.0f);
-                // Neighbors
-                glm::vec3 left = x > 0 ? glm::vec3(-1.0f, heightMap[z][x - 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
-                glm::vec3 right =
-                    x < rows - 1 ? glm::vec3(1.0f, heightMap[z][x + 1] - heightMap[z][x], 0.0f) : glm::vec3(0.0f);
-                glm::vec3 down = z > 0 ? glm::vec3(0.0f, heightMap[z - 1][x] - heightMap[z][x], -1.0f) : glm::vec3(0.0f);
-                glm::vec3 up = z < rows - 1 ? glm::vec3(0.0f, heightMap[z + 1][x] - heightMap[z][x], 1.0f) : glm::vec3(0.0f);
+                float leftY = x > 0 ? heightMap[z][x - 1] * heightScale : 0.0f;
+                float rightY = x < cols - 1 ? heightMap[z][x + 1] * heightScale : 0.0f;
+                float upY = z < rows - 1 ? heightMap[z + 1][x] * heightScale : 0.0f;
+                float downY = z > 0 ? heightMap[z - 1][x] * heightScale : 0.0f;
 
-                // Cross products to compute normals
-                if (x > 0 && z > 0)
-                    sumNormals += glm::cross(left, down);
-                if (x < rows - 1 && z > 0)
-                    sumNormals += glm::cross(down, right);
-                if (x < rows - 1 && z < rows - 1)
-                    sumNormals += glm::cross(right, up);
-                if (x > 0 && z < rows - 1)
-                    sumNormals += glm::cross(up, left);
+                float dx = scale;
+                float dz = scale;
+
+                glm::vec3 left = glm::vec3(-dx, leftY - originY, 0.0f);
+                glm::vec3 right = glm::vec3(dx, rightY - originY, 0.0f);
+                glm::vec3 up = glm::vec3(0.0f, upY - originY, dz);
+                glm::vec3 down = glm::vec3(0.0f, downY - originY, -dz);
+
+                auto normalComponent = [&](glm::vec3 a, glm::vec3 b)
+                {
+                    glm::vec3 normal;
+                    if (x > 0 && z > 0 && x < cols - 1 && z < rows - 1)
+                    {
+                        // Cross products to compute normals
+                        normal = glm::cross(a, b);
+                    }
+                    else
+                    {
+                        normal = glm::vec3(0.0f, 1.0f, 0.0f);
+                    }
+                    return normal;
+                };
+
+                // smoothshading
+                sumNormals = normalComponent(left, -down);
+                sumNormals += normalComponent(-down, right);
+                sumNormals += normalComponent(right, -up);
+                sumNormals += normalComponent(-up, left);
 
                 vertex.m_Normal = glm::normalize(sumNormals);
-                m_Vertices.push_back(vertex);
             }
         }
         for (size_t z = 0; z < rows - 1; ++z)
