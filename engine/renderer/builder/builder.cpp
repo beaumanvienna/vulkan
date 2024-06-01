@@ -194,7 +194,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", filepath);
+            LOG_CORE_CRITICAL("Builder::LoadTerrainHeightMapPNG: Couldn't load file {0}", filepath);
         }
 
         return entt::null;

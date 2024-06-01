@@ -113,12 +113,8 @@ namespace GfxRenderEngine
         // draw shadow
         void DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                  VkDescriptorSet const& shadowDescriptorSet);
-        void DrawShadowAnimatedInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                         const VkDescriptorSet& shadowDescriptorSet);
         void DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
                                          VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
-        void DrawAnimatedShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
-                                                 VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         // cube map
         void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
 

@@ -111,7 +111,7 @@ namespace GfxRenderEngine
                 {
                     static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
                     static_cast<VK_Model*>(mesh.m_Model.get())
-                        ->DrawShadowAnimatedInstanced(frameInfo, m_PipelineLayout, shadowDescriptorSet);
+                        ->DrawShadowInstanced(frameInfo, m_PipelineLayout, shadowDescriptorSet);
                 }
             }
         }
