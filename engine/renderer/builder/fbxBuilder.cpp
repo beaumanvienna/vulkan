@@ -357,7 +357,8 @@ namespace GfxRenderEngine
                     if (texture)
                     {
                         materialTextures[Material::EMISSIVE_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_COLOR;
+                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
+                        pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
                     }
                     break;
                 }
@@ -441,13 +442,13 @@ namespace GfxRenderEngine
 
             Material& material = m_Materials[materialIndex];
 
+            LoadProperties(fbxMaterial, material.m_PbrMaterial);
+
             LoadMap(fbxMaterial, aiTextureType_DIFFUSE, materialIndex);
             LoadMap(fbxMaterial, aiTextureType_NORMALS, materialIndex);
             LoadMap(fbxMaterial, aiTextureType_SHININESS, materialIndex);
             LoadMap(fbxMaterial, aiTextureType_METALNESS, materialIndex);
             LoadMap(fbxMaterial, aiTextureType_EMISSIVE, materialIndex);
-
-            LoadProperties(fbxMaterial, material.m_PbrMaterial);
         }
     }
 

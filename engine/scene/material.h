@@ -58,7 +58,6 @@ namespace GfxRenderEngine
 
         enum MaterialFeatures // bitset
         {
-            HAS_VERTEX_COLOR = GLSL_HAS_VERTEX_COLOR,
             HAS_DIFFUSE_MAP = GLSL_HAS_DIFFUSE_MAP,
             HAS_NORMAL_MAP = GLSL_HAS_NORMAL_MAP,
             HAS_ROUGHNESS_MAP = GLSL_HAS_ROUGHNESS_MAP,

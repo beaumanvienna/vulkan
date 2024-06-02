@@ -323,7 +323,7 @@ namespace GfxRenderEngine
                     float baseFactor = baseFactorMaterialMap.has_value ? baseFactorMaterialMap.value_real : 1.0f;
                     if (materialMap.texture)
                     {
-                        std::string filename(materialMap.texture->filename.data);
+                        std::string filename(materialMap.texture->absolute_filename.data);
                         materialTextures[Material::DIFFUSE_MAP_INDEX] = LoadTexture(filename, Texture::USE_SRGB);
                         pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
                         pbrMaterial.m_DiffuseColor.r = baseFactor;
@@ -396,8 +396,9 @@ namespace GfxRenderEngine
                     std::string filename(materialMap.texture->filename.data);
                     materialTextures[Material::EMISSIVE_MAP_INDEX] = LoadTexture(filename, Texture::USE_SRGB);
                     pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
+                    pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
                 }
-
+                else
                 {
                     glm::vec3 emissiveColor(materialMap.value_vec3.x, materialMap.value_vec3.y, materialMap.value_vec3.z);
                     pbrMaterial.m_EmissiveColor = emissiveColor;

@@ -1,8 +1,5 @@
 /* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -24,14 +21,13 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 // material
-#define GLSL_HAS_VERTEX_COLOR (0x1 << 0x0)
-#define GLSL_HAS_DIFFUSE_MAP (0x1 << 0x1)
-#define GLSL_HAS_NORMAL_MAP (0x1 << 0x2)
-#define GLSL_HAS_ROUGHNESS_MAP (0x1 << 0x3)
-#define GLSL_HAS_METALLIC_MAP (0x1 << 0x4)
-#define GLSL_HAS_ROUGHNESS_METALLIC_MAP (0x1 << 0x5)
-#define GLSL_HAS_EMISSIVE_COLOR (0x1 << 0x6)
-#define GLSL_HAS_EMISSIVE_MAP (0x1 << 0x7)
+#define GLSL_HAS_DIFFUSE_MAP (0x1 << 0x0)
+#define GLSL_HAS_NORMAL_MAP (0x1 << 0x1)
+#define GLSL_HAS_ROUGHNESS_MAP (0x1 << 0x2)
+#define GLSL_HAS_METALLIC_MAP (0x1 << 0x3)
+#define GLSL_HAS_ROUGHNESS_METALLIC_MAP (0x1 << 0x4)
+#define GLSL_HAS_EMISSIVE_COLOR (0x1 << 0x5)
+#define GLSL_HAS_EMISSIVE_MAP (0x1 << 0x6)
 
 // shader properties
 #define GLSL_HAS_SKELETAL_ANIMATION (0x1 << 0x0)

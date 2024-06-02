@@ -105,15 +105,7 @@ void main()
     }
     else
     {
-        if (bool(push.m_Features & GLSL_HAS_VERTEX_COLOR))
-        {
-            col = vec4(fragColor.r, fragColor.g, fragColor.b, 1.0);
-        }
-        else
-        {
-            col = push.m_DiffuseColor;
-        }
-        
+        col = vec4(fragColor.r, fragColor.g, fragColor.b, 1.0);
     }
     if (col.w < 0.5)
     {

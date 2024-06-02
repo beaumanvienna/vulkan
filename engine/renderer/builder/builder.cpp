@@ -198,7 +198,6 @@ namespace GfxRenderEngine
                 submesh.m_Material.m_PbrMaterial.m_Roughness = 0.5f;
                 submesh.m_Material.m_PbrMaterial.m_Metallic = 0.1f;
                 submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
-                submesh.m_Material.m_PbrMaterial.m_Features = Material::HAS_VERTEX_COLOR;
 
                 { // create material descriptor
                     Material::MaterialTextures materialTextures;
