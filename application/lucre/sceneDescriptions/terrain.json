@@ -2,9 +2,72 @@
     "file format identifier": 1.2,
     "description": "terrain scene",
     "author": "Copyright (c) 2024 Engine Development Team",
-    "terrainPngPath": "application/lucre/models/assets/terrain/heightmap.png",
+    "terrainPngPath": "application/lucre/models/assets/terrain/heightmap2.png",
     "fastgltf files":
     [
+        {
+            "filename": "application/lucre/models/funkyKong/sports car/cube.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.141, 0.141, 0.141
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.779968, 2.25822, -4
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140998, 0.140998, 0.140998
+                        ],
+                        "rotation":
+                        [
+                            3.01614, 1.00771, 2.99355
+                        ],
+                        "translation":
+                        [
+                            -0.494322, 2.28222, -3.408
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/lights/gltf/lights.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.084, 0.084, 0.084
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.745493, 2.37433, -0.536219
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb",
             "instances":
@@ -81,12 +144,9 @@
                     }
                 }
             ]
-        }
-    ],
-    "ufbx files":
-    [
+        },
         {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
             "instances":
             [
                 {
@@ -105,7 +165,142 @@
                             -0.779968, 2.25822, 0.946633
                         ]
                     }
+                }
+            ]
+        }
+    ],
+    "gltf files":
+    [
+        {
+            "filename": "application/lucre/models/funkyKong/sports car/cube.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.141, 0.141, 0.141
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.779968, 5.25822, -4
+                        ]
+                    }
                 },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140998, 0.140998, 0.140998
+                        ],
+                        "rotation":
+                        [
+                            3.01614, 1.00771, 2.99355
+                        ],
+                        "translation":
+                        [
+                            -0.494322, 5.28222, -3.408
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "fbx files":
+    [
+        {
+            "filename": "application/lucre/models/funkyKong/sports car/cube.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.141, 0.141, 0.141
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.779968, 4.25822, -4
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140998, 0.140998, 0.140998
+                        ],
+                        "rotation":
+                        [
+                            3.01614, 1.00771, 2.99355
+                        ],
+                        "translation":
+                        [
+                            -0.494322, 4.28222, -3.408
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "ufbx files":
+    [
+        {
+            "filename": "application/lucre/models/funkyKong/sports car/cube.fbx",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.141, 0.141, 0.141
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.779968, 3.25822, -4
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140998, 0.140998, 0.140998
+                        ],
+                        "rotation":
+                        [
+                            3.01614, 1.00771, 2.99355
+                        ],
+                        "translation":
+                        [
+                            -0.494322, 3.28222, -3.408
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
+            "instances":
+            [
                 {
                     "transform":
                     {

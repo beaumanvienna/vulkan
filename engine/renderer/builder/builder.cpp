@@ -195,8 +195,8 @@ namespace GfxRenderEngine
                 submesh.m_VertexCount = m_Vertices.size();
                 submesh.m_InstanceCount = 1;
 
-                submesh.m_Material.m_PbrMaterial.m_Roughness = 0.5f;
-                submesh.m_Material.m_PbrMaterial.m_Metallic = 0.1f;
+                submesh.m_Material.m_PbrMaterial.m_Roughness = 0.1f;
+                submesh.m_Material.m_PbrMaterial.m_Metallic = 0.9f;
                 submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
 
                 { // create material descriptor

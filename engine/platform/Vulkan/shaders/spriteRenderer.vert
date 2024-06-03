@@ -70,9 +70,7 @@ layout(location = 0) out vec4  fragColor;
 layout(location = 1) out vec3  fragPositionWorld;
 layout(location = 2) out vec3  fragMormalWorld;
 layout(location = 3) out vec2  fragUV;
-layout(location = 4) out float fragAmplification;
-layout(location = 5) out int   fragUnlit;
-layout(location = 6) out vec3  toCameraDirection;
+layout(location = 4) out vec3  toCameraDirection;
 
 void main()
 {
@@ -81,8 +79,6 @@ void main()
     fragPositionWorld = positionWorld.xyz;
     fragMormalWorld = normalize(mat3(push.m_NormalMatrix) * normal);
     fragColor = color;
-    fragAmplification = amplification;
-    fragUnlit = unlit;
 
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position, 1.0);

@@ -278,31 +278,40 @@ namespace GfxRenderEngine
         return newNode;
     }
 
-    std::shared_ptr<Texture> UFbxBuilder::LoadTexture(std::string const& filepath, bool useSRGB)
+    std::shared_ptr<Texture> UFbxBuilder::LoadTexture(ufbx_material_map const& materialMap, bool useSRGB)
     {
         std::shared_ptr<Texture> texture;
-        bool loadSucess = false;
+        auto createTexture = [&](ufbx_string const& str)
+        {
+            std::string filepath(str.data);
+            if (EngineCore::FileExists(filepath) && !EngineCore::IsDirectory(filepath))
+            {
+                texture = Texture::Create();
+                if (texture->Init(filepath, useSRGB))
+                {
+                    m_Textures.push_back(texture);
+                    return true;
+                }
+            }
+            return false;
+        };
 
-        if (EngineCore::FileExists(filepath) && !EngineCore::IsDirectory(filepath))
+        if (createTexture(materialMap.texture->filename))
         {
-            texture = Texture::Create();
-            loadSucess = texture->Init(filepath, useSRGB);
-        }
-        else if (EngineCore::FileExists(m_Basepath + filepath) && !EngineCore::IsDirectory(m_Basepath + filepath))
-        {
-            texture = Texture::Create();
-            loadSucess = texture->Init(m_Basepath + filepath, useSRGB);
-        }
-        else
-        {
-            LOG_CORE_CRITICAL("UFbxBuilder::LoadTexture(): file '{0}' not found", filepath);
-        }
-
-        if (loadSucess)
-        {
-            m_Textures.push_back(texture);
             return texture;
         }
+        if (createTexture(materialMap.texture->absolute_filename))
+        {
+            return texture;
+        }
+        if (createTexture(materialMap.texture->relative_filename))
+        {
+            return texture;
+        }
+
+        // no luck
+        std::string filepath(materialMap.texture->filename.data);
+        LOG_CORE_CRITICAL("UFbxBuilder::LoadTexture(): file '{0}' not found", filepath);
         return nullptr;
     }
 
@@ -323,13 +332,15 @@ namespace GfxRenderEngine
                     float baseFactor = baseFactorMaterialMap.has_value ? baseFactorMaterialMap.value_real : 1.0f;
                     if (materialMap.texture)
                     {
-                        std::string filename(materialMap.texture->absolute_filename.data);
-                        materialTextures[Material::DIFFUSE_MAP_INDEX] = LoadTexture(filename, Texture::USE_SRGB);
-                        pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
-                        pbrMaterial.m_DiffuseColor.r = baseFactor;
-                        pbrMaterial.m_DiffuseColor.g = baseFactor;
-                        pbrMaterial.m_DiffuseColor.b = baseFactor;
-                        pbrMaterial.m_DiffuseColor.a = baseFactor;
+                        if (auto texture = LoadTexture(materialMap, Texture::USE_SRGB))
+                        {
+                            materialTextures[Material::DIFFUSE_MAP_INDEX] = texture;
+                            pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                            pbrMaterial.m_DiffuseColor.r = baseFactor;
+                            pbrMaterial.m_DiffuseColor.g = baseFactor;
+                            pbrMaterial.m_DiffuseColor.b = baseFactor;
+                            pbrMaterial.m_DiffuseColor.a = baseFactor;
+                        }
                     }
                     else // constant material property
                     {
@@ -348,9 +359,11 @@ namespace GfxRenderEngine
                 {
                     if (materialMap.texture)
                     {
-                        std::string filename(materialMap.texture->filename.data);
-                        materialTextures[Material::ROUGHNESS_MAP_INDEX] = LoadTexture(filename, Texture::USE_UNORM);
-                        pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
+                        if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
+                        {
+                            materialTextures[Material::ROUGHNESS_MAP_INDEX] = texture;
+                            pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
+                        }
                     }
                     else // constant material property
                     {
@@ -366,9 +379,11 @@ namespace GfxRenderEngine
                 {
                     if (materialMap.texture)
                     {
-                        std::string filename(materialMap.texture->filename.data);
-                        materialTextures[Material::METALLIC_MAP_INDEX] = LoadTexture(filename, Texture::USE_UNORM);
-                        pbrMaterial.m_Features |= Material::HAS_METALLIC_MAP;
+                        if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
+                        {
+                            materialTextures[Material::METALLIC_MAP_INDEX] = texture;
+                            pbrMaterial.m_Features |= Material::HAS_METALLIC_MAP;
+                        }
                     }
                     else // constant material property
                     {
@@ -382,9 +397,11 @@ namespace GfxRenderEngine
                 ufbx_material_map const& materialMap = fbxMaterial->pbr.normal_map;
                 if (materialMap.texture)
                 {
-                    std::string filename(materialMap.texture->filename.data);
-                    materialTextures[Material::NORMAL_MAP_INDEX] = LoadTexture(filename, Texture::USE_UNORM);
-                    pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                    if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
+                    {
+                        materialTextures[Material::NORMAL_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                    }
                 }
                 break;
             }
@@ -393,10 +410,12 @@ namespace GfxRenderEngine
                 ufbx_material_map const& materialMap = fbxMaterial->pbr.emission_color;
                 if (materialMap.texture)
                 {
-                    std::string filename(materialMap.texture->filename.data);
-                    materialTextures[Material::EMISSIVE_MAP_INDEX] = LoadTexture(filename, Texture::USE_SRGB);
-                    pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
-                    pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
+                    if (auto texture = LoadTexture(materialMap, Texture::USE_SRGB))
+                    {
+                        materialTextures[Material::EMISSIVE_MAP_INDEX] = texture;
+                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
+                        pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
+                    }
                 }
                 else
                 {

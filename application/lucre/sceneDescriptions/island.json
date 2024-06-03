@@ -120,12 +120,9 @@
                     }
                 }
             ]
-        }
-    ],
-    "ufbx files":
-    [
+        },
         {
-            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
             "instances":
             [
                 {
@@ -144,7 +141,16 @@
                             -0.779968, 2.25822, 0.946633
                         ]
                     }
-                },
+                }
+            ]
+        }
+    ],
+    "ufbx files":
+    [
+        {
+            "filename": "application/lucre/models/external_3D_files/node hierarchy/fbx/node hierarchy.fbx",
+            "instances":
+            [
                 {
                     "transform":
                     {

@@ -30,9 +30,7 @@ layout(location = 0)      in vec4  fragColor;
 layout(location = 1)      in vec3  fragPositionWorld;
 layout(location = 2)      in vec3  fragNormalWorld;
 layout(location = 3)      in vec2  fragUV;
-layout(location = 4)      in float fragAmplification;
-layout(location = 5) flat in int   fragUnlit;
-layout(location = 6)      in vec3  toCameraDirection;
+layout(location = 4)      in vec3  toCameraDirection;
 
 struct PointLight
 {
@@ -71,6 +69,8 @@ layout(push_constant) uniform Push
 
 void main()
 {
+    float amplification = 1.0;
+    bool unlit = false;
 
     vec3 ambientLightColor = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
 
@@ -117,15 +117,15 @@ void main()
     // ------------------------------
 
     vec3 pixelColor;
-    float alpha = texture(tex1,fragUV).w;
+    float alpha = texture(tex1,fragUV).w;       
     if (alpha == 0.0) discard;
     pixelColor = texture(tex1,fragUV).xyz;
-    pixelColor *= fragAmplification;
-    
-    if (fragUnlit != 0)
-    {
-        diffusedLightColor = vec3(1.0, 1.0, 1.0);
-        specularLightColor = vec3(0.0, 0.0, 0.0);
+    pixelColor *= amplification;
+
+    if (unlit)
+    {                                                
+        diffusedLightColor = vec3(1.0, 1.0, 1.0);    
+        specularLightColor = vec3(0.0, 0.0, 0.0);    
     }
     
     outColor.xyz = ambientLightColor*pixelColor.xyz + (diffusedLightColor  * pixelColor.xyz) + specularLightColor;
