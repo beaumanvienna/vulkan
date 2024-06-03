@@ -51,7 +51,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCube.gltf",
+            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCube.glb",
             "instances":
             [
                 {
@@ -74,7 +74,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCubeWithTexture.gltf",
+            "filename": "application/lucre/models/external_3D_files/emissive/emissiveCubeWithTexture.glb",
             "instances":
             [
                 {
@@ -775,7 +775,7 @@
                     {
                         "scale":
                         [
-                            0.480028, 0.5, 0.5
+                            0.465462, 0.5, 0.5
                         ],
                         "rotation":
                         [
@@ -819,11 +819,11 @@
                         ],
                         "rotation":
                         [
-                            8.23472e-08, 1.02564, 7.82359e-08
+                            8.2338e-08, 1.02564, 7.82269e-08
                         ],
                         "translation":
                         [
-                            21.9168, -0.0535294, -51.1386
+                            5.20026, -0.0535291, -61.2766
                         ]
                     }
                 }
