@@ -6,7 +6,7 @@
     "fastgltf files":
     [
         {
-            "filename": "application/lucre/models/funkyKong/sports car/cube.glb",
+            "filename": "application/lucre/models/assets/SportsCar/cube.glb",
             "instances":
             [
                 {
@@ -172,7 +172,7 @@
     "gltf files":
     [
         {
-            "filename": "application/lucre/models/funkyKong/sports car/cube.glb",
+            "filename": "application/lucre/models/assets/SportsCar/cube.glb",
             "instances":
             [
                 {
@@ -215,7 +215,7 @@
     "fbx files":
     [
         {
-            "filename": "application/lucre/models/funkyKong/sports car/cube.fbx",
+            "filename": "application/lucre/models/assets/SportsCar/cube.fbx",
             "instances":
             [
                 {
@@ -258,7 +258,7 @@
     "ufbx files":
     [
         {
-            "filename": "application/lucre/models/funkyKong/sports car/cube.fbx",
+            "filename": "application/lucre/models/assets/SportsCar/cube.fbx",
             "instances":
             [
                 {
