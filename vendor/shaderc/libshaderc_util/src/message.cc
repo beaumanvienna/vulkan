@@ -197,7 +197,8 @@ MessageType ParseGlslangOutput(const string_piece& message,
 bool PrintFilteredErrors(const string_piece& file_name,
                          std::ostream* error_stream, bool warnings_as_errors,
                          bool suppress_warnings, const char* error_list,
-                         size_t* total_warnings, size_t* total_errors) {
+                         size_t* total_warnings, size_t* total_errors,
+                         bool success) {
   const char* ignored_error_strings[] = {
       "Warning, version 310 is not yet complete; most version-specific "
       "features are present, but some are missing.",
@@ -219,7 +220,7 @@ bool PrintFilteredErrors(const string_piece& file_name,
       "Linked compute stage:", ""};
   size_t existing_total_errors = *total_errors;
   string_piece error_messages(error_list);
-  for (const string_piece& message : error_messages.get_fields('\n')) {
+  for (const string_piece& message : error_messages.get_fields(success, '\n')) {
     if (std::find(std::begin(ignored_error_strings),
                   std::end(ignored_error_strings),
                   message) == std::end(ignored_error_strings)) {

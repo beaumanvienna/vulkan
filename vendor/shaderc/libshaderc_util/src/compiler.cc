@@ -302,7 +302,7 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
 
   success &= PrintFilteredErrors(error_tag, error_stream, warnings_as_errors_,
                                  suppress_warnings_, shader.getInfoLog(),
-                                 total_warnings, total_errors);
+                                 total_warnings, total_errors, success);
   if (!success) return result_tuple;
 
   glslang::TProgram program;

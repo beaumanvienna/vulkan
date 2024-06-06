@@ -19,6 +19,7 @@
 #include <cstring>
 #include <ostream>
 #include <vector>
+#include <iostream>
 
 namespace shaderc_util {
 // Provides a read-only view into a string (cstring or std::string).
@@ -308,6 +309,32 @@ class string_piece {
     }
     if (size() - first > 0) {
       fields.push_back(substr(first, size() - first));
+    }
+    return fields;
+  }
+  
+  std::vector<string_piece> get_fields(bool success, char delimiter,
+                                       bool keep_delimiter = false) const {
+    std::vector<string_piece> fields;
+    size_t first = 0;
+    size_t field_break = find_first_of(delimiter);
+    while (field_break != npos) {
+      string_piece element = substr(first, field_break - first + keep_delimiter);
+      if (!success)
+      {
+        std::cout << element.data() << "\n";
+      }
+      fields.push_back(element);
+      first = field_break + 1;
+      field_break = find_first_of(delimiter, first);
+    }
+    if (size() - first > 0) {
+      fields.push_back(substr(first, size() - first));
+    }
+    if (!success)
+    {
+      std::cout << "shader comilation failed - terminating\n";
+      exit(0);
     }
     return fields;
   }

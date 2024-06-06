@@ -74,7 +74,8 @@ MessageType ParseGlslangOutput(const shaderc_util::string_piece& message,
 bool PrintFilteredErrors(const shaderc_util::string_piece& file_name,
                          std::ostream* error_stream, bool warnings_as_errors,
                          bool suppress_warnings, const char* error_list,
-                         size_t* total_warnings, size_t* total_errors);
+                         size_t* total_warnings, size_t* total_errors,
+                         bool success = true);
 
 // Outputs, to error_stream,  the number of warnings and errors if there are
 // any.
