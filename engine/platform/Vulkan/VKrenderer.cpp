@@ -121,7 +121,7 @@ namespace GfxRenderEngine
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // color map
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> pbrDescriptorSetLayout =
+        std::unique_ptr<VK_DescriptorSetLayout> pbrMaterialDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                             VK_SHADER_STAGE_FRAGMENT_BIT) // diffuse color map
@@ -134,26 +134,18 @@ namespace GfxRenderEngine
                 .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                             VK_SHADER_STAGE_FRAGMENT_BIT) // roughness map
                 .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT)                                     // metallic map
-                .AddBinding(6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // metallic map
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> pbrSADescriptorSetLayout =
+        std::unique_ptr<VK_DescriptorSetLayout> pbrResourceDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // diffuse color map
-                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // normal map
-                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // roughness metallic map
-                .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // emissive map
-                .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // roughness map
-                .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT)                                     // metallic map
-                .AddBinding(6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
-                .AddBinding(7, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .Build();
+
+        std::unique_ptr<VK_DescriptorSetLayout> pbrSAResourceDescriptorSetLayout =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
                 .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> instanceDescriptorSetLayout =
@@ -197,10 +189,13 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse = {
             m_GlobalDescriptorSetLayout, diffuseDescriptorSetLayout->GetDescriptorSetLayout()};
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {m_GlobalDescriptorSetLayout,
-                                                                      pbrDescriptorSetLayout->GetDescriptorSetLayout()};
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrSA = {m_GlobalDescriptorSetLayout,
-                                                                        pbrSADescriptorSetLayout->GetDescriptorSetLayout()};
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
+            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
+            pbrResourceDescriptorSetLayout->GetDescriptorSetLayout()};
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrSA = {
+            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
+            pbrSAResourceDescriptorSetLayout->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting = {
             m_GlobalDescriptorSetLayout, m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),

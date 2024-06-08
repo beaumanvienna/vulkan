@@ -46,6 +46,7 @@ namespace GfxRenderEngine
             Builder& AddBinding(uint binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags,
                                 uint count = 1);
 
+            size_t Size() const { return m_Bindings.size(); }
             std::unique_ptr<VK_DescriptorSetLayout> Build() const;
 
         private:

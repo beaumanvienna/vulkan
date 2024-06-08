@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,35 +22,36 @@
 
 #pragma once
 
-#include "renderer/model.h"
-#include "scene/scene.h"
+#include <memory>
+#include "renderer/texture.h"
+#include "renderer/buffer.h"
+#include "engine/platform/Vulkan/resource.h"
+#include "engine.h"
 
 namespace GfxRenderEngine
 {
-    class Builder
+    class ResourceDescriptor;
+    class Resources
     {
+    public:
+        enum BufferIndices
+        {
+            INSTANCE_BUFFER_INDEX = 0,
+            SKELETAL_ANIMATION_BUFFER_INDEX,
+            NUM_BUFFERS
+        };
+
+        // fixed-size array for resource buffers
+        typedef std::array<std::shared_ptr<Buffer>, Resources::NUM_BUFFERS> ResourceBuffers;
+
+        enum ResourceFeatures // bitset
+        {
+            HAS_INSTANCING = GLSL_HAS_INSTANCING,
+            HAS_SKELETAL_ANIMATION = GLSL_HAS_SKELETAL_ANIMATION
+        };
 
     public:
-        Builder() = default;
-
-        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
-        void LoadParticle(glm::vec4 const& color);
-        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
-                        glm::vec4 const& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry);
-
-    private:
-        void CalculateTangents();
-        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
-
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
-
-        // cubemap
-        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<Submesh> m_CubemapSubmeshes{};
+        std::shared_ptr<ResourceDescriptor> m_ResourceDescriptor;
     };
+
 } // namespace GfxRenderEngine

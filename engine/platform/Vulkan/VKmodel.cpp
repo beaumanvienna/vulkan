@@ -103,9 +103,10 @@ namespace GfxRenderEngine
     VK_Model::~VK_Model() {}
 
     VK_Submesh::VK_Submesh(Submesh const& submesh)
-        : Submesh{submesh.m_FirstIndex,  submesh.m_FirstVertex,   submesh.m_IndexCount,
-                  submesh.m_VertexCount, submesh.m_InstanceCount, submesh.m_Material},
-          m_MaterialDescriptor(*(static_cast<VK_MaterialDescriptor*>(submesh.m_Material.m_MaterialDescriptor.get())))
+        : Submesh{submesh.m_FirstIndex,    submesh.m_FirstVertex, submesh.m_IndexCount, submesh.m_VertexCount,
+                  submesh.m_InstanceCount, submesh.m_Material,    submesh.m_Resources},
+          m_MaterialDescriptor(submesh.m_Material.m_MaterialDescriptor),
+          m_ResourceDescriptor(submesh.m_Resources.m_ResourceDescriptor)
     {
     }
 
@@ -115,16 +116,16 @@ namespace GfxRenderEngine
         {
             VK_Submesh vkSubmesh(submesh);
 
-            MaterialDescriptor::MaterialTypes materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+            MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
 
             switch (materialType)
             {
-                case MaterialDescriptor::MaterialTypes::MtPbr:
+                case MaterialDescriptor::MaterialType::MtPbr:
                 {
                     m_SubmeshesPbrMap.push_back(vkSubmesh);
                     break;
                 }
-                case MaterialDescriptor::MaterialTypes::MtCubemap:
+                case MaterialDescriptor::MaterialType::MtCubemap:
                 {
                     m_SubmeshesCubemap.push_back(vkSubmesh);
                     break;
@@ -189,13 +190,31 @@ namespace GfxRenderEngine
     void VK_Model::BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                    VK_Submesh const& submesh)
     {
-        auto& localDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, localDescriptorSet};
+        const VkDescriptorSet& materialDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet};
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
                                 pipelineLayout,                  // VkPipelineLayout       layout,
                                 0,                               // uint32_t               firstSet,
-                                2,                               // uint32_t               descriptorSetCount,
+                                descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                0,                               // uint32_t               dynamicOffsetCount,
+                                nullptr                          // const uint32_t*        pDynamicOffsets);
+        );
+    }
+
+    void VK_Model::BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                   VK_Submesh const& submesh, bool bindResources)
+    {
+        const VkDescriptorSet& materialDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
+        const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet,
+                                                       resourceDescriptorSet};
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                pipelineLayout,                  // VkPipelineLayout       layout,
+                                0,                               // uint32_t               firstSet,
+                                descriptorSets.size(),           // uint32_t               descriptorSetCount,
                                 descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
                                 0,                               // uint32_t               dynamicOffsetCount,
                                 nullptr                          // const uint32_t*        pDynamicOffsets);
@@ -260,7 +279,7 @@ namespace GfxRenderEngine
     {
         for (auto& submesh : m_SubmeshesPbrMap)
         {
-            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
@@ -278,7 +297,7 @@ namespace GfxRenderEngine
     void VK_Model::DrawShadowInstancedInternal(VK_FrameInfo const& frameInfo, VkPipelineLayout const& pipelineLayout,
                                                VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
     {
-        VkDescriptorSet localDescriptorSet = submesh.m_MaterialDescriptor.GetShadowDescriptorSet();
+        VkDescriptorSet localDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2,
                                 descriptorSets.data(), 0, nullptr);

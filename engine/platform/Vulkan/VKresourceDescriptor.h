@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,35 +22,28 @@
 
 #pragma once
 
-#include "renderer/model.h"
-#include "scene/scene.h"
+#include <vulkan/vulkan.h>
+
+#include "renderer/resourceDescriptor.h"
 
 namespace GfxRenderEngine
 {
-    class Builder
+    class VK_ResourceDescriptor : public ResourceDescriptor
     {
 
     public:
-        Builder() = default;
+        VK_ResourceDescriptor(Resources::ResourceBuffers& buffers);
+        VK_ResourceDescriptor(VK_ResourceDescriptor const& other);
+        VK_ResourceDescriptor(std::shared_ptr<ResourceDescriptor> const& resourceDescriptor);
 
-        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
-        void LoadParticle(glm::vec4 const& color);
-        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
-                        glm::vec4 const& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry);
-
-    private:
-        void CalculateTangents();
-        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
+        virtual ~VK_ResourceDescriptor();
 
     public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
+        const VkDescriptorSet& GetDescriptorSet() const;
+        const VkDescriptorSet& GetShadowDescriptorSet() const;
 
-        // cubemap
-        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<Submesh> m_CubemapSubmeshes{};
+    private:
+        VkDescriptorSet m_DescriptorSet;
+        VkDescriptorSet m_ShadowDescriptorSet;
     };
 } // namespace GfxRenderEngine

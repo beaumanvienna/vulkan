@@ -45,16 +45,8 @@ namespace GfxRenderEngine
             NUM_TEXTURES
         };
 
-        enum BufferIndices
-        {
-            INSTANCE_BUFFER_INDEX = 0,
-            SKELETAL_ANIMATION_BUFFER_INDEX,
-            NUM_BUFFERS
-        };
-
         // fixed-size array for material textures
         typedef std::array<std::shared_ptr<Texture>, Material::NUM_TEXTURES> MaterialTextures;
-        typedef std::array<std::shared_ptr<Buffer>, Material::NUM_BUFFERS> MaterialBuffers;
 
         enum MaterialFeatures // bitset
         {

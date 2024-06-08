@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -27,16 +27,15 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialTypes materialType,
-                                                                   Material::MaterialTextures& textures,
-                                                                   Material::MaterialBuffers& buffers)
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialTypes,
+                                                                   Material::MaterialTextures& textures)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
 
         switch (RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
-                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, textures, buffers);
+                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialTypes, textures);
                 break;
             default:
                 materialDescriptor = nullptr;
@@ -46,7 +45,7 @@ namespace GfxRenderEngine
         return materialDescriptor;
     }
 
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialTypes materialType,
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialTypes,
                                                                    std::shared_ptr<Cubemap> const& cubemap)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
@@ -54,7 +53,7 @@ namespace GfxRenderEngine
         switch (RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
-                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialType, cubemap);
+                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialTypes, cubemap);
                 break;
             default:
                 materialDescriptor = nullptr;

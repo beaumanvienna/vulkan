@@ -46,6 +46,7 @@
 #include "renderer/skeletalAnimation/skeleton.h"
 #include "renderer/skeletalAnimation/skeletalAnimations.h"
 #include "renderer/materialDescriptor.h"
+#include "renderer/resourceDescriptor.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "sprite/sprite.h"
@@ -55,13 +56,13 @@ namespace GfxRenderEngine
 {
     struct Vertex // 3D, with animation
     {
-        glm::vec3 m_Position;    // layout(location = 0)
-        glm::vec4 m_Color;       // layout(location = 1)
-        glm::vec3 m_Normal;      // layout(location = 2)
-        glm::vec2 m_UV;          // layout(location = 3)
-        glm::vec3 m_Tangent;     // layout(location = 4)
-        glm::ivec4 m_JointIds;   // layout(location = 5)
-        glm::vec4 m_Weights;     // layout(location = 6)
+        glm::vec3 m_Position;  // layout(location = 0)
+        glm::vec4 m_Color;     // layout(location = 1)
+        glm::vec3 m_Normal;    // layout(location = 2)
+        glm::vec2 m_UV;        // layout(location = 3)
+        glm::vec3 m_Tangent;   // layout(location = 4)
+        glm::ivec4 m_JointIds; // layout(location = 5)
+        glm::vec4 m_Weights;   // layout(location = 6)
     };
 
     struct Submesh
@@ -72,6 +73,7 @@ namespace GfxRenderEngine
         uint m_VertexCount;
         uint m_InstanceCount;
         Material m_Material;
+        Resources m_Resources;
     };
 
     class Model

@@ -1,4 +1,5 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -19,9 +20,6 @@
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
 
 #include "auxiliary/hash.h"
 #include "core.h"
@@ -201,12 +199,16 @@ namespace GfxRenderEngine
 
                 { // create material descriptor
                     Material::MaterialTextures materialTextures;
-                    Material::MaterialBuffers materialBuffers;
 
-                    materialBuffers[Material::INSTANCE_BUFFER_INDEX] = instanceBuffer->GetBuffer();
-                    auto materialDescriptor =
-                        MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures, materialBuffers);
+                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
                     submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                }
+                { // create resource descriptor
+                    Resources::ResourceBuffers resourceBuffers;
+
+                    resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceBuffer->GetBuffer();
+                    auto resourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
+                    submesh.m_Resources.m_ResourceDescriptor = resourceDescriptor;
                 }
                 m_Submeshes.push_back(submesh);
                 auto model = Engine::m_Engine->LoadModel(*this);
@@ -403,6 +405,7 @@ namespace GfxRenderEngine
                 auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
                 submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
             }
+
             m_Submeshes.push_back(submesh);
         }
 

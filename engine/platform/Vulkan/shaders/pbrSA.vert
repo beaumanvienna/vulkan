@@ -27,7 +27,7 @@
 
 #include "engine/renderer/skeletalAnimation/joints.h"
 #include "engine/platform/Vulkan/pointlights.h"
-#include "engine/platform/Vulkan/material.h"
+#include "engine/platform/Vulkan/resource.h"
 
 layout(location = 0) in vec3  position;
 layout(location = 1) in vec3  color;
@@ -68,12 +68,12 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 1, binding = 6) uniform InstanceUniformBuffer
+layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 {
     InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
 
-layout(set = 1, binding = 7) uniform SkeletalAnimationShaderData
+layout(set = 2, binding = 1) uniform SkeletalAnimationShaderData
 {
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;

@@ -25,19 +25,18 @@
 #include "VKrenderer.h"
 #include "VKtexture.h"
 #include "VKcubemap.h"
-#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
     extern std::shared_ptr<Texture> gTextureSpritesheet;
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialTypes materialType,
-                                                 Material::MaterialTextures& textures, Material::MaterialBuffers& buffers)
+    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
+                                                 Material::MaterialTextures& textures)
 
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialTypes::MtPbr:
+            case MaterialDescriptor::MaterialType::MtPbr:
             {
                 // textures
                 std::shared_ptr<Texture> diffuseMap;
@@ -57,20 +56,6 @@ namespace GfxRenderEngine
                 roughnessMap = textures[Material::ROUGHNESS_MAP_INDEX] ? textures[Material::ROUGHNESS_MAP_INDEX] : dummy;
                 metallicMap = textures[Material::METALLIC_MAP_INDEX] ? textures[Material::METALLIC_MAP_INDEX] : dummy;
 
-                // buffers
-                std::shared_ptr<Buffer>& instanceUbo = buffers[Material::INSTANCE_BUFFER_INDEX];
-                auto instanceBuffer = static_cast<VK_Buffer*>(instanceUbo.get());
-                VkDescriptorBufferInfo instanceBufferInfo = instanceBuffer->DescriptorInfo();
-
-                std::shared_ptr<Buffer>& skeletalAnimationUbo = buffers[Material::SKELETAL_ANIMATION_BUFFER_INDEX];
-                VK_Buffer* skeletalAnimationBuffer = nullptr;
-                VkDescriptorBufferInfo skeletalAnimationBufferInfo;
-                if (skeletalAnimationUbo)
-                {
-                    skeletalAnimationBuffer = static_cast<VK_Buffer*>(skeletalAnimationUbo.get());
-                    skeletalAnimationBufferInfo = skeletalAnimationBuffer->DescriptorInfo();
-                }
-
                 {
                     VK_DescriptorSetLayout::Builder builder{};
                     builder.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -78,12 +63,7 @@ namespace GfxRenderEngine
                         .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                         .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                         .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-                    if (skeletalAnimationUbo)
-                    {
-                        builder.AddBinding(7, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-                    }
+                        .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
                     std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
                     auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
@@ -99,31 +79,8 @@ namespace GfxRenderEngine
                         .WriteImage(2, imageInfo2)
                         .WriteImage(3, imageInfo3)
                         .WriteImage(4, imageInfo4)
-                        .WriteImage(5, imageInfo5)
-                        .WriteBuffer(6, instanceBufferInfo);
-                    if (skeletalAnimationBuffer)
-                    {
-                        descriptorWriter.WriteBuffer(7, skeletalAnimationBufferInfo);
-                    }
+                        .WriteImage(5, imageInfo5);
                     descriptorWriter.Build(m_DescriptorSet);
-                }
-
-                {
-                    VK_DescriptorSetLayout::Builder builder{};
-                    builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-                    if (skeletalAnimationUbo)
-                    {
-                        builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-                    }
-                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
-
-                    VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
-                    descriptorWriter.WriteBuffer(0, instanceBufferInfo);
-                    if (skeletalAnimationBuffer)
-                    {
-                        descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
-                    }
-                    descriptorWriter.Build(m_ShadowDescriptorSet);
                 }
                 break;
             }
@@ -135,13 +92,13 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialTypes materialType,
+    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
                                                  std::shared_ptr<Cubemap> const& cubemap)
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialTypes::MtCubemap:
+            case MaterialDescriptor::MaterialType::MtCubemap:
             {
                 std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
                     VK_DescriptorSetLayout::Builder()
@@ -170,11 +127,21 @@ namespace GfxRenderEngine
         m_ShadowDescriptorSet = other.m_ShadowDescriptorSet;
     }
 
+    VK_MaterialDescriptor::VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor)
+    {
+        if (materialDescriptor)
+        {
+            VK_MaterialDescriptor* other = static_cast<VK_MaterialDescriptor*>(materialDescriptor.get());
+            m_MaterialType = other->m_MaterialType;
+            m_DescriptorSet = other->m_DescriptorSet;
+            m_ShadowDescriptorSet = other->m_ShadowDescriptorSet;
+        }
+    }
+
     VK_MaterialDescriptor::~VK_MaterialDescriptor() {}
 
-    MaterialDescriptor::MaterialTypes VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
+    MaterialDescriptor::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
 
     const VkDescriptorSet& VK_MaterialDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
 
-    const VkDescriptorSet& VK_MaterialDescriptor::GetShadowDescriptorSet() const { return m_ShadowDescriptorSet; }
 } // namespace GfxRenderEngine

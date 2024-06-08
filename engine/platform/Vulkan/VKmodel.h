@@ -43,6 +43,7 @@
 #include "VKtexture.h"
 #include "VKcubemap.h"
 #include "VKmaterialDescriptor.h"
+#include "VKresourceDescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -51,6 +52,7 @@ namespace GfxRenderEngine
     {
         VK_Submesh(Submesh const& submesh);
         VK_MaterialDescriptor m_MaterialDescriptor;
+        VK_ResourceDescriptor m_ResourceDescriptor;
     };
 
     class VK_Model : public Model
@@ -103,6 +105,8 @@ namespace GfxRenderEngine
                               VK_Submesh const& submesh);
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                              VK_Submesh const& submesh);
+        void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                             VK_Submesh const& submesh, bool bindResources);
 
         void Draw(VkCommandBuffer commandBuffer);
         void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);

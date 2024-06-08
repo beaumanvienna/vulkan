@@ -25,7 +25,6 @@
 #include <memory>
 
 #include "engine.h"
-#include "renderer/buffer.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "scene/material.h"
@@ -36,23 +35,22 @@ namespace GfxRenderEngine
     class MaterialDescriptor
     {
     public:
-        enum MaterialTypes
+        enum MaterialType
         {
-            MtPbr = 0x1 << 0x00,   // 1
-            MtCubemap = 0x1 << 0x1 // 2
+            MtPbr = 0x1 << 0x00,    // 1
+            MtCubemap = 0x1 << 0x01 // 2
         };
-        static constexpr uint ALL_PBR_MATERIALS = MaterialTypes::MtPbr;
+        static constexpr uint ALL_PBR_MATERIALS = MaterialType::MtPbr;
 
     public:
         virtual ~MaterialDescriptor() = default;
 
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialTypes materialType,
-                                                          Material::MaterialTextures& textures,
-                                                          Material::MaterialBuffers& buffers);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialTypes materialType,
+        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
+                                                          Material::MaterialTextures& textures);
+        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 
     public:
-        virtual MaterialDescriptor::MaterialTypes GetMaterialType() const = 0;
+        virtual MaterialDescriptor::MaterialType GetMaterialType() const = 0;
     };
 } // namespace GfxRenderEngine

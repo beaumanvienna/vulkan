@@ -32,21 +32,20 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_MaterialDescriptor(MaterialDescriptor::MaterialTypes materialType, Material::MaterialTextures& textures,
-                              Material::MaterialBuffers& buffers);
-        VK_MaterialDescriptor(MaterialDescriptor::MaterialTypes materialType, std::shared_ptr<Cubemap> const& cubemap);
+        VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType, Material::MaterialTextures& textures);
+        VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
 
         VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
+        VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor);
 
         virtual ~VK_MaterialDescriptor();
 
     public:
-        virtual MaterialDescriptor::MaterialTypes GetMaterialType() const override;
+        virtual MaterialDescriptor::MaterialType GetMaterialType() const override;
         const VkDescriptorSet& GetDescriptorSet() const;
-        const VkDescriptorSet& GetShadowDescriptorSet() const;
 
     private:
-        MaterialDescriptor::MaterialTypes m_MaterialType;
+        MaterialDescriptor::MaterialType m_MaterialType;
         VkDescriptorSet m_DescriptorSet;
         VkDescriptorSet m_ShadowDescriptorSet;
     };
