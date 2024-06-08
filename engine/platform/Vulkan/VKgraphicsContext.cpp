@@ -85,6 +85,13 @@ namespace GfxRenderEngine
         return model;
     }
 
+    std::shared_ptr<Model> VK_Context::LoadModel(const TerrainBuilder& builder)
+    {
+        ASSERT(VK_Core::m_Device != nullptr);
+        auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
+        return model;
+    }
+
     std::shared_ptr<Model> VK_Context::LoadModel(const GltfBuilder& builder)
     {
         ASSERT(VK_Core::m_Device != nullptr);

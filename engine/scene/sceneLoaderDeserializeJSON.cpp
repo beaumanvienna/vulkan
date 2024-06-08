@@ -23,6 +23,7 @@
 #include "auxiliary/file.h"
 #include "core.h"
 #include "scene/sceneLoaderJSON.h"
+#include "scene/terrainLoaderJSON.h"
 
 namespace GfxRenderEngine
 {
@@ -65,18 +66,31 @@ namespace GfxRenderEngine
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number");
 
                 // only check major version of "file format identifier"
-                // todo: Ask to JC: is the format identifier 1.3 or 1.2.1?
                 m_SceneDescriptionFile.m_FileFormatIdentifier = sceneObject.value().get_double();
                 CORE_ASSERT(
                     (std::trunc(m_SceneDescriptionFile.m_FileFormatIdentifier) == std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
                     "The scene description major version does not match");
             }
-            else if (sceneObjectKey == "terrainPngPath")
+            else if (sceneObjectKey == "terrain")
             {
-                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "Terrain path must be string");
-                std::string_view terrainPath = sceneObject.value().get_string();
-                m_SceneDescriptionFile.m_TerrainPngPath = std::string(terrainPath);
-                LOG_CORE_INFO("Terrain PNG Path: {0}", m_SceneDescriptionFile.m_TerrainPngPath);
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
+                ondemand::array terrainDescriptions = sceneObject.value().get_array();
+                {
+                    int count = terrainDescriptions.count_elements();
+                    if (count == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 terrain");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} terrain descriptions", count);
+                    }
+                }
+
+                for (auto terrainDescription : terrainDescriptions)
+                {
+                    ParseTerrainDescription(terrainDescription, m_SceneDescriptionFile.m_TerrainDescriptions);
+                }
             }
 
             else if (sceneObjectKey == "description")
@@ -531,5 +545,97 @@ namespace GfxRenderEngine
             ++componentIndex;
         }
         return returnVec3;
+    }
+
+    void SceneLoaderJSON::ParseTerrainDescription(ondemand::object terrainDescription,
+                                                  std::vector<Terrain::TerrainDescription>& terrainDescriptions)
+    {
+        std::string filename;
+
+        for (auto terrainDescriptionObject : terrainDescription)
+        {
+            std::string_view terrainDescriptionObjectKey = terrainDescriptionObject.unescaped_key();
+
+            if (terrainDescriptionObjectKey == "filename")
+            {
+                std::string_view filenameStringView = terrainDescriptionObject.value().get_string();
+                filename = std::string(filenameStringView);
+                if (EngineCore::FileExists(filename))
+                {
+                    LOG_CORE_INFO("Scene loader found {0}", filename);
+                }
+                else
+                {
+                    LOG_CORE_CRITICAL("terrain description not found: {0}", filename);
+                    return;
+                }
+            }
+            else if (terrainDescriptionObjectKey == "instances")
+            {
+                // get array of terrain instances
+                ondemand::array instances = terrainDescriptionObject.value();
+                int instanceCount = instances.count_elements();
+
+                if (!instanceCount)
+                {
+                    LOG_CORE_ERROR("no instances found (json file broken): {0}", filename);
+                    return;
+                }
+
+                TerrainLoaderJSON terrainLoaderJSON(m_Scene);
+                bool loadSuccessful = terrainLoaderJSON.Deserialize(filename, instanceCount);
+
+                if (!loadSuccessful)
+                {
+                    Terrain::TerrainDescription terrainDescriptionScene(filename);
+                    terrainDescriptions.push_back(terrainDescriptionScene);
+                }
+                else
+                {
+                    LOG_CORE_CRITICAL("terrain description did not load properly: {0}", filename);
+                    return;
+                }
+
+                std::vector<Terrain::Instance>& terrainInstances = terrainDescriptions.back().m_Instances;
+                terrainInstances.resize(instanceCount);
+
+                {
+                    uint instanceIndex = 0;
+                    for (auto instance : instances)
+                    {
+                        std::string fullEntityName = filename + std::string("::" + std::to_string(instanceIndex));
+                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                        Terrain::Instance& terrainInstance = terrainInstances[instanceIndex];
+                        terrainInstance.m_Entity = entity;
+                        ondemand::object instanceObjects = instance.value();
+                        for (auto instanceObject : instanceObjects)
+                        {
+                            std::string_view instanceObjectKey = instanceObject.unescaped_key();
+
+                            if (instanceObjectKey == "transform")
+                            {
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object),
+                                            "type must be object");
+                                ParseTransform(instanceObject.value(), entity);
+                            }
+                            else
+                            {
+                                LOG_CORE_CRITICAL("unrecognized terrain instance object");
+                            }
+                        }
+                        ++instanceIndex;
+                    }
+                }
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("unrecognized terrain description object");
+            }
+        }
+    }
+
+    std::vector<Terrain::TerrainDescription>& SceneLoaderJSON::GetTerrainDescriptions()
+    {
+        return m_SceneDescriptionFile.m_TerrainDescriptions;
     }
 } // namespace GfxRenderEngine

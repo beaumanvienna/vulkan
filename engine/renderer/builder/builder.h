@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -33,7 +33,6 @@ namespace GfxRenderEngine
     public:
         Builder() = default;
 
-        entt::entity LoadTerrainHeightMapPNG(const std::string& filepath, Scene& scene);
         void LoadParticle(glm::vec4 const& color);
         void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
                         glm::vec4 const& color = glm::vec4(1.0f));
@@ -41,7 +40,6 @@ namespace GfxRenderEngine
 
     private:
         void CalculateTangents();
-        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
         void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
 
     public:

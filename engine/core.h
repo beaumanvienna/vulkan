@@ -85,6 +85,7 @@ namespace GfxRenderEngine
         float GetDesktopHeight() const { return static_cast<float>(m_Window->GetDesktopHeight()); }
 
         std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
         std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }

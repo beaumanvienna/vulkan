@@ -33,6 +33,7 @@ using namespace simdjson;
 #include "renderer/gltf.h"
 #include "renderer/obj.h"
 #include "scene/scene.h"
+#include "scene/terrain.h"
 
 namespace GfxRenderEngine
 {
@@ -46,7 +47,7 @@ namespace GfxRenderEngine
         void Deserialize(std::string& filepath, std::string& alternativeFilepath);
         void Serialize();
         Gltf::GltfFiles& GetGltfFiles() { return m_SceneDescriptionFile.m_GltfFiles; }
-        std::string& GetTerrainPath() { return m_SceneDescriptionFile.m_TerrainPngPath; };
+        std::vector<Terrain::TerrainDescription>& GetTerrainDescriptions();
         Gltf::GltfFiles& GetFastgltfFiles() { return m_SceneDescriptionFile.m_FastgltfFiles; }
 
     private:
@@ -56,8 +57,9 @@ namespace GfxRenderEngine
             double m_FileFormatIdentifier;
             std::string m_Description;
             std::string m_Author;
+            // assets
             Gltf::GltfFiles m_GltfFiles;
-            std::string m_TerrainPngPath;
+            std::vector<Terrain::TerrainDescription> m_TerrainDescriptions;
             Gltf::GltfFiles m_FastgltfFiles;
             Fbx::FbxFiles m_FbxFiles;
             Fbx::FbxFiles m_UFbxFiles;
@@ -69,10 +71,12 @@ namespace GfxRenderEngine
 
         void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene);
         void ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx);
-        void ParseObjFile(ondemand::object objFileJSON);
+
         void ParseTransform(ondemand::object transformJSON, entt::entity entity);
         void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,
                             uint instanceIndex);
+        void ParseTerrainDescription(ondemand::object terrainDescription,
+                                     std::vector<Terrain::TerrainDescription>& terrainDescriptions);
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 

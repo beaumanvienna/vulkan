@@ -100,6 +100,15 @@ namespace GfxRenderEngine
         CreateIndexBuffer(std::move(builder.m_Indices));
     }
 
+    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const TerrainBuilder& builder)
+        : m_Device(device), m_HasIndexBuffer{false}
+    {
+        CopySubmeshes(builder.m_Submeshes);
+
+        CreateVertexBuffer(std::move(builder.m_Vertices));
+        CreateIndexBuffer(std::move(builder.m_Indices));
+    }
+
     VK_Model::~VK_Model() {}
 
     VK_Submesh::VK_Submesh(Submesh const& submesh)

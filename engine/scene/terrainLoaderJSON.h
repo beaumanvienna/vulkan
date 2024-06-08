@@ -22,49 +22,44 @@
 
 #pragma once
 
-#include "entt.hpp"
+#include "simdjson.h"
+#include <fstream>
+#include <iostream>
+
+using namespace simdjson;
 
 #include "engine.h"
+#include "renderer/fbx.h"
+#include "renderer/gltf.h"
+#include "renderer/obj.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
-    namespace Gltf
+    class TerrainLoaderJSON
     {
 
-        static constexpr int GLTF_NOT_USED = -1;
-        static constexpr bool GLTF_LOAD_SUCCESS = true;
-        static constexpr bool GLTF_LOAD_FAILURE = false;
+    public:
+        TerrainLoaderJSON(Scene& scene);
+        ~TerrainLoaderJSON() {}
 
-        struct Node
+        bool Deserialize(std::string& filepath, int instanceCount);
+
+    private:
+        struct TerrainDescriptionFile
         {
-            std::string m_Name;
-            float m_WalkSpeed{0.0f};
-            bool m_RigidBody{false};
-            std::string m_ScriptComponent;
+            // JSON file attributes here
+            double m_FileFormatIdentifier;
+            std::string m_Description;
+            std::string m_Author;
+            std::string m_TerrainPngPath;
         };
 
-        struct Instance
-        {
-            entt::entity m_Entity;
-            std::vector<Node> m_Nodes;
+    private:
+        static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
-            Instance() = default;
-            Instance(entt::entity entity) : m_Entity{entity} {}
-        };
+        Scene& m_Scene;
 
-        struct GltfFile
-        {
-            std::string m_Filename;
-            std::vector<Instance> m_Instances;
-
-            GltfFile() = default;
-            GltfFile(std::string& filename) : m_Filename{filename} {}
-        };
-
-        struct GltfFiles
-        {
-            std::vector<GltfFile> m_GltfFilesFromScene;
-            std::vector<GltfFile> m_GltfFilesFromPreFabs;
-        };
-    } // namespace Gltf
+        TerrainDescriptionFile m_TerrainDescriptionFile;
+    };
 } // namespace GfxRenderEngine

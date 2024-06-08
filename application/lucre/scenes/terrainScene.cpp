@@ -156,15 +156,7 @@ namespace LucreApp
 
     void TerrainScene::LoadTerrain()
     {
-        Builder builder;
-        m_Terrain = builder.LoadTerrainHeightMapPNG(m_SceneLoaderJSON.GetTerrainPath(), *this);
-        if (m_Terrain != entt::null)
-        {
-            auto view = m_Registry.view<TransformComponent>();
-            auto& terrainTransform = view.get<TransformComponent>(m_Terrain);
-            terrainTransform.SetScale(0.054f);
-            terrainTransform.SetTranslation({-0.576f, 2.33f, -0.117f});
-        }
+        m_Terrain = m_Dictionary.Retrieve("application/lucre/terrainDescriptions/heightmap2.json::0");
     }
     void TerrainScene::LoadModels()
     {

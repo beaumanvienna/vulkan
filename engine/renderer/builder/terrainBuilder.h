@@ -22,49 +22,28 @@
 
 #pragma once
 
-#include "entt.hpp"
-
-#include "engine.h"
+#include "renderer/model.h"
+#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
-    namespace Gltf
+    class TerrainBuilder
     {
 
-        static constexpr int GLTF_NOT_USED = -1;
-        static constexpr bool GLTF_LOAD_SUCCESS = true;
-        static constexpr bool GLTF_LOAD_FAILURE = false;
+    public:
+        TerrainBuilder() = default;
 
-        struct Node
-        {
-            std::string m_Name;
-            float m_WalkSpeed{0.0f};
-            bool m_RigidBody{false};
-            std::string m_ScriptComponent;
-        };
+        bool LoadTerrainHeightMap(const std::string& filepath, Scene& scene, int instanceCount);
 
-        struct Instance
-        {
-            entt::entity m_Entity;
-            std::vector<Node> m_Nodes;
+    private:
+        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
 
-            Instance() = default;
-            Instance(entt::entity entity) : m_Entity{entity} {}
-        };
+        void CalculateTangents();
+        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
 
-        struct GltfFile
-        {
-            std::string m_Filename;
-            std::vector<Instance> m_Instances;
-
-            GltfFile() = default;
-            GltfFile(std::string& filename) : m_Filename{filename} {}
-        };
-
-        struct GltfFiles
-        {
-            std::vector<GltfFile> m_GltfFilesFromScene;
-            std::vector<GltfFile> m_GltfFilesFromPreFabs;
-        };
-    } // namespace Gltf
+    public:
+        std::vector<uint> m_Indices{};
+        std::vector<Vertex> m_Vertices{};
+        std::vector<Submesh> m_Submeshes{};
+    };
 } // namespace GfxRenderEngine

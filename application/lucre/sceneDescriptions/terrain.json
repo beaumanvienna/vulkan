@@ -2,7 +2,49 @@
     "file format identifier": 1.2,
     "description": "terrain scene",
     "author": "Copyright (c) 2024 Engine Development Team",
-    "terrainPngPath": "application/lucre/models/assets/terrain/heightmap2.png",
+    "terrain":
+    [
+        {
+            "filename": "application/lucre/terrainDescriptions/heightmap2.json",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.141, 0.141, 0.141
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 1.07215, 3.14159
+                        ],
+                        "translation":
+                        [
+                            -0.779968, 2.25822, -4
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.140998, 0.140998, 0.140998
+                        ],
+                        "rotation":
+                        [
+                            3.01614, 1.00771, 2.99355
+                        ],
+                        "translation":
+                        [
+                            -0.494322, 2.28222, -3.408
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
     "fastgltf files":
     [
         {

@@ -55,7 +55,7 @@ namespace LucreApp
 #ifdef MACOSX
         SetNextState(State::CUTSCENE);
 #else
-        SetNextState(State::DESSERT);
+        SetNextState(State::TERRAIN);
 #endif
     }
 
