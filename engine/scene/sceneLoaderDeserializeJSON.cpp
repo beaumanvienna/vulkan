@@ -587,24 +587,24 @@ namespace GfxRenderEngine
 
                 if (!loadSuccessful)
                 {
-                    Terrain::TerrainDescription terrainDescriptionScene(filename);
-                    terrainDescriptions.push_back(terrainDescriptionScene);
-                }
-                else
-                {
                     LOG_CORE_CRITICAL("terrain description did not load properly: {0}", filename);
                     return;
                 }
+
+                Terrain::TerrainDescription terrainDescriptionScene(filename);
+                terrainDescriptions.push_back(terrainDescriptionScene);
 
                 std::vector<Terrain::Instance>& terrainInstances = terrainDescriptions.back().m_Instances;
                 terrainInstances.resize(instanceCount);
 
                 {
+                    auto name = EngineCore::GetFilenameWithoutPath(filename);
+                    name = EngineCore::GetFilenameWithoutExtension(name);
                     uint instanceIndex = 0;
                     for (auto instance : instances)
                     {
-                        std::string fullEntityName = filename + std::string("::" + std::to_string(instanceIndex));
-                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                        std::string entityName = name + std::string("::" + std::to_string(instanceIndex));
+                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
                         Terrain::Instance& terrainInstance = terrainInstances[instanceIndex];
                         terrainInstance.m_Entity = entity;
                         ondemand::object instanceObjects = instance.value();

@@ -23,6 +23,7 @@
 
 #include "core.h"
 #include "renderer/builder/terrainBuilder.h"
+#include "auxiliary/file.h"
 #include "scene/scene.h"
 #include "stb_image.h"
 
@@ -121,7 +122,9 @@ namespace GfxRenderEngine
     {
         m_Vertices.clear();
         m_Indices.clear();
+        m_Submeshes.clear();
         int width, height, bytesPerPixel;
+        stbi_set_flip_vertically_on_load(false);
         uchar* localBuffer = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, 0);
         if (localBuffer)
         {
@@ -137,67 +140,78 @@ namespace GfxRenderEngine
 
             PopulateTerrainData(terrainData);
 
-            // create game object
-            entt::entity entity;
-            std::shared_ptr<InstanceBuffer> instanceBuffer;
+            // create game objects for all instances
             {
                 auto& registry = scene.GetRegistry();
                 auto& sceneGraph = scene.GetSceneGraph();
                 auto& dictionary = scene.GetDictionary();
 
-                // create game object
-                entity = registry.create();
-                TransformComponent transform{};
-                PbrMaterialTag pbrMaterialTag{};
+                auto name = EngineCore::GetFilenameWithoutPath(filepath);
+                name = EngineCore::GetFilenameWithoutExtension(name);
                 InstanceTag instanceTag;
 
-                // create instance buffer
-                instanceTag.m_Instances.push_back(entity);
-                const uint numberOfInstances = instanceCount;
-                const uint indexOfFirstInstance = 0;
-                instanceBuffer = InstanceBuffer::Create(numberOfInstances);
-                instanceTag.m_InstanceBuffer = instanceBuffer;
-                instanceTag.m_InstanceBuffer->SetInstanceData(indexOfFirstInstance, transform.GetMat4Global(),
-                                                              transform.GetNormalMatrix());
-                transform.SetInstance(instanceTag.m_InstanceBuffer, indexOfFirstInstance);
+                for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
+                {
+                    // create game object
+                    entt::entity entity = registry.create();
+                    std::shared_ptr<Model> model;
+                    TransformComponent transform{};
+                    instanceTag.m_Instances.push_back(entity);
 
-                // push into ECS
-                registry.emplace<TransformComponent>(entity, transform);
-                registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
-                registry.emplace<InstanceTag>(entity, instanceTag);
+                    // add to scene graph
+                    auto instanceStr = std::to_string(instanceIndex);
+                    auto shortName = name + "::" + instanceStr;
+                    auto longName = filepath + "::" + instanceStr;
+                    uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
+                    sceneGraph.GetRoot().AddChild(newNode);
 
-                // add to scene graph
-                uint newNode = sceneGraph.CreateNode(entity, "terrain", "terrain", dictionary);
-                sceneGraph.GetRoot().AddChild(newNode);
+                    // only for the 1st instance
+                    if (!instanceIndex)
+                    {
+                        // create instance buffer
+                        instanceTag.m_InstanceBuffer = InstanceBuffer::Create(instanceCount);
+                        registry.emplace<InstanceTag>(entity, instanceTag);
 
-                Submesh submesh{};
-                submesh.m_FirstIndex = 0;
-                submesh.m_FirstVertex = 0;
-                submesh.m_IndexCount = m_Indices.size();
-                submesh.m_VertexCount = m_Vertices.size();
-                submesh.m_InstanceCount = 1;
+                        Submesh submesh{};
+                        submesh.m_FirstIndex = 0;
+                        submesh.m_FirstVertex = 0;
+                        submesh.m_IndexCount = m_Indices.size();
+                        submesh.m_VertexCount = m_Vertices.size();
+                        submesh.m_InstanceCount = instanceCount;
 
-                submesh.m_Material.m_PbrMaterial.m_Roughness = 0.1f;
-                submesh.m_Material.m_PbrMaterial.m_Metallic = 0.9f;
-                submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
+                        submesh.m_Material.m_PbrMaterial.m_Roughness = 0.1f;
+                        submesh.m_Material.m_PbrMaterial.m_Metallic = 0.9f;
+                        submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
 
-                { // create material descriptor
-                    Material::MaterialTextures materialTextures;
+                        { // create material descriptor
+                            Material::MaterialTextures materialTextures;
 
-                    auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
-                    submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                            auto materialDescriptor =
+                                MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
+                            submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                        }
+                        { // create resource descriptor
+                            Resources::ResourceBuffers resourceBuffers;
+
+                            resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceTag.m_InstanceBuffer->GetBuffer();
+                            auto resourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
+                            submesh.m_Resources.m_ResourceDescriptor = resourceDescriptor;
+                        }
+                        m_Submeshes.push_back(submesh);
+                        model = Engine::m_Engine->LoadModel(*this);
+
+                        PbrMaterialTag pbrMaterialTag{};
+                        registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+                    }
+
+                    instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
+                                                                  transform.GetNormalMatrix());
+                    transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
+                    registry.emplace<TransformComponent>(entity, transform);
+
+                    MeshComponent mesh{shortName, model};
+                    registry.emplace<MeshComponent>(entity, mesh);
                 }
-                { // create resource descriptor
-                    Resources::ResourceBuffers resourceBuffers;
-
-                    resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceBuffer->GetBuffer();
-                    auto resourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
-                    submesh.m_Resources.m_ResourceDescriptor = resourceDescriptor;
-                }
-                m_Submeshes.push_back(submesh);
-                auto model = Engine::m_Engine->LoadModel(*this);
-                MeshComponent mesh{"terrain", model};
-                registry.emplace<MeshComponent>(entity, mesh);
             }
 
             return true;

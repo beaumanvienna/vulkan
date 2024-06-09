@@ -1,0 +1,6 @@
+{
+    "file format identifier": 1.2,
+    "description": "height map 2",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "terrainPngPath": "application/lucre/models/assets/terrain/heightmap.png"
+}
