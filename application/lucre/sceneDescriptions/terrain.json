@@ -57,7 +57,7 @@
                         ],
                         "rotation":
                         [
-                            0, 0.523, 0
+                            0, 1.11096, 0
                         ],
                         "translation":
                         [
@@ -70,6 +70,199 @@
     ],
     "fastgltf files":
     [
+        {
+            "filename": "application/lucre/models/assets/grass/grass1.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.21, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.1, 0
+                        ],
+                        "translation":
+                        [
+                            -0.312224, 2.47418, -1.43068
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.26, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.05, 0
+                        ],
+                        "translation":
+                        [
+                            -0.509889, 2.50041, -1.34755
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.15, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.01, 0
+                        ],
+                        "translation":
+                        [
+                            -0.526872, 2.519, -1.58371
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.18, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.4, 0
+                        ],
+                        "translation":
+                        [
+                            -0.79588, 2.48453, -1.35981
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.23, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.25, 0
+                        ],
+                        "translation":
+                        [
+                            -0.690436, 2.564, -1.4978
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.21, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, -0.2, 0
+                        ],
+                        "translation":
+                        [
+                            -0.850817, 2.47888, -1.72814
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.22, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, -0.3, 0
+                        ],
+                        "translation":
+                        [
+                            -1.16569, 2.533, -1.61293
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.2, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, -0.0300008, 0
+                        ],
+                        "translation":
+                        [
+                            -0.993448, 2.529, -1.41301
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.2, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.04, 0
+                        ],
+                        "translation":
+                        [
+                            -1.1857, 2.529, -1.32872
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.18, 0.24, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, -0.06, 0
+                        ],
+                        "translation":
+                        [
+                            -1.37251, 2.565, -1.47645
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.2, 0.2, 0.2
+                        ],
+                        "rotation":
+                        [
+                            0, 0.1, 0
+                        ],
+                        "translation":
+                        [
+                            -1.38512, 2.50803, -1.56139
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/assets/SportsCar/cube.glb",
             "instances":
