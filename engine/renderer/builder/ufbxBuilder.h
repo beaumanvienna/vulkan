@@ -25,7 +25,7 @@
 #include "ufbx/ufbx.h"
 
 #include "renderer/model.h"
-#include "renderer/fbx.h"
+#include "scene/fbx.h"
 #include "scene/scene.h"
 
 namespace GfxRenderEngine

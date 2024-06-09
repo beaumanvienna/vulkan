@@ -29,7 +29,7 @@
 #include "vendor/imgui/imgui.h"
 #include "vendor/imGuizmo/ImGuizmo.h"
 #include "scene/sceneLoader.h"
-#include "renderer/gltf.h"
+#include "scene/gltf.h"
 
 namespace LucreApp
 {

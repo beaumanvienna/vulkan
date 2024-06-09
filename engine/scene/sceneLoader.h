@@ -25,7 +25,7 @@
 #include <unordered_map>
 
 #include "engine.h"
-#include "renderer/gltf.h"
+#include "scene/gltf.h"
 #include "scene/scene.h"
 #include "yaml-cpp/yaml.h"
 

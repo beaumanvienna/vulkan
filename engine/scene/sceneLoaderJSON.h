@@ -29,10 +29,10 @@
 using namespace simdjson;
 
 #include "engine.h"
-#include "renderer/fbx.h"
-#include "renderer/gltf.h"
-#include "renderer/obj.h"
 #include "scene/scene.h"
+#include "scene/fbx.h"
+#include "scene/gltf.h"
+#include "scene/obj.h"
 #include "scene/terrain.h"
 
 namespace GfxRenderEngine
@@ -88,11 +88,13 @@ namespace GfxRenderEngine
         void SerializeString(int indent, std::string const& key, std::string const& value, bool noComma = false);
         void SerializeBool(int indent, std::string const& key, bool value, bool noComma = false);
         void SerializeNumber(int indent, std::string const& key, double const value, bool noComma = false);
+
         void SerializeGltfFiles(int indent, bool noComma);
         void SerializeFastgltfFiles(int indent, bool noComma);
         void SerializeGltfFile(int indent, Gltf::GltfFile const& gltfFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Gltf::Instance> const& instances);
         void SerializeInstance(int indent, Gltf::Instance const& instance, bool noComma);
+
         void SerializeTransform(int indent, entt::entity const& entity, bool noComma = false);
         void SerializeNodes(int indent, std::vector<Gltf::Node> const& nodes);
         void SerializeNode(int indent, Gltf::Node const& node, bool noComma);
@@ -108,6 +110,11 @@ namespace GfxRenderEngine
         void SerializeObjFile(int indent, Obj::ObjFile const& objFile, bool noComma);
         void SerializeInstances(int indent, std::vector<Obj::Instance> const& instances);
         void SerializeInstance(int indent, Obj::Instance const& instance, bool noComma);
+
+        void SerializeTerrrainDescriptions(int indent, bool noComma);
+        void SerializeTerrrainDescription(int indent, Terrain::TerrainDescription const& terrainDescription, bool noComma);
+        void SerializeInstances(int indent, std::vector<Terrain::Instance> const& instances);
+        void SerializeInstance(int indent, Terrain::Instance const& instance, bool noComma);
 
     private:
         std::ofstream m_OutputFile;

@@ -29,7 +29,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 
 #include "renderer/model.h"
-#include "renderer/gltf.h"
+#include "scene/gltf.h"
 #include "scene/scene.h"
 
 namespace GfxRenderEngine

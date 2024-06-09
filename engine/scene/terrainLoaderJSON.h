@@ -29,9 +29,9 @@
 using namespace simdjson;
 
 #include "engine.h"
-#include "renderer/fbx.h"
-#include "renderer/gltf.h"
-#include "renderer/obj.h"
+#include "scene/fbx.h"
+#include "scene/gltf.h"
+#include "scene/obj.h"
 #include "scene/scene.h"
 
 namespace GfxRenderEngine
