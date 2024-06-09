@@ -47,5 +47,12 @@ namespace GfxRenderEngine
             TerrainDescription(std::string const& filename) : m_Filename{filename} {}
         };
 
+        struct TerrainSpec
+        {
+            Material::PbrMaterial m_PbrMaterial{};
+            std::string m_FilepathTerrainDescription;
+            std::string m_FilepathHeightMap;
+        };
+
     } // namespace Terrain
 } // namespace GfxRenderEngine

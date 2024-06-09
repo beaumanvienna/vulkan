@@ -24,6 +24,7 @@
 
 #include "renderer/model.h"
 #include "scene/scene.h"
+#include "scene/terrain.h"
 
 namespace GfxRenderEngine
 {
@@ -33,7 +34,7 @@ namespace GfxRenderEngine
     public:
         TerrainBuilder() = default;
 
-        bool LoadTerrainHeightMap(const std::string& filepath, Scene& scene, int instanceCount);
+        bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
 
     private:
         void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);

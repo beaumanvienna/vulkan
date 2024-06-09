@@ -32,13 +32,12 @@ namespace GfxRenderEngine
 
     void TerrainBuilder::PopulateTerrainData(std::vector<std::vector<float>> const& heightMap)
     {
-        float scale = 0.1f;      // Scale for the grid spacing
-        float heightScale = 1.f; // Scale for the height values
         size_t rows = heightMap.size();
         size_t cols = heightMap.empty() ? 0 : heightMap[0].size();
         m_Vertices.resize(rows * cols);
         size_t vertexCounter = 0;
 
+        // vertices
         for (size_t z = 0; z < rows; ++z)
         {
             for (size_t x = 0; x < cols; ++x)
@@ -46,9 +45,9 @@ namespace GfxRenderEngine
                 Vertex& vertex = m_Vertices[vertexCounter];
                 ++vertexCounter;
 
-                float originY = heightMap[z][x] * heightScale;
+                float originY = heightMap[z][x];
 
-                vertex.m_Position = glm::vec3(x * scale, originY, z * scale);
+                vertex.m_Position = glm::vec3(x, originY, z);
                 vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
                 vertex.m_UV = glm::vec2(0.f, 0.f);
                 vertex.m_Tangent = glm::vec3(1.0f);
@@ -60,13 +59,13 @@ namespace GfxRenderEngine
                 // left O right
                 //    down
                 glm::vec3 sumNormals(0.0f);
-                float leftY = x > 0 ? heightMap[z][x - 1] * heightScale : 0.0f;
-                float rightY = x < cols - 1 ? heightMap[z][x + 1] * heightScale : 0.0f;
-                float upY = z < rows - 1 ? heightMap[z + 1][x] * heightScale : 0.0f;
-                float downY = z > 0 ? heightMap[z - 1][x] * heightScale : 0.0f;
+                float leftY = x > 0 ? heightMap[z][x - 1] : 0.0f;
+                float rightY = x < cols - 1 ? heightMap[z][x + 1] : 0.0f;
+                float upY = z < rows - 1 ? heightMap[z + 1][x] : 0.0f;
+                float downY = z > 0 ? heightMap[z - 1][x] : 0.0f;
 
-                float dx = scale;
-                float dz = scale;
+                float dx = 1.0f;
+                float dz = 1.0f;
 
                 glm::vec3 left = glm::vec3(-dx, leftY - originY, 0.0f);
                 glm::vec3 right = glm::vec3(dx, rightY - originY, 0.0f);
@@ -97,6 +96,8 @@ namespace GfxRenderEngine
                 vertex.m_Normal = glm::normalize(sumNormals);
             }
         }
+
+        // indices
         for (size_t z = 0; z < rows - 1; ++z)
         {
             for (size_t x = 0; x < cols - 1; ++x)
@@ -118,14 +119,15 @@ namespace GfxRenderEngine
         }
     }
 
-    bool TerrainBuilder::LoadTerrainHeightMap(std::string const& filepath, Scene& scene, int instanceCount)
+    bool TerrainBuilder::LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
         m_Vertices.clear();
         m_Indices.clear();
         m_Submeshes.clear();
         int width, height, bytesPerPixel;
         stbi_set_flip_vertically_on_load(false);
-        uchar* localBuffer = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, 0);
+        std::string const& filepathHeightMap = terrainSpec.m_FilepathHeightMap;
+        uchar* localBuffer = stbi_load(filepathHeightMap.c_str(), &width, &height, &bytesPerPixel, 0);
         if (localBuffer)
         {
             std::vector<std::vector<float>> terrainData(height, std::vector<float>(width));
@@ -146,7 +148,7 @@ namespace GfxRenderEngine
                 auto& sceneGraph = scene.GetSceneGraph();
                 auto& dictionary = scene.GetDictionary();
 
-                auto name = EngineCore::GetFilenameWithoutPath(filepath);
+                auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
                 name = EngineCore::GetFilenameWithoutExtension(name);
                 InstanceTag instanceTag;
 
@@ -161,7 +163,7 @@ namespace GfxRenderEngine
                     // add to scene graph
                     auto instanceStr = std::to_string(instanceIndex);
                     auto shortName = name + "::" + instanceStr;
-                    auto longName = filepath + "::" + instanceStr;
+                    auto longName = terrainSpec.m_FilepathTerrainDescription + "::" + instanceStr;
                     uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
                     sceneGraph.GetRoot().AddChild(newNode);
 
@@ -179,9 +181,7 @@ namespace GfxRenderEngine
                         submesh.m_VertexCount = m_Vertices.size();
                         submesh.m_InstanceCount = instanceCount;
 
-                        submesh.m_Material.m_PbrMaterial.m_Roughness = 0.1f;
-                        submesh.m_Material.m_PbrMaterial.m_Metallic = 0.9f;
-                        submesh.m_Material.m_PbrMaterial.m_NormalMapIntensity = 1.0f;
+                        submesh.m_Material.m_PbrMaterial = terrainSpec.m_PbrMaterial;
 
                         { // create material descriptor
                             Material::MaterialTextures materialTextures;
@@ -218,7 +218,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMapPNG: Couldn't load file {0}", filepath);
+            LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}", filepathHeightMap);
         }
 
         return false;

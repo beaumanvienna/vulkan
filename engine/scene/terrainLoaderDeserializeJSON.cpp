@@ -45,6 +45,9 @@ namespace GfxRenderEngine
         ondemand::document terrainDocument = parser.iterate(json);
         ondemand::object terrainAttributess = terrainDocument.get_object();
 
+        Terrain::TerrainSpec terrainSpec{};
+        terrainSpec.m_FilepathTerrainDescription = filepath;
+
         for (auto terrainAttributes : terrainAttributess)
         {
             std::string_view terrainAttributesKey = terrainAttributes.unescaped_key();
@@ -59,13 +62,14 @@ namespace GfxRenderEngine
                              std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
                             "The terrain description major version does not match");
             }
-            else if (terrainAttributesKey == "terrainPngPath")
+            else if (terrainAttributesKey == "heightMapPath")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
-                            "Terrain path must be string");
+                            "heightmap path must be string");
                 std::string_view terrainPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_TerrainPngPath = std::string(terrainPath);
-                LOG_CORE_INFO("Terrain PNG Path: {0}", m_TerrainDescriptionFile.m_TerrainPngPath);
+                m_TerrainDescriptionFile.m_FilepathHeightMap = std::string(terrainPath);
+                terrainSpec.m_FilepathHeightMap = m_TerrainDescriptionFile.m_FilepathHeightMap;
+                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathHeightMap);
             }
             else if (terrainAttributesKey == "description")
             {
@@ -81,6 +85,30 @@ namespace GfxRenderEngine
                 m_TerrainDescriptionFile.m_Author = std::string(terrainAuthor);
                 LOG_CORE_INFO("author: {0}", m_TerrainDescriptionFile.m_Author);
             }
+            else if (terrainAttributesKey == "material")
+            {
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::object), "type must be object");
+                Material::PbrMaterial& pbrMaterial = m_TerrainDescriptionFile.m_PbrMaterial;
+                ondemand::object materialJSON = terrainAttributes.value();
+                for (auto materialComponent : materialJSON)
+                {
+                    std::string_view materialComponentKey = materialComponent.unescaped_key();
+                    if (materialComponentKey == "roughness")
+                    {
+                        pbrMaterial.m_Roughness = materialComponent.value().get_double();
+                        terrainSpec.m_PbrMaterial.m_Roughness = pbrMaterial.m_Roughness;
+                    }
+                    else if (materialComponentKey == "metallic")
+                    {
+                        pbrMaterial.m_Metallic = materialComponent.value().get_double();
+                        terrainSpec.m_PbrMaterial.m_Metallic = pbrMaterial.m_Metallic;
+                    }
+                    else
+                    {
+                        LOG_CORE_CRITICAL("unrecognized material property '" + std::string(materialComponentKey) + "'");
+                    }
+                }
+            }
             else
             {
                 LOG_CORE_CRITICAL("unrecognized terrain object '" + std::string(terrainAttributesKey) + "'");
@@ -88,7 +116,7 @@ namespace GfxRenderEngine
         }
 
         TerrainBuilder builder{};
-        return builder.LoadTerrainHeightMap(m_TerrainDescriptionFile.m_TerrainPngPath, m_Scene, instanceCount);
+        return builder.LoadTerrainHeightMap(m_Scene, instanceCount, terrainSpec);
     }
 
 } // namespace GfxRenderEngine

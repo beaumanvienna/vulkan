@@ -605,6 +605,7 @@ namespace GfxRenderEngine
                     {
                         std::string entityName = name + std::string("::" + std::to_string(instanceIndex));
                         entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
+                        CORE_ASSERT(entity != entt::null, "couldn't find entity");
                         Terrain::Instance& terrainInstance = terrainInstances[instanceIndex];
                         terrainInstance.m_Entity = entity;
                         ondemand::object instanceObjects = instance.value();

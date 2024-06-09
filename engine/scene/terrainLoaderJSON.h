@@ -52,7 +52,8 @@ namespace GfxRenderEngine
             double m_FileFormatIdentifier;
             std::string m_Description;
             std::string m_Author;
-            std::string m_TerrainPngPath;
+            std::string m_FilepathHeightMap;
+            Material::PbrMaterial m_PbrMaterial;
         };
 
     private:

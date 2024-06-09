@@ -2,5 +2,10 @@
     "file format identifier": 1.2,
     "description": "height map 2",
     "author": "Copyright (c) 2024 Engine Development Team",
-    "terrainPngPath": "application/lucre/models/assets/terrain/heightmap.png"
+    "heightMapPath": "application/lucre/models/assets/terrain/heightmap.png",
+    "material":
+    {
+        "roughness": 0.1,
+        "metallic": 0.9
+    }
 }
