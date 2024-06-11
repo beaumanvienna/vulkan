@@ -5,6 +5,29 @@
     "terrain":
     [
         {
+            "filename": "application/lucre/terrainDescriptions/lucre island.json",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.0649992, 9.54943, 0.0649992
+                        ],
+                        "rotation":
+                        [
+                            3.14159, 0.767164, 3.14159
+                        ],
+                        "translation":
+                        [
+                            4.37885, -1.14346, 59.3405
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/terrainDescriptions/heightmap2.json",
             "instances":
             [
@@ -46,29 +69,6 @@
         },
         {
             "filename": "application/lucre/terrainDescriptions/heightmap.json",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.0219, 0.392, 0.0219
-                        ],
-                        "rotation":
-                        [
-                            0, 1.11096, 0
-                        ],
-                        "translation":
-                        [
-                            -10.523, 0.942, -2.375
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/terrainDescriptions/lucre island.json",
             "instances":
             [
                 {
@@ -397,7 +397,7 @@
                         ],
                         "translation":
                         [
-                            -0.221573, -1.14068, 1.17507
+                            -0.221573, -1.16457, 1.17507
                         ]
                     }
                 }

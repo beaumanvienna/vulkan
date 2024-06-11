@@ -30,7 +30,7 @@
 #include "engine/platform/Vulkan/resource.h"
 
 layout(location = 0) in vec3  position;
-layout(location = 1) in vec3  color;
+layout(location = 1) in vec4  color;
 layout(location = 2) in vec3  normal;
 layout(location = 3) in vec2  uv;
 layout(location = 4) in vec3  tangent;
@@ -79,7 +79,7 @@ layout(set = 2, binding = 1) uniform SkeletalAnimationShaderData
 } skeletalAnimation;
 
 layout(location = 0)  out  vec3  fragPosition;
-layout(location = 1)  out  vec3  fragColor;
+layout(location = 1)  out  vec4  fragColor;
 layout(location = 2)  out  vec3  fragNormal;
 layout(location = 3)  out  vec2  fragUV;
 layout(location = 4)  out  vec3  fragTangent;
@@ -88,7 +88,7 @@ void main()
 {
     vec4 animatedPosition = vec4(0.0f);
     mat4 jointTransform    = mat4(0.0f);
-    for (int i = 0 ; i < MAX_JOINT_INFLUENCE ; i++)
+    for (int i = 0 ; i < MAX_JOINT_INFLUENCE ; ++i)
     {
         if (weights[i] == 0)
             continue;
@@ -116,4 +116,5 @@ void main()
     fragTangent = normalize(normalMatrix * tangent);
 
     fragUV = uv;
+    fragColor = color;
 }

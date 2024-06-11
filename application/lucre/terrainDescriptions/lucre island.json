@@ -3,6 +3,7 @@
     "description": "height map 2",
     "author": "Copyright (c) 2024 Engine Development Team",
     "heightMapPath": "application/lucre/models/assets/terrain/lucreIsland1 heightmap.png",
+    "colorMapPath": "application/lucre/models/assets/terrain/lucreIsland1 colormap.png",
     "material":
     {
         "roughness": 0.5,

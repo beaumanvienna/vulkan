@@ -37,8 +37,8 @@ namespace GfxRenderEngine
         bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
 
     private:
-        void PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
-
+        bool PopulateTerrainData(std::vector<std::vector<float>> const& heightMap);
+        void ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties);
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
 

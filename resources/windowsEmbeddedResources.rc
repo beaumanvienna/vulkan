@@ -20,7 +20,6 @@ IDR_SHADER_DR_FRAG       TEXT                    "engine\\platform\\Vulkan\\shad
 IDR_SHADER_NM_VERT       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbr.vert"
 IDR_SHADER_NM_FRAG       TEXT                    "engine\\platform\\Vulkan\\shaders\\pbr.frag"
 IDR_SHADER_D_VERT        TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrSA.vert"
-IDR_SHADER_D_FRAG        TEXT                    "engine\\platform\\Vulkan\\shaders\\pbrSA.frag"
 
 IDR_SHADER_SP2D_VERT     TEXT                    "engine\\platform\\Vulkan\\shaders\\spriteRenderer2D.vert"
 IDR_SHADER_SP2D_FRAG     TEXT                    "engine\\platform\\Vulkan\\shaders\\spriteRenderer2D.frag"

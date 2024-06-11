@@ -52,6 +52,7 @@ namespace GfxRenderEngine
             Material::PbrMaterial m_PbrMaterial{};
             std::string m_FilepathTerrainDescription;
             std::string m_FilepathHeightMap;
+            std::string m_FilepathColorMap;
         };
 
     } // namespace Terrain

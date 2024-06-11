@@ -90,7 +90,7 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrSA.vert.spv", "bin-int/pbrSA.frag.spv",
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrSA.vert.spv", "bin-int/pbr.frag.spv",
                                                    pipelineConfig);
     }
 

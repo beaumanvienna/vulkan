@@ -15,29 +15,28 @@
 #define IDR_SHADER_NM_VERT                  114
 #define IDR_SHADER_NM_FRAG                  115
 #define IDR_SHADER_D_VERT                   116
-#define IDR_SHADER_D_FRAG                   117
-#define IDR_SHADER_SP2D_VERT                118
-#define IDR_SHADER_SP2D_FRAG                119
-#define IDR_SHADER_GUIS_VERT                120
-#define IDR_SHADER_GUIS_FRAG                121
-#define IDR_SHADER_GUIS2D_VERT              122
-#define IDR_SHADER_GUIS2D_FRAG              123
-#define IDR_SHADER_SR_VERT                  124
-#define IDR_SHADER_SR_FRAG                  125
-#define IDR_SHADER_SB_VERT                  126
-#define IDR_SHADER_SB_FRAG                  127
-#define IDR_SHADER_SHADOW_VERT              128
-#define IDR_SHADER_SHADOW_FRAG              129
-#define IDR_SHADER_SHADSA_VERT              130
-#define IDR_SHADER_SHADSA_FRAG              131
-#define IDR_SHADER_DEBUG_VERT              132
-#define IDR_SHADER_DEBUG_FRAG              133
+#define IDR_SHADER_SP2D_VERT                117
+#define IDR_SHADER_SP2D_FRAG                118
+#define IDR_SHADER_GUIS_VERT                119
+#define IDR_SHADER_GUIS_FRAG                120
+#define IDR_SHADER_GUIS2D_VERT              121
+#define IDR_SHADER_GUIS2D_FRAG              122
+#define IDR_SHADER_SR_VERT                  123
+#define IDR_SHADER_SR_FRAG                  124
+#define IDR_SHADER_SB_VERT                  125
+#define IDR_SHADER_SB_FRAG                  126
+#define IDR_SHADER_SHADOW_VERT              127
+#define IDR_SHADER_SHADOW_FRAG              128
+#define IDR_SHADER_SHADSA_VERT              129
+#define IDR_SHADER_SHADSA_FRAG              130
+#define IDR_SHADER_DEBUG_VERT               131
+#define IDR_SHADER_DEBUG_FRAG              132
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
-        #define _APS_NEXT_RESOURCE_VALUE    134
+        #define _APS_NEXT_RESOURCE_VALUE    133
         #define _APS_NEXT_COMMAND_VALUE     40001
         #define _APS_NEXT_CONTROL_VALUE     1001
-        #define _APS_NEXT_SYMED_VALUE       133
+        #define _APS_NEXT_SYMED_VALUE       132
     #endif
 #endif

@@ -22,9 +22,6 @@
         <file>../engine/platform/Vulkan/shaders/pbrSA.vert</file>
     </gresource>
     <gresource prefix="/text/">
-        <file>../engine/platform/Vulkan/shaders/pbrSA.frag</file>
-    </gresource>
-    <gresource prefix="/text/">
         <file>../engine/platform/Vulkan/shaders/deferredShading.vert</file>
     </gresource>
     <gresource prefix="/text/">

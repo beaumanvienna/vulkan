@@ -29,40 +29,85 @@
 
 namespace GfxRenderEngine
 {
-
-    void TerrainBuilder::PopulateTerrainData(std::vector<std::vector<float>> const& heightMap)
+    void TerrainBuilder::ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties)
     {
+        glm::ivec3 colorMapProperties;
+        uchar* rawData = stbi_load(terrainSpec.m_FilepathColorMap.c_str(), &colorMapProperties.x /*width*/,
+                                   &colorMapProperties.y /*height*/, &colorMapProperties.z /*bytes per pixel*/, 0);
+        if (!rawData)
+        {
+            LOG_CORE_CRITICAL("color map did not load: {0}", terrainSpec.m_FilepathColorMap);
+            return;
+        }
+        if (!(colorMapProperties.z == 4))
+        {
+            LOG_CORE_CRITICAL("color map must be rgba (got {0} bytes per pixel) from {1}", colorMapProperties.z,
+                              terrainSpec.m_FilepathColorMap);
+            stbi_image_free(rawData);
+            return;
+        }
+        if (!((colorMapProperties.x == heightMapProperties.x) && (colorMapProperties.y == heightMapProperties.y)))
+        {
+            LOG_CORE_CRITICAL("color map  and height map dimensions must match: color map width: {0}, color map height: "
+                              "{1}, height map width: {2}, height map height: {3}, color map: {4}, heigh map: {5}",
+                              colorMapProperties.x, colorMapProperties.y, heightMapProperties.x, heightMapProperties.y,
+                              terrainSpec.m_FilepathColorMap, terrainSpec.m_FilepathHeightMap);
+            stbi_image_free(rawData);
+            return;
+        }
+
+        uint32_t* imageData = reinterpret_cast<uint32_t*>(rawData);
+        size_t vertexCounter = 0;
+        for (int y = 0; y < colorMapProperties.y; ++y)
+        {
+            for (int x = 0; x < colorMapProperties.x; ++x)
+            { // image format is rgba in reverse
+                uint32_t abgr = imageData[y * colorMapProperties.x + x];
+                float r = (0xff & (abgr >> 0)) / 255.0f;
+                float g = (0xff & (abgr >> 8)) / 255.0f;
+                float b = (0xff & (abgr >> 16)) / 255.0f;
+                float a = (0xff & (abgr >> 24)) / 255.0f;
+                m_Vertices[vertexCounter].m_Color = glm::vec4(r, g, b, a);
+                ++vertexCounter;
+            }
+        }
+        stbi_image_free(rawData);
+    }
+
+    bool TerrainBuilder::PopulateTerrainData(std::vector<std::vector<float>> const& heightMap)
+    {
+        if (heightMap.empty() || heightMap[0].empty())
+        {
+            LOG_CORE_CRITICAL("heightmap is incomplete");
+            return false;
+        }
         size_t rows = heightMap.size();
-        size_t cols = heightMap.empty() ? 0 : heightMap[0].size();
+        size_t cols = heightMap[0].size();
         m_Vertices.resize(rows * cols);
         size_t vertexCounter = 0;
 
         // vertices
-        for (size_t z = 0; z < rows; ++z)
+        for (size_t row = 0; row < rows; ++row)
         {
-            for (size_t x = 0; x < cols; ++x)
+            for (size_t col = 0; col < cols; ++col)
             {
                 Vertex& vertex = m_Vertices[vertexCounter];
                 ++vertexCounter;
 
-                float originY = heightMap[z][x];
+                float originY = heightMap[row][col];
 
-                vertex.m_Position = glm::vec3(x, originY, z);
-                vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[z][x] / 3, 1.0f);
-                vertex.m_UV = glm::vec2(0.f, 0.f);
-                vertex.m_Tangent = glm::vec3(1.0f);
-                vertex.m_JointIds = glm::ivec4(0);
-                vertex.m_Weights = glm::vec4(0.0f);
+                vertex.m_Position = glm::vec3(col, originY, row);
+                vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[row][col] / 3, 1.0f);
 
                 // compute normals via neighbors
                 //     up
                 // left O right
                 //    down
                 glm::vec3 sumNormals(0.0f);
-                float leftY = x > 0 ? heightMap[z][x - 1] : 0.0f;
-                float rightY = x < cols - 1 ? heightMap[z][x + 1] : 0.0f;
-                float upY = z < rows - 1 ? heightMap[z + 1][x] : 0.0f;
-                float downY = z > 0 ? heightMap[z - 1][x] : 0.0f;
+                float leftY = col > 0 ? heightMap[row][col - 1] : 0.0f;
+                float rightY = col < cols - 1 ? heightMap[row][col + 1] : 0.0f;
+                float upY = row < rows - 1 ? heightMap[row + 1][col] : 0.0f;
+                float downY = row > 0 ? heightMap[row - 1][col] : 0.0f;
 
                 float dx = 1.0f;
                 float dz = 1.0f;
@@ -75,7 +120,7 @@ namespace GfxRenderEngine
                 auto normalComponent = [&](glm::vec3 a, glm::vec3 b)
                 {
                     glm::vec3 normal;
-                    if (x > 0 && z > 0 && x < cols - 1 && z < rows - 1)
+                    if (col > 0 && row > 0 && col < cols - 1 && row < rows - 1)
                     {
                         // Cross products to compute normals
                         normal = glm::cross(a, b);
@@ -98,130 +143,137 @@ namespace GfxRenderEngine
         }
 
         // indices
-        for (size_t z = 0; z < rows - 1; ++z)
+        m_Indices.resize(rows * cols * 6 /*six indices per quad*/);
+        size_t index = 0;
+        for (size_t row = 0; row < rows - 1; ++row)
         {
-            for (size_t x = 0; x < cols - 1; ++x)
+            for (size_t col = 0; col < cols - 1; ++col)
             {
-
-                uint32_t topLeft = z * cols + x;
-
+                uint32_t topLeft = row * cols + col;
                 uint32_t topRight = topLeft + 1;
-                uint32_t bottomLeft = (z + 1) * cols + x;
+                uint32_t bottomLeft = (row + 1) * cols + col;
                 uint32_t bottomRight = bottomLeft + 1;
 
-                m_Indices.push_back(topLeft);
-                m_Indices.push_back(bottomLeft);
-                m_Indices.push_back(topRight);
-                m_Indices.push_back(topRight);
-                m_Indices.push_back(bottomLeft);
-                m_Indices.push_back(bottomRight);
+                m_Indices[index++] = topLeft;
+                m_Indices[index++] = bottomLeft;
+                m_Indices[index++] = topRight;
+                m_Indices[index++] = topRight;
+                m_Indices[index++] = bottomLeft;
+                m_Indices[index++] = bottomRight;
             }
         }
+        CalculateTangents();
+        return true;
     }
 
     bool TerrainBuilder::LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
+        stbi_set_flip_vertically_on_load(false);
+
         m_Vertices.clear();
         m_Indices.clear();
         m_Submeshes.clear();
-        int width, height, bytesPerPixel;
-        stbi_set_flip_vertically_on_load(false);
-        std::string const& filepathHeightMap = terrainSpec.m_FilepathHeightMap;
-        uchar* localBuffer = stbi_load(filepathHeightMap.c_str(), &width, &height, &bytesPerPixel, 0);
-        if (localBuffer)
+
+        // terrain data
         {
-            std::vector<std::vector<float>> terrainData(height, std::vector<float>(width));
-            for (int i = 0; i < height; ++i)
+            glm::ivec3 heightMapProperties{};
+            uchar* rawData = stbi_load(terrainSpec.m_FilepathHeightMap.c_str(), &heightMapProperties.x,
+                                       &heightMapProperties.y, &heightMapProperties.z, 0);
+            if (!rawData)
             {
-                for (int j = 0; j < width; ++j)
+                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}",
+                                  terrainSpec.m_FilepathHeightMap);
+                return false;
+            }
+
+            std::vector<std::vector<float>> terrainData(heightMapProperties.y, std::vector<float>(heightMapProperties.x));
+            for (int y = 0; y < heightMapProperties.y; ++y)
+            {
+                for (int x = 0; x < heightMapProperties.x; ++x)
                 {
-                    terrainData[i][j] = static_cast<float>(localBuffer[i * width + j]) / 127.0f;
+                    terrainData[y][x] = static_cast<float>(rawData[y * heightMapProperties.x + x]) / 255.0f;
                 }
             }
-            stbi_image_free(localBuffer);
+            stbi_image_free(rawData);
 
-            PopulateTerrainData(terrainData);
-
-            // create game objects for all instances
+            if (!PopulateTerrainData(terrainData))
             {
-                auto& registry = scene.GetRegistry();
-                auto& sceneGraph = scene.GetSceneGraph();
-                auto& dictionary = scene.GetDictionary();
+                return false;
+            }
+            ColorTerrain(terrainSpec, heightMapProperties);
+        }
 
-                auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
-                name = EngineCore::GetFilenameWithoutExtension(name);
-                InstanceTag instanceTag;
+        // create game objects for all instances
+        {
+            auto& registry = scene.GetRegistry();
+            auto& sceneGraph = scene.GetSceneGraph();
+            auto& dictionary = scene.GetDictionary();
 
-                for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
+            auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
+            name = EngineCore::GetFilenameWithoutExtension(name);
+            InstanceTag instanceTag;
+
+            for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
+            {
+                // create game object
+                entt::entity entity = registry.create();
+                std::shared_ptr<Model> model;
+                TransformComponent transform{};
+                instanceTag.m_Instances.push_back(entity);
+
+                // add to scene graph
+                auto instanceStr = std::to_string(instanceIndex);
+                auto shortName = name + "::" + instanceStr;
+                auto longName = terrainSpec.m_FilepathTerrainDescription + "::" + instanceStr;
+                uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
+                sceneGraph.GetRoot().AddChild(newNode);
+
+                // only for the 1st instance
+                if (!instanceIndex)
                 {
-                    // create game object
-                    entt::entity entity = registry.create();
-                    std::shared_ptr<Model> model;
-                    TransformComponent transform{};
-                    instanceTag.m_Instances.push_back(entity);
+                    // create instance buffer
+                    instanceTag.m_InstanceBuffer = InstanceBuffer::Create(instanceCount);
+                    registry.emplace<InstanceTag>(entity, instanceTag);
 
-                    // add to scene graph
-                    auto instanceStr = std::to_string(instanceIndex);
-                    auto shortName = name + "::" + instanceStr;
-                    auto longName = terrainSpec.m_FilepathTerrainDescription + "::" + instanceStr;
-                    uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
-                    sceneGraph.GetRoot().AddChild(newNode);
+                    Submesh submesh{};
+                    submesh.m_FirstIndex = 0;
+                    submesh.m_FirstVertex = 0;
+                    submesh.m_IndexCount = m_Indices.size();
+                    submesh.m_VertexCount = m_Vertices.size();
+                    submesh.m_InstanceCount = instanceCount;
 
-                    // only for the 1st instance
-                    if (!instanceIndex)
-                    {
-                        // create instance buffer
-                        instanceTag.m_InstanceBuffer = InstanceBuffer::Create(instanceCount);
-                        registry.emplace<InstanceTag>(entity, instanceTag);
+                    submesh.m_Material.m_PbrMaterial = terrainSpec.m_PbrMaterial;
 
-                        Submesh submesh{};
-                        submesh.m_FirstIndex = 0;
-                        submesh.m_FirstVertex = 0;
-                        submesh.m_IndexCount = m_Indices.size();
-                        submesh.m_VertexCount = m_Vertices.size();
-                        submesh.m_InstanceCount = instanceCount;
+                    { // create material descriptor
+                        Material::MaterialTextures materialTextures;
 
-                        submesh.m_Material.m_PbrMaterial = terrainSpec.m_PbrMaterial;
-
-                        { // create material descriptor
-                            Material::MaterialTextures materialTextures;
-
-                            auto materialDescriptor =
-                                MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
-                            submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
-                        }
-                        { // create resource descriptor
-                            Resources::ResourceBuffers resourceBuffers;
-
-                            resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceTag.m_InstanceBuffer->GetBuffer();
-                            auto resourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
-                            submesh.m_Resources.m_ResourceDescriptor = resourceDescriptor;
-                        }
-                        m_Submeshes.push_back(submesh);
-                        model = Engine::m_Engine->LoadModel(*this);
-
-                        PbrMaterialTag pbrMaterialTag{};
-                        registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+                        auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
+                        submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
                     }
+                    { // create resource descriptor
+                        Resources::ResourceBuffers resourceBuffers;
 
-                    instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
-                                                                  transform.GetNormalMatrix());
-                    transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
-                    registry.emplace<TransformComponent>(entity, transform);
+                        resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceTag.m_InstanceBuffer->GetBuffer();
+                        auto resourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
+                        submesh.m_Resources.m_ResourceDescriptor = resourceDescriptor;
+                    }
+                    m_Submeshes.push_back(submesh);
+                    model = Engine::m_Engine->LoadModel(*this);
 
-                    MeshComponent mesh{shortName, model};
-                    registry.emplace<MeshComponent>(entity, mesh);
+                    PbrMaterialTag pbrMaterialTag{};
+                    registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
                 }
+
+                instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
+                                                              transform.GetNormalMatrix());
+                transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
+                registry.emplace<TransformComponent>(entity, transform);
+
+                MeshComponent mesh{shortName, model};
+                registry.emplace<MeshComponent>(entity, mesh);
             }
-
-            return true;
         }
-        else
-        {
-            LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}", filepathHeightMap);
-        }
-
-        return false;
+        return true;
     }
 
     void TerrainBuilder::CalculateTangents()

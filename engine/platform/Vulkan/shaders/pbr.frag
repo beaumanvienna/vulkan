@@ -35,7 +35,7 @@ layout(set = 1, binding = 4) uniform sampler2D roughnessMap;
 layout(set = 1, binding = 5) uniform sampler2D metallicMap;
 
 layout(location = 0) in vec3 fragPosition;
-layout(location = 1) in vec3 fragColor;
+layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec3 fragNormal;
 layout(location = 3) in vec2 fragUV;
 layout(location = 4) in vec3 fragTangent;
@@ -105,9 +105,9 @@ void main()
     }
     else
     {
-        col = vec4(fragColor.r, fragColor.g, fragColor.b, 1.0);
+        col = vec4(fragColor.r, fragColor.g, fragColor.b, fragColor.a);
     }
-    if (col.w < 0.5)
+    if (col.a < 0.5)
     {
         discard;
     }

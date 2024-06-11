@@ -924,7 +924,6 @@ namespace GfxRenderEngine
                     "pbr.vert",
                     "pbr.frag",
                     "pbrSA.vert",
-                    "pbrSA.frag",
                     "deferredShading.vert",
                     "deferredShading.frag",
                     "skybox.vert",

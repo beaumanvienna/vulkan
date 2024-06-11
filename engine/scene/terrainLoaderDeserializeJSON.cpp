@@ -62,15 +62,6 @@ namespace GfxRenderEngine
                              std::trunc(SUPPORTED_FILE_FORMAT_VERSION)),
                             "The terrain description major version does not match");
             }
-            else if (terrainAttributesKey == "heightMapPath")
-            {
-                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
-                            "heightmap path must be string");
-                std::string_view terrainPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_FilepathHeightMap = std::string(terrainPath);
-                terrainSpec.m_FilepathHeightMap = m_TerrainDescriptionFile.m_FilepathHeightMap;
-                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathHeightMap);
-            }
             else if (terrainAttributesKey == "description")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string), "type must be string");
@@ -84,6 +75,24 @@ namespace GfxRenderEngine
                 std::string_view terrainAuthor = terrainAttributes.value().get_string();
                 m_TerrainDescriptionFile.m_Author = std::string(terrainAuthor);
                 LOG_CORE_INFO("author: {0}", m_TerrainDescriptionFile.m_Author);
+            }
+            else if (terrainAttributesKey == "heightMapPath")
+            {
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
+                            "heightmap path must be string");
+                std::string_view heightMapPath = terrainAttributes.value().get_string();
+                m_TerrainDescriptionFile.m_FilepathHeightMap = std::string(heightMapPath);
+                terrainSpec.m_FilepathHeightMap = m_TerrainDescriptionFile.m_FilepathHeightMap;
+                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathHeightMap);
+            }
+            else if (terrainAttributesKey == "colorMapPath")
+            {
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
+                            "colormap path must be string");
+                std::string_view colorMapPath = terrainAttributes.value().get_string();
+                m_TerrainDescriptionFile.m_FilepathColorMap = std::string(colorMapPath);
+                terrainSpec.m_FilepathColorMap = m_TerrainDescriptionFile.m_FilepathColorMap;
+                LOG_CORE_INFO("Colormap Path: {0}", m_TerrainDescriptionFile.m_FilepathColorMap);
             }
             else if (terrainAttributesKey == "material")
             {
