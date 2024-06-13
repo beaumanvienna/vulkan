@@ -20,31 +20,19 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
+#include "stb_image.h"
 
-#include "renderer/model.h"
-#include "scene/scene.h"
-#include "scene/terrain.h"
+#include "auxiliary/stbWrapper.h"
 
 namespace GfxRenderEngine
 {
-    class TerrainBuilder
+    StbWrapper::StbWrapper(char const* filename, int* x, int* y, int* comp, int req_comp)
     {
+        m_DataBuffer = stbi_load(filename, x, y, comp, req_comp);
+    }
 
-    public:
-        TerrainBuilder() = default;
+    uchar* StbWrapper::Get() { return m_DataBuffer; }
 
-        bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
+    StbWrapper::~StbWrapper() { stbi_image_free(m_DataBuffer); }
 
-    private:
-        bool PopulateTerrainData(uchar* heightMap, glm::ivec3 const& heightMapProperties);
-        void ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties);
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
-
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
-    };
 } // namespace GfxRenderEngine

@@ -24,6 +24,7 @@
 #include "core.h"
 #include "renderer/builder/terrainBuilder.h"
 #include "auxiliary/file.h"
+#include "auxiliary/stbWrapper.h"
 #include "scene/scene.h"
 #include "stb_image.h"
 
@@ -56,13 +57,14 @@ namespace GfxRenderEngine
             return;
         }
 
-        uint32_t* imageData = reinterpret_cast<uint32_t*>(rawData);
+        uint* imageData = reinterpret_cast<uint*>(rawData);
         size_t vertexCounter = 0;
         for (int y = 0; y < colorMapProperties.y; ++y)
         {
+            int yOffset = y * colorMapProperties.x;
             for (int x = 0; x < colorMapProperties.x; ++x)
             { // image format is rgba in reverse
-                uint32_t abgr = imageData[y * colorMapProperties.x + x];
+                uint abgr = imageData[yOffset + x];
                 float r = (0xff & (abgr >> 0)) / 255.0f;
                 float g = (0xff & (abgr >> 8)) / 255.0f;
                 float b = (0xff & (abgr >> 16)) / 255.0f;
@@ -74,92 +76,101 @@ namespace GfxRenderEngine
         stbi_image_free(rawData);
     }
 
-    bool TerrainBuilder::PopulateTerrainData(std::vector<std::vector<float>> const& heightMap)
+    bool TerrainBuilder::PopulateTerrainData(uchar* heightMap, glm::ivec3 const& heightMapProperties)
     {
-        if (heightMap.empty() || heightMap[0].empty())
+        int const& cols = heightMapProperties.x;
+        int const& rows = heightMapProperties.y;
+        if (!(rows > 0 && cols > 0))
         {
             LOG_CORE_CRITICAL("heightmap is incomplete");
             return false;
         }
-        size_t rows = heightMap.size();
-        size_t cols = heightMap[0].size();
-        m_Vertices.resize(rows * cols);
-        size_t vertexCounter = 0;
 
-        // vertices
-        for (size_t row = 0; row < rows; ++row)
-        {
-            for (size_t col = 0; col < cols; ++col)
+        { // vertices
+            m_Vertices.resize(rows * cols);
+            int vertexCounter = 0;
+            for (int row = 0; row < rows; ++row)
             {
-                Vertex& vertex = m_Vertices[vertexCounter];
-                ++vertexCounter;
+                int rowOffset = row * cols;
+                int rowPlusOneOffset = (row + 1) * cols;
+                int rowMinusOneOffset = (row - 1) * cols;
 
-                float originY = heightMap[row][col];
-
-                vertex.m_Position = glm::vec3(col, originY, row);
-                vertex.m_Color = glm::vec4(0.f, 0.f, heightMap[row][col] / 3, 1.0f);
-
-                // compute normals via neighbors
-                //     up
-                // left O right
-                //    down
-                glm::vec3 sumNormals(0.0f);
-                float leftY = col > 0 ? heightMap[row][col - 1] : 0.0f;
-                float rightY = col < cols - 1 ? heightMap[row][col + 1] : 0.0f;
-                float upY = row < rows - 1 ? heightMap[row + 1][col] : 0.0f;
-                float downY = row > 0 ? heightMap[row - 1][col] : 0.0f;
-
-                float dx = 1.0f;
-                float dz = 1.0f;
-
-                glm::vec3 left = glm::vec3(-dx, leftY - originY, 0.0f);
-                glm::vec3 right = glm::vec3(dx, rightY - originY, 0.0f);
-                glm::vec3 up = glm::vec3(0.0f, upY - originY, dz);
-                glm::vec3 down = glm::vec3(0.0f, downY - originY, -dz);
-
-                auto normalComponent = [&](glm::vec3 a, glm::vec3 b)
+                for (int col = 0; col < cols; ++col)
                 {
-                    glm::vec3 normal;
-                    if (col > 0 && row > 0 && col < cols - 1 && row < rows - 1)
-                    {
-                        // Cross products to compute normals
-                        normal = glm::cross(a, b);
-                    }
-                    else
-                    {
-                        normal = glm::vec3(0.0f, 1.0f, 0.0f);
-                    }
-                    return normal;
-                };
+                    Vertex& vertex = m_Vertices[vertexCounter];
+                    auto byteToFloat = [](uchar const& byte) { return static_cast<uint>(byte) / 255.0f; };
 
-                // smoothshading
-                sumNormals = normalComponent(left, -down);
-                sumNormals += normalComponent(-down, right);
-                sumNormals += normalComponent(right, -up);
-                sumNormals += normalComponent(-up, left);
+                    float originY = byteToFloat(heightMap[vertexCounter]);
 
-                vertex.m_Normal = glm::normalize(sumNormals);
+                    vertex.m_Position = glm::vec3(col, originY, row);
+                    vertex.m_Color = glm::vec4(0.f, 0.f, originY / 3.0f, 1.0f);
+
+                    // compute normals via neighbors
+                    //     up
+                    // left O right
+                    //    down
+                    glm::vec3 sumNormals(0.0f);
+                    float leftY = col > 0 ? byteToFloat(heightMap[rowOffset + col - 1]) : 0.0f;
+                    float rightY = col < cols - 1 ? byteToFloat(heightMap[rowOffset + col + 1]) : 0.0f;
+                    float upY = row < rows - 1 ? byteToFloat(heightMap[rowPlusOneOffset + col]) : 0.0f;
+                    float downY = row > 0 ? byteToFloat(heightMap[rowMinusOneOffset + col]) : 0.0f;
+
+                    float dx = 1.0f;
+                    float dz = 1.0f;
+
+                    glm::vec3 left = glm::vec3(-dx, leftY - originY, 0.0f);
+                    glm::vec3 right = glm::vec3(dx, rightY - originY, 0.0f);
+                    glm::vec3 up = glm::vec3(0.0f, upY - originY, dz);
+                    glm::vec3 down = glm::vec3(0.0f, downY - originY, -dz);
+
+                    auto normalComponent = [&](glm::vec3 a, glm::vec3 b)
+                    {
+                        glm::vec3 normal;
+                        if (col > 0 && row > 0 && col < cols - 1 && row < rows - 1)
+                        {
+                            // Cross products to compute normals
+                            normal = glm::cross(a, b);
+                        }
+                        else
+                        {
+                            normal = glm::vec3(0.0f, 1.0f, 0.0f);
+                        }
+                        return normal;
+                    };
+
+                    // smoothshading
+                    sumNormals = normalComponent(left, -down);
+                    sumNormals += normalComponent(-down, right);
+                    sumNormals += normalComponent(right, -up);
+                    sumNormals += normalComponent(-up, left);
+
+                    vertex.m_Normal = glm::normalize(sumNormals);
+                    ++vertexCounter;
+                }
             }
         }
 
-        // indices
-        m_Indices.resize(rows * cols * 6 /*six indices per quad*/);
-        size_t index = 0;
-        for (size_t row = 0; row < rows - 1; ++row)
-        {
-            for (size_t col = 0; col < cols - 1; ++col)
+        { // indices
+            m_Indices.resize(rows * cols * 6 /*six indices per quad*/);
+            int index = 0;
+            for (int row = 0; row < rows - 1; ++row)
             {
-                uint32_t topLeft = row * cols + col;
-                uint32_t topRight = topLeft + 1;
-                uint32_t bottomLeft = (row + 1) * cols + col;
-                uint32_t bottomRight = bottomLeft + 1;
+                uint rowOffset = row * cols;
+                uint rowPlusOneOffset = (row + 1) * cols;
+                for (int col = 0; col < cols - 1; ++col)
+                {
+                    uint topLeft = rowOffset + col;
+                    uint topRight = topLeft + 1;
+                    uint bottomLeft = rowPlusOneOffset + col;
+                    uint bottomRight = bottomLeft + 1;
 
-                m_Indices[index++] = topLeft;
-                m_Indices[index++] = bottomLeft;
-                m_Indices[index++] = topRight;
-                m_Indices[index++] = topRight;
-                m_Indices[index++] = bottomLeft;
-                m_Indices[index++] = bottomRight;
+                    m_Indices[index++] = topLeft;
+                    m_Indices[index++] = bottomLeft;
+                    m_Indices[index++] = topRight;
+                    m_Indices[index++] = topRight;
+                    m_Indices[index++] = bottomLeft;
+                    m_Indices[index++] = bottomRight;
+                }
             }
         }
         CalculateTangents();
@@ -177,26 +188,24 @@ namespace GfxRenderEngine
         // terrain data
         {
             glm::ivec3 heightMapProperties{};
-            uchar* rawData = stbi_load(terrainSpec.m_FilepathHeightMap.c_str(), &heightMapProperties.x,
-                                       &heightMapProperties.y, &heightMapProperties.z, 0);
-            if (!rawData)
+            StbWrapper terrainData{terrainSpec.m_FilepathHeightMap.c_str(), &heightMapProperties.x, &heightMapProperties.y,
+                                   &heightMapProperties.z, 0};
+            if (!terrainData.Get())
             {
                 LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}",
                                   terrainSpec.m_FilepathHeightMap);
                 return false;
             }
 
-            std::vector<std::vector<float>> terrainData(heightMapProperties.y, std::vector<float>(heightMapProperties.x));
-            for (int y = 0; y < heightMapProperties.y; ++y)
+            if (heightMapProperties.z != 1)
             {
-                for (int x = 0; x < heightMapProperties.x; ++x)
-                {
-                    terrainData[y][x] = static_cast<float>(rawData[y * heightMapProperties.x + x]) / 255.0f;
-                }
+                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: heightmap {0} must be 8bpc GRAY (1 byte per pixel)",
+                                  terrainSpec.m_FilepathHeightMap);
+                return false;
             }
-            stbi_image_free(rawData);
 
-            if (!PopulateTerrainData(terrainData))
+            bool succesful = PopulateTerrainData(terrainData.Get(), heightMapProperties);
+            if (!succesful)
             {
                 return false;
             }

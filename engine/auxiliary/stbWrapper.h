@@ -21,30 +21,21 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
-
-#include "renderer/model.h"
-#include "scene/scene.h"
-#include "scene/terrain.h"
-
+#include "engine.h"
 namespace GfxRenderEngine
 {
-    class TerrainBuilder
+
+    class StbWrapper
     {
 
     public:
-        TerrainBuilder() = default;
+        StbWrapper() = delete;
+        StbWrapper(char const* filename, int* x, int* y, int* comp, int req_comp);
+        ~StbWrapper();
 
-        bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
+        uchar* Get();
 
     private:
-        bool PopulateTerrainData(uchar* heightMap, glm::ivec3 const& heightMapProperties);
-        void ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties);
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
-
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
+        uchar* m_DataBuffer;
     };
 } // namespace GfxRenderEngine
