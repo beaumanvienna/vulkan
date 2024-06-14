@@ -25,17 +25,24 @@
 namespace GfxRenderEngine
 {
 
-    class StbWrapper
+    class Image
     {
 
     public:
-        StbWrapper() = delete;
-        StbWrapper(char const* filename, int* x, int* y, int* comp, int req_comp);
-        ~StbWrapper();
+        Image() = delete;
+        Image(std::string const& filename);
+        ~Image();
 
         uchar* Get();
+        int Width() const;
+        int Height() const;
+        int BytesPerPixel() const;
+        glm::ivec3 const& GetProperties() const;
+        bool IsValid() const;
+        uchar operator[](uint index) const;
 
     private:
         uchar* m_DataBuffer;
+        glm::ivec3 m_Properties{};
     };
 } // namespace GfxRenderEngine

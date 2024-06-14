@@ -21,13 +21,13 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
-
-#include "renderer/model.h"
-#include "scene/scene.h"
 #include "scene/terrain.h"
 
 namespace GfxRenderEngine
 {
+    class Scene;
+    class Image;
+
     class TerrainBuilder
     {
 
@@ -37,8 +37,8 @@ namespace GfxRenderEngine
         bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
 
     private:
-        bool PopulateTerrainData(uchar* heightMap, glm::ivec3 const& heightMapProperties);
-        void ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties);
+        bool PopulateTerrainData(Image const& heightMap);
+        void ColorTerrain(Terrain::TerrainSpec const& terrainSpec, Image const& heightMap);
         void CalculateTangents();
         void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
 

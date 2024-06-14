@@ -22,11 +22,15 @@
 
 #pragma once
 
-#include "renderer/model.h"
-#include "scene/scene.h"
-
 namespace GfxRenderEngine
 {
+
+    class Cubemap;
+    class Model;
+    class Scene;
+    class Submesh;
+    class Vertex;
+
     class Builder
     {
 

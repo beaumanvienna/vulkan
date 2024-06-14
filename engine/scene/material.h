@@ -23,13 +23,14 @@
 #pragma once
 
 #include <memory>
-#include "renderer/texture.h"
-#include "renderer/buffer.h"
+
 #include "engine/platform/Vulkan/material.h"
 #include "engine.h"
 
 namespace GfxRenderEngine
 {
+    class Texture;
+    class Buffer;
     class MaterialDescriptor;
     class Material
     {

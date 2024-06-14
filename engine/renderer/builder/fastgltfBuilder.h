@@ -28,12 +28,27 @@
 #include <fastgltf/util.hpp>
 #include <fastgltf/glm_element_traits.hpp>
 
-#include "renderer/model.h"
+#include "scene/material.h"
 #include "scene/gltf.h"
-#include "scene/scene.h"
 
 namespace GfxRenderEngine
 {
+    namespace Armature
+    {
+        class Skeleton;
+    }
+    class Buffer;
+    class Dictionary;
+    class InstanceBuffer;
+    class Material;
+    class Model;
+    class Scene;
+    class SceneGraph;
+    class SkeletalAnimations;
+    class Submesh;
+    class Texture;
+    class TransformComponent;
+    class Vertex;
 
     class FastgltfBuilder
     {

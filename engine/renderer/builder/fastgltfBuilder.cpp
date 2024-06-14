@@ -24,6 +24,9 @@
 #include "stb_image.h"
 
 #include "core.h"
+#include "scene/scene.h"
+#include "renderer/model.h"
+#include "renderer/instanceBuffer.h"
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/materialDescriptor.h"
 #include "renderer/resourceDescriptor.h"

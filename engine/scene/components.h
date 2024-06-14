@@ -28,12 +28,13 @@
 #include "entt.hpp"
 
 #include "engine.h"
-#include "renderer/camera.h"
-#include "renderer/instanceBuffer.h"
 
 namespace GfxRenderEngine
 {
+    class Camera;
+    class Image;
     class Model;
+    class InstanceBuffer;
 
     class TransformComponent
     {
@@ -215,5 +216,10 @@ namespace GfxRenderEngine
     struct SkeletalAnimationTag
     {
         uint m_Tag{0};
+    };
+
+    struct TerrainComponent
+    {
+        std::shared_ptr<Image> m_HeightMap;
     };
 } // namespace GfxRenderEngine

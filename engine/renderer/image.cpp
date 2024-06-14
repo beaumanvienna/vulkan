@@ -1,8 +1,6 @@
 /* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
-   Author: Mantar (https://github.com/AhmetErenLacinbala)
-
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
    (the "Software"), to deal in the Software without restriction,
@@ -22,23 +20,28 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-#include "engine.h"
-#include <string>
-#include <vector>
+#include "stb_image.h"
+
+#include "renderer/image.h"
 
 namespace GfxRenderEngine
 {
-    class BaseTerrain
+    Image::Image(std::string const& filename)
     {
-    public:
-        BaseTerrain(std::string const& filepath);
-        std::vector<std::vector<float>> m_TerrainData;
+        stbi_set_flip_vertically_on_load(false);
+        m_DataBuffer = stbi_load(filename.c_str(), &m_Properties.x, &m_Properties.y, &m_Properties.z, 0);
+    }
 
-    private:
-        std::string m_Filepath;
-        void ReadFile(std::string const& filepath);
-        uint m_TerrainSize{0};
-    };
+    Image::~Image() { stbi_image_free(m_DataBuffer); }
+
+    uchar* Image::Get() { return m_DataBuffer; }
+
+    glm::ivec3 const& Image::GetProperties() const { return m_Properties; }
+    int Image::Width() const { return m_Properties.x; }
+    int Image::Height() const { return m_Properties.y; }
+    int Image::BytesPerPixel() const { return m_Properties.z; }
+    bool Image::IsValid() const { return m_DataBuffer != nullptr; }
+
+    uchar Image::operator[](uint index) const { return m_DataBuffer[index]; }
 
 } // namespace GfxRenderEngine

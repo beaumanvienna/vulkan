@@ -26,6 +26,7 @@
 #include "assimp/postprocess.h"
 
 #include "core.h"
+#include "renderer/instanceBuffer.h"
 #include "renderer/builder/fbxBuilder.h"
 #include "renderer/materialDescriptor.h"
 #include "auxiliary/instrumentation.h"

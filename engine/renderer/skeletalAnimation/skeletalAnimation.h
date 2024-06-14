@@ -25,12 +25,11 @@
 #include <memory>
 
 #include "engine.h"
-#include "auxiliary/timestep.h"
 #include "renderer/skeletalAnimation/skeleton.h"
 
 namespace GfxRenderEngine
 {
-
+    class Timestep;
     class SkeletalAnimation
     {
 

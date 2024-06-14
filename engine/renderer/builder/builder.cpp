@@ -21,12 +21,14 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "auxiliary/hash.h"
-#include "core.h"
-#include "renderer/builder/builder.h"
-#include "scene/scene.h"
-
 #include "stb_image.h"
+
+#include "core.h"
+#include "scene/scene.h"
+#include "auxiliary/hash.h"
+#include "renderer/builder/builder.h"
+#include "renderer/model.h"
+
 
 #include "VKmodel.h"
 

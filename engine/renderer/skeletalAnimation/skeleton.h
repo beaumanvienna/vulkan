@@ -29,7 +29,6 @@
 #include "gtx/quaternion.hpp"
 
 #include "engine.h"
-#include "renderer/buffer.h"
 #include "renderer/skeletalAnimation/joints.h"
 
 namespace GfxRenderEngine

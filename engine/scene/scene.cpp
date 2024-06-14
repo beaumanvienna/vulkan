@@ -30,6 +30,7 @@
 #include "auxiliary/file.h"
 #include "scene/components.h"
 #include "scene/scene.h"
+#include "renderer/camera.h"
 
 namespace GfxRenderEngine
 {

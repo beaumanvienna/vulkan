@@ -31,10 +31,10 @@
 #include "scene/sceneGraph.h"
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
-#include "renderer/camera.h"
 
 namespace GfxRenderEngine
 {
+    class Camera;
     class Scene
     {
 

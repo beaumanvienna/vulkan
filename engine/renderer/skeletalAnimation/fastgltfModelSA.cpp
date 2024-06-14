@@ -26,6 +26,8 @@
 #include "gtc/type_ptr.hpp"
 #include "gtx/quaternion.hpp"
 #include "renderer/builder/fastgltfBuilder.h"
+#include "renderer/skeletalAnimation/skeleton.h"
+#include "renderer/model.h"
 
 namespace GfxRenderEngine
 {

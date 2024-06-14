@@ -22,47 +22,47 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
+#include "renderer/image.h"
+#include "renderer/model.h"
+#include "renderer/instanceBuffer.h"
 #include "renderer/builder/terrainBuilder.h"
 #include "auxiliary/file.h"
-#include "auxiliary/stbWrapper.h"
 #include "scene/scene.h"
-#include "stb_image.h"
 
 namespace GfxRenderEngine
 {
-    void TerrainBuilder::ColorTerrain(Terrain::TerrainSpec const& terrainSpec, glm::ivec3& heightMapProperties)
+    void TerrainBuilder::ColorTerrain(Terrain::TerrainSpec const& terrainSpec, Image const& heightMap)
     {
-        glm::ivec3 colorMapProperties;
-        uchar* rawData = stbi_load(terrainSpec.m_FilepathColorMap.c_str(), &colorMapProperties.x /*width*/,
-                                   &colorMapProperties.y /*height*/, &colorMapProperties.z /*bytes per pixel*/, 0);
-        if (!rawData)
+        Image colorMap{terrainSpec.m_FilepathColorMap};
+
+        if (!colorMap.IsValid())
         {
             LOG_CORE_CRITICAL("color map did not load: {0}", terrainSpec.m_FilepathColorMap);
             return;
         }
-        if (!(colorMapProperties.z == 4))
+
+        if (!(colorMap.BytesPerPixel() == 4))
         {
-            LOG_CORE_CRITICAL("color map must be rgba (got {0} bytes per pixel) from {1}", colorMapProperties.z,
+            LOG_CORE_CRITICAL("color map must be rgba (got {0} bytes per pixel) from {1}", colorMap.BytesPerPixel(),
                               terrainSpec.m_FilepathColorMap);
-            stbi_image_free(rawData);
-            return;
-        }
-        if (!((colorMapProperties.x == heightMapProperties.x) && (colorMapProperties.y == heightMapProperties.y)))
-        {
-            LOG_CORE_CRITICAL("color map  and height map dimensions must match: color map width: {0}, color map height: "
-                              "{1}, height map width: {2}, height map height: {3}, color map: {4}, heigh map: {5}",
-                              colorMapProperties.x, colorMapProperties.y, heightMapProperties.x, heightMapProperties.y,
-                              terrainSpec.m_FilepathColorMap, terrainSpec.m_FilepathHeightMap);
-            stbi_image_free(rawData);
             return;
         }
 
-        uint* imageData = reinterpret_cast<uint*>(rawData);
-        size_t vertexCounter = 0;
-        for (int y = 0; y < colorMapProperties.y; ++y)
+        if (!((colorMap.Width() == heightMap.Width()) && (colorMap.Height()) == heightMap.Height()))
         {
-            int yOffset = y * colorMapProperties.x;
-            for (int x = 0; x < colorMapProperties.x; ++x)
+            LOG_CORE_CRITICAL("color map  and height map dimensions must match: color map width: {0}, color map height: "
+                              "{1}, height map width: {2}, height map height: {3}, color map: {4}, heigh map: {5}",
+                              colorMap.Width(), colorMap.Height(), heightMap.Width(), heightMap.Height(),
+                              terrainSpec.m_FilepathColorMap, terrainSpec.m_FilepathHeightMap);
+            return;
+        }
+
+        uint* imageData = reinterpret_cast<uint*>(colorMap.Get());
+        size_t vertexCounter = 0;
+        for (int y = 0; y < colorMap.Height(); ++y)
+        {
+            int yOffset = y * colorMap.Width();
+            for (int x = 0; x < colorMap.Width(); ++x)
             { // image format is rgba in reverse
                 uint abgr = imageData[yOffset + x];
                 float r = (0xff & (abgr >> 0)) / 255.0f;
@@ -73,13 +73,13 @@ namespace GfxRenderEngine
                 ++vertexCounter;
             }
         }
-        stbi_image_free(rawData);
     }
 
-    bool TerrainBuilder::PopulateTerrainData(uchar* heightMap, glm::ivec3 const& heightMapProperties)
+    bool TerrainBuilder::PopulateTerrainData(Image const& heightMap)
     {
-        int const& cols = heightMapProperties.x;
-        int const& rows = heightMapProperties.y;
+
+        int const& cols = heightMap.GetProperties().x;
+        int const& rows = heightMap.GetProperties().y;
         if (!(rows > 0 && cols > 0))
         {
             LOG_CORE_CRITICAL("heightmap is incomplete");
@@ -179,37 +179,36 @@ namespace GfxRenderEngine
 
     bool TerrainBuilder::LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
-        stbi_set_flip_vertically_on_load(false);
-
+        TerrainComponent terrainComponent{};
         m_Vertices.clear();
         m_Indices.clear();
         m_Submeshes.clear();
 
         // terrain data
         {
-            glm::ivec3 heightMapProperties{};
-            StbWrapper terrainData{terrainSpec.m_FilepathHeightMap.c_str(), &heightMapProperties.x, &heightMapProperties.y,
-                                   &heightMapProperties.z, 0};
-            if (!terrainData.Get())
+            terrainComponent.m_HeightMap = std::make_shared<Image>(terrainSpec.m_FilepathHeightMap);
+            Image& heightMap = *terrainComponent.m_HeightMap.get();
+
+            if (!heightMap.IsValid())
             {
                 LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}",
                                   terrainSpec.m_FilepathHeightMap);
                 return false;
             }
 
-            if (heightMapProperties.z != 1)
+            if (heightMap.BytesPerPixel() != 1)
             {
                 LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: heightmap {0} must be 8bpc GRAY (1 byte per pixel)",
                                   terrainSpec.m_FilepathHeightMap);
                 return false;
             }
 
-            bool succesful = PopulateTerrainData(terrainData.Get(), heightMapProperties);
+            bool succesful = PopulateTerrainData(heightMap);
             if (!succesful)
             {
                 return false;
             }
-            ColorTerrain(terrainSpec, heightMapProperties);
+            ColorTerrain(terrainSpec, heightMap);
         }
 
         // create game objects for all instances
@@ -280,6 +279,7 @@ namespace GfxRenderEngine
 
                 MeshComponent mesh{shortName, model};
                 registry.emplace<MeshComponent>(entity, mesh);
+                registry.emplace<TerrainComponent>(entity, terrainComponent);
             }
         }
         return true;
