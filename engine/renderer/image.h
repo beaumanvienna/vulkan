@@ -37,12 +37,15 @@ namespace GfxRenderEngine
         int Width() const;
         int Height() const;
         int BytesPerPixel() const;
-        glm::ivec3 const& GetProperties() const;
+        int Size() const;
+
         bool IsValid() const;
         uchar operator[](uint index) const;
 
     private:
         uchar* m_DataBuffer;
-        glm::ivec3 m_Properties{};
+        int m_Width;
+        int m_Height;
+        int m_BytesPerPixel;
     };
 } // namespace GfxRenderEngine

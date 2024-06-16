@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     public:
         TerrainBuilder() = default;
 
-        bool LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
+        bool LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
 
     private:
         bool PopulateTerrainData(Image const& heightMap);

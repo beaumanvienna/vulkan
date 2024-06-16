@@ -29,23 +29,23 @@
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 
-layout(location = 0) in vec3  position;
-layout(location = 1) in vec4  color;
-layout(location = 2) in vec3  normal;
-layout(location = 3) in vec2  uv;
-layout(location = 4) in vec3  tangent;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec3 normal;
+layout(location = 3) in vec2 uv;
+layout(location = 4) in vec3 tangent;
 layout(location = 5) in ivec4 jointIds;
-layout(location = 6) in vec4  weights;
+layout(location = 6) in vec4 weights;
 
 struct PointLight
 {
-    vec4 m_Position;  // ignore w
-    vec4 m_Color;     // w is intensity
+    vec4 m_Position; // ignore w
+    vec4 m_Color;    // w is intensity
 };
 
 struct DirectionalLight
 {
-    vec4 m_Direction;  // ignore w
+    vec4 m_Direction; // ignore w
     vec4 m_Color;     // w is intensity
 };
 
@@ -78,29 +78,29 @@ layout(set = 2, binding = 1) uniform SkeletalAnimationShaderData
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
-layout(location = 0)  out  vec3  fragPosition;
-layout(location = 1)  out  vec4  fragColor;
-layout(location = 2)  out  vec3  fragNormal;
-layout(location = 3)  out  vec2  fragUV;
-layout(location = 4)  out  vec3  fragTangent;
+layout(location = 0) out vec3 fragPosition;
+layout(location = 1) out vec4 fragColor;
+layout(location = 2) out vec3 fragNormal;
+layout(location = 3) out vec2 fragUV;
+layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
     vec4 animatedPosition = vec4(0.0f);
-    mat4 jointTransform    = mat4(0.0f);
-    for (int i = 0 ; i < MAX_JOINT_INFLUENCE ; ++i)
+    mat4 jointTransform = mat4(0.0f);
+    for (int i = 0; i < MAX_JOINT_INFLUENCE; ++i)
     {
         if (weights[i] == 0)
             continue;
         if (jointIds[i] >=MAX_JOINTS) 
         {
             animatedPosition = vec4(position,1.0f);
-            jointTransform   = mat4(1.0f);
+            jointTransform = mat4(1.0f);
             break;
         }
         vec4 localPosition  = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
-        animatedPosition   += localPosition * weights[i];
-        jointTransform     += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
+        animatedPosition += localPosition * weights[i];
+        jointTransform += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
     }
 
     mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
@@ -108,11 +108,11 @@ void main()
 
     // projection * view * model * position
     vec4 positionWorld = modelMatrix * animatedPosition;
-    gl_Position        = ubo.m_Projection * ubo.m_View * positionWorld;
-    fragPosition       = positionWorld.xyz;
+    gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
+    fragPosition = positionWorld.xyz;
 
-    mat3 normalMatrix  = transpose(inverse(mat3(instanceNormalMatrix) * mat3(jointTransform)));
-    fragNormal  = normalize(normalMatrix * normal);
+    mat3 normalMatrix = transpose(inverse(mat3(instanceNormalMatrix) * mat3(jointTransform)));
+    fragNormal = normalize(normalMatrix * normal);
     fragTangent = normalize(normalMatrix * tangent);
 
     fragUV = uv;

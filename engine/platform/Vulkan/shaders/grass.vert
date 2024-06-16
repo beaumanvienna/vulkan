@@ -1,8 +1,5 @@
 /* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -27,11 +24,11 @@
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 uv;
-layout(location = 4) in vec3 tangent;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec4  color;
+layout(location = 2) in vec3  normal;
+layout(location = 3) in vec2  uv;
+layout(location = 4) in vec3  tangent;
 
 struct PointLight
 {
@@ -66,8 +63,18 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanceData[MAX_INSTANCE];
-} uboInstanced;
+    InstanceData m_InstanceData;
+} baseTransform;
+
+#define WIDTH 1024 // row
+#define HEIGHT 750 // col
+#define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 768000
+#define INSTANCE_COUNT 16384 // max buffer size 65536 bytes
+
+layout(set = 2, binding = 2) uniform HeightMap
+{
+    int m_HeightMapData[INSTANCE_COUNT]; 
+} heightMap;
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -77,13 +84,27 @@ layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+    mat4 baseModelMatrix = baseTransform.m_InstanceData.m_ModelMatrix;
+    mat4 normalMatrix = baseTransform.m_InstanceData.m_NormalMatrix;
+    
+    
+    int index = int(floor(46.875 * gl_InstanceIndex));
+    int hgt = heightMap.m_HeightMapData[index];
+    float row = floor(index / WIDTH);
+    float col = floor((index - WIDTH * row));
+    
+    mat4 localTranslation = mat4
+    (
+        vec4(1.0, 0.0, 0.0, 0.0), // first column
+        vec4(0.0, 1.0, 0.0, 0.0), // second column
+        vec4(0.0, 0.0, 1.0, 0.0), // third column
+        vec4(col, hgt, row, 1.0)  // fourth column
+    );          
 
     // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);
+    gl_Position = ubo.m_Projection * ubo.m_View * baseModelMatrix * localTranslation * vec4(position, 1.0);
 
-    vec4 positionWorld = modelMatrix * vec4(position, 1.0);
+    vec4 positionWorld = baseModelMatrix * vec4(position, 1.0);
     fragPosition = positionWorld.xyz;
     fragNormal = mat3(normalMatrix) * normal;
     fragTangent = mat3(normalMatrix) * tangent;

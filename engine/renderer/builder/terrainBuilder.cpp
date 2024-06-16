@@ -28,6 +28,7 @@
 #include "renderer/builder/terrainBuilder.h"
 #include "auxiliary/file.h"
 #include "scene/scene.h"
+#include "auxiliary/debug.h"
 
 namespace GfxRenderEngine
 {
@@ -78,8 +79,8 @@ namespace GfxRenderEngine
     bool TerrainBuilder::PopulateTerrainData(Image const& heightMap)
     {
 
-        int const& cols = heightMap.GetProperties().x;
-        int const& rows = heightMap.GetProperties().y;
+        int const& cols = heightMap.Width();
+        int const& rows = heightMap.Height();
         if (!(rows > 0 && cols > 0))
         {
             LOG_CORE_CRITICAL("heightmap is incomplete");
@@ -177,28 +178,30 @@ namespace GfxRenderEngine
         return true;
     }
 
-    bool TerrainBuilder::LoadTerrainHeightMap(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
+    bool TerrainBuilder::LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
         TerrainComponent terrainComponent{};
+        auto& registry = scene.GetRegistry();
+        auto& sceneGraph = scene.GetSceneGraph();
+        auto& dictionary = scene.GetDictionary();
+
         m_Vertices.clear();
         m_Indices.clear();
         m_Submeshes.clear();
 
-        // terrain data
-        {
+        { // terrain data
             terrainComponent.m_HeightMap = std::make_shared<Image>(terrainSpec.m_FilepathHeightMap);
             Image& heightMap = *terrainComponent.m_HeightMap.get();
 
             if (!heightMap.IsValid())
             {
-                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: Couldn't load file {0}",
-                                  terrainSpec.m_FilepathHeightMap);
+                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrain: Couldn't load file {0}", terrainSpec.m_FilepathHeightMap);
                 return false;
             }
 
             if (heightMap.BytesPerPixel() != 1)
             {
-                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrainHeightMap: heightmap {0} must be 8bpc GRAY (1 byte per pixel)",
+                LOG_CORE_CRITICAL("TerrainBuilder::LoadTerrain: heightmap {0} must be 8bpc GRAY (1 byte per pixel)",
                                   terrainSpec.m_FilepathHeightMap);
                 return false;
             }
@@ -211,11 +214,7 @@ namespace GfxRenderEngine
             ColorTerrain(terrainSpec, heightMap);
         }
 
-        // create game objects for all instances
-        {
-            auto& registry = scene.GetRegistry();
-            auto& sceneGraph = scene.GetSceneGraph();
-            auto& dictionary = scene.GetDictionary();
+        { // create game objects for all instances
 
             auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
             name = EngineCore::GetFilenameWithoutExtension(name);
@@ -282,6 +281,47 @@ namespace GfxRenderEngine
                 registry.emplace<TerrainComponent>(entity, terrainComponent);
             }
         }
+
+        { // populate landscape
+            // create a height map on the GPU for grass locations and load a grass model
+            bool fileExists = EngineCore::FileExists(terrainSpec.m_FilepathGrassModel) &&
+                              !EngineCore::IsDirectory(terrainSpec.m_FilepathGrassModel);
+            if (fileExists)
+            {
+                Image& heightMap = *terrainComponent.m_HeightMap.get();
+                uint heightMapSize = std::min(16384, heightMap.Size());
+                Resources::ResourceBuffers resourceBuffers;
+                {
+                    // unforunately, need to copy one buffer into another (glsl does not support uint8_t by default)
+                    std::vector<int> bufferData(heightMapSize);
+                    for (uint index = 0; index < heightMapSize; ++index)
+                    {
+                        bufferData[index] = heightMap[index];
+                    }
+                    int bufferSize = heightMapSize * sizeof(int); // in bytes
+                    auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
+                    ubo = Buffer::Create(bufferSize);
+                    resourceBuffers[Resources::HEIGHTMAP]->MapBuffer();
+                    // update ubo
+                    ubo->WriteToBuffer(bufferData.data());
+                    ubo->Flush();
+
+                    FastgltfBuilder builder(terrainSpec.m_FilepathGrassModel, scene, &resourceBuffers);
+                    builder.Load(1 /*1 instance in scene graph (grass has the instance count in the tag)*/);
+
+                    entt::entity grassEntityRoot = dictionary.Retrieve(terrainSpec.m_FilepathGrassModel + "::0::root");
+                    if (grassEntityRoot != entt::null)
+                    {
+                        TreeNode rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
+                        TreeNode grassNode =
+                            sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
+                        GrassTag grassTag{heightMapSize};
+                        registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
+                    }
+                }
+            }
+        }
+
         return true;
     }
 

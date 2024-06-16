@@ -54,8 +54,17 @@ namespace GfxRenderEngine
         virtual void MapBuffer() override;
         void Unmap();
 
-        void WriteToBuffer(const void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-        VkResult Flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+        void WriteToBuffer(const void* data, VkDeviceSize size, VkDeviceSize offset);
+        virtual void WriteToBuffer(const void* data) override
+        {
+            WriteToBuffer(data, VK_WHOLE_SIZE /*VkDeviceSize size*/, 0 /*VkDeviceSize offset*/);
+        }
+        VkResult Flush(VkDeviceSize size, VkDeviceSize offset);
+        virtual bool Flush() override
+        {
+            VkResult result = Flush(VK_WHOLE_SIZE /*VkDeviceSize size*/, 0 /*VkDeviceSize offset*/);
+            return result == VkResult::VK_SUCCESS;
+        }
         VkDescriptorBufferInfo DescriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkResult Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 

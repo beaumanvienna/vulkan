@@ -53,6 +53,7 @@ namespace GfxRenderEngine
             std::string m_FilepathTerrainDescription;
             std::string m_FilepathHeightMap;
             std::string m_FilepathColorMap;
+            std::string m_FilepathGrassModel;
         };
 
     } // namespace Terrain

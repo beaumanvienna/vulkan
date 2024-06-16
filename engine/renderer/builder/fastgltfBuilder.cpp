@@ -29,18 +29,20 @@
 #include "renderer/instanceBuffer.h"
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/materialDescriptor.h"
-#include "renderer/resourceDescriptor.h"
 #include "auxiliary/instrumentation.h"
 #include "auxiliary/file.h"
 
 namespace GfxRenderEngine
 {
-
-    FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene)
+    FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers)
         : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
           m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}, m_InstanceCount{0}, m_InstanceIndex{0}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
+        if (resourceBuffers)
+        {
+            m_ResourceBuffers = *resourceBuffers;
+        }
     }
 
     bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
@@ -833,14 +835,13 @@ namespace GfxRenderEngine
         }
 
         { // resources
-            Resources::ResourceBuffers resourceBuffers;
             std::shared_ptr<Buffer> instanceUbo{m_InstanceBuffer->GetBuffer()};
-            resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
+            m_ResourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
             if (m_SkeletalAnimation)
             {
-                resourceBuffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX] = m_ShaderData;
+                m_ResourceBuffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX] = m_ShaderData;
             }
-            submesh.m_Resources.m_ResourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
+            submesh.m_Resources.m_ResourceDescriptor = ResourceDescriptor::Create(m_ResourceBuffers);
         }
 
         LOG_CORE_INFO("material assigned (fastgltf): material index {0}", materialIndex);

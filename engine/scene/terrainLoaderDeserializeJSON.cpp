@@ -118,6 +118,15 @@ namespace GfxRenderEngine
                     }
                 }
             }
+            else if (terrainAttributesKey == "grass")
+            {
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
+                            "grass 3D model path must be string");
+                std::string_view grassModelPath = terrainAttributes.value().get_string();
+                m_TerrainDescriptionFile.m_FilepathGrassModel = std::string(grassModelPath);
+                terrainSpec.m_FilepathGrassModel = m_TerrainDescriptionFile.m_FilepathGrassModel;
+                LOG_CORE_INFO("Grass Model Path: {0}", m_TerrainDescriptionFile.m_FilepathGrassModel);
+            }
             else
             {
                 LOG_CORE_CRITICAL("unrecognized terrain object '" + std::string(terrainAttributesKey) + "'");
@@ -125,7 +134,7 @@ namespace GfxRenderEngine
         }
 
         TerrainBuilder builder{};
-        return builder.LoadTerrainHeightMap(m_Scene, instanceCount, terrainSpec);
+        return builder.LoadTerrain(m_Scene, instanceCount, terrainSpec);
     }
 
 } // namespace GfxRenderEngine

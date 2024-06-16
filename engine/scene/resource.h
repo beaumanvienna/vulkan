@@ -38,6 +38,7 @@ namespace GfxRenderEngine
         {
             INSTANCE_BUFFER_INDEX = 0,
             SKELETAL_ANIMATION_BUFFER_INDEX,
+            HEIGHTMAP,
             NUM_BUFFERS
         };
 
@@ -47,7 +48,8 @@ namespace GfxRenderEngine
         enum ResourceFeatures // bitset
         {
             HAS_INSTANCING = GLSL_HAS_INSTANCING,
-            HAS_SKELETAL_ANIMATION = GLSL_HAS_SKELETAL_ANIMATION
+            HAS_SKELETAL_ANIMATION = GLSL_HAS_SKELETAL_ANIMATION,
+            HAS_HEIGHTMAP = GLSL_HAS_HEIGHTMAP
         };
 
     public:

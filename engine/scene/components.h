@@ -222,4 +222,9 @@ namespace GfxRenderEngine
     {
         std::shared_ptr<Image> m_HeightMap;
     };
+
+    struct GrassTag
+    {
+        uint m_InstanceCount{0};
+    };
 } // namespace GfxRenderEngine

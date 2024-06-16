@@ -28,72 +28,79 @@
 
 namespace GfxRenderEngine
 {
+    extern std::shared_ptr<Buffer> gDummyBuffer;
     VK_ResourceDescriptor::VK_ResourceDescriptor(Resources::ResourceBuffers& buffers)
     {
 
+        auto& instBuffer = buffers[Resources::INSTANCE_BUFFER_INDEX];
+        auto& skelBuffer = buffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX];
+        auto& hBuffer = buffers[Resources::HEIGHTMAP];
+
         // instance buffer
-        std::shared_ptr<Buffer>& instanceUbo = buffers[Resources::INSTANCE_BUFFER_INDEX];
-        VK_Buffer* instanceBuffer = nullptr;
-        VkDescriptorBufferInfo instanceBufferInfo;
-        if (instanceUbo)
-        {
-            instanceBuffer = static_cast<VK_Buffer*>(instanceUbo.get());
-            instanceBufferInfo = instanceBuffer->DescriptorInfo();
-        }
+        std::shared_ptr<Buffer>& instanceUbo = instBuffer ? instBuffer : gDummyBuffer;
+        VK_Buffer* instanceBuffer = static_cast<VK_Buffer*>(instanceUbo.get());
+        VkDescriptorBufferInfo instanceBufferInfo = instanceBuffer->DescriptorInfo();
 
         // joint/bone matrices
-        std::shared_ptr<Buffer>& skeletalAnimationUbo = buffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX];
-        VK_Buffer* skeletalAnimationBuffer = nullptr;
-        VkDescriptorBufferInfo skeletalAnimationBufferInfo;
-        if (skeletalAnimationUbo)
-        {
-            skeletalAnimationBuffer = static_cast<VK_Buffer*>(skeletalAnimationUbo.get());
-            skeletalAnimationBufferInfo = skeletalAnimationBuffer->DescriptorInfo();
-        }
+        std::shared_ptr<Buffer>& skeletalAnimationUbo = skelBuffer ? skelBuffer : gDummyBuffer;
+        VK_Buffer* skeletalAnimationBuffer = static_cast<VK_Buffer*>(skeletalAnimationUbo.get());
+        VkDescriptorBufferInfo skeletalAnimationBufferInfo = skeletalAnimationBuffer->DescriptorInfo();
+
+        // height map
+        std::shared_ptr<Buffer>& heightmapUbo = hBuffer ? hBuffer : gDummyBuffer;
+        VK_Buffer* heightmapBuffer = static_cast<VK_Buffer*>(heightmapUbo.get());
+        VkDescriptorBufferInfo heightmapBufferInfo = heightmapBuffer->DescriptorInfo();
 
         {
             VK_DescriptorSetLayout::Builder builder{};
-            if (instanceUbo)
+            if (instBuffer || skelBuffer || hBuffer)
             {
                 builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
-            if (skeletalAnimationUbo)
+            if (skelBuffer || hBuffer)
             {
                 builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
+            if (hBuffer)
+            {
+                builder.AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+            }
+            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
+            VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
+            if (instBuffer || skelBuffer || hBuffer)
+            {
+                descriptorWriter.WriteBuffer(0, instanceBufferInfo);
+            }
+            if (skelBuffer || hBuffer)
+            {
+                descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
+            }
+            if (hBuffer)
+            {
+                descriptorWriter.WriteBuffer(2, heightmapBufferInfo);
+            }
+            descriptorWriter.Build(m_DescriptorSet);
+        }
+
+        // shadows
+        {
+            VK_DescriptorSetLayout::Builder builder{};
+            if (instBuffer)
+            {
+                builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+            }
+            if (skelBuffer)
+            {
+                builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+            }
             if (builder.Size())
             {
                 std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
                 VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
                 descriptorWriter.WriteBuffer(0, instanceBufferInfo);
-                if (skeletalAnimationBuffer)
-                {
-                    descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
-                }
-                descriptorWriter.Build(m_DescriptorSet);
-            }
-        }
-
-        // shadows
-        {
-            VK_DescriptorSetLayout::Builder builder{};
-            if (instanceUbo)
-            {
-                builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-            }
-            if (skeletalAnimationUbo)
-            {
-                builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-            }
-            if(builder.Size())
-            {
-                std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
-
-                VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
-                descriptorWriter.WriteBuffer(0, instanceBufferInfo);
-                if (skeletalAnimationBuffer)
+                if (skelBuffer)
                 {
                     descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
                 }

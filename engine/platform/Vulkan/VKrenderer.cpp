@@ -34,6 +34,7 @@ namespace GfxRenderEngine
 {
     std::shared_ptr<Texture> gTextureSpritesheet;
     std::shared_ptr<Texture> gTextureFontAtlas;
+    std::shared_ptr<Buffer> gDummyBuffer;
 
     std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
 
@@ -148,6 +149,13 @@ namespace GfxRenderEngine
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
                 .Build();
 
+        std::unique_ptr<VK_DescriptorSetLayout> grassResourceDescriptorSetLayout =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // dummy
+                .AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for height map
+                .Build();
+
         std::unique_ptr<VK_DescriptorSetLayout> instanceDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
@@ -193,6 +201,10 @@ namespace GfxRenderEngine
             m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
             pbrResourceDescriptorSetLayout->GetDescriptorSetLayout()};
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGrass = {
+            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
+            grassResourceDescriptorSetLayout->GetDescriptorSetLayout()};
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrSA = {
             m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
             pbrSAResourceDescriptorSetLayout->GetDescriptorSetLayout()};
@@ -237,6 +249,14 @@ namespace GfxRenderEngine
         gTextureFontAtlas = textureFontAtlas; // copy from VK_Texture to Texture
         VkDescriptorImageInfo imageInfo1 = textureFontAtlas->GetDescriptorImageInfo();
 
+        { // a dummy buffer
+            uint dummy = 0xffffffff;
+            gDummyBuffer = Buffer::Create(sizeof(uint));
+            gDummyBuffer->MapBuffer();
+            gDummyBuffer->WriteToBuffer(&dummy);
+            gDummyBuffer->Flush();
+        }
+
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers0[i]->DescriptorInfo();
@@ -266,6 +286,9 @@ namespace GfxRenderEngine
         m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
         m_RenderSystemPbrSA =
             std::make_unique<VK_RenderSystemPbrSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrSA);
+
+        m_RenderSystemGrass =
+            std::make_unique<VK_RenderSystemGrass>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
 
         m_RenderSystemShadowInstanced = std::make_unique<VK_RenderSystemShadowInstanced>(
             m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
@@ -800,6 +823,7 @@ namespace GfxRenderEngine
             // 3D objects
             m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -908,6 +932,7 @@ namespace GfxRenderEngine
                     LOG_CORE_WARN("creating bin directory for spirv files");
                     EngineCore::CreateDirectory("bin-int");
                 }
+                // clang-format off
                 std::vector<std::string> shaderFilenames = {
                     // 2D
                     "spriteRenderer.vert",
@@ -924,6 +949,7 @@ namespace GfxRenderEngine
                     "pbr.vert",
                     "pbr.frag",
                     "pbrSA.vert",
+                    "grass.vert",
                     "deferredShading.vert",
                     "deferredShading.frag",
                     "skybox.vert",
@@ -939,9 +965,9 @@ namespace GfxRenderEngine
                     "bloomUp.vert",
                     "bloomUp.frag",
                     "bloomDown.vert",
-                    "bloomDown.frag",
+                    "bloomDown.frag"
                 };
-
+                // clang-format on
                 for (auto& filename : shaderFilenames)
                 {
                     std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");

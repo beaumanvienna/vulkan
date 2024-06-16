@@ -294,6 +294,22 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount)
+    {
+        for (auto& submesh : m_SubmeshesPbrMap)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
+            vkCmdDrawIndexed(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                             submesh.m_IndexCount,      // uint32_t        indexCount
+                             instanceCount,             // uint32_t        instanceCount
+                             submesh.m_FirstIndex,      // uint32_t        firstIndex
+                             submesh.m_FirstVertex,     // int32_t         vertexOffset
+                             0                          // uint32_t        firstInstance
+            );
+        }
+    }
+
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                        const VkDescriptorSet& shadowDescriptorSet)
     {

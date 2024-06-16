@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -23,26 +23,40 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
 
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
+
 namespace GfxRenderEngine
 {
+    class Camera;
+    class Scene;
 
-    class Buffer
+    class VK_RenderSystemGrass
     {
 
     public:
-        enum class BufferUsage
-        {
-            SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU
-        };
+        VK_RenderSystemGrass(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemGrass();
 
-    public:
-        virtual ~Buffer() = default;
-        virtual void MapBuffer() = 0;
-        virtual void WriteToBuffer(const void* data) = 0;
-        virtual bool Flush() = 0;
-        static std::shared_ptr<Buffer> Create(uint size /*in bytes*/);
+        VK_RenderSystemGrass(const VK_RenderSystemGrass&) = delete;
+        VK_RenderSystemGrass& operator=(const VK_RenderSystemGrass&) = delete;
+
+        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+
+    private:
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
     };
 } // namespace GfxRenderEngine

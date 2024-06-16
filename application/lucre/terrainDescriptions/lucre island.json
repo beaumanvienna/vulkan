@@ -8,5 +8,6 @@
     {
         "roughness": 0.5,
         "metallic": 0.1
-    }
+    },
+    "grass": "application/lucre/models/assets/grass/grass1.glb"
 }

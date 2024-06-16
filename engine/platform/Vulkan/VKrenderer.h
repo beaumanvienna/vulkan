@@ -41,6 +41,7 @@
 
 #include "systems/VKpbrSys.h"
 #include "systems/VKpbrSASys.h"
+#include "systems/VKgrassSys.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
@@ -145,6 +146,7 @@ namespace GfxRenderEngine
 
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
+        std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;
         std::unique_ptr<VK_RenderSystemShadowInstanced> m_RenderSystemShadowInstanced;
         std::unique_ptr<VK_RenderSystemShadowAnimatedInstanced> m_RenderSystemShadowAnimatedInstanced;
         std::unique_ptr<VK_RenderSystemDeferredShading> m_RenderSystemDeferredShading;

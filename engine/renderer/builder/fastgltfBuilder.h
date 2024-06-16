@@ -28,8 +28,9 @@
 #include <fastgltf/util.hpp>
 #include <fastgltf/glm_element_traits.hpp>
 
-#include "scene/material.h"
 #include "scene/gltf.h"
+#include "scene/material.h"
+#include "renderer/resourceDescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -55,7 +56,7 @@ namespace GfxRenderEngine
 
     public:
         FastgltfBuilder() = delete;
-        FastgltfBuilder(const std::string& filepath, Scene& scene);
+        FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers = nullptr);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
 
@@ -127,6 +128,7 @@ namespace GfxRenderEngine
 
         std::vector<entt::entity> m_InstancedObjects;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
+        Resources::ResourceBuffers m_ResourceBuffers;
         uint m_RenderObject;
 
         entt::registry& m_Registry;
