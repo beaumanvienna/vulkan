@@ -23,12 +23,9 @@
 #include "application.h"
 #include "lucre.h"
 
-std::shared_ptr<Application> Application::Create()
+std::unique_ptr<Application> Application::Create()
 {
-
-    if (!LucreApp::Lucre::m_Application)
-    {
-        LucreApp::Lucre::m_Application = std::make_shared<LucreApp::Lucre>();
-    }
-    return LucreApp::Lucre::m_Application;
+    std::unique_ptr<Application> application = std::make_unique<LucreApp::Lucre>();
+    LucreApp::Lucre::m_Application = reinterpret_cast<LucreApp::Lucre*>(application.get());
+    return application;
 }

@@ -96,12 +96,9 @@ namespace GfxRenderEngine
         // init audio
         m_Audio = Audio::Create();
         m_Audio->Start();
-        #ifdef PULSEAUDIO
-            Sound::SetCallback([this](const LibPAmanager::Event& event)
-            {
-                AudioCallback((int)event.GetType());
-            });
-        #endif
+#ifdef PULSEAUDIO
+        Sound::SetCallback([this](const LibPAmanager::Event& event) { AudioCallback((int)event.GetType()); });
+#endif
 
         // init controller
         if (!m_Controller.Start())
@@ -330,7 +327,7 @@ namespace GfxRenderEngine
         return std::chrono::high_resolution_clock::now();
     }
 
-    void Engine::RunScripts(std::shared_ptr<GfxRenderEngine::Application> application)
+    void Engine::RunScripts(Application* application)
     {
         auto currentScene = application->GetScene();
         auto& registry = currentScene->GetRegistry();

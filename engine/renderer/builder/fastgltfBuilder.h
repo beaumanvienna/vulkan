@@ -63,7 +63,6 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Textures{};
         std::vector<Submesh> m_Submeshes{};
 
     private:
@@ -119,6 +118,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<std::shared_ptr<Texture>> m_Textures{};
 
         // scene graph
         uint m_InstanceCount;
@@ -128,7 +128,7 @@ namespace GfxRenderEngine
 
         std::vector<entt::entity> m_InstancedObjects;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
-        Resources::ResourceBuffers m_ResourceBuffers;
+        Resources::ResourceBuffers m_ResourceBuffersPre;
         uint m_RenderObject;
 
         entt::registry& m_Registry;

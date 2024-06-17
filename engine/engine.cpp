@@ -33,7 +33,7 @@ int engine(int argc, char* argv[])
     PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
 
     std::unique_ptr<GfxRenderEngine::Engine> engine;
-    std::shared_ptr<GfxRenderEngine::Application> application;
+    std::unique_ptr<GfxRenderEngine::Application> application;
 
     {
         PROFILE_SCOPE("engine startup");
@@ -83,7 +83,7 @@ int engine(int argc, char* argv[])
                 {
                     PROFILE_SCOPE("application->OnUpdate()");
                     application->OnUpdate(engine->GetTimestep());
-                    engine->RunScripts(application);
+                    engine->RunScripts(application.get());
                 }
                 engine->OnRender();
             }
@@ -95,6 +95,8 @@ int engine(int argc, char* argv[])
     }
 
     application->Shutdown();
+    engine->Shutdown();
+    application.reset();
     engine->Quit();
 
     PROFILE_END_SESSION();

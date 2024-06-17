@@ -43,7 +43,7 @@ namespace LucreApp
 
     public:
         TerrainScene(const std::string& filepath, const std::string& alternativeFilepath);
-        ~TerrainScene() override {}
+        virtual ~TerrainScene() override {}
 
         virtual void Start() override;
         virtual void Stop() override;

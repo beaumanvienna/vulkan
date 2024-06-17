@@ -41,9 +41,7 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Textures{};
         std::vector<Submesh> m_Submeshes{};
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
     private:
         void LoadTextures();
@@ -88,6 +86,8 @@ namespace GfxRenderEngine
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;
         uint m_TextureOffset;
+        std::vector<std::shared_ptr<Texture>> m_Textures{};
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
         // scene graph
         uint m_InstanceCount;

@@ -54,6 +54,7 @@ namespace GfxRenderEngine
 
     public:
         std::shared_ptr<ResourceDescriptor> m_ResourceDescriptor;
+        ResourceBuffers m_ResourceBuffers;
     };
 
 } // namespace GfxRenderEngine

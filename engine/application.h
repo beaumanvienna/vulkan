@@ -43,6 +43,6 @@ namespace GfxRenderEngine
         virtual void OnEvent(Event& event) = 0;
         virtual Scene* GetScene() = 0;
 
-        static std::shared_ptr<Application> Create();
+        static std::unique_ptr<Application> Create();
     };
 } // namespace GfxRenderEngine

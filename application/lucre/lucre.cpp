@@ -36,7 +36,7 @@
 namespace LucreApp
 {
 
-    std::shared_ptr<Lucre> Lucre::m_Application;
+    Lucre* Lucre::m_Application;
     SpriteSheet* Lucre::m_Spritesheet;
 
     Lucre::Lucre() : m_CurrentScene{nullptr}, m_InGameGuiIsRunning{false}, m_DebugWindowIsRunning{false} {}
@@ -64,7 +64,7 @@ namespace LucreApp
         m_Renderer = Engine::m_Engine->GetRenderer();
 
         // create orthogonal camera
-        
+
         OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
                                                                 -2.0f /*ZFar*/);
         m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);

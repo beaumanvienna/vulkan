@@ -43,7 +43,6 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Textures;
         std::vector<Submesh> m_Submeshes{};
 
     private:
@@ -71,6 +70,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
+        std::vector<std::shared_ptr<Texture>> m_Textures;
         std::vector<Material::MaterialTextures> m_MaterialTextures{};
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;

@@ -668,27 +668,22 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material material{}; // create from defaults
-            Material::MaterialTextures materialTextures;
+            Material& material = submesh.m_Material;
 
             // material
-            if (materialIndex != Fbx::FBX_NOT_USED)
+            if (materialIndex != Gltf::GLTF_NOT_USED)
             {
                 material = m_Materials[materialIndex];
-                materialTextures = m_MaterialTextures[materialIndex];
+                material.m_MaterialTextures = m_MaterialTextures[materialIndex];
             }
 
             // create material descriptor
-
             material.m_MaterialDescriptor =
-                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, materialTextures);
-
-            // assign
-            submesh.m_Material = material;
+                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, material.m_MaterialTextures);
         }
 
         { // resources
-            Resources::ResourceBuffers resourceBuffers;
+            Resources::ResourceBuffers& resourceBuffers = submesh.m_Resources.m_ResourceBuffers;
             std::shared_ptr<Buffer> instanceUbo{m_InstanceBuffer->GetBuffer()};
             resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
             if (m_SkeletalAnimation)

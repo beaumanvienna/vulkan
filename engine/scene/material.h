@@ -85,6 +85,7 @@ namespace GfxRenderEngine
     public:
         PbrMaterial m_PbrMaterial;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
+        MaterialTextures m_MaterialTextures;
     };
 
 } // namespace GfxRenderEngine

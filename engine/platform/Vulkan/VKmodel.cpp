@@ -57,56 +57,48 @@ namespace GfxRenderEngine
         return attributeDescriptions;
     }
 
-#define INIT_GLTF_AND_FBX_MODEL(x)                                                      \
-    CopySubmeshes(builder.m_Submeshes);                                                 \
-    m_Textures = std::move(builder.m_Textures); /*used to manage lifetime of textures*/ \
-    m_Skeleton = std::move(builder.m_Skeleton);                                         \
-    m_Animations = std::move(builder.m_Animations);                                     \
-    m_ShaderDataUbo = builder.m_ShaderData;                                             \
-    CreateVertexBuffer(std::move(builder.m_Vertices));                                  \
+#define INIT_MODEL()                                   \
+    CopySubmeshes(builder.m_Submeshes);                \
+    CreateVertexBuffer(std::move(builder.m_Vertices)); \
     CreateIndexBuffer(std::move(builder.m_Indices));
 
-    // VK_Model
+#define INIT_GLTF_AND_FBX_MODEL()                      \
+    CopySubmeshes(builder.m_Submeshes);                \
+    CreateVertexBuffer(std::move(builder.m_Vertices)); \
+    CreateIndexBuffer(std::move(builder.m_Indices));   \
+    m_Skeleton = std::move(builder.m_Skeleton);        \
+    m_Animations = std::move(builder.m_Animations);    \
+    m_ShaderDataUbo = builder.m_ShaderData;
+
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
         INIT_GLTF_AND_FBX_MODEL();
     }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
         INIT_GLTF_AND_FBX_MODEL();
     }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
         INIT_GLTF_AND_FBX_MODEL();
     }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
         INIT_GLTF_AND_FBX_MODEL();
     }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder) : m_Device(device), m_HasIndexBuffer{false}
     {
-        CopySubmeshes(builder.m_Submeshes);
-        m_Cubemaps = std::move(builder.m_Cubemaps);
-
-        CreateVertexBuffer(std::move(builder.m_Vertices));
-        CreateIndexBuffer(std::move(builder.m_Indices));
+        INIT_MODEL();
+        m_Cubemaps = std::move(builder.m_Cubemaps); // used to manage lifetime
     }
-
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const TerrainBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
-        CopySubmeshes(builder.m_Submeshes);
-
-        CreateVertexBuffer(std::move(builder.m_Vertices));
-        CreateIndexBuffer(std::move(builder.m_Indices));
+        INIT_MODEL();
     }
 
     VK_Model::~VK_Model() {}

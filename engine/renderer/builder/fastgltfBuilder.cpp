@@ -41,7 +41,11 @@ namespace GfxRenderEngine
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
         if (resourceBuffers)
         {
-            m_ResourceBuffers = *resourceBuffers;
+            // optionally: additional resources not originating from a 3D file can be provided here
+            // e.g. a height map for terrain required in the vertex shader
+            // these additional resource go into descriptor set 2,
+            // along with the instance and skeletal animation buffer
+            m_ResourceBuffersPre = *resourceBuffers;
         }
     }
 
@@ -815,33 +819,30 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material material{}; // create from defaults
-            Material::MaterialTextures materialTextures;
+            Material& material = submesh.m_Material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)
             {
                 material = m_Materials[materialIndex];
-                materialTextures = m_MaterialTextures[materialIndex];
+                material.m_MaterialTextures = m_MaterialTextures[materialIndex];
             }
 
             // create material descriptor
-
             material.m_MaterialDescriptor =
-                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, materialTextures);
-
-            // assign
-            submesh.m_Material = material;
+                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, material.m_MaterialTextures);
         }
 
         { // resources
+            Resources::ResourceBuffers& resourceBuffers = submesh.m_Resources.m_ResourceBuffers;
+            resourceBuffers = m_ResourceBuffersPre;
             std::shared_ptr<Buffer> instanceUbo{m_InstanceBuffer->GetBuffer()};
-            m_ResourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
+            resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
             if (m_SkeletalAnimation)
             {
-                m_ResourceBuffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX] = m_ShaderData;
+                resourceBuffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX] = m_ShaderData;
             }
-            submesh.m_Resources.m_ResourceDescriptor = ResourceDescriptor::Create(m_ResourceBuffers);
+            submesh.m_Resources.m_ResourceDescriptor = ResourceDescriptor::Create(resourceBuffers);
         }
 
         LOG_CORE_INFO("material assigned (fastgltf): material index {0}", materialIndex);

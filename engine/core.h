@@ -66,7 +66,7 @@ namespace GfxRenderEngine
         bool IsPaused() const { return m_Paused; }
         bool IsInitialized() const { return m_GraphicsContextInitialized; }
         bool IsRunning() const { return m_Running; }
-        void RunScripts(std::shared_ptr<GfxRenderEngine::Application> application);
+        void RunScripts(Application* application);
 
         std::string& GetHomeDirectory() { return m_HomeDir; }
         std::string GetConfigFilePath() const { return m_ConfigFilePath; }

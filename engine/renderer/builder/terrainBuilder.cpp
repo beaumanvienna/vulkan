@@ -317,6 +317,10 @@ namespace GfxRenderEngine
                             sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
                         GrassTag grassTag{heightMapSize};
                         registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
+
+                        auto& transform = registry.get<TransformComponent>(grassEntityRoot);
+                        transform.SetTranslation({-11.0f, 8.4f, -1.4f});
+                        transform.SetScale({0.235f, 0.235f, 0.235f});
                     }
                 }
             }

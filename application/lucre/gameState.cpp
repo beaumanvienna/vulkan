@@ -143,51 +143,6 @@ namespace LucreApp
                 LoadNextState();
                 break;
             }
-            case State::MAIN:
-            {
-                if (GetScene()->IsFinished())
-                {
-                    // game over
-                    Engine::m_Engine->Shutdown();
-                }
-                break;
-            }
-            case State::BEACH:
-            {
-                if (GetScene()->IsFinished())
-                {
-                    // game over
-                    Engine::m_Engine->Shutdown();
-                }
-                break;
-            }
-            case State::NIGHT:
-            {
-                if (GetScene()->IsFinished())
-                {
-                    // game over
-                    Engine::m_Engine->Shutdown();
-                }
-                break;
-            }
-            case State::DESSERT:
-            {
-                if (GetScene()->IsFinished())
-                {
-                    // game over
-                    Engine::m_Engine->Shutdown();
-                }
-                break;
-            }
-            case State::TERRAIN:
-            {
-                if (GetScene()->IsFinished())
-                {
-                    // game over
-                    Engine::m_Engine->Shutdown();
-                }
-                break;
-            }
             case State::SETTINGS:
             {
                 if (GetScene()->IsFinished())
@@ -196,6 +151,11 @@ namespace LucreApp
                 }
                 break;
             }
+            case State::MAIN:
+            case State::BEACH:
+            case State::NIGHT:
+            case State::DESSERT:
+            case State::TERRAIN:
             case State::NULL_STATE:
             case State::MAX_STATES:
             {

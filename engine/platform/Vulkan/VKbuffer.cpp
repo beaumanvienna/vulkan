@@ -157,7 +157,8 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+        VkResult result = vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+        return result;
     }
 
     /**

@@ -46,25 +46,25 @@ namespace LucreApp
 
     public:
         Lucre();
-        ~Lucre() {}
+        virtual ~Lucre() {}
 
-        bool Start() override;
-        void Shutdown() override;
-        void OnUpdate(const Timestep& timestep) override;
-        void OnEvent(Event& event) override;
+        virtual bool Start() override;
+        virtual void Shutdown() override;
+        virtual void OnUpdate(const Timestep& timestep) override;
+        virtual void OnEvent(Event& event) override;
         void OnAppEvent(AppEvent& event);
         void OnResize();
 
         void PlaySound(int resourceID);
         UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
-        Scene* GetScene() override { return m_GameState.GetScene(); }
+        virtual Scene* GetScene() override { return m_GameState.GetScene(); }
         GameState::State GetState() const { return m_GameState.GetState(); }
         bool KeyboardInputIsReleased() const { return !m_InGameGuiIsRunning; }
         bool DebugWindowIsRunning() const { return m_DebugWindowIsRunning; }
         bool InGameGuiIsRunning() const { return m_InGameGuiIsRunning; }
 
     public:
-        static std::shared_ptr<Lucre> m_Application;
+        static Lucre* m_Application;
         static SpriteSheet* m_Spritesheet;
 
     private:

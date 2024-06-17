@@ -43,9 +43,7 @@ namespace GfxRenderEngine
     public:
         std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
-        std::vector<std::shared_ptr<Texture>> m_Textures;
         std::vector<Submesh> m_Submeshes{};
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
     private:
         void LoadVertexData(const ufbx_node* fbxNodePtr);
@@ -78,6 +76,8 @@ namespace GfxRenderEngine
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
         std::vector<entt::entity> m_InstancedObjects;
         uint m_RenderObject;
+        std::vector<std::shared_ptr<Texture>> m_Textures;
+        std::vector<Material::MaterialTextures> m_MaterialTextures{};
 
         // scene graph
         uint m_InstanceCount;
