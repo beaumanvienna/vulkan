@@ -69,9 +69,9 @@ layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 #define WIDTH 1024 // row
 #define HEIGHT 750 // col
 #define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 768000
-#define INSTANCE_COUNT 16384 // max buffer size 65536 bytes
+#define INSTANCE_COUNT NUM_HEIGHT_VALUES
 
-layout(set = 2, binding = 2) uniform HeightMap
+layout(set = 2, binding = 2) readonly buffer HeightMap
 {
     int m_HeightMapData[INSTANCE_COUNT]; 
 } heightMap;
@@ -86,19 +86,18 @@ void main()
 {
     mat4 baseModelMatrix = baseTransform.m_InstanceData.m_ModelMatrix;
     mat4 normalMatrix = baseTransform.m_InstanceData.m_NormalMatrix;
-    
-    
-    int index = int(floor(46.875 * gl_InstanceIndex));
+
+    int index = gl_InstanceIndex;
     int hgt = heightMap.m_HeightMapData[index];
     float row = floor(index / WIDTH);
     float col = floor((index - WIDTH * row));
-    
+
     mat4 localTranslation = mat4
     (
-        vec4(1.0, 0.0, 0.0, 0.0), // first column
-        vec4(0.0, 1.0, 0.0, 0.0), // second column
-        vec4(0.0, 0.0, 1.0, 0.0), // third column
-        vec4(col, hgt, row, 1.0)  // fourth column
+        vec4(4.0, 0.0, 0.0, 0.0), // first column
+        vec4(0.0, 4.0, 0.0, 0.0), // second column
+        vec4(0.0, 0.0, 4.0, 0.0), // third column
+        vec4(col, row, -hgt, 1.0)  // fourth column
     );          
 
     // projection * view * model * position

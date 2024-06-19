@@ -43,7 +43,7 @@ namespace GfxRenderEngine
         VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
                   VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment = 1);
 
-        VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU);
+        VK_Buffer(uint size, Buffer::BufferUsage bufferUsage = Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
 
         virtual ~VK_Buffer();
 

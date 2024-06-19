@@ -35,7 +35,8 @@ namespace GfxRenderEngine
     public:
         enum class BufferUsage
         {
-            SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU
+            UNIFORM_BUFFER_VISIBLE_TO_CPU,
+            STORAGE_BUFFER_VISIBLE_TO_CPU
         };
 
     public:
@@ -43,6 +44,7 @@ namespace GfxRenderEngine
         virtual void MapBuffer() = 0;
         virtual void WriteToBuffer(const void* data) = 0;
         virtual bool Flush() = 0;
-        static std::shared_ptr<Buffer> Create(uint size /*in bytes*/);
+        static std::shared_ptr<Buffer> Create(uint size /*in bytes*/,
+                                              BufferUsage bufferUsage = BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
     };
 } // namespace GfxRenderEngine

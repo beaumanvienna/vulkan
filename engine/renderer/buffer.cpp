@@ -29,14 +29,14 @@
 namespace GfxRenderEngine
 {
 
-    std::shared_ptr<Buffer> Buffer::Create(uint size)
+    std::shared_ptr<Buffer> Buffer::Create(uint size, BufferUsage bufferUsage)
     {
         std::shared_ptr<Buffer> buffer;
 
         switch (RendererAPI::GetAPI())
         {
             case RendererAPI::VULKAN:
-                buffer = std::make_shared<VK_Buffer>(size);
+                buffer = std::make_shared<VK_Buffer>(size, bufferUsage);
                 break;
             default:
                 buffer = nullptr;

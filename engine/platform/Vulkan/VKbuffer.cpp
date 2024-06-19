@@ -59,18 +59,40 @@ namespace GfxRenderEngine
 
     VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device.get())
     {
-        if (bufferUsage == Buffer::BufferUsage::SMALL_SHADER_DATA_BUFFER_VISIBLE_TO_CPU)
+        switch (bufferUsage)
         {
-            m_InstanceSize = size;
-            m_InstanceCount = 1;
-            m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+            case Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU:
+            {
+                m_InstanceSize = size;
+                m_InstanceCount = 1;
+                m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
-            VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
 
-            m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
-            m_BufferSize = m_AlignmentSize * m_InstanceCount;
-            m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+                m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
+                m_BufferSize = m_AlignmentSize * m_InstanceCount;
+                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+                break;
+            }
+            case Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU:
+            {
+                m_InstanceSize = size;
+                m_InstanceCount = 1;
+                m_UsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+                m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+
+                m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
+                m_BufferSize = m_AlignmentSize * m_InstanceCount;
+                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+                break;
+            }
+            default:
+            {
+                LOG_CORE_CRITICAL("unrecognized buffer usage");
+            }
         }
     }
 

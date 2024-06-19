@@ -289,7 +289,7 @@ namespace GfxRenderEngine
             if (fileExists)
             {
                 Image& heightMap = *terrainComponent.m_HeightMap.get();
-                uint heightMapSize = std::min(16384, heightMap.Size());
+                uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
                 {
                     // unforunately, need to copy one buffer into another (glsl does not support uint8_t by default)
@@ -300,7 +300,7 @@ namespace GfxRenderEngine
                     }
                     int bufferSize = heightMapSize * sizeof(int); // in bytes
                     auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
-                    ubo = Buffer::Create(bufferSize);
+                    ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                     resourceBuffers[Resources::HEIGHTMAP]->MapBuffer();
                     // update ubo
                     ubo->WriteToBuffer(bufferData.data());
@@ -319,8 +319,9 @@ namespace GfxRenderEngine
                         registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
 
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);
-                        transform.SetTranslation({-11.0f, 8.4f, -1.4f});
-                        transform.SetScale({0.235f, 0.235f, 0.235f});
+                        transform.SetRotation({3.14159f, 0.767164f, 3.14159f});
+                        transform.SetTranslation({4.37885f, -1.14346f, 59.3405f});
+                        transform.SetScale({0.0649992f, 0.0376f, 0.0649992f});
                     }
                 }
             }

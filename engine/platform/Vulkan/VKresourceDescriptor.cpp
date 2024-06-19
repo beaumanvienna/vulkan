@@ -63,7 +63,7 @@ namespace GfxRenderEngine
             }
             if (hBuffer)
             {
-                builder.AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+                builder.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
             std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
