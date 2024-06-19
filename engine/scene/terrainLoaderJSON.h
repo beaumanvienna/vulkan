@@ -53,6 +53,7 @@ namespace GfxRenderEngine
             std::string m_Description;
             std::string m_Author;
             std::string m_FilepathHeightMap;
+            std::string m_FilepathGrassHeightMap;
             std::string m_FilepathColorMap;
             std::string m_FilepathGrassModel;
             Material::PbrMaterial m_PbrMaterial;

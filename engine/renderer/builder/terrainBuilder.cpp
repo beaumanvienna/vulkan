@@ -288,7 +288,7 @@ namespace GfxRenderEngine
                               !EngineCore::IsDirectory(terrainSpec.m_FilepathGrassModel);
             if (fileExists)
             {
-                Image& heightMap = *terrainComponent.m_HeightMap.get();
+                Image heightMap(terrainSpec.m_FilepathGrassHeightMap);
                 uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
                 {
@@ -321,7 +321,7 @@ namespace GfxRenderEngine
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);
                         transform.SetRotation({3.14159f, 0.767164f, 3.14159f});
                         transform.SetTranslation({4.37885f, -1.14346f, 59.3405f});
-                        transform.SetScale({0.0649992f, 0.0376f, 0.0649992f});
+                        transform.SetScale({0.1299984f, 0.0376f, 0.1299984f});
                     }
                 }
             }

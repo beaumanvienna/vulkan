@@ -85,6 +85,15 @@ namespace GfxRenderEngine
                 terrainSpec.m_FilepathHeightMap = m_TerrainDescriptionFile.m_FilepathHeightMap;
                 LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathHeightMap);
             }
+            else if (terrainAttributesKey == "grassHeightMapPath")
+            {
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
+                            "grass heightmap path must be string");
+                std::string_view grassHeightMapPath = terrainAttributes.value().get_string();
+                m_TerrainDescriptionFile.m_FilepathGrassHeightMap = std::string(grassHeightMapPath);
+                terrainSpec.m_FilepathGrassHeightMap = m_TerrainDescriptionFile.m_FilepathGrassHeightMap;
+                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathGrassHeightMap);
+            }
             else if (terrainAttributesKey == "colorMapPath")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),

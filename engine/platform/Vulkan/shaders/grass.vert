@@ -66,8 +66,8 @@ layout(set = 2, binding = 0) uniform InstanceUniformBuffer
     InstanceData m_InstanceData;
 } baseTransform;
 
-#define WIDTH 1024 // row
-#define HEIGHT 750 // col
+#define WIDTH 512 // row
+#define HEIGHT 375 // col
 #define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 768000
 #define INSTANCE_COUNT NUM_HEIGHT_VALUES
 
@@ -92,16 +92,19 @@ void main()
     float row = floor(index / WIDTH);
     float col = floor((index - WIDTH * row));
 
-    mat4 localTranslation = mat4
+    float theta = sin(hgt+gl_InstanceIndex); // random
+    float s = sin(theta); // sine
+    float c = cos(theta); // cosine
+    mat4 localTransform = mat4
     (
-        vec4(4.0, 0.0, 0.0, 0.0), // first column
-        vec4(0.0, 4.0, 0.0, 0.0), // second column
-        vec4(0.0, 0.0, 4.0, 0.0), // third column
-        vec4(col, row, -hgt, 1.0)  // fourth column
-    );          
+        vec4(5.0 * c,       s,   0.0, 0.0), // first column
+        vec4(     -s, 5.0 * c,   0.0, 0.0), // second column
+        vec4(    0.0,     0.0,   5.0, 0.0), // third column
+        vec4(    col,      row, -hgt, 1.0)  // fourth column
+    );
 
     // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * baseModelMatrix * localTranslation * vec4(position, 1.0);
+    gl_Position = ubo.m_Projection * ubo.m_View * baseModelMatrix * localTransform * vec4(position, 1.0);
 
     vec4 positionWorld = baseModelMatrix * vec4(position, 1.0);
     fragPosition = positionWorld.xyz;
