@@ -68,7 +68,7 @@ layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 
 #define WIDTH 512 // row
 #define HEIGHT 375 // col
-#define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 768000
+#define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 192000
 #define INSTANCE_COUNT NUM_HEIGHT_VALUES
 
 layout(set = 2, binding = 2) readonly buffer HeightMap
@@ -95,21 +95,36 @@ void main()
     float theta = sin(hgt+gl_InstanceIndex); // random
     float s = sin(theta); // sine
     float c = cos(theta); // cosine
+    float scl = 5.0;
     mat4 localTransform = mat4
     (
-        vec4(5.0 * c,       s,   0.0, 0.0), // first column
-        vec4(     -s, 5.0 * c,   0.0, 0.0), // second column
-        vec4(    0.0,     0.0,   5.0, 0.0), // third column
-        vec4(    col,      row, -hgt, 1.0)  // fourth column
+        vec4(scl * c,
+                   s,   
+                 0.0,
+                 0.0                ), // first column
+        vec4(          -s,
+                  scl * c,
+                      0.0,
+                      0.0           ), // second column
+        vec4(              0.0,
+                           0.0,
+                           scl,
+                           0.0      ), // third column
+        vec4(                   col,
+                                hgt,
+                                row,
+                                1.0 )  // fourth column
     );
 
+    vec4 positionWorld = baseModelMatrix * localTransform * vec4(position, 1.0);
     // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * baseModelMatrix * localTransform * vec4(position, 1.0);
+    gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
 
-    vec4 positionWorld = baseModelMatrix * vec4(position, 1.0);
     fragPosition = positionWorld.xyz;
-    fragNormal = mat3(normalMatrix) * normal;
-    fragTangent = mat3(normalMatrix) * tangent;
+
+    mat3 normalMatrixTransformed = transpose(inverse(mat3(normalMatrix) * mat3(localTransform)));
+    fragNormal = normalize(normalMatrixTransformed * normal);
+    fragTangent = normalize(normalMatrixTransformed * tangent);
 
     fragUV = uv;
     fragColor = color;
