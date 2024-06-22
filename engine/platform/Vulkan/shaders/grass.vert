@@ -88,27 +88,29 @@ void main()
     mat4 normalMatrix = baseTransform.m_InstanceData.m_NormalMatrix;
 
     int index = gl_InstanceIndex;
-    int hgt = heightMap.m_HeightMapData[index];
+    float hgt = heightMap.m_HeightMapData[index];
     float row = floor(index / WIDTH);
     float col = floor((index - WIDTH * row));
 
     float theta = sin(hgt+gl_InstanceIndex); // random
     float s = sin(theta); // sine
     float c = cos(theta); // cosine
-    float scl = 5.0;
-    mat4 localTransform = mat4
+    float sclXZ = 5.0;
+    float sclY = 5.0;
+
+    mat4 translation = mat4
     (
-        vec4(scl * c,
-                   s,   
+        vec4(    1.0,
+                 0.0,   
                  0.0,
                  0.0                ), // first column
-        vec4(          -s,
-                  scl * c,
+        vec4(         0.0,
+                      1.0,
                       0.0,
                       0.0           ), // second column
         vec4(              0.0,
                            0.0,
-                           scl,
+                           1.0,
                            0.0      ), // third column
         vec4(                   col,
                                 hgt,
@@ -116,13 +118,55 @@ void main()
                                 1.0 )  // fourth column
     );
 
+    mat4 rotation = mat4               // rotation around y-axsis
+    (
+        vec4(      c,
+                 0.0,   
+                  -s,
+                 0.0                ), // first column
+        vec4(         0.0,
+                      1.0,
+                      0.0,
+                      0.0           ), // second column
+        vec4(                s,
+                           0.0,
+                             c,
+                           0.0      ), // third column
+        vec4(                   0.0,
+                                0.0,
+                                0.0,
+                                1.0 )  // fourth column
+    );
+
+    
+    mat4 scale = mat4
+    (
+        vec4(  sclXZ,
+                 0.0,
+                 0.0,
+                 0.0                ), // first column
+        vec4(         0.0,
+                     sclY,
+                      0.0,
+                      0.0           ), // second column
+        vec4(              0.0,
+                           0.0,
+                         sclXZ,
+                           0.0      ), // third column
+        vec4(                   0.0,
+                                0.0,
+                                0.0,
+                                1.0 )  // fourth column
+    );
+    mat4 localTransform = translation * rotation * scale;
+
     vec4 positionWorld = baseModelMatrix * localTransform * vec4(position, 1.0);
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
 
     fragPosition = positionWorld.xyz;
 
-    mat3 normalMatrixTransformed = transpose(inverse(mat3(normalMatrix) * mat3(localTransform)));
+    mat3 normalMatrixTransformed = transpose(inverse(mat3(baseModelMatrix) * mat3(localTransform)));
     fragNormal = normalize(normalMatrixTransformed * normal);
     fragTangent = normalize(normalMatrixTransformed * tangent);
 
