@@ -285,23 +285,39 @@ namespace GfxRenderEngine
         { // populate landscape
             // create a height map on the GPU for grass locations and load a grass model
             Terrain::GrassSpec const& grassSpec = terrainSpec.m_GrassSpec;
-            bool fileExists = EngineCore::FileExists(grassSpec.m_FilepathGrassModel) &&
-                              !EngineCore::IsDirectory(grassSpec.m_FilepathGrassModel);
-            if (fileExists)
+            bool GrassModelFound = EngineCore::FileExists(grassSpec.m_FilepathGrassModel) &&
+                                   !EngineCore::IsDirectory(grassSpec.m_FilepathGrassModel);
+            bool densityMapFound = EngineCore::FileExists(grassSpec.m_FilepathDensityMap) &&
+                                   !EngineCore::IsDirectory(grassSpec.m_FilepathDensityMap);
+            if (GrassModelFound && densityMapFound)
             {
                 Image heightMap(grassSpec.m_FilepathGrassHeightMap);
+                Image densityMap(grassSpec.m_FilepathDensityMap);
+                CORE_ASSERT((heightMap.Width() == densityMap.Width()) && (heightMap.Height() == densityMap.Height()),
+                            "dimesnion must match");
                 uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
+                uint grassInstances = 0;
                 {
-                    { // unforunately, need to copy one buffer into another (glsl does not support uint8_t by default)
-                        std::vector<int> bufferData(heightMapSize);
-                        for (uint index = 0; index < heightMapSize; ++index)
+                    {
+                        std::vector<Terrain::GrassShaderData> bufferData(heightMapSize);
+                        for (uint mapIndex = 0; mapIndex < heightMapSize; ++mapIndex)
                         {
-                            bufferData[index] = heightMap[index];
+                            float normalizedRandom = std::rand() / static_cast<float>(RAND_MAX);
+                            float normalizedDenisty = densityMap[mapIndex] / 255.0f;
+                            float randomizedDensity = normalizedRandom * normalizedDenisty;
+                            bool placeGrass = (heightMap[mapIndex] > 0) && (randomizedDensity > 0.05f);
+                            if (placeGrass)
+                            {
+                                bufferData[grassInstances].m_Height = heightMap[mapIndex];
+                                bufferData[grassInstances].m_Index = mapIndex;
+                                ++grassInstances;
+                            }
                         }
-                        int bufferSize = heightMapSize * sizeof(int); // in bytes
+                        CORE_ASSERT(grassInstances, "no grass placed");
                         auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
-                        ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                        ubo = Buffer::Create(grassInstances * sizeof(Terrain::GrassShaderData),
+                                             Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                         ubo->MapBuffer();
                         // update ubo
                         ubo->WriteToBuffer(bufferData.data());
@@ -331,7 +347,7 @@ namespace GfxRenderEngine
                         TreeNode rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
                         TreeNode grassNode =
                             sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
-                        GrassTag grassTag{heightMapSize};
+                        GrassTag grassTag{grassInstances};
                         registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
 
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);

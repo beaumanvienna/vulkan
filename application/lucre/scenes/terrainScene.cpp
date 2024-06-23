@@ -56,7 +56,7 @@ namespace LucreApp
             float aspectRatio = 1.777f;
             float yfov = 0.51f;
             float znear = 0.1f;
-            float zfar = 500.0f;
+            float zfar = 1500.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
             m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
@@ -170,7 +170,7 @@ namespace LucreApp
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
             auto view = m_Registry.view<TransformComponent>();
             auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(250.0f);
+            skyboxTransform.SetScale(500.0f);
         }
         { // directional lights
             {

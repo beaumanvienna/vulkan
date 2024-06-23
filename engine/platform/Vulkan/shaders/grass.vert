@@ -42,10 +42,16 @@ struct DirectionalLight
     vec4 m_Color;     // w is intensity
 };
 
-struct InstanceData
+struct BaseModelData
 {
     mat4 m_ModelMatrix;
     mat4 m_NormalMatrix;
+};
+
+struct GrassShaderData
+{
+    int m_Height;
+    int m_Index;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -71,12 +77,12 @@ layout(set = 2, binding = 3) uniform ParameterBuffer
 
 layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 {
-    InstanceData m_InstanceData;
+    BaseModelData m_BaseModelData;
 } baseTransform;
 
 layout(set = 2, binding = 2) readonly buffer HeightMap
 {
-    int m_HeightMapData[1]; // actual array size is larger than 1
+    GrassShaderData m_GrassShaderData[1]; // actual array size is larger than 1
 } heightMap;
 
 layout(location = 0) out vec3 fragPosition;
@@ -87,11 +93,11 @@ layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    mat4 baseModelMatrix = baseTransform.m_InstanceData.m_ModelMatrix;
-    mat4 normalMatrix = baseTransform.m_InstanceData.m_NormalMatrix;
+    mat4 baseModelMatrix = baseTransform.m_BaseModelData.m_ModelMatrix;
+    mat4 normalMatrix = baseTransform.m_BaseModelData.m_NormalMatrix;
 
-    int index = gl_InstanceIndex;
-    float hgt = heightMap.m_HeightMapData[index];
+    int index = heightMap.m_GrassShaderData[gl_InstanceIndex].m_Index;
+    float hgt = heightMap.m_GrassShaderData[gl_InstanceIndex].m_Height;
     float row = floor(index / parameters.m_Width);
     float col = floor((index - parameters.m_Width * row));
 

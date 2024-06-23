@@ -47,6 +47,11 @@ namespace GfxRenderEngine
             float m_ScaleY;
         };
 
+        struct GrassShaderData
+        {
+            int m_Height;
+            int m_Index;
+        };
         struct TerrainDescription
         {
             std::string m_Filename;
@@ -59,6 +64,7 @@ namespace GfxRenderEngine
         {
             std::string m_FilepathGrassModel;
             std::string m_FilepathGrassHeightMap;
+            std::string m_FilepathDensityMap;
             glm::vec3 m_Translation{};
             glm::vec3 m_Rotation{};
             glm::vec3 m_Scale{};

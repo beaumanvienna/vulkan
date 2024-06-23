@@ -13,6 +13,7 @@
     {
         "modelPath": "application/lucre/models/assets/grass/grass1.glb",
         "heightMapPath": "application/lucre/models/assets/terrain/lucreIsland1 heightmap2.png",
+        "denistyMapPath": "application/lucre/models/assets/terrain/lucreIsland1 grass density map.png",
         "transform":
         {
             "scale":

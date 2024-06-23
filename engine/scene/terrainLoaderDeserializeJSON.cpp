@@ -176,6 +176,23 @@ namespace GfxRenderEngine
                     return;
                 }
             }
+            else if (grassAttributeKey == "denistyMapPath")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::string),
+                            "grass model filepath must be string");
+                std::string_view densityMapFilenameStringView = grassAttribute.value().get_string();
+                std::string& filepath = grassSpec.m_FilepathDensityMap;
+                filepath = std::string(densityMapFilenameStringView);
+                if (EngineCore::FileExists(filepath))
+                {
+                    LOG_CORE_INFO("density map for grass found {0}", filepath);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("density map for grass not found: {0}", filepath);
+                    return;
+                }
+            }
             else if (grassAttributeKey == "transform")
             {
                 CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::object), "transform must be object");

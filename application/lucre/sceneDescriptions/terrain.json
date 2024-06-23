@@ -94,6 +94,29 @@
     "fastgltf files":
     [
         {
+            "filename": "application/lucre/models/assets/terrain/house.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.276, 0.2898, 0.276
+                        ],
+                        "rotation":
+                        [
+                            0.175195, 1.28096, 0.182655
+                        ],
+                        "translation":
+                        [
+                            -3.22584, 5.06019, 41.9383
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/models/assets/grass/grass1.glb",
             "instances":
             [
