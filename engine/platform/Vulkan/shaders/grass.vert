@@ -61,19 +61,22 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
+layout(set = 2, binding = 3) uniform ParameterBuffer
+{
+    int m_Width;
+    int m_Height; // not used, 
+    float m_ScaleXZ;
+    float m_ScaleY;
+} parameters;
+
 layout(set = 2, binding = 0) uniform InstanceUniformBuffer
 {
     InstanceData m_InstanceData;
 } baseTransform;
 
-#define WIDTH 512 // row
-#define HEIGHT 375 // col
-#define NUM_HEIGHT_VALUES WIDTH*HEIGHT // 192000
-#define INSTANCE_COUNT NUM_HEIGHT_VALUES
-
 layout(set = 2, binding = 2) readonly buffer HeightMap
 {
-    int m_HeightMapData[INSTANCE_COUNT]; 
+    int m_HeightMapData[1]; // actual array size is larger than 1
 } heightMap;
 
 layout(location = 0) out vec3 fragPosition;
@@ -89,14 +92,14 @@ void main()
 
     int index = gl_InstanceIndex;
     float hgt = heightMap.m_HeightMapData[index];
-    float row = floor(index / WIDTH);
-    float col = floor((index - WIDTH * row));
+    float row = floor(index / parameters.m_Width);
+    float col = floor((index - parameters.m_Width * row));
 
     float theta = sin(hgt+gl_InstanceIndex); // random
     float s = sin(theta); // sine
     float c = cos(theta); // cosine
-    float sclXZ = 5.0;
-    float sclY = 5.0;
+    float sclXZ = parameters.m_ScaleXZ;
+    float sclY = parameters.m_ScaleY;
 
     mat4 translation = mat4
     (
@@ -138,7 +141,6 @@ void main()
                                 1.0 )  // fourth column
     );
 
-    
     mat4 scale = mat4
     (
         vec4(  sclXZ,

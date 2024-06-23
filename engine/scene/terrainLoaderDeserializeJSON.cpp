@@ -182,6 +182,16 @@ namespace GfxRenderEngine
                 ondemand::object transformJSON = grassAttribute.value().get_object();
                 ParseTransform(transformJSON);
             }
+            else if (grassAttributeKey == "scaleXZ")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::number), "type must be number");
+                grassSpec.m_ScaleXZ = grassAttribute.value().get_double();
+            }
+            else if (grassAttributeKey == "scaleY")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::number), "type must be number");
+                grassSpec.m_ScaleY = grassAttribute.value().get_double();
+            }
             else
             {
                 LOG_CORE_CRITICAL("unrecognized grass attribute");

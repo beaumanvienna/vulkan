@@ -111,7 +111,7 @@ void main()
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
     fragPosition = positionWorld.xyz;
 
-    mat3 normalMatrix = transpose(inverse(mat3(instanceNormalMatrix) * mat3(jointTransform)));
+    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix) * mat3(jointTransform)));
     fragNormal = normalize(normalMatrix * normal);
     fragTangent = normalize(normalMatrix * tangent);
 

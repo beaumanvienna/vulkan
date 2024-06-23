@@ -39,6 +39,14 @@ namespace GfxRenderEngine
             Instance(entt::entity entity) : m_Entity{entity} {}
         };
 
+        struct GrassParameters
+        {
+            int m_Width;
+            int m_Height; // not used,
+            float m_ScaleXZ;
+            float m_ScaleY;
+        };
+
         struct TerrainDescription
         {
             std::string m_Filename;
@@ -54,6 +62,8 @@ namespace GfxRenderEngine
             glm::vec3 m_Translation{};
             glm::vec3 m_Rotation{};
             glm::vec3 m_Scale{};
+            float m_ScaleXZ{1.0f};
+            float m_ScaleY{1.0f};
         };
 
         struct TerrainSpec

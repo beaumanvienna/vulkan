@@ -35,6 +35,7 @@ namespace GfxRenderEngine
         auto& instBuffer = buffers[Resources::INSTANCE_BUFFER_INDEX];
         auto& skelBuffer = buffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX];
         auto& hBuffer = buffers[Resources::HEIGHTMAP];
+        auto& mPurposeBuffer = buffers[Resources::MULTI_PURPOSE_BUFFER];
 
         // instance buffer
         std::shared_ptr<Buffer>& instanceUbo = instBuffer ? instBuffer : gDummyBuffer;
@@ -51,34 +52,47 @@ namespace GfxRenderEngine
         VK_Buffer* heightmapBuffer = static_cast<VK_Buffer*>(heightmapUbo.get());
         VkDescriptorBufferInfo heightmapBufferInfo = heightmapBuffer->DescriptorInfo();
 
+        // multi purpose
+        std::shared_ptr<Buffer>& multiPurposeUbo = mPurposeBuffer ? mPurposeBuffer : gDummyBuffer;
+        VK_Buffer* multiPurposeBuffer = static_cast<VK_Buffer*>(multiPurposeUbo.get());
+        VkDescriptorBufferInfo multiPurposeBufferInfo = multiPurposeBuffer->DescriptorInfo();
+
         {
             VK_DescriptorSetLayout::Builder builder{};
-            if (instBuffer || skelBuffer || hBuffer)
+            if (instBuffer || skelBuffer || hBuffer || mPurposeBuffer)
             {
                 builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
-            if (skelBuffer || hBuffer)
+            if (skelBuffer || hBuffer || mPurposeBuffer)
             {
                 builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
-            if (hBuffer)
+            if (hBuffer || mPurposeBuffer)
             {
                 builder.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+            }
+            if (mPurposeBuffer)
+            {
+                builder.AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
             std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
             VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
-            if (instBuffer || skelBuffer || hBuffer)
+            if (instBuffer || skelBuffer || hBuffer || mPurposeBuffer)
             {
                 descriptorWriter.WriteBuffer(0, instanceBufferInfo);
             }
-            if (skelBuffer || hBuffer)
+            if (skelBuffer || hBuffer || mPurposeBuffer)
             {
                 descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
             }
-            if (hBuffer)
+            if (hBuffer || mPurposeBuffer)
             {
                 descriptorWriter.WriteBuffer(2, heightmapBufferInfo);
+            }
+            if (mPurposeBuffer)
+            {
+                descriptorWriter.WriteBuffer(3, multiPurposeBufferInfo);
             }
             descriptorWriter.Build(m_DescriptorSet);
         }

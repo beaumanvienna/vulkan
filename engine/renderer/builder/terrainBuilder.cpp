@@ -293,19 +293,34 @@ namespace GfxRenderEngine
                 uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
                 {
-                    // unforunately, need to copy one buffer into another (glsl does not support uint8_t by default)
-                    std::vector<int> bufferData(heightMapSize);
-                    for (uint index = 0; index < heightMapSize; ++index)
-                    {
-                        bufferData[index] = heightMap[index];
+                    { // unforunately, need to copy one buffer into another (glsl does not support uint8_t by default)
+                        std::vector<int> bufferData(heightMapSize);
+                        for (uint index = 0; index < heightMapSize; ++index)
+                        {
+                            bufferData[index] = heightMap[index];
+                        }
+                        int bufferSize = heightMapSize * sizeof(int); // in bytes
+                        auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
+                        ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                        ubo->MapBuffer();
+                        // update ubo
+                        ubo->WriteToBuffer(bufferData.data());
+                        ubo->Flush();
                     }
-                    int bufferSize = heightMapSize * sizeof(int); // in bytes
-                    auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
-                    ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
-                    resourceBuffers[Resources::HEIGHTMAP]->MapBuffer();
-                    // update ubo
-                    ubo->WriteToBuffer(bufferData.data());
-                    ubo->Flush();
+
+                    {
+                        Terrain::GrassParameters grassParameters{.m_Width = heightMap.Width(),
+                                                                 .m_Height = heightMap.Height(),
+                                                                 .m_ScaleXZ = grassSpec.m_ScaleXZ,
+                                                                 .m_ScaleY = grassSpec.m_ScaleY};
+                        int bufferSize = sizeof(Terrain::GrassParameters);
+                        auto& ubo = resourceBuffers[Resources::MULTI_PURPOSE_BUFFER];
+                        ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
+                        ubo->MapBuffer();
+                        // update ubo
+                        ubo->WriteToBuffer(&grassParameters);
+                        ubo->Flush();
+                    }
 
                     FastgltfBuilder builder(grassSpec.m_FilepathGrassModel, scene, &resourceBuffers);
                     builder.Load(1 /*1 instance in scene graph (grass has the instance count in the tag)*/);

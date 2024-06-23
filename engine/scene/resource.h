@@ -39,6 +39,7 @@ namespace GfxRenderEngine
             INSTANCE_BUFFER_INDEX = 0,
             SKELETAL_ANIMATION_BUFFER_INDEX,
             HEIGHTMAP,
+            MULTI_PURPOSE_BUFFER,
             NUM_BUFFERS
         };
 
