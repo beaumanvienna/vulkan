@@ -29,10 +29,8 @@
 using namespace simdjson;
 
 #include "engine.h"
-#include "scene/fbx.h"
-#include "scene/gltf.h"
-#include "scene/obj.h"
 #include "scene/scene.h"
+#include "scene/terrain.h"
 
 namespace GfxRenderEngine
 {
@@ -52,12 +50,12 @@ namespace GfxRenderEngine
             double m_FileFormatIdentifier;
             std::string m_Description;
             std::string m_Author;
-            std::string m_FilepathHeightMap;
-            std::string m_FilepathGrassHeightMap;
-            std::string m_FilepathColorMap;
-            std::string m_FilepathGrassModel;
-            Material::PbrMaterial m_PbrMaterial;
+            Terrain::TerrainSpec m_TerrainSpec{};
         };
+
+        void ParseGrassSpecification(ondemand::object grassSpecification);
+        void ParseTransform(ondemand::object transformJSON);
+        glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
     private:
         static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;

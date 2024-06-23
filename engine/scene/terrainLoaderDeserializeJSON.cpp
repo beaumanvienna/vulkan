@@ -45,7 +45,7 @@ namespace GfxRenderEngine
         ondemand::document terrainDocument = parser.iterate(json);
         ondemand::object terrainAttributess = terrainDocument.get_object();
 
-        Terrain::TerrainSpec terrainSpec{};
+        Terrain::TerrainSpec& terrainSpec = m_TerrainDescriptionFile.m_TerrainSpec;
         terrainSpec.m_FilepathTerrainDescription = filepath;
 
         for (auto terrainAttributes : terrainAttributess)
@@ -81,32 +81,21 @@ namespace GfxRenderEngine
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
                             "heightmap path must be string");
                 std::string_view heightMapPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_FilepathHeightMap = std::string(heightMapPath);
-                terrainSpec.m_FilepathHeightMap = m_TerrainDescriptionFile.m_FilepathHeightMap;
-                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathHeightMap);
-            }
-            else if (terrainAttributesKey == "grassHeightMapPath")
-            {
-                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
-                            "grass heightmap path must be string");
-                std::string_view grassHeightMapPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_FilepathGrassHeightMap = std::string(grassHeightMapPath);
-                terrainSpec.m_FilepathGrassHeightMap = m_TerrainDescriptionFile.m_FilepathGrassHeightMap;
-                LOG_CORE_INFO("Heightmap Path: {0}", m_TerrainDescriptionFile.m_FilepathGrassHeightMap);
+                terrainSpec.m_FilepathHeightMap = std::string(heightMapPath);
+                LOG_CORE_INFO("Heightmap Path: {0}", terrainSpec.m_FilepathHeightMap);
             }
             else if (terrainAttributesKey == "colorMapPath")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
                             "colormap path must be string");
                 std::string_view colorMapPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_FilepathColorMap = std::string(colorMapPath);
-                terrainSpec.m_FilepathColorMap = m_TerrainDescriptionFile.m_FilepathColorMap;
-                LOG_CORE_INFO("Colormap Path: {0}", m_TerrainDescriptionFile.m_FilepathColorMap);
+                terrainSpec.m_FilepathColorMap = std::string(colorMapPath);
+                LOG_CORE_INFO("Colormap Path: {0}", terrainSpec.m_FilepathColorMap);
             }
             else if (terrainAttributesKey == "material")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::object), "type must be object");
-                Material::PbrMaterial& pbrMaterial = m_TerrainDescriptionFile.m_PbrMaterial;
+                Material::PbrMaterial& pbrMaterial = terrainSpec.m_PbrMaterial;
                 ondemand::object materialJSON = terrainAttributes.value();
                 for (auto materialComponent : materialJSON)
                 {
@@ -129,12 +118,10 @@ namespace GfxRenderEngine
             }
             else if (terrainAttributesKey == "grass")
             {
-                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
-                            "grass 3D model path must be string");
-                std::string_view grassModelPath = terrainAttributes.value().get_string();
-                m_TerrainDescriptionFile.m_FilepathGrassModel = std::string(grassModelPath);
-                terrainSpec.m_FilepathGrassModel = m_TerrainDescriptionFile.m_FilepathGrassModel;
-                LOG_CORE_INFO("Grass Model Path: {0}", m_TerrainDescriptionFile.m_FilepathGrassModel);
+                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::object),
+                            "grass 3D model path must be object");
+                ondemand::object grassSpec = terrainAttributes.value().get_object();
+                ParseGrassSpecification(grassSpec);
             }
             else
             {
@@ -144,6 +131,134 @@ namespace GfxRenderEngine
 
         TerrainBuilder builder{};
         return builder.LoadTerrain(m_Scene, instanceCount, terrainSpec);
+    }
+
+    void TerrainLoaderJSON::ParseGrassSpecification(ondemand::object grassSpecification)
+    {
+        Terrain::TerrainSpec& terrainSpec = m_TerrainDescriptionFile.m_TerrainSpec;
+        Terrain::GrassSpec& grassSpec = terrainSpec.m_GrassSpec;
+
+        for (auto grassAttribute : grassSpecification)
+        {
+            std::string_view grassAttributeKey = grassAttribute.unescaped_key();
+
+            if (grassAttributeKey == "modelPath")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::string),
+                            "grass model filepath must be string");
+                std::string_view grassModelFilenameStringView = grassAttribute.value().get_string();
+                std::string& filepath = grassSpec.m_FilepathGrassModel;
+                filepath = std::string(grassModelFilenameStringView);
+                if (EngineCore::FileExists(filepath))
+                {
+                    LOG_CORE_INFO("grass model found {0}", filepath);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("grass model not found: {0}", filepath);
+                    return;
+                }
+            }
+            else if (grassAttributeKey == "heightMapPath")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::string),
+                            "grass model filepath must be string");
+                std::string_view heightmapFilenameStringView = grassAttribute.value().get_string();
+                std::string& filepath = grassSpec.m_FilepathGrassHeightMap;
+                filepath = std::string(heightmapFilenameStringView);
+                if (EngineCore::FileExists(filepath))
+                {
+                    LOG_CORE_INFO("heightmap for grass found {0}", filepath);
+                }
+                else
+                {
+                    LOG_CORE_ERROR("heightmap for grass not found: {0}", filepath);
+                    return;
+                }
+            }
+            else if (grassAttributeKey == "transform")
+            {
+                CORE_ASSERT((grassAttribute.value().type() == ondemand::json_type::object), "transform must be object");
+                ondemand::object transformJSON = grassAttribute.value().get_object();
+                ParseTransform(transformJSON);
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("unrecognized grass attribute");
+            }
+        }
+    }
+
+    void TerrainLoaderJSON::ParseTransform(ondemand::object transformJSON)
+    {
+        Terrain::TerrainSpec& terrainSpec = m_TerrainDescriptionFile.m_TerrainSpec;
+        Terrain::GrassSpec& grassSpec = terrainSpec.m_GrassSpec;
+
+        glm::vec3 scale{1.0f};
+        glm::vec3 rotation{0.0f};
+        glm::vec3 translation{0.0f};
+
+        for (auto transformComponent : transformJSON)
+        {
+            std::string_view transformComponentKey = transformComponent.unescaped_key();
+            if (transformComponentKey == "scale")
+            {
+                ondemand::array scaleJSON = transformComponent.value();
+                scale = ConvertToVec3(scaleJSON);
+            }
+            else if (transformComponentKey == "rotation")
+            {
+                ondemand::array rotationJSON = transformComponent.value();
+                rotation = ConvertToVec3(rotationJSON);
+            }
+            else if (transformComponentKey == "translation")
+            {
+                ondemand::array translationJSON = transformComponent.value();
+                translation = ConvertToVec3(translationJSON);
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("unrecognized transform component");
+            }
+        }
+
+        grassSpec.m_Scale = scale;
+        grassSpec.m_Rotation = rotation;
+        grassSpec.m_Translation = translation;
+    }
+
+    glm::vec3 TerrainLoaderJSON::ConvertToVec3(ondemand::array arrayJSON)
+    {
+        glm::vec3 returnVec3{0.0f};
+        uint componentIndex = 0;
+        for (auto component : arrayJSON)
+        {
+            switch (componentIndex)
+            {
+                case 0:
+                {
+                    returnVec3.x = component.get_double();
+                    break;
+                }
+                case 1:
+                {
+                    returnVec3.y = component.get_double();
+                    break;
+                }
+                case 2:
+                {
+                    returnVec3.z = component.get_double();
+                    break;
+                }
+                default:
+                {
+                    LOG_CORE_ERROR("JSON::CConvertToVec3(...) argument must have 3 components");
+                    break;
+                }
+            }
+            ++componentIndex;
+        }
+        return returnVec3;
     }
 
 } // namespace GfxRenderEngine

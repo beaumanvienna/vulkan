@@ -284,11 +284,12 @@ namespace GfxRenderEngine
 
         { // populate landscape
             // create a height map on the GPU for grass locations and load a grass model
-            bool fileExists = EngineCore::FileExists(terrainSpec.m_FilepathGrassModel) &&
-                              !EngineCore::IsDirectory(terrainSpec.m_FilepathGrassModel);
+            Terrain::GrassSpec const& grassSpec = terrainSpec.m_GrassSpec;
+            bool fileExists = EngineCore::FileExists(grassSpec.m_FilepathGrassModel) &&
+                              !EngineCore::IsDirectory(grassSpec.m_FilepathGrassModel);
             if (fileExists)
             {
-                Image heightMap(terrainSpec.m_FilepathGrassHeightMap);
+                Image heightMap(grassSpec.m_FilepathGrassHeightMap);
                 uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
                 {
@@ -306,10 +307,10 @@ namespace GfxRenderEngine
                     ubo->WriteToBuffer(bufferData.data());
                     ubo->Flush();
 
-                    FastgltfBuilder builder(terrainSpec.m_FilepathGrassModel, scene, &resourceBuffers);
+                    FastgltfBuilder builder(grassSpec.m_FilepathGrassModel, scene, &resourceBuffers);
                     builder.Load(1 /*1 instance in scene graph (grass has the instance count in the tag)*/);
 
-                    entt::entity grassEntityRoot = dictionary.Retrieve(terrainSpec.m_FilepathGrassModel + "::0::root");
+                    entt::entity grassEntityRoot = dictionary.Retrieve(grassSpec.m_FilepathGrassModel + "::0::root");
                     if (grassEntityRoot != entt::null)
                     {
                         TreeNode rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
@@ -319,9 +320,9 @@ namespace GfxRenderEngine
                         registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
 
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);
-                        transform.SetRotation({3.14159f, 0.767164f, 3.14159f});
-                        transform.SetTranslation({4.37885f, -1.14346f, 59.3405f});
-                        transform.SetScale({0.1299984f, 0.0376f, 0.1299984f});
+                        transform.SetRotation(terrainSpec.m_GrassSpec.m_Rotation);
+                        transform.SetTranslation(terrainSpec.m_GrassSpec.m_Translation);
+                        transform.SetScale({terrainSpec.m_GrassSpec.m_Scale});
                     }
                 }
             }

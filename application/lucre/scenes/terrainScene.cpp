@@ -318,8 +318,8 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({-0.8f, 3.0f, 23.0f});
-        cameraTransform.SetRotation({0.0610371f, 6.2623f, 0.0f});
+        cameraTransform.SetTranslation({1.792f, 4.220f, -13.696f});
+        cameraTransform.SetRotation({-0.074769905f, 3.01f, 0.0f});
 
         // global camera transform is not yet available
         // because UpdateTransformCache didn't run yet
