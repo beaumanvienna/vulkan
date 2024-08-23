@@ -28,10 +28,11 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Texture> gTextureSpritesheet;
+
+    extern std::shared_ptr<Texture> gTextureAtlas;
+
     VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
                                                  Material::MaterialTextures& textures)
-
         : m_MaterialType{materialType}
     {
         switch (materialType)
@@ -45,7 +46,7 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture> emissiveMap;
                 std::shared_ptr<Texture> roughnessMap;
                 std::shared_ptr<Texture> metallicMap;
-                std::shared_ptr<Texture>& dummy = gTextureSpritesheet;
+                std::shared_ptr<Texture>& dummy = gTextureAtlas;
 
                 diffuseMap = textures[Material::DIFFUSE_MAP_INDEX] ? textures[Material::DIFFUSE_MAP_INDEX] : dummy;
                 normalMap = textures[Material::NORMAL_MAP_INDEX] ? textures[Material::NORMAL_MAP_INDEX] : dummy;
@@ -124,7 +125,6 @@ namespace GfxRenderEngine
     {
         m_MaterialType = other.m_MaterialType;
         m_DescriptorSet = other.m_DescriptorSet;
-        m_ShadowDescriptorSet = other.m_ShadowDescriptorSet;
     }
 
     VK_MaterialDescriptor::VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor)
@@ -134,7 +134,6 @@ namespace GfxRenderEngine
             VK_MaterialDescriptor* other = static_cast<VK_MaterialDescriptor*>(materialDescriptor.get());
             m_MaterialType = other->m_MaterialType;
             m_DescriptorSet = other->m_DescriptorSet;
-            m_ShadowDescriptorSet = other->m_ShadowDescriptorSet;
         }
     }
 

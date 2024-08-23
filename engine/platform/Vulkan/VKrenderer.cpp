@@ -32,7 +32,7 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> gTextureSpritesheet;
+    std::shared_ptr<Texture> gTextureAtlas;
     std::shared_ptr<Texture> gTextureFontAtlas;
     std::shared_ptr<Buffer> gDummyBuffer;
 
@@ -239,7 +239,7 @@ namespace GfxRenderEngine
         textureSpritesheet->Init(data, fileSize, Texture::USE_SRGB);
         textureSpritesheet->SetFilename("spritesheet");
 
-        gTextureSpritesheet = textureSpritesheet; // copy from VK_Texture to Texture
+        gTextureAtlas = textureSpritesheet; // copy from VK_Texture to Texture
         VkDescriptorImageInfo imageInfo0 = textureSpritesheet->GetDescriptorImageInfo();
 
         data = (const uchar*)ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");

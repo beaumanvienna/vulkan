@@ -96,37 +96,11 @@ namespace GfxRenderEngine
             }
             descriptorWriter.Build(m_DescriptorSet);
         }
-
-        // shadows
-        {
-            VK_DescriptorSetLayout::Builder builder{};
-            if (instBuffer)
-            {
-                builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-            }
-            if (skelBuffer)
-            {
-                builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-            }
-            if (builder.Size())
-            {
-                std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
-
-                VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
-                descriptorWriter.WriteBuffer(0, instanceBufferInfo);
-                if (skelBuffer)
-                {
-                    descriptorWriter.WriteBuffer(1, skeletalAnimationBufferInfo);
-                }
-                descriptorWriter.Build(m_ShadowDescriptorSet);
-            }
-        }
     }
 
     VK_ResourceDescriptor::VK_ResourceDescriptor(VK_ResourceDescriptor const& other)
     {
         m_DescriptorSet = other.m_DescriptorSet;
-        m_ShadowDescriptorSet = other.m_ShadowDescriptorSet;
     }
 
     VK_ResourceDescriptor::VK_ResourceDescriptor(std::shared_ptr<ResourceDescriptor> const& resourceDescriptor)
@@ -136,7 +110,6 @@ namespace GfxRenderEngine
             VK_ResourceDescriptor* other = static_cast<VK_ResourceDescriptor*>(resourceDescriptor.get());
 
             m_DescriptorSet = other->m_DescriptorSet;
-            m_ShadowDescriptorSet = other->m_ShadowDescriptorSet;
         }
     }
 
@@ -144,5 +117,4 @@ namespace GfxRenderEngine
 
     const VkDescriptorSet& VK_ResourceDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
 
-    const VkDescriptorSet& VK_ResourceDescriptor::GetShadowDescriptorSet() const { return m_ShadowDescriptorSet; }
 } // namespace GfxRenderEngine

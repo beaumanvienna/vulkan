@@ -28,13 +28,13 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Texture> gTextureSpritesheet;
+    extern std::shared_ptr<Texture> gTextureAtlas;
 
     SpriteSheet::SpriteSheet() : m_Rows{0}, m_Columns{0} {}
 
     void SpriteSheet::AddSpritesheet()
     {
-        m_Texture = gTextureSpritesheet;
+        m_Texture = gTextureAtlas;
         for (int i = 0; i < atlas.num_images; i++)
         {
             bool rotated = images[i].rotation;

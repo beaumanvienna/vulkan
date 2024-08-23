@@ -40,10 +40,8 @@ namespace GfxRenderEngine
 
     public:
         const VkDescriptorSet& GetDescriptorSet() const;
-        const VkDescriptorSet& GetShadowDescriptorSet() const;
 
     private:
         VkDescriptorSet m_DescriptorSet;
-        VkDescriptorSet m_ShadowDescriptorSet;
     };
 } // namespace GfxRenderEngine

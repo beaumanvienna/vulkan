@@ -90,6 +90,9 @@ layout(push_constant) uniform Push
     float m_Spare1; // padding
     float m_Spare2; // padding
     float m_Spare3; // padding
+
+    // byte 64 to 128
+    vec4 m_Spare4[4];
 } push;
 
 void main()

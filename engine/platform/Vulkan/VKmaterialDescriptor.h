@@ -47,6 +47,5 @@ namespace GfxRenderEngine
     private:
         MaterialDescriptor::MaterialType m_MaterialType;
         VkDescriptorSet m_DescriptorSet;
-        VkDescriptorSet m_ShadowDescriptorSet;
     };
 } // namespace GfxRenderEngine
