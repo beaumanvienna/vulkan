@@ -83,7 +83,7 @@ namespace LucreApp
 
     private:
         std::mutex m_Mutex;
-        State m_State, m_NextState, m_LastState, m_DeleteScene;
+        State m_State, m_NextState, m_LastState, m_DeleteScene, m_LoadingState;
         std::shared_ptr<Scene> m_Scenes[static_cast<int>(State::MAX_STATES)];
         bool m_UserInputEnabled;
         bool m_InputIdle;

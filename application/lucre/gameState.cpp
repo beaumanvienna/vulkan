@@ -39,7 +39,7 @@ namespace LucreApp
 
     GameState::GameState()
         : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH}, m_InputIdle{false},
-          m_UserInputEnabled{false}, m_DeleteScene{State::NULL_STATE}
+          m_UserInputEnabled{false}, m_DeleteScene{State::NULL_STATE}, m_LoadingState{State::NULL_STATE}
     {
         memset(m_StateLoaded, false, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }
@@ -52,11 +52,7 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-#ifdef MACOSX
-        SetNextState(State::CUTSCENE);
-#else
         SetNextState(State::TERRAIN);
-#endif
     }
 
     void GameState::Stop() { GetScene()->Stop(); }
@@ -185,6 +181,10 @@ namespace LucreApp
 
     void GameState::LoadNextState()
     {
+        if (m_LoadingState != State::NULL_STATE)
+        {
+            return;
+        }
         if (!IsLoaded(m_NextState))
         {
             if (m_DeleteScene == State::NULL_STATE)
@@ -229,6 +229,11 @@ namespace LucreApp
     void GameState::Load(GameState::State state)
     {
         ASSERT(!IsLoaded(state));
+        if (m_LoadingState != State::NULL_STATE)
+        {
+            return;
+        }
+        m_LoadingState = state;
         switch (state)
         {
             case State::SPLASH:
@@ -242,7 +247,7 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                auto lambda = [&]()
+                auto lambda = [&, state]()
                 {
                     auto scenePtr =
                         std::make_shared<MainScene>("main.json", "application/lucre/sceneDescriptions/main.json");
@@ -264,7 +269,7 @@ namespace LucreApp
             }
             case State::BEACH:
             {
-                auto lambda = [&]()
+                auto lambda = [&, state]()
                 {
                     auto scenePtr =
                         std::make_shared<BeachScene>("beach.json", "application/lucre/sceneDescriptions/beach.json");
@@ -287,7 +292,7 @@ namespace LucreApp
 
             case State::NIGHT:
             {
-                auto lambda = [&]()
+                auto lambda = [&, state]()
                 {
                     auto scenePtr =
                         std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
@@ -309,7 +314,7 @@ namespace LucreApp
             }
             case State::DESSERT:
             {
-                auto lambda = [&]()
+                auto lambda = [&, state]()
                 {
                     auto scenePtr =
                         std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
@@ -331,9 +336,8 @@ namespace LucreApp
             }
             case State::TERRAIN:
             {
-                auto lambda = [&]()
+                auto lambda = [&, state]()
                 {
-                    // todo: use the json format
                     auto scenePtr =
                         std::make_shared<TerrainScene>("terrain.json", "application/lucre/sceneDescriptions/terrain.json");
                     SetupScene(state, scenePtr);
@@ -399,6 +403,7 @@ namespace LucreApp
     {
         std::lock_guard lock(m_Mutex);
         m_StateLoaded[static_cast<int>(state)] = isLoaded;
+        m_LoadingState = State::NULL_STATE;
     }
 
     void GameState::SetupScene(const State state, const std::shared_ptr<Scene>& scene)
