@@ -36,6 +36,10 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
 
+#ifdef TRACY_ENABLE
+    #include "tracy/Tracy.hpp"
+#endif
+
 typedef uint8_t uchar;
 typedef uint16_t uint16;
 typedef uint32_t uint;

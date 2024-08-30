@@ -476,6 +476,7 @@ namespace GfxRenderEngine
 
     VkCommandBuffer VK_Renderer::BeginFrame()
     {
+        ZoneScopedN("VK_Renderer::BeginFrame()");
         ASSERT(!m_FrameInProgress);
 
         auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
@@ -508,6 +509,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndFrame()
     {
+        ZoneScopedN("VK_Renderer::EndFrame()");
         ASSERT(m_FrameInProgress);
 
         auto commandBuffer = GetCurrentCommandBuffer();

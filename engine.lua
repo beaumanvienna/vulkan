@@ -8,8 +8,7 @@ project "engine"
 
     defines
     {
-        "ENGINE_VERSION=\"0.8.8\"",
-        "PROFILING"
+        "ENGINE_VERSION=\"0.9.0\""
     }
 
     files 
@@ -55,6 +54,8 @@ project "engine"
         "vendor/json",
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
+        "vendor/thread-pool/include",
+        "vendor/tracy/include"
     }
 
     libdirs
@@ -159,11 +160,21 @@ project "engine"
         buildoptions { "-Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
     filter { "configurations:Debug" }
-        defines { "DEBUG" }
+        defines
+        {
+            "DEBUG",
+            "PROFILING",
+            "TRACY_ENABLE"
+        }
         symbols "On"
 
     filter { "configurations:Release" }
-        defines { "NDEBUG" }
+        defines
+        {
+            "NDEBUG",
+            "PROFILING",
+            "TRACY_ENABLE"
+        }
         optimize "On"
 
     filter { "configurations:Dist" }

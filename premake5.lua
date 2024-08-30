@@ -17,8 +17,7 @@ project "lucre"
 
     defines
     {
-        "LUCRE_VERSION=\"0.4.2\"",
-        "PROFILING"
+        "LUCRE_VERSION=\"0.4.2\""
     }
 
     files 
@@ -47,6 +46,8 @@ project "lucre"
         "vendor/json",
         "vendor/glm",
         "vendor/stb",
+        "vendor/thread-pool/include",
+        "vendor/tracy/include"
     }
 
     libdirs
@@ -216,7 +217,12 @@ project "lucre"
         }
 
     filter { "configurations:Debug" }
-        defines { "DEBUG" }
+        defines
+        {
+            "DEBUG",
+            "PROFILING",
+            "TRACY_ENABLE"
+        }
         symbols "On"
         kind "ConsoleApp"
 
@@ -230,7 +236,12 @@ project "lucre"
         buildoptions { "-Wall -Wextra -Wpedantic -Wshadow -Wno-unused-parameter -Wno-reorder -Wno-expansion-to-defined" }
 
     filter { "configurations:Release" }
-        defines { "NDEBUG" }
+        defines
+        {
+            "NDEBUG",
+            "PROFILING",
+            "TRACY_ENABLE"
+        }
         optimize "On"
         kind "ConsoleApp"
 
@@ -262,6 +273,10 @@ project "lucre"
         os.remove("./vendor/atlas/Makefile")
         os.rmdir("./vendor/box2d/bin")
         os.rmdir("./vendor/box2d/bin-int")
+        os.rmdir("./vendor/fastgltf/bin")
+        os.rmdir("./vendor/fastgltf/bin-int")
+        os.rmdir("./vendor/ufbx/bin")
+        os.rmdir("./vendor/ufbx/bin-int")
         os.rmdir("./vendor/assetImporter/bin")
         os.rmdir("./vendor/assetImporter/bin-int")
         os.remove("./vendor/assetImporter/Makefile")

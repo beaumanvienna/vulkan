@@ -1,10 +1,8 @@
 {
-    "configurations":
-    [
+    "configurations": [
         {
             "name": "Linux",
-            "includePath":
-            [
+            "includePath": [
                 "application",
                 "application/lucre",
                 "engine",
@@ -27,6 +25,7 @@
                 "vendor/stb",
                 "vendor/pamanager/libpamanager/src",
                 "vendor/sdl/include",
+                "vendor/thread-pool/include",
                 "resources/atlas",
                 "/usr/include/glib-2.0",
                 "/usr/lib/x86_64-linux-gnu/glib-2.0/include"

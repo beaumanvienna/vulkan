@@ -82,6 +82,7 @@ int engine(int argc, char* argv[])
             {
                 {
                     PROFILE_SCOPE("application->OnUpdate()");
+                    ZoneScopedN("application->OnUpdate");
                     application->OnUpdate(engine->GetTimestep());
                     engine->RunScripts(application.get());
                 }
@@ -92,6 +93,7 @@ int engine(int argc, char* argv[])
                 std::this_thread::sleep_for(16ms);
             }
         }
+        FrameMark;
     }
 
     application->Shutdown();

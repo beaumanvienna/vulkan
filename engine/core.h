@@ -37,6 +37,7 @@
 #include "platform/window.h"
 #include "layer/layerStack.h"
 #include "renderer/graphicsContext.h"
+#include "BS_thread_pool/BS_thread_pool.hpp"
 #include "renderer/renderer.h"
 #include "renderer/model.h"
 #include "audio/audio.h"
@@ -121,6 +122,7 @@ namespace GfxRenderEngine
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
+        BS::thread_pool m_Pool;
 
     private:
         static void SignalHandler(int signal);
