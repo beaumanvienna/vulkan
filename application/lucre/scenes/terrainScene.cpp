@@ -233,6 +233,7 @@ namespace LucreApp
 
     void TerrainScene::OnUpdate(const Timestep& timestep)
     {
+        ZoneScopedNC("TerrainScene", 0x0000ff);
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
             auto view = m_Registry.view<TransformComponent>();

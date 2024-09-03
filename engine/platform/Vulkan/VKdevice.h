@@ -93,6 +93,7 @@ namespace GfxRenderEngine
         VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling,
                                      VkFormatFeatureFlags features);
         VkFormat FindDepthFormat();
+        void PrintAllSupportedFormats();
 
         // Buffer Helper Functions
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,

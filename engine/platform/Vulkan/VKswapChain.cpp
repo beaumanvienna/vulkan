@@ -87,6 +87,7 @@ namespace GfxRenderEngine
 
     VkResult VK_SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex)
     {
+        ZoneScopedN("SubmitCommandBuffers");
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
             PROFILE_SCOPE("waitFor ImagesInFlight");

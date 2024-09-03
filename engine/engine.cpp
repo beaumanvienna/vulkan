@@ -86,7 +86,10 @@ int engine(int argc, char* argv[])
                     application->OnUpdate(engine->GetTimestep());
                     engine->RunScripts(application.get());
                 }
-                engine->OnRender();
+                {
+                    ZoneScopedN("engine->OnRender()");
+                    engine->OnRender();
+                }
             }
             else
             {

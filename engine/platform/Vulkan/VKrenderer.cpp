@@ -509,18 +509,23 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndFrame()
     {
-        ZoneScopedN("VK_Renderer::EndFrame()");
+        {
+            ZoneScopedNS("VK_Renderer::EndFrame()", 10);
+        }
         ASSERT(m_FrameInProgress);
 
         auto commandBuffer = GetCurrentCommandBuffer();
-
-        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("recording of command buffer failed");
+            ZoneScopedN("vkEndCommandBuffer");
+            if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("recording of command buffer failed");
+            }
         }
         auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, &m_CurrentImageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
+            ZoneScopedN("Recreate()");
             m_Window->ResetWindowResizedFlag();
             Recreate();
         }
@@ -927,62 +932,74 @@ namespace GfxRenderEngine
     void VK_Renderer::CompileShaders()
     {
 
-        std::thread shaderCompileThread(
-            [this]()
+        if (!EngineCore::FileExists("bin-int"))
+        {
+            LOG_CORE_WARN("creating bin directory for spirv files");
+            EngineCore::CreateDirectory("bin-int");
+        }
+        // clang-format off
+        std::vector<std::string> shaderFilenames = {
+            // 2D
+            "spriteRenderer.vert",
+            "spriteRenderer.frag",
+            "spriteRenderer2D.frag",
+            "spriteRenderer2D.vert",
+            "guiShader.frag",
+            "guiShader.vert",
+            "guiShader2.frag",
+            "guiShader2.vert",
+            // 3D
+            "pointLight.vert",
+            "pointLight.frag",
+            "pbr.vert",
+            "pbr.frag",
+            "pbrSA.vert",
+            "grass.vert",
+            "deferredShading.vert",
+            "deferredShading.frag",
+            "skybox.vert",
+            "skybox.frag",
+            "shadowShaderAnimatedInstanced.vert",
+            "shadowShaderAnimatedInstanced.frag",
+            "shadowShaderInstanced.vert",
+            "shadowShaderInstanced.frag",
+            "debug.vert",
+            "debug.frag",
+            "postprocessing.vert",
+            "postprocessing.frag",
+            "bloomUp.vert",
+            "bloomUp.frag",
+            "bloomDown.vert",
+            "bloomDown.frag"
+        };
+        // clang-format on
+
+        BS::thread_pool& threadPool = Engine::m_Engine->m_Pool;
+        std::vector<std::future<bool>> futures;
+        futures.resize(shaderFilenames.size());
+
+        uint futureCounter = 0;
+        for (auto& filename : shaderFilenames)
+        {
+            auto compileThread = [filename, futureCounter]() -> bool
             {
-                if (!EngineCore::FileExists("bin-int"))
+                ZoneScopedN("compileTread");
+                ZoneTransientN(variableName, std::string(std::to_string(futureCounter)).c_str(), true);
+                bool isOk = true;
+                std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");
+                if (!EngineCore::FileExists(spirvFilename))
                 {
-                    LOG_CORE_WARN("creating bin directory for spirv files");
-                    EngineCore::CreateDirectory("bin-int");
+                    std::string name = std::string("engine/platform/Vulkan/shaders/") + filename;
+                    VK_Shader shader{name, spirvFilename};
+                    isOk = shader.IsOk();
                 }
-                // clang-format off
-                std::vector<std::string> shaderFilenames = {
-                    // 2D
-                    "spriteRenderer.vert",
-                    "spriteRenderer.frag",
-                    "spriteRenderer2D.frag",
-                    "spriteRenderer2D.vert",
-                    "guiShader.frag",
-                    "guiShader.vert",
-                    "guiShader2.frag",
-                    "guiShader2.vert",
-                    // 3D
-                    "pointLight.vert",
-                    "pointLight.frag",
-                    "pbr.vert",
-                    "pbr.frag",
-                    "pbrSA.vert",
-                    "grass.vert",
-                    "deferredShading.vert",
-                    "deferredShading.frag",
-                    "skybox.vert",
-                    "skybox.frag",
-                    "shadowShaderAnimatedInstanced.vert",
-                    "shadowShaderAnimatedInstanced.frag",
-                    "shadowShaderInstanced.vert",
-                    "shadowShaderInstanced.frag",
-                    "debug.vert",
-                    "debug.frag",
-                    "postprocessing.vert",
-                    "postprocessing.frag",
-                    "bloomUp.vert",
-                    "bloomUp.frag",
-                    "bloomDown.vert",
-                    "bloomDown.frag"
-                };
-                // clang-format on
-                for (auto& filename : shaderFilenames)
-                {
-                    std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");
-                    if (!EngineCore::FileExists(spirvFilename))
-                    {
-                        std::string name = std::string("engine/platform/Vulkan/shaders/") + filename;
-                        VK_Shader shader{name, spirvFilename};
-                    }
-                }
-                m_ShadersCompiled = true;
-            });
-        shaderCompileThread.detach();
+                return isOk;
+            };
+            futures[futureCounter] = threadPool.submit_task(compileThread);
+            ++futureCounter;
+        }
+        threadPool.wait();
+        m_ShadersCompiled = true;
     }
 
     void VK_Renderer::DrawWithTransform(const Sprite& sprite, const glm::mat4& transform)

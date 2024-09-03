@@ -40,7 +40,7 @@ namespace GfxRenderEngine
         {
             return;
         }
-
+        ZoneScopedNC("FastgltfBuilder::LoadSkeletonsGltf", 0x00ff00);
         if (numberOfSkeletons > 1)
         {
             LOG_CORE_WARN("A model should only have a single skin/armature/skeleton. Using skin 0.");

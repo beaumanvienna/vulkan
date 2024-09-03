@@ -58,6 +58,7 @@ namespace GfxRenderEngine
     // create texture from raw memory
     bool VK_Texture::Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter, int magFilter)
     {
+        ZoneScopedNC("VK_Texture::Init", 0xffff00);
         bool ok = false;
         m_FileName = "raw memory";
         m_sRGB = sRGB;

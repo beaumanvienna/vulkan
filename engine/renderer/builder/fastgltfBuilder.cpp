@@ -52,9 +52,12 @@ namespace GfxRenderEngine
     bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
         PROFILE_SCOPE("FastgltfBuilder::Load");
+        ZoneScopedN("FastgltfBuilder::Load");
         stbi_set_flip_vertically_on_load(false);
 
         { // load from file
+
+            ZoneTransientN(variableName, EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath).c_str(), true);
             auto path = std::filesystem::path{m_Filepath};
 
             // glTF files list their required extensions
@@ -446,6 +449,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadTextures()
     {
+        ZoneScopedNC("FastgltfBuilder::LoadTextures", 0x0000ff);
         size_t numTextures = m_GltfModel.images.size();
         m_Textures.resize(numTextures);
 
@@ -610,6 +614,7 @@ namespace GfxRenderEngine
     // handle vertex data
     void FastgltfBuilder::LoadVertexData(uint const meshIndex)
     {
+        ZoneScopedN("FastgltfBuilder::LoadVertexData");
         m_Vertices.clear();
         m_Indices.clear();
         m_Submeshes.clear();
@@ -813,6 +818,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::AssignMaterial(Submesh& submesh, int const materialIndex)
     {
+        ZoneScopedN("AssignMaterial");
         { // material
             if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
             {
