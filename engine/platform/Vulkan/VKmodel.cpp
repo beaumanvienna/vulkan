@@ -73,6 +73,7 @@ namespace GfxRenderEngine
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder)
         : m_Device(device), m_HasIndexBuffer{false}
     {
+        ZoneScopedNC("VK_Model(FastgltfBuilder)", 0x00ffff);
         INIT_GLTF_AND_FBX_MODEL();
     }
     VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder)

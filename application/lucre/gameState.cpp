@@ -247,7 +247,7 @@ namespace LucreApp
             }
             case State::MAIN:
             {
-                auto lambda = [&, state]()
+                auto lambda = [this, state]()
                 {
                     auto scenePtr =
                         std::make_shared<MainScene>("main.json", "application/lucre/sceneDescriptions/main.json");
@@ -269,7 +269,7 @@ namespace LucreApp
             }
             case State::BEACH:
             {
-                auto lambda = [&, state]()
+                auto lambda = [this, state]()
                 {
                     auto scenePtr =
                         std::make_shared<BeachScene>("beach.json", "application/lucre/sceneDescriptions/beach.json");
@@ -292,7 +292,7 @@ namespace LucreApp
 
             case State::NIGHT:
             {
-                auto lambda = [&, state]()
+                auto lambda = [this, state]()
                 {
                     auto scenePtr =
                         std::make_shared<NightScene>("night.json", "application/lucre/sceneDescriptions/night.json");
@@ -314,7 +314,7 @@ namespace LucreApp
             }
             case State::DESSERT:
             {
-                auto lambda = [&, state]()
+                auto lambda = [this, state]()
                 {
                     auto scenePtr =
                         std::make_shared<DessertScene>("dessert.json", "application/lucre/sceneDescriptions/dessert.json");
@@ -336,7 +336,7 @@ namespace LucreApp
             }
             case State::TERRAIN:
             {
-                auto lambda = [&, state]()
+                auto lambda = [this, state]()
                 {
                     ZoneScopedN("loadTerrain");
                     auto scenePtr =
@@ -348,8 +348,8 @@ namespace LucreApp
                 };
                 if (Engine::m_Engine->MultiThreadingSupport())
                 {
-                    std::thread loadTerrainSceneThread(lambda);
-                    loadTerrainSceneThread.detach();
+                    ThreadPool& threadPool = Engine::m_Engine->m_Pool;
+                    std::future<void> future = threadPool.SubmitTask(lambda);
                 }
                 else
                 {

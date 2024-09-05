@@ -709,6 +709,7 @@ namespace GfxRenderEngine
 
     VkCommandBuffer VK_Device::BeginSingleTimeCommands(QueueTypes type)
     {
+        ZoneScopedN("BeginSingleTimeCommands");
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -751,12 +752,14 @@ namespace GfxRenderEngine
         // see BeginSingleTimeCommands
         if ((type == QueueTypes::TRANSFER) || m_TransferQueueSupportsGraphics)
         {
+            ZoneScopedN("EndSingleTimeCommands");
             vkQueueSubmit(TransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(TransferQueue());
             vkFreeCommandBuffers(m_Device, m_LoadCommandPool, 1, &commandBuffer);
         }
         else
         {
+            ZoneScopedN("EndSingleTimeCommands");
             vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(GraphicsQueue());
             vkFreeCommandBuffers(m_Device, m_GraphicsCommandPool, 1, &commandBuffer);
@@ -778,6 +781,7 @@ namespace GfxRenderEngine
 
     void VK_Device::CopyBufferToImage(VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount)
     {
+        ZoneScopedN("CopyBufferToImage");
         VkCommandBuffer commandBuffer = BeginSingleTimeCommands(QueueTypes::TRANSFER);
 
         VkBufferImageCopy region{};

@@ -47,6 +47,7 @@ namespace GfxRenderEngine
 
     bool VK_Renderer::Init()
     {
+        ZoneScopedN("VK_Renderer::Init()");
         if (!m_ShadersCompiled)
             return m_ShadersCompiled;
 
@@ -974,7 +975,7 @@ namespace GfxRenderEngine
         };
         // clang-format on
 
-        BS::thread_pool& threadPool = Engine::m_Engine->m_Pool;
+        ThreadPool& threadPool = Engine::m_Engine->m_Pool;
         std::vector<std::future<bool>> futures;
         futures.resize(shaderFilenames.size());
 
@@ -995,10 +996,10 @@ namespace GfxRenderEngine
                 }
                 return isOk;
             };
-            futures[futureCounter] = threadPool.submit_task(compileThread);
+            futures[futureCounter] = threadPool.SubmitTask(compileThread);
             ++futureCounter;
         }
-        threadPool.wait();
+        threadPool.Wait();
         m_ShadersCompiled = true;
     }
 

@@ -180,6 +180,7 @@ namespace GfxRenderEngine
 
     bool TerrainBuilder::LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
+        ZoneScopedNC("TerrainBuilder::LoadTerrain", 0xFF0000);
         TerrainComponent terrainComponent{};
         auto& registry = scene.GetRegistry();
         auto& sceneGraph = scene.GetSceneGraph();
