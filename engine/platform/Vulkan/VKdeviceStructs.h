@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -18,31 +18,42 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-   */
+#pragma once
 
-#include "graphicsContext.h"
-#include "rendererAPI.h"
+#include <vector>
+#include <vulkan/vulkan.h>
 
-#include "VKgraphicsContext.h"
-#include "VKwindow.h"
+#include "VKpool.h"
 
-std::shared_ptr<GraphicsContext> GraphicsContext::Create(void* window, ThreadPool& threadPoolPrimary,
-                                                         ThreadPool& threadPoolSecondary)
+#include "auxiliary/threadPool.h"
+
+namespace GfxRenderEngine
 {
-    std::shared_ptr<GraphicsContext> graphicsContext;
-
-    switch (RendererAPI::GetAPI())
+    struct SwapChainSupportDetails
     {
-        case RendererAPI::VULKAN:
-            graphicsContext =
-                std::make_shared<VK_Context>(static_cast<VK_Window*>(window), threadPoolPrimary, threadPoolSecondary);
-            break;
-        default:
-            graphicsContext = nullptr;
-            break;
-    }
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
 
-    return graphicsContext;
-}
+    enum QueueTypes
+    {
+        GRAPHICS = 0,
+        PRESENT,
+        TRANSFER,
+        NUMBER_OF_QUEUE_TYPES
+    };
+
+    struct QueueFamilyIndices
+    {
+        int m_GraphicsFamily = -1;
+        int m_PresentFamily = -1;
+        int m_TransferFamily = -1;
+        int m_NumberOfQueues = 0;
+        std::vector<int> m_UniqueFamilyIndices;
+        int m_QueueIndices[QueueTypes::NUMBER_OF_QUEUE_TYPES] = {};
+        bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0) && (m_TransferFamily >= 0); }
+    };
+} // namespace GfxRenderEngine

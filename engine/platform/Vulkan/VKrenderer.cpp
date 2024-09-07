@@ -87,9 +87,9 @@ namespace GfxRenderEngine
         }
 
         // create a global pool for desciptor sets
-        static constexpr uint POOL_SIZE = 10000;
+        static constexpr uint POOL_SIZE = 500;
         m_DescriptorPool =
-            VK_DescriptorPool::Builder()
+            VK_DescriptorPool::Builder(m_Device->Device())
                 .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
                 .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
                 .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 7500)
@@ -975,7 +975,7 @@ namespace GfxRenderEngine
         };
         // clang-format on
 
-        ThreadPool& threadPool = Engine::m_Engine->m_Pool;
+        ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
         std::vector<std::future<bool>> futures;
         futures.resize(shaderFilenames.size());
 

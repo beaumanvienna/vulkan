@@ -449,92 +449,103 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadTextures()
     {
-        ZoneScopedNC("FastgltfBuilder::LoadTextures", 0x0000ff);
         size_t numTextures = m_GltfModel.images.size();
         m_Textures.resize(numTextures);
+        std::vector<std::future<std::shared_ptr<Texture>>> futures;
+        futures.resize(numTextures);
 
         // retrieve all images from the glTF file
         for (uint imageIndex = 0; imageIndex < numTextures; ++imageIndex)
         {
-            fastgltf::Image& glTFImage = m_GltfModel.images[imageIndex];
-            auto texture = Texture::Create();
+            auto loadtexture = [this, imageIndex]()
+            {
+                ZoneScopedNC("FastgltfBuilder::LoadTextures", 0x0000ff);
 
-            // image data is of type std::variant: the data type can be a URI/filepath, an Array, or a BufferView
-            // std::visit calls the appropriate function
-            std::visit(
-                fastgltf::visitor{
-                    [&](fastgltf::sources::URI& filePath) // load from file name
-                    {
-                        const std::string imageFilepath(filePath.uri.path().begin(), filePath.uri.path().end());
+                fastgltf::Image& glTFImage = m_GltfModel.images[imageIndex];
+                auto texture = Texture::Create();
 
-                        CORE_ASSERT(filePath.fileByteOffset == 0, "no offset data support with stbi " + glTFImage.name);
-                        CORE_ASSERT(filePath.uri.isLocalPath(), "no local file " + glTFImage.name);
+                // image data is of type std::variant: the data type can be a URI/filepath, an Array, or a BufferView
+                // std::visit calls the appropriate function
+                std::visit(
+                    fastgltf::visitor{
+                        [&](fastgltf::sources::URI& filePath) // load from file name
+                        {
+                            const std::string imageFilepath(filePath.uri.path().begin(), filePath.uri.path().end());
 
-                        int width = 0, height = 0, nrChannels = 0;
-                        unsigned char* buffer =
-                            stbi_load(imageFilepath.c_str(), &width, &height, &nrChannels, 4 /*int desired_channels*/);
-                        CORE_ASSERT(buffer, "stbi failed (image data = URI) " + glTFImage.name);
-                        CORE_ASSERT(nrChannels == 4, "wrong number of channels");
+                            CORE_ASSERT(filePath.fileByteOffset == 0, "no offset data support with stbi " + glTFImage.name);
+                            CORE_ASSERT(filePath.uri.isLocalPath(), "no local file " + glTFImage.name);
 
-                        int minFilter = GetMinFilter(imageIndex);
-                        int magFilter = GetMagFilter(imageIndex);
-                        bool imageFormat = GetImageFormat(imageIndex);
-                        texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+                            int width = 0, height = 0, nrChannels = 0;
+                            unsigned char* buffer =
+                                stbi_load(imageFilepath.c_str(), &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                            CORE_ASSERT(buffer, "stbi failed (image data = URI) " + glTFImage.name);
+                            CORE_ASSERT(nrChannels == 4, "wrong number of channels");
 
-                        stbi_image_free(buffer);
+                            int minFilter = GetMinFilter(imageIndex);
+                            int magFilter = GetMagFilter(imageIndex);
+                            bool imageFormat = GetImageFormat(imageIndex);
+                            texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
+                            stbi_image_free(buffer);
+                        },
+                        [&](fastgltf::sources::Array& vector) // load from memory
+                        {
+                            int width = 0, height = 0, nrChannels = 0;
+
+                            using byte = unsigned char;
+                            byte* buffer = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()),
+                                                                 &width, &height, &nrChannels, 4 /*int desired_channels*/);
+                            CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
+
+                            int minFilter = GetMinFilter(imageIndex);
+                            int magFilter = GetMagFilter(imageIndex);
+                            bool imageFormat = GetImageFormat(imageIndex);
+                            texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
+                            stbi_image_free(buffer);
+                        },
+                        [&](fastgltf::sources::BufferView& view) // load from buffer view
+                        {
+                            auto& bufferView = m_GltfModel.bufferViews[view.bufferViewIndex];
+                            auto& bufferFromBufferView = m_GltfModel.buffers[bufferView.bufferIndex];
+
+                            std::visit(
+                                fastgltf::visitor{
+                                    [&](auto& arg) // default branch if image data is not supported
+                                    {
+                                        LOG_CORE_CRITICAL("not supported default branch (image data = BUfferView) " +
+                                                          glTFImage.name);
+                                    },
+                                    [&](fastgltf::sources::Array& vector) // load from memory
+                                    {
+                                        int width = 0, height = 0, nrChannels = 0;
+                                        using byte = unsigned char;
+                                        byte* buffer = stbi_load_from_memory(vector.bytes.data() + bufferView.byteOffset,
+                                                                             static_cast<int>(bufferView.byteLength), &width,
+                                                                             &height, &nrChannels, 4);
+                                        CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
+
+                                        int minFilter = GetMinFilter(imageIndex);
+                                        int magFilter = GetMagFilter(imageIndex);
+                                        bool imageFormat = GetImageFormat(imageIndex);
+                                        texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
+
+                                        stbi_image_free(buffer);
+                                    }},
+                                bufferFromBufferView.data);
+                        },
+                        [&](auto& arg) // default branch if image data is not supported
+                        { LOG_CORE_CRITICAL("not supported default branch " + glTFImage.name); },
                     },
-                    [&](fastgltf::sources::Array& vector) // load from memory
-                    {
-                        int width = 0, height = 0, nrChannels = 0;
-
-                        using byte = unsigned char;
-                        byte* buffer = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()),
-                                                             &width, &height, &nrChannels, 4 /*int desired_channels*/);
-                        CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
-
-                        int minFilter = GetMinFilter(imageIndex);
-                        int magFilter = GetMagFilter(imageIndex);
-                        bool imageFormat = GetImageFormat(imageIndex);
-                        texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
-
-                        stbi_image_free(buffer);
-                    },
-                    [&](fastgltf::sources::BufferView& view) // load from buffer view
-                    {
-                        auto& bufferView = m_GltfModel.bufferViews[view.bufferViewIndex];
-                        auto& bufferFromBufferView = m_GltfModel.buffers[bufferView.bufferIndex];
-
-                        std::visit(
-                            fastgltf::visitor{
-                                [&](auto& arg) // default branch if image data is not supported
-                                {
-                                    LOG_CORE_CRITICAL("not supported default branch (image data = BUfferView) " +
-                                                      glTFImage.name);
-                                },
-                                [&](fastgltf::sources::Array& vector) // load from memory
-                                {
-                                    int width = 0, height = 0, nrChannels = 0;
-                                    using byte = unsigned char;
-                                    byte* buffer = stbi_load_from_memory(vector.bytes.data() + bufferView.byteOffset,
-                                                                         static_cast<int>(bufferView.byteLength), &width,
-                                                                         &height, &nrChannels, 4);
-                                    CORE_ASSERT(buffer, "stbi failed (image data = Array) " + glTFImage.name);
-
-                                    int minFilter = GetMinFilter(imageIndex);
-                                    int magFilter = GetMagFilter(imageIndex);
-                                    bool imageFormat = GetImageFormat(imageIndex);
-                                    texture->Init(width, height, imageFormat, buffer, minFilter, magFilter);
-
-                                    stbi_image_free(buffer);
-                                }},
-                            bufferFromBufferView.data);
-                    },
-                    [&](auto& arg) // default branch if image data is not supported
-                    { LOG_CORE_CRITICAL("not supported default branch " + glTFImage.name); },
-                },
-                glTFImage.data);
-
-            m_Textures[imageIndex] = texture;
+                    glTFImage.data);
+                LOG_CORE_INFO("loadTexture end, image index: {0}", imageIndex);
+                return texture;
+            };
+            futures[imageIndex] = Engine::m_Engine->m_PoolSecondary.SubmitTask(loadtexture);
+        }
+        for (uint imageIndex = 0; imageIndex < numTextures; ++imageIndex)
+        {
+            m_Textures[imageIndex] = futures[imageIndex].get();
         }
     }
 

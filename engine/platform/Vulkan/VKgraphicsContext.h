@@ -37,7 +37,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_Context(VK_Window* window);
+        VK_Context(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);
         virtual ~VK_Context() override {}
 
         virtual bool Init() override;

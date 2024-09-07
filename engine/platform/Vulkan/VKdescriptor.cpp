@@ -81,6 +81,7 @@ namespace GfxRenderEngine
     }
 
     // *************** Descriptor Pool Builder *********************
+    VK_DescriptorPool::Builder::Builder(VkDevice device) : m_Device{device} {}
 
     VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, uint count)
     {
@@ -102,13 +103,14 @@ namespace GfxRenderEngine
 
     std::unique_ptr<VK_DescriptorPool> VK_DescriptorPool::Builder::Build() const
     {
-        return std::make_unique<VK_DescriptorPool>(m_MaxSets, m_PoolFlags, m_PoolSizes);
+        return std::make_unique<VK_DescriptorPool>(m_Device, m_MaxSets, m_PoolFlags, m_PoolSizes);
     }
 
     // *************** Descriptor Pool *********************
 
-    VK_DescriptorPool::VK_DescriptorPool(uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
+    VK_DescriptorPool::VK_DescriptorPool(VkDevice device, uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
                                          const std::vector<VkDescriptorPoolSize>& poolSizes)
+        : m_Device{device}
     {
         VkDescriptorPoolCreateInfo descriptorPoolInfo{};
         descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -117,7 +119,7 @@ namespace GfxRenderEngine
         descriptorPoolInfo.maxSets = maxSets;
         descriptorPoolInfo.flags = poolFlags;
 
-        auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &descriptorPoolInfo, nullptr, &m_DescriptorPool);
+        auto result = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool);
         if (result != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create descriptor pool!");
@@ -126,8 +128,8 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::~VK_DescriptorPool()
     {
-        vkDeviceWaitIdle(VK_Core::m_Device->Device());
-        vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, nullptr);
+        vkDeviceWaitIdle(m_Device);
+        vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
     }
 
     bool VK_DescriptorPool::AllocateDescriptorSet(const VkDescriptorSetLayout descriptorSetLayout,

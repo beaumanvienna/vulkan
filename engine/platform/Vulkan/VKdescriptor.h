@@ -29,8 +29,6 @@
 
 #include "engine.h"
 
-#include "VKdevice.h"
-
 namespace GfxRenderEngine
 {
     class VK_DescriptorSetLayout
@@ -90,7 +88,7 @@ namespace GfxRenderEngine
         {
 
         public:
-            Builder() {}
+            Builder(VkDevice device);
 
             Builder& AddPoolSize(VkDescriptorType descriptorType, uint count);
             Builder& SetPoolFlags(VkDescriptorPoolCreateFlags flags);
@@ -98,6 +96,7 @@ namespace GfxRenderEngine
             std::unique_ptr<VK_DescriptorPool> Build() const;
 
         private:
+            VkDevice m_Device;
             std::vector<VkDescriptorPoolSize> m_PoolSizes;
 
             uint m_MaxSets = 1000;
@@ -105,7 +104,7 @@ namespace GfxRenderEngine
         };
 
     public:
-        VK_DescriptorPool(uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
+        VK_DescriptorPool(VkDevice device, uint maxSets, VkDescriptorPoolCreateFlags poolFlags,
                           const std::vector<VkDescriptorPoolSize>& poolSizes);
         ~VK_DescriptorPool();
 
@@ -117,6 +116,7 @@ namespace GfxRenderEngine
         void ResetPool();
 
     private:
+        VkDevice m_Device;
         VkDescriptorPool m_DescriptorPool;
 
         friend class VK_DescriptorWriter;

@@ -64,9 +64,6 @@ namespace GfxRenderEngine
 
             LOG_CORE_INFO("{0}  extensions supported", extensionCount);
 
-            // create a device
-            VK_Core::m_Device = std::make_shared<VK_Device>(this);
-
             if (m_Window)
             {
                 m_OK = true;

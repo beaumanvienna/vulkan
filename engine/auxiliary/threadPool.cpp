@@ -30,5 +30,6 @@ namespace GfxRenderEngine
     ThreadPool::ThreadPool(const BS::concurrency_t numThreads) : m_Pool{numThreads} {}
 
     void ThreadPool::Wait() { m_Pool.wait(); }
+    [[nodiscard]] BS::concurrency_t ThreadPool::Size() const { return m_Pool.get_thread_count(); }
 
 } // namespace GfxRenderEngine

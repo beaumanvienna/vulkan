@@ -74,7 +74,8 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_Device::VK_Device(VK_Window* window) : m_Window{window}
+    VK_Device::VK_Device(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
+        : m_Window{window}
     {
         CreateInstance();
         SetupDebugMessenger();
@@ -82,12 +83,12 @@ namespace GfxRenderEngine
         PickPhysicalDevice();
         CreateLogicalDevice();
         CreateCommandPool();
+        m_LoadPool = std::make_shared<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
     }
 
     VK_Device::~VK_Device()
     {
         vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
-        vkDestroyCommandPool(m_Device, m_LoadCommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
 
         if (m_EnableValidationLayers)
@@ -301,13 +302,6 @@ namespace GfxRenderEngine
         if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create graphics command pool!");
-        }
-
-        poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_TransferFamily;
-
-        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_LoadCommandPool) != VK_SUCCESS)
-        {
-            LOG_CORE_CRITICAL("failed to create load command pool!");
         }
     }
 
@@ -713,19 +707,7 @@ namespace GfxRenderEngine
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        // single time commands are transfer commands
-        // however, commands like vkCmdBlitImage require graphics support on transfer queues
-        // --> if the transfer queue is of the same queue family as the graphics queue,
-        // the load command pool can be used, multithreading enabled, "type" be ignored
-        // otherwise the graphics queue has to be used, if requested by "type"
-        if (m_TransferQueueSupportsGraphics)
-        {
-            allocInfo.commandPool = m_LoadCommandPool;
-        }
-        else
-        {
-            allocInfo.commandPool = type == QueueTypes::TRANSFER ? m_LoadCommandPool : m_GraphicsCommandPool;
-        }
+        allocInfo.commandPool = m_LoadPool->GetCommandPool();
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -742,27 +724,19 @@ namespace GfxRenderEngine
 
     void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type)
     {
+        ZoneScopedN("EndSingleTimeCommands");
         vkEndCommandBuffer(commandBuffer);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
+        std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
 
-        // see BeginSingleTimeCommands
-        if ((type == QueueTypes::TRANSFER) || m_TransferQueueSupportsGraphics)
         {
-            ZoneScopedN("EndSingleTimeCommands");
             vkQueueSubmit(TransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(TransferQueue());
-            vkFreeCommandBuffers(m_Device, m_LoadCommandPool, 1, &commandBuffer);
-        }
-        else
-        {
-            ZoneScopedN("EndSingleTimeCommands");
-            vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(GraphicsQueue());
-            vkFreeCommandBuffers(m_Device, m_GraphicsCommandPool, 1, &commandBuffer);
+            vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
         }
     }
 

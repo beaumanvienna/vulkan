@@ -122,7 +122,8 @@ namespace GfxRenderEngine
         static Engine* m_Engine;
         static SettingsManager m_SettingsManager;
         CoreSettings m_CoreSettings{&m_SettingsManager};
-        ThreadPool m_Pool;
+        ThreadPool m_PoolPrimary;
+        ThreadPool m_PoolSecondary;
 
     private:
         static void SignalHandler(int signal);

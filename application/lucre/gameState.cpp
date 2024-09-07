@@ -256,15 +256,8 @@ namespace LucreApp
                     GetScene(state)->Start();
                     SetLoaded(state);
                 };
-                if (Engine::m_Engine->MultiThreadingSupport())
-                {
-                    std::thread loadMainSceneThread(lambda);
-                    loadMainSceneThread.detach();
-                }
-                else
-                {
-                    lambda();
-                }
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
                 break;
             }
             case State::BEACH:
@@ -278,18 +271,10 @@ namespace LucreApp
                     GetScene(state)->Start();
                     SetLoaded(state);
                 };
-                if (Engine::m_Engine->MultiThreadingSupport())
-                {
-                    std::thread loadBeachSceneThread(lambda);
-                    loadBeachSceneThread.detach();
-                }
-                else
-                {
-                    lambda();
-                }
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
                 break;
             }
-
             case State::NIGHT:
             {
                 auto lambda = [this, state]()
@@ -301,15 +286,8 @@ namespace LucreApp
                     GetScene(state)->Start();
                     SetLoaded(state);
                 };
-                if (Engine::m_Engine->MultiThreadingSupport())
-                {
-                    std::thread loadNightSceneThread(lambda);
-                    loadNightSceneThread.detach();
-                }
-                else
-                {
-                    lambda();
-                }
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
                 break;
             }
             case State::DESSERT:
@@ -323,15 +301,8 @@ namespace LucreApp
                     GetScene(state)->Start();
                     SetLoaded(state);
                 };
-                if (Engine::m_Engine->MultiThreadingSupport())
-                {
-                    std::thread loadDessertSceneThread(lambda);
-                    loadDessertSceneThread.detach();
-                }
-                else
-                {
-                    lambda();
-                }
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
                 break;
             }
             case State::TERRAIN:
@@ -346,15 +317,8 @@ namespace LucreApp
                     GetScene(state)->Start();
                     SetLoaded(state);
                 };
-                if (Engine::m_Engine->MultiThreadingSupport())
-                {
-                    ThreadPool& threadPool = Engine::m_Engine->m_Pool;
-                    std::future<void> future = threadPool.SubmitTask(lambda);
-                }
-                else
-                {
-                    lambda();
-                }
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
                 break;
             }
             case State::CUTSCENE:

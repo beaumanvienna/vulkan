@@ -35,6 +35,7 @@
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/builder/ufbxBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
+#include "auxiliary/threadPool.h"
 
 namespace GfxRenderEngine
 {
@@ -62,7 +63,8 @@ namespace GfxRenderEngine
         virtual uint GetContextHeight() const = 0;
         virtual bool MultiThreadingSupport() const = 0;
 
-        static std::shared_ptr<GraphicsContext> Create(void* window);
+        static std::shared_ptr<GraphicsContext> Create(void* window, ThreadPool& threadPoolPrimary,
+                                                       ThreadPool& threadPoolSecondary);
 
     private:
     };

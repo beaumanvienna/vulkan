@@ -21,32 +21,38 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
-#include <mutex>
-#include "BS_thread_pool/BS_thread_pool.hpp"
+#include <unordered_map>
+
+#include "engine.h"
+#include "VKdescriptor.h"
+#include "VKdeviceStructs.h"
+#include "auxiliary/threadPool.h"
 
 namespace GfxRenderEngine
 {
-
-    class ThreadPool
+    class VK_Pool
     {
 
     public:
-        ThreadPool();
-        ThreadPool(const BS::concurrency_t numThreads);
+        VK_Pool(VkDevice& device, QueueFamilyIndices& queueFamilyIndices, ThreadPool& threadPoolPrimary,
+                ThreadPool& threadPoolSecondary);
+        ~VK_Pool();
 
-        void Wait();
-        [[nodiscard]] BS::concurrency_t Size() const;
+        VkCommandPool& GetCommandPool();
+        VK_DescriptorPool& GetDescriptorPool();
 
-        template <typename FunctionType, typename ReturnType = std::invoke_result_t<std::decay_t<FunctionType>>>
-        [[nodiscard]] std::future<ReturnType> SubmitTask(FunctionType&& task)
-        {
-            std::lock_guard<std::mutex> guard(m_Mutex);
-            return m_Pool.submit_task(task);
-        }
-        [[nodiscard]] std::vector<std::thread::id> GetThreadIDs() const { return m_Pool.get_thread_ids(); }
+        // Not copyable or movable
+        VK_Pool(const VK_Pool&) = delete;
+        VK_Pool& operator=(const VK_Pool&) = delete;
+        VK_Pool(VK_Pool&&) = delete;
+        VK_Pool& operator=(VK_Pool&&) = delete;
 
     private:
-        BS::thread_pool m_Pool;
-        std::mutex m_Mutex;
+        VkDevice& m_Device;
+        QueueFamilyIndices& m_QueueFamilyIndices;
+        ThreadPool& m_PoolPrimary;
+        ThreadPool& m_PoolSecondary;
+        std::unordered_map<uint64, VkCommandPool> m_CommandPools;
+        std::unordered_map<uint64, std::unique_ptr<VK_DescriptorPool>> m_DescriptorPools;
     };
 } // namespace GfxRenderEngine

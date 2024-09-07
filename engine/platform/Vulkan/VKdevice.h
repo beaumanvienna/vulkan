@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,38 +22,15 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "VKpool.h"
+#include "VKdeviceStructs.h"
+#include "auxiliary/threadPool.h"
+
 namespace GfxRenderEngine
 {
-    struct SwapChainSupportDetails
-    {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-    enum QueueTypes
-    {
-        GRAPHICS = 0,
-        PRESENT,
-        TRANSFER,
-        NUMBER_OF_QUEUE_TYPES
-    };
-
-    struct QueueFamilyIndices
-    {
-        int m_GraphicsFamily = -1;
-        int m_PresentFamily = -1;
-        int m_TransferFamily = -1;
-        int m_NumberOfQueues = 0;
-        std::vector<int> m_UniqueFamilyIndices;
-        int m_QueueIndices[QueueTypes::NUMBER_OF_QUEUE_TYPES] = {};
-        bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0) && (m_TransferFamily >= 0); }
-    };
-
     class VK_Window;
 
     class VK_Device
@@ -66,7 +43,7 @@ namespace GfxRenderEngine
         const bool m_EnableValidationLayers = true;
 #endif
 
-        VK_Device(VK_Window* window);
+        VK_Device(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);
         ~VK_Device();
 
         // Not copyable or movable
@@ -148,8 +125,8 @@ namespace GfxRenderEngine
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VK_Window* m_Window;
         VkCommandPool m_GraphicsCommandPool;
-        VkCommandPool m_LoadCommandPool;
-
+        std::shared_ptr<VK_Pool> m_LoadPool;
+        std::mutex m_QueueAccessMutex;
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;
 
