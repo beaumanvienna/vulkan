@@ -77,7 +77,7 @@ namespace GfxRenderEngine
                                                  "bin-int/shadowShaderInstanced.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemShadowInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry,
+    void VK_RenderSystemShadowInstanced::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
                                                         DirectionalLightComponent* directionalLight, int renderpass,
                                                         const VkDescriptorSet& shadowDescriptorSet)
     {
@@ -91,8 +91,8 @@ namespace GfxRenderEngine
             m_Pipeline1->Bind(frameInfo.m_CommandBuffer);
         }
 
-        auto meshView =
-            registry.view<MeshComponent, TransformComponent, InstanceTag>(entt::exclude<SkeletalAnimationTag, GrassTag>);
+        auto meshView = registry.Get().view<MeshComponent, TransformComponent, InstanceTag>(
+            entt::exclude<SkeletalAnimationTag, GrassTag>);
         for (auto entity : meshView)
         {
             auto& mesh = meshView.get<MeshComponent>(entity);

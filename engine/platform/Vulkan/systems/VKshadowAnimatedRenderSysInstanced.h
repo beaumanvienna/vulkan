@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         VK_RenderSystemShadowAnimatedInstanced(const VK_RenderSystemShadowAnimatedInstanced&) = delete;
         VK_RenderSystemShadowAnimatedInstanced& operator=(const VK_RenderSystemShadowAnimatedInstanced&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry,
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
                             DirectionalLightComponent* directionalLight, int renderpass,
                             const VkDescriptorSet& shadowDescriptorSet);
 

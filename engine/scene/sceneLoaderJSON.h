@@ -66,13 +66,21 @@ namespace GfxRenderEngine
             Obj::ObjFiles m_ObjFiles;
         };
 
+        struct GltfInfo
+        {
+            std::future<bool> m_LoadFuture;
+            Gltf::GltfFile m_GltfFile;
+            int m_InstanceCount{0};
+            std::vector<TransformComponent> m_InstanceTransforms;
+        };
+
     private:
         void Deserialize(std::string& filepath);
 
-        void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, std::vector<Gltf::GltfFile>& gltfFilesFromScene);
+        void ParseGltfFile(ondemand::object gltfFileJSON, bool fast, SceneLoaderJSON::GltfInfo& gltfInfo);
         void ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx);
 
-        void ParseTransform(ondemand::object transformJSON, entt::entity entity);
+        void ParseTransform(ondemand::object transformJSON, TransformComponent& transform);
         void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,
                             uint instanceIndex);
         void ParseTerrainDescription(ondemand::object terrainDescription,

@@ -161,7 +161,7 @@ namespace GfxRenderEngine
         m_Indices.push_back(3);
     }
 
-    entt::entity Builder::LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry)
+    entt::entity Builder::LoadCubemap(std::vector<std::string> const& faces, Registry& registry)
     {
         entt::entity entity;
         static constexpr uint VERTEX_COUNT = 36;
@@ -234,7 +234,7 @@ namespace GfxRenderEngine
         // create game object
         {
             auto model = Engine::m_Engine->LoadModel(*this);
-            entity = registry.create();
+            entity = registry.Create();
             MeshComponent mesh{"cubemap", model};
             registry.emplace<MeshComponent>(entity, mesh);
             TransformComponent transform{};

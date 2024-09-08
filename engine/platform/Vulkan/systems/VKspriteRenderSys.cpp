@@ -78,7 +78,7 @@ namespace GfxRenderEngine
                                                    "bin-int/spriteRenderer.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemSpriteRenderer::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemSpriteRenderer::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
                                 &frameInfo.m_GlobalDescriptorSet, 0, nullptr);

@@ -91,11 +91,11 @@ namespace GfxRenderEngine
             std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbr.vert.spv", "bin-int/pbr.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemPbr::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemPbr::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
+        auto view = registry.Get().view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
             entt::exclude<SkeletalAnimationTag, GrassTag>);
         for (auto mainInstance : view)
         {

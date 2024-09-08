@@ -40,7 +40,7 @@ namespace GfxRenderEngine
     {
         {
             m_Name = EngineCore::GetFilenameWithoutExtension(filepath);
-            auto entity = m_Registry.create();
+            auto entity = m_Registry.Create();
             // The root node gets a transform so that each and every node
             // has a transform, however, it should never be used
             TransformComponent transform{};
@@ -50,7 +50,7 @@ namespace GfxRenderEngine
         }
         {
             // create lights group
-            auto entity = m_Registry.create();
+            auto entity = m_Registry.Create();
 
             TransformComponent lightGroupTransform{};
             m_Registry.emplace<TransformComponent>(entity, lightGroupTransform);
@@ -66,7 +66,7 @@ namespace GfxRenderEngine
 
     entt::entity Scene::CreatePointLight(const float intensity, const float radius, const glm::vec3& color)
     {
-        entt::entity pointLight = m_Registry.create();
+        entt::entity pointLight = m_Registry.Create();
 
         // transform
         TransformComponent lightTransform{};
@@ -88,7 +88,7 @@ namespace GfxRenderEngine
 
     entt::entity Scene::CreateDirectionalLight(const float intensity, const glm::vec3& color)
     {
-        entt::entity directionlLight = m_Registry.create();
+        entt::entity directionlLight = m_Registry.Create();
 
         DirectionalLightComponent directionlLightComponent{intensity, color};
         m_Registry.emplace<DirectionalLightComponent>(directionlLight, directionlLightComponent);

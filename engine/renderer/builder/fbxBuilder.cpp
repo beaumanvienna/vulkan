@@ -83,7 +83,7 @@ namespace GfxRenderEngine
         for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
         {
             // create group game object(s) for all instances to apply transform from JSON file to
-            auto entity = m_Registry.create();
+            auto entity = m_Registry.Create();
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
             auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
@@ -153,7 +153,7 @@ namespace GfxRenderEngine
             else // one or more children have a mesh, but not this one --> create group node
             {
                 // create game object and transform component
-                auto entity = m_Registry.create();
+                auto entity = m_Registry.Create();
                 {
                     TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
                     if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
@@ -186,7 +186,7 @@ namespace GfxRenderEngine
     {
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
 
-        auto entity = m_Registry.create();
+        auto entity = m_Registry.Create();
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
                          "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;

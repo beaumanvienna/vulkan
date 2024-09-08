@@ -38,7 +38,7 @@ namespace LucreApp
     {
 
     public:
-        CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations);
+        CharacterAnimation(Registry& registry, entt::entity gameObject, SkeletalAnimations& animations);
         ~CharacterAnimation() {}
 
         void Start();
@@ -82,7 +82,7 @@ namespace LucreApp
         float ToDegree(float rotation);
 
     private:
-        entt::registry& m_Registry;
+        Registry& m_Registry;
         std::unique_ptr<GamepadInputController> m_GamepadInputController;
         entt::entity m_GameObject;
         SkeletalAnimations& m_Animations;

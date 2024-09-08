@@ -99,7 +99,7 @@ namespace GfxRenderEngine
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
         uint m_RenderObject;
 
-        entt::registry& m_Registry;
+        Registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
 

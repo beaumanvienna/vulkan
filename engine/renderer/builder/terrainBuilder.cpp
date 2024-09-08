@@ -34,6 +34,10 @@ namespace GfxRenderEngine
 {
     void TerrainBuilder::ColorTerrain(Terrain::TerrainSpec const& terrainSpec, Image const& heightMap)
     {
+        if (!EngineCore::FileExists(terrainSpec.m_FilepathColorMap))
+        {
+            return;
+        }
         Image colorMap{terrainSpec.m_FilepathColorMap};
 
         if (!colorMap.IsValid())
@@ -224,7 +228,7 @@ namespace GfxRenderEngine
             for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
             {
                 // create game object
-                entt::entity entity = registry.create();
+                entt::entity entity = registry.Create();
                 std::shared_ptr<Model> model;
                 TransformComponent transform{};
                 instanceTag.m_Instances.push_back(entity);

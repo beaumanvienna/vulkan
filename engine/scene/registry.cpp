@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -20,41 +20,17 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#pragma once
-
-#include <memory>
-#include <vector>
-#include <vulkan/vulkan.h>
-
-#include "engine.h"
-#include "renderer/camera.h"
-#include "scene/scene.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
+#include "scene/registry.h"
 
 namespace GfxRenderEngine
 {
-    class VK_RenderSystemCubemap
+    Registry::Registry() {}
+
+    Registry::~Registry() {}
+
+    [[nodiscard]] entt::entity Registry::Create()
     {
-
-    public:
-        VK_RenderSystemCubemap(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemCubemap();
-
-        VK_RenderSystemCubemap(const VK_RenderSystemCubemap&) = delete;
-        VK_RenderSystemCubemap& operator=(const VK_RenderSystemCubemap&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
-
-    private:
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-    };
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        return m_Registry.create();
+    }
 } // namespace GfxRenderEngine

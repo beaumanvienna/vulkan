@@ -71,7 +71,12 @@ namespace GfxRenderEngine
 
             fastgltf::GltfDataBuffer dataBuffer;
             fastgltf::Parser parser(extensions);
-
+            if (!EngineCore::FileExists(m_Filepath))
+            {
+                LOG_CORE_CRITICAL("FastgltfBuilder::Load NOT FOUND {0}", m_Filepath);
+                std::cout << m_Filepath << "\n";
+                exit(1);
+            }
             // load raw data of the file (can be gltf or glb)
             dataBuffer.loadFromFile(path);
 
@@ -128,7 +133,7 @@ namespace GfxRenderEngine
         for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
         {
             // create group game object(s) for all instances to apply transform from JSON file to
-            auto entity = m_Registry.create();
+            auto entity = m_Registry.Create();
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
             auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
@@ -213,7 +218,7 @@ namespace GfxRenderEngine
             else // one or more children have a mesh, but not this one --> create group node
             {
                 // create game object and transform component
-                auto entity = m_Registry.create();
+                auto entity = m_Registry.Create();
 
                 // create scene graph node and add to parent
                 auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
@@ -245,7 +250,7 @@ namespace GfxRenderEngine
         int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
         int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
 
-        auto entity = m_Registry.create();
+        auto entity = m_Registry.Create();
         auto baseName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + baseName;
         auto longName = m_Filepath + baseName;

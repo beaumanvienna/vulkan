@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,68 +12,54 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "scene/sceneGraph.h"
 
 namespace GfxRenderEngine
 {
-    TreeNode::TreeNode(entt::entity gameObject,
-                       const std::string& name,
-                       const std::string& longName)
-        : m_GameObject(gameObject),
-          m_LongName(longName),
-          m_Name(name)
-    {}
-
-    TreeNode::~TreeNode()
-    {}
-
-    entt::entity TreeNode::GetGameObject() const
+    TreeNode::TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName)
+        : m_GameObject(gameObject), m_LongName(longName), m_Name(name)
     {
-        return m_GameObject;
     }
 
-    const std::string& TreeNode::GetName() const
+    TreeNode::TreeNode(GfxRenderEngine::TreeNode const& other)
+        : m_GameObject(other.m_GameObject), m_LongName(other.m_LongName), m_Name(other.m_Name), m_Children(other.m_Children)
     {
-        return m_Name;
     }
 
-    const std::string& TreeNode::GetLongName() const
-    {
-        return m_LongName;
-    }
+    TreeNode::~TreeNode() {}
 
-    uint TreeNode::Children() const
-    {
-        return m_Children.size();
-    }
+    entt::entity TreeNode::GetGameObject() const { return m_GameObject; }
 
-    uint TreeNode::GetChild(uint const childIndex)
-    {
-        return m_Children[childIndex];
-    }
+    const std::string& TreeNode::GetName() const { return m_Name; }
+
+    const std::string& TreeNode::GetLongName() const { return m_LongName; }
+
+    uint TreeNode::Children() const { return m_Children.size(); }
+
+    uint TreeNode::GetChild(uint const childIndex) { return m_Children[childIndex]; }
 
     uint TreeNode::AddChild(uint const nodeIndex)
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         uint childIndex = m_Children.size();
         m_Children.push_back(nodeIndex);
         return childIndex;
     }
 
-    void TreeNode::SetGameObject(entt::entity gameObject)
-    {
-        m_GameObject = gameObject;
-    }
+    void TreeNode::SetGameObject(entt::entity gameObject) { m_GameObject = gameObject; }
 
-    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName, Dictionary& dictionary)
+    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName,
+                                Dictionary& dictionary)
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         uint nodeIndex = m_Nodes.size();
         m_Nodes.push_back({gameObject, name, longName});
         dictionary.InsertShort(name, gameObject);
@@ -86,17 +72,15 @@ namespace GfxRenderEngine
     {
         std::string indentStr(indent, ' ');
         TreeNode& treeNode = m_Nodes[nodeIndex];
-        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(treeNode.GetGameObject()), treeNode.GetName());
+        LOG_CORE_INFO("{0}game object `{1}`, name: `{2}`", indentStr, static_cast<uint>(treeNode.GetGameObject()),
+                      treeNode.GetName());
         for (uint childIndex = 0; childIndex < treeNode.Children(); ++childIndex)
         {
             TraverseLog(treeNode.GetChild(childIndex), indent + 4);
         }
     }
 
-    TreeNode& SceneGraph::GetNode(uint const nodeIndex)
-    {
-        return m_Nodes[nodeIndex];
-    }
+    TreeNode& SceneGraph::GetNode(uint const nodeIndex) { return m_Nodes[nodeIndex]; }
 
     TreeNode& SceneGraph::GetNodeByGameObject(entt::entity const gameObject)
     {
@@ -106,6 +90,7 @@ namespace GfxRenderEngine
 
     TreeNode& SceneGraph::GetRoot()
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         CORE_ASSERT(m_Nodes.size(), "SceneGraph::GetRoot(): scene graph is empty");
         return m_Nodes[SceneGraph::ROOT_NODE];
     }
@@ -113,11 +98,11 @@ namespace GfxRenderEngine
     uint SceneGraph::GetTreeNodeIndex(entt::entity const gameObject)
     {
         uint returnValue = NODE_INVALID;
-        
+
         if (m_MapFromGameObjectToNode.find(gameObject) != m_MapFromGameObjectToNode.end())
         {
             returnValue = m_MapFromGameObjectToNode[gameObject];
         }
         return returnValue;
     }
-}
+} // namespace GfxRenderEngine

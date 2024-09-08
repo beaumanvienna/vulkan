@@ -63,7 +63,7 @@ namespace LucreApp
             MeshComponent mesh{"walk animation", model};
             mesh.m_Enabled = false;
 
-            m_Guybrush[i] = m_Registry.create();
+            m_Guybrush[i] = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
@@ -83,7 +83,7 @@ namespace LucreApp
             MeshComponent mesh{"logo", model};
             mesh.m_Enabled = true;
 
-            m_Logo = m_Registry.create();
+            m_Logo = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_Logo, mesh);
 
             TransformComponent transform{};

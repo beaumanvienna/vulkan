@@ -64,7 +64,7 @@ namespace LucreApp
                 MeshComponent mesh{"horn animation", model};
                 mesh.m_Enabled = false;
 
-                m_Guybrush[i] = m_Registry.create();
+                m_Guybrush[i] = m_Registry.Create();
                 m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
                 TransformComponent transform{};

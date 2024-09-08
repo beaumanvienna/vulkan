@@ -151,7 +151,7 @@ namespace GfxRenderEngine
             else // one or more children have a mesh, but not this one --> create group node
             {
                 // create game object and transform component
-                auto entity = m_Registry.create();
+                auto entity = m_Registry.Create();
                 {
                     glm::vec3 scale;
                     glm::quat rotation;
@@ -198,7 +198,7 @@ namespace GfxRenderEngine
     {
         std::string nodeName(fbxNodePtr->name.data);
 
-        auto entity = m_Registry.create();
+        auto entity = m_Registry.Create();
         auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
                          "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
         auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;

@@ -61,7 +61,7 @@ namespace LucreApp
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
             m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
-            m_Camera = m_Registry.create();
+            m_Camera = m_Registry.Create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
             uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
@@ -179,7 +179,7 @@ namespace LucreApp
                 if (m_Lightbulb0 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb0 not found");
-                    m_Lightbulb0 = m_Registry.create();
+                    m_Lightbulb0 = m_Registry.Create();
                     TransformComponent transform{};
 
                     transform.SetScale({0.01, 0.01, 0.01});
@@ -199,7 +199,7 @@ namespace LucreApp
                 if (m_Lightbulb1 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb1 not found");
-                    m_Lightbulb1 = m_Registry.create();
+                    m_Lightbulb1 = m_Registry.Create();
                     TransformComponent transform{};
 
                     transform.SetScale({0.00999934, 0.00999997, 0.00999993});

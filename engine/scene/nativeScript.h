@@ -47,7 +47,7 @@ namespace GfxRenderEngine
 
         Scene* m_Scene;
         entt::entity m_GameObject;
-        entt::registry& m_Registry;
+        Registry& m_Registry;
         TransformComponent& m_Transform;
         const glm::vec3& m_Translation;
 

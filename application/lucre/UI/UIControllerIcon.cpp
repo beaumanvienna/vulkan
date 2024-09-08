@@ -231,7 +231,7 @@ namespace LucreApp
         MeshComponent mesh{"controller icon", model};
 
         {
-            m_ID1 = m_Registry.create();
+            m_ID1 = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_ID1, mesh);
 
             TransformComponent transform{};
@@ -241,7 +241,7 @@ namespace LucreApp
             m_Registry.emplace<SpriteRendererComponent2D>(m_ID1, spriteRendererComponent2D);
         }
         {
-            m_ID2 = m_Registry.create();
+            m_ID2 = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_ID2, mesh);
 
             TransformComponent transform{};

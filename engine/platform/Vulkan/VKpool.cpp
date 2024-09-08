@@ -49,7 +49,7 @@ namespace GfxRenderEngine
 
         auto createDescriptorPool = [this, device]()
         {
-            static constexpr uint POOL_SIZE = 500;
+            static constexpr uint POOL_SIZE = 5000;
             std::unique_ptr<VK_DescriptorPool> descriptorPool =
                 VK_DescriptorPool::Builder(device)
                     .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
@@ -114,9 +114,9 @@ namespace GfxRenderEngine
         CORE_ASSERT(pool != nullptr, "no command pool found!");
         if (!pool)
         {
+            std::cout << "terminating because of thread id:" << threadID << "\n";
             exit(1);
         }
-
         return pool;
     }
 
@@ -127,9 +127,38 @@ namespace GfxRenderEngine
         CORE_ASSERT(m_DescriptorPools[hash] != nullptr, "no command pool found!");
         if (!m_DescriptorPools[hash])
         {
+            std::cout << "thread id:" << threadID << "\n";
             exit(1);
         }
         return *m_DescriptorPools[hash];
     }
 
+    void VK_Pool::ResetCommandPool()
+    {
+        VkCommandPoolResetFlags flags{VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT};
+        vkResetCommandPool(m_Device, GetCommandPool(), flags);
+    }
+
+    void VK_Pool::ResetCommandPools(ThreadPool& threadpool)
+    {
+        VkCommandPoolResetFlags flags{VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT};
+        for (auto& threadID : threadpool.GetThreadIDs())
+        {
+            std::cout << "VK_Pool::ResetAllCommandPools: " << "):" << threadID << "\n";
+            uint64 hash = std::hash<std::thread::id>()(threadID);
+            vkResetCommandPool(m_Device, m_CommandPools[hash], flags);
+        }
+    }
+
+    void VK_Pool::ResetDescriptorPool() { GetDescriptorPool().ResetPool(); }
+
+    void VK_Pool::ResetDescriptorPools(ThreadPool& threadpool)
+    {
+        for (auto& threadID : threadpool.GetThreadIDs())
+        {
+            std::cout << "VK_Pool::ResetAllCommandPools: " << "):" << threadID << "\n";
+            uint64 hash = std::hash<std::thread::id>()(threadID);
+            m_DescriptorPools[hash]->ResetPool();
+        }
+    }
 } // namespace GfxRenderEngine

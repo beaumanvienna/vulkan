@@ -86,15 +86,15 @@ namespace GfxRenderEngine
 
         virtual bool Init() override;
         virtual void BeginFrame(Camera* camera) override;
-        virtual void Renderpass3D(entt::registry& registry) override;
-        virtual void SubmitShadows(entt::registry& registry,
+        virtual void Renderpass3D(Registry& registry) override;
+        virtual void SubmitShadows(Registry& registry,
                                    const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
         virtual void Submit(Scene& scene) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
         virtual void PostProcessingRenderpass() override;
-        virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem) override;
-        virtual void Submit2D(Camera* camera, entt::registry& registry) override;
+        virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem) override;
+        virtual void Submit2D(Camera* camera, Registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
         virtual uint GetFrameCounter() override { return m_FrameCounter; }
@@ -108,7 +108,7 @@ namespace GfxRenderEngine
                           const float textureID = 1.0f) override;
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
 
-        virtual void UpdateAnimations(entt::registry& registry, const Timestep& timestep) override;
+        virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 

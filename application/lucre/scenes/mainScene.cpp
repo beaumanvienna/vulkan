@@ -61,7 +61,7 @@ namespace LucreApp
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
             m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
-            m_Camera = m_Registry.create();
+            m_Camera = m_Registry.Create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
             uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);

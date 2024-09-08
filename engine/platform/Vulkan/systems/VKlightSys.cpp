@@ -88,7 +88,7 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
-    void VK_LightSystem::Render(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_LightSystem::Render(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
                                 &frameInfo.m_GlobalDescriptorSet, 0, nullptr);
@@ -116,7 +116,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_LightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, entt::registry& registry)
+    void VK_LightSystem::Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, Registry& registry)
     {
         PROFILE_SCOPE("VK_LightSystem::Update");
         {

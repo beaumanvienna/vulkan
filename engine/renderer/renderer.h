@@ -42,18 +42,18 @@ namespace GfxRenderEngine
 
         virtual bool Init() =0;
 
-        virtual void SubmitShadows(entt::registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;
+        virtual void SubmitShadows(Registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;
         virtual void Submit(Scene& scene) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
         virtual void PostProcessingRenderpass() = 0;
-        virtual void TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
-        virtual void Submit2D(Camera* camera, entt::registry& registry) = 0;
+        virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
+        virtual void Submit2D(Camera* camera, Registry& registry) = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
         virtual void BeginFrame(Camera* camera) = 0;
-        virtual void Renderpass3D(entt::registry& registry) = 0;
+        virtual void Renderpass3D(Registry& registry) = 0;
         virtual void EndScene() = 0;
 
         virtual void DrawWithTransform(const Sprite& sprite, const glm::mat4& transform) = 0;
@@ -63,7 +63,7 @@ namespace GfxRenderEngine
         virtual float GetAmbientLightIntensity() = 0;
 
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) = 0;
-        virtual void UpdateAnimations(entt::registry& registry, const Timestep& timestep) = 0;
+        virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) = 0;
 
     };
 }

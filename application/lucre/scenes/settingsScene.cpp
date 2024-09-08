@@ -56,7 +56,7 @@ namespace LucreApp
                 m_BarrelTranslationSpeed[i] = 250.0f + (50.0f * EngineCore::RandomPlusMinusOne());
                 m_BarrelRotationSpeed[i] = 2.0f + (0.1f * EngineCore::RandomPlusMinusOne());
 
-                m_Barrel[i] = m_Registry.create();
+                m_Barrel[i] = m_Registry.Create();
                 m_Registry.emplace<MeshComponent>(m_Barrel[i], mesh);
 
                 TransformComponent transform = TransformComponent(barrelSprite.GetMat4());
@@ -77,7 +77,7 @@ namespace LucreApp
             MeshComponent mesh{"background", model};
             mesh.m_Enabled = true;
 
-            m_BackGround = m_Registry.create();
+            m_BackGround = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_BackGround, mesh);
 
             TransformComponent transform = TransformComponent(backGroundSprite.GetMat4());

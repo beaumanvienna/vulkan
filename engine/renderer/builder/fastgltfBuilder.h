@@ -30,6 +30,7 @@
 
 #include "scene/gltf.h"
 #include "scene/material.h"
+#include "scene/registry.h"
 #include "renderer/resourceDescriptor.h"
 
 namespace GfxRenderEngine
@@ -46,10 +47,10 @@ namespace GfxRenderEngine
     class Scene;
     class SceneGraph;
     class SkeletalAnimations;
-    class Submesh;
+    struct Submesh;
     class Texture;
     class TransformComponent;
-    class Vertex;
+    struct Vertex;
 
     class FastgltfBuilder
     {
@@ -131,7 +132,7 @@ namespace GfxRenderEngine
         Resources::ResourceBuffers m_ResourceBuffersPre;
         uint m_RenderObject;
 
-        entt::registry& m_Registry;
+        Registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
 

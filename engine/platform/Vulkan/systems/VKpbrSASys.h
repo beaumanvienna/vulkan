@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         VK_RenderSystemPbrSA(const VK_RenderSystemPbrSA&) = delete;
         VK_RenderSystemPbrSA& operator=(const VK_RenderSystemPbrSA&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);

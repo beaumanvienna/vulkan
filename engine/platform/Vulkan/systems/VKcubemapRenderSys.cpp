@@ -79,7 +79,7 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
-    void VK_RenderSystemCubemap::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemCubemap::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 

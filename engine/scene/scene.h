@@ -28,6 +28,7 @@
 #include "engine.h"
 #include "entt.hpp"
 #include "events/event.h"
+#include "scene/registry.h"
 #include "scene/sceneGraph.h"
 #include "scene/dictionary.h"
 #include "auxiliary/timestep.h"
@@ -65,7 +66,7 @@ namespace GfxRenderEngine
 
         bool IsFinished() const { return !m_IsRunning; }
         void SetRunning() { m_IsRunning = true; }
-        entt::registry& GetRegistry() { return m_Registry; };
+        Registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
         SceneGraph& GetSceneGraph() { return m_SceneGraph; }
         TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
@@ -76,7 +77,7 @@ namespace GfxRenderEngine
         std::string m_Name;
         std::string m_Filepath;
         std::string m_AlternativeFilepath;
-        entt::registry m_Registry;
+        Registry m_Registry;
         Dictionary m_Dictionary;
         SceneGraph m_SceneGraph;
         bool m_IsRunning;

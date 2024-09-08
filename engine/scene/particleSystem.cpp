@@ -43,7 +43,7 @@ namespace GfxRenderEngine
             MeshComponent mesh{"particle animation", model};
             mesh.m_Enabled = false;
 
-            m_AnimationSprites[i] = m_Registry.create();
+            m_AnimationSprites[i] = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_AnimationSprites[i], mesh);
         }
     }
@@ -77,7 +77,7 @@ namespace GfxRenderEngine
         m_PoolIndex = (m_PoolIndex + 1) % m_ParticlePool.size();
 
         Builder builder{};
-        particle.m_Entity = m_Registry.create();
+        particle.m_Entity = m_Registry.Create();
 
         builder.LoadParticle(spec.m_StartColor);
         auto model = Engine::m_Engine->LoadModel(builder);

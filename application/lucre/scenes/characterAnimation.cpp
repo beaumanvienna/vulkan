@@ -27,7 +27,7 @@
 namespace LucreApp
 {
 
-    CharacterAnimation::CharacterAnimation(entt::registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
+    CharacterAnimation::CharacterAnimation(Registry& registry, entt::entity gameObject, SkeletalAnimations& animations)
         : m_Registry{registry}, m_GameObject{gameObject}, m_Animations{animations}, m_DirToTheRight{false},
           m_Transform{glm::mat4(1.0f)}, m_PreviousPositionX{0.0f}, m_MotionState{MotionState::IDLE},
           m_FramesPerRotation{FRAMES_PER_ROTATION}, m_FramesToRotate{0}, m_Speed{0.0f}, m_WaitStartWalk{0.0f},

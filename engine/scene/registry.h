@@ -22,45 +22,50 @@
 
 #pragma once
 
-#include <map>
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
+#include "entt.hpp"
 
 #include "engine.h"
-#include "renderer/camera.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-    class VK_LightSystem
+
+    class Registry
     {
 
     public:
-        VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass,
-                       VK_DescriptorSetLayout& globalDescriptorSetLayout);
-        ~VK_LightSystem();
+        Registry();
+        ~Registry();
+        entt::registry& Get() { return m_Registry; }
 
-        VK_LightSystem(const VK_LightSystem&) = delete;
-        VK_LightSystem& operator=(const VK_LightSystem&) = delete;
+        [[nodiscard]] entt::entity Create();
 
-        void Update(const VK_FrameInfo& frameInfo, GlobalUniformBuffer& ubo, Registry& registry);
-        void Render(const VK_FrameInfo& frameInfo, Registry& registry);
+        template <typename Component, typename... Args> decltype(auto) emplace(const entt::entity entity, Args&&... args)
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.emplace<Component>(entity, std::forward<Args>(args)...);
+        }
+
+        template <typename Component> [[nodiscard]] decltype(auto) get([[maybe_unused]] const entt::entity entity)
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.get<Component>(entity);
+        }
+
+        template <typename Component, typename... Other, typename... Exclude>
+        [[nodiscard]] auto view(entt::exclude_t<Exclude...> = {})
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.view<Component, Other...>();
+        }
+
+        template <typename... Component> [[nodiscard]] bool all_of(const entt::entity entity)
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.all_of<Component...>(entity);
+        }
 
     private:
-        void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
-        void CreatePipeline(VkRenderPass renderPass);
-
-    private:
-        std::shared_ptr<VK_Device> m_Device;
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-
-        std::map<float, entt::entity> m_SortedLight;
+        std::mutex m_Mutex;
+        entt::registry m_Registry;
     };
 } // namespace GfxRenderEngine

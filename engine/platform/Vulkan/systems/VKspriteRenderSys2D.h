@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         VK_RenderSystemSpriteRenderer2D(const VK_RenderSystemSpriteRenderer2D&) = delete;
         VK_RenderSystemSpriteRenderer2D& operator=(const VK_RenderSystemSpriteRenderer2D&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry, Camera* camera);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry, Camera* camera);
 
     private:
         void CreatePipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);

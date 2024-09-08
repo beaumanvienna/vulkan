@@ -41,6 +41,12 @@ namespace GfxRenderEngine
         VkCommandPool& GetCommandPool();
         VK_DescriptorPool& GetDescriptorPool();
 
+        void ResetCommandPool();
+        void ResetCommandPools(ThreadPool& threadpool);
+
+        void ResetDescriptorPool();
+        void ResetDescriptorPools(ThreadPool& threadpool);
+
         // Not copyable or movable
         VK_Pool(const VK_Pool&) = delete;
         VK_Pool& operator=(const VK_Pool&) = delete;
@@ -52,7 +58,10 @@ namespace GfxRenderEngine
         QueueFamilyIndices& m_QueueFamilyIndices;
         ThreadPool& m_PoolPrimary;
         ThreadPool& m_PoolSecondary;
+
+        // pool of command pools
         std::unordered_map<uint64, VkCommandPool> m_CommandPools;
+        // pool of descriptor pools
         std::unordered_map<uint64, std::unique_ptr<VK_DescriptorPool>> m_DescriptorPools;
     };
 } // namespace GfxRenderEngine

@@ -95,7 +95,7 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
-    void VK_RenderSystemGrass::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry)
+    void VK_RenderSystemGrass::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 

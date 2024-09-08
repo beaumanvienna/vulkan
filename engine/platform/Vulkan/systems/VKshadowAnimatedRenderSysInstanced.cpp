@@ -81,7 +81,7 @@ namespace GfxRenderEngine
                                                  "bin-int/shadowShaderAnimatedInstanced.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemShadowAnimatedInstanced::RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry,
+    void VK_RenderSystemShadowAnimatedInstanced::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
                                                                 DirectionalLightComponent* directionalLight, int renderpass,
                                                                 const VkDescriptorSet& shadowDescriptorSet)
     {

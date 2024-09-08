@@ -611,7 +611,7 @@ namespace GfxRenderEngine
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
 
-    void VK_Renderer::SubmitShadows(entt::registry& registry,
+    void VK_Renderer::SubmitShadows(Registry& registry,
                                     const std::vector<DirectionalLightComponent*>& directionalLights)
     {
         // this function supports one directional light
@@ -785,7 +785,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Renderpass3D(entt::registry& registry)
+    void VK_Renderer::Renderpass3D(Registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
@@ -844,7 +844,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::TransparencyPass(entt::registry& registry, ParticleSystem* particleSystem)
+    void VK_Renderer::TransparencyPass(Registry& registry, ParticleSystem* particleSystem)
     {
         if (m_CurrentCommandBuffer)
         {
@@ -889,7 +889,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::Submit2D(Camera* camera, entt::registry& registry)
+    void VK_Renderer::Submit2D(Camera* camera, Registry& registry)
     {
         if (m_CurrentCommandBuffer)
         {
@@ -917,7 +917,7 @@ namespace GfxRenderEngine
         return m_CurrentFrameIndex;
     }
 
-    void VK_Renderer::UpdateAnimations(entt::registry& registry, const Timestep& timestep)
+    void VK_Renderer::UpdateAnimations(Registry& registry, const Timestep& timestep)
     {
         auto view = registry.view<MeshComponent, TransformComponent, SkeletalAnimationTag>();
         for (auto entity : view)

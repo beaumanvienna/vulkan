@@ -88,7 +88,7 @@ namespace GfxRenderEngine
         };
 
         std::vector<Particle> m_ParticlePool;
-        entt::registry m_Registry;
+        Registry m_Registry;
 
     private:
 

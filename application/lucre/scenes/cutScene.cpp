@@ -62,7 +62,7 @@ namespace LucreApp
             MeshComponent mesh{"walk animation", model};
             mesh.m_Enabled = false;
 
-            m_Guybrush[i] = m_Registry.create();
+            m_Guybrush[i] = m_Registry.Create();
             m_Registry.emplace<MeshComponent>(m_Guybrush[i], mesh);
 
             TransformComponent transform{};
@@ -71,7 +71,7 @@ namespace LucreApp
 
         // beach
         {
-            m_Beach = m_Registry.create();
+            m_Beach = m_Registry.Create();
 
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(m_Beach, transform);
@@ -81,7 +81,7 @@ namespace LucreApp
         {
             for (uint i = 0; i < 2; i++)
             {
-                m_Clouds[i] = m_Registry.create();
+                m_Clouds[i] = m_Registry.Create();
 
                 TransformComponent transform{};
                 m_Registry.emplace<TransformComponent>(m_Clouds[i], transform);

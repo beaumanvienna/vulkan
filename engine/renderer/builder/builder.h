@@ -22,14 +22,16 @@
 
 #pragma once
 
+#include "scene/registry.h"
+
 namespace GfxRenderEngine
 {
 
     class Cubemap;
     class Model;
     class Scene;
-    class Submesh;
-    class Vertex;
+    struct Submesh;
+    struct Vertex;
 
     class Builder
     {
@@ -40,7 +42,7 @@ namespace GfxRenderEngine
         void LoadParticle(glm::vec4 const& color);
         void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
                         glm::vec4 const& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(std::vector<std::string> const& faces, entt::registry& registry);
+        entt::entity LoadCubemap(std::vector<std::string> const& faces, Registry& registry);
 
     private:
         void CalculateTangents();

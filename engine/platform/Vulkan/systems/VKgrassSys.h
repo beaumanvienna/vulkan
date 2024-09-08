@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         VK_RenderSystemGrass(const VK_RenderSystemGrass&) = delete;
         VK_RenderSystemGrass& operator=(const VK_RenderSystemGrass&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, entt::registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);

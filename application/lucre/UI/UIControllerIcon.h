@@ -47,7 +47,7 @@ namespace LucreApp
         void Init();
 
     public:
-        entt::registry m_Registry;
+        Registry m_Registry;
 
     private:
         void LoadModels();
