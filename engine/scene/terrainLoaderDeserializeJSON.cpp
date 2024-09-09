@@ -29,7 +29,7 @@ namespace GfxRenderEngine
 
     TerrainLoaderJSON::TerrainLoaderJSON(Scene& scene) : m_Scene(scene) {}
 
-    bool TerrainLoaderJSON::Deserialize(std::string& filepath, int instanceCount)
+    bool TerrainLoaderJSON::Deserialize(std::string filepath, int instanceCount)
     {
         if (!EngineCore::FileExists(filepath))
         {

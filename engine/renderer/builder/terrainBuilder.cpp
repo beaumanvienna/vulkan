@@ -28,7 +28,6 @@
 #include "renderer/builder/terrainBuilder.h"
 #include "auxiliary/file.h"
 #include "scene/scene.h"
-#include "auxiliary/debug.h"
 
 namespace GfxRenderEngine
 {

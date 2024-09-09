@@ -87,9 +87,13 @@ namespace GfxRenderEngine
                     }
                 }
 
+                m_TerrainInfos.resize(terrainDescriptions.count_elements());
+                uint terrainCounter = 0;
                 for (auto terrainDescription : terrainDescriptions)
                 {
-                    ParseTerrainDescription(terrainDescription, m_SceneDescriptionFile.m_TerrainDescriptions);
+                    ParseTerrainDescription(terrainDescription, m_SceneDescriptionFile.m_TerrainDescriptions,
+                                            m_TerrainInfos[terrainCounter]);
+                    ++terrainCounter;
                 }
             }
 
@@ -280,6 +284,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("unrecognized scene object '" + std::string(sceneObjectKey) + "'");
             }
         }
+        FinalizeTerrainDescriptions();
     }
 
     void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast, SceneLoaderJSON::GltfInfo& gltfInfo)
@@ -622,7 +627,8 @@ namespace GfxRenderEngine
     }
 
     void SceneLoaderJSON::ParseTerrainDescription(ondemand::object terrainDescription,
-                                                  std::vector<Terrain::TerrainDescription>& terrainDescriptions)
+                                                  std::vector<Terrain::TerrainDescription>& terrainDescriptions,
+                                                  TerrainInfo& terrainInfo)
     {
         std::string filename;
 
@@ -656,32 +662,21 @@ namespace GfxRenderEngine
                     return;
                 }
 
-                TerrainLoaderJSON terrainLoaderJSON(m_Scene);
-                bool loadSuccessful = terrainLoaderJSON.Deserialize(filename, instanceCount);
-
-                if (!loadSuccessful)
+                auto loadTerrain = [this, filename, instanceCount]()
                 {
-                    LOG_CORE_CRITICAL("terrain description did not load properly: {0}", filename);
-                    return;
-                }
+                    TerrainLoaderJSON terrainLoaderJSON(m_Scene);
+                    return terrainLoaderJSON.Deserialize(filename, instanceCount);
+                };
 
-                Terrain::TerrainDescription terrainDescriptionScene(filename);
-                terrainDescriptions.push_back(terrainDescriptionScene);
-
-                std::vector<Terrain::Instance>& terrainInstances = terrainDescriptions.back().m_Instances;
-                terrainInstances.resize(instanceCount);
+                terrainInfo.m_LoadFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(loadTerrain);
+                terrainInfo.m_Filename = filename;
+                terrainInfo.m_InstanceCount = instanceCount;
+                terrainInfo.m_InstanceTransforms.resize(instanceCount);
 
                 {
-                    auto name = EngineCore::GetFilenameWithoutPath(filename);
-                    name = EngineCore::GetFilenameWithoutExtension(name);
                     uint instanceIndex = 0;
                     for (auto instance : instances)
                     {
-                        std::string entityName = name + std::string("::" + std::to_string(instanceIndex));
-                        entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
-                        CORE_ASSERT(entity != entt::null, "couldn't find entity");
-                        Terrain::Instance& terrainInstance = terrainInstances[instanceIndex];
-                        terrainInstance.m_Entity = entity;
                         ondemand::object instanceObjects = instance.value();
                         for (auto instanceObject : instanceObjects)
                         {
@@ -691,7 +686,7 @@ namespace GfxRenderEngine
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object),
                                             "type must be object");
-                                TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                                TransformComponent& transform = terrainInfo.m_InstanceTransforms[instanceIndex];
                                 ParseTransform(instanceObject.value(), transform);
                             }
                             else
@@ -713,5 +708,41 @@ namespace GfxRenderEngine
     std::vector<Terrain::TerrainDescription>& SceneLoaderJSON::GetTerrainDescriptions()
     {
         return m_SceneDescriptionFile.m_TerrainDescriptions;
+    }
+
+    void SceneLoaderJSON::FinalizeTerrainDescriptions()
+    {
+        for (auto& terrainInfo : m_TerrainInfos)
+        {
+            if (!terrainInfo.m_LoadFuture.get())
+            {
+                continue;
+            }
+            Terrain::TerrainDescription terrainDescriptionScene(terrainInfo.m_Filename);
+            m_SceneDescriptionFile.m_TerrainDescriptions.push_back(terrainDescriptionScene);
+
+            std::vector<Terrain::Instance>& terrainInstances =
+                m_SceneDescriptionFile.m_TerrainDescriptions.back().m_Instances;
+            terrainInstances.resize(terrainInfo.m_InstanceCount);
+
+            {
+                auto name = EngineCore::GetFilenameWithoutPath(terrainInfo.m_Filename);
+                name = EngineCore::GetFilenameWithoutExtension(name);
+                uint instanceIndex = 0;
+                for (auto& terrainInstance : terrainInstances)
+                {
+                    std::string entityName = name + std::string("::" + std::to_string(instanceIndex));
+                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
+                    CORE_ASSERT(entity != entt::null, "couldn't find entity");
+                    terrainInstance.m_Entity = entity;
+                    TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                    transform.SetScale(terrainInfo.m_InstanceTransforms[instanceIndex].GetScale());
+                    transform.SetRotation(terrainInfo.m_InstanceTransforms[instanceIndex].GetRotation());
+                    transform.SetTranslation(terrainInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+
+                    ++instanceIndex;
+                }
+            }
+        }
     }
 } // namespace GfxRenderEngine

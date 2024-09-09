@@ -74,6 +74,14 @@ namespace GfxRenderEngine
             std::vector<TransformComponent> m_InstanceTransforms;
         };
 
+        struct TerrainInfo
+        {
+            std::future<bool> m_LoadFuture;
+            std::string m_Filename;
+            int m_InstanceCount{0};
+            std::vector<TransformComponent> m_InstanceTransforms;
+        };
+
     private:
         void Deserialize(std::string& filepath);
 
@@ -84,7 +92,9 @@ namespace GfxRenderEngine
         void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,
                             uint instanceIndex);
         void ParseTerrainDescription(ondemand::object terrainDescription,
-                                     std::vector<Terrain::TerrainDescription>& terrainDescriptions);
+                                     std::vector<Terrain::TerrainDescription>& terrainDescriptions,
+                                     TerrainInfo& terrainInfo);
+        void FinalizeTerrainDescriptions();
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
@@ -131,5 +141,7 @@ namespace GfxRenderEngine
         Scene& m_Scene;
 
         SceneDescriptionFile m_SceneDescriptionFile;
+
+        std::vector<TerrainInfo> m_TerrainInfos;
     };
 } // namespace GfxRenderEngine

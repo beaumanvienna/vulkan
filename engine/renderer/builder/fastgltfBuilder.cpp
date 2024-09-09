@@ -543,7 +543,6 @@ namespace GfxRenderEngine
                         { LOG_CORE_CRITICAL("not supported default branch " + glTFImage.name); },
                     },
                     glTFImage.data);
-                LOG_CORE_INFO("loadTexture end, image index: {0}", imageIndex);
                 return texture;
             };
             futures[imageIndex] = Engine::m_Engine->m_PoolSecondary.SubmitTask(loadtexture);

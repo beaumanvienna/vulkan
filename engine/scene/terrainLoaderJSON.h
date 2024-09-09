@@ -41,7 +41,7 @@ namespace GfxRenderEngine
         TerrainLoaderJSON(Scene& scene);
         ~TerrainLoaderJSON() {}
 
-        bool Deserialize(std::string& filepath, int instanceCount);
+        bool Deserialize(std::string filepath, int instanceCount);
 
     private:
         struct TerrainDescriptionFile
