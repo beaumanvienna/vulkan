@@ -104,7 +104,6 @@ namespace GfxRenderEngine
     {
         vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
-        vkQueueWaitIdle(m_TransfertQueue);
     }
 
     void VK_Device::CreateInstance()
@@ -228,10 +227,6 @@ namespace GfxRenderEngine
             {
                 ++queuesPerFamily;
             }
-            if (familyIndex == indices.m_TransferFamily)
-            { // transfer
-                ++queuesPerFamily;
-            }
             if (queuesPerFamily)
             {
                 QueueSpec spec = {
@@ -286,9 +281,6 @@ namespace GfxRenderEngine
 
         vkGetDeviceQueue(m_Device, indices.m_GraphicsFamily, indices.m_QueueIndices[QueueTypes::GRAPHICS], &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.m_PresentFamily, indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
-        vkGetDeviceQueue(m_Device, indices.m_TransferFamily, indices.m_QueueIndices[QueueTypes::TRANSFER],
-                         &m_TransfertQueue);
-        m_TransferQueueSupportsGraphics = indices.m_GraphicsFamily == indices.m_TransferFamily;
         // PrintAllSupportedFormats();
     }
 
@@ -559,18 +551,6 @@ namespace GfxRenderEngine
                     --availableQueues;
                 }
             }
-            // transfer queue
-            if ((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) &&
-                (indices.m_TransferFamily == NO_ASSIGNED) && (availableQueues > 0))
-            {
-                if (indices.m_UniqueFamilyIndices[i] != i)
-                {
-                    indices.m_UniqueFamilyIndices[uniqueIndices] = i;
-                    ++uniqueIndices;
-                }
-                ++numberOfQueues;
-                indices.m_TransferFamily = i;
-            }
 
             if (indices.IsComplete())
             {
@@ -734,8 +714,8 @@ namespace GfxRenderEngine
         std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
 
         {
-            vkQueueSubmit(TransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(TransferQueue());
+            vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(GraphicsQueue());
             vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
         }
     }

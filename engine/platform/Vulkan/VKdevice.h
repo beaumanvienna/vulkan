@@ -60,7 +60,6 @@ namespace GfxRenderEngine
         VkSurfaceKHR Surface() { return m_Surface; }
         VkQueue GraphicsQueue() { return m_GraphicsQueue; }
         VkQueue PresentQueue() { return m_PresentQueue; }
-        VkQueue TransferQueue() { return m_TransfertQueue; }
 
         SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
         uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties);
@@ -88,7 +87,7 @@ namespace GfxRenderEngine
         VkSampleCountFlagBits m_SampleCountFlagBits;
 
         VkInstance GetInstance() const { return m_Instance; }
-        bool MultiThreadingSupport() const { return m_TransferQueueSupportsGraphics; }
+        bool MultiThreadingSupport() const { return true; }
 
     private:
         static constexpr int NO_ASSIGNED = -1;
@@ -132,7 +131,6 @@ namespace GfxRenderEngine
 
         VkQueue m_GraphicsQueue;
         VkQueue m_PresentQueue;
-        VkQueue m_TransfertQueue;
 
         const std::vector<const char*> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef MACOSX
@@ -141,6 +139,5 @@ namespace GfxRenderEngine
 #else
         const std::vector<const char*> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #endif
-        bool m_TransferQueueSupportsGraphics = false;
     };
 } // namespace GfxRenderEngine

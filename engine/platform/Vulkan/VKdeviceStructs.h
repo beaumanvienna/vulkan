@@ -54,6 +54,6 @@ namespace GfxRenderEngine
         int m_NumberOfQueues = 0;
         std::vector<int> m_UniqueFamilyIndices;
         int m_QueueIndices[QueueTypes::NUMBER_OF_QUEUE_TYPES] = {};
-        bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0) && (m_TransferFamily >= 0); }
+        bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0); }
     };
 } // namespace GfxRenderEngine
