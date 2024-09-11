@@ -89,8 +89,7 @@ namespace GfxRenderEngine
         void ParseFbxFile(ondemand::object fbxFileJSON, bool ufbx);
 
         void ParseTransform(ondemand::object transformJSON, TransformComponent& transform);
-        void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance,
-                            uint instanceIndex);
+        void ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename, Gltf::Instance& gltfFileInstance);
         void ParseTerrainDescription(ondemand::object terrainDescription,
                                      std::vector<Terrain::TerrainDescription>& terrainDescriptions,
                                      TerrainInfo& terrainInfo);

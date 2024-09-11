@@ -126,7 +126,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& pool);
+        VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& descriptorPool);
+        VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout);
 
         VK_DescriptorWriter& WriteBuffer(uint binding, const VkDescriptorBufferInfo& bufferInfo);
         VK_DescriptorWriter& WriteImage(uint binding, const VkDescriptorImageInfo& imageInfo);
@@ -137,7 +138,7 @@ namespace GfxRenderEngine
 
     private:
         VK_DescriptorSetLayout& m_SetLayout;
-        VK_DescriptorPool& m_Pool;
+        VK_DescriptorPool& m_DescriptorPool;
         std::vector<VkWriteDescriptorSet> m_Writes;
     };
 } // namespace GfxRenderEngine

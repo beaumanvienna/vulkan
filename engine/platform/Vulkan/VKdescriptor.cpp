@@ -128,7 +128,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::~VK_DescriptorPool()
     {
-        vkDeviceWaitIdle(m_Device);
+        VK_Core::m_Device->WaitIdle();
         vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
     }
 
@@ -159,8 +159,12 @@ namespace GfxRenderEngine
 
     // *************** Descriptor Writer *********************
 
-    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& pool)
-        : m_SetLayout{setLayout}, m_Pool{pool}
+    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& descriptorPool)
+        : m_SetLayout{setLayout}, m_DescriptorPool{descriptorPool}
+    {
+    }
+    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout)
+        : m_SetLayout{setLayout}, m_DescriptorPool{VK_Core::m_Device.get()->GetLoadPool().get()->GetDescriptorPool()}
     {
     }
 
@@ -232,7 +236,7 @@ namespace GfxRenderEngine
 
     bool VK_DescriptorWriter::Build(VkDescriptorSet& set)
     {
-        bool success = m_Pool.AllocateDescriptorSet(m_SetLayout.GetDescriptorSetLayout(), set);
+        bool success = m_DescriptorPool.AllocateDescriptorSet(m_SetLayout.GetDescriptorSetLayout(), set);
         if (!success)
         {
             return false;

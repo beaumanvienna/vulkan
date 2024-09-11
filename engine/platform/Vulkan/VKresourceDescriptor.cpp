@@ -77,7 +77,7 @@ namespace GfxRenderEngine
             }
             std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
-            VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
+            VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout);
             if (instBuffer || skelBuffer || hBuffer || mPurposeBuffer)
             {
                 descriptorWriter.WriteBuffer(0, instanceBufferInfo);

@@ -1087,7 +1087,7 @@
                     "nodes":
                     [
                         {
-                            "name": "0::SceneWithDuck::duck",
+                            "name": "SceneWithDuck::duck",
                             "walkSpeed": 0,
                             "rigidBody": false,
                             "script-component": "application/lucre/scripts/duck/duck.cpp"

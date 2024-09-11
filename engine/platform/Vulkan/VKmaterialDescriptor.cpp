@@ -74,7 +74,7 @@ namespace GfxRenderEngine
                     auto& imageInfo4 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo5 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
 
-                    VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool);
+                    VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout);
                     descriptorWriter.WriteImage(0, imageInfo0)
                         .WriteImage(1, imageInfo1)
                         .WriteImage(2, imageInfo2)
@@ -108,9 +108,7 @@ namespace GfxRenderEngine
 
                 VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
 
-                VK_DescriptorWriter(*localDescriptorSetLayout, *VK_Renderer::m_DescriptorPool)
-                    .WriteImage(0, cubemapInfo)
-                    .Build(m_DescriptorSet);
+                VK_DescriptorWriter(*localDescriptorSetLayout).WriteImage(0, cubemapInfo).Build(m_DescriptorSet);
                 break;
             }
             default:

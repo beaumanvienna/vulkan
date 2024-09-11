@@ -161,7 +161,7 @@ namespace LucreApp
     {
         auto duck =
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
-        if (duck != entt::null)
+        if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
 

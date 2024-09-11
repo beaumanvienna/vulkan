@@ -88,6 +88,9 @@ namespace GfxRenderEngine
 
         VkInstance GetInstance() const { return m_Instance; }
         bool MultiThreadingSupport() const { return true; }
+        std::mutex m_QueueAccessMutex;
+        std::shared_ptr<VK_Pool> GetLoadPool() { return m_LoadPool; }
+        void WaitIdle();
 
     private:
         static constexpr int NO_ASSIGNED = -1;
@@ -125,7 +128,6 @@ namespace GfxRenderEngine
         VK_Window* m_Window;
         VkCommandPool m_GraphicsCommandPool;
         std::shared_ptr<VK_Pool> m_LoadPool;
-        std::mutex m_QueueAccessMutex;
         VkDevice m_Device;
         VkSurfaceKHR m_Surface;
 

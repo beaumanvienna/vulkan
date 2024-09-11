@@ -187,18 +187,29 @@ namespace LucreApp
         }
     }
 
-    void BeachScene::LoadScripts() {}
-
-    void BeachScene::StartScripts()
+    void BeachScene::LoadScripts()
     {
         auto duck =
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
-        if (duck != entt::null)
+        if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
-            if (m_Registry.all_of<ScriptComponent>(duck))
+            auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
+
+            duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
+            LOG_APP_INFO("scripts loaded");
+        }
+    }
+
+    void BeachScene::StartScripts()
+    {
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto& entity : view)
+        {
+            auto& scriptComponent = m_Registry.get<ScriptComponent>(entity);
+            if (scriptComponent.m_Script)
             {
-                auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);
-                duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
+                LOG_APP_INFO("starting script {0}", scriptComponent.m_Filepath);
+                scriptComponent.m_Script->Start();
             }
         }
     }

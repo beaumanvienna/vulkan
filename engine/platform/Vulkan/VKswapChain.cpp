@@ -111,10 +111,13 @@ namespace GfxRenderEngine
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame]);
-        if (vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to submit draw command buffer!");
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
+            vkResetFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame]);
+            if (vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to submit draw command buffer!");
+            }
         }
 
         VkPresentInfoKHR presentInfo = {};
@@ -129,7 +132,11 @@ namespace GfxRenderEngine
 
         presentInfo.pImageIndices = imageIndex;
 
-        auto result = vkQueuePresentKHR(m_Device->PresentQueue(), &presentInfo);
+        VkResult result{};
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
+            result = vkQueuePresentKHR(m_Device->PresentQueue(), &presentInfo);
+        }
 
         m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -271,7 +278,6 @@ namespace GfxRenderEngine
 
     VkPresentModeKHR VK_SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
-        // std::cout << "Present mode: V-Sync" << std::endl;
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

@@ -36,11 +36,10 @@ namespace GfxRenderEngine
     std::shared_ptr<Texture> gTextureFontAtlas;
     std::shared_ptr<Buffer> gDummyBuffer;
 
-    std::unique_ptr<VK_DescriptorPool> VK_Renderer::m_DescriptorPool;
-
     VK_Renderer::VK_Renderer(VK_Window* window)
         : m_Window{window}, m_FrameCounter{0}, m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f}, m_CurrentFrameIndex{0},
-          m_ShowDebugShadowMap{false}, m_FrameInProgress{false}, m_ShadersCompiled{false}, m_Device{VK_Core::m_Device}
+          m_ShowDebugShadowMap{false}, m_FrameInProgress{false}, m_ShadersCompiled{false}, m_Device{VK_Core::m_Device},
+          m_LoadPool{VK_Core::m_Device.get()->GetLoadPool()}, m_DescriptorPool{m_LoadPool.get()->GetDescriptorPool()}
     {
         CompileShaders(); // runs in a parallel thread and sets m_ShadersCompiled
     }
@@ -85,16 +84,6 @@ namespace GfxRenderEngine
                                             m_Device->m_Properties.limits.minUniformBufferOffsetAlignment);
             m_UniformBuffers[i]->Map();
         }
-
-        // create a global pool for desciptor sets
-        static constexpr uint POOL_SIZE = 500;
-        m_DescriptorPool =
-            VK_DescriptorPool::Builder(m_Device->Device())
-                .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
-                .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
-                .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 7500)
-                .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2450)
-                .Build();
 
         std::unique_ptr<VK_DescriptorSetLayout> shadowUniformBufferDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
@@ -262,7 +251,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers0[i]->DescriptorInfo();
-            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, m_DescriptorPool)
                 .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets0[i]);
         }
@@ -270,7 +259,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers1[i]->DescriptorInfo();
-            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, m_DescriptorPool)
                 .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets1[i]);
         }
@@ -278,7 +267,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
-            VK_DescriptorWriter(*globalDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*globalDescriptorSetLayout, m_DescriptorPool)
                 .WriteBuffer(0, bufferInfo)
                 .WriteImage(1, imageInfo0)
                 .WriteImage(2, imageInfo1)
@@ -333,7 +322,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateRenderSystemBloom()
     {
-        m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>(*m_RenderPass, *m_DescriptorPool);
+        m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>(*m_RenderPass, m_DescriptorPool);
     }
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
@@ -346,7 +335,7 @@ namespace GfxRenderEngine
             VkDescriptorBufferInfo shadowUBObufferInfo0 = m_ShadowUniformBuffers0[i]->DescriptorInfo();
             VkDescriptorBufferInfo shadowUBObufferInfo1 = m_ShadowUniformBuffers1[i]->DescriptorInfo();
 
-            VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, m_DescriptorPool)
                 .WriteImage(0, shadowMapInfo0)
                 .WriteImage(1, shadowMapInfo1)
                 .WriteBuffer(2, shadowUBObufferInfo0)
@@ -379,7 +368,7 @@ namespace GfxRenderEngine
             imageInfoGBufferEmissionInputAttachment.imageView = m_RenderPass->GetImageViewGBufferEmission();
             imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            VK_DescriptorWriter(*m_LightingDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*m_LightingDescriptorSetLayout, m_DescriptorPool)
                 .WriteImage(0, imageInfoGBufferPositionInputAttachment)
                 .WriteImage(1, imageInfoGBufferNormalInputAttachment)
                 .WriteImage(2, imageInfoGBufferColorInputAttachment)
@@ -401,7 +390,7 @@ namespace GfxRenderEngine
             imageInfoGBufferEmissionInputAttachment.imageView = m_RenderPass->GetImageViewGBufferEmission();
             imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout, *m_DescriptorPool)
+            VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout, m_DescriptorPool)
                 .WriteImage(0, imageInfoColorInputAttachment)
                 .WriteImage(1, imageInfoGBufferEmissionInputAttachment)
                 .Build(m_PostProcessingDescriptorSets[frameIndex]);
@@ -418,8 +407,7 @@ namespace GfxRenderEngine
             extent = m_Window->GetExtent();
             glfwWaitEvents();
         }
-
-        vkDeviceWaitIdle(m_Device->Device());
+        m_Device->WaitIdle();
 
         // create the swapchain
         if (m_SwapChain == nullptr)
@@ -611,8 +599,7 @@ namespace GfxRenderEngine
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
 
-    void VK_Renderer::SubmitShadows(Registry& registry,
-                                    const std::vector<DirectionalLightComponent*>& directionalLights)
+    void VK_Renderer::SubmitShadows(Registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights)
     {
         // this function supports one directional light
         // with a high-resolution and

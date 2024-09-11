@@ -157,15 +157,43 @@ namespace GfxRenderEngine
                         for (auto& gltfFileInstance : gltfFileInstances)
                         {
                             gltfFileInstance = gltfInfo.m_GltfFile.m_Instances[instanceIndex];
-                            std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
-                                                         std::string("::" + std::to_string(instanceIndex) + "::root");
-                            entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
 
-                            gltfFileInstance.m_Entity = entity;
-                            TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
-                            transform.SetScale(gltfInfo.m_InstanceTransforms[instanceIndex].GetScale());
-                            transform.SetRotation(gltfInfo.m_InstanceTransforms[instanceIndex].GetRotation());
-                            transform.SetTranslation(gltfInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+                            { // transform
+                                std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                                             std::string("::" + std::to_string(instanceIndex) + "::root");
+                                entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+
+                                gltfFileInstance.m_Entity = entity;
+                                TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                                transform.SetScale(gltfInfo.m_InstanceTransforms[instanceIndex].GetScale());
+                                transform.SetRotation(gltfInfo.m_InstanceTransforms[instanceIndex].GetRotation());
+                                transform.SetTranslation(gltfInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+                            }
+
+                            for (auto& gltfNode : gltfFileInstance.m_Nodes)
+                            {
+                                // script component
+                                if (!gltfNode.m_ScriptComponent.empty())
+                                {
+                                    std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                                                 "::" + std::to_string(instanceIndex) +
+                                                                 "::" + gltfNode.m_Name;
+                                    entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                                    if (gameObject != entt::null)
+                                    {
+                                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description",
+                                                      gltfNode.m_ScriptComponent, fullEntityName);
+                                        ScriptComponent scriptComponent(gltfNode.m_ScriptComponent);
+                                        m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+                                    }
+                                    else
+                                    {
+                                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description",
+                                                      gltfNode.m_ScriptComponent, fullEntityName);
+                                    }
+                                }
+                            }
+
                             ++instanceIndex;
                         }
                         ++fileCount;
@@ -212,25 +240,48 @@ namespace GfxRenderEngine
                         gltfFilesFromScene.push_back(gltfInfo.m_GltfFile);
 
                         std::vector<Gltf::Instance>& gltfFileInstances = gltfFilesFromScene.back().m_Instances;
-                        {
-                            Gltf::GltfFile& file = gltfFilesFromScene.back();
-                            LOG_CORE_INFO("file.m_Filename: {0}", file.m_Filename);
-                            LOG_CORE_INFO("file.m_Instances.size(): {0}", file.m_Instances.size());
-                        }
                         gltfFileInstances.resize(gltfInfo.m_InstanceCount);
                         uint instanceIndex = 0;
                         for (auto& gltfFileInstance : gltfFileInstances)
                         {
                             gltfFileInstance = gltfInfo.m_GltfFile.m_Instances[instanceIndex];
-                            std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
-                                                         std::string("::" + std::to_string(instanceIndex) + "::root");
-                            entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
 
-                            gltfFileInstance.m_Entity = entity;
-                            TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
-                            transform.SetScale(gltfInfo.m_InstanceTransforms[instanceIndex].GetScale());
-                            transform.SetRotation(gltfInfo.m_InstanceTransforms[instanceIndex].GetRotation());
-                            transform.SetTranslation(gltfInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+                            { // transform
+                                std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                                             std::string("::" + std::to_string(instanceIndex) + "::root");
+                                entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+
+                                gltfFileInstance.m_Entity = entity;
+                                TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                                transform.SetScale(gltfInfo.m_InstanceTransforms[instanceIndex].GetScale());
+                                transform.SetRotation(gltfInfo.m_InstanceTransforms[instanceIndex].GetRotation());
+                                transform.SetTranslation(gltfInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+                            }
+
+                            for (auto& gltfNode : gltfFileInstance.m_Nodes)
+                            {
+                                // script component
+                                if (!gltfNode.m_ScriptComponent.empty())
+                                {
+                                    std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                                                 "::" + std::to_string(instanceIndex) +
+                                                                 "::" + gltfNode.m_Name;
+                                    entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+                                    if (gameObject != entt::null)
+                                    {
+                                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description",
+                                                      gltfNode.m_ScriptComponent, fullEntityName);
+                                        ScriptComponent scriptComponent(gltfNode.m_ScriptComponent);
+                                        m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
+                                    }
+                                    else
+                                    {
+                                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description",
+                                                      gltfNode.m_ScriptComponent, fullEntityName);
+                                    }
+                                }
+                            }
+
                             ++instanceIndex;
                         }
                         ++fileCount;
@@ -374,7 +425,7 @@ namespace GfxRenderEngine
                             {
                                 CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::array),
                                             "type must be object");
-                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance, instanceIndex);
+                                ParseNodesGltf(instanceObject.value(), gltfFilename, gltfFileInstance);
                             }
                             else
                             {
@@ -527,7 +578,7 @@ namespace GfxRenderEngine
     }
 
     void SceneLoaderJSON::ParseNodesGltf(ondemand::array nodesJSON, std::string const& gltfFilename,
-                                         Gltf::Instance& gltfFileInstance, uint instanceIndex)
+                                         Gltf::Instance& gltfFileInstance)
     {
         uint nodeCount = nodesJSON.count_elements();
         if (!nodeCount)
@@ -565,23 +616,6 @@ namespace GfxRenderEngine
                 {
                     std::string_view scriptComponentStringView = nodeObject.value().get_string();
                     gltfNode.m_ScriptComponent = std::string(scriptComponentStringView);
-
-                    std::string fullEntityName =
-                        gltfFilename + "::" + std::to_string(instanceIndex) + "::" + gltfNode.m_Name;
-                    entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
-                    if (gameObject != entt::null)
-                    {
-                        LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description", scriptComponentStringView,
-                                      fullEntityName);
-
-                        ScriptComponent scriptComponent(scriptComponentStringView);
-                        m_Scene.m_Registry.emplace<ScriptComponent>(gameObject, scriptComponent);
-                    }
-                    else
-                    {
-                        LOG_CORE_WARN("could not find script '{0}' for entity '{1}' in scene description",
-                                      scriptComponentStringView, fullEntityName);
-                    }
                 }
                 else
                 {

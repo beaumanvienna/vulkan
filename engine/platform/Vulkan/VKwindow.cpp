@@ -100,7 +100,7 @@ namespace GfxRenderEngine
     void VK_Window::Shutdown()
     {
         VK_Core::m_Device->Shutdown();
-        vkDeviceWaitIdle(VK_Core::m_Device->Device());
+        VK_Core::m_Device->WaitIdle();
     }
 
     void VK_Window::ToggleFullscreen()

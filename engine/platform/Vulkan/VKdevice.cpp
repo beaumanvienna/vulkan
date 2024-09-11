@@ -164,7 +164,6 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("failed to find GPUs with Vulkan support!");
         }
-        // std::cout << "Device count: " << deviceCount << std::endl;
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
@@ -712,7 +711,6 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
         std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
-
         {
             vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(GraphicsQueue());
@@ -822,6 +820,12 @@ namespace GfxRenderEngine
             LOG_CORE_INFO("sample count: VK_SAMPLE_COUNT_1_BIT");
             m_SampleCountFlagBits = VK_SAMPLE_COUNT_1_BIT;
         }
+    }
+
+    void VK_Device::WaitIdle()
+    {
+        std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
+        vkDeviceWaitIdle(m_Device);
     }
 
     void VK_Device::PrintAllSupportedFormats()

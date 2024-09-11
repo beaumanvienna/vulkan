@@ -113,8 +113,6 @@ namespace GfxRenderEngine
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
     public:
-        static std::unique_ptr<VK_DescriptorPool> m_DescriptorPool;
-
     private:
         void CreateCommandBuffers();
         void FreeCommandBuffers();
@@ -130,6 +128,8 @@ namespace GfxRenderEngine
         void Recreate();
 
     private:
+        std::shared_ptr<VK_Pool> m_LoadPool;
+        VK_DescriptorPool& m_DescriptorPool;
         bool m_ShadersCompiled;
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;

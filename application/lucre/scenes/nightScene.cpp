@@ -219,8 +219,7 @@ namespace LucreApp
                                                   0,                                  /* margin */
                                                   0.01f                               /* scale) */
             );
-            m_VolcanoSmoke =
-                std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/);
+            m_VolcanoSmoke = std::make_shared<ParticleSystem>(poolSize, &m_SpritesheetSmoke, 5.0f /*amplification*/);
         }
     }
 
@@ -304,9 +303,7 @@ namespace LucreApp
         }
     }
 
-    void NightScene::LoadScripts() {}
-
-    void NightScene::StartScripts()
+    void NightScene::LoadScripts()
     {
         auto duck =
             m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
@@ -316,6 +313,20 @@ namespace LucreApp
 
             duckScriptComponent.m_Script = std::make_shared<DuckScript>(duck, this);
             LOG_APP_INFO("scripts loaded");
+        }
+    }
+
+    void NightScene::StartScripts()
+    {
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto& entity : view)
+        {
+            auto& scriptComponent = m_Registry.get<ScriptComponent>(entity);
+            if (scriptComponent.m_Script)
+            {
+                LOG_APP_INFO("starting script {0}", scriptComponent.m_Filepath);
+                scriptComponent.m_Script->Start();
+            }
         }
     }
 
