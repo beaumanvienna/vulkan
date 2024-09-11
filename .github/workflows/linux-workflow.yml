@@ -35,7 +35,7 @@ jobs:
       run: rm -f bin/Release/libresource-system-gnu.a
 
     - name: upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
             name: engine-linux
             path: bin/Release
