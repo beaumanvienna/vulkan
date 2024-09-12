@@ -37,7 +37,7 @@ namespace GfxRenderEngine
 {
     namespace Armature
     {
-        class Skeleton;
+        struct Skeleton;
     }
     class Buffer;
     class Dictionary;

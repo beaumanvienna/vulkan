@@ -47,15 +47,16 @@ namespace GfxRenderEngine
             return commandPool;
         };
 
-        auto createDescriptorPool = [this, device]()
+        auto createDescriptorPool = [device]()
         {
             static constexpr uint POOL_SIZE = 5000;
             std::unique_ptr<VK_DescriptorPool> descriptorPool =
                 VK_DescriptorPool::Builder(device)
                     .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 50)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 7500)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 2450)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 3500)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
                     .Build();
             return descriptorPool;
         };
@@ -65,7 +66,6 @@ namespace GfxRenderEngine
             // loop over all worker threads and fill the unordered maps for
             // thread id -> command pool and
             // thread id -> descriptor pool
-            uint index = 0;
             for (auto& threadID : pool.GetThreadIDs())
             {
                 // Hash for thread id (created from a hasher class object and the thread id).
@@ -76,7 +76,6 @@ namespace GfxRenderEngine
 
                 // create descriptor pools for the thread pool
                 m_DescriptorPools.emplace(hash, createDescriptorPool());
-                ++index;
             }
         };
 

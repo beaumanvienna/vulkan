@@ -317,6 +317,7 @@ namespace GfxRenderEngine
     {
         VkDescriptorSet localDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        CORE_ASSERT(localDescriptorSet, "resource descriptor set empty");
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2,
                                 descriptorSets.data(), 0, nullptr);
 

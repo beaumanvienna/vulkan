@@ -75,6 +75,7 @@ namespace GfxRenderEngine
             {
                 builder.AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
             }
+            CORE_ASSERT(builder.Size(), "builder empty");
             std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
 
             VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout);
@@ -94,7 +95,10 @@ namespace GfxRenderEngine
             {
                 descriptorWriter.WriteBuffer(3, multiPurposeBufferInfo);
             }
-            descriptorWriter.Build(m_DescriptorSet);
+            {
+                bool success = descriptorWriter.Build(m_DescriptorSet);
+                CORE_ASSERT(success, "descriptor writer failed");
+            }
         }
     }
 

@@ -187,8 +187,8 @@ project "lucre"
         includedirs 
         {
             "/opt/homebrew/include",
-            "/opt/homebrew/Cellar/glib/2.78.1/include/glib-2.0/",
-            "/opt/homebrew/Cellar/glib/2.78.1/lib/glib-2.0/include/",
+            "/opt/homebrew/Cellar/glib/2.80.4/include/glib-2.0/",
+            "/opt/homebrew/Cellar/glib/2.80.4/lib/glib-2.0/include/",
             "/opt/homebrew/include/SDL2/"
         }
         links
