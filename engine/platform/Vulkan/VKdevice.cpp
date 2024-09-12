@@ -1053,6 +1053,7 @@ namespace GfxRenderEngine
             "VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM                  ",
             "VK_FORMAT_G16_B16R16_2PLANE_422_UNORM                   ",
             "VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM                  ",
+            #ifndef MACOSX
             "VK_FORMAT_G8_B8R8_2PLANE_444_UNORM                      ",
             "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16     ",
             "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16     ",
@@ -1073,6 +1074,7 @@ namespace GfxRenderEngine
             "VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK                       ",
             "VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK                       ",
             "VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK                       ",
+            #endif
             "VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG                   ",
             "VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG                   ",
             "VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG                   ",
@@ -1081,9 +1083,11 @@ namespace GfxRenderEngine
             "VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG                    ",
             "VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG                    ",
             "VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG                    ",
+            #ifndef MACOSX
             "VK_FORMAT_R16G16_SFIXED5_NV                             ",
             "VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR                     ",
             "VK_FORMAT_A8_UNORM_KHR                                  ",
+            #endif
             "VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT                     ",
             "VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT                     ",
             "VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT                     ",
@@ -1132,13 +1136,17 @@ namespace GfxRenderEngine
             "VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR              ",
             "VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR               ",
             "VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR              ",
+            #ifndef MACOSX
             "VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT                  ",
             "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT ",
             "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT ",
             "VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT               ",
+            #endif
             "VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT                     ",
             "VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT                     ",
+            #ifndef MACOSX
             "VK_FORMAT_R16G16_S10_5_NV                               "
+            #endif
         };
         std::vector<VkFormat> candidates =
         {
@@ -1361,6 +1369,7 @@ namespace GfxRenderEngine
             VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
             VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
             VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
+            #ifndef MACOSX
             VK_FORMAT_G8_B8R8_2PLANE_444_UNORM,
             VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16,
             VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16,
@@ -1381,6 +1390,7 @@ namespace GfxRenderEngine
             VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK,
             VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK,
             VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK,
+            #endif
             VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
             VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
             VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
@@ -1389,9 +1399,11 @@ namespace GfxRenderEngine
             VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
             VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
             VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
+            #ifndef MACOSX
             VK_FORMAT_R16G16_SFIXED5_NV,
             VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR,
             VK_FORMAT_A8_UNORM_KHR,
+            #endif
             VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT,
             VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT,
             VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT,
@@ -1440,13 +1452,17 @@ namespace GfxRenderEngine
             VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR,
             VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR,
             VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR,
+            #ifndef MACOSX
             VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT,
             VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT,
             VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT,
             VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT,
+            #endif
             VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT,
             VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT,
+            #ifndef MACOSX
             VK_FORMAT_R16G16_S10_5_NV
+            #endif
         };
         // clang-format on
         uint index = 0;
