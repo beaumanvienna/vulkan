@@ -77,8 +77,8 @@ namespace GfxRenderEngine
 
     private:
         std::shared_ptr<VK_Device> m_Device;
-        VkPipeline m_GraphicsPipeline;
-        VkShaderModule m_VertShaderModule;
-        VkShaderModule m_FragShaderModule;
+        VkPipeline m_GraphicsPipeline{nullptr};
+        VkShaderModule m_VertShaderModule{nullptr};
+        VkShaderModule m_FragShaderModule{nullptr};
     };
 } // namespace GfxRenderEngine

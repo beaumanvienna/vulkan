@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
 #include "VKmaterialDescriptor.h"
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
@@ -58,15 +59,6 @@ namespace GfxRenderEngine
                 metallicMap = textures[Material::METALLIC_MAP_INDEX] ? textures[Material::METALLIC_MAP_INDEX] : dummy;
 
                 {
-                    VK_DescriptorSetLayout::Builder builder{};
-                    builder.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-                    std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
-
                     auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
@@ -74,14 +66,14 @@ namespace GfxRenderEngine
                     auto& imageInfo4 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo5 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
 
-                    VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout);
-                    descriptorWriter.WriteImage(0, imageInfo0)
+                    VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
+                        .WriteImage(0, imageInfo0)
                         .WriteImage(1, imageInfo1)
                         .WriteImage(2, imageInfo2)
                         .WriteImage(3, imageInfo3)
                         .WriteImage(4, imageInfo4)
-                        .WriteImage(5, imageInfo5);
-                    descriptorWriter.Build(m_DescriptorSet);
+                        .WriteImage(5, imageInfo5)
+                        .Build(m_DescriptorSet);
                 }
                 break;
             }
@@ -101,14 +93,11 @@ namespace GfxRenderEngine
         {
             case MaterialDescriptor::MaterialType::MtCubemap:
             {
-                std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout =
-                    VK_DescriptorSetLayout::Builder()
-                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                        .Build();
-
                 VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
 
-                VK_DescriptorWriter(*localDescriptorSetLayout).WriteImage(0, cubemapInfo).Build(m_DescriptorSet);
+                VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
+                    .WriteImage(0, cubemapInfo)
+                    .Build(m_DescriptorSet);
                 break;
             }
             default:
@@ -140,5 +129,12 @@ namespace GfxRenderEngine
     MaterialDescriptor::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
 
     const VkDescriptorSet& VK_MaterialDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
+
+    VK_DescriptorSetLayout&
+    VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType)
+    {
+        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer().get());
+        return renderer->GetMaterialDescriptorSetLayout(materialType);
+    }
 
 } // namespace GfxRenderEngine

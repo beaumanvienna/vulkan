@@ -28,30 +28,24 @@
 namespace LucreApp
 {
 
-    DuckScript::DuckScript(entt::entity entity, Scene* scene)
-        : NativeScript(entity, scene), m_Health(10), m_BloodThirstiness(10000)
-    {
-    }
+    DuckScript::DuckScript(entt::entity entity, Scene* scene) : NativeScript(entity, scene) {}
 
-    void DuckScript::Start()
-    {
-        m_Transform.SetTranslationY(3.5f);
-    }
+    void DuckScript::Start() { m_Transform.SetTranslationY(3.5f); }
 
     void DuckScript::OnUpdate(const Timestep& timestep)
     {
-        static constexpr float MOVE_UP   =  1.0f;
+        static constexpr float MOVE_UP = 1.0f;
         static constexpr float MOVE_DOWN = -1.0f;
         static float move = MOVE_DOWN;
 
-        if ((m_Translation.y > 1.5f) && (move==MOVE_UP))
+        if ((m_Translation.y > 1.5f) && (move == MOVE_UP))
         {
             move = MOVE_DOWN;
         }
-        else if ((m_Translation.y < 1.0f) && (move==MOVE_DOWN))
+        else if ((m_Translation.y < 1.0f) && (move == MOVE_DOWN))
         {
             move = MOVE_UP;
         }
-        m_Transform.AddTranslation({0.0f, timestep*move, 0.0f});
+        m_Transform.AddTranslation({0.0f, timestep * move, 0.0f});
     }
-}
+} // namespace LucreApp

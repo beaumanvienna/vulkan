@@ -541,8 +541,8 @@ namespace LucreApp
                 {1.0f, 1.0f, 1.0f, 1.0f}, // glm::vec4 m_StartColor
                 {1.0f, 1.0f, 1.0f, 0.0f}, // glm::vec4 m_EndColor
 
-                {0.005f}, // float m_StartSize
-                {0.07f},  // float m_FinalSize
+                0.005f, // float m_StartSize
+                0.07f,  // float m_FinalSize
 
                 {6s}, // Timestep m_LifeTime
             };

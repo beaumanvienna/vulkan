@@ -75,8 +75,8 @@ namespace GfxRenderEngine
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
 
-        VkCommandBuffer BeginSingleTimeCommands(QueueTypes type);
-        void EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type);
+        VkCommandBuffer BeginSingleTimeCommands();
+        void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount);
 
@@ -97,9 +97,9 @@ namespace GfxRenderEngine
 
         struct QueueSpec
         {
-            int m_QueueFamilyIndex;
-            float m_QueuePriority;
-            int m_QueueCount;
+            int m_QueueFamilyIndex{0};
+            float m_QueuePriority{1.0f};
+            int m_QueueCount{0};
         };
 
         void CreateInstance();
@@ -117,22 +117,22 @@ namespace GfxRenderEngine
         bool CheckValidationLayerSupport();
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice& device);
         void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        void HasGflwRequiredInstanceExtensions();
+        VkResult HasGflwRequiredInstanceExtensions();
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
-        VkInstance m_Instance;
-        QueueFamilyIndices m_QueueFamilyIndices;
-        VkDebugUtilsMessengerEXT m_DebugMessenger;
-        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+        VkInstance m_Instance{nullptr};
+        QueueFamilyIndices m_QueueFamilyIndices{};
+        VkDebugUtilsMessengerEXT m_DebugMessenger{nullptr};
+        VkPhysicalDevice m_PhysicalDevice{nullptr};
         VK_Window* m_Window;
-        VkCommandPool m_GraphicsCommandPool;
+        VkCommandPool m_GraphicsCommandPool{nullptr};
         std::shared_ptr<VK_Pool> m_LoadPool;
-        VkDevice m_Device;
-        VkSurfaceKHR m_Surface;
+        VkDevice m_Device{nullptr};
+        VkSurfaceKHR m_Surface{nullptr};
 
-        VkQueue m_GraphicsQueue;
-        VkQueue m_PresentQueue;
+        VkQueue m_GraphicsQueue{nullptr};
+        VkQueue m_PresentQueue{nullptr};
 
         const std::vector<const char*> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef MACOSX

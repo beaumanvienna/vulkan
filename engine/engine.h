@@ -37,7 +37,7 @@
 #include "gtx/hash.hpp"
 
 #ifdef TRACY_ENABLE
-    #include "tracy/Tracy.hpp"
+#include "tracy/Tracy.hpp"
 #endif
 
 typedef uint8_t uchar;
@@ -68,39 +68,68 @@ int engine(int argc, char* argv[]);
 
 // logging
 #ifndef DISTRIBUTION_BUILD
-    #define LOGGING_AND_ASSERTS
+#define LOGGING_AND_ASSERTS
 #endif
 #ifdef LOGGING_AND_ASSERTS
-    #define CORE_ASSERT(x, str) \
-        if (!(x))               \
-        LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-    
-    #define APP_ASSERT(x, str) \
-        if (!(x))              \
-        LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
-    
-    #define LOG_CORE_TRACE(...) GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
-    #define LOG_CORE_INFO(...) GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
-    #define LOG_CORE_WARN(...) GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
-    #define LOG_CORE_ERROR(...) GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
-    #define LOG_CORE_CRITICAL(...) GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
-    
-    #define LOG_APP_TRACE(...) GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
-    #define LOG_APP_INFO(...) GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
-    #define LOG_APP_WARN(...) GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
-    #define LOG_APP_ERROR(...) GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
-    #define LOG_APP_CRITICAL(...) GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
+#define CORE_ASSERT(x, str) \
+    if (!(x))               \
+    LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
+
+#define CORE_HARD_STOP(str)                                                                              \
+    LOG_CORE_CRITICAL("hard stop on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str); \
+    std::cout << "terminating because of " << str << std::endl;                                          \
+    exit(1)
+
+#define APP_ASSERT(x, str) \
+    if (!(x))              \
+    LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
+
+#define LOG_CORE_TRACE(...) GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
+#define LOG_CORE_INFO(...) GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
+#define LOG_CORE_WARN(...) GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
+#define LOG_CORE_ERROR(...) GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
+#define LOG_CORE_CRITICAL(...) GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
+
+#define LOG_APP_TRACE(...) GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
+#define LOG_APP_INFO(...) GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
+#define LOG_APP_WARN(...) GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
+#define LOG_APP_ERROR(...) GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
+#define LOG_APP_CRITICAL(...) GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
 #else
-    #define CORE_ASSERT(x, str) {}
-    #define APP_ASSERT(x, str) {}
-    #define LOG_CORE_TRACE(...) {}
-    #define LOG_CORE_INFO(...) {}
-    #define LOG_CORE_WARN(...) {}
-    #define LOG_CORE_ERROR(...) {}
-    #define LOG_CORE_CRITICAL(...) {}
-    #define LOG_APP_TRACE(...) {}
-    #define LOG_APP_INFO(...) {}
-    #define LOG_APP_WARN(...) {}
-    #define LOG_APP_ERROR(...) {}
-    #define LOG_APP_CRITICAL(...) {}
+#define CORE_ASSERT(x, str) \
+    {                       \
+    }
+#define APP_ASSERT(x, str) \
+    {                      \
+    }
+#define LOG_CORE_TRACE(...) \
+    {                       \
+    }
+#define LOG_CORE_INFO(...) \
+    {                      \
+    }
+#define LOG_CORE_WARN(...) \
+    {                      \
+    }
+#define LOG_CORE_ERROR(...) \
+    {                       \
+    }
+#define LOG_CORE_CRITICAL(...) \
+    {                          \
+    }
+#define LOG_APP_TRACE(...) \
+    {                      \
+    }
+#define LOG_APP_INFO(...) \
+    {                     \
+    }
+#define LOG_APP_WARN(...) \
+    {                     \
+    }
+#define LOG_APP_ERROR(...) \
+    {                      \
+    }
+#define LOG_APP_CRITICAL(...) \
+    {                         \
+    }
 #endif

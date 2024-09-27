@@ -28,6 +28,8 @@
 
 #include "engine.h"
 #include "renderer/renderer.h"
+#include "renderer/materialDescriptor.h"
+#include "renderer/resourceDescriptor.h"
 #include "platform/Vulkan/imguiEngine/imgui.h"
 
 #include "systems/VKshadowAnimatedRenderSysInstanced.h"
@@ -112,6 +114,9 @@ namespace GfxRenderEngine
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
+        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
+        VK_DescriptorSetLayout& GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourceType);
+
     public:
     private:
         void CreateCommandBuffers();
@@ -128,8 +133,6 @@ namespace GfxRenderEngine
         void Recreate();
 
     private:
-        std::shared_ptr<VK_Pool> m_LoadPool;
-        VK_DescriptorPool& m_DescriptorPool;
         bool m_ShadersCompiled;
         VK_Window* m_Window;
         std::shared_ptr<VK_Device> m_Device;
@@ -162,29 +165,36 @@ namespace GfxRenderEngine
         std::shared_ptr<Imgui> m_Imgui;
 
         std::vector<VkCommandBuffer> m_CommandBuffers;
-        VkCommandBuffer m_CurrentCommandBuffer;
-        VkDescriptorSetLayout m_GlobalDescriptorSetLayout;
+        VkCommandBuffer m_CurrentCommandBuffer{nullptr};
+        std::unique_ptr<VK_DescriptorSetLayout> m_GlobalDescriptorSetLayout;
 
-        uint m_CurrentImageIndex;
+        uint m_CurrentImageIndex{0};
         int m_CurrentFrameIndex;
         uint m_FrameCounter;
         bool m_FrameInProgress;
-        VK_FrameInfo m_FrameInfo;
+        VK_FrameInfo m_FrameInfo{};
 
+        // *** descriptor set layouts ***
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
+        std::unique_ptr<VK_DescriptorSetLayout> m_ShadowUniformBufferDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
+        // material descriptor set layouts
+        using Mt = MaterialDescriptor::MaterialType;
+        std::array<std::unique_ptr<VK_DescriptorSetLayout>, Mt::NUM_TYPES> m_MaterialDescriptorSetLayouts;
+        // resource descriptor set layouts
+        using Rt = ResourceDescriptor::ResourceType;
+        std::array<std::unique_ptr<VK_DescriptorSetLayout>, Rt::NUM_TYPES> m_ResourceDescriptorSetLayouts;
 
-        std::vector<VkDescriptorSet> m_ShadowDescriptorSets0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_ShadowDescriptorSets1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_GlobalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_LocalDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<std::unique_ptr<VK_Buffer>> m_UniformBuffers{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers0{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<std::unique_ptr<VK_Buffer>> m_ShadowUniformBuffers1{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_ShadowMapDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_LightingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
-        std::vector<VkDescriptorSet> m_PostProcessingDescriptorSets{VK_SwapChain::MAX_FRAMES_IN_FLIGHT};
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowDescriptorSets0;
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowDescriptorSets1;
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_GlobalDescriptorSets;
+        std::array<std::unique_ptr<VK_Buffer>, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_UniformBuffers;
+        std::array<std::unique_ptr<VK_Buffer>, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowUniformBuffers0;
+        std::array<std::unique_ptr<VK_Buffer>, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowUniformBuffers1;
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowMapDescriptorSets;
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_LightingDescriptorSets;
+        std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_PostProcessingDescriptorSets;
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

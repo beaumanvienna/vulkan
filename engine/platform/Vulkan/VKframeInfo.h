@@ -66,12 +66,13 @@ namespace GfxRenderEngine
 
     struct VK_FrameInfo
     {
-        int m_FrameIndex;
-        uint m_ImageIndex;
-        float m_FrameTime;
-        VkCommandBuffer m_CommandBuffer;
-        Camera* m_Camera;
-        VkDescriptorSet m_GlobalDescriptorSet;
+        int m_FrameIndex{0};
+        uint m_ImageIndex{0};
+        float m_FrameTime{0.0f};
+        VkCommandBuffer m_CommandBuffer{nullptr};
+        Camera* m_Camera{nullptr};
+        VkDescriptorSet m_GlobalDescriptorSet{nullptr};
+        VkDescriptorSet m_DiffuseDescriptorSet{nullptr};
     };
 
 } // namespace GfxRenderEngine

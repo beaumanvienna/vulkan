@@ -132,11 +132,11 @@ namespace GfxRenderEngine
         std::shared_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
 
-        uint m_VertexCount;
+        uint m_VertexCount{0};
+        uint m_IndexCount{0};
 
-        bool m_HasIndexBuffer;
+        bool m_HasIndexBuffer{false};
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
-        uint m_IndexCount;
 
         std::vector<VK_Submesh> m_SubmeshesPbrMap{};
         std::vector<VK_Submesh> m_SubmeshesPbrSAMap{};

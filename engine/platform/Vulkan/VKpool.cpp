@@ -49,14 +49,13 @@ namespace GfxRenderEngine
 
         auto createDescriptorPool = [device]()
         {
-            static constexpr uint POOL_SIZE = 5000;
+            static constexpr uint POOL_SIZE = 10000;
             std::unique_ptr<VK_DescriptorPool> descriptorPool =
                 VK_DescriptorPool::Builder(device)
-                    .SetMaxSets(VK_SwapChain::MAX_FRAMES_IN_FLIGHT * POOL_SIZE)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 3500)
-                    .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SwapChain::MAX_FRAMES_IN_FLIGHT * 500)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, POOL_SIZE)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, POOL_SIZE)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, POOL_SIZE)
+                    .AddPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, POOL_SIZE)
                     .Build();
             return descriptorPool;
         };
@@ -113,8 +112,8 @@ namespace GfxRenderEngine
         CORE_ASSERT(pool != nullptr, "no command pool found!");
         if (!pool)
         {
-            std::cout << "terminating because of thread id:" << threadID << "\n";
-            exit(1);
+            std::cout << "thread id:" << threadID << "\n";
+            CORE_HARD_STOP("thread id");
         }
         return pool;
     }
@@ -127,7 +126,7 @@ namespace GfxRenderEngine
         if (!m_DescriptorPools[hash])
         {
             std::cout << "thread id:" << threadID << "\n";
-            exit(1);
+            CORE_HARD_STOP("thread id");
         }
         return *m_DescriptorPools[hash];
     }

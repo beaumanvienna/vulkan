@@ -81,7 +81,6 @@ namespace LucreApp
         entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1, m_Terrain, m_Water, m_Guybrush;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
-        entt::entity m_PointLight[MAX_LIGHTS];
 
         //------
         void LoadTerrain();

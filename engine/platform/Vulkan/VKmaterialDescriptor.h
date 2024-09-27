@@ -25,6 +25,7 @@
 #include <vulkan/vulkan.h>
 
 #include "renderer/materialDescriptor.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -45,7 +46,10 @@ namespace GfxRenderEngine
         const VkDescriptorSet& GetDescriptorSet() const;
 
     private:
+        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
+
+    private:
         MaterialDescriptor::MaterialType m_MaterialType;
-        VkDescriptorSet m_DescriptorSet;
+        VkDescriptorSet m_DescriptorSet{nullptr};
     };
 } // namespace GfxRenderEngine

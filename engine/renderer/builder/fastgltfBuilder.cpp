@@ -71,12 +71,6 @@ namespace GfxRenderEngine
 
             fastgltf::GltfDataBuffer dataBuffer;
             fastgltf::Parser parser(extensions);
-            if (!EngineCore::FileExists(m_Filepath))
-            {
-                LOG_CORE_CRITICAL("FastgltfBuilder::Load NOT FOUND {0}", m_Filepath);
-                std::cout << m_Filepath << "\n";
-                exit(1);
-            }
             // load raw data of the file (can be gltf or glb)
             dataBuffer.loadFromFile(path);
 

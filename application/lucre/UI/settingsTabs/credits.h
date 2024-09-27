@@ -45,7 +45,5 @@ namespace LucreApp
 
     private:
         SpriteSheet* m_Spritesheet;
-
-        SCREEN_UI::TextView* m_TextSetup1;
     };
 } // namespace LucreApp

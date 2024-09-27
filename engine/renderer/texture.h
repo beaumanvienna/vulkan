@@ -51,6 +51,5 @@ namespace GfxRenderEngine
         virtual void SetFilename(const std::string& filename) = 0;
 
         static std::shared_ptr<Texture> Create();
-        static std::shared_ptr<Texture> Create(uint ID, int internalFormat, int dataFormat, int type);
     };
 } // namespace GfxRenderEngine

@@ -64,19 +64,19 @@ namespace GfxRenderEngine
         void CreateShadowFramebuffer();
 
     private:
-        VkFormat m_DepthFormat;
+        VkFormat m_DepthFormat{VkFormat::VK_FORMAT_UNDEFINED};
         std::shared_ptr<VK_Device> m_Device;
 
-        VkExtent2D m_ShadowMapExtent;
-        VkFramebuffer m_ShadowFramebuffer;
-        VkRenderPass m_ShadowRenderPass;
+        VkExtent2D m_ShadowMapExtent{};
+        VkFramebuffer m_ShadowFramebuffer{nullptr};
+        VkRenderPass m_ShadowRenderPass{nullptr};
 
-        VkImage m_ShadowDepthImage;
-        VkImageLayout m_ImageLayout;
-        VkImageView m_ShadowDepthImageView;
-        VkDeviceMemory m_ShadowDepthImageMemory;
-        VkSampler m_ShadowDepthSampler;
+        VkImage m_ShadowDepthImage{nullptr};
+        VkImageLayout m_ImageLayout{};
+        VkImageView m_ShadowDepthImageView{nullptr};
+        VkDeviceMemory m_ShadowDepthImageMemory{nullptr};
+        VkSampler m_ShadowDepthSampler{nullptr};
 
-        VkDescriptorImageInfo m_DescriptorImageInfo;
+        VkDescriptorImageInfo m_DescriptorImageInfo{};
     };
 } // namespace GfxRenderEngine

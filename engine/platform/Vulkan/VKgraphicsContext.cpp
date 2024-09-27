@@ -47,10 +47,6 @@ namespace GfxRenderEngine
         {
             m_Initialized = m_Renderer->Init();
         }
-        else
-        {
-            LOG_CORE_WARN("VK_Context: already initialized");
-        }
         return m_Initialized;
     }
 

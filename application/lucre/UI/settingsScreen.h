@@ -69,7 +69,6 @@ namespace LucreApp
     private:
         InfoMessage* m_SettingsInfo;
         SCREEN_UI::TabHolder* m_TabHolder = nullptr;
-        SCREEN_UI::Choice* m_BackButton;
         int m_LastTab;
 
         SpriteSheet* m_Spritesheet;

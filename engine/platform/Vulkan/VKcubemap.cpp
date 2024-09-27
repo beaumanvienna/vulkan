@@ -32,8 +32,7 @@ namespace GfxRenderEngine
 {
 
     VK_Cubemap::VK_Cubemap(bool nearestFilter)
-        : m_NearestFilter(nearestFilter), m_MipLevels(1), m_FileNames({""}), m_Type(0), m_Width(0), m_Height(0),
-          m_BytesPerPixel(0), m_InternalFormat(0), m_DataFormat(0), m_sRGB(false)
+        : m_NearestFilter{nearestFilter}, m_MipLevels{1}, m_Width{0}, m_Height{0}, m_BytesPerPixel{0}, m_sRGB{false}
     {
     }
 
@@ -58,7 +57,7 @@ namespace GfxRenderEngine
 
     void VK_Cubemap::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -99,7 +98,7 @@ namespace GfxRenderEngine
 
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
         m_ImageLayout = newLayout;
     }
 

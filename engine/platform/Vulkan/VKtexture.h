@@ -36,7 +36,6 @@ namespace GfxRenderEngine
 
     public:
         VK_Texture(bool nearestFilter = false);
-        VK_Texture(uint ID, int internalFormat, int dataFormat, int type);
         virtual ~VK_Texture();
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter,
@@ -65,26 +64,23 @@ namespace GfxRenderEngine
 
     private:
         std::string m_FileName;
-        uint m_RendererID;
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
         uint m_MipLevels;
 
-        int m_InternalFormat, m_DataFormat;
         bool m_sRGB;
         VkFilter m_MinFilter;
         VkFilter m_MagFilter;
         VkFilter m_MinFilterMip;
-        int m_Type;
 
-        VkFormat m_ImageFormat;
-        VkImage m_TextureImage;
-        VkDeviceMemory m_TextureImageMemory;
-        VkImageLayout m_ImageLayout;
-        VkImageView m_ImageView;
-        VkSampler m_Sampler;
+        VkFormat m_ImageFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkImage m_TextureImage{nullptr};
+        VkDeviceMemory m_TextureImageMemory{nullptr};
+        VkImageLayout m_ImageLayout{VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED};
+        VkImageView m_ImageView{nullptr};
+        VkSampler m_Sampler{nullptr};
 
-        VkDescriptorImageInfo m_DescriptorImageInfo;
+        VkDescriptorImageInfo m_DescriptorImageInfo{};
 
     private:
         static constexpr int TEXTURE_FILTER_NEAREST = 9728;

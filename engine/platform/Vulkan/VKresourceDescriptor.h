@@ -25,6 +25,7 @@
 #include <vulkan/vulkan.h>
 
 #include "renderer/resourceDescriptor.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -42,6 +43,9 @@ namespace GfxRenderEngine
         const VkDescriptorSet& GetDescriptorSet() const;
 
     private:
-        VkDescriptorSet m_DescriptorSet;
+        VK_DescriptorSetLayout& GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourcelType);
+
+    private:
+        VkDescriptorSet m_DescriptorSet{nullptr};
     };
 } // namespace GfxRenderEngine

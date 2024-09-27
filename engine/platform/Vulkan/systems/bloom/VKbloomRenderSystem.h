@@ -58,7 +58,7 @@ namespace GfxRenderEngine
         static constexpr int NUMBER_OF_DOWNSAMPLED_IMAGES = NUMBER_OF_MIPMAPS - 1; // number of down-sampled images
 
     public:
-        VK_RenderSystemBloom(VK_RenderPass const& renderPass3D, VK_DescriptorPool& descriptorPool);
+        VK_RenderSystemBloom(VK_RenderPass const& renderPass3D);
         ~VK_RenderSystemBloom();
 
         VK_RenderSystemBloom(const VK_RenderSystemBloom&) = delete;
@@ -75,7 +75,7 @@ namespace GfxRenderEngine
         void CreateFrameBuffersUp();
 
         void CreateDescriptorSet();
-        void CreateBloomPipelinesLayout(VkDescriptorSetLayout const& descriptorSetLayout);
+        void CreateBloomPipelinesLayout();
         void CreateBloomPipelines();
         void CreateBloomDescriptorSetLayout();
 
@@ -84,8 +84,6 @@ namespace GfxRenderEngine
         void SetViewPort(const VK_FrameInfo& frameInfo, VkExtent2D const& extent);
 
     private:
-        VK_DescriptorPool& m_DescriptorPool;
-
         VK_RenderPass const& m_RenderPass3D; // external 3D pass
         VkPipelineLayout m_BloomPipelineLayout;
 

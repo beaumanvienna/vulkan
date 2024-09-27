@@ -41,6 +41,7 @@ namespace GfxRenderEngine
             OPEN_AL,
             FFMPEG
         };
+        virtual ~Audio() {};
 
     public:
         virtual void Start() = 0;

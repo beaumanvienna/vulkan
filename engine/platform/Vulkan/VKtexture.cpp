@@ -32,8 +32,7 @@ namespace GfxRenderEngine
 {
 
     VK_Texture::VK_Texture(bool nearestFilter)
-        : m_FileName(""), m_RendererID(0), m_LocalBuffer(nullptr), m_Type(0), m_Width(0), m_Height(0), m_BytesPerPixel(0),
-          m_InternalFormat(0), m_DataFormat(0), m_MipLevels(0), m_sRGB(false)
+        : m_FileName(""), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BytesPerPixel(0), m_MipLevels(0), m_sRGB(false)
     {
         nearestFilter ? m_MinFilter = VK_FILTER_NEAREST : m_MinFilter = VK_FILTER_LINEAR;
         nearestFilter ? m_MagFilter = VK_FILTER_NEAREST : m_MagFilter = VK_FILTER_LINEAR;
@@ -48,11 +47,6 @@ namespace GfxRenderEngine
         vkDestroyImageView(device, m_ImageView, nullptr);
         vkDestroySampler(device, m_Sampler, nullptr);
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
-    }
-
-    VK_Texture::VK_Texture(uint ID, int internalFormat, int dataFormat, int type)
-        : m_RendererID{ID}, m_InternalFormat{internalFormat}, m_DataFormat{dataFormat}, m_Type{type}, m_sRGB{false}
-    {
     }
 
     // create texture from raw memory
@@ -121,7 +115,7 @@ namespace GfxRenderEngine
 
     void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -163,7 +157,7 @@ namespace GfxRenderEngine
 
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }
 
     void VK_Texture::CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
@@ -388,7 +382,7 @@ namespace GfxRenderEngine
             return;
         }
 
-        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands(QueueTypes::GRAPHICS);
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -454,7 +448,7 @@ namespace GfxRenderEngine
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
                              nullptr, 0, nullptr, 1, &barrier);
 
-        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer, QueueTypes::GRAPHICS);
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }
 
     VkFilter VK_Texture::SetFilter(int minMagFilter)

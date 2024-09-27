@@ -134,46 +134,46 @@ namespace GfxRenderEngine
 
     private:
         std::shared_ptr<VK_Device> m_Device;
-        VK_SwapChain* m_SwapChain;
-        VkExtent2D m_RenderPassExtent;
+        VK_SwapChain* m_SwapChain;     // constructor initialized
+        VkExtent2D m_RenderPassExtent; // constructor initialized
 
-        VkFormat m_DepthFormat;
-        VkFormat m_BufferPositionFormat;
-        VkFormat m_BufferNormalFormat;
-        VkFormat m_BufferColorFormat;
-        VkFormat m_BufferMaterialFormat;
-        VkFormat m_BufferEmissionFormat;
+        VkFormat m_DepthFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkFormat m_BufferPositionFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkFormat m_BufferNormalFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkFormat m_BufferColorFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkFormat m_BufferMaterialFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkFormat m_BufferEmissionFormat{VkFormat::VK_FORMAT_UNDEFINED};
 
-        VkImage m_DepthImage;
-        VkImage m_ColorAttachmentImage;
-        VkImage m_GBufferPositionImage;
-        VkImage m_GBufferNormalImage;
-        VkImage m_GBufferColorImage;
-        VkImage m_GBufferMaterialImage;
-        VkImage m_GBufferEmissionImage;
+        VkImage m_DepthImage{nullptr};
+        VkImage m_ColorAttachmentImage{nullptr};
+        VkImage m_GBufferPositionImage{nullptr};
+        VkImage m_GBufferNormalImage{nullptr};
+        VkImage m_GBufferColorImage{nullptr};
+        VkImage m_GBufferMaterialImage{nullptr};
+        VkImage m_GBufferEmissionImage{nullptr};
 
-        VkImageView m_DepthImageView;
-        VkImageView m_ColorAttachmentView;
-        VkImageView m_GBufferPositionView;
-        VkImageView m_GBufferNormalView;
-        VkImageView m_GBufferColorView;
-        VkImageView m_GBufferMaterialView;
-        VkImageView m_GBufferEmissionView;
+        VkImageView m_DepthImageView{nullptr};
+        VkImageView m_ColorAttachmentView{nullptr};
+        VkImageView m_GBufferPositionView{nullptr};
+        VkImageView m_GBufferNormalView{nullptr};
+        VkImageView m_GBufferColorView{nullptr};
+        VkImageView m_GBufferMaterialView{nullptr};
+        VkImageView m_GBufferEmissionView{nullptr};
 
-        VkDeviceMemory m_DepthImageMemory;
-        VkDeviceMemory m_ColorAttachmentImageMemory;
-        VkDeviceMemory m_GBufferPositionImageMemory;
-        VkDeviceMemory m_GBufferNormalImageMemory;
-        VkDeviceMemory m_GBufferColorImageMemory;
-        VkDeviceMemory m_GBufferMaterialImageMemory;
-        VkDeviceMemory m_GBufferEmissionImageMemory;
+        VkDeviceMemory m_DepthImageMemory{nullptr};
+        VkDeviceMemory m_ColorAttachmentImageMemory{nullptr};
+        VkDeviceMemory m_GBufferPositionImageMemory{nullptr};
+        VkDeviceMemory m_GBufferNormalImageMemory{nullptr};
+        VkDeviceMemory m_GBufferColorImageMemory{nullptr};
+        VkDeviceMemory m_GBufferMaterialImageMemory{nullptr};
+        VkDeviceMemory m_GBufferEmissionImageMemory{nullptr};
 
         std::vector<VkFramebuffer> m_3DFramebuffers;
         std::vector<VkFramebuffer> m_PostProcessingFramebuffers;
         std::vector<VkFramebuffer> m_GUIFramebuffers;
 
-        VkRenderPass m_3DRenderPass;
-        VkRenderPass m_PostProcessingRenderPass;
-        VkRenderPass m_GUIRenderPass;
+        VkRenderPass m_3DRenderPass{nullptr};
+        VkRenderPass m_PostProcessingRenderPass{nullptr};
+        VkRenderPass m_GUIRenderPass{nullptr};
     };
 } // namespace GfxRenderEngine

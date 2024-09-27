@@ -45,21 +45,4 @@ namespace GfxRenderEngine
 
         return texture;
     }
-
-    std::shared_ptr<Texture> Texture::Create(uint ID, int internalFormat, int dataFormat, int type)
-    {
-        std::shared_ptr<Texture> texture;
-
-        switch (RendererAPI::GetAPI())
-        {
-            case RendererAPI::VULKAN:
-                LOG_CORE_CRITICAL("not implemented");
-                break;
-            default:
-                texture = nullptr;
-                break;
-        }
-
-        return texture;
-    }
 } // namespace GfxRenderEngine

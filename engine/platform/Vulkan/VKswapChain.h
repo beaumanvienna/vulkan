@@ -74,22 +74,22 @@ namespace GfxRenderEngine
         VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-        VkFormat m_SwapChainImageFormat;
-        VkExtent2D m_SwapChainExtent;
+        VkFormat m_SwapChainImageFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkExtent2D m_SwapChainExtent{};
 
-        std::vector<VkImage> m_SwapChainImages;
-        std::vector<VkImageView> m_SwapChainImageViews;
+        std::vector<VkImage> m_SwapChainImages{};
+        std::vector<VkImageView> m_SwapChainImageViews{};
 
         std::shared_ptr<VK_Device> m_Device;
         std::shared_ptr<VK_SwapChain> m_OldSwapChain;
-        VkExtent2D m_WindowExtent;
+        VkExtent2D m_WindowExtent{};
 
-        VkSwapchainKHR m_SwapChain;
+        VkSwapchainKHR m_SwapChain{nullptr};
 
-        std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-        std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-        std::vector<VkFence> m_InFlightFences;
-        std::vector<VkFence> m_ImagesInFlight;
-        size_t m_CurrentFrame = 0;
+        std::vector<VkSemaphore> m_ImageAvailableSemaphores{};
+        std::vector<VkSemaphore> m_RenderFinishedSemaphores{};
+        std::vector<VkFence> m_InFlightFences{};
+        std::vector<VkFence> m_ImagesInFlight{};
+        size_t m_CurrentFrame{0};
     };
 } // namespace GfxRenderEngine

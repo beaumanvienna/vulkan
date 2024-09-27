@@ -141,7 +141,6 @@ namespace GfxRenderEngine
                 {
                     std::vector<Gltf::GltfFile>& gltfFilesFromScene =
                         m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
-                    uint fileCount{0};
                     for (auto& gltfInfo : gltfInfoVector)
                     {
                         if (!gltfInfo.m_LoadFuture.get())
@@ -196,7 +195,6 @@ namespace GfxRenderEngine
 
                             ++instanceIndex;
                         }
-                        ++fileCount;
                     }
                 }
             }
@@ -229,7 +227,7 @@ namespace GfxRenderEngine
                 {
                     std::vector<Gltf::GltfFile>& gltfFilesFromScene =
                         m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene;
-                    uint fileCount{0};
+
                     for (auto& gltfInfo : gltfInfoVector)
                     {
                         if (!gltfInfo.m_LoadFuture.get())
@@ -284,7 +282,6 @@ namespace GfxRenderEngine
 
                             ++instanceIndex;
                         }
-                        ++fileCount;
                     }
                 }
             }

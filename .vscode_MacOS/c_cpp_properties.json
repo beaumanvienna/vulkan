@@ -1,0 +1,45 @@
+{
+    "configurations": [
+        {
+            "name": "macOS",
+            "includePath": [
+                "application",
+                "application/lucre",
+                "engine",
+                "vendor",
+                "vendor/imgui",
+                "resources",
+                "vendor/spdlog/include",
+                "vendor/yaml-cpp/include",
+                "vendor/fastgltf/include",
+                ".",
+                "engine/platform/Vulkan",
+                "vendor/assetImporter/include",
+                "vendor/tinyObjLoader",
+                "vendor/fastgltf/include/",
+                "vendor/box2d/include",
+                "vendor/entt/include",
+                "vendor/simdjson",
+                "vendor/json",
+                "vendor/glm",
+                "vendor/stb",
+                "vendor/pamanager/libpamanager/src",
+                "vendor/sdl/include",
+                "vendor/thread-pool/include",
+                "resources/atlas",
+                "/usr/local/include",
+                "/opt/homebrew/Cellar/glib/2.80.4/include/glib-2.0",
+                "/opt/homebrew/Cellar/glib/2.80.4/lib/glib-2.0/include",
+                "/opt/homebrew/include/SDL2",
+                "/opt/homebrew/include",
+                "vendor/tracy/include"
+            ],
+            "defines": [
+                "MACOSX"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++20"
+        }
+    ],
+    "version": 4
+}

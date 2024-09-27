@@ -37,10 +37,11 @@ namespace GfxRenderEngine
     public:
         enum MaterialType
         {
-            MtPbr = 0x1 << 0x00,    // 1
-            MtCubemap = 0x1 << 0x01 // 2
+            MtPbr = 0,
+            MtCubemap,
+            MtDiffuse,
+            NUM_TYPES
         };
-        static constexpr uint ALL_PBR_MATERIALS = MaterialType::MtPbr;
 
     public:
         virtual ~MaterialDescriptor() = default;

@@ -41,7 +41,5 @@ namespace LucreApp
 
     private:
 
-        uint m_Health, m_BloodThirstiness;
-
     };
 }

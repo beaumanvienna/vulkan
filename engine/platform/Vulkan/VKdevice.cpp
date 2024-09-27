@@ -31,11 +31,6 @@
 #include "VKdevice.h"
 #include "VKwindow.h"
 
-#ifdef MACOSX
-#include <vulkan/vulkan_beta.h>
-#define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR static_cast<VkStructureType>(1000163000)
-#endif
-
 namespace GfxRenderEngine
 {
 
@@ -45,7 +40,12 @@ namespace GfxRenderEngine
                                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                         void* pUserData)
     {
-        std::cout << "validation layer: " << pCallbackData->pMessage << std::endl;
+        std::string message(pCallbackData->pMessage);
+        // exclude performance warnings
+        if (message.find("Validation Performance Warning:") == std::string::npos)
+        {
+            std::cout << "validation layer: " << message << std::endl;
+        }
 
         return VK_FALSE;
     }
@@ -149,11 +149,13 @@ namespace GfxRenderEngine
 
         if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create instance!");
-            exit(1);
+            CORE_HARD_STOP("failed to create instance");
         }
 
-        HasGflwRequiredInstanceExtensions();
+        if (HasGflwRequiredInstanceExtensions() != VK_SUCCESS)
+        {
+            CORE_HARD_STOP("required glfw extensions missing");
+        }
     }
 
     void VK_Device::PickPhysicalDevice()
@@ -185,15 +187,14 @@ namespace GfxRenderEngine
             {
                 m_PhysicalDevice = device;
                 vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
-                LOG_CORE_INFO("found an onboard graphics card: {0}", m_Properties.deviceName);
+                LOG_CORE_INFO("found graphics card: {0}", m_Properties.deviceName);
                 break;
             }
         }
 
         if (m_PhysicalDevice == VK_NULL_HANDLE)
         {
-            LOG_CORE_CRITICAL("failed to find a suitable GPU!");
-            exit(1);
+            CORE_HARD_STOP("failed to find a suitable GPU");
         }
     }
 
@@ -261,18 +262,7 @@ namespace GfxRenderEngine
         {
             createInfo.enabledLayerCount = 0;
         }
-#ifdef MACOSX
-        VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures = {};
-        {
-            portabilityFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR;
 
-            VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
-            physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-            physicalDeviceFeatures2.pNext = &portabilityFeatures;
-            vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &physicalDeviceFeatures2);
-        }
-        createInfo.pNext = &portabilityFeatures;
-#endif
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LOG_CORE_CRITICAL("failed to create logical device!");
@@ -451,8 +441,9 @@ namespace GfxRenderEngine
         return extensions;
     }
 
-    void VK_Device::HasGflwRequiredInstanceExtensions()
+    VkResult VK_Device::HasGflwRequiredInstanceExtensions()
     {
+        VkResult result = VK_SUCCESS;
         uint extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -465,13 +456,15 @@ namespace GfxRenderEngine
         }
 
         auto requiredExtensions = GetRequiredExtensions();
-        for (const auto& required : requiredExtensions)
+        for (const auto& requiredExtension : requiredExtensions)
         {
-            if (available.find(required) == available.end())
+            if (available.find(requiredExtension) == available.end())
             {
+                result = VK_INCOMPLETE;
                 LOG_CORE_CRITICAL("Missing required glfw extension");
             }
         }
+        return result;
     }
 
     bool VK_Device::CheckDeviceExtensionSupport(VkPhysicalDevice device)
@@ -680,7 +673,7 @@ namespace GfxRenderEngine
         vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
     }
 
-    VkCommandBuffer VK_Device::BeginSingleTimeCommands(QueueTypes type)
+    VkCommandBuffer VK_Device::BeginSingleTimeCommands()
     {
         ZoneScopedN("BeginSingleTimeCommands");
         VkCommandBufferAllocateInfo allocInfo{};
@@ -701,7 +694,7 @@ namespace GfxRenderEngine
         return commandBuffer;
     }
 
-    void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer, QueueTypes type)
+    void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
         ZoneScopedN("EndSingleTimeCommands");
         vkEndCommandBuffer(commandBuffer);
@@ -720,7 +713,7 @@ namespace GfxRenderEngine
 
     void VK_Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands(QueueTypes::TRANSFER);
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0; // Optional
@@ -728,13 +721,13 @@ namespace GfxRenderEngine
         copyRegion.size = size;
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-        EndSingleTimeCommands(commandBuffer, QueueTypes::TRANSFER);
+        EndSingleTimeCommands(commandBuffer);
     }
 
     void VK_Device::CopyBufferToImage(VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount)
     {
         ZoneScopedN("CopyBufferToImage");
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands(QueueTypes::TRANSFER);
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -750,7 +743,7 @@ namespace GfxRenderEngine
         region.imageExtent = {width, height, 1};
 
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        EndSingleTimeCommands(commandBuffer, QueueTypes::TRANSFER);
+        EndSingleTimeCommands(commandBuffer);
     }
 
     void VK_Device::CreateImageWithInfo(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image,

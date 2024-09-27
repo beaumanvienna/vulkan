@@ -38,8 +38,7 @@ namespace GfxRenderEngine
 
     VK_Renderer::VK_Renderer(VK_Window* window)
         : m_Window{window}, m_FrameCounter{0}, m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f}, m_CurrentFrameIndex{0},
-          m_ShowDebugShadowMap{false}, m_FrameInProgress{false}, m_ShadersCompiled{false}, m_Device{VK_Core::m_Device},
-          m_LoadPool{VK_Core::m_Device.get()->GetLoadPool()}, m_DescriptorPool{m_LoadPool.get()->GetDescriptorPool()}
+          m_ShowDebugShadowMap{false}, m_FrameInProgress{false}, m_ShadersCompiled{false}, m_Device{VK_Core::m_Device}
     {
         CompileShaders(); // runs in a parallel thread and sets m_ShadersCompiled
     }
@@ -85,7 +84,7 @@ namespace GfxRenderEngine
             m_UniformBuffers[i]->Map();
         }
 
-        std::unique_ptr<VK_DescriptorSetLayout> shadowUniformBufferDescriptorSetLayout =
+        m_ShadowUniformBufferDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
                 .Build();
@@ -98,64 +97,50 @@ namespace GfxRenderEngine
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> globalDescriptorSetLayout =
+        m_GlobalDescriptorSetLayout =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // projection, view , lights
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // spritesheet
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // font atlas
-                .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                 .Build();
-        m_GlobalDescriptorSetLayout = globalDescriptorSetLayout->GetDescriptorSetLayout();
 
-        std::unique_ptr<VK_DescriptorSetLayout> diffuseDescriptorSetLayout =
+        m_MaterialDescriptorSetLayouts[Mt::MtDiffuse] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // color map
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> pbrMaterialDescriptorSetLayout =
-            VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // diffuse color map
-                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // normal map
-                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // roughness metallic map
-                .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // emissive map
-                .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // roughness map
-                .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            VK_SHADER_STAGE_FRAGMENT_BIT) // metallic map
-                .Build();
+        m_MaterialDescriptorSetLayouts[Mt::MtPbr] = VK_DescriptorSetLayout::Builder()
+                                                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // diffuse color map
+                                                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // normal map
+                                                        .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // roughness metallic map
+                                                        .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // emissive map
+                                                        .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // roughness map
+                                                        .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // metallic map
+                                                        .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> pbrResourceDescriptorSetLayout =
+        m_ResourceDescriptorSetLayouts[Rt::RtInstance] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> pbrSAResourceDescriptorSetLayout =
+        m_ResourceDescriptorSetLayouts[Rt::RtInstanceSA] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> grassResourceDescriptorSetLayout =
+        m_ResourceDescriptorSetLayouts[Rt::RtGrass] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // dummy
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for height map
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader parameters
-                .Build();
-
-        std::unique_ptr<VK_DescriptorSetLayout> instanceDescriptorSetLayout =
-            VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
-                .Build();
-
-        std::unique_ptr<VK_DescriptorSetLayout> animationInstancedDescriptorSetLayout =
-            VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
-                .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
                 .Build();
 
         m_LightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
@@ -178,47 +163,53 @@ namespace GfxRenderEngine
                             VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer emissive input attachment
                 .Build();
 
-        std::unique_ptr<VK_DescriptorSetLayout> cubemapDescriptorSetLayout =
+        m_MaterialDescriptorSetLayouts[Mt::MtCubemap] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // cubemap
                 .Build();
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse = {m_GlobalDescriptorSetLayout};
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse = {
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDiffuse = {
-            m_GlobalDescriptorSetLayout, diffuseDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtDiffuse]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
-            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
-            pbrResourceDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGrass = {
-            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
-            grassResourceDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtGrass]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrSA = {
-            m_GlobalDescriptorSetLayout, pbrMaterialDescriptorSetLayout->GetDescriptorSetLayout(),
-            pbrSAResourceDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtInstanceSA]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting = {
-            m_GlobalDescriptorSetLayout, m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPostProcessing = {
-            m_GlobalDescriptorSetLayout,
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_PostProcessingDescriptorSetLayout->GetDescriptorSetLayout(),
         };
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap = {
-            m_GlobalDescriptorSetLayout, cubemapDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtCubemap]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadowInstanced = {
-            shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
-            instanceDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_ShadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadowAnimatedInstanced = {
-            shadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
-            animationInstancedDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_ShadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtInstanceSA]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDebug = {
             m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()};
@@ -251,7 +242,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers0[i]->DescriptorInfo();
-            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_ShadowUniformBufferDescriptorSetLayout)
                 .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets0[i]);
         }
@@ -259,7 +250,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo shadowUBObufferInfo = m_ShadowUniformBuffers1[i]->DescriptorInfo();
-            VK_DescriptorWriter(*shadowUniformBufferDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_ShadowUniformBufferDescriptorSetLayout)
                 .WriteBuffer(0, shadowUBObufferInfo)
                 .Build(m_ShadowDescriptorSets1[i]);
         }
@@ -267,7 +258,7 @@ namespace GfxRenderEngine
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
             VkDescriptorBufferInfo bufferInfo = m_UniformBuffers[i]->DescriptorInfo();
-            VK_DescriptorWriter(*globalDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_GlobalDescriptorSetLayout)
                 .WriteBuffer(0, bufferInfo)
                 .WriteImage(1, imageInfo0)
                 .WriteImage(2, imageInfo1)
@@ -289,13 +280,13 @@ namespace GfxRenderEngine
             m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(), descriptorSetLayoutsShadowAnimatedInstanced);
 
         m_LightSystem =
-            std::make_unique<VK_LightSystem>(m_Device, m_RenderPass->Get3DRenderPass(), *globalDescriptorSetLayout);
+            std::make_unique<VK_LightSystem>(m_Device, m_RenderPass->Get3DRenderPass(), *m_GlobalDescriptorSetLayout);
         m_RenderSystemSpriteRenderer =
             std::make_unique<VK_RenderSystemSpriteRenderer>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsDiffuse);
-        m_RenderSystemSpriteRenderer2D =
-            std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_RenderPass->GetGUIRenderPass(), *globalDescriptorSetLayout);
+        m_RenderSystemSpriteRenderer2D = std::make_unique<VK_RenderSystemSpriteRenderer2D>(m_RenderPass->GetGUIRenderPass(),
+                                                                                           *m_GlobalDescriptorSetLayout);
         m_RenderSystemGUIRenderer =
-            std::make_unique<VK_RenderSystemGUIRenderer>(m_RenderPass->GetGUIRenderPass(), *globalDescriptorSetLayout);
+            std::make_unique<VK_RenderSystemGUIRenderer>(m_RenderPass->GetGUIRenderPass(), *m_GlobalDescriptorSetLayout);
         m_RenderSystemCubemap =
             std::make_unique<VK_RenderSystemCubemap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsCubemap);
 
@@ -306,7 +297,6 @@ namespace GfxRenderEngine
         m_RenderSystemDeferredShading = std::make_unique<VK_RenderSystemDeferredShading>(
             m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsLighting, m_LightingDescriptorSets.data(),
             m_ShadowMapDescriptorSets.data());
-
         CreateRenderSystemBloom();
 
         m_RenderSystemPostProcessing = std::make_unique<VK_RenderSystemPostProcessing>(
@@ -322,7 +312,7 @@ namespace GfxRenderEngine
 
     void VK_Renderer::CreateRenderSystemBloom()
     {
-        m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>(*m_RenderPass, m_DescriptorPool);
+        m_RenderSystemBloom = std::make_unique<VK_RenderSystemBloom>(*m_RenderPass);
     }
 
     void VK_Renderer::CreateShadowMapDescriptorSets()
@@ -335,7 +325,7 @@ namespace GfxRenderEngine
             VkDescriptorBufferInfo shadowUBObufferInfo0 = m_ShadowUniformBuffers0[i]->DescriptorInfo();
             VkDescriptorBufferInfo shadowUBObufferInfo1 = m_ShadowUniformBuffers1[i]->DescriptorInfo();
 
-            VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_ShadowMapDescriptorSetLayout)
                 .WriteImage(0, shadowMapInfo0)
                 .WriteImage(1, shadowMapInfo1)
                 .WriteBuffer(2, shadowUBObufferInfo0)
@@ -368,7 +358,7 @@ namespace GfxRenderEngine
             imageInfoGBufferEmissionInputAttachment.imageView = m_RenderPass->GetImageViewGBufferEmission();
             imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            VK_DescriptorWriter(*m_LightingDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_LightingDescriptorSetLayout)
                 .WriteImage(0, imageInfoGBufferPositionInputAttachment)
                 .WriteImage(1, imageInfoGBufferNormalInputAttachment)
                 .WriteImage(2, imageInfoGBufferColorInputAttachment)
@@ -390,7 +380,7 @@ namespace GfxRenderEngine
             imageInfoGBufferEmissionInputAttachment.imageView = m_RenderPass->GetImageViewGBufferEmission();
             imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout, m_DescriptorPool)
+            VK_DescriptorWriter(*m_PostProcessingDescriptorSetLayout)
                 .WriteImage(0, imageInfoColorInputAttachment)
                 .WriteImage(1, imageInfoGBufferEmissionInputAttachment)
                 .Build(m_PostProcessingDescriptorSets[frameIndex]);
@@ -1004,5 +994,14 @@ namespace GfxRenderEngine
         {
             m_RenderSystemGUIRenderer->RenderSprite(m_FrameInfo, sprite, position, color, textureID);
         }
+    }
+
+    VK_DescriptorSetLayout& VK_Renderer::GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType)
+    {
+        return *m_MaterialDescriptorSetLayouts[materialType];
+    }
+    VK_DescriptorSetLayout& VK_Renderer::GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourceType)
+    {
+        return *m_ResourceDescriptorSetLayouts[resourceType];
     }
 } // namespace GfxRenderEngine

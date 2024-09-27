@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -29,7 +29,7 @@
 
 namespace GfxRenderEngine
 {
-    Layer::Layer(const std::string& name) : m_DebugName(name), m_Enabled(true) {}
+    Layer::Layer(const std::string& name) : m_DebugName{name} {}
 
     Layer::~Layer() {}
 } // namespace GfxRenderEngine

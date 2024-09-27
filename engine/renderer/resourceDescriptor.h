@@ -35,6 +35,15 @@ namespace GfxRenderEngine
     class ResourceDescriptor
     {
     public:
+        enum ResourceType
+        {
+            RtInstance = 0, // instance buffer
+            RtInstanceSA,   // instance buffer + bone matrices
+            RtGrass,        // grass shader
+            NUM_TYPES
+        };
+
+    public:
         virtual ~ResourceDescriptor() = default;
 
         static std::shared_ptr<ResourceDescriptor> Create(Resources::ResourceBuffers& buffers);

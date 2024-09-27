@@ -96,11 +96,12 @@ namespace GfxRenderEngine
             std::unique_ptr<VK_DescriptorPool> Build() const;
 
         private:
-            VkDevice m_Device;
+            VkDevice m_Device; // constructor-initialized
             std::vector<VkDescriptorPoolSize> m_PoolSizes;
 
-            uint m_MaxSets = 1000;
-            VkDescriptorPoolCreateFlags m_PoolFlags = 0;
+            uint m_MaxSets{0};
+            bool m_MaxSetsCalled{false};
+            VkDescriptorPoolCreateFlags m_PoolFlags{0};
         };
 
     public:
@@ -116,8 +117,8 @@ namespace GfxRenderEngine
         void ResetPool();
 
     private:
-        VkDevice m_Device;
-        VkDescriptorPool m_DescriptorPool;
+        VkDevice m_Device{nullptr};
+        VkDescriptorPool m_DescriptorPool{nullptr};
 
         friend class VK_DescriptorWriter;
     };
@@ -126,7 +127,6 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& descriptorPool);
         VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout);
 
         VK_DescriptorWriter& WriteBuffer(uint binding, const VkDescriptorBufferInfo& bufferInfo);
@@ -139,6 +139,6 @@ namespace GfxRenderEngine
     private:
         VK_DescriptorSetLayout& m_SetLayout;
         VK_DescriptorPool& m_DescriptorPool;
-        std::vector<VkWriteDescriptorSet> m_Writes;
+        std::vector<VkWriteDescriptorSet> m_Writes{};
     };
 } // namespace GfxRenderEngine

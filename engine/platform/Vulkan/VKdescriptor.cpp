@@ -85,6 +85,8 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, uint count)
     {
+        CORE_ASSERT(!m_MaxSetsCalled, "SetMaxSets() is optionally. It must be the final call b4 build().");
+        m_MaxSets += count;
         m_PoolSizes.push_back({descriptorType, count});
         return *this;
     }
@@ -97,6 +99,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::SetMaxSets(uint count)
     {
+        m_MaxSetsCalled = true;
         m_MaxSets = count;
         return *this;
     }
@@ -142,8 +145,10 @@ namespace GfxRenderEngine
         allocInfo.descriptorSetCount = 1;
 
         auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &descriptor);
+        CORE_ASSERT(result == VK_SUCCESS, "vkAllocateDescriptorSets failed");
         if (result != VK_SUCCESS)
         {
+            CORE_HARD_STOP("AllocateDescriptorSet");
             return false;
         }
         return true;
@@ -158,13 +163,8 @@ namespace GfxRenderEngine
     void VK_DescriptorPool::ResetPool() { vkResetDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, 0); }
 
     // *************** Descriptor Writer *********************
-
-    VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout, VK_DescriptorPool& descriptorPool)
-        : m_SetLayout{setLayout}, m_DescriptorPool{descriptorPool}
-    {
-    }
     VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout)
-        : m_SetLayout{setLayout}, m_DescriptorPool{VK_Core::m_Device.get()->GetLoadPool().get()->GetDescriptorPool()}
+        : m_SetLayout{setLayout}, m_DescriptorPool{VK_Core::m_Device->GetLoadPool()->GetDescriptorPool()}
     {
     }
 
@@ -237,8 +237,10 @@ namespace GfxRenderEngine
     bool VK_DescriptorWriter::Build(VkDescriptorSet& set)
     {
         bool success = m_DescriptorPool.AllocateDescriptorSet(m_SetLayout.GetDescriptorSetLayout(), set);
+        CORE_ASSERT(success, "AllocateDescriptorSet failed");
         if (!success)
         {
+            CORE_HARD_STOP("VK_DescriptorWriter::Build");
             return false;
         }
         Overwrite(set);

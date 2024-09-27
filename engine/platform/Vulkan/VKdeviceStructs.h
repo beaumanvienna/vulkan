@@ -48,10 +48,10 @@ namespace GfxRenderEngine
 
     struct QueueFamilyIndices
     {
-        int m_GraphicsFamily = -1;
-        int m_PresentFamily = -1;
-        int m_TransferFamily = -1;
-        int m_NumberOfQueues = 0;
+        int m_GraphicsFamily{-1};
+        int m_PresentFamily{-1};
+        int m_TransferFamily{-1};
+        int m_NumberOfQueues{0};
         std::vector<int> m_UniqueFamilyIndices;
         int m_QueueIndices[QueueTypes::NUMBER_OF_QUEUE_TYPES] = {};
         bool IsComplete() { return (m_GraphicsFamily >= 0) && (m_PresentFamily >= 0); }

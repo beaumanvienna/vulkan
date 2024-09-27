@@ -49,7 +49,6 @@ namespace GfxRenderEngine
         inline const std::string& GetName() const { return m_DebugName; }
 
     private:
-        bool m_Enabled;
         std::string m_DebugName;
     };
 } // namespace GfxRenderEngine

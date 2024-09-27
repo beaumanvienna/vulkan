@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
+
 #include "VKresourceDescriptor.h"
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
@@ -58,27 +60,25 @@ namespace GfxRenderEngine
         VkDescriptorBufferInfo multiPurposeBufferInfo = multiPurposeBuffer->DescriptorInfo();
 
         {
-            VK_DescriptorSetLayout::Builder builder{};
-            if (instBuffer || skelBuffer || hBuffer || mPurposeBuffer)
+            ResourceDescriptor::ResourceType resourceType{};
+            if (buffers[Resources::HEIGHTMAP])
             {
-                builder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+                resourceType = ResourceDescriptor::ResourceType::RtGrass;
             }
-            if (skelBuffer || hBuffer || mPurposeBuffer)
+            else if (buffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX])
             {
-                builder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+                resourceType = ResourceDescriptor::ResourceType::RtInstanceSA;
             }
-            if (hBuffer || mPurposeBuffer)
+            else if (buffers[Resources::INSTANCE_BUFFER_INDEX])
             {
-                builder.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+                resourceType = ResourceDescriptor::ResourceType::RtInstance;
             }
-            if (mPurposeBuffer)
+            else
             {
-                builder.AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+                CORE_ASSERT(false, "resource type not supported");
+                CORE_HARD_STOP("resource type was not found");
             }
-            CORE_ASSERT(builder.Size(), "builder empty");
-            std::unique_ptr<VK_DescriptorSetLayout> localDescriptorSetLayout = builder.Build();
-
-            VK_DescriptorWriter descriptorWriter(*localDescriptorSetLayout);
+            VK_DescriptorWriter descriptorWriter(GetResourceDescriptorSetLayout(resourceType));
             if (instBuffer || skelBuffer || hBuffer || mPurposeBuffer)
             {
                 descriptorWriter.WriteBuffer(0, instanceBufferInfo);
@@ -120,5 +120,12 @@ namespace GfxRenderEngine
     VK_ResourceDescriptor::~VK_ResourceDescriptor() {}
 
     const VkDescriptorSet& VK_ResourceDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
+
+    VK_DescriptorSetLayout&
+    VK_ResourceDescriptor::GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourcelType)
+    {
+        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer().get());
+        return renderer->GetResourceDescriptorSetLayout(resourcelType);
+    }
 
 } // namespace GfxRenderEngine

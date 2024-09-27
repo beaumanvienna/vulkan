@@ -29,8 +29,8 @@
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemBloom::VK_RenderSystemBloom(VK_RenderPass const& renderPass3D, VK_DescriptorPool& descriptorPool)
-        : m_RenderPass3D{renderPass3D}, m_FilterRadius{0.001}, m_DescriptorPool{descriptorPool}
+    VK_RenderSystemBloom::VK_RenderSystemBloom(VK_RenderPass const& renderPass3D)
+        : m_RenderPass3D{renderPass3D}, m_FilterRadius{0.001}
     {
         m_ExtentMipLevel0 = m_RenderPass3D.GetExtent();
 
@@ -44,7 +44,7 @@ namespace GfxRenderEngine
         // pipelines
         CreateBloomDescriptorSetLayout();
         CreateDescriptorSet(); // use one descriptor set
-        CreateBloomPipelinesLayout(m_BloomDescriptorSetsLayout->GetDescriptorSetLayout());
+        CreateBloomPipelinesLayout();
         CreateBloomPipelines(); // use two pipelines (up pipeline and down pipeline)
     }
 
@@ -236,7 +236,7 @@ namespace GfxRenderEngine
             }
         }
 
-        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetsLayout, m_DescriptorPool);
+        VK_DescriptorWriter descriptorWriter(*m_BloomDescriptorSetsLayout);
 
         for (uint mipLevel = 0; mipLevel < VK_RenderSystemBloom::NUMBER_OF_MIPMAPS; ++mipLevel)
         {
@@ -251,8 +251,9 @@ namespace GfxRenderEngine
     }
 
     // up & down share the same layout
-    void VK_RenderSystemBloom::CreateBloomPipelinesLayout(VkDescriptorSetLayout const& descriptorSetLayout)
+    void VK_RenderSystemBloom::CreateBloomPipelinesLayout()
     {
+        VkDescriptorSetLayout const& descriptorSetLayout = m_BloomDescriptorSetsLayout->GetDescriptorSetLayout();
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
@@ -325,7 +326,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.extent = framebuffer->GetExtent();
 
         VkClearValue clearValue{};
-        clearValue.color = {0.50f, 0.30f, 0.70f, 1.0f};
+        clearValue.color = {{0.50f, 0.30f, 0.70f, 1.0f}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearValue;
 

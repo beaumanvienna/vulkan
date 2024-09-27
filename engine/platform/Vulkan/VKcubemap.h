@@ -55,21 +55,18 @@ namespace GfxRenderEngine
     private:
         static constexpr int NUMBER_OF_CUBEMAP_IMAGES = 6;
 
-        std::vector<std::string> m_FileNames;
+        std::vector<std::string> m_FileNames{};
         int m_Width, m_Height, m_BytesPerPixel;
         uint m_MipLevels;
-
         bool m_NearestFilter, m_sRGB;
-        int m_InternalFormat, m_DataFormat;
-        int m_Type;
 
-        VkFormat m_ImageFormat;
-        VkImage m_CubemapImage;
-        VkDeviceMemory m_CubemapImageMemory;
-        VkImageLayout m_ImageLayout;
-        VkImageView m_ImageView;
-        VkSampler m_Sampler;
+        VkFormat m_ImageFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkImage m_CubemapImage{nullptr};
+        VkDeviceMemory m_CubemapImageMemory{nullptr};
+        VkImageLayout m_ImageLayout{VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED};
+        VkImageView m_ImageView{nullptr};
+        VkSampler m_Sampler{nullptr};
 
-        VkDescriptorImageInfo m_DescriptorImageInfo;
+        VkDescriptorImageInfo m_DescriptorImageInfo{};
     };
 } // namespace GfxRenderEngine

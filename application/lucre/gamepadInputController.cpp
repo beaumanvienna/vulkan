@@ -99,7 +99,6 @@ namespace LucreApp
             float yaw = transform.GetRotation().y;
             const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
             const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
-            const glm::vec3 upDir{0.f, -1.f, 0.f};
 
             glm::vec3 moveDir{0.0f};
             moveDir -= forwardDir * m_Momentum.Get(translate, timestep);

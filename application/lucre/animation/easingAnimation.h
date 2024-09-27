@@ -38,6 +38,7 @@ namespace LucreApp
             m_RangeLow = rangeLow < rangeHigh ? rangeLow : rangeHigh;
             m_RangeHigh = rangeLow < rangeHigh ? rangeHigh : rangeLow;
         }
+        virtual ~EasingAnimation() {};
 
         void Run(float time, float& speed)
         {
