@@ -24,13 +24,7 @@
                             0.776581, 1.87029, -0.898012
                         ]
                     }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf",
-            "instances":
-            [
+                },
                 {
                     "transform":
                     {

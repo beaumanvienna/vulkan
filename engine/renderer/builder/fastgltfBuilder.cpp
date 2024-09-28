@@ -656,7 +656,7 @@ namespace GfxRenderEngine
             // Vertices
             {
                 const float* positionBuffer = nullptr;
-                const float* colorBuffer = nullptr;
+                const void* colorBuffer = nullptr;
                 const float* normalsBuffer = nullptr;
                 const float* tangentsBuffer = nullptr;
                 const float* texCoordsBuffer = nullptr;
@@ -677,10 +677,41 @@ namespace GfxRenderEngine
                 // Get buffer data for vertex color
                 if (glTFPrimitive.findAttribute("COLOR_0") != glTFPrimitive.attributes.end())
                 {
-                    colorBufferComponentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second], colorBuffer);
-                    auto glComponentType = fastgltf::getGLComponentType(colorBufferComponentType);
-                    CORE_ASSERT(glComponentType == GL_FLOAT, "unexpected component type " + std::to_string(glComponentType));
+                    fastgltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second];
+                    colorBufferComponentType = accessor.componentType;
+                    switch (colorBufferComponentType)
+                    {
+                        case fastgltf::ComponentType::Float:
+                        {
+                            const float* buffer;
+                            LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                                                buffer);
+                            colorBuffer = buffer;
+                            break;
+                        }
+                        case fastgltf::ComponentType::UnsignedShort:
+                        {
+                            const uint16_t* buffer;
+                            LoadAccessor<uint16_t>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                                                   buffer);
+                            colorBuffer = buffer;
+                            break;
+                        }
+                        case fastgltf::ComponentType::UnsignedByte:
+                        {
+                            const uint8_t* buffer;
+                            LoadAccessor<uint8_t>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                                                  buffer);
+                            colorBuffer = buffer;
+                            break;
+                        }
+                        default:
+                        {
+                            int componentType = fastgltf::getGLComponentType(colorBufferComponentType);
+                            CORE_ASSERT(false, "unexpected component type " + std::to_string(componentType));
+                            break;
+                        }
+                    }
                 }
 
                 // Get buffer data for vertex normals
@@ -735,7 +766,37 @@ namespace GfxRenderEngine
                     vertex.m_Position = glm::vec3(position.x, position.y, position.z);
 
                     // color
-                    auto vertexColor = colorBuffer ? glm::make_vec3(&colorBuffer[vertexIterator * 3]) : glm::vec3(1.0f);
+                    glm::vec3 vertexColor{1.0f};
+                    switch (colorBufferComponentType)
+                    {
+                        case fastgltf::ComponentType::Float:
+                        {
+                            vertexColor =
+                                colorBuffer ? glm::make_vec3(&((static_cast<const float*>(colorBuffer))[vertexIterator * 3]))
+                                            : glm::vec3(1.0f);
+                            break;
+                        }
+                        case fastgltf::ComponentType::UnsignedShort:
+                        {
+                            const uint16_t* vec3 = &((static_cast<const uint16_t*>(colorBuffer))[vertexIterator * 3]);
+                            float norm = 0xFFFF;
+                            vertexColor =
+                                colorBuffer ? glm::vec3(vec3[0] / norm, vec3[1] / norm, vec3[2] / norm) : glm::vec3(1.0f);
+                            break;
+                        }
+                        case fastgltf::ComponentType::UnsignedByte:
+                        {
+                            const uint8_t* vec3 = &((static_cast<const uint8_t*>(colorBuffer))[vertexIterator * 3]);
+                            float norm = 0xFF;
+                            vertexColor =
+                                colorBuffer ? glm::vec3(vec3[0] / norm, vec3[1] / norm, vec3[2] / norm) : glm::vec3(1.0f);
+                            break;
+                        }
+                        default:
+                        {
+                            break;
+                        }
+                    }
                     vertex.m_Color = glm::vec4(vertexColor.x, vertexColor.y, vertexColor.z, 1.0f) * diffuseColor;
 
                     // normal
