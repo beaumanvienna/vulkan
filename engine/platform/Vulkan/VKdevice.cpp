@@ -1076,11 +1076,6 @@ namespace GfxRenderEngine
             "VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG                    ",
             "VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG                    ",
             "VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG                    ",
-            #ifndef MACOSX
-            "VK_FORMAT_R16G16_SFIXED5_NV                             ",
-            "VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR                     ",
-            "VK_FORMAT_A8_UNORM_KHR                                  ",
-            #endif
             "VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT                     ",
             "VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT                     ",
             "VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT                     ",
@@ -1136,10 +1131,7 @@ namespace GfxRenderEngine
             "VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT               ",
             #endif
             "VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT                     ",
-            "VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT                     ",
-            #ifndef MACOSX
-            "VK_FORMAT_R16G16_S10_5_NV                               "
-            #endif
+            "VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT                     "
         };
         std::vector<VkFormat> candidates =
         {
@@ -1392,11 +1384,6 @@ namespace GfxRenderEngine
             VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
             VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
             VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
-            #ifndef MACOSX
-            VK_FORMAT_R16G16_SFIXED5_NV,
-            VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR,
-            VK_FORMAT_A8_UNORM_KHR,
-            #endif
             VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT,
             VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT,
             VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT,
@@ -1452,10 +1439,7 @@ namespace GfxRenderEngine
             VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT,
             #endif
             VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT,
-            VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT,
-            #ifndef MACOSX
-            VK_FORMAT_R16G16_S10_5_NV
-            #endif
+            VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT
         };
         // clang-format on
         uint index = 0;
