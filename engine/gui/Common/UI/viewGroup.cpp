@@ -498,9 +498,7 @@ namespace GfxRenderEngine
                 return;
             }
 
-            float sum = 0.0f;
             float maxOther = 0.0f;
-            float totalWeight = 0.0f;
             float weightSum = 0.0f;
             float weightZeroSum = 0.0f;
 
@@ -520,7 +518,6 @@ namespace GfxRenderEngine
 
                 if (linLayoutParams)
                 {
-                    totalWeight += linLayoutParams->weight;
                     if (linLayoutParams->HasMargins())
                     {
                         margins = linLayoutParams->margins;
@@ -566,7 +563,6 @@ namespace GfxRenderEngine
                     maxOther = std::max(maxOther, view->GetMeasuredWidth() + margins.horiz());
                 }
 
-                sum += amount;
                 if (linLayoutParams)
                 {
                     if (linLayoutParams->weight == 0.0f)
@@ -940,7 +936,6 @@ namespace GfxRenderEngine
         }
 
         const float friction = 0.92f;
-        const float stop_threshold = 0.1f;
 
         void ScrollView::Draw(SCREEN_UIContext& dc)
         {
@@ -1345,7 +1340,7 @@ namespace GfxRenderEngine
         }
 
         TabHolder::TabHolder(Orientation orientation, float stripSize, LayoutParams* layoutParams, float leftMargin)
-            : LinearLayout(Opposite(orientation), layoutParams), stripSize_(stripSize)
+            : LinearLayout(Opposite(orientation), layoutParams)
         {
             if (orientation == ORIENT_HORIZONTAL)
             {

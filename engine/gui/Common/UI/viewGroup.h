@@ -298,9 +298,7 @@ namespace GfxRenderEngine
 
             Orientation orientation_;
             float scrollPos_ = 0.0f;
-            float scrollStart_ = 0.0f;
             float scrollTarget_ = 0.0f;
-            int scrollTouchId_ = -1;
             bool scrollToTarget_ = false;
             float inertia_ = 0.0f;
             float pull_ = 0.0f;
@@ -384,7 +382,6 @@ namespace GfxRenderEngine
             ScrollView* tabScroll_ = nullptr;
             AnchorLayout* contents_ = nullptr;
 
-            float stripSize_;
             int currentTab_ = 0;
             std::vector<View*> tabs_;
             std::vector<AnchorTranslateTween*> tabTweens_;

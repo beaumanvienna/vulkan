@@ -71,11 +71,6 @@ namespace GfxRenderEngine
 
     bool Engine::Start()
     {
-        // init logger
-        if (!Log::Init())
-        {
-            std::cout << "Could not initialize logger" << std::endl;
-        }
         InitSettings();
 
         // signal handling

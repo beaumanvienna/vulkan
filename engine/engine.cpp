@@ -25,12 +25,18 @@
 
 #include "core.h"
 #include "engine.h"
-#include "auxiliary/instrumentation.h"
 #include "application.h"
+
+using Profiler = GfxRenderEngine::Instrumentation::Profiler;
+// global logger for the engine and application
+std::unique_ptr<GfxRenderEngine::Log> g_Logger;
+// non-owning pointer to the global profiler
+std::unique_ptr<Profiler> g_Profiler;
 
 int engine(int argc, char* argv[])
 {
-    PROFILE_BEGIN_SESSION("RunTime", "profiling (open with chrome tracing).json");
+    g_Logger = std::make_unique<GfxRenderEngine::Log>();
+    g_Profiler = std::make_unique<Profiler>("RunTime", "profiling (open with chrome tracing).json");
 
     std::unique_ptr<GfxRenderEngine::Engine> engine;
     std::unique_ptr<GfxRenderEngine::Application> application;
@@ -53,7 +59,6 @@ int engine(int argc, char* argv[])
             if (!engine->IsRunning())
             {
                 engine->Quit();
-                PROFILE_END_SESSION();
                 exit(0);
             }
             std::this_thread::sleep_for(16ms);
@@ -103,10 +108,11 @@ int engine(int argc, char* argv[])
     engine->Shutdown();
     application.reset();
     engine->Quit();
+    g_Profiler.reset();
+    g_Logger.reset();
 
-    PROFILE_END_SESSION();
 #ifdef DEBUG
-    LOG_CORE_INFO("leaving main");
+    std::cout << "leaving main" << std::endl;
 #endif
     return 0;
 }

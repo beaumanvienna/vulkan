@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
+#include <iostream>
 #include <mutex>
 #include "BS_thread_pool/BS_thread_pool.hpp"
 

@@ -38,8 +38,8 @@ namespace LucreApp
 {
 
     GameState::GameState()
-        : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH}, m_InputIdle{false},
-          m_UserInputEnabled{false}, m_DeleteScene{State::NULL_STATE}, m_LoadingState{State::NULL_STATE}
+        : m_State{State::SPLASH}, m_NextState{State::SPLASH}, m_LastState{State::SPLASH}, m_UserInputEnabled{false},
+          m_DeleteScene{State::NULL_STATE}, m_LoadingState{State::NULL_STATE}
     {
         memset(m_StateLoaded, false, static_cast<int>(State::MAX_STATES) * sizeof(bool));
     }

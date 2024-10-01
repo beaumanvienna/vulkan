@@ -35,7 +35,7 @@
                 "vendor/tracy/include"
             ],
             "defines": [
-                "MACOSX"
+                "MACOSX", "PROFILING"
             ],
             "cStandard": "c17",
             "cppStandard": "c++20"

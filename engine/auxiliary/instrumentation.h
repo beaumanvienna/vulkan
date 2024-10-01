@@ -44,10 +44,7 @@ namespace GfxRenderEngine
 #define FUNC_SIGNATURE __PRETTY_FUNCTION__
 #endif
 
-#define PROFILE_BEGIN_SESSION(name, filepath) ::GfxRenderEngine::Instrumentation::SessionManager::Get().Begin(name, filepath)
-#define PROFILE_END_SESSION() ::GfxRenderEngine::Instrumentation::SessionManager::Get().End()
-
-#define PROFILE_SCOPE_LINE2(name, line) ::GfxRenderEngine::Instrumentation::Timer timer##line(name)
+#define PROFILE_SCOPE_LINE2(name, line) Instrumentation::Timer timer##line(*g_Profiler, name)
 #define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
 #define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
 #define PROFILE_FUNCTION() PROFILE_SCOPE(FUNC_SIGNATURE)
@@ -68,30 +65,19 @@ namespace GfxRenderEngine
             std::string m_Name;
         };
 
-        class SessionManager
+        class Profiler
         {
         public:
-            SessionManager(const SessionManager&) = delete;
-            SessionManager(SessionManager&&) = delete;
-
-            void Begin(const std::string& name, const std::string& filename = "results.json");
-            void End();
+            Profiler(const std::string& name, const std::string& filename = "results.json");
+            ~Profiler();
+            Profiler(const Profiler&) = delete;
+            Profiler(Profiler&&) = delete;
 
             void CreateEntry(const Result& result);
 
-            static SessionManager& Get()
-            {
-                static SessionManager instance;
-                return instance;
-            }
-
         private:
-            SessionManager();
-            ~SessionManager();
-
             void StartJsonFile();
             void EndJsonFile();
-            void EndInternal();
 
         private:
             std::mutex m_Mutex;
@@ -104,10 +90,11 @@ namespace GfxRenderEngine
         {
 
         public:
-            Timer(const char* name);
+            Timer(Profiler& Profiler, const char* name);
             ~Timer();
 
         private:
+            Profiler& m_Profiler;
             const char* m_Name;
             std::chrono::time_point<std::chrono::high_resolution_clock> m_Start, m_End;
         };

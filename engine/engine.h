@@ -26,6 +26,10 @@
 #include <chrono>
 
 #include "log/log.h"
+#include "auxiliary/instrumentation.h"
+#ifdef TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+#endif
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm.hpp"
@@ -35,10 +39,6 @@
 #include "gtx/compatibility.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include "gtx/hash.hpp"
-
-#ifdef TRACY_ENABLE
-#include "tracy/Tracy.hpp"
-#endif
 
 typedef uint8_t uchar;
 typedef uint16_t uint16;
@@ -66,11 +66,28 @@ int engine(int argc, char* argv[]);
 
 #define BIT(x) (1 << (x))
 
+// profiling
+extern std::unique_ptr<GfxRenderEngine::Instrumentation::Profiler> g_Profiler;
+
 // logging
 #ifndef DISTRIBUTION_BUILD
 #define LOGGING_AND_ASSERTS
 #endif
 #ifdef LOGGING_AND_ASSERTS
+
+extern std::unique_ptr<GfxRenderEngine::Log> g_Logger;
+#define LOG_CORE_TRACE(...) g_Logger->GetLogger().trace(__VA_ARGS__)
+#define LOG_CORE_INFO(...) g_Logger->GetLogger().info(__VA_ARGS__)
+#define LOG_CORE_WARN(...) g_Logger->GetLogger().warn(__VA_ARGS__)
+#define LOG_CORE_ERROR(...) g_Logger->GetLogger().error(__VA_ARGS__)
+#define LOG_CORE_CRITICAL(...) g_Logger->GetLogger().critical(__VA_ARGS__)
+
+#define LOG_APP_TRACE(...) g_Logger->GetAppLogger().trace(__VA_ARGS__)
+#define LOG_APP_INFO(...) g_Logger->GetAppLogger().info(__VA_ARGS__)
+#define LOG_APP_WARN(...) g_Logger->GetAppLogger().warn(__VA_ARGS__)
+#define LOG_APP_ERROR(...) g_Logger->GetAppLogger().error(__VA_ARGS__)
+#define LOG_APP_CRITICAL(...) g_Logger->GetAppLogger().critical(__VA_ARGS__)
+
 #define CORE_ASSERT(x, str) \
     if (!(x))               \
     LOG_CORE_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
@@ -84,17 +101,6 @@ int engine(int argc, char* argv[]);
     if (!(x))              \
     LOG_APP_CRITICAL("ASSERT on line number {0} in file {1}: {2} (error)", __LINE__, __FILE__, str)
 
-#define LOG_CORE_TRACE(...) GfxRenderEngine::Log::GetLogger()->trace(__VA_ARGS__)
-#define LOG_CORE_INFO(...) GfxRenderEngine::Log::GetLogger()->info(__VA_ARGS__)
-#define LOG_CORE_WARN(...) GfxRenderEngine::Log::GetLogger()->warn(__VA_ARGS__)
-#define LOG_CORE_ERROR(...) GfxRenderEngine::Log::GetLogger()->error(__VA_ARGS__)
-#define LOG_CORE_CRITICAL(...) GfxRenderEngine::Log::GetLogger()->critical(__VA_ARGS__)
-
-#define LOG_APP_TRACE(...) GfxRenderEngine::Log::GetAppLogger()->trace(__VA_ARGS__)
-#define LOG_APP_INFO(...) GfxRenderEngine::Log::GetAppLogger()->info(__VA_ARGS__)
-#define LOG_APP_WARN(...) GfxRenderEngine::Log::GetAppLogger()->warn(__VA_ARGS__)
-#define LOG_APP_ERROR(...) GfxRenderEngine::Log::GetAppLogger()->error(__VA_ARGS__)
-#define LOG_APP_CRITICAL(...) GfxRenderEngine::Log::GetAppLogger()->critical(__VA_ARGS__)
 #else
 #define CORE_ASSERT(x, str) \
     {                       \

@@ -33,7 +33,10 @@ namespace GfxRenderEngine
 {
     namespace Instrumentation
     {
-        Timer::Timer(const char* name) : m_Name(name) { m_Start = std::chrono::high_resolution_clock::now(); }
+        Timer::Timer(Profiler& profiler, const char* name) : m_Profiler{profiler}, m_Name(name)
+        {
+            m_Start = std::chrono::high_resolution_clock::now();
+        }
 
         Timer::~Timer()
         {
@@ -42,20 +45,10 @@ namespace GfxRenderEngine
             auto start = std::chrono::duration<double, std::micro>{m_Start.time_since_epoch()};
             auto elapsedMicroSeconds = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch() -
                                        std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch();
-            SessionManager::Get().CreateEntry({m_Name, start, elapsedMicroSeconds, std::this_thread::get_id()});
+            m_Profiler.CreateEntry({m_Name, start, elapsedMicroSeconds, std::this_thread::get_id()});
         }
-
-        SessionManager::SessionManager() : m_CurrentSession(nullptr) {}
-
-        SessionManager::~SessionManager() { End(); }
-
-        void SessionManager::Begin(const std::string& name, const std::string& filename)
+        Profiler::Profiler(const std::string& name, const std::string& filename)
         {
-            std::lock_guard lock(m_Mutex);
-            if (m_CurrentSession)
-            {
-                EndInternal();
-            }
             m_StartTime = std::chrono::steady_clock::now();
 
             // this function must be called
@@ -85,18 +78,23 @@ namespace GfxRenderEngine
             }
             else
             {
-                // plain cout because logger might not yet be available
-                std::cout << "SessionManager could not open output file '" << filepath << "'" << std::endl;
+                LOG_CORE_CRITICAL("Profiler could not open output file '{0}'", filepath);
             }
         }
 
-        void SessionManager::End()
+        Profiler::~Profiler()
         {
             std::lock_guard lock(m_Mutex);
-            EndInternal();
+            if (m_CurrentSession)
+            {
+                EndJsonFile();
+                m_OutputStream.close();
+                delete m_CurrentSession;
+                m_CurrentSession = nullptr;
+            }
         }
 
-        void SessionManager::CreateEntry(const Result& result)
+        void Profiler::CreateEntry(const Result& result)
         {
             if ((std::chrono::steady_clock::now() - m_StartTime) > 5min)
             {
@@ -111,10 +109,9 @@ namespace GfxRenderEngine
             outputFile << "\"name\":\"" << result.m_Name << "\",";
             outputFile << "\"ph\":\"X\",";
             outputFile << "\"pid\":0,";
-            outputFile << "\"tid\":" << result.m_ThreadID << ",";
+            outputFile << "\"tid\":" << std::hash<std::thread::id>()(result.m_ThreadID) << ",";
             outputFile << "\"ts\":" << result.m_Start.count();
             outputFile << "}";
-
             std::lock_guard lock(m_Mutex);
             if (m_CurrentSession)
             {
@@ -123,28 +120,18 @@ namespace GfxRenderEngine
             }
         }
 
-        void SessionManager::StartJsonFile()
+        void Profiler::StartJsonFile()
         {
             m_OutputStream << "{\"otherData\": {},\"traceEvents\":[{}";
             m_OutputStream.flush();
         }
 
-        void SessionManager::EndJsonFile()
+        void Profiler::EndJsonFile()
         {
             m_OutputStream << "]}";
             m_OutputStream.flush();
         }
 
-        void SessionManager::EndInternal()
-        {
-            if (m_CurrentSession)
-            {
-                EndJsonFile();
-                m_OutputStream.close();
-                delete m_CurrentSession;
-                m_CurrentSession = nullptr;
-            }
-        }
     } // namespace Instrumentation
 } // namespace GfxRenderEngine
 #endif
