@@ -32,9 +32,6 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<Texture> gTextureAtlas;
-    std::shared_ptr<Texture> gTextureFontAtlas;
-    std::shared_ptr<Buffer> gDummyBuffer;
 
     VK_Renderer::VK_Renderer(VK_Window* window)
         : m_Window{window}, m_FrameCounter{0}, m_CurrentImageIndex{0}, m_AmbientLightIntensity{0.0f}, m_CurrentFrameIndex{0},
@@ -47,7 +44,9 @@ namespace GfxRenderEngine
     {
         ZoneScopedN("VK_Renderer::Init()");
         if (!m_ShadersCompiled)
+        {
             return m_ShadersCompiled;
+        }
 
         RecreateSwapChain();
         RecreateRenderpass();
@@ -222,7 +221,6 @@ namespace GfxRenderEngine
 
         gTextureAtlas = textureSpritesheet; // copy from VK_Texture to Texture
         VkDescriptorImageInfo imageInfo0 = textureSpritesheet->GetDescriptorImageInfo();
-
         data = (const uchar*)ResourceSystem::GetDataPointer(fileSize, "/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         auto textureFontAtlas = std::make_shared<VK_Texture>(true);
         textureFontAtlas->Init(data, fileSize, Texture::USE_SRGB);
@@ -387,7 +385,14 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_Renderer::~VK_Renderer() { FreeCommandBuffers(); }
+    VK_Renderer::~VK_Renderer()
+    {
+        gTextureAtlas.reset();
+        gTextureFontAtlas.reset();
+        gDummyBuffer.reset();
+        m_Imgui->Destroy();
+        FreeCommandBuffers();
+    }
 
     void VK_Renderer::RecreateSwapChain()
     {
@@ -1004,4 +1009,6 @@ namespace GfxRenderEngine
     {
         return *m_ResourceDescriptorSetLayouts[resourceType];
     }
+
+    std::shared_ptr<Texture> VK_Renderer::GetTextureAtlas() { return gTextureAtlas; }
 } // namespace GfxRenderEngine

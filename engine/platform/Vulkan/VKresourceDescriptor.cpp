@@ -22,6 +22,7 @@
 
 #include "core.h"
 
+#include "VKrenderer.h"
 #include "VKresourceDescriptor.h"
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
@@ -30,9 +31,10 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Buffer> gDummyBuffer;
     VK_ResourceDescriptor::VK_ResourceDescriptor(Resources::ResourceBuffers& buffers)
     {
+        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
+        auto gDummyBuffer = renderer->gDummyBuffer;
 
         auto& instBuffer = buffers[Resources::INSTANCE_BUFFER_INDEX];
         auto& skelBuffer = buffers[Resources::SKELETAL_ANIMATION_BUFFER_INDEX];
@@ -124,7 +126,7 @@ namespace GfxRenderEngine
     VK_DescriptorSetLayout&
     VK_ResourceDescriptor::GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourcelType)
     {
-        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer().get());
+        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
         return renderer->GetResourceDescriptorSetLayout(resourcelType);
     }
 

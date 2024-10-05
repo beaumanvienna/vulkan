@@ -38,13 +38,16 @@ namespace GfxRenderEngine
         virtual void Render(VkCommandBuffer commandBuffer) = 0;
         virtual void Run() = 0;
 
-        static std::shared_ptr<Imgui> Create(VkRenderPass renderPass, uint imageCount);
-        static std::shared_ptr<Imgui> ToggleDebugWindow(const GenericCallback& callback = nullptr);
+        static Imgui* Create(VkRenderPass renderPass, uint imageCount);
+        static void Destroy();
+        static Imgui* ToggleDebugWindow(const GenericCallback& callback = nullptr);
 
     public:
         static GenericCallback m_Callback;
 
     private:
         static bool m_ImguiDebugWindowEnabled;
+        static std::unique_ptr<Imgui> m_Imgui;
+        static std::unique_ptr<Imgui> m_ImguiNull;
     };
 } // namespace GfxRenderEngine

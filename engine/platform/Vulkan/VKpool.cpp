@@ -112,7 +112,7 @@ namespace GfxRenderEngine
         CORE_ASSERT(pool != nullptr, "no command pool found!");
         if (!pool)
         {
-            std::cout << "thread id:" << threadID << "\n";
+            std::cout << "thread id:" << threadID << std::endl;
             CORE_HARD_STOP("thread id");
         }
         return pool;
@@ -125,7 +125,7 @@ namespace GfxRenderEngine
         CORE_ASSERT(m_DescriptorPools[hash] != nullptr, "no command pool found!");
         if (!m_DescriptorPools[hash])
         {
-            std::cout << "thread id:" << threadID << "\n";
+            std::cout << "thread id:" << threadID << std::endl;
             CORE_HARD_STOP("thread id");
         }
         return *m_DescriptorPools[hash];
@@ -142,7 +142,6 @@ namespace GfxRenderEngine
         VkCommandPoolResetFlags flags{VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT};
         for (auto& threadID : threadpool.GetThreadIDs())
         {
-            std::cout << "VK_Pool::ResetAllCommandPools: " << "):" << threadID << "\n";
             uint64 hash = std::hash<std::thread::id>()(threadID);
             vkResetCommandPool(m_Device, m_CommandPools[hash], flags);
         }
@@ -154,7 +153,6 @@ namespace GfxRenderEngine
     {
         for (auto& threadID : threadpool.GetThreadIDs())
         {
-            std::cout << "VK_Pool::ResetAllCommandPools: " << "):" << threadID << "\n";
             uint64 hash = std::hash<std::thread::id>()(threadID);
             m_DescriptorPools[hash]->ResetPool();
         }

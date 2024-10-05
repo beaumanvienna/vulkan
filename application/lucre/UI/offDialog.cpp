@@ -42,7 +42,7 @@ namespace LucreApp
         Choice* cancelButton;
 
         LinearLayout* items = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        float scale = UI::m_Common->m_ScaleAll;
+        float scale = UI::g_Common->m_ScaleAll;
 
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {

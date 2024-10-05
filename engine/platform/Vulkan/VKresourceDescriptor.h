@@ -29,6 +29,7 @@
 
 namespace GfxRenderEngine
 {
+    class VK_Renderer;
     class VK_ResourceDescriptor : public ResourceDescriptor
     {
 

@@ -56,7 +56,7 @@ namespace LucreApp
 
     private:
         static constexpr int NUM_BARRELS = 4;
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
         std::shared_ptr<CameraController> m_CameraController;
 
         entt::entity m_BackGround, m_Barrel[NUM_BARRELS];

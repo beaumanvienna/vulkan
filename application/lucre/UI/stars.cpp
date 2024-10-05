@@ -26,6 +26,9 @@
 
 namespace LucreApp
 {
+    UIStarIcon::UIStarIcon(bool narrow, const std::string& name) : Layer(name), m_Narrow(narrow) {}
+
+    UIStarIcon::~UIStarIcon() {}
 
     void UIStarIcon::OnAttach()
     {
@@ -59,8 +62,8 @@ namespace LucreApp
         // 1st star icon: move right to top right corner
         glm::vec2 finalOutOfScreenPosition;
         glm::vec2 finalScreenPosition1;
-        float xPosWide1 = UI::m_Common->m_AvailableWidth - UI::m_Common->m_TabMarginLeftRight;
-        float yPosWide12 = 226.0f * UI::m_Common->m_ScaleAll;
+        float xPosWide1 = UI::g_Common->m_AvailableWidth - UI::g_Common->m_TabMarginLeftRight;
+        float yPosWide12 = 226.0f * UI::g_Common->m_ScaleAll;
         finalOutOfScreenPosition = glm::vec2(2000.0f, 300.0f);
         if (m_Narrow)
         {
@@ -81,7 +84,7 @@ namespace LucreApp
         m_StarMoveOut1.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 2nd star icon: move left to top left corner
-        float xPosWide23 = UI::m_Common->m_TabMarginLeftRight + UI::m_Common->m_IconWidth * 1.5f;
+        float xPosWide23 = UI::g_Common->m_TabMarginLeftRight + UI::g_Common->m_IconWidth * 1.5f;
         glm::vec2 finalScreenPosition2;
         if (m_Narrow)
         {
@@ -102,7 +105,7 @@ namespace LucreApp
         m_StarMoveOut2.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 3rd star icon: move left to bottom left corner
-        float yPosWide3 = yPosWide12 + 568.0f * UI::m_Common->m_ScaleAll;
+        float yPosWide3 = yPosWide12 + 568.0f * UI::g_Common->m_ScaleAll;
         glm::vec2 finalScreenPosition3;
         if (m_Narrow)
         {

@@ -38,42 +38,41 @@
 
 namespace LucreApp
 {
-    std::unique_ptr<SCREEN_ScreenManager> UI::m_ScreenManager = nullptr;
-    std::shared_ptr<Texture> UI::m_FontAtlasTexture;
-    std::shared_ptr<Texture> UI::m_SpritesheetTexture;
-    std::shared_ptr<Common> UI::m_Common;
+    SCREEN_ScreenManager* UI::g_ScreenManager{nullptr};
+    Common* UI::g_Common{nullptr};
+
+    UI::UI(const std::string& name) : Layer(name) {}
+
+    UI::~UI()
+    {
+        g_ScreenManager = nullptr;
+        g_Common = nullptr;
+    }
 
     void UI::OnAttach()
     {
         auto renderer = Engine::m_Engine->GetRenderer();
         m_Spritesheet = Lucre::m_Spritesheet;
         m_ScreenManager = std::make_unique<SCREEN_ScreenManager>(renderer, m_Spritesheet);
+        g_ScreenManager = m_ScreenManager.get();
 
         m_FontAtlasTexture = ResourceSystem::GetTextureFromMemory("/images/atlas/fontAtlas.png", IDB_FONTS_RETRO, "PNG");
         m_SpritesheetTexture = m_Spritesheet->GetTexture();
         m_Common = std::make_unique<Common>();
+        g_Common = m_Common.get();
 
         m_MainScreen = new MainScreen(m_Spritesheet);
         m_MainScreen->OnAttach();
         m_ScreenManager->push(m_MainScreen);
 
-        m_UIStarIcon = new UIStarIcon(false, "UI star icon");
-        Engine::m_Engine->PushOverlay(m_UIStarIcon);
+        m_UIStarIcon = std::make_unique<UIStarIcon>(false, "UI star icon");
+        Engine::m_Engine->PushOverlay(m_UIStarIcon.get());
 
-        m_UIControllerAnimation = new ControllerSetupAnimation("controller animation");
-        Engine::m_Engine->PushOverlay(m_UIControllerAnimation);
+        m_UIControllerAnimation = std::make_unique<ControllerSetupAnimation>("controller animation");
+        Engine::m_Engine->PushOverlay(m_UIControllerAnimation.get());
     }
 
-    void UI::OnDetach()
-    {
-        m_MainScreen->OnDetach();
-        m_ScreenManager.reset();
-        m_FontAtlasTexture.reset();
-        m_SpritesheetTexture.reset();
-
-        delete m_MainScreen;
-        delete m_UIStarIcon;
-    }
+    void UI::OnDetach() { m_MainScreen->OnDetach(); }
 
     void UI::OnUpdate(const Timestep& timestep)
     {
@@ -251,10 +250,10 @@ namespace LucreApp
     {
         // draw health bar
         Sprite whiteSprite = m_Spritesheet->GetSprite(I_WHITE);
-        float x1 = 32.0f * UI::m_Common->m_ScaleAll;
-        float y1 = 8.0f * UI::m_Common->m_ScaleAll;
-        float x2 = 132.0f * UI::m_Common->m_ScaleAll;
-        float y2 = 50.0f * UI::m_Common->m_ScaleAll;
+        float x1 = 32.0f * UI::g_Common->m_ScaleAll;
+        float y1 = 8.0f * UI::g_Common->m_ScaleAll;
+        float x2 = 132.0f * UI::g_Common->m_ScaleAll;
+        float y2 = 50.0f * UI::g_Common->m_ScaleAll;
         Color colorForeground = 0xFF442a28;
         Color colorBackground = 0xC0000000;
 

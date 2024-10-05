@@ -39,7 +39,7 @@ namespace GfxRenderEngine
         glm::vec4 m_ColorRadius; // w is radius
     };
 
-    VK_LightSystem::VK_LightSystem(std::shared_ptr<VK_Device> device, VkRenderPass renderPass,
+    VK_LightSystem::VK_LightSystem(VK_Device* device, VkRenderPass renderPass,
                                    VK_DescriptorSetLayout& globalDescriptorSetLayout)
         : m_Device(device)
     {

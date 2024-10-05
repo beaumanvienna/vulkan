@@ -36,10 +36,13 @@ namespace GfxRenderEngine
         : m_Window{window}, m_FrameDuration{16.667ms}, m_VSyncIsWorking{10}, m_Initialized{false}
     {
         // create a device
-        VK_Core::m_Device = std::make_shared<VK_Device>(window, threadPoolPrimary, threadPoolSecondary);
-        m_Renderer = std::make_shared<VK_Renderer>(m_Window);
+        m_Device = std::make_unique<VK_Device>(window, threadPoolPrimary, threadPoolSecondary);
+        VK_Core::m_Device = m_Device.get();
+        m_Renderer = std::make_unique<VK_Renderer>(m_Window);
         m_Initialized = m_Renderer->Init();
     }
+
+    VK_Context::~VK_Context() {}
 
     bool VK_Context::Init()
     {

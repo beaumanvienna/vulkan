@@ -83,11 +83,12 @@ namespace GfxRenderEngine
         PickPhysicalDevice();
         CreateLogicalDevice();
         CreateCommandPool();
-        m_LoadPool = std::make_shared<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
+        m_LoadPool = std::make_unique<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
     }
 
     VK_Device::~VK_Device()
     {
+        m_LoadPool.reset();
         vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
         vkDestroyDevice(m_Device, nullptr);
 

@@ -29,6 +29,7 @@
 
 namespace LucreApp
 {
+    ControllerSetupAnimation::~ControllerSetupAnimation() {}
 
     void ControllerSetupAnimation::OnAttach()
     {

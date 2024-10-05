@@ -99,7 +99,7 @@ namespace LucreApp
             std::shared_ptr<CameraController> m_CameraController[CameraTypes::MaxCameraTypes];
         };
 
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
         SceneLoaderJSON m_SceneLoaderJSON;
 
         // all things camera

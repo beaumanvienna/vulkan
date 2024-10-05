@@ -40,6 +40,7 @@ namespace LucreApp
     SpriteSheet* Lucre::m_Spritesheet;
 
     Lucre::Lucre() : m_CurrentScene{nullptr}, m_InGameGuiIsRunning{false}, m_DebugWindowIsRunning{false} {}
+    Lucre::~Lucre() {}
 
     bool Lucre::Start()
     {
@@ -55,11 +56,11 @@ namespace LucreApp
         m_GameState.Start();
         m_CurrentScene = m_GameState.GetScene();
 
-        m_UI = new UI("UI");
-        Engine::m_Engine->PushLayer(m_UI);
+        m_UI = std::make_unique<UI>("UI");
+        Engine::m_Engine->PushLayer(m_UI.get());
 
-        m_UIControllerIcon = new UIControllerIcon(false /* indent */, "UI controller");
-        Engine::m_Engine->PushOverlay(m_UIControllerIcon);
+        m_UIControllerIcon = std::make_unique<UIControllerIcon>(false /* indent */, "UI controller icon");
+        Engine::m_Engine->PushOverlay(m_UIControllerIcon.get());
 
         m_Renderer = Engine::m_Engine->GetRenderer();
 

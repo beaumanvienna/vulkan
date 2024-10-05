@@ -86,7 +86,7 @@ namespace GfxRenderEngine
             fontscalex = 1.0f;
             fontscaley = 1.0f;
         }
-        ~SCREEN_DrawBuffer();
+        ~SCREEN_DrawBuffer() {}
 
         bool MeasureImage(const Sprite& sprite, float& w, float& h);
         void DrawImage(const Sprite& sprite, float x, float y, float scale, Color color = COLOR(0xFFFFFF),
@@ -112,7 +112,7 @@ namespace GfxRenderEngine
 
         float fontscalex;
         float fontscaley;
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
 
     private:
         glm::vec4 ConvertColor(Color color);

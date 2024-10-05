@@ -70,29 +70,20 @@ namespace GfxRenderEngine
     m_Animations = std::move(builder.m_Animations);    \
     m_ShaderDataUbo = builder.m_ShaderData;
 
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder) : m_Device(device)
+    VK_Model::VK_Model(VK_Device* device, const FastgltfBuilder& builder) : m_Device(device)
     {
         ZoneScopedNC("VK_Model(FastgltfBuilder)", 0x00ffff);
         INIT_GLTF_AND_FBX_MODEL();
     }
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder) : m_Device(device)
-    {
-        INIT_GLTF_AND_FBX_MODEL();
-    }
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder) : m_Device(device)
-    {
-        INIT_GLTF_AND_FBX_MODEL();
-    }
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder) : m_Device(device)
-    {
-        INIT_GLTF_AND_FBX_MODEL();
-    }
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder) : m_Device(device)
+    VK_Model::VK_Model(VK_Device* device, const UFbxBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const GltfBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const FbxBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const Builder& builder) : m_Device(device)
     {
         INIT_MODEL();
         m_Cubemaps = std::move(builder.m_Cubemaps); // used to manage lifetime
     }
-    VK_Model::VK_Model(std::shared_ptr<VK_Device> device, const TerrainBuilder& builder) : m_Device(device) { INIT_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const TerrainBuilder& builder) : m_Device(device) { INIT_MODEL(); }
 
     VK_Model::~VK_Model() {}
 

@@ -58,6 +58,12 @@ namespace GfxRenderEngine
         theme = &ui_theme;
     }
 
+    SCREEN_UIContext::~SCREEN_UIContext()
+    {
+        delete fontStyle_;
+        delete uidrawbuffer_;
+    }
+
     void SCREEN_UIContext::UIThemeInit()
     {
         bounds_ = Bounds(0, 0, Engine::m_Engine->GetWindowWidth(), Engine::m_Engine->GetWindowHeight());

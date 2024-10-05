@@ -30,13 +30,12 @@
 
 namespace GfxRenderEngine
 {
-
-    // a 90-dgree rotation cannot be achieved with UVs
+    // a 90-degree rotation cannot be achieved with UVs
     // since there are only two points and the picture only flips
-    // a 90-dgree rotation  must be done with four verticies
+    // a 90-degree rotation  must be done with four verticies
 
     Sprite::Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                   const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale)
+                   const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scale)
         : m_Pos1X(pos1X), m_Pos1Y(pos1Y), m_Pos2X(pos2X), m_Pos2Y(pos2Y), m_Width(width), m_Height(height),
           m_Texture(texture), m_ScaleX(scale), m_Name(name), m_ScaleY(scale), m_Rotated(false), m_IsValid(true)
     {
@@ -44,7 +43,7 @@ namespace GfxRenderEngine
     }
 
     Sprite::Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                   const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale,
+                   const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scale,
                    const bool rotated)
         : m_Pos1X(pos1X), m_Pos1Y(pos1Y), m_Pos2X(pos2X), m_Pos2Y(pos2Y), m_Texture(texture), m_ScaleX(scale), m_Name(name),
           m_ScaleY(scale), m_Rotated(rotated), m_IsValid(true)
@@ -63,7 +62,7 @@ namespace GfxRenderEngine
     }
 
     Sprite::Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                   const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX,
+                   const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scaleX,
                    const float scaleY, const bool rotated)
         : m_Pos1X(pos1X), m_Pos1Y(pos1Y), m_Pos2X(pos2X), m_Pos2Y(pos2Y), m_Texture(texture), m_Name(name), m_ScaleX(scaleX),
           m_ScaleY(scaleY), m_Rotated(rotated), m_IsValid(true)
@@ -86,6 +85,8 @@ namespace GfxRenderEngine
           m_ScaleY(0.0f), m_Rotated(false), m_IsValid(false), m_Transform(glm::mat4(1.0f))
     {
     }
+
+    Sprite::~Sprite() {}
 
     const std::string& Sprite::GetName() const { return m_Name; }
 
@@ -157,14 +158,14 @@ namespace GfxRenderEngine
     }
 
     Sprite2D::Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                       const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale)
+                       const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scale)
         : Sprite(pos1X, pos1Y, pos2X, pos2Y, width, height, texture, name, scale)
     {
         FlipY();
     }
 
     Sprite2D::Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                       const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale,
+                       const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scale,
                        const bool rotated)
         : Sprite(pos1X, pos1Y, pos2X, pos2Y, width, height, texture, name, scale, rotated)
     {
@@ -172,14 +173,16 @@ namespace GfxRenderEngine
     }
 
     Sprite2D::Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                       const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX,
-                       const float scaleY, const bool rotated)
+                       const int height, const std::shared_ptr<Texture>& texture, const std::string& name,
+                       const float scaleX, const float scaleY, const bool rotated)
         : Sprite(pos1X, pos1Y, pos2X, pos2Y, width, height, texture, name, scaleX, scaleY, rotated)
     {
         FlipY();
     }
 
     Sprite2D::Sprite2D() : Sprite() {}
+
+    Sprite2D::~Sprite2D() {}
 
     void Sprite2D::FlipY()
     {

@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
+#include "VKrenderer.h"
 #include "VKmaterialDescriptor.h"
 #include "VKdescriptor.h"
 #include "VKrenderer.h"
@@ -30,8 +31,6 @@
 namespace GfxRenderEngine
 {
 
-    extern std::shared_ptr<Texture> gTextureAtlas;
-
     VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
                                                  Material::MaterialTextures& textures)
         : m_MaterialType{materialType}
@@ -40,6 +39,8 @@ namespace GfxRenderEngine
         {
             case MaterialDescriptor::MaterialType::MtPbr:
             {
+                auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
+                auto textureAtlas = renderer->gTextureAtlas;
                 // textures
                 std::shared_ptr<Texture> diffuseMap;
                 std::shared_ptr<Texture> normalMap;
@@ -47,7 +48,7 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture> emissiveMap;
                 std::shared_ptr<Texture> roughnessMap;
                 std::shared_ptr<Texture> metallicMap;
-                std::shared_ptr<Texture>& dummy = gTextureAtlas;
+                std::shared_ptr<Texture>& dummy = textureAtlas;
 
                 diffuseMap = textures[Material::DIFFUSE_MAP_INDEX] ? textures[Material::DIFFUSE_MAP_INDEX] : dummy;
                 normalMap = textures[Material::NORMAL_MAP_INDEX] ? textures[Material::NORMAL_MAP_INDEX] : dummy;
@@ -133,7 +134,7 @@ namespace GfxRenderEngine
     VK_DescriptorSetLayout&
     VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType)
     {
-        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer().get());
+        auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
         return renderer->GetMaterialDescriptorSetLayout(materialType);
     }
 

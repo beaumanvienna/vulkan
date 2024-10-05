@@ -175,7 +175,7 @@ namespace GfxRenderEngine
         if (signal == SIGINT)
         {
             LOG_CORE_INFO("Received signal SIGINT, exiting");
-            exit(0);
+            Engine::m_Engine->Shutdown();
         }
     }
 

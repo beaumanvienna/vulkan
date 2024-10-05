@@ -32,6 +32,6 @@ namespace GfxRenderEngine
     {
 
     public:
-        static std::shared_ptr<VK_Device> m_Device;
+        static VK_Device* m_Device;
     };
 } // namespace GfxRenderEngine

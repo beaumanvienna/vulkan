@@ -49,6 +49,7 @@ namespace GfxRenderEngine
         vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemory, nullptr);
         vkDestroySampler(m_Device->Device(), m_ShadowDepthSampler, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_ShadowRenderPass, nullptr);
+        vkDestroyFramebuffer(m_Device->Device(), m_ShadowFramebuffer, nullptr);
     }
 
     void VK_ShadowMap::CreateShadowRenderPass()

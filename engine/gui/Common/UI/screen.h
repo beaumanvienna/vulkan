@@ -114,7 +114,7 @@ namespace GfxRenderEngine
     class SCREEN_ScreenManager
     {
     public:
-        SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI);
+        SCREEN_ScreenManager(Renderer* renderer, SpriteSheet* spritesheetUI);
         virtual ~SCREEN_ScreenManager();
 
         void switchScreen(SCREEN_Screen* screen);
@@ -186,6 +186,6 @@ namespace GfxRenderEngine
         std::vector<Layer> nextStack_;
         std::stack<SCREEN_UI::View*> lastFocusView;
 
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
     };
 } // namespace GfxRenderEngine

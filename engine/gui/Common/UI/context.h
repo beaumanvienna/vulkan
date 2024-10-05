@@ -82,20 +82,9 @@ namespace GfxRenderEngine
     {
     public:
         SCREEN_UIContext();
-        ~SCREEN_UIContext() {}
+        ~SCREEN_UIContext();
 
-        void Init(SCREEN_Draw::SCREEN_DrawContext* thin3d, SCREEN_Draw::SCREEN_Pipeline* uipipe,
-                  SCREEN_Draw::SCREEN_Pipeline* uipipenotex, SCREEN_DrawBuffer* uidrawbuffer,
-                  SCREEN_DrawBuffer* uidrawbufferTop);
-
-        void BeginFrame();
-
-        void Begin();
-        void BeginNoTex();
-        void BeginPipeline(SCREEN_Draw::SCREEN_Pipeline* pipeline, SCREEN_Draw::SCREEN_SamplerState* samplerState);
         void Flush();
-
-        void RebindTexture() const;
 
         void PushScissor(const Bounds& bounds);
         void PopScissor();
@@ -129,10 +118,7 @@ namespace GfxRenderEngine
         const Bounds& GetBounds() const { return bounds_; }
         Bounds GetLayoutBounds() const;
         SCREEN_Draw::SCREEN_DrawContext* GetSCREEN_DrawContext() { return draw_; }
-        void SetCurZ(float curZ);
 
-        void PushTransform(const UITransform& transform);
-        void PopTransform();
         Bounds TransformBounds(const Bounds& bounds);
 
     private:
@@ -141,16 +127,16 @@ namespace GfxRenderEngine
 
         float fontScaleX_ = 1.0f;
         float fontScaleY_ = 1.0f;
-        SCREEN_UI::FontStyle* fontStyle_ = nullptr;
-        SCREEN_TextDrawer* textDrawer_ = nullptr;
+        SCREEN_UI::FontStyle* fontStyle_{nullptr};
+        SCREEN_TextDrawer* textDrawer_{nullptr};
 
         SCREEN_Draw::SCREEN_SamplerState* sampler_;
-        SCREEN_Draw::SCREEN_Pipeline* ui_pipeline_ = nullptr;
-        SCREEN_Draw::SCREEN_Pipeline* ui_pipeline_notex_ = nullptr;
+        SCREEN_Draw::SCREEN_Pipeline* ui_pipeline_{nullptr};
+        SCREEN_Draw::SCREEN_Pipeline* ui_pipeline_notex_{nullptr};
         std::unique_ptr<SCREEN_ManagedTexture> uitexture_;
 
-        SCREEN_DrawBuffer* uidrawbuffer_ = nullptr;
-        SCREEN_DrawBuffer* uidrawbufferTop_ = nullptr;
+        SCREEN_DrawBuffer* uidrawbuffer_{nullptr};
+        SCREEN_DrawBuffer* uidrawbufferTop_{nullptr};
 
         std::vector<Bounds> scissorStack_;
         std::vector<UITransform> transformStack_;

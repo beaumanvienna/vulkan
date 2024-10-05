@@ -28,7 +28,7 @@
 namespace GfxRenderEngine
 {
 
-    VK_Pipeline::VK_Pipeline(std::shared_ptr<VK_Device> device, const std::string& filePathVertexShader_SPV,
+    VK_Pipeline::VK_Pipeline(VK_Device* device, const std::string& filePathVertexShader_SPV,
                              const std::string& filePathFragmentShader_SPV, const PipelineConfigInfo& spec)
         : m_Device(device)
     {

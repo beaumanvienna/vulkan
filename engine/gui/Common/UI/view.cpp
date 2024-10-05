@@ -697,7 +697,7 @@ namespace GfxRenderEngine
         {
             Style style;
 
-            std::shared_ptr<Renderer> renderer = Engine::m_Engine->GetRenderer();
+            Renderer* renderer = Engine::m_Engine->GetRenderer();
 
             if (!IsSticky() && (numIcons_ != 3))
             {

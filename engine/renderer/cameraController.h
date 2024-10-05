@@ -53,10 +53,6 @@ namespace GfxRenderEngine
         std::shared_ptr<Camera> m_Camera;
 
         float m_ZoomFactor;
-        float m_Left;
-        float m_Right;
-        float m_Bottom;
-        float m_Top;
         float m_ZNear;
         float m_ZFar;
         float m_Fovy;

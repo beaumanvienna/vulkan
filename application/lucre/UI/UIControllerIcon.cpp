@@ -32,6 +32,9 @@
 
 namespace LucreApp
 {
+    UIControllerIcon::UIControllerIcon(bool indent, const std::string& name) : Layer(name), m_Indent(indent) {}
+
+    UIControllerIcon::~UIControllerIcon() {}
 
     void UIControllerIcon::OnAttach()
     {

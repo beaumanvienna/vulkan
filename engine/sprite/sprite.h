@@ -37,16 +37,19 @@ namespace GfxRenderEngine
 
     public:
         Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
-               const std::shared_ptr<Texture> texture, const std::string& name, const float scale = 1.0f);
+               const std::shared_ptr<Texture>& texture, const std::string& name, const float scale = 1.0f);
 
         Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
-               const std::shared_ptr<Texture> texture, const std::string& name, const float scale, const bool rotated);
+               const std::shared_ptr<Texture>& texture, const std::string& name, const float scale, const bool rotated);
 
         Sprite(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width, const int height,
-               const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX, const float scaleY,
+               const std::shared_ptr<Texture>& texture, const std::string& name, const float scaleX, const float scaleY,
                const bool rotated = false);
 
         Sprite();
+        virtual ~Sprite();
+        Sprite(const Sprite&) = default;
+        Sprite& operator=(const Sprite&) = default;
 
         const std::string& GetName() const;
         const glm::mat4& GetMat4() const { return m_Transform; }
@@ -90,17 +93,18 @@ namespace GfxRenderEngine
 
     public:
         Sprite2D(const Sprite& sprite);
+        virtual ~Sprite2D();
 
         Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                 const int height, const std::shared_ptr<Texture> texture, const std::string& name,
+                 const int height, const std::shared_ptr<Texture>& texture, const std::string& name,
                  const float scale = 1.0f);
 
         Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                 const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scale,
+                 const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scale,
                  const bool rotated);
 
         Sprite2D(const float pos1X, const float pos1Y, const float pos2X, const float pos2Y, const int width,
-                 const int height, const std::shared_ptr<Texture> texture, const std::string& name, const float scaleX,
+                 const int height, const std::shared_ptr<Texture>& texture, const std::string& name, const float scaleX,
                  const float scaleY, const bool rotated = false);
 
         Sprite2D();

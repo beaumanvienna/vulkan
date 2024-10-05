@@ -49,7 +49,7 @@ namespace GfxRenderEngine
 
     VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
                          VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment)
-        : m_Device(VK_Core::m_Device.get()), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
+        : m_Device(VK_Core::m_Device), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
           m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
     {
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
@@ -57,7 +57,7 @@ namespace GfxRenderEngine
         m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
     }
 
-    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device.get())
+    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device)
     {
         switch (bufferUsage)
         {

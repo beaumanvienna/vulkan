@@ -43,7 +43,7 @@ namespace LucreApp
 
     public:
         TerrainScene(const std::string& filepath, const std::string& alternativeFilepath);
-        virtual ~TerrainScene() override {}
+        virtual ~TerrainScene() override;
 
         virtual void Start() override;
         virtual void Stop() override;
@@ -67,7 +67,7 @@ namespace LucreApp
         void ApplyDebugSettings();
 
     private:
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
 
         SceneLoaderJSON m_SceneLoaderJSON;
         // SceneLoader m_SceneLoader;

@@ -72,7 +72,7 @@ namespace LucreApp
         void EmitVolcanoSmoke();
 
     private:
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
         SceneLoaderJSON m_SceneLoaderJSON;
 
         // the camera is keyboard-controlled

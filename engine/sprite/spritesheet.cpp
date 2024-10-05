@@ -28,19 +28,22 @@
 
 namespace GfxRenderEngine
 {
-    extern std::shared_ptr<Texture> gTextureAtlas;
+    SpriteSheet::SpriteSheet() : m_Rows{0}, m_Columns{0}
+    {
+        m_TextureAtlas = Engine::m_Engine->GetRenderer()->GetTextureAtlas();
+    }
 
-    SpriteSheet::SpriteSheet() : m_Rows{0}, m_Columns{0} {}
+    SpriteSheet::~SpriteSheet() {}
 
     void SpriteSheet::AddSpritesheet()
     {
-        m_Texture = gTextureAtlas;
-        for (int i = 0; i < atlas.num_images; i++)
+        m_Texture = m_TextureAtlas;
+        m_SpriteTable.reserve(m_SpriteTable.size() + atlas.num_images);
+        for (int i = 0; i < atlas.num_images; ++i)
         {
             bool rotated = images[i].rotation;
-            Sprite sprite = Sprite(images[i].u1, images[i].v1, images[i].u2, images[i].v2, images[i].w, images[i].h,
-                                   m_Texture, images[i].name, 1.0f, rotated);
-            m_SpriteTable.push_back(sprite);
+            m_SpriteTable.emplace_back(images[i].u1, images[i].v1, images[i].u2, images[i].v2, images[i].w, images[i].h,
+                                       m_Texture, images[i].name, 1.0f, rotated);
         }
     }
 
@@ -52,7 +55,9 @@ namespace GfxRenderEngine
         const uchar* data = (const uchar*)ResourceSystem::GetDataPointer(fileSize, path, resourceID, resourceClass);
         bool ok = m_Texture->Init(data, fileSize, Texture::USE_SRGB);
         if (ok)
+        {
             AddSpritesheet();
+        }
         return ok;
     }
 
@@ -61,7 +66,9 @@ namespace GfxRenderEngine
         m_Texture = Texture::Create();
         bool ok = m_Texture->Init(fileName, Texture::USE_SRGB);
         if (ok)
+        {
             AddSpritesheet();
+        }
         return ok;
     }
 
@@ -83,10 +90,11 @@ namespace GfxRenderEngine
         float advanceY = static_cast<float>(tileHeight + spacing) / originalSprite.m_Texture->GetHeight();
 
         float currentY = originalSprite.m_Pos1Y;
-        for (uint row = 0; row < rows; row++)
+        m_SpriteTable.reserve(m_SpriteTable.size() + rows * columns);
+        for (uint row = 0; row < rows; ++row)
         {
             float currentX = originalSprite.m_Pos1X;
-            for (uint column = 0; column < columns; column++)
+            for (uint column = 0; column < columns; ++column)
             {
                 std::string name = mapName + "_" + std::to_string(row) + "_" + std::to_string(column);
                 bool rotated = false;
@@ -95,8 +103,7 @@ namespace GfxRenderEngine
                 float u2 = currentX + tileWidthNormalized;
                 float v2 = currentY - tileHeightNormalized;
 
-                Sprite sprite = Sprite(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scale, rotated);
-                m_SpriteTable.push_back(sprite);
+                m_SpriteTable.emplace_back(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scale, rotated);
                 currentX += advanceX;
             }
             currentY -= advanceY;
@@ -163,10 +170,11 @@ namespace GfxRenderEngine
         float advanceY = static_cast<float>(tileHeight + spacing) / m_Texture->GetHeight();
 
         float currentY = 0.0f;
-        for (uint row = 0; row < rows; row++)
+        m_SpriteTable.reserve(m_SpriteTable.size() + rows * columns);
+        for (uint row = 0; row < rows; ++row)
         {
             float currentX = 0.0f;
-            for (uint column = 0; column < columns; column++)
+            for (uint column = 0; column < columns; ++column)
             {
                 std::string name = mapName + "_" + std::to_string(row) + "_" + std::to_string(column);
                 bool rotated = false;
@@ -174,8 +182,8 @@ namespace GfxRenderEngine
                 float v1 = currentY;
                 float u2 = currentX + tileWidthNormalized;
                 float v2 = currentY + tileHeightNormalized;
-                Sprite sprite = Sprite(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scale, rotated);
-                m_SpriteTable.push_back(sprite);
+
+                m_SpriteTable.emplace_back(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scale, rotated);
                 currentX += advanceX;
             }
             currentY += advanceY;
@@ -189,11 +197,11 @@ namespace GfxRenderEngine
         for (auto sprite : m_SpriteTable)
         {
             LOG_CORE_INFO("Found sprite, name: {0}, index: {1}", sprite.GetName(), std::to_string(i));
-            i++;
+            ++i;
         }
     }
 
-    Sprite SpriteSheet::GetSprite(uint index) { return m_SpriteTable[index]; }
+    Sprite& SpriteSheet::GetSprite(uint index) { return m_SpriteTable[index]; }
 
     bool SpriteSheet::AddSpritesheetRow(const Sprite& originalSprite, uint frames, const float scaleX, const float scaleY)
     {
@@ -208,21 +216,20 @@ namespace GfxRenderEngine
         int tileHeight = originalSprite.GetHeight();
 
         float tileWidthNormalized = static_cast<float>(tileWidth) / m_Texture->GetWidth();
-
+        m_SpriteTable.reserve(m_SpriteTable.size() + frames);
         if (rotated)
         {
             float advanceY = tileWidthNormalized;
 
             float currentY = originalSprite.m_Pos1Y - tileWidthNormalized;
-            for (uint row = 0; row < frames; row++)
+            for (uint row = 0; row < frames; ++row)
             {
                 std::string name = originalSprite.GetName() + "_" + std::to_string(row);
                 float u1 = originalSprite.m_Pos1X;
                 float v1 = currentY;
                 float u2 = originalSprite.m_Pos2X;
                 float v2 = currentY + tileWidthNormalized;
-                Sprite sprite = Sprite(u1, v2, u2, v1, tileHeight, tileWidth, m_Texture, name, scaleX, scaleY, rotated);
-                m_SpriteTable.push_back(sprite);
+                m_SpriteTable.emplace_back(u1, v2, u2, v1, tileHeight, tileWidth, m_Texture, name, scaleX, scaleY, rotated);
                 currentY -= advanceY;
             }
         }
@@ -231,15 +238,14 @@ namespace GfxRenderEngine
             float advanceX = tileWidthNormalized;
 
             float currentX = originalSprite.m_Pos1X;
-            for (uint column = 0; column < frames; column++)
+            for (uint column = 0; column < frames; ++column)
             {
                 std::string name = originalSprite.GetName() + "_" + std::to_string(column);
                 float u1 = currentX;
                 float v1 = originalSprite.m_Pos1Y;
                 float u2 = currentX + tileWidthNormalized;
                 float v2 = originalSprite.m_Pos2Y;
-                Sprite sprite = Sprite(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scaleX, scaleY);
-                m_SpriteTable.push_back(sprite);
+                m_SpriteTable.emplace_back(u1, v1, u2, v2, tileWidth, tileHeight, m_Texture, name, scaleX, scaleY);
                 currentX += advanceX;
             }
         }

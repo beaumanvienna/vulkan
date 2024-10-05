@@ -50,6 +50,10 @@ namespace GfxRenderEngine
 
     public:
         SpriteSheet();
+        ~SpriteSheet();
+
+        SpriteSheet(const Sprite&) = delete;
+        SpriteSheet& operator=(const Sprite&) = delete;
 
         void AddSpritesheet();
         bool AddSpritesheet(const std::string& fileName);
@@ -71,7 +75,7 @@ namespace GfxRenderEngine
                                const float scaleY);
         bool AddSpritesheetRow(const char* path /* GNU */, int resourceID /* MSVC */,
                                const std::string& resourceClass /* MSVC */, uint frames, const float scale = 1.0f);
-        Sprite GetSprite(uint index);
+        Sprite& GetSprite(uint index);
         void SetScale(const float scale);
         void ListSprites();
         std::shared_ptr<Texture> GetTexture() const { return m_Texture; }
@@ -87,5 +91,6 @@ namespace GfxRenderEngine
         std::shared_ptr<Texture> m_Texture;
         std::vector<Sprite> m_SpriteTable;
         uint m_Rows, m_Columns;
+        std::shared_ptr<Texture> m_TextureAtlas;
     };
 } // namespace GfxRenderEngine

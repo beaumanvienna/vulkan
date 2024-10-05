@@ -29,5 +29,5 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<VK_Device> VK_Core::m_Device;
+    VK_Device* VK_Core::m_Device;
 }

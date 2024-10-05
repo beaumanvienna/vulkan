@@ -43,29 +43,29 @@ namespace LucreApp
     {
         using namespace SCREEN_UI;
 
-        float availableWidth = UI::m_Common->m_AvailableWidth - 2 * UI::m_Common->m_TabMarginLeftRight;
-        float availableHeight = UI::m_Common->m_AvailableHeight;
+        float availableWidth = UI::g_Common->m_AvailableWidth - 2 * UI::g_Common->m_TabMarginLeftRight;
+        float availableHeight = UI::g_Common->m_AvailableHeight;
 
         // Reset content
         Clear();
 
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
-            Add(new Spacer(UI::m_Common->m_IconWidth / 2.0f));
+            Add(new Spacer(UI::g_Common->m_IconWidth / 2.0f));
         }
         else
         {
-            Add(new Spacer(226.0f * UI::m_Common->m_ScaleAll - 69.0f - UI::m_Common->m_TabMargin));
+            Add(new Spacer(226.0f * UI::g_Common->m_ScaleAll - 69.0f - UI::g_Common->m_TabMargin));
         }
 
-        float verticalSpace = (availableHeight - 4 * UI::m_Common->m_IconHeight);
+        float verticalSpace = (availableHeight - 4 * UI::g_Common->m_IconHeight);
         LinearLayout* creditsHorizontal =
             new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(FILL_PARENT, verticalSpace));
         Add(creditsHorizontal);
 
         // vertical column for logos
         auto sprite = Sprite2D(m_Spritesheet->GetSprite(I_LOGO_PPSSPP));
-        sprite.SetScale(UI::m_Common->m_ScaleAll);
+        sprite.SetScale(UI::g_Common->m_ScaleAll);
         LinearLayout* logos = new LinearLayout(ORIENT_VERTICAL);
         creditsHorizontal->Add(logos);
         logos->Add(new Spacer(0.0f, verticalSpace / 2.0f));

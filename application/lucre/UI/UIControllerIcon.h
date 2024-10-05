@@ -36,7 +36,8 @@ namespace LucreApp
     {
 
     public:
-        UIControllerIcon(bool indent, const std::string& name = "UIControllerIcon") : Layer(name), m_Indent(indent) {}
+        UIControllerIcon(bool indent, const std::string& name = "UIControllerIcon");
+        virtual ~UIControllerIcon();
 
         void OnAttach() override;
         void OnDetach() override;

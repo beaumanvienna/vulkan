@@ -76,7 +76,7 @@ namespace LucreApp
     private:
         static constexpr float POINT_LIGHT_INTENSITY = 2.7f;
 
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
         SceneLoaderJSON m_SceneLoaderJSON;
 
         // the camera is keyboard-controlled

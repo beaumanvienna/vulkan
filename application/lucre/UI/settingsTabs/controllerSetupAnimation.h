@@ -36,6 +36,7 @@ namespace LucreApp
 
     public:
         ControllerSetupAnimation(const std::string& name = "layer") : Layer(name) {}
+        ~ControllerSetupAnimation() override;
 
         void OnAttach() override;
         void OnDetach() override;
@@ -46,7 +47,7 @@ namespace LucreApp
         void SetActiveController(int activeController);
 
     private:
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
 
         // sprite sheets
         SpriteSheet m_SpritesheetPointers;

@@ -65,7 +65,7 @@ namespace GfxRenderEngine
 
     private:
         VkFormat m_DepthFormat{VkFormat::VK_FORMAT_UNDEFINED};
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
 
         VkExtent2D m_ShadowMapExtent{};
         VkFramebuffer m_ShadowFramebuffer{nullptr};

@@ -108,7 +108,7 @@ namespace GfxRenderEngine
         }
         else
         {
-            std::cout << "Texture: Couldn't load file " << m_FileName << std::endl;
+            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", m_FileName);
         }
         return ok;
     }

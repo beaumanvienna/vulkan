@@ -80,7 +80,7 @@ namespace GfxRenderEngine
         std::vector<VkImage> m_SwapChainImages{};
         std::vector<VkImageView> m_SwapChainImageViews{};
 
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
         std::shared_ptr<VK_SwapChain> m_OldSwapChain;
         VkExtent2D m_WindowExtent{};
 

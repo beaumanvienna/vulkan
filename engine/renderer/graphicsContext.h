@@ -50,7 +50,7 @@ namespace GfxRenderEngine
         virtual void SwapBuffers() = 0;
         virtual bool IsInitialized() const = 0;
 
-        virtual std::shared_ptr<Renderer> GetRenderer() const = 0;
+        virtual Renderer* GetRenderer() const = 0;
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) = 0;

@@ -86,12 +86,12 @@ namespace GfxRenderEngine
         };
 
     public:
-        VK_Model(std::shared_ptr<VK_Device> device, const Builder& builder);
-        VK_Model(std::shared_ptr<VK_Device> device, const GltfBuilder& builder);
-        VK_Model(std::shared_ptr<VK_Device> device, const FastgltfBuilder& builder);
-        VK_Model(std::shared_ptr<VK_Device> device, const FbxBuilder& builder);
-        VK_Model(std::shared_ptr<VK_Device> device, const UFbxBuilder& builder);
-        VK_Model(std::shared_ptr<VK_Device> device, const TerrainBuilder& builder);
+        VK_Model(VK_Device* device, const Builder& builder);
+        VK_Model(VK_Device* device, const GltfBuilder& builder);
+        VK_Model(VK_Device* device, const FastgltfBuilder& builder);
+        VK_Model(VK_Device* device, const FbxBuilder& builder);
+        VK_Model(VK_Device* device, const UFbxBuilder& builder);
+        VK_Model(VK_Device* device, const TerrainBuilder& builder);
         virtual ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;
@@ -129,7 +129,7 @@ namespace GfxRenderEngine
         void CopySubmeshes(std::vector<Submesh> const& submeshes);
 
     private:
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
 
         uint m_VertexCount{0};

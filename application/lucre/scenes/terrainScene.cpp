@@ -43,6 +43,8 @@ namespace LucreApp
     {
     }
 
+    TerrainScene::~TerrainScene() {}
+
     void TerrainScene::Start()
     {
         m_IsRunning = true;

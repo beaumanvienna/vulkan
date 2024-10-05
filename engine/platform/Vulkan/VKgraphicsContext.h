@@ -38,14 +38,14 @@ namespace GfxRenderEngine
 
     public:
         VK_Context(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);
-        virtual ~VK_Context() override {}
+        virtual ~VK_Context() override;
 
         virtual bool Init() override;
         virtual void SetVSync(int interval) override;
         virtual void SwapBuffers() override;
         virtual bool IsInitialized() const override { return m_Initialized; }
 
-        virtual std::shared_ptr<Renderer> GetRenderer() const override { return m_Renderer; }
+        virtual Renderer* GetRenderer() const override { return m_Renderer.get(); }
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) override;
@@ -65,7 +65,8 @@ namespace GfxRenderEngine
         bool m_Initialized;
 
         VK_Window* m_Window;
-        std::shared_ptr<VK_Renderer> m_Renderer;
+        std::unique_ptr<VK_Device> m_Device;
+        std::unique_ptr<VK_Renderer> m_Renderer;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
         std::chrono::duration<float, std::chrono::seconds::period> m_FrameDuration;

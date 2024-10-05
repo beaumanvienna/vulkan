@@ -32,32 +32,41 @@
 
 namespace GfxRenderEngine
 {
-    static std::shared_ptr<VK_Imgui> m_Imgui;
-    static std::shared_ptr<ImguiNull> m_ImguiNull;
-    bool Imgui::m_ImguiDebugWindowEnabled = false;
+    std::unique_ptr<Imgui> Imgui::m_Imgui;
+    std::unique_ptr<Imgui> Imgui::m_ImguiNull;
+    bool Imgui::m_ImguiDebugWindowEnabled{false};
     GenericCallback Imgui::m_Callback;
 
-    std::shared_ptr<Imgui> Imgui::Create(VkRenderPass renderPass, uint imageCount)
+    Imgui* Imgui::Create(VkRenderPass renderPass, uint imageCount)
     {
-        if (!m_Imgui)
-            m_Imgui = std::make_shared<VK_Imgui>(renderPass, imageCount);
-        if (!m_ImguiNull)
-            m_ImguiNull = std::make_shared<ImguiNull>();
-
-        return m_ImguiNull;
+        m_Imgui = std::make_unique<VK_Imgui>(renderPass, imageCount);
+        m_ImguiNull = std::make_unique<ImguiNull>();
+        return m_ImguiNull.get();
     }
 
-    std::shared_ptr<Imgui> Imgui::ToggleDebugWindow(const GenericCallback& callback)
+    void Imgui::Destroy()
+    {
+        if (m_Imgui)
+        {
+            m_Imgui.reset();
+        }
+        if (m_ImguiNull)
+        {
+            m_ImguiNull.reset();
+        }
+    }
+
+    Imgui* Imgui::ToggleDebugWindow(const GenericCallback& callback)
     {
         m_Callback = callback;
         m_ImguiDebugWindowEnabled = !m_ImguiDebugWindowEnabled;
         if (m_ImguiDebugWindowEnabled)
         {
-            return m_Imgui;
+            return m_Imgui.get();
         }
         else
         {
-            return m_ImguiNull;
+            return m_ImguiNull.get();
         }
     }
 } // namespace GfxRenderEngine

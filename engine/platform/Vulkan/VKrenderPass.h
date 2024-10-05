@@ -133,7 +133,7 @@ namespace GfxRenderEngine
         void DestroyGBuffers();
 
     private:
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
         VK_SwapChain* m_SwapChain;     // constructor initialized
         VkExtent2D m_RenderPassExtent; // constructor initialized
 

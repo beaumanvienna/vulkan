@@ -56,11 +56,6 @@ int engine(int argc, char* argv[])
             // "app not responding"
             // while shaders compile
             engine->WaitInitialized();
-            if (!engine->IsRunning())
-            {
-                engine->Quit();
-                exit(0);
-            }
             std::this_thread::sleep_for(16ms);
         }
     }
@@ -108,6 +103,7 @@ int engine(int argc, char* argv[])
     engine->Shutdown();
     application.reset();
     engine->Quit();
+    engine.reset();
     g_Profiler.reset();
     g_Logger.reset();
 

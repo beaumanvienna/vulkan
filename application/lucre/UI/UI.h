@@ -41,7 +41,8 @@ namespace LucreApp
     {
 
     public:
-        UI(const std::string& name = "UI") : Layer(name) {}
+        UI(const std::string& name = "UI");
+        virtual ~UI() override;
 
         void OnAttach() override;
         void OnDetach() override;
@@ -52,10 +53,8 @@ namespace LucreApp
         void Health(const float health);
         SCREEN_DrawBuffer* Draw() const { return m_ScreenManager->getUIContext()->Draw(); }
 
-        static std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
-        static std::shared_ptr<Texture> m_FontAtlasTexture;
-        static std::shared_ptr<Texture> m_SpritesheetTexture;
-        static std::shared_ptr<Common> m_Common;
+        static SCREEN_ScreenManager* g_ScreenManager;
+        static Common* g_Common;
 
     private:
         bool Touch(int flags, float x, float y, int deviceID);
@@ -63,9 +62,13 @@ namespace LucreApp
         void Axis();
 
     private:
+        std::unique_ptr<SCREEN_ScreenManager> m_ScreenManager;
+        std::unique_ptr<Common> m_Common;
         MainScreen* m_MainScreen{nullptr};
-        UIStarIcon* m_UIStarIcon{nullptr};
-        ControllerSetupAnimation* m_UIControllerAnimation = nullptr;
+        std::unique_ptr<UIStarIcon> m_UIStarIcon;
+        std::unique_ptr<ControllerSetupAnimation> m_UIControllerAnimation;
+        std::shared_ptr<Texture> m_FontAtlasTexture;
+        std::shared_ptr<Texture> m_SpritesheetTexture;
 
         SpriteSheet* m_Spritesheet;
     };

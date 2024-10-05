@@ -43,7 +43,8 @@ namespace LucreApp
         };
 
     public:
-        UIStarIcon(bool narrow, const std::string& name = "layer") : Layer(name), m_Narrow(narrow) {}
+        UIStarIcon(bool narrow, const std::string& name = "UIStarIcon");
+        ~UIStarIcon() override;
 
         void OnAttach() override;
         void OnDetach() override;
@@ -62,7 +63,7 @@ namespace LucreApp
         void Init();
 
     private:
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
 
         SpriteSheet* m_Spritesheet;
         Sprite2D m_StarSprite;

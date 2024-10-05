@@ -116,8 +116,13 @@ namespace GfxRenderEngine
 
         VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
         VK_DescriptorSetLayout& GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourceType);
+        virtual std::shared_ptr<Texture> GetTextureAtlas() override;
 
     public:
+        std::shared_ptr<Texture> gTextureAtlas;
+        std::shared_ptr<Texture> gTextureFontAtlas;
+        std::shared_ptr<Buffer> gDummyBuffer;
+
     private:
         void CreateCommandBuffers();
         void FreeCommandBuffers();
@@ -135,7 +140,7 @@ namespace GfxRenderEngine
     private:
         bool m_ShadersCompiled;
         VK_Window* m_Window;
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
         std::unique_ptr<VK_SwapChain> m_SwapChain;
 
         enum ShadowMaps
@@ -162,7 +167,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemDebug> m_RenderSystemDebug;
         std::unique_ptr<VK_LightSystem> m_LightSystem;
 
-        std::shared_ptr<Imgui> m_Imgui;
+        Imgui* m_Imgui;
 
         std::vector<VkCommandBuffer> m_CommandBuffers;
         VkCommandBuffer m_CurrentCommandBuffer{nullptr};

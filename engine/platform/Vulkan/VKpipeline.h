@@ -56,7 +56,7 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_Pipeline(std::shared_ptr<VK_Device> device, const std::string& filePathVertexShader_SPV,
+        VK_Pipeline(VK_Device* device, const std::string& filePathVertexShader_SPV,
                     const std::string& filePathFragmentShader_SPV, const PipelineConfigInfo& spec);
         ~VK_Pipeline();
 
@@ -76,7 +76,7 @@ namespace GfxRenderEngine
         void CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
     private:
-        std::shared_ptr<VK_Device> m_Device;
+        VK_Device* m_Device;
         VkPipeline m_GraphicsPipeline{nullptr};
         VkShaderModule m_VertShaderModule{nullptr};
         VkShaderModule m_FragShaderModule{nullptr};

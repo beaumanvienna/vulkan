@@ -46,7 +46,7 @@ namespace LucreApp
 
     public:
         Lucre();
-        virtual ~Lucre() {}
+        virtual ~Lucre() override;
 
         virtual bool Start() override;
         virtual void Shutdown() override;
@@ -56,7 +56,6 @@ namespace LucreApp
         void OnResize();
 
         void PlaySound(int resourceID);
-        UIControllerIcon* GetUI() const { return m_UIControllerIcon; }
         virtual Scene* GetScene() override { return m_GameState.GetScene(); }
         GameState::State GetState() const { return m_GameState.GetState(); }
         bool KeyboardInputIsReleased() const { return !m_InGameGuiIsRunning; }
@@ -75,8 +74,8 @@ namespace LucreApp
         void Cancel();
 
     private:
-        UIControllerIcon* m_UIControllerIcon = nullptr;
-        UI* m_UI = nullptr;
+        std::unique_ptr<UIControllerIcon> m_UIControllerIcon;
+        std::unique_ptr<UI> m_UI = nullptr;
 
         AppSettings m_AppSettings{&Engine::m_SettingsManager};
         GameState m_GameState;
@@ -84,7 +83,7 @@ namespace LucreApp
 
         std::shared_ptr<Window> m_Window;
         std::shared_ptr<Cursor> m_Cursor;
-        std::shared_ptr<Renderer> m_Renderer;
+        Renderer* m_Renderer;
         std::shared_ptr<Cursor> m_EmptyCursor;
         std::shared_ptr<CameraController> m_CameraController;
 

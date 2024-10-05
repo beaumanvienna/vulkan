@@ -29,6 +29,7 @@
 
 namespace GfxRenderEngine
 {
+    class VK_Renderer;
     class VK_MaterialDescriptor : public MaterialDescriptor
     {
 

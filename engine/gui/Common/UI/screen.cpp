@@ -38,8 +38,7 @@ namespace GfxRenderEngine
     SpriteSheet* SCREEN_ScreenManager::m_SpritesheetUI = nullptr;
     std::shared_ptr<CameraController> SCREEN_ScreenManager::m_CameraController;
 
-    SCREEN_ScreenManager::SCREEN_ScreenManager(std::shared_ptr<Renderer> renderer, SpriteSheet* spritesheetUI)
-        : m_Renderer(renderer)
+    SCREEN_ScreenManager::SCREEN_ScreenManager(Renderer* renderer, SpriteSheet* spritesheetUI) : m_Renderer(renderer)
     {
         m_ScreenManager = this;
         m_SpritesheetUI = spritesheetUI;
@@ -55,7 +54,11 @@ namespace GfxRenderEngine
         camera.SetViewDirection(position, direction);
     }
 
-    SCREEN_ScreenManager::~SCREEN_ScreenManager() { shutdown(); }
+    SCREEN_ScreenManager::~SCREEN_ScreenManager()
+    {
+        shutdown();
+        delete uiContext_;
+    }
 
     void SCREEN_ScreenManager::update()
     {
