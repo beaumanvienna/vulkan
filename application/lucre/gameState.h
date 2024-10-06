@@ -47,6 +47,9 @@ namespace LucreApp
             NIGHT,
             DESSERT,
             TERRAIN,
+            ISLAND_2,
+            VOLCANO,
+            RESERVED0,
             MAX_STATES
         };
 

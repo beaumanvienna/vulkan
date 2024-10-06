@@ -31,7 +31,10 @@
 
 namespace LucreApp
 {
-
+    OffDialog::OffDialog(std::string label, OffDiagEvent offDiagEvent)
+        : SCREEN_PopupScreen(label), m_offDiagEvent(offDiagEvent)
+    {
+    }
     void OffDialog::CreatePopupContents(SCREEN_UI::ViewGroup* parent)
     {
         using namespace SCREEN_UI;
@@ -42,25 +45,23 @@ namespace LucreApp
         Choice* cancelButton;
 
         LinearLayout* items = new LinearLayout(ORIENT_HORIZONTAL, new LinearLayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        float scale = UI::g_Common->m_ScaleAll;
+        float scale = UI::g_Common->m_ScaleAll * 720.0f / 1080.0f;
+        float iconWidth = 265.0f * scale; // width is 530.0f * scale, see SCREEN_PopupScreen::SCREEN_PopupScreen()
+        float iconHeight = UI::g_Common->m_IconHeight * 720.0f / 1080.0f;
 
         if (CoreSettings::m_UITheme == THEME_RETRO)
         {
             if (m_offDiagEvent == OFFDIAG_QUIT)
             {
-                yesButton =
-                    new Choice(ma->T("YES"), TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
-                cancelButton =
-                    new Choice(ma->T("CANCEL"), TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
+                yesButton = new Choice(ma->T("YES"), TRANSPARENT_BACKGROUND, new LayoutParams(iconWidth, iconHeight));
+                cancelButton = new Choice(ma->T("CANCEL"), TRANSPARENT_BACKGROUND, new LayoutParams(iconWidth, iconHeight));
                 yesButton->OnClick.Handle(this, &OffDialog::QuitMarley);
                 cancelButton->OnClick.Handle<SCREEN_UIScreen>(this, &SCREEN_UIScreen::OnBack);
             }
             else
             {
-                yesButton =
-                    new Choice(ma->T("YES"), TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
-                cancelButton =
-                    new Choice(ma->T("CANCEL"), TRANSPARENT_BACKGROUND, new LayoutParams(265.0f * scale, 64.0f * scale));
+                yesButton = new Choice(ma->T("YES"), TRANSPARENT_BACKGROUND, new LayoutParams(iconWidth, iconHeight));
+                cancelButton = new Choice(ma->T("CANCEL"), TRANSPARENT_BACKGROUND, new LayoutParams(iconWidth, iconHeight));
                 yesButton->OnClick.Handle(this, &OffDialog::SwitchOff);
                 cancelButton->OnClick.Handle<SCREEN_UIScreen>(this, &SCREEN_UIScreen::OnBack);
             }
@@ -69,15 +70,15 @@ namespace LucreApp
         {
             if (m_offDiagEvent == OFFDIAG_QUIT)
             {
-                yesButton = new Choice(ma->T("YES"), new LayoutParams(265.0f * scale, 64.0f * scale));
-                cancelButton = new Choice(ma->T("CANCEL"), new LayoutParams(265.0f * scale, 64.0f * scale));
+                yesButton = new Choice(ma->T("YES"), new LayoutParams(iconWidth, iconHeight));
+                cancelButton = new Choice(ma->T("CANCEL"), new LayoutParams(iconWidth, iconHeight));
                 yesButton->OnClick.Handle(this, &OffDialog::QuitMarley);
                 cancelButton->OnClick.Handle<SCREEN_UIScreen>(this, &SCREEN_UIScreen::OnBack);
             }
             else
             {
-                yesButton = new Choice(ma->T("YES"), new LayoutParams(265.0f * scale, 64.0f * scale));
-                cancelButton = new Choice(ma->T("CANCEL"), new LayoutParams(265.0f * scale, 64.0f * scale));
+                yesButton = new Choice(ma->T("YES"), new LayoutParams(iconWidth, iconHeight));
+                cancelButton = new Choice(ma->T("CANCEL"), new LayoutParams(iconWidth, iconHeight));
                 yesButton->OnClick.Handle(this, &OffDialog::SwitchOff);
                 cancelButton->OnClick.Handle<SCREEN_UIScreen>(this, &SCREEN_UIScreen::OnBack);
             }

@@ -38,12 +38,12 @@
 
 namespace LucreApp
 {
-    class TerrainScene : public Scene
+    class VolcanoScene : public Scene
     {
 
     public:
-        TerrainScene(const std::string& filepath, const std::string& alternativeFilepath);
-        virtual ~TerrainScene() override;
+        VolcanoScene(const std::string& filepath, const std::string& alternativeFilepath);
+        virtual ~VolcanoScene() override;
 
         virtual void Start() override;
         virtual void Stop() override;

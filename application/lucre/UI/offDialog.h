@@ -39,7 +39,8 @@ namespace LucreApp
     class OffDialog : public SCREEN_PopupScreen
     {
     public:
-        OffDialog(std::string label, OffDiagEvent offDiagEvent) : SCREEN_PopupScreen(label), m_offDiagEvent(offDiagEvent) {}
+        OffDialog(std::string label, OffDiagEvent offDiagEvent);
+
         void CreatePopupContents(SCREEN_UI::ViewGroup* parent) override;
 
     private:

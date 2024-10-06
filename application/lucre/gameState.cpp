@@ -33,6 +33,9 @@
 #include "scenes/settingsScene.h"
 #include "scenes/splashScene.h"
 #include "scenes/terrainScene.h"
+#include "scenes/island2Scene.h"
+#include "scenes/volcanoScene.h"
+#include "scenes/reserved0Scene.h"
 
 namespace LucreApp
 {
@@ -102,6 +105,21 @@ namespace LucreApp
                 str = "State::TERRAIN";
                 break;
             }
+            case State::ISLAND_2:
+            {
+                str = "State::ISLAND_2";
+                break;
+            }
+            case State::VOLCANO:
+            {
+                str = "State::VOLCANO";
+                break;
+            }
+            case State::RESERVED0:
+            {
+                str = "State::RESERVED0";
+                break;
+            }
             case State::SETTINGS:
             {
                 str = "State::SETTINGS";
@@ -152,6 +170,9 @@ namespace LucreApp
             case State::NIGHT:
             case State::DESSERT:
             case State::TERRAIN:
+            case State::ISLAND_2:
+            case State::VOLCANO:
+            case State::RESERVED0:
             case State::NULL_STATE:
             case State::MAX_STATES:
             {
@@ -312,6 +333,54 @@ namespace LucreApp
                     ZoneScopedN("loadTerrain");
                     auto scenePtr =
                         std::make_shared<TerrainScene>("terrain.json", "application/lucre/sceneDescriptions/terrain.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
+                break;
+            }
+            case State::ISLAND_2:
+            {
+                auto lambda = [this, state]()
+                {
+                    ZoneScopedN("loadIsland_2");
+                    auto scenePtr =
+                        std::make_shared<Island2Scene>("island2.json", "application/lucre/sceneDescriptions/island2.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
+                break;
+            }
+            case State::VOLCANO:
+            {
+                auto lambda = [this, state]()
+                {
+                    ZoneScopedN("loadVolcano");
+                    auto scenePtr =
+                        std::make_shared<VolcanoScene>("volcano.json", "application/lucre/sceneDescriptions/volcano.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
+                break;
+            }
+            case State::RESERVED0:
+            {
+                auto lambda = [this, state]()
+                {
+                    ZoneScopedN("loadResreved0");
+                    auto scenePtr = std::make_shared<Reserved0Scene>("reserved0.json",
+                                                                     "application/lucre/sceneDescriptions/reserved0.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();

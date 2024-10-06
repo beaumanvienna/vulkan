@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -43,13 +43,13 @@ namespace LucreApp
         };
 
     public:
-        UIStarIcon(bool narrow, const std::string& name = "UIStarIcon");
+        UIStarIcon(std::string const& name = "UIStarIcon");
         ~UIStarIcon() override;
 
         void OnAttach() override;
         void OnDetach() override;
         void OnEvent(Event& event) override;
-        void OnUpdate(const Timestep& timestep) override;
+        void OnUpdate(Timestep const& timestep) override;
         void OnResize();
 
         void Start() { m_Start = true; }
@@ -63,9 +63,9 @@ namespace LucreApp
         void Init();
 
     private:
-        Renderer* m_Renderer;
+        Renderer* m_Renderer{nullptr};
 
-        SpriteSheet* m_Spritesheet;
+        SpriteSheet* m_Spritesheet{nullptr};
         Sprite2D m_StarSprite;
 
         Animation m_StarMoveIn1;
@@ -77,8 +77,6 @@ namespace LucreApp
         Animation m_StarMoveOut1;
         Animation m_StarMoveOut2;
         Animation m_StarMoveOut3;
-
-        bool m_Narrow;
 
         bool m_Start;
         bool m_Stop;

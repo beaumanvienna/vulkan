@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -61,11 +61,11 @@ namespace LucreApp
         m_Common = std::make_unique<Common>();
         g_Common = m_Common.get();
 
-        m_MainScreen = new MainScreen(m_Spritesheet);
+        m_MainScreen = new MainScreen(*m_Spritesheet); // deleted by screen manager
         m_MainScreen->OnAttach();
         m_ScreenManager->push(m_MainScreen);
 
-        m_UIStarIcon = std::make_unique<UIStarIcon>(false, "UI star icon");
+        m_UIStarIcon = std::make_unique<UIStarIcon>("UI star icon");
         Engine::m_Engine->PushOverlay(m_UIStarIcon.get());
 
         m_UIControllerAnimation = std::make_unique<ControllerSetupAnimation>("controller animation");

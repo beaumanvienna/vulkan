@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2021 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -26,7 +26,7 @@
 
 namespace LucreApp
 {
-    UIStarIcon::UIStarIcon(bool narrow, const std::string& name) : Layer(name), m_Narrow(narrow) {}
+    UIStarIcon::UIStarIcon(std::string const& name) : Layer(name) {}
 
     UIStarIcon::~UIStarIcon() {}
 
@@ -63,16 +63,9 @@ namespace LucreApp
         glm::vec2 finalOutOfScreenPosition;
         glm::vec2 finalScreenPosition1;
         float xPosWide1 = UI::g_Common->m_AvailableWidth - UI::g_Common->m_TabMarginLeftRight;
-        float yPosWide12 = 226.0f * UI::g_Common->m_ScaleAll;
+        float yPosWide12 = 160.0f * UI::g_Common->m_ScaleAll;
         finalOutOfScreenPosition = glm::vec2(2000.0f, 300.0f);
-        if (m_Narrow)
-        {
-            finalScreenPosition1 = glm::vec2(320.0f, 110.0f);
-        }
-        else
-        {
-            finalScreenPosition1 = glm::vec2(xPosWide1, yPosWide12);
-        }
+        finalScreenPosition1 = glm::vec2(xPosWide1, yPosWide12);
 
         m_StarMoveIn1.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition1));
         m_StarMoveIn1.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
@@ -84,16 +77,9 @@ namespace LucreApp
         m_StarMoveOut1.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 2nd star icon: move left to top left corner
-        float xPosWide23 = UI::g_Common->m_TabMarginLeftRight + UI::g_Common->m_IconWidth * 1.5f;
+        float xPosWide23 = UI::g_Common->m_TabMarginLeftRight + UI::g_Common->m_IconWidth * 3.0f;
         glm::vec2 finalScreenPosition2;
-        if (m_Narrow)
-        {
-            finalScreenPosition2 = glm::vec2(650.0f, 500.0f);
-        }
-        else
-        {
-            finalScreenPosition2 = glm::vec2(xPosWide23, yPosWide12);
-        }
+        finalScreenPosition2 = glm::vec2(xPosWide23, yPosWide12);
 
         m_StarMoveIn2.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition2));
         m_StarMoveIn2.AddRotation(Rotation(1.0f * duration, 0.0f, -3.141f));
@@ -105,16 +91,10 @@ namespace LucreApp
         m_StarMoveOut2.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
 
         // 3rd star icon: move left to bottom left corner
-        float yPosWide3 = yPosWide12 + 568.0f * UI::g_Common->m_ScaleAll;
+        float yPosWide3 = yPosWide12 + 460.0f * UI::g_Common->m_ScaleAll;
         glm::vec2 finalScreenPosition3;
-        if (m_Narrow)
-        {
-            finalScreenPosition3 = glm::vec2(650.0f, 350.0f);
-        }
-        else
-        {
-            finalScreenPosition3 = glm::vec2(xPosWide23, yPosWide3);
-        }
+
+        finalScreenPosition3 = glm::vec2(xPosWide23, yPosWide3);
 
         m_StarMoveIn3.AddTranslation(Translation(1.0f * duration, finalOutOfScreenPosition, finalScreenPosition3));
         m_StarMoveIn3.AddRotation(Rotation(1.0f * duration, 0.0f, 3.141f));
@@ -132,7 +112,7 @@ namespace LucreApp
 
     void UIStarIcon::OnDetach() {}
 
-    void UIStarIcon::OnUpdate(const Timestep& timestep)
+    void UIStarIcon::OnUpdate(Timestep const& timestep)
     {
         switch (m_State)
         {

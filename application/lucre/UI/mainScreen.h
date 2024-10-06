@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -36,9 +36,13 @@ namespace LucreApp
     {
 
     public:
-        MainScreen(SpriteSheet* spritesheet) { m_Spritesheet = spritesheet; }
-        virtual ~MainScreen() {}
-        bool key(const SCREEN_KeyInput& key) override;
+        MainScreen(SpriteSheet& spritesheet);
+        virtual ~MainScreen();
+
+        MainScreen(MainScreen const&) = delete;
+        MainScreen& operator=(MainScreen const&) = delete;
+
+        bool key(SCREEN_KeyInput const& key) override;
         void OnAttach();
         void OnDetach();
         void update() override;
@@ -54,6 +58,9 @@ namespace LucreApp
         SCREEN_UI::EventReturn Scene3Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn Scene4Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn Scene5Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene6Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene7Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene8Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams& e);
 
@@ -66,25 +73,30 @@ namespace LucreApp
         };
 
     private:
-        SCREEN_UI::Choice* m_OffButton = nullptr;
-        SCREEN_UI::Choice* m_SettingsButton = nullptr;
-        SCREEN_UI::Choice* m_Scene1Button = nullptr;
-        SCREEN_UI::Choice* m_Scene2Button = nullptr;
-        SCREEN_UI::Choice* m_Scene3Button = nullptr;
-        SCREEN_UI::Choice* m_Scene4Button = nullptr;
-        SCREEN_UI::Choice* m_Scene5Button = nullptr;
-        InfoMessage* m_MainInfo = nullptr;
+        enum SceneButtons
+        {
+            SCENE_BUTTON_1 = 0,
+            SCENE_BUTTON_2,
+            SCENE_BUTTON_3,
+            SCENE_BUTTON_4,
+            SCENE_BUTTON_5,
+            SCENE_BUTTON_6,
+            SCENE_BUTTON_7,
+            SCENE_BUTTON_8,
+            NUM_SCENE_BUTTONS
+        };
+
+        SCREEN_UI::Choice* m_OffButton{nullptr};
+        SCREEN_UI::Choice* m_SettingsButton{nullptr};
+        SCREEN_UI::Choice* m_SceneButtons[SceneButtons::NUM_SCENE_BUTTONS] = {};
+        InfoMessage* m_MainInfo{nullptr};
 
         bool m_SetFocus = true;
         bool m_ToolTipsShown[MAX_TOOLTIP_IDs] = {false};
 
-        SpriteSheet* m_Spritesheet = nullptr;
+        SpriteSheet& m_Spritesheet;
         SpriteSheet m_SpritesheetSettings;
         SpriteSheet m_SpritesheetOff;
-        SpriteSheet m_SpritesheetScene1Button;
-        SpriteSheet m_SpritesheetScene2Button;
-        SpriteSheet m_SpritesheetScene3Button;
-        SpriteSheet m_SpritesheetScene4Button;
-        SpriteSheet m_SpritesheetScene5Button;
+        SpriteSheet m_SpritesheetSceneButtons[SceneButtons::NUM_SCENE_BUTTONS];
     };
 } // namespace LucreApp

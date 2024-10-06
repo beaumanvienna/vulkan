@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -33,14 +33,14 @@ namespace LucreApp
         m_AvailableWidth = Engine::m_Engine->GetWindowWidth();
         m_AvailableHeight = Engine::m_Engine->GetWindowHeight();
 
-        m_ScaleAll = m_AvailableHeight / 1080.0f;
+        m_ScaleAll = m_AvailableHeight / 720.0f;
 
         m_IconWidth = 64.0f * m_ScaleAll;
         m_IconHeight = 64.0f * m_ScaleAll;
-        m_IconSpacer = 64.0f * m_ScaleAll;
+        m_IconSpacer = 20.0f * m_ScaleAll;
 
         m_StripSize = 150.0f * m_ScaleAll;
-        m_MarginLeftRight = 64.0f * m_ScaleAll;
+        m_MarginLeftRight = 32.0f * m_ScaleAll;
         m_SettingsBar = 85.0f * m_ScaleAll;
 
         m_TabMargin = 50.0f * m_ScaleAll;
@@ -49,7 +49,7 @@ namespace LucreApp
 
         m_ControllerScale = 1.0f * m_ScaleAll;
 
-        m_TabIconScaleRetro = 1.5 * m_ScaleAll;
+        m_TabIconScaleRetro = 1.0 * m_ScaleAll;
         m_IconScaleRetro = 0.5 * m_ScaleAll;
         m_IconScale = 1.0 * m_ScaleAll;
     }

@@ -55,7 +55,7 @@ namespace LucreApp
         }
         else
         {
-            Add(new Spacer(226.0f * UI::g_Common->m_ScaleAll - 69.0f - UI::g_Common->m_TabMargin));
+            Add(new Spacer(160.0f * UI::g_Common->m_ScaleAll - 69.0f - UI::g_Common->m_TabMargin));
         }
 
         float verticalSpace = (availableHeight - 4 * UI::g_Common->m_IconHeight);

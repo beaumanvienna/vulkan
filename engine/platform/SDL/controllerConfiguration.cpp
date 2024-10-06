@@ -376,7 +376,7 @@ namespace GfxRenderEngine
             return true;
         bool ok = false;
 
-        if (m_CountX > 10)
+        if (m_CountX > 100)
         {
             m_ControllerButton[m_ConfigurationState] = m_ValueX;
             ok = true;
