@@ -4,10 +4,55 @@
     "author": "Copyright (c) 2024 Engine Development Team",
     "terrain":
     [
+        {
+            "filename": "application/lucre/terrainDescriptions/heightmap2.json",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.0054, 0.115714, 0.0054
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -0.576, 2.29826, -0.117
+                        ]
+                    }
+                }
+            ]
+        }
         
     ],
     "fastgltf files":
     [
-     
+        {
+            "filename": "application/lucre/models/assets/Sponza/glTF/Sponza.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.229000002, -0.00899999961, 0.116380259
+                        ]
+                    }
+                }
+            ]
+        }
     ]
 }
