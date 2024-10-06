@@ -35,8 +35,8 @@ namespace LucreApp
 
         m_ScaleAll = m_AvailableHeight / 1080.0f;
 
-        m_IconWidth = 128.0f * m_ScaleAll;
-        m_IconHeight = 128.0f * m_ScaleAll;
+        m_IconWidth = 64.0f * m_ScaleAll;
+        m_IconHeight = 64.0f * m_ScaleAll;
         m_IconSpacer = 64.0f * m_ScaleAll;
 
         m_StripSize = 150.0f * m_ScaleAll;
@@ -50,8 +50,8 @@ namespace LucreApp
         m_ControllerScale = 1.0f * m_ScaleAll;
 
         m_TabIconScaleRetro = 1.5 * m_ScaleAll;
-        m_IconScaleRetro = 1.0 * m_ScaleAll;
-        m_IconScale = 2.0 * m_ScaleAll;
+        m_IconScaleRetro = 0.5 * m_ScaleAll;
+        m_IconScale = 1.0 * m_ScaleAll;
     }
 
     void Common::OnResize() { Init(); }

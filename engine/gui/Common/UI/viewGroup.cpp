@@ -80,7 +80,7 @@ namespace GfxRenderEngine
         void ViewGroup::RemoveSubview(View* view)
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 if (views_[i] == view)
                 {
@@ -94,7 +94,7 @@ namespace GfxRenderEngine
         void ViewGroup::Clear()
         {
             std::lock_guard<std::mutex> guard(modifyLock_);
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 delete views_[i];
                 views_[i] = nullptr;
@@ -112,7 +112,7 @@ namespace GfxRenderEngine
                 tag = anonId;
             }
 
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 views_[i]->PersistData(status, tag + "/" + SCREEN_StringFromInt((int)i), storage);
             }
@@ -242,7 +242,7 @@ namespace GfxRenderEngine
             std::lock_guard<std::mutex> guard(modifyLock_);
             if (!CanBeFocused() && !views_.empty())
             {
-                for (size_t i = 0; i < views_.size(); i++)
+                for (size_t i = 0; i < views_.size(); ++i)
                 {
                     if (views_[i]->SetFocus())
                         return true;
@@ -253,7 +253,7 @@ namespace GfxRenderEngine
 
         bool ViewGroup::SubviewFocused(View* view)
         {
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 if (views_[i] == view)
                     return true;
@@ -425,7 +425,7 @@ namespace GfxRenderEngine
             }
 
             int num = -1;
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 if (views_[i] == view)
                 {
@@ -455,7 +455,7 @@ namespace GfxRenderEngine
                 case FOCUS_RIGHT:
                 case FOCUS_DOWN:
                 {
-                    for (size_t i = 0; i < views_.size(); i++)
+                    for (size_t i = 0; i < views_.size(); ++i)
                     {
                         if (views_[i] == view)
                         {
@@ -510,7 +510,7 @@ namespace GfxRenderEngine
                 {
                     continue;
                 }
-                numVisible++;
+                ++numVisible;
 
                 const LinearLayoutParams* linLayoutParams = view->GetLayoutParams()->As<LinearLayoutParams>();
 
@@ -703,7 +703,7 @@ namespace GfxRenderEngine
                 itemBounds.w = measuredWidth_;
             }
 
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 if (views_[i]->GetVisibility() == V_GONE)
                 {
@@ -1155,7 +1155,7 @@ namespace GfxRenderEngine
 
         void AnchorLayout::MeasureViews(const SCREEN_UIContext& dc, MeasureSpec horiz, MeasureSpec vert)
         {
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 Size width = WRAP_CONTENT;
                 Size height = WRAP_CONTENT;
@@ -1217,7 +1217,7 @@ namespace GfxRenderEngine
 
         void AnchorLayout::Layout()
         {
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 const AnchorLayoutParams* params = views_[i]->GetLayoutParams()->As<AnchorLayoutParams>();
 
@@ -1287,7 +1287,7 @@ namespace GfxRenderEngine
         {
             MeasureSpecType measureType = settings_.fillCells ? EXACTLY : AT_MOST;
 
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 views_[i]->Measure(dc, MeasureSpec(measureType, settings_.columnWidth),
                                    MeasureSpec(measureType, settings_.rowHeight));
@@ -1310,7 +1310,7 @@ namespace GfxRenderEngine
             int y = 0;
             int x = 0;
             int count = 0;
-            for (size_t i = 0; i < views_.size(); i++)
+            for (size_t i = 0; i < views_.size(); ++i)
             {
                 Bounds itemBounds, innerBounds;
 
@@ -1325,7 +1325,7 @@ namespace GfxRenderEngine
                 views_[i]->SetBounds(innerBounds);
                 views_[i]->Layout();
 
-                count++;
+                ++count;
                 if (count == numColumns_)
                 {
                     count = 0;
@@ -1522,7 +1522,7 @@ namespace GfxRenderEngine
 
         void ChoiceStrip::enableAllTabs()
         {
-            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); choice++)
+            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); ++choice)
             {
                 Choice(choice)->SetEnabled(true);
             }
@@ -1530,7 +1530,7 @@ namespace GfxRenderEngine
 
         void ChoiceStrip::disableAllTabs()
         {
-            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); choice++)
+            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); ++choice)
             {
                 Choice(choice)->SetEnabled(false);
             }
@@ -1541,7 +1541,7 @@ namespace GfxRenderEngine
         bool ChoiceStrip::AnyTabHasFocus(int& tab)
         {
             bool anyTabHasFocus = false;
-            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); choice++)
+            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); ++choice)
             {
                 if (Choice(choice)->HasFocus())
                 {
@@ -1582,7 +1582,7 @@ namespace GfxRenderEngine
         bool ChoiceStrip::Touch(const SCREEN_TouchInput& input)
         {
             bool clicked = false;
-            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); choice++)
+            for (unsigned int choice = 0; choice < (unsigned int)views_.size(); ++choice)
             {
                 bool isEnabled = Choice(choice)->IsEnabled();
                 Choice(choice)->SetEnabled(true);
@@ -1594,7 +1594,7 @@ namespace GfxRenderEngine
 
         EventReturn ChoiceStrip::OnChoiceClick(EventParams& e)
         {
-            for (int i = 0; i < (int)views_.size(); i++)
+            for (int i = 0; i < (int)views_.size(); ++i)
             {
                 if (views_[i] != e.v)
                 {
@@ -1711,7 +1711,7 @@ namespace GfxRenderEngine
         void ListView::CreateAllItems()
         {
             linLayout_->Clear();
-            for (int i = 0; i < adaptor_->GetNumItems(); i++)
+            for (int i = 0; i < adaptor_->GetNumItems(); ++i)
             {
                 if (hidden_.find(i) == hidden_.end())
                 {
