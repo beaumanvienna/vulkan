@@ -57,6 +57,8 @@ namespace GfxRenderEngine
 
     void VK_Context::SwapBuffers()
     {
+        ZoneScopedN("SwapBuffers");
+#ifndef MACOSX
         auto diffTime = Engine::m_Engine->GetTime() - m_StartTime;
         auto sleepTime = m_FrameDuration - diffTime - 150us;
         if (sleepTime < 0s)
@@ -77,6 +79,13 @@ namespace GfxRenderEngine
         }
         // here starts the new frame
         m_StartTime = Engine::m_Engine->GetTime();
+#else
+        std::this_thread::sleep_for(10ms);
+        auto oldStartTime = m_StartTime;
+        m_StartTime = std::chrono::high_resolution_clock::now();
+        auto frameDuration = m_StartTime - oldStartTime;
+        std::cout << "frameDuration: " << frameDuration.count() / 1000000.0f << " ms" << std::endl;
+#endif
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const Builder& builder)
