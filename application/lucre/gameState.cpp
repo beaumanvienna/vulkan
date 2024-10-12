@@ -330,7 +330,7 @@ namespace LucreApp
             {
                 auto lambda = [this, state]()
                 {
-                    ZoneScopedN("loadTerrain");
+                    ZoneScopedN("loadTerrainScene");
                     auto scenePtr =
                         std::make_shared<TerrainScene>("terrain.json", "application/lucre/sceneDescriptions/terrain.json");
                     SetupScene(state, scenePtr);

@@ -60,7 +60,42 @@ namespace GfxRenderEngine
             return descriptorPool;
         };
 
-        auto loopOverWorkerThreads = [this, createCommandPool, createDescriptorPool](ThreadPool& pool)
+        auto createUploadSemaphore = [this]()
+        {
+            VkSemaphore uploadSemaphore;
+            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+            timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+            timelineCreateInfo.initialValue = 0;
+
+            VkSemaphoreCreateInfo semaphoreInfo{};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            semaphoreInfo.pNext = &timelineCreateInfo;
+            {
+                if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &uploadSemaphore) != VK_SUCCESS)
+                {
+                    CORE_HARD_STOP("failed to create synchronization objects in VK_Pool::CreateSyncObjects()!");
+                }
+            }
+            return uploadSemaphore;
+        };
+
+        auto emplacePoolObjects = [this, createCommandPool, createDescriptorPool, createUploadSemaphore](uint64 hash)
+        {
+            // create command pool
+            m_CommandPools.emplace(hash, createCommandPool());
+
+            // create descriptor pool
+            m_DescriptorPools.emplace(hash, createDescriptorPool());
+
+            // create upload semaphore pool
+            m_UploadSemaphores.emplace(hash, createUploadSemaphore());
+
+            // create signal value pool
+            m_SignalValues.emplace(hash, 0);
+        };
+
+        auto loopOverWorkerThreads = [emplacePoolObjects](ThreadPool& pool)
         {
             // loop over all worker threads and fill the unordered maps for
             // thread id -> command pool and
@@ -69,12 +104,7 @@ namespace GfxRenderEngine
             {
                 // Hash for thread id (created from a hasher class object and the thread id).
                 uint64 hash = std::hash<std::thread::id>()(threadID);
-
-                // create command pools for the thread pool
-                m_CommandPools.emplace(hash, createCommandPool());
-
-                // create descriptor pools for the thread pool
-                m_DescriptorPools.emplace(hash, createDescriptorPool());
+                emplacePoolObjects(hash);
             }
         };
 
@@ -88,16 +118,17 @@ namespace GfxRenderEngine
 
             // Hash for thread id (created from a hasher class object and the thread id).
             uint64 hash = std::hash<std::thread::id>()(threadID);
-            // create command pools for the thread pool
-            m_CommandPools.emplace(hash, createCommandPool());
-
-            // create descriptor pools for the thread pool
-            m_DescriptorPools.emplace(hash, createDescriptorPool());
+            emplacePoolObjects(hash);
         }
     }
 
     VK_Pool::~VK_Pool()
     {
+        for (auto& uploadSemaphore : m_UploadSemaphores)
+        {
+            vkDestroySemaphore(m_Device, uploadSemaphore.second, nullptr);
+        }
+
         for (auto& commandPool : m_CommandPools)
         {
             vkDestroyCommandPool(m_Device, commandPool.second, nullptr);
@@ -122,13 +153,39 @@ namespace GfxRenderEngine
     {
         std::thread::id threadID = std::this_thread::get_id();
         uint64 hash = std::hash<std::thread::id>()(threadID);
-        CORE_ASSERT(m_DescriptorPools[hash] != nullptr, "no command pool found!");
+        CORE_ASSERT(m_DescriptorPools[hash] != nullptr, "no descriptor pool found!");
         if (!m_DescriptorPools[hash])
         {
             std::cout << "thread id:" << threadID << std::endl;
             CORE_HARD_STOP("thread id");
         }
         return *m_DescriptorPools[hash];
+    }
+
+    VkSemaphore& VK_Pool::GetUploadSemaphore()
+    {
+        std::thread::id threadID = std::this_thread::get_id();
+        uint64 hash = std::hash<std::thread::id>()(threadID);
+        CORE_ASSERT(m_UploadSemaphores[hash] != nullptr, "no upload semaphore found!");
+        if (!m_UploadSemaphores[hash])
+        {
+            std::cout << "thread id:" << threadID << std::endl;
+            CORE_HARD_STOP("thread id");
+        }
+        return m_UploadSemaphores[hash];
+    }
+
+    uint64& VK_Pool::GetSignalValue()
+    {
+        std::thread::id threadID = std::this_thread::get_id();
+        uint64 hash = std::hash<std::thread::id>()(threadID);
+        CORE_ASSERT(m_SignalValues[hash].Get() != SignalValue::DEFAULT_CONSTRUCTED, "no signal value found!");
+        if (m_SignalValues[hash].Get() == SignalValue::DEFAULT_CONSTRUCTED)
+        {
+            std::cout << "thread id:" << threadID << std::endl;
+            CORE_HARD_STOP("thread id");
+        }
+        return m_SignalValues[hash].Get();
     }
 
     void VK_Pool::ResetCommandPool()

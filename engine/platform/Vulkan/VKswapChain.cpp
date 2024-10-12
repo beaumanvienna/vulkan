@@ -87,9 +87,10 @@ namespace GfxRenderEngine
 
     VkResult VK_SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex)
     {
-        ZoneScopedN("SubmitCommandBuffers");
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
+            ZoneScopedN("SCB waitFence"); // SCB: submit command buffers
             PROFILE_SCOPE("waitFor ImagesInFlight");
             vkWaitForFences(m_Device->Device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
@@ -114,9 +115,12 @@ namespace GfxRenderEngine
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
             vkResetFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame]);
-            if (vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to submit draw command buffer!");
+                ZoneScopedN("SCB queueSubmit");
+                if (vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS)
+                {
+                    LOG_CORE_CRITICAL("failed to submit draw command buffer!");
+                }
             }
         }
 
@@ -134,6 +138,7 @@ namespace GfxRenderEngine
 
         VkResult result{};
         {
+            ZoneScopedN("vkQueuePresentKHR");
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
             result = vkQueuePresentKHR(m_Device->PresentQueue(), &presentInfo);
         }

@@ -40,6 +40,8 @@ namespace GfxRenderEngine
 
         VkCommandPool& GetCommandPool();
         VK_DescriptorPool& GetDescriptorPool();
+        VkSemaphore& GetUploadSemaphore();
+        uint64& GetSignalValue();
 
         void ResetCommandPool();
         void ResetCommandPools(ThreadPool& threadpool);
@@ -63,5 +65,16 @@ namespace GfxRenderEngine
         std::unordered_map<uint64, VkCommandPool> m_CommandPools;
         // pool of descriptor pools
         std::unordered_map<uint64, std::unique_ptr<VK_DescriptorPool>> m_DescriptorPools;
+        // pool of upload semaphores
+        std::unordered_map<uint64, VkSemaphore> m_UploadSemaphores;
+
+        // pool of upload signal values
+        struct SignalValue
+        {
+            static constexpr uint64 DEFAULT_CONSTRUCTED = -1;
+            uint64 m_Value{DEFAULT_CONSTRUCTED};
+            uint64& Get() { return m_Value; }
+        };
+        std::unordered_map<uint64, SignalValue> m_SignalValues;
     };
 } // namespace GfxRenderEngine

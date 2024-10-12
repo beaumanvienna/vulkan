@@ -239,12 +239,17 @@ namespace GfxRenderEngine
             }
         }
 
+        // PhysicalDeviceVulkan12Features required for timeline semaphore
+        VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features{};
+        physicalDeviceVulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        physicalDeviceVulkan12Features.timelineSemaphore = VK_TRUE;
+
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
 
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
+        createInfo.pNext = &physicalDeviceVulkan12Features;
         createInfo.queueCreateInfoCount = queueCreateInfos.size();
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
@@ -436,7 +441,6 @@ namespace GfxRenderEngine
 
 #ifdef MACOSX
         extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-        // extensions.push_back("VK_KHR_portability_subset");
 #endif
 
         return extensions;
@@ -697,18 +701,49 @@ namespace GfxRenderEngine
 
     void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
-        ZoneScopedN("EndSingleTimeCommands");
         vkEndCommandBuffer(commandBuffer);
+        uint64_t& signalTimelineValue = m_LoadPool->GetSignalValue();
+        ++signalTimelineValue;
+        VkTimelineSemaphoreSubmitInfo timelineSemaphoreSubmitInfo{};
+        timelineSemaphoreSubmitInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+        timelineSemaphoreSubmitInfo.signalSemaphoreValueCount = 1;
+        timelineSemaphoreSubmitInfo.pSignalSemaphoreValues = &signalTimelineValue;
 
+        VkSemaphore signalSemaphore = m_LoadPool->GetUploadSemaphore();
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext = &timelineSemaphoreSubmitInfo;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-        std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &signalSemaphore;
         {
+            ZoneScopedN("ESTC vkQueueSubmit"); // ESTC = end single time commands
+            std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
             vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(GraphicsQueue());
-            vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
+        }
+
+        // wait for completion, then free command buffer
+        {
+            const uint64 waitValue = signalTimelineValue;
+            VkSemaphoreWaitInfo waitInfo{};
+            waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+            waitInfo.semaphoreCount = 1;
+            waitInfo.pSemaphores = &signalSemaphore;
+            waitInfo.pValues = &waitValue;
+            while (true)
+            {
+                ZoneScopedN("ESTC wait sema");
+                {
+                    std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
+                    if (vkWaitSemaphores(m_Device, &waitInfo, 0 /* no timeout, return immediately*/) == VK_SUCCESS)
+                    {
+                        vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
+                        break;
+                    }
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
         }
     }
 
@@ -818,6 +853,7 @@ namespace GfxRenderEngine
 
     void VK_Device::WaitIdle()
     {
+        ZoneScopedN("WaitIdle");
         std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
         vkDeviceWaitIdle(m_Device);
     }
