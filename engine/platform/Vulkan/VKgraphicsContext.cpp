@@ -58,21 +58,20 @@ namespace GfxRenderEngine
     void VK_Context::LimitFrameRate(Chrono::TimePoint startTime)
     {
         ZoneScopedN("LimitFrameRate");
-#ifndef MACOSX
         auto diffTime = Engine::m_Engine->GetTime() - startTime;
         auto sleepTime = m_MinFrameDuration - diffTime;
 
         if (sleepTime > 0s)
         {
+#ifdef MACOSX
+            static constexpr Chrono::Duration MACOS_MAX_SLEEP_TIME = 10ms;
+            if (sleepTime > MACOS_MAX_SLEEP_TIME)
+            {
+                sleepTime = MACOS_MAX_SLEEP_TIME;
+            }
+#endif
             std::this_thread::sleep_for(sleepTime);
         }
-#else
-        std::this_thread::sleep_for(10ms);
-        auto oldStartTime = m_StartTime;
-        m_StartTime = std::chrono::high_resolution_clock::now();
-        auto frameDuration = m_StartTime - oldStartTime;
-        std::cout << "frameDuration: " << frameDuration.count() / 1000000.0f << " ms" << std::endl;
-#endif
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const Builder& builder)
