@@ -33,7 +33,7 @@
 namespace GfxRenderEngine
 {
     VK_Context::VK_Context(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
-        : m_Window{window}, m_FrameDuration{16.667ms}, m_VSyncIsWorking{10}, m_Initialized{false}
+        : m_Window{window}, m_Initialized{false}
     {
         // create a device
         m_Device = std::make_unique<VK_Device>(window, threadPoolPrimary, threadPoolSecondary);
@@ -55,30 +55,17 @@ namespace GfxRenderEngine
 
     void VK_Context::SetVSync(int interval) {}
 
-    void VK_Context::SwapBuffers()
+    void VK_Context::LimitFrameRate(Chrono::TimePoint startTime)
     {
-        ZoneScopedN("SwapBuffers");
+        ZoneScopedN("LimitFrameRate");
 #ifndef MACOSX
-        auto diffTime = Engine::m_Engine->GetTime() - m_StartTime;
-        auto sleepTime = m_FrameDuration - diffTime - 150us;
-        if (sleepTime < 0s)
-            sleepTime = 0s;
+        auto diffTime = Engine::m_Engine->GetTime() - startTime;
+        auto sleepTime = m_MinFrameDuration - diffTime;
 
-        // here ends the frame
-        if (m_VSyncIsWorking)
-        {
-            if (diffTime < (m_FrameDuration / 2))
-            {
-                // time difference too short
-                m_VSyncIsWorking--;
-            }
-        }
-        else
+        if (sleepTime > 0s)
         {
             std::this_thread::sleep_for(sleepTime);
         }
-        // here starts the new frame
-        m_StartTime = Engine::m_Engine->GetTime();
 #else
         std::this_thread::sleep_for(10ms);
         auto oldStartTime = m_StartTime;

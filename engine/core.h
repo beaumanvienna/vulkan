@@ -56,8 +56,8 @@ namespace GfxRenderEngine
         bool Start();
         void WaitInitialized();
         void OnUpdate();
-        void OnRender();
         void OnEvent(Event& event);
+        void PostRender();
         void QueueEvent(std::unique_ptr<Event>& event);
         void Shutdown(bool switchOffComputer = false);
         void Quit();
@@ -141,7 +141,8 @@ namespace GfxRenderEngine
         LayerStack m_LayerStack;
 
         Timestep m_Timestep;
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_TimeLastFrame;
+        Chrono::TimePoint m_TimeLastFrame;
+        Chrono::TimePoint m_StartTime;
 
         bool m_Running, m_Paused, m_GraphicsContextInitialized;
         std::vector<std::unique_ptr<Event>> m_EventQueue;

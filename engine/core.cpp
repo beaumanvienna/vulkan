@@ -166,9 +166,10 @@ namespace GfxRenderEngine
             }
             m_EventQueue.clear();
         }
+        m_StartTime = GetTime();
     }
 
-    void Engine::OnRender() { m_GraphicsContext->SwapBuffers(); }
+    void Engine::PostRender() { m_GraphicsContext->LimitFrameRate(m_StartTime); }
 
     void Engine::SignalHandler(int signal)
     {

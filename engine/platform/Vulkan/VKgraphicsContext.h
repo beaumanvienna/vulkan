@@ -42,7 +42,7 @@ namespace GfxRenderEngine
 
         virtual bool Init() override;
         virtual void SetVSync(int interval) override;
-        virtual void SwapBuffers() override;
+        virtual void LimitFrameRate(Chrono::TimePoint) override;
         virtual bool IsInitialized() const override { return m_Initialized; }
 
         virtual Renderer* GetRenderer() const override { return m_Renderer.get(); }
@@ -68,8 +68,15 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_Device> m_Device;
         std::unique_ptr<VK_Renderer> m_Renderer;
 
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
-        std::chrono::duration<float, std::chrono::seconds::period> m_FrameDuration;
-        int m_VSyncIsWorking;
+        Chrono::TimePoint m_StartTime;
+
+        // *** m_MinFrameDuration ***
+        // The main thread must use at least m_MinFrameDuration of CPU time.
+        // If the app is using less, LimitFrameRate() pads the remainder via sleep().
+        // Without the frame limiter, vkQueuesubmit() would pad the remainder,
+        // and we don't want that:
+        // vkQueuesubmit() is blocking the acces mutex and thus background operations
+        // on the queue (such as resource loading) are blocked as well.
+        Chrono::Duration m_MinFrameDuration{16.0ms};
     };
 } // namespace GfxRenderEngine

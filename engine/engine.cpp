@@ -87,8 +87,8 @@ int engine(int argc, char* argv[])
                     engine->RunScripts(application.get());
                 }
                 {
-                    ZoneScopedN("engine->OnRender()");
-                    engine->OnRender();
+                    ZoneScopedN("engine->PostRender()");
+                    engine->PostRender();
                 }
             }
             else

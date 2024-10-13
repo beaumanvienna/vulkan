@@ -283,6 +283,14 @@ namespace GfxRenderEngine
 
     VkPresentModeKHR VK_SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
+        for (auto& presentMode : availablePresentModes)
+        {
+            if (presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+            {
+                return presentMode;
+            }
+        }
+        // guaranteed to be supported
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

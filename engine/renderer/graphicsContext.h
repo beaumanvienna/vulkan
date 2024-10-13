@@ -39,6 +39,12 @@
 
 namespace GfxRenderEngine
 {
+    namespace Chrono
+    {
+        using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+        using Duration = std::chrono::duration<float, std::chrono::seconds::period>;
+    } // namespace Chrono
+
     class GraphicsContext
     {
 
@@ -47,7 +53,7 @@ namespace GfxRenderEngine
 
         virtual bool Init() = 0;
         virtual void SetVSync(int interval) = 0;
-        virtual void SwapBuffers() = 0;
+        virtual void LimitFrameRate(Chrono::TimePoint) = 0;
         virtual bool IsInitialized() const = 0;
 
         virtual Renderer* GetRenderer() const = 0;
