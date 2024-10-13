@@ -143,7 +143,13 @@ namespace GfxRenderEngine
                         m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene;
                     for (auto& gltfInfo : gltfInfoVector)
                     {
-                        if (!gltfInfo.m_LoadFuture.get())
+                        if (!gltfInfo.m_LoadFuture.has_value())
+                        {
+                            // file was not loaded (probably not found on disk)
+                            continue;
+                        }
+                        auto& loadFuture = gltfInfo.m_LoadFuture.value();
+                        if (!loadFuture.get())
                         {
                             LOG_CORE_CRITICAL("gltf file did not load properly: {0}", gltfInfo.m_GltfFile.m_Filename);
                             continue;
@@ -212,7 +218,7 @@ namespace GfxRenderEngine
                     LOG_CORE_INFO("loading {0} gltf files (fastgltf)", gltfFileCount);
                 }
 
-                std::vector<GltfInfo> gltfInfoVector;
+                std::vector<GltfInfo> gltfInfoVector{};
                 gltfInfoVector.resize(gltfFileCount);
 
                 {
@@ -230,7 +236,13 @@ namespace GfxRenderEngine
 
                     for (auto& gltfInfo : gltfInfoVector)
                     {
-                        if (!gltfInfo.m_LoadFuture.get())
+                        if (!gltfInfo.m_LoadFuture.has_value())
+                        {
+                            // file was not loaded (probably not found on disk)
+                            continue;
+                        }
+                        auto& loadFuture = gltfInfo.m_LoadFuture.value();
+                        if (!loadFuture.get())
                         {
                             LOG_CORE_CRITICAL("gltf file did not load properly: {0}", gltfInfo.m_GltfFile.m_Filename);
                             continue;
@@ -749,7 +761,13 @@ namespace GfxRenderEngine
     {
         for (auto& terrainInfo : m_TerrainInfos)
         {
-            if (!terrainInfo.m_LoadFuture.get())
+            if (!terrainInfo.m_LoadFuture.has_value())
+            {
+                // file was not loaded (probably not found on disk)
+                continue;
+            }
+            auto& loadFuture = terrainInfo.m_LoadFuture.value();
+            if (!loadFuture.get())
             {
                 continue;
             }

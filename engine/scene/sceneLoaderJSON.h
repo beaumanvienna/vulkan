@@ -68,7 +68,7 @@ namespace GfxRenderEngine
 
         struct GltfInfo
         {
-            std::future<bool> m_LoadFuture;
+            std::optional<std::future<bool>> m_LoadFuture{std::nullopt};
             Gltf::GltfFile m_GltfFile;
             int m_InstanceCount{0};
             std::vector<TransformComponent> m_InstanceTransforms;
@@ -76,7 +76,7 @@ namespace GfxRenderEngine
 
         struct TerrainInfo
         {
-            std::future<bool> m_LoadFuture;
+            std::optional<std::future<bool>> m_LoadFuture{std::nullopt};
             std::string m_Filename;
             int m_InstanceCount{0};
             std::vector<TransformComponent> m_InstanceTransforms;
