@@ -86,8 +86,8 @@ namespace GfxRenderEngine
             auto entity = m_Registry.Create();
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
-            auto shortName = name + "::" + std::to_string(m_InstanceIndex) + "::root";
-            auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+            auto shortName = m_DictionaryPrefix + "::" + name + "::" + std::to_string(m_InstanceIndex) + "::root";
+            auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
             uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(groupNode);
 
@@ -167,8 +167,9 @@ namespace GfxRenderEngine
                 }
 
                 // create scene graph node and add to parent
-                auto shortName = "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                auto shortName = m_DictionaryPrefix + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                auto longName =
+                    m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
                 currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
             }
@@ -187,9 +188,9 @@ namespace GfxRenderEngine
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
 
         auto entity = m_Registry.Create();
-        auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
+        auto shortName = m_DictionaryPrefix + "::" + EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
                          "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-        auto longName = m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+        auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
 
         uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
@@ -795,6 +796,8 @@ namespace GfxRenderEngine
             cnt = (cnt + 1) % 3;
         }
     }
+
+    void FbxBuilder::SetDictionaryPrefix(std::string const& dictionaryPrefix) { m_DictionaryPrefix = dictionaryPrefix; }
 
     void FbxBuilder::PrintMaps(const aiMaterial* fbxMaterial)
     {

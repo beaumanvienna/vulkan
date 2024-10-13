@@ -35,7 +35,9 @@
                 "vendor/tracy/include"
             ],
             "defines": [
-                "MACOSX", "PROFILING"
+                "MACOSX",
+                "PROFILING",
+                "ZoneScopedNC(x,y)"
             ],
             "cStandard": "c17",
             "cppStandard": "c++20"

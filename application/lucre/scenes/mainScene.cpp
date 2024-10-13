@@ -96,10 +96,11 @@ namespace LucreApp
             Engine::m_Engine->QueueEvent(event);
         }
 
-        m_Barrel = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/barrel/barrel.gltf::0::root");
-        m_Helmet = m_Dictionary.Retrieve("application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::0::root");
-        m_ToyCar = m_Dictionary.Retrieve("application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::0::root");
-        m_Sponza = m_Dictionary.Retrieve("application/lucre/models/assets/Sponza/glTF/Sponza.gltf::0::root");
+        m_Barrel = m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/barrel/barrel.gltf::0::root");
+        m_Helmet =
+            m_Dictionary.Retrieve("SL::application/lucre/models/assets/DamagedHelmet/glTF/DamagedHelmet.gltf::0::root");
+        m_ToyCar = m_Dictionary.Retrieve("SL::application/lucre/models/assets/ToyCar/glTF/ToyCar.gltf::0::root");
+        m_Sponza = m_Dictionary.Retrieve("SL::application/lucre/models/assets/Sponza/glTF/Sponza.gltf::0::root");
         if (m_Sponza != entt::null)
         {
             // place sponze scene
@@ -160,7 +161,7 @@ namespace LucreApp
     void MainScene::LoadScripts()
     {
         auto duck =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
+            m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);

@@ -513,6 +513,29 @@
             ]
         },
         {
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.00999934, 0.00999997, 0.00999993
+                        ],
+                        "rotation":
+                        [
+                            -1.11028, -0.546991, 0.165967
+                        ],
+                        "translation":
+                        [
+                            6, 6.26463, -14.1572
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/models/external_3D_files/node hierarchy/gltf/node hierarchy.glb",
             "instances":
             [

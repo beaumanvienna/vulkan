@@ -31,7 +31,9 @@
                 "/usr/lib/x86_64-linux-gnu/glib-2.0/include",
                 "vendor/tracy/include"
             ],
-            "defines": [],
+            "defines": [
+                "ZoneScopedNC(x,y)"
+            ],
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-gcc-x64"

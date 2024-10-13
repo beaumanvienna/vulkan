@@ -60,6 +60,7 @@ namespace GfxRenderEngine
         FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers = nullptr);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
+        void SetDictionaryPrefix(std::string const&);
 
     public:
         std::vector<uint> m_Indices{};
@@ -115,6 +116,7 @@ namespace GfxRenderEngine
     private:
         std::string m_Filepath;
         std::string m_Basepath;
+        std::string m_DictionaryPrefix;
         fastgltf::Asset m_GltfModel;
         std::shared_ptr<Model> m_Model;
         std::vector<Material> m_Materials;

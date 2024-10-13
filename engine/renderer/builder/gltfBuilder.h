@@ -37,6 +37,7 @@ namespace GfxRenderEngine
         GltfBuilder(const std::string& filepath, Scene& scene);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
+        void SetDictionaryPrefix(std::string const&);
 
     public:
         std::vector<uint> m_Indices{};
@@ -81,6 +82,7 @@ namespace GfxRenderEngine
     private:
         std::string m_Filepath;
         std::string m_Basepath;
+        std::string m_DictionaryPrefix;
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;
         std::shared_ptr<Model> m_Model;

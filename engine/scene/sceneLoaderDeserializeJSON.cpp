@@ -158,7 +158,7 @@ namespace GfxRenderEngine
                             gltfFileInstance = gltfInfo.m_GltfFile.m_Instances[instanceIndex];
 
                             { // transform
-                                std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                std::string fullEntityName = std::string("SL::") + gltfInfo.m_GltfFile.m_Filename +
                                                              std::string("::" + std::to_string(instanceIndex) + "::root");
                                 entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
 
@@ -174,7 +174,7 @@ namespace GfxRenderEngine
                                 // script component
                                 if (!gltfNode.m_ScriptComponent.empty())
                                 {
-                                    std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                    std::string fullEntityName = std::string("SL::") + gltfInfo.m_GltfFile.m_Filename +
                                                                  "::" + std::to_string(instanceIndex) +
                                                                  "::" + gltfNode.m_Name;
                                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
@@ -245,7 +245,7 @@ namespace GfxRenderEngine
                             gltfFileInstance = gltfInfo.m_GltfFile.m_Instances[instanceIndex];
 
                             { // transform
-                                std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                std::string fullEntityName = std::string("SL::") + gltfInfo.m_GltfFile.m_Filename +
                                                              std::string("::" + std::to_string(instanceIndex) + "::root");
                                 entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
 
@@ -261,7 +261,7 @@ namespace GfxRenderEngine
                                 // script component
                                 if (!gltfNode.m_ScriptComponent.empty())
                                 {
-                                    std::string fullEntityName = gltfInfo.m_GltfFile.m_Filename +
+                                    std::string fullEntityName = std::string("SL::") + gltfInfo.m_GltfFile.m_Filename +
                                                                  "::" + std::to_string(instanceIndex) +
                                                                  "::" + gltfNode.m_Name;
                                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
@@ -385,6 +385,7 @@ namespace GfxRenderEngine
                     auto loadGltf = [this, gltfFilename, instanceCount, sceneID]()
                     {
                         FastgltfBuilder builder(gltfFilename, m_Scene);
+                        builder.SetDictionaryPrefix("SL"); // scene loader
                         return builder.Load(instanceCount, sceneID);
                     };
                     gltfInfo.m_LoadFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(loadGltf);
@@ -394,6 +395,7 @@ namespace GfxRenderEngine
                     auto loadGltf = [this, gltfFilename, instanceCount, sceneID]()
                     {
                         GltfBuilder builder(gltfFilename, m_Scene);
+                        builder.SetDictionaryPrefix("SL"); // scene loader
                         return builder.Load(instanceCount, sceneID);
                     };
                     gltfInfo.m_LoadFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(loadGltf);
@@ -475,11 +477,13 @@ namespace GfxRenderEngine
                 if (ufbx)
                 {
                     UFbxBuilder builder(fbxFilename, m_Scene);
+                    builder.SetDictionaryPrefix("SL"); // scene loader
                     loadSuccessful = builder.Load(instanceCount);
                 }
                 else
                 {
                     FbxBuilder builder(fbxFilename, m_Scene);
+                    builder.SetDictionaryPrefix("SL"); // scene loader
                     loadSuccessful = builder.Load(instanceCount);
                 }
                 if (loadSuccessful)
@@ -507,7 +511,7 @@ namespace GfxRenderEngine
                     for (auto instance : instances)
                     {
                         std::string fullEntityName =
-                            fbxFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
+                            std::string("SL::") + fbxFilename + std::string("::" + std::to_string(instanceIndex) + "::root");
                         entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
                         Fbx::Instance& fbxFileInstance = fbxFileInstances[instanceIndex];
                         fbxFileInstance.m_Entity = entity;

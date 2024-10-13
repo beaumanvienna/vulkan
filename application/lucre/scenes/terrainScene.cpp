@@ -108,11 +108,11 @@ namespace LucreApp
         }
 
         m_Water = m_Dictionary.Retrieve(
-            "application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
+            "SL::application/lucre/models/external_3D_files/Island scene/gltf/Island10.glb::0::Scene::Water");
 
         // get characters and start all animations
         m_Guybrush = m_Dictionary.Retrieve(
-            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
+            "SL::application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -137,7 +137,7 @@ namespace LucreApp
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
                 entt::entity model = m_Dictionary.Retrieve(
-                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
+                    "SL::application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
                 if (model != entt::null)
                 {
                     m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
@@ -176,8 +176,8 @@ namespace LucreApp
         }
         { // directional lights
             {
-                m_Lightbulb0 =
-                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb0 not found");
@@ -196,8 +196,8 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 =
-                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                m_Lightbulb1 = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb1 not found");

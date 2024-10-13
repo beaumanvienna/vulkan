@@ -39,6 +39,7 @@ namespace GfxRenderEngine
         FbxBuilder(const std::string& filepath, Scene& scene);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Fbx::FBX_NOT_USED);
+        void SetDictionaryPrefix(std::string const&);
 
     public:
         std::vector<uint> m_Indices{};
@@ -68,6 +69,7 @@ namespace GfxRenderEngine
     private:
         std::string m_Filepath;
         std::string m_Basepath;
+        std::string m_DictionaryPrefix;
         const aiScene* m_FbxScene;
         std::vector<Material> m_Materials;
         std::vector<std::shared_ptr<Texture>> m_Textures;

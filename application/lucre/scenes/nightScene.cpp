@@ -87,8 +87,8 @@ namespace LucreApp
 
         // get characters and start all animations
         m_NonPlayableCharacter1 =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/monkey01/monkey01.glb::0::root");
-        m_Hero = m_Dictionary.Retrieve("application/lucre/models/external_3D_files/CesiumMan/animations/"
+            m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/monkey01/monkey01.glb::0::root");
+        m_Hero = m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/CesiumMan/animations/"
                                        "CesiumManAnimations.gltf::0::Scene::Cesium_Man");
         if (m_Hero != entt::null)
         {
@@ -105,7 +105,7 @@ namespace LucreApp
             }
         }
         m_Guybrush = m_Dictionary.Retrieve(
-            "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
+            "SL::application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::guybrush object");
         if (m_Guybrush != entt::null)
         {
             if (m_Registry.all_of<SkeletalAnimationTag>(m_Guybrush))
@@ -130,7 +130,7 @@ namespace LucreApp
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
                 entt::entity model = m_Dictionary.Retrieve(
-                    "application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
+                    "SL::application/lucre/models/guybrush_animated_gltf/animation/guybrush.glb::0::Scene::Armature");
 
                 m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
                 m_CharacterAnimation->Start();
@@ -144,7 +144,7 @@ namespace LucreApp
                 SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
 
                 entt::entity model = m_Dictionary.Retrieve(
-                    "application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::root");
+                    "SL::application/lucre/models/external_3D_files/CesiumMan/animations/CesiumManAnimations.gltf::0::root");
                 if (model != entt::null)
                 {
                     m_CharacterAnimation = std::make_unique<CharacterAnimation>(m_Registry, model, animations);
@@ -154,7 +154,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacter2 =
-            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::0::Scene::Kaya Body_Mesh");
+            m_Dictionary.Retrieve("SL::application/lucre/models/Kaya/gltf/Kaya.glb::0::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter2 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter2);
@@ -164,7 +164,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacter3 =
-            m_Dictionary.Retrieve("application/lucre/models/Kaya/gltf/Kaya.glb::1::Scene::Kaya Body_Mesh");
+            m_Dictionary.Retrieve("SL::application/lucre/models/Kaya/gltf/Kaya.glb::1::Scene::Kaya Body_Mesh");
         if (m_NonPlayableCharacter3 != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacter3);
@@ -250,8 +250,8 @@ namespace LucreApp
         }
         { // directional lights
             {
-                m_Lightbulb0 =
-                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb0 not found");
@@ -276,8 +276,8 @@ namespace LucreApp
             }
 
             {
-                m_Lightbulb1 =
-                    m_Dictionary.Retrieve("application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                m_Lightbulb1 = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb1 not found");
@@ -306,7 +306,7 @@ namespace LucreApp
     void NightScene::LoadScripts()
     {
         auto duck =
-            m_Dictionary.Retrieve("application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
+            m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/duck/duck.gltf::0::SceneWithDuck::duck");
         if ((duck != entt::null) && m_Registry.all_of<ScriptComponent>(duck))
         {
             auto& duckScriptComponent = m_Registry.get<ScriptComponent>(duck);

@@ -125,7 +125,7 @@ namespace LucreApp
         // game objects
         entt::entity m_Skybox;
         entt::entity m_NonPlayableCharacters[NPC::MaxNPC];
-        entt::entity m_Lightbulb0, m_Lightbulb1, m_Guybrush, m_Water;
+        entt::entity m_Lightbulb0, m_Lightbulb1;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_Camera[CameraTypes::MaxCameraTypes];
         entt::entity m_PointLight[MAX_LIGHTS];
@@ -137,9 +137,6 @@ namespace LucreApp
         static constexpr int ANIMATE_X_Y = 2;
         static constexpr bool INVERT_EASE = true;
         entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
-        std::array<EasingAnimations<ANIMATE_X_Y>, NUMBER_OF_MOVING_LIGHTS> m_EasingAnimation;
-        void AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation);
-        bool m_RunLightAnimation;
 
     private:
         struct BananaComponent

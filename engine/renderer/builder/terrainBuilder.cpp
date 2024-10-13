@@ -343,9 +343,11 @@ namespace GfxRenderEngine
                     }
 
                     FastgltfBuilder builder(grassSpec.m_FilepathGrassModel, scene, &resourceBuffers);
+                    builder.SetDictionaryPrefix("terrain");
                     builder.Load(1 /*1 instance in scene graph (grass has the instance count in the tag)*/);
 
-                    entt::entity grassEntityRoot = dictionary.Retrieve(grassSpec.m_FilepathGrassModel + "::0::root");
+                    entt::entity grassEntityRoot =
+                        dictionary.Retrieve(std::string("terrain::") + grassSpec.m_FilepathGrassModel + "::0::root");
                     if (grassEntityRoot != entt::null)
                     {
                         TreeNode rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
