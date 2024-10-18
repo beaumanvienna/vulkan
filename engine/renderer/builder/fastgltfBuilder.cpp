@@ -196,6 +196,7 @@ namespace GfxRenderEngine
     {
         auto loadNode = [this, scene, gltfNodeIndex, parentNode, instanceIndex]()
         {
+
             ZoneScopedN("FastgltfBuilder::ProcessNode");
             auto& node = m_GltfModel.nodes[gltfNodeIndex];
             std::string nodeName(node.name);
@@ -292,6 +293,7 @@ namespace GfxRenderEngine
                                                               transform.GetNormalMatrix());
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
                 transform.SetInstance(instanceBuffer, instanceIndex);
+
                 {
                     std::lock_guard<std::mutex> guard(m_Mutex);
                     m_InstancedObjects[gltfNodeIndex] = entity;
@@ -646,6 +648,10 @@ namespace GfxRenderEngine
     // load vertex data
     void FastgltfBuilder::LoadVertexData(uint const meshIndex, Model::ModelData& modelData)
     {
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            std::cout << "LoadVertexData(), mesh index:" << meshIndex << std::endl;
+        }
         ZoneScopedN("FastgltfBuilder::LoadVertexData");
         auto& vertices = modelData.m_Vertices;
         auto& indices = modelData.m_Indices;
