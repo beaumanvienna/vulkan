@@ -80,6 +80,17 @@ namespace GfxRenderEngine
     {
 
     public:
+        struct ModelData
+        {
+            std::vector<uint> m_Indices{};
+            std::vector<Vertex> m_Vertices{};
+            std::vector<Submesh> m_Submeshes{};
+            std::shared_ptr<Armature::Skeleton> m_Skeleton;
+            std::shared_ptr<Buffer> m_ShaderData;
+            std::shared_ptr<SkeletalAnimations> m_Animations;
+        };
+
+    public:
         Model() {}
         virtual ~Model() = default;
 

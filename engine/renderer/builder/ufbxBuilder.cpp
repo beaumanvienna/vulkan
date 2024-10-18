@@ -464,7 +464,7 @@ namespace GfxRenderEngine
         }
     }
 
-    // handle vertex data
+    // load vertex data
     void UFbxBuilder::LoadVertexData(const ufbx_node* fbxNodePtr)
     {
         m_Vertices.clear();

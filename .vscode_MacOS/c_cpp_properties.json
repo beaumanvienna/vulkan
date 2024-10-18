@@ -37,7 +37,9 @@
             "defines": [
                 "MACOSX",
                 "PROFILING",
-                "ZoneScopedNC(x,y)"
+                "ZoneScopedNC(x,y)",
+                "ZoneScopedN(x)",
+                "ZoneTransientN(x, y, z)"
             ],
             "cStandard": "c17",
             "cppStandard": "c++20"

@@ -25,7 +25,6 @@
 
 #include "core.h"
 #include "scene/scene.h"
-#include "renderer/model.h"
 #include "renderer/instanceBuffer.h"
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/materialDescriptor.h"
@@ -36,7 +35,7 @@ namespace GfxRenderEngine
 {
     FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers)
         : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
-          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}, m_InstanceCount{0}, m_InstanceIndex{0}
+          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}
     {
         m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
         if (resourceBuffers)
@@ -124,14 +123,14 @@ namespace GfxRenderEngine
 
         // PASS 2 (for all instances)
         m_InstanceCount = instanceCount;
-        for (m_InstanceIndex = 0; m_InstanceIndex < m_InstanceCount; ++m_InstanceIndex)
+        for (uint instanceIndex = 0; instanceIndex < m_InstanceCount; ++instanceIndex)
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.Create();
 
             std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
-            auto shortName = m_DictionaryPrefix + "::" + name + "::" + std::to_string(m_InstanceIndex) + "::root";
-            auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+            auto shortName = m_DictionaryPrefix + "::" + name + "::" + std::to_string(instanceIndex) + "::root";
+            auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) + "::root";
             uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(groupNode);
 
@@ -143,13 +142,13 @@ namespace GfxRenderEngine
             // a scene ID was provided
             if (sceneID > Gltf::GLTF_NOT_USED)
             {
-                ProcessScene(m_GltfModel.scenes[sceneID], groupNode);
+                ProcessScene(m_GltfModel.scenes[sceneID], groupNode, instanceIndex);
             }
             else // no scene ID was provided --> use all scenes
             {
                 for (auto& scene : m_GltfModel.scenes)
                 {
-                    ProcessScene(scene, groupNode);
+                    ProcessScene(scene, groupNode, instanceIndex);
                 }
             }
         }
@@ -176,7 +175,7 @@ namespace GfxRenderEngine
         return localHasMesh;
     }
 
-    void FastgltfBuilder::ProcessScene(fastgltf::Scene& scene, uint const parentNode)
+    void FastgltfBuilder::ProcessScene(fastgltf::Scene& scene, uint const parentNode, uint instanceIndex)
     {
         size_t nodeCount = scene.nodeIndices.size();
         if (!nodeCount)
@@ -185,69 +184,82 @@ namespace GfxRenderEngine
             return;
         }
 
-        m_RenderObject = 0;
         for (uint nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
         {
-            ProcessNode(scene, scene.nodeIndices[nodeIndex], parentNode);
+            ProcessNode(&scene, scene.nodeIndices[nodeIndex], parentNode, instanceIndex);
         }
+        Engine::m_Engine->m_PoolSecondary.Wait();
     }
 
-    void FastgltfBuilder::ProcessNode(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
+    void FastgltfBuilder::ProcessNode(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode,
+                                      uint instanceIndex)
     {
-        auto& node = m_GltfModel.nodes[gltfNodeIndex];
-        std::string nodeName(node.name);
-
-        uint currentNode = parentNode;
-
-        if (m_HasMesh[gltfNodeIndex])
+        auto loadNode = [this, scene, gltfNodeIndex, parentNode, instanceIndex]()
         {
-            int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
-            int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
-            int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
-            if ((meshIndex != Gltf::GLTF_NOT_USED) || (lightIndex != Gltf::GLTF_NOT_USED) ||
-                (cameraIndex != Gltf::GLTF_NOT_USED))
-            {
-                currentNode = CreateGameObject(scene, gltfNodeIndex, parentNode);
-            }
-            else // one or more children have a mesh, but not this one --> create group node
-            {
-                // create game object and transform component
-                auto entity = m_Registry.Create();
+            ZoneScopedN("FastgltfBuilder::ProcessNode");
+            auto& node = m_GltfModel.nodes[gltfNodeIndex];
+            std::string nodeName(node.name);
 
-                // create scene graph node and add to parent
-                auto shortName = m_DictionaryPrefix + "::" + std::to_string(m_InstanceIndex) +
-                                 "::" + std::string(scene.name) + "::" + nodeName;
-                auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) +
-                                "::" + std::string(scene.name) + "::" + nodeName;
-                currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-                m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+            uint currentNode = parentNode;
 
+            if (m_HasMesh[gltfNodeIndex])
+            {
+                int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
+                int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
+                int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
+                if ((meshIndex != Gltf::GLTF_NOT_USED) || (lightIndex != Gltf::GLTF_NOT_USED) ||
+                    (cameraIndex != Gltf::GLTF_NOT_USED))
                 {
-                    TransformComponent transform{};
-                    LoadTransformationMatrix(transform, gltfNodeIndex);
-                    m_Registry.emplace<TransformComponent>(entity, transform);
+                    currentNode = CreateGameObject(scene, gltfNodeIndex, parentNode, instanceIndex);
+                }
+                else // one or more children have a mesh, but not this one --> create group node
+                {
+                    std::lock_guard<std::mutex> guard(m_Mutex);
+                    // create game object and transform component
+                    auto entity = m_Registry.Create();
+
+                    // create scene graph node and add to parent
+                    auto shortName = m_DictionaryPrefix + "::" + std::to_string(instanceIndex) +
+                                     "::" + std::string(scene->name) + "::" + nodeName;
+                    auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) +
+                                    "::" + std::string(scene->name) + "::" + nodeName;
+                    currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+                    m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+
+                    {
+                        TransformComponent transform{};
+                        LoadTransformationMatrix(transform, gltfNodeIndex);
+                        m_Registry.emplace<TransformComponent>(entity, transform);
+                    }
                 }
             }
-        }
 
-        size_t childNodeCount = node.children.size();
-        for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
+            size_t childNodeCount = node.children.size();
+            for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
+            {
+                int gltfChildNodeIndex = node.children[childNodeIndex];
+                ProcessNode(scene, gltfChildNodeIndex, currentNode, instanceIndex);
+            }
+            return true;
+        };
         {
-            int gltfChildNodeIndex = node.children[childNodeIndex];
-            ProcessNode(scene, gltfChildNodeIndex, currentNode);
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            m_NodeFutures.emplace_back(Engine::m_Engine->m_PoolSecondary.SubmitTask(loadNode));
         }
     }
 
-    uint FastgltfBuilder::CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode)
+    uint FastgltfBuilder::CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode,
+                                           uint instanceIndex)
     {
         auto& node = m_GltfModel.nodes[gltfNodeIndex];
         std::string nodeName(node.name);
+
         int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
         int lightIndex = node.lightIndex.has_value() ? node.lightIndex.value() : Gltf::GLTF_NOT_USED;
         int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.Create();
-        auto baseName = "::" + std::to_string(m_InstanceIndex) + "::" + std::string(scene.name) + "::" + nodeName;
+        auto baseName = "::" + std::to_string(instanceIndex) + "::" + std::string(scene->name) + "::" + nodeName;
         auto shortName = m_DictionaryPrefix + "::" + EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) + baseName;
         auto longName = m_DictionaryPrefix + "::" + m_Filepath + baseName;
 
@@ -260,6 +272,8 @@ namespace GfxRenderEngine
         if (meshIndex != Gltf::GLTF_NOT_USED)
         {
             // create a model
+            Model::ModelData modelData = {
+                .m_Skeleton = m_Skeleton, .m_ShaderData = m_ShaderData, .m_Animations = m_Animations};
 
             // *** Instancing ***
             // create instance tag for first game object;
@@ -267,38 +281,42 @@ namespace GfxRenderEngine
             // The renderer can loop over all instance tags
             // to retrieve the corresponding game objects.
 
-            if (!m_InstanceIndex)
+            if (!instanceIndex)
             {
+                std::shared_ptr<InstanceBuffer> instanceBuffer;
                 InstanceTag instanceTag;
                 instanceTag.m_Instances.push_back(entity);
-                m_InstanceBuffer = InstanceBuffer::Create(m_InstanceCount);
-                instanceTag.m_InstanceBuffer = m_InstanceBuffer;
-                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                instanceBuffer = InstanceBuffer::Create(m_InstanceCount);
+                instanceTag.m_InstanceBuffer = instanceBuffer;
+                instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
                                                               transform.GetNormalMatrix());
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
-                transform.SetInstance(m_InstanceBuffer, m_InstanceIndex);
-                m_InstancedObjects.push_back(entity);
+                transform.SetInstance(instanceBuffer, instanceIndex);
+                {
+                    std::lock_guard<std::mutex> guard(m_Mutex);
+                    m_InstancedObjects[gltfNodeIndex] = entity;
+                }
 
                 // create model for 1st instance
-                LoadVertexData(meshIndex);
-                LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", m_Vertices.size(),
-                              m_Indices.size(), m_Filepath, nodeName);
+                LoadVertexData(meshIndex, modelData);
+                LOG_CORE_INFO("Vertex count: {0}, Index count: {1} (file: {2}, node: {3})", modelData.m_Vertices.size(),
+                              modelData.m_Indices.size(), m_Filepath, nodeName);
 
                 { // assign material
                     uint primitiveIndex = 0;
                     for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
                     {
-                        Submesh& submesh = m_Submeshes[primitiveIndex];
+                        Submesh& submesh = modelData.m_Submeshes[primitiveIndex];
                         ++primitiveIndex;
 
                         if (glTFPrimitive.materialIndex.has_value())
                         {
-                            AssignMaterial(submesh, glTFPrimitive.materialIndex.value());
+                            AssignMaterial(submesh, glTFPrimitive.materialIndex.value(), instanceBuffer.get());
                         }
                         else
                         {
                             LOG_CORE_ERROR("submesh has no material, check your 3D model");
-                            AssignMaterial(submesh, Gltf::GLTF_NOT_USED);
+                            AssignMaterial(submesh, Gltf::GLTF_NOT_USED, instanceBuffer.get());
                         }
                     }
                 }
@@ -316,16 +334,19 @@ namespace GfxRenderEngine
                 }
 
                 // submit to engine
-                m_Model = Engine::m_Engine->LoadModel(*this);
+                m_Model = Engine::m_Engine->LoadModel(modelData);
             }
             else
             {
-                entt::entity instance = m_InstancedObjects[m_RenderObject++];
+                std::lock_guard lock(m_Mutex);
+                CORE_ASSERT(m_InstancedObjects.find(gltfNodeIndex) != m_InstancedObjects.end(),
+                            "instanced object not found");
+                entt::entity instance = m_InstancedObjects[gltfNodeIndex];
                 InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
                 instanceTag.m_Instances.push_back(entity);
-                instanceTag.m_InstanceBuffer->SetInstanceData(m_InstanceIndex, transform.GetMat4Global(),
+                instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
                                                               transform.GetNormalMatrix());
-                transform.SetInstance(instanceTag.m_InstanceBuffer, m_InstanceIndex);
+                transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
             }
 
             { // add mesh component to all instances
@@ -391,7 +412,7 @@ namespace GfxRenderEngine
         m_Registry.emplace<TransformComponent>(entity, transform);
 
         return newNode;
-    }
+    } // namespace GfxRenderEngine
 
     bool FastgltfBuilder::GetImageFormat(uint const imageIndex)
     {
@@ -622,25 +643,25 @@ namespace GfxRenderEngine
         }
     }
 
-    // handle vertex data
-    void FastgltfBuilder::LoadVertexData(uint const meshIndex)
+    // load vertex data
+    void FastgltfBuilder::LoadVertexData(uint const meshIndex, Model::ModelData& modelData)
     {
         ZoneScopedN("FastgltfBuilder::LoadVertexData");
-        m_Vertices.clear();
-        m_Indices.clear();
-        m_Submeshes.clear();
+        auto& vertices = modelData.m_Vertices;
+        auto& indices = modelData.m_Indices;
+        auto& submeshes = modelData.m_Submeshes;
 
         uint numPrimitives = m_GltfModel.meshes[meshIndex].primitives.size();
-        m_Submeshes.resize(numPrimitives);
+        submeshes.resize(numPrimitives);
 
         uint primitiveIndex = 0;
         for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
         {
-            Submesh& submesh = m_Submeshes[primitiveIndex];
+            Submesh& submesh = submeshes[primitiveIndex];
             ++primitiveIndex;
 
-            submesh.m_FirstVertex = static_cast<uint>(m_Vertices.size());
-            submesh.m_FirstIndex = static_cast<uint>(m_Indices.size());
+            submesh.m_FirstVertex = static_cast<uint>(vertices.size());
+            submesh.m_FirstIndex = static_cast<uint>(indices.size());
             submesh.m_InstanceCount = m_InstanceCount;
 
             size_t vertexCount = 0;
@@ -757,8 +778,8 @@ namespace GfxRenderEngine
                 }
 
                 // Append data to model's vertex buffer
-                uint numVerticesBefore = m_Vertices.size();
-                m_Vertices.resize(numVerticesBefore + vertexCount);
+                uint numVerticesBefore = vertices.size();
+                vertices.resize(numVerticesBefore + vertexCount);
                 uint vertexIndex = numVerticesBefore;
                 for (size_t vertexIterator = 0; vertexIterator < vertexCount; ++vertexIterator)
                 {
@@ -839,14 +860,14 @@ namespace GfxRenderEngine
                         }
                         vertex.m_Weights = glm::make_vec4(&weightsBuffer[vertexIterator * 4]);
                     }
-                    m_Vertices[vertexIndex] = vertex;
+                    vertices[vertexIndex] = vertex;
                     ++vertexIndex;
                 }
 
                 // calculate tangents
                 if (!tangentsBuffer)
                 {
-                    CalculateTangents();
+                    CalculateTangents(modelData);
                 }
             }
 
@@ -857,9 +878,9 @@ namespace GfxRenderEngine
                 indexCount = accessor.count;
 
                 // append indices for submesh to global index array
-                size_t globalIndicesOffset = m_Indices.size();
-                m_Indices.resize(m_Indices.size() + indexCount);
-                uint* destination = m_Indices.data() + globalIndicesOffset;
+                size_t globalIndicesOffset = indices.size();
+                indices.resize(indices.size() + indexCount);
+                uint* destination = indices.data() + globalIndicesOffset;
                 fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor, [&](uint submeshIndex, size_t iterator)
                                                          { destination[iterator] = submeshIndex; });
             }
@@ -888,7 +909,7 @@ namespace GfxRenderEngine
             node.transform);
     }
 
-    void FastgltfBuilder::AssignMaterial(Submesh& submesh, int const materialIndex)
+    void FastgltfBuilder::AssignMaterial(Submesh& submesh, int const materialIndex, InstanceBuffer* instanceBuffer)
     {
         ZoneScopedN("AssignMaterial");
         { // material
@@ -914,7 +935,7 @@ namespace GfxRenderEngine
         { // resources
             Resources::ResourceBuffers& resourceBuffers = submesh.m_Resources.m_ResourceBuffers;
             resourceBuffers = m_ResourceBuffersPre;
-            std::shared_ptr<Buffer> instanceUbo{m_InstanceBuffer->GetBuffer()};
+            std::shared_ptr<Buffer> instanceUbo{instanceBuffer->GetBuffer()};
             resourceBuffers[Resources::INSTANCE_BUFFER_INDEX] = instanceUbo;
             if (m_SkeletalAnimation)
             {
@@ -926,15 +947,15 @@ namespace GfxRenderEngine
         LOG_CORE_INFO("material assigned (fastgltf): material index {0}", materialIndex);
     }
 
-    void FastgltfBuilder::CalculateTangents()
+    void FastgltfBuilder::CalculateTangents(Model::ModelData& modelData)
     {
-        if (m_Indices.size())
+        if (modelData.m_Indices.size())
         {
-            CalculateTangentsFromIndexBuffer(m_Indices);
+            CalculateTangentsFromIndexBuffer(modelData, modelData.m_Indices);
         }
         else
         {
-            uint vertexCount = m_Vertices.size();
+            uint vertexCount = modelData.m_Vertices.size();
             if (vertexCount)
             {
                 std::vector<uint> indices;
@@ -943,12 +964,12 @@ namespace GfxRenderEngine
                 {
                     indices[i] = i;
                 }
-                CalculateTangentsFromIndexBuffer(indices);
+                CalculateTangentsFromIndexBuffer(modelData, indices);
             }
         }
     }
 
-    void FastgltfBuilder::CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices)
+    void FastgltfBuilder::CalculateTangentsFromIndexBuffer(Model::ModelData& modelData, const std::vector<uint>& indices)
     {
         uint cnt = 0;
         uint vertexIndex1 = 0;
@@ -963,7 +984,7 @@ namespace GfxRenderEngine
 
         for (uint index : indices)
         {
-            auto& vertex = m_Vertices[index];
+            auto& vertex = modelData.m_Vertices[index];
 
             switch (cnt)
             {
@@ -1016,9 +1037,9 @@ namespace GfxRenderEngine
                     if (tangent.x == 0.0f && tangent.y == 0.0f && tangent.z == 0.0f)
                         tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 
-                    m_Vertices[vertexIndex1].m_Tangent = tangent;
-                    m_Vertices[vertexIndex2].m_Tangent = tangent;
-                    m_Vertices[vertexIndex3].m_Tangent = tangent;
+                    modelData.m_Vertices[vertexIndex1].m_Tangent = tangent;
+                    modelData.m_Vertices[vertexIndex2].m_Tangent = tangent;
+                    modelData.m_Vertices[vertexIndex3].m_Tangent = tangent;
 
                     break;
             }

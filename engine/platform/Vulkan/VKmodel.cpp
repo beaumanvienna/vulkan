@@ -70,10 +70,16 @@ namespace GfxRenderEngine
     m_Animations = std::move(builder.m_Animations);    \
     m_ShaderDataUbo = builder.m_ShaderData;
 
-    VK_Model::VK_Model(VK_Device* device, const FastgltfBuilder& builder) : m_Device(device)
+    VK_Model::VK_Model(const Model::ModelData& modelData) : m_Device(VK_Core::m_Device)
     {
         ZoneScopedNC("VK_Model(FastgltfBuilder)", 0x00ffff);
-        INIT_GLTF_AND_FBX_MODEL();
+
+        CopySubmeshes(modelData.m_Submeshes);
+        CreateVertexBuffer(std::move(modelData.m_Vertices));
+        CreateIndexBuffer(std::move(modelData.m_Indices));
+        m_Skeleton = std::move(modelData.m_Skeleton);
+        m_Animations = std::move(modelData.m_Animations);
+        m_ShaderDataUbo = std::move(modelData.m_ShaderData);
     }
     VK_Model::VK_Model(VK_Device* device, const UFbxBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
     VK_Model::VK_Model(VK_Device* device, const GltfBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }

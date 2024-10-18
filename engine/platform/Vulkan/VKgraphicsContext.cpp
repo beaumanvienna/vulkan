@@ -95,10 +95,9 @@ namespace GfxRenderEngine
         return model;
     }
 
-    std::shared_ptr<Model> VK_Context::LoadModel(const FastgltfBuilder& builder)
+    std::shared_ptr<Model> VK_Context::LoadModel(const Model::ModelData& modelData)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
-        auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
+        auto model = std::make_shared<VK_Model>(modelData);
         return model;
     }
 

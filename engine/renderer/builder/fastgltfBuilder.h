@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <future>
+
 #include <fastgltf/core.hpp>
 #include <fastgltf/types.hpp>
 #include <fastgltf/tools.hpp>
@@ -31,6 +33,7 @@
 #include "scene/gltf.h"
 #include "scene/material.h"
 #include "scene/registry.h"
+#include "renderer/model.h"
 #include "renderer/resourceDescriptor.h"
 
 namespace GfxRenderEngine
@@ -43,7 +46,6 @@ namespace GfxRenderEngine
     class Dictionary;
     class InstanceBuffer;
     class Material;
-    class Model;
     class Scene;
     class SceneGraph;
     class SkeletalAnimations;
@@ -62,25 +64,20 @@ namespace GfxRenderEngine
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
         void SetDictionaryPrefix(std::string const&);
 
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
-
     private:
         void LoadTextures();
         void LoadMaterials();
-        void LoadVertexData(uint const meshIndex);
+        void LoadVertexData(uint const, Model::ModelData&);
         bool GetImageFormat(uint const imageIndex);
-        void AssignMaterial(Submesh& submesh, int const materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex, InstanceBuffer* instanceBuffer);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
+        void CalculateTangents(Model::ModelData&);
+        void CalculateTangentsFromIndexBuffer(Model::ModelData&, const std::vector<uint>& indices);
 
         bool MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex);
-        void ProcessScene(fastgltf::Scene& scene, uint const parentNode);
-        void ProcessNode(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
-        uint CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        void ProcessScene(fastgltf::Scene& scene, uint const parentNode, uint instanceIndex);
+        void ProcessNode(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
+        uint CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
         int GetMinFilter(uint index);
         int GetMagFilter(uint index);
 
@@ -124,19 +121,17 @@ namespace GfxRenderEngine
         std::vector<std::shared_ptr<Texture>> m_Textures{};
 
         // scene graph
-        uint m_InstanceCount;
-        uint m_InstanceIndex;
+        uint m_InstanceCount{0};
         std::vector<bool> m_HasMesh;
-        entt::entity m_GameObject;
-
-        std::vector<entt::entity> m_InstancedObjects;
-        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
+        std::vector<std::future<bool>> m_NodeFutures;
+        std::unordered_map<int, entt::entity> m_InstancedObjects;
         Resources::ResourceBuffers m_ResourceBuffersPre;
-        uint m_RenderObject;
 
         Registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
+
+        std::mutex m_Mutex;
 
         // skeletal animation
     private:

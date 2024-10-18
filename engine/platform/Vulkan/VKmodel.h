@@ -88,7 +88,7 @@ namespace GfxRenderEngine
     public:
         VK_Model(VK_Device* device, const Builder& builder);
         VK_Model(VK_Device* device, const GltfBuilder& builder);
-        VK_Model(VK_Device* device, const FastgltfBuilder& builder);
+        VK_Model(const Model::ModelData&);
         VK_Model(VK_Device* device, const FbxBuilder& builder);
         VK_Model(VK_Device* device, const UFbxBuilder& builder);
         VK_Model(VK_Device* device, const TerrainBuilder& builder);
