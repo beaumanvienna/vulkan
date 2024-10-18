@@ -583,7 +583,7 @@ namespace GfxRenderEngine
         }
     }
 
-    // handle vertex data
+    // load vertex data
     void GltfBuilder::LoadVertexData(uint const meshIndex)
     {
         m_Vertices.clear();

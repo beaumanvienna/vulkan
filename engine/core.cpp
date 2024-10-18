@@ -353,4 +353,14 @@ namespace GfxRenderEngine
             }
         }
     }
+
+    std::shared_ptr<Model> Engine::LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
+    std::shared_ptr<Model> Engine::LoadModel(const TerrainBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+    std::shared_ptr<Model> Engine::LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+    std::shared_ptr<Model> Engine::LoadModel(const Model::ModelData& modelData)
+    {
+        return m_GraphicsContext->LoadModel(modelData);
+    }
+    std::shared_ptr<Model> Engine::LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+    std::shared_ptr<Model> Engine::LoadModel(const UFbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
 } // namespace GfxRenderEngine

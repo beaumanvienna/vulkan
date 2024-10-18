@@ -454,7 +454,7 @@ namespace GfxRenderEngine
         }
     }
 
-    // handle vertex data
+    // load vertex data
     void FbxBuilder::LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
     {
         m_Vertices.clear();

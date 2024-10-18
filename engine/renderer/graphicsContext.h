@@ -60,7 +60,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) = 0;
-        virtual std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) = 0;
+        virtual std::shared_ptr<Model> LoadModel(const Model::ModelData& modelData) = 0;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
