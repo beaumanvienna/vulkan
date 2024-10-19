@@ -56,6 +56,36 @@ namespace GfxRenderEngine
 {
     struct Vertex // 3D, with animation
     {
+
+        // default
+        Vertex()
+            : m_Position{0.0f}, m_Color{0.0f}, m_Normal{0.0f}, m_UV{0.0f}, m_Tangent{0.0f}, m_JointIds{0}, m_Weights{0.0f}
+        {
+        }
+
+        // copy
+        Vertex(glm::vec3& position, glm::vec4& color, glm::vec3& normal, glm::vec2& uv, glm::vec3& tangent,
+               glm::ivec4& jointIds, glm::vec4& weights)
+            : m_Position{position}, m_Color{color}, m_Normal{normal}, m_UV{uv}, m_Tangent{tangent}, m_JointIds{jointIds},
+              m_Weights{weights}
+        {
+        }
+
+        // move
+        Vertex(glm::vec3&& position, glm::vec4&& color, glm::vec3&& normal, glm::vec2&& uv, glm::vec3&& tangent,
+               glm::ivec4&& jointIds, glm::vec4&& weights)
+            : m_Position{std::move(position)}, m_Color{std::move(color)}, m_Normal{std::move(normal)}, m_UV{std::move(uv)},
+              m_Tangent{std::move(tangent)}, m_JointIds{std::move(jointIds)}, m_Weights{std::move(weights)}
+        {
+        }
+
+        // move with some default args
+        Vertex(glm::vec3&& position, glm::vec4&& color, glm::vec3&& normal, glm::vec2&& uv)
+            : m_Position{std::move(position)}, m_Color{std::move(color)}, m_Normal{std::move(normal)}, m_UV{std::move(uv)},
+              m_Tangent{0.0f}, m_JointIds{0}, m_Weights{0.0f}
+        {
+        }
+
         glm::vec3 m_Position;  // layout(location = 0)
         glm::vec4 m_Color;     // layout(location = 1)
         glm::vec3 m_Normal;    // layout(location = 2)

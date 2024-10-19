@@ -49,8 +49,8 @@ namespace GfxRenderEngine
         void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
 
     public:
-        std::vector<uint> m_Indices{};
         std::vector<Vertex> m_Vertices{};
+        std::vector<uint> m_Indices{};
         std::vector<Submesh> m_Submeshes{};
 
         // cubemap
