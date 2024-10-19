@@ -52,7 +52,7 @@ namespace LucreApp
         virtual void ResetTimer() override;
 
     private:
-        static constexpr std::chrono::duration<float, std::chrono::seconds::period> MIN_TIME_IN_CUTSCENE = 1s;
+        static constexpr std::chrono::duration<float, std::chrono::seconds::period> MIN_TIME_IN_CUTSCENE = 0.7ms;
         void Init();
         void MoveClouds(const Timestep& timestep);
         void Draw();

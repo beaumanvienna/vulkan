@@ -615,11 +615,28 @@
                         ],
                         "rotation":
                         [
-                            0, -0, 0
+                            0, 0, 0
                         ],
                         "translation":
                         [
                             3.03369, 2.09252, 3.85279
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.41, 0.41, 0.41
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            0.473659, 2.09252, 4.48397
                         ]
                     }
                 }
@@ -1404,32 +1421,6 @@
                         "translation":
                         [
                             0.919629, 1.61309, -63.3036
-                        ]
-                    }
-                }
-            ]
-        }
-    ],
-    "ufbx files":
-    [
-        {
-            "filename": "application/lucre/models/dancing/fbx/Dancing Michelle.fbx",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.41, 0.41, 0.41
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            0.473659, 2.09252, 4.48397
                         ]
                     }
                 }

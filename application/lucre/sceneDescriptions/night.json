@@ -1116,16 +1116,7 @@
                             2.116, 1.529, -1.377
                         ]
                     }
-                }
-            ]
-        }
-    ],
-    "ufbx files":
-    [
-        {
-            "filename": "application/lucre/models/external_3D_files/Wooden Crate/Wooden Crate.fbx",
-            "instances":
-            [
+                },
                 {
                     "transform":
                     {

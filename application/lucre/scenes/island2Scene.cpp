@@ -196,7 +196,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacters[NPC::Character4] =
-            m_Dictionary.Retrieve("SL::application/lucre/models/dancing/fbx/Dancing Michelle.fbx::0::Michelle");
+            m_Dictionary.Retrieve("SL::application/lucre/models/dancing/gltf/Dancing Michelle.glb::1::Scene::Michelle");
         if (m_NonPlayableCharacters[NPC::Character4] != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character4]);
