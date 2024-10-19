@@ -35,6 +35,7 @@
 #include "scene/registry.h"
 #include "renderer/model.h"
 #include "renderer/resourceDescriptor.h"
+#include "auxiliary/queue.h"
 
 namespace GfxRenderEngine
 {
@@ -123,7 +124,7 @@ namespace GfxRenderEngine
         // scene graph
         uint m_InstanceCount{0};
         std::vector<bool> m_HasMesh;
-        std::vector<std::future<bool>> m_NodeFutures;
+        Atomic::Queue<std::future<bool>> m_NodeFuturesQueue;
         std::unordered_map<int, entt::entity> m_InstancedObjects;
         Resources::ResourceBuffers m_ResourceBuffersPre;
 

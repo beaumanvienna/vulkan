@@ -188,7 +188,9 @@ namespace GfxRenderEngine
         {
             ProcessNode(&scene, scene.nodeIndices[nodeIndex], parentNode, instanceIndex);
         }
-        Engine::m_Engine->m_PoolSecondary.Wait();
+
+        auto wait = [](std::future<bool>&& future) { future.get(); };
+        m_NodeFuturesQueue.DoAll(wait);
     }
 
     void FastgltfBuilder::ProcessNode(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode,
@@ -196,7 +198,6 @@ namespace GfxRenderEngine
     {
         auto loadNode = [this, scene, gltfNodeIndex, parentNode, instanceIndex]()
         {
-
             ZoneScopedN("FastgltfBuilder::ProcessNode");
             auto& node = m_GltfModel.nodes[gltfNodeIndex];
             std::string nodeName(node.name);
@@ -243,10 +244,7 @@ namespace GfxRenderEngine
             }
             return true;
         };
-        {
-            std::lock_guard<std::mutex> guard(m_Mutex);
-            m_NodeFutures.emplace_back(Engine::m_Engine->m_PoolSecondary.SubmitTask(loadNode));
-        }
+        m_NodeFuturesQueue.EmplaceBack(Engine::m_Engine->m_PoolSecondary.SubmitTask(loadNode));
     }
 
     uint FastgltfBuilder::CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode,
@@ -648,10 +646,6 @@ namespace GfxRenderEngine
     // load vertex data
     void FastgltfBuilder::LoadVertexData(uint const meshIndex, Model::ModelData& modelData)
     {
-        {
-            std::lock_guard<std::mutex> guard(m_Mutex);
-            std::cout << "LoadVertexData(), mesh index:" << meshIndex << std::endl;
-        }
         ZoneScopedN("FastgltfBuilder::LoadVertexData");
         auto& vertices = modelData.m_Vertices;
         auto& indices = modelData.m_Indices;
