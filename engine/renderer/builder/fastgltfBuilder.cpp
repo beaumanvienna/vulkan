@@ -189,8 +189,6 @@ namespace GfxRenderEngine
             ProcessNode(&scene, scene.nodeIndices[nodeIndex], parentNode, instanceIndex);
         }
 
-        std::this_thread::sleep_for(10ms); // won't make a difference as scene loading
-                                           // is in the background and takes much longer anyways
         auto wait = [](std::future<bool>&& future) { future.get(); };
         m_NodeFuturesQueue.DoAll(wait);
     }
