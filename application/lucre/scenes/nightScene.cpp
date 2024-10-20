@@ -65,7 +65,7 @@ namespace LucreApp
             m_Camera = m_Registry.Create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
-            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", "defaultCamera", m_Dictionary);
+            uint cameraNode = m_SceneGraph.CreateNode(m_Camera, "defaultCamera", m_Dictionary);
             m_SceneGraph.GetRoot().AddChild(cameraNode);
             ResetScene();
 

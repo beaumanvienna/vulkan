@@ -64,8 +64,7 @@ namespace GfxRenderEngine
         static constexpr uint NODE_INVALID = -1;
 
     public:
-        uint CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName,
-                        Dictionary& dictionary);
+        uint CreateNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary);
         TreeNode& GetNode(uint const nodeIndex);
         TreeNode& GetNodeByGameObject(entt::entity const gameObject);
         TreeNode& GetRoot();

@@ -167,7 +167,7 @@ namespace GfxRenderEngine
                                 std::string fullEntityName = std::string("SL::") + gltfInfo.m_GltfFile.m_Filename +
                                                              std::string("::" + std::to_string(instanceIndex) + "::root");
                                 entt::entity entity = m_Scene.m_Dictionary.Retrieve(fullEntityName);
-
+                                CORE_ASSERT(entity != entt::null, "couldn't find entity");
                                 gltfFileInstance.m_Entity = entity;
                                 TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
                                 transform.SetScale(gltfInfo.m_InstanceTransforms[instanceIndex].GetScale());
@@ -184,6 +184,7 @@ namespace GfxRenderEngine
                                                                  "::" + std::to_string(instanceIndex) +
                                                                  "::" + gltfNode.m_Name;
                                     entt::entity gameObject = m_Scene.m_Dictionary.Retrieve(fullEntityName);
+
                                     if (gameObject != entt::null)
                                     {
                                         LOG_CORE_INFO("found script '{0}' for entity '{1}' in scene description",
@@ -779,13 +780,11 @@ namespace GfxRenderEngine
             terrainInstances.resize(terrainInfo.m_InstanceCount);
 
             {
-                auto name = EngineCore::GetFilenameWithoutPath(terrainInfo.m_Filename);
-                name = EngineCore::GetFilenameWithoutExtension(name);
                 uint instanceIndex = 0;
                 for (auto& terrainInstance : terrainInstances)
                 {
-                    std::string entityName = name + std::string("::" + std::to_string(instanceIndex));
-                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(entityName);
+                    std::string name = terrainInfo.m_Filename + std::string("::") + std::to_string(instanceIndex);
+                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(name);
                     CORE_ASSERT(entity != entt::null, "couldn't find entity");
                     terrainInstance.m_Entity = entity;
                     TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);

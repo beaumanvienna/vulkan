@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
@@ -35,26 +35,18 @@ namespace GfxRenderEngine
     {
 
     public:
-
-        void InsertShort(const std::string& key, entt::entity value);
-        void InsertLong(const std::string& key, entt::entity value);
-        entt::entity Retrieve(const std::string& key);
+        void Insert(std::string const& key, entt::entity value);
+        entt::entity Retrieve(std::string const& key);
         size_t Size() const { return m_DictStr2GameObject.size(); }
         void List() const;
 
-        const std::string& GetShortName(entt::entity gameObject);
-        const std::string& GetLongName(entt::entity gameObject);
+        const std::string& GetName(entt::entity gameObject);
 
     private:
-
-        void Insert(const std::string& key, entt::entity value);
-
-    private:
+        std::mutex m_Mutex;
 
         std::unordered_map<std::string, entt::entity> m_DictStr2GameObject;
-        std::unordered_map<entt::entity, std::string> m_GameObject2ShortStr;
-        std::unordered_map<entt::entity, std::string> m_GameObject2LongStr;
-
+        std::unordered_map<entt::entity, std::string> m_GameObject2Str;
     };
 
-}
+} // namespace GfxRenderEngine

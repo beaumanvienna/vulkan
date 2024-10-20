@@ -220,8 +220,6 @@ namespace GfxRenderEngine
 
         { // create game objects for all instances
 
-            auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
-            name = EngineCore::GetFilenameWithoutExtension(name);
             InstanceTag instanceTag;
 
             for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
@@ -233,10 +231,8 @@ namespace GfxRenderEngine
                 instanceTag.m_Instances.push_back(entity);
 
                 // add to scene graph
-                auto instanceStr = std::to_string(instanceIndex);
-                auto shortName = name + "::" + instanceStr;
-                auto longName = terrainSpec.m_FilepathTerrainDescription + "::" + instanceStr;
-                uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
+                auto name = terrainSpec.m_FilepathTerrainDescription + "::" + std::to_string(instanceIndex);
+                uint newNode = sceneGraph.CreateNode(entity, name, dictionary);
                 sceneGraph.GetRoot().AddChild(newNode);
 
                 // only for the 1st instance
@@ -280,6 +276,8 @@ namespace GfxRenderEngine
                 transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
                 registry.emplace<TransformComponent>(entity, transform);
 
+                auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(terrainSpec.m_FilepathTerrainDescription) +
+                                 std::string("::") + std::to_string(instanceIndex);
                 MeshComponent mesh{shortName, model};
                 registry.emplace<MeshComponent>(entity, mesh);
                 registry.emplace<TerrainComponent>(entity, terrainComponent);

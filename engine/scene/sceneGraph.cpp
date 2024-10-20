@@ -56,14 +56,12 @@ namespace GfxRenderEngine
 
     void TreeNode::SetGameObject(entt::entity gameObject) { m_GameObject = gameObject; }
 
-    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, std::string const& longName,
-                                Dictionary& dictionary)
+    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary)
     {
         std::lock_guard<std::mutex> guard(m_Mutex);
         uint nodeIndex = m_Nodes.size();
-        m_Nodes.push_back({gameObject, name, longName});
-        dictionary.InsertShort(name, gameObject);
-        dictionary.InsertLong(longName, gameObject);
+        m_Nodes.push_back({gameObject, name, name});
+        dictionary.Insert(name, gameObject);
         m_MapFromGameObjectToNode[gameObject] = nodeIndex;
         return nodeIndex;
     }

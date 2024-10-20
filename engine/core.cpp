@@ -349,7 +349,7 @@ namespace GfxRenderEngine
                 }
                 log.push_back(static_cast<uint>(entity));
                 LOG_CORE_WARN("no script loaded for game object {0}, '{1}'", static_cast<uint>(entity),
-                              currentScene->GetDictionary().GetLongName(entity));
+                              currentScene->GetDictionary().GetName(entity));
             }
         }
     }

@@ -168,21 +168,16 @@ namespace GfxRenderEngine
                 }
 
                 // create scene graph node and add to parent
-                std::string shortName;
-                std::string longName;
+                std::string name;
                 if (fbxNodePtr == m_FbxScene->root_node)
                 { // special name in scene graph for root node
-                    std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
-                    shortName = m_DictionaryPrefix + "::" + name + "::" + std::to_string(m_InstanceIndex) + "::root";
-                    longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+                    name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
                 }
                 else
                 {
-                    shortName = m_DictionaryPrefix + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                    longName =
-                        m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+                    name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
                 }
-                currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+                currentNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
                 m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
             }
         }
@@ -200,11 +195,9 @@ namespace GfxRenderEngine
         std::string nodeName(fbxNodePtr->name.data);
 
         auto entity = m_Registry.Create();
-        auto shortName = m_DictionaryPrefix + "::" + EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
-                         "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-        auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+        auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
 
-        uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
+        uint newNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
         m_SceneGraph.GetNode(parentNode).AddChild(newNode);
 
         glm::vec3 scale;
