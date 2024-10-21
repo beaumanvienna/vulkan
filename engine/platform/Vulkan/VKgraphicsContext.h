@@ -60,6 +60,7 @@ namespace GfxRenderEngine
         virtual uint GetContextWidth() const override { return m_Renderer->GetContextWidth(); }
         virtual uint GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
         virtual bool MultiThreadingSupport() const override;
+        virtual void WaitIdle() const override;
 
     private:
         bool m_Initialized;

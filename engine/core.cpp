@@ -354,6 +354,8 @@ namespace GfxRenderEngine
         }
     }
 
+    void Engine::WaitIdle() const { m_GraphicsContext->WaitIdle(); }
+
     std::shared_ptr<Model> Engine::LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
     std::shared_ptr<Model> Engine::LoadModel(const TerrainBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
     std::shared_ptr<Model> Engine::LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }

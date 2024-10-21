@@ -55,6 +55,7 @@ namespace GfxRenderEngine
 
         bool Start();
         void WaitInitialized();
+        void WaitIdle() const;
         void OnUpdate();
         void OnEvent(Event& event);
         void PostRender();

@@ -116,4 +116,6 @@ namespace GfxRenderEngine
     }
 
     bool VK_Context::MultiThreadingSupport() const { return VK_Core::m_Device->MultiThreadingSupport(); }
+
+    void VK_Context::WaitIdle() const { VK_Core::m_Device->WaitIdle(); };
 } // namespace GfxRenderEngine

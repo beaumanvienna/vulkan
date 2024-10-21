@@ -57,8 +57,6 @@ namespace GfxRenderEngine
         virtual void StartScripts() = 0;
         virtual void ResetTimer() {}
 
-        void DestroyEntity(entt::entity entity);
-
         entt::entity CreatePointLight(const float intensity = 1.0f, const float radius = 0.1f,
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
         entt::entity CreateDirectionalLight(const float intensity = 1.0f,
