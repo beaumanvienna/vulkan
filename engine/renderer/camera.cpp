@@ -53,7 +53,7 @@ namespace GfxRenderEngine
 
     void Camera::SetPerspectiveProjection(float fovy, float aspect, float near, float far)
     {
-        ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+        CORE_ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f, "aspect too small");
         m_ProjectionType = PERSPECTIVE_PROJECTION;
         const float tanHalfFovy = tan(fovy / 2.f);
         m_ProjectionMatrix = glm::mat4{0.0f};

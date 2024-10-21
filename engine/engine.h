@@ -58,10 +58,6 @@ int engine(int argc, char* argv[]);
 #undef CreateDirectory
 #undef CreateWindow
 
-#define ASSERT(x) \
-    if (!(x))     \
-        std::cout << " (ASSERT on line number " << __LINE__ << " in file " << __FILE__ << ")" << std::endl;
-
 #define MEMBER_SIZE(type, member) sizeof(type::member)
 
 #define BIT(x) (1 << (x))

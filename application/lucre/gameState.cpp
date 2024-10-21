@@ -253,7 +253,7 @@ namespace LucreApp
 
     void GameState::Load(GameState::State state)
     {
-        ASSERT(!IsLoaded(state));
+        CORE_ASSERT(!IsLoaded(state), "!IsLoaded(state)");
         if (m_LoadingState != State::NULL_STATE)
         {
             return;

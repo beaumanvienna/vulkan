@@ -274,7 +274,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemBloom::CreateBloomPipelines()
     {
-        ASSERT(m_BloomPipelineLayout != nullptr);
+        CORE_ASSERT(m_BloomPipelineLayout != nullptr, "m_BloomPipelineLayout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

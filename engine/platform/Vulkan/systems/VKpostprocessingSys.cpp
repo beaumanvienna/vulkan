@@ -68,7 +68,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemPostProcessing::CreatePostProcessingPipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PostProcessingPipelineLayout != nullptr);
+        CORE_ASSERT(m_PostProcessingPipelineLayout != nullptr, "m_PostProcessingPipelineLayout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

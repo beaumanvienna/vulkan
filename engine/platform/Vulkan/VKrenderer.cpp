@@ -454,14 +454,14 @@ namespace GfxRenderEngine
 
     VkCommandBuffer VK_Renderer::GetCurrentCommandBuffer() const
     {
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         return m_CommandBuffers[m_CurrentFrameIndex];
     }
 
     VkCommandBuffer VK_Renderer::BeginFrame()
     {
         ZoneScopedN("VK_Renderer::BeginFrame()");
-        ASSERT(!m_FrameInProgress);
+        CORE_ASSERT(!m_FrameInProgress, "frame must not be in progress");
 
         auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
 
@@ -496,7 +496,7 @@ namespace GfxRenderEngine
         {
             ZoneScopedNS("VK_Renderer::EndFrame()", 10);
         }
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
 
         auto commandBuffer = GetCurrentCommandBuffer();
         {
@@ -532,8 +532,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginShadowRenderPass0(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -564,8 +564,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginShadowRenderPass1(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -647,8 +647,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -685,8 +685,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -718,8 +718,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginGUIRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -747,8 +747,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         vkCmdEndRenderPass(commandBuffer);
     }
@@ -895,7 +895,7 @@ namespace GfxRenderEngine
 
     int VK_Renderer::GetFrameIndex() const
     {
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         return m_CurrentFrameIndex;
     }
 

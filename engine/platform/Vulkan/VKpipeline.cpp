@@ -66,8 +66,8 @@ namespace GfxRenderEngine
                                              const std::string& filePathFragmentShader_SPV,
                                              const PipelineConfigInfo& configInfo)
     {
-        ASSERT(configInfo.pipelineLayout != nullptr);
-        ASSERT(configInfo.renderPass != nullptr);
+        CORE_ASSERT(configInfo.pipelineLayout != nullptr, "configInfo.pipelineLayout is null");
+        CORE_ASSERT(configInfo.renderPass != nullptr, "configInfo.renderPass");
 
         auto vertCode = readFile(filePathVertexShader_SPV);
         auto fragCode = readFile(filePathFragmentShader_SPV);

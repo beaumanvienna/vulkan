@@ -76,21 +76,21 @@ namespace GfxRenderEngine
 
     std::shared_ptr<Model> VK_Context::LoadModel(const Builder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const TerrainBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const GltfBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
@@ -103,14 +103,14 @@ namespace GfxRenderEngine
 
     std::shared_ptr<Model> VK_Context::LoadModel(const FbxBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const UFbxBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }

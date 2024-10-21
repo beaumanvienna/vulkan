@@ -65,7 +65,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemSpriteRenderer2D::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 
@@ -79,8 +79,7 @@ namespace GfxRenderEngine
                                                    "bin-int/spriteRenderer2D.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
-                                                         Camera* camera)
+    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry, Camera* camera)
     {
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
                                 &frameInfo.m_GlobalDescriptorSet, 0, nullptr);

@@ -72,7 +72,7 @@ namespace GfxRenderEngine
 
     void VK_LightSystem::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 
@@ -129,7 +129,7 @@ namespace GfxRenderEngine
             {
                 auto& transform = view.get<TransformComponent>(entity);
 
-                ASSERT(lightIndex < MAX_LIGHTS);
+                CORE_ASSERT(lightIndex < MAX_LIGHTS, "light index must be less than MAX_LIGHTS");
 
                 auto& mat4Global = transform.GetMat4Global();
                 constexpr int column = 3;
@@ -169,7 +169,7 @@ namespace GfxRenderEngine
             {
                 auto& directionalLight = view.get<DirectionalLightComponent>(entity);
 
-                ASSERT(lightIndex < MAX_LIGHTS);
+                CORE_ASSERT(lightIndex < MAX_LIGHTS, "light index must be less than MAX_LIGHTS");
 
                 // copy light to ubo
                 ubo.m_DirectionalLight.m_Direction = glm::vec4(directionalLight.m_Direction, 0.0f);

@@ -150,7 +150,7 @@ namespace LucreApp
 
     void Lucre::OnResize()
     {
-        ASSERT(m_CurrentScene);
+        CORE_ASSERT(m_CurrentScene, "m_CurrentScene is null");
         m_CurrentScene->OnResize();
         m_UIControllerIcon->Init();
         m_UI->OnResize();

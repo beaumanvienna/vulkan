@@ -36,7 +36,7 @@ namespace GfxRenderEngine
                                                                                  VkDescriptorType descriptorType,
                                                                                  VkShaderStageFlags stageFlags, uint count)
     {
-        ASSERT(m_Bindings.count(binding) == 0); // binding already in use
+        CORE_ASSERT(m_Bindings.count(binding) == 0, "binding already in use");
         VkDescriptorSetLayoutBinding layoutBinding{};
         layoutBinding.binding = binding;
         layoutBinding.descriptorType = descriptorType;
@@ -85,7 +85,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorPool::Builder& VK_DescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, uint count)
     {
-        CORE_ASSERT(!m_MaxSetsCalled, "SetMaxSets() is optionally. It must be the final call b4 build().");
+        CORE_ASSERT(!m_MaxSetsCalled, "SetMaxSets() is optionally. It must be the final call before build().");
         m_MaxSets += count;
         m_PoolSizes.push_back({descriptorType, count});
         return *this;
@@ -170,11 +170,11 @@ namespace GfxRenderEngine
 
     VK_DescriptorWriter& VK_DescriptorWriter::WriteBuffer(uint binding, const VkDescriptorBufferInfo& bufferInfo)
     {
-        ASSERT(m_SetLayout.m_Bindings.count(binding) == 1); // layout does not contain specified binding
+        CORE_ASSERT(m_SetLayout.m_Bindings.count(binding) == 1, "layout does not contain specified binding");
 
         auto& bindingDescription = m_SetLayout.m_Bindings[binding];
 
-        ASSERT(bindingDescription.descriptorCount == 1); // binding single descriptor info, but binding expects multiple
+        CORE_ASSERT(bindingDescription.descriptorCount == 1, "binding single descriptor info, but binding expects multiple");
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

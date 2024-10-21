@@ -68,7 +68,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemGUIRenderer::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

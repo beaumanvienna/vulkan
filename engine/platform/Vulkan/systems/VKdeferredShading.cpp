@@ -70,7 +70,7 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemDeferredShading::CreateLightingPipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_LightingPipelineLayout != nullptr);
+        CORE_ASSERT(m_LightingPipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

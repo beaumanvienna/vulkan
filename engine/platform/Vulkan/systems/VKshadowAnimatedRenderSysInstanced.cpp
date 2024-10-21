@@ -62,7 +62,7 @@ namespace GfxRenderEngine
     void VK_RenderSystemShadowAnimatedInstanced::CreatePipeline(std::unique_ptr<VK_Pipeline>& pipeline,
                                                                 VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 
