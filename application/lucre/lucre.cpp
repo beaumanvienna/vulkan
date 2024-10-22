@@ -82,7 +82,8 @@ namespace LucreApp
             {
                 const uint numberOfScenes =
                     static_cast<int>(GameState::State::MAX_STATES) - static_cast<int>(GameState::State::MAIN);
-                uint loopCounter = 0;
+                uint loopCounter{0};
+                uint previousRandomNumber{0};
                 while (Engine::m_Engine->IsRunning())
                 {
                     std::this_thread::sleep_for(100ms);
@@ -104,7 +105,12 @@ namespace LucreApp
                         {
                             break;
                         }
-                        uint randomNumber = 1 + std::rand() / ((RAND_MAX + 1u) / numberOfScenes);
+                        uint randomNumber;
+                        do
+                        {
+                            randomNumber = 1 + std::rand() / ((RAND_MAX + 1u) / numberOfScenes);
+                        } while (randomNumber == previousRandomNumber);
+                        previousRandomNumber = randomNumber;
                         uint sceneNumber = randomNumber + static_cast<int>(GameState::State::MAIN) - 1;
                         LOG_APP_INFO("stress test: random number = {0}, sceneNumber = {1}, loop counter = {2}", randomNumber,
                                      sceneNumber, ++loopCounter);

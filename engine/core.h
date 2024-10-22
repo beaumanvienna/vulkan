@@ -60,6 +60,7 @@ namespace GfxRenderEngine
         void OnEvent(Event& event);
         void PostRender();
         void QueueEvent(std::unique_ptr<Event>& event);
+        void ResetDescriptorPools();
         void Shutdown(bool switchOffComputer = false);
         void Quit();
 

@@ -457,5 +457,6 @@ namespace LucreApp
         m_StateLoaded[static_cast<int>(state)] = false;
         m_Scenes[static_cast<int>(state)] = nullptr;
         m_DeleteScene = State::NULL_STATE;
+        Engine::m_Engine->ResetDescriptorPools();
     }
 } // namespace LucreApp

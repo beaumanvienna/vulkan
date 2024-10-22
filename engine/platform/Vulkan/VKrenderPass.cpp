@@ -372,6 +372,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferPositionView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -393,6 +394,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferNormalView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -414,6 +416,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferColorView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -435,6 +438,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferMaterialView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -456,6 +460,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_GBufferEmissionView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }

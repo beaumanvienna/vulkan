@@ -74,8 +74,7 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_Device::VK_Device(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
-        : m_Window{window}
+    VK_Device::VK_Device(VK_Window* window) : m_Window{window}
     {
         CreateInstance();
         SetupDebugMessenger();
@@ -83,7 +82,6 @@ namespace GfxRenderEngine
         PickPhysicalDevice();
         CreateLogicalDevice();
         CreateCommandPool();
-        m_LoadPool = std::make_unique<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
     }
 
     VK_Device::~VK_Device()
@@ -100,6 +98,13 @@ namespace GfxRenderEngine
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
     }
+
+    void VK_Device::LoadPool(ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
+    {
+        m_LoadPool = std::make_unique<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
+    }
+
+    void VK_Device::ResetPool(ThreadPool& threadPool) { m_LoadPool->ResetDescriptorPools(threadPool); }
 
     void VK_Device::Shutdown()
     {
@@ -392,6 +397,7 @@ namespace GfxRenderEngine
         auto result = CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger);
         if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to set up debug messenger!");
         }
     }
@@ -856,6 +862,143 @@ namespace GfxRenderEngine
         ZoneScopedN("WaitIdle");
         std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
         vkDeviceWaitIdle(m_Device);
+    }
+
+    void VK_Device::PrintError(VkResult result)
+    {
+        switch (result)
+        {
+            case VK_NOT_READY:
+            {
+                LOG_CORE_CRITICAL("VK_NOT_READY");
+                break;
+            }
+            case VK_TIMEOUT:
+            {
+                LOG_CORE_CRITICAL("VK_TIMEOUT");
+                break;
+            }
+            case VK_INCOMPLETE:
+            {
+                LOG_CORE_CRITICAL("VK_INCOMPLETE");
+                break;
+            }
+            case VK_ERROR_OUT_OF_HOST_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_HOST_MEMORY");
+                break;
+            }
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+                break;
+            }
+            case VK_ERROR_INITIALIZATION_FAILED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INITIALIZATION_FAILED");
+                break;
+            }
+            case VK_ERROR_DEVICE_LOST:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_DEVICE_LOST");
+                break;
+            }
+            case VK_ERROR_MEMORY_MAP_FAILED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_MEMORY_MAP_FAILED");
+                break;
+            }
+            case VK_ERROR_EXTENSION_NOT_PRESENT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_EXTENSION_NOT_PRESENT");
+                break;
+            }
+            case VK_ERROR_FEATURE_NOT_PRESENT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FEATURE_NOT_PRESENT");
+                break;
+            }
+            case VK_ERROR_INCOMPATIBLE_DRIVER:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INCOMPATIBLE_DRIVER");
+                break;
+            }
+            case VK_ERROR_TOO_MANY_OBJECTS:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_TOO_MANY_OBJECTS");
+                break;
+            }
+            case VK_ERROR_FORMAT_NOT_SUPPORTED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FORMAT_NOT_SUPPORTED");
+                break;
+            }
+            case VK_ERROR_FRAGMENTED_POOL:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FRAGMENTED_POOL");
+                break;
+            }
+            case VK_ERROR_UNKNOWN:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_UNKNOWN");
+                break;
+            }
+            case VK_ERROR_OUT_OF_POOL_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_POOL_MEMORY");
+                break;
+            }
+            case VK_ERROR_INVALID_EXTERNAL_HANDLE:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INVALID_EXTERNAL_HANDLE");
+                break;
+            }
+            case VK_ERROR_FRAGMENTATION:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FRAGMENTATION");
+                break;
+            }
+            case VK_PIPELINE_COMPILE_REQUIRED:
+            {
+                LOG_CORE_CRITICAL("VK_PIPELINE_COMPILE_REQUIRED");
+                break;
+            }
+            case VK_ERROR_SURFACE_LOST_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_SURFACE_LOST_KHR");
+                break;
+            }
+            case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_NATIVE_WINDOW_IN_USE_KHR");
+                break;
+            }
+            case VK_ERROR_OUT_OF_DATE_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_DATE_KHR");
+                break;
+            }
+            case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INCOMPATIBLE_DISPLAY_KHR");
+                break;
+            }
+            case VK_ERROR_VALIDATION_FAILED_EXT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_VALIDATION_FAILED_EXT");
+                break;
+            }
+            case VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR");
+                break;
+            }
+            default:
+            {
+                LOG_CORE_CRITICAL("VK_Device::PrintError: error not in list");
+                break;
+            }
+        }
     }
 
     void VK_Device::PrintAllSupportedFormats()

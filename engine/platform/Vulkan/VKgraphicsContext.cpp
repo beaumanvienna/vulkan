@@ -36,8 +36,9 @@ namespace GfxRenderEngine
         : m_Window{window}, m_Initialized{false}
     {
         // create a device
-        m_Device = std::make_unique<VK_Device>(window, threadPoolPrimary, threadPoolSecondary);
+        m_Device = std::make_unique<VK_Device>(window);
         VK_Core::m_Device = m_Device.get();
+        m_Device->LoadPool(threadPoolPrimary, threadPoolSecondary);
         m_Renderer = std::make_unique<VK_Renderer>(m_Window);
         m_Initialized = m_Renderer->Init();
     }
@@ -118,4 +119,6 @@ namespace GfxRenderEngine
     bool VK_Context::MultiThreadingSupport() const { return VK_Core::m_Device->MultiThreadingSupport(); }
 
     void VK_Context::WaitIdle() const { VK_Core::m_Device->WaitIdle(); };
+
+    void VK_Context::ResetDescriptorPool(ThreadPool& threadPool) { VK_Core::m_Device->ResetPool(threadPool); };
 } // namespace GfxRenderEngine

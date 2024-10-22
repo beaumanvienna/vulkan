@@ -355,6 +355,11 @@ namespace GfxRenderEngine
     }
 
     void Engine::WaitIdle() const { m_GraphicsContext->WaitIdle(); }
+    void Engine::ResetDescriptorPools()
+    {
+        m_GraphicsContext->ResetDescriptorPool(m_PoolPrimary);
+        m_GraphicsContext->ResetDescriptorPool(m_PoolSecondary);
+    }
 
     std::shared_ptr<Model> Engine::LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
     std::shared_ptr<Model> Engine::LoadModel(const TerrainBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }

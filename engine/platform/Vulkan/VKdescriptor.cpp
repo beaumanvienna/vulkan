@@ -67,11 +67,15 @@ namespace GfxRenderEngine
         descriptorSetLayoutInfo.bindingCount = static_cast<uint>(setLayoutBindings.size());
         descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 
-        auto result = vkCreateDescriptorSetLayout(VK_Core::m_Device->Device(), &descriptorSetLayoutInfo, nullptr,
-                                                  &m_DescriptorSetLayout);
-        if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create descriptor set layout!");
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            auto result = vkCreateDescriptorSetLayout(VK_Core::m_Device->Device(), &descriptorSetLayoutInfo, nullptr,
+                                                      &m_DescriptorSetLayout);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create descriptor set layout!");
+            }
         }
     }
 
@@ -122,17 +126,24 @@ namespace GfxRenderEngine
         descriptorPoolInfo.maxSets = maxSets;
         descriptorPoolInfo.flags = poolFlags;
 
-        auto result = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool);
-        if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create descriptor pool!");
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            auto result = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create descriptor pool!");
+            }
         }
     }
 
     VK_DescriptorPool::~VK_DescriptorPool()
     {
         VK_Core::m_Device->WaitIdle();
-        vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+        }
     }
 
     bool VK_DescriptorPool::AllocateDescriptorSet(const VkDescriptorSetLayout descriptorSetLayout,
@@ -144,18 +155,23 @@ namespace GfxRenderEngine
         allocInfo.pSetLayouts = &descriptorSetLayout;
         allocInfo.descriptorSetCount = 1;
 
-        auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &descriptor);
-        CORE_ASSERT(result == VK_SUCCESS, "vkAllocateDescriptorSets failed");
-        if (result != VK_SUCCESS)
         {
-            CORE_HARD_STOP("AllocateDescriptorSet");
-            return false;
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &descriptor);
+            CORE_ASSERT(result == VK_SUCCESS, "vkAllocateDescriptorSets failed");
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                CORE_HARD_STOP("AllocateDescriptorSet");
+                return false;
+            }
         }
         return true;
     }
 
     void VK_DescriptorPool::FreeDescriptors(std::vector<VkDescriptorSet>& descriptors) const
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkFreeDescriptorSets(VK_Core::m_Device->Device(), m_DescriptorPool, static_cast<uint>(descriptors.size()),
                              descriptors.data());
     }
@@ -253,6 +269,9 @@ namespace GfxRenderEngine
         {
             write.dstSet = set;
         }
-        vkUpdateDescriptorSets(VK_Core::m_Device->Device(), m_Writes.size(), m_Writes.data(), 0, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUpdateDescriptorSets(VK_Core::m_Device->Device(), m_Writes.size(), m_Writes.data(), 0, nullptr);
+        }
     }
 } // namespace GfxRenderEngine

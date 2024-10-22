@@ -43,7 +43,7 @@ namespace GfxRenderEngine
         const bool m_EnableValidationLayers = true;
 #endif
 
-        VK_Device(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);
+        VK_Device(VK_Window* window);
         ~VK_Device();
 
         // Not copyable or movable
@@ -89,8 +89,12 @@ namespace GfxRenderEngine
         VkInstance GetInstance() const { return m_Instance; }
         bool MultiThreadingSupport() const { return true; }
         std::mutex m_QueueAccessMutex;
+        std::mutex m_DeviceAccessMutex;
         VK_Pool* GetLoadPool() { return m_LoadPool.get(); }
+        void LoadPool(ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);
+        void ResetPool(ThreadPool& threadPool);
         void WaitIdle();
+        void PrintError(VkResult result);
 
     private:
         static constexpr int NO_ASSIGNED = -1;

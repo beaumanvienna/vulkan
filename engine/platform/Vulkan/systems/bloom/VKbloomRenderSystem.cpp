@@ -81,6 +81,7 @@ namespace GfxRenderEngine
                 vkCreateImageView(VK_Core::m_Device->Device(), &viewInfo, nullptr, &m_EmissionMipmapViews[mipLevel]);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -232,6 +233,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(VK_Core::m_Device->Device(), &samplerCreateInfo, nullptr, &m_Sampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }

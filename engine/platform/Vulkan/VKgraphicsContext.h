@@ -61,6 +61,7 @@ namespace GfxRenderEngine
         virtual uint GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
         virtual bool MultiThreadingSupport() const override;
         virtual void WaitIdle() const override;
+        virtual void ResetDescriptorPool(ThreadPool& threadPool) override;
 
     private:
         bool m_Initialized;

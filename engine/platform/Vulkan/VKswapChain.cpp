@@ -201,6 +201,7 @@ namespace GfxRenderEngine
         auto result = vkCreateSwapchainKHR(m_Device->Device(), &createInfo, nullptr, &m_SwapChain);
         if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create swap chain!");
         }
 
@@ -235,6 +236,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_SwapChainImageViews[i]);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }

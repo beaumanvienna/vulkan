@@ -183,6 +183,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }

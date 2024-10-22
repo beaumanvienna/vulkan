@@ -515,6 +515,7 @@ namespace GfxRenderEngine
         }
         else if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_WARN("failed to present swap chain image");
         }
         m_FrameInProgress = false;
