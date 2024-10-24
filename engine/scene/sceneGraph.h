@@ -42,7 +42,7 @@ namespace GfxRenderEngine
         entt::entity GetGameObject() const;
         const std::string& GetName() const;
         const std::string& GetLongName() const;
-        uint Children() const;
+        uint Children();
         uint GetChild(uint const childIndex);
         uint AddChild(uint const nodeIndex);
         void SetGameObject(entt::entity gameObject);

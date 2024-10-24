@@ -42,9 +42,17 @@ namespace GfxRenderEngine
 
     const std::string& TreeNode::GetLongName() const { return m_LongName; }
 
-    uint TreeNode::Children() const { return m_Children.size(); }
+    uint TreeNode::Children()
+    {
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        return m_Children.size();
+    }
 
-    uint TreeNode::GetChild(uint const childIndex) { return m_Children[childIndex]; }
+    uint TreeNode::GetChild(uint const childIndex)
+    {
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        return m_Children[childIndex];
+    }
 
     uint TreeNode::AddChild(uint const nodeIndex)
     {
@@ -78,10 +86,15 @@ namespace GfxRenderEngine
         }
     }
 
-    TreeNode& SceneGraph::GetNode(uint const nodeIndex) { return m_Nodes[nodeIndex]; }
+    TreeNode& SceneGraph::GetNode(uint const nodeIndex)
+    {
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        return m_Nodes[nodeIndex];
+    }
 
     TreeNode& SceneGraph::GetNodeByGameObject(entt::entity const gameObject)
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         uint nodeIndex = m_MapFromGameObjectToNode[gameObject];
         return m_Nodes[nodeIndex];
     }
@@ -95,6 +108,7 @@ namespace GfxRenderEngine
 
     uint SceneGraph::GetTreeNodeIndex(entt::entity const gameObject)
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         uint returnValue = NODE_INVALID;
 
         if (m_MapFromGameObjectToNode.find(gameObject) != m_MapFromGameObjectToNode.end())

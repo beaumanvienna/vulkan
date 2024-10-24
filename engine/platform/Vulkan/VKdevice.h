@@ -88,7 +88,6 @@ namespace GfxRenderEngine
 
         VkInstance GetInstance() const { return m_Instance; }
         bool MultiThreadingSupport() const { return true; }
-        std::mutex m_QueueAccessMutex;
         std::mutex m_DeviceAccessMutex;
         VK_Pool* GetLoadPool() { return m_LoadPool.get(); }
         void LoadPool(ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary);

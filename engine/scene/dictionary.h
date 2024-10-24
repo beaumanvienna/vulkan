@@ -37,8 +37,8 @@ namespace GfxRenderEngine
     public:
         void Insert(std::string const& key, entt::entity value);
         entt::entity Retrieve(std::string const& key);
-        size_t Size() const { return m_DictStr2GameObject.size(); }
-        void List() const;
+        size_t Size();
+        void List();
 
         const std::string& GetName(entt::entity gameObject);
 

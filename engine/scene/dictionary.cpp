@@ -45,8 +45,9 @@ namespace GfxRenderEngine
         }
     }
 
-    void Dictionary::List() const
+    void Dictionary::List()
     {
+        std::lock_guard<std::mutex> guard(m_Mutex);
         LOG_CORE_INFO("listing dictionary:");
         for (auto& it : m_DictStr2GameObject)
         {
@@ -59,5 +60,11 @@ namespace GfxRenderEngine
         std::lock_guard<std::mutex> guard(m_Mutex);
         CORE_ASSERT((m_GameObject2Str.find(gameObject) != m_GameObject2Str.end()), "Dictionary::GetName no entry found");
         return m_GameObject2Str[gameObject];
+    }
+
+    size_t Dictionary::Size()
+    {
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        return m_DictStr2GameObject.size();
     }
 } // namespace GfxRenderEngine

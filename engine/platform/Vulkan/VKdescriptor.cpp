@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -81,6 +81,7 @@ namespace GfxRenderEngine
 
     VK_DescriptorSetLayout::~VK_DescriptorSetLayout()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkDestroyDescriptorSetLayout(VK_Core::m_Device->Device(), m_DescriptorSetLayout, nullptr);
     }
 
@@ -176,7 +177,11 @@ namespace GfxRenderEngine
                              descriptors.data());
     }
 
-    void VK_DescriptorPool::ResetPool() { vkResetDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, 0); }
+    void VK_DescriptorPool::ResetPool()
+    {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+        vkResetDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPool, 0);
+    }
 
     // *************** Descriptor Writer *********************
     VK_DescriptorWriter::VK_DescriptorWriter(VK_DescriptorSetLayout& setLayout)

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -108,6 +108,7 @@ namespace GfxRenderEngine
 
     void VK_Device::Shutdown()
     {
+        std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
         vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
     }
@@ -454,7 +455,7 @@ namespace GfxRenderEngine
 
     VkResult VK_Device::HasGflwRequiredInstanceExtensions()
     {
-        VkResult result = VK_SUCCESS;
+        auto result = VK_SUCCESS;
         uint extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -657,6 +658,7 @@ namespace GfxRenderEngine
     void VK_Device::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
                                  VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
+        // no guard needed; none of the below are externally synchronized
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = size;
@@ -680,8 +682,10 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("failed to allocate vertex buffer memory!");
         }
-
-        vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+        }
     }
 
     VkCommandBuffer VK_Device::BeginSingleTimeCommands()
@@ -694,20 +698,29 @@ namespace GfxRenderEngine
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        }
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        }
 
         return commandBuffer;
     }
 
     void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
-        vkEndCommandBuffer(commandBuffer);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkEndCommandBuffer(commandBuffer);
+        }
         uint64_t& signalTimelineValue = m_LoadPool->GetSignalValue();
         ++signalTimelineValue;
         VkTimelineSemaphoreSubmitInfo timelineSemaphoreSubmitInfo{};
@@ -725,7 +738,7 @@ namespace GfxRenderEngine
         submitInfo.pSignalSemaphores = &signalSemaphore;
         {
             ZoneScopedN("ESTC vkQueueSubmit"); // ESTC = end single time commands
-            std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
             vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         }
 
@@ -741,14 +754,14 @@ namespace GfxRenderEngine
             {
                 ZoneScopedN("ESTC wait sema");
                 {
-                    std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
                     if (vkWaitSemaphores(m_Device, &waitInfo, 0 /* no timeout, return immediately*/) == VK_SUCCESS)
                     {
+                        std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
                         vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
                         break;
                     }
                 }
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(1ms);
             }
         }
     }
@@ -761,7 +774,10 @@ namespace GfxRenderEngine
         copyRegion.srcOffset = 0; // Optional
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+        }
 
         EndSingleTimeCommands(commandBuffer);
     }
@@ -784,16 +800,23 @@ namespace GfxRenderEngine
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
 
-        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        }
         EndSingleTimeCommands(commandBuffer);
     }
 
     void VK_Device::CreateImageWithInfo(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image,
                                         VkDeviceMemory& imageMemory)
     {
-        if (vkCreateImage(m_Device, &imageInfo, nullptr, &image) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create image!");
+            auto result = vkCreateImage(m_Device, &imageInfo, nullptr, &image);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to create image!");
+            }
         }
 
         VkMemoryRequirements memRequirements;
@@ -809,9 +832,15 @@ namespace GfxRenderEngine
             LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
         }
 
-        if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)
+        // only vkBindImageMemory is externally synchronized in this function
         {
-            LOG_CORE_CRITICAL("failed to bind image memory!");
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            auto result = vkBindImageMemory(m_Device, image, imageMemory, 0);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to bind image memory!");
+            }
         }
     }
 
@@ -860,7 +889,6 @@ namespace GfxRenderEngine
     void VK_Device::WaitIdle()
     {
         ZoneScopedN("WaitIdle");
-        std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
         vkDeviceWaitIdle(m_Device);
     }
 
