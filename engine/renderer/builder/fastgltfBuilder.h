@@ -75,7 +75,7 @@ namespace GfxRenderEngine
         void CalculateTangents(Model::ModelData&);
         void CalculateTangentsFromIndexBuffer(Model::ModelData&, const std::vector<uint>& indices);
 
-        bool MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex);
+        bool MarkNode(int const gltfNodeIndex);
         void ProcessScene(fastgltf::Scene& scene, uint const parentNode, uint instanceIndex);
         void ProcessNode(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
         uint CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
@@ -91,8 +91,8 @@ namespace GfxRenderEngine
         {
             CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
 
-            const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
-            auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
+            const fastgltf::BufferView& bufferView = m_GltfAsset.bufferViews[accessor.bufferViewIndex.value()];
+            auto& buffer = m_GltfAsset.buffers[bufferView.bufferIndex];
 
             const fastgltf::sources::Array* vector = std::get_if<fastgltf::sources::Array>(&buffer.data);
             CORE_ASSERT(vector, "FastgltfBuilder::LoadAccessor: unsupported data type");
@@ -115,8 +115,8 @@ namespace GfxRenderEngine
         std::string m_Filepath;
         std::string m_Basepath;
         std::string m_DictionaryPrefix;
-        fastgltf::Asset m_GltfModel;
-        std::shared_ptr<Model> m_Model;
+        fastgltf::Asset m_GltfAsset;
+        std::vector<std::shared_ptr<Model>> m_Models;
         std::vector<Material> m_Materials;
         std::vector<Material::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};

@@ -82,10 +82,11 @@ namespace GfxRenderEngine
                 PrintAssetError(assetErrorCode);
                 return Gltf::GLTF_LOAD_FAILURE;
             }
-            m_GltfModel = std::move(asset.get());
+            m_GltfAsset = std::move(asset.get());
+            m_Models.resize(m_GltfAsset.nodes.size());
         }
 
-        if (!m_GltfModel.meshes.size() && !m_GltfModel.lights.size() && !m_GltfModel.cameras.size())
+        if (!m_GltfAsset.meshes.size() && !m_GltfAsset.lights.size() && !m_GltfAsset.cameras.size())
         {
             LOG_CORE_CRITICAL("Load: no meshes found in {0}", m_Filepath);
             return Gltf::GLTF_LOAD_FAILURE;
@@ -94,7 +95,7 @@ namespace GfxRenderEngine
         if (sceneID > Gltf::GLTF_NOT_USED) // a scene ID was provided
         {
             // check if valid
-            if ((m_GltfModel.scenes.size() - 1) < static_cast<size_t>(sceneID))
+            if ((m_GltfAsset.scenes.size() - 1) < static_cast<size_t>(sceneID))
             {
                 LOG_CORE_CRITICAL("Load: scene not found in {0}", m_Filepath);
                 return Gltf::GLTF_LOAD_FAILURE;
@@ -108,16 +109,16 @@ namespace GfxRenderEngine
         // PASS 1
         // mark gltf nodes to receive a game object ID if they have a mesh or any child has
         // --> create array of flags for all nodes of the gltf file
-        m_HasMesh.resize(m_GltfModel.nodes.size(), false);
+        m_HasMesh.resize(m_GltfAsset.nodes.size(), false);
         {
             // if a scene ID was provided, use it, otherwise use scene 0
             int sceneIDLocal = (sceneID > Gltf::GLTF_NOT_USED) ? sceneID : 0;
 
-            fastgltf::Scene& scene = m_GltfModel.scenes[sceneIDLocal];
+            fastgltf::Scene const& scene = m_GltfAsset.scenes[sceneIDLocal];
             size_t nodeCount = scene.nodeIndices.size();
             for (size_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
             {
-                MarkNode(scene, scene.nodeIndices[nodeIndex]);
+                MarkNode(scene.nodeIndices[nodeIndex]);
             }
         }
 
@@ -139,11 +140,11 @@ namespace GfxRenderEngine
             // a scene ID was provided
             if (sceneID > Gltf::GLTF_NOT_USED)
             {
-                ProcessScene(m_GltfModel.scenes[sceneID], groupNode, instanceIndex);
+                ProcessScene(m_GltfAsset.scenes[sceneID], groupNode, instanceIndex);
             }
             else // no scene ID was provided --> use all scenes
             {
-                for (auto& scene : m_GltfModel.scenes)
+                for (auto& scene : m_GltfAsset.scenes)
                 {
                     ProcessScene(scene, groupNode, instanceIndex);
                 }
@@ -152,10 +153,10 @@ namespace GfxRenderEngine
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
-    bool FastgltfBuilder::MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex)
+    bool FastgltfBuilder::MarkNode(int const gltfNodeIndex)
     {
         // each recursive call of this function marks a node in "m_HasMesh" if itself or a child has a mesh
-        auto& node = m_GltfModel.nodes[gltfNodeIndex];
+        auto& node = m_GltfAsset.nodes[gltfNodeIndex];
 
         // does this gltf node have a mesh?
         bool localHasMesh = (node.meshIndex.has_value() || node.cameraIndex.has_value() || node.lightIndex.has_value());
@@ -165,7 +166,7 @@ namespace GfxRenderEngine
         for (size_t childNodeIndex = 0; childNodeIndex < childNodeCount; ++childNodeIndex)
         {
             int gltfChildNodeIndex = node.children[childNodeIndex];
-            bool childHasMesh = MarkNode(scene, gltfChildNodeIndex);
+            bool childHasMesh = MarkNode(gltfChildNodeIndex);
             localHasMesh = localHasMesh || childHasMesh;
         }
         m_HasMesh[gltfNodeIndex] = localHasMesh;
@@ -196,7 +197,7 @@ namespace GfxRenderEngine
         auto loadNode = [this, scene, gltfNodeIndex, parentNode, instanceIndex]()
         {
             ZoneScopedN("FastgltfBuilder::ProcessNode");
-            auto& node = m_GltfModel.nodes[gltfNodeIndex];
+            auto& node = m_GltfAsset.nodes[gltfNodeIndex];
             std::string nodeName(node.name);
 
             uint currentNode = parentNode;
@@ -245,7 +246,7 @@ namespace GfxRenderEngine
     uint FastgltfBuilder::CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode,
                                            uint instanceIndex)
     {
-        auto& node = m_GltfModel.nodes[gltfNodeIndex];
+        auto& node = m_GltfAsset.nodes[gltfNodeIndex];
         std::string nodeName(node.name);
 
         int meshIndex = node.meshIndex.has_value() ? node.meshIndex.value() : Gltf::GLTF_NOT_USED;
@@ -275,13 +276,14 @@ namespace GfxRenderEngine
 
             if (!instanceIndex)
             {
-                std::shared_ptr<InstanceBuffer> instanceBuffer;
                 InstanceTag instanceTag;
-                instanceTag.m_Instances.push_back(entity);
+                instanceTag.m_Instances.resize(m_InstanceCount);
+                instanceTag.m_Instances[instanceIndex] = entity;
+
+                auto& instanceBuffer = instanceTag.m_InstanceBuffer;
                 instanceBuffer = InstanceBuffer::Create(m_InstanceCount);
-                instanceTag.m_InstanceBuffer = instanceBuffer;
-                instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
-                                                              transform.GetNormalMatrix());
+                instanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(), transform.GetNormalMatrix());
+
                 m_Registry.emplace<InstanceTag>(entity, instanceTag);
                 transform.SetInstance(instanceBuffer, instanceIndex);
 
@@ -297,7 +299,7 @@ namespace GfxRenderEngine
 
                 { // assign material
                     uint primitiveIndex = 0;
-                    for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+                    for (const auto& glTFPrimitive : m_GltfAsset.meshes[meshIndex].primitives)
                     {
                         Submesh& submesh = modelData.m_Submeshes[primitiveIndex];
                         ++primitiveIndex;
@@ -327,7 +329,7 @@ namespace GfxRenderEngine
                 }
 
                 // submit to engine
-                m_Model = Engine::m_Engine->LoadModel(modelData);
+                m_Models[gltfNodeIndex] = Engine::m_Engine->LoadModel(modelData);
             }
             else
             {
@@ -336,21 +338,21 @@ namespace GfxRenderEngine
                             "instanced object not found");
                 entt::entity instance = m_InstancedObjects[gltfNodeIndex];
                 InstanceTag& instanceTag = m_Registry.get<InstanceTag>(instance);
-                instanceTag.m_Instances.push_back(entity);
+                instanceTag.m_Instances[instanceIndex] = entity;
                 instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
                                                               transform.GetNormalMatrix());
                 transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
             }
 
             { // add mesh component to all instances
-                MeshComponent mesh{nodeName, m_Model};
+                MeshComponent mesh{nodeName, m_Models[gltfNodeIndex]};
                 m_Registry.emplace<MeshComponent>(entity, mesh);
             }
         }
         else if (lightIndex != Gltf::GLTF_NOT_USED)
         {
             // create a light
-            fastgltf::Light& glTFLight = m_GltfModel.lights[lightIndex];
+            fastgltf::Light& glTFLight = m_GltfAsset.lights[lightIndex];
             switch (glTFLight.type)
             {
                 case fastgltf::LightType::Directional:
@@ -380,7 +382,7 @@ namespace GfxRenderEngine
         else if (cameraIndex != Gltf::GLTF_NOT_USED)
         {
             // create a camera
-            fastgltf::Camera& glTFCamera = m_GltfModel.cameras[cameraIndex];
+            fastgltf::Camera& glTFCamera = m_GltfAsset.cameras[cameraIndex];
             if (const auto* pOrthographic = std::get_if<fastgltf::Camera::Orthographic>(&glTFCamera.camera))
             {
                 float xmag = pOrthographic->xmag;
@@ -409,12 +411,12 @@ namespace GfxRenderEngine
 
     bool FastgltfBuilder::GetImageFormat(uint const imageIndex)
     {
-        for (fastgltf::Material& material : m_GltfModel.materials)
+        for (fastgltf::Material& material : m_GltfAsset.materials)
         {
             if (material.pbrData.baseColorTexture.has_value()) // albedo aka diffuse map aka bas color -> sRGB
             {
                 uint diffuseTextureIndex = material.pbrData.baseColorTexture.value().textureIndex;
-                auto& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
+                auto& diffuseTexture = m_GltfAsset.textures[diffuseTextureIndex];
                 if (imageIndex == diffuseTexture.imageIndex.value())
                 {
                     return Texture::USE_SRGB;
@@ -423,7 +425,7 @@ namespace GfxRenderEngine
             if (material.emissiveTexture.has_value())
             {
                 uint emissiveTextureIndex = material.emissiveTexture.value().textureIndex;
-                auto& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
+                auto& emissiveTexture = m_GltfAsset.textures[emissiveTextureIndex];
                 if (imageIndex == emissiveTexture.imageIndex.value())
                 {
                     return Texture::USE_SRGB;
@@ -437,12 +439,12 @@ namespace GfxRenderEngine
     int FastgltfBuilder::GetMinFilter(uint index)
     {
         fastgltf::Filter filter = fastgltf::Filter::Linear;
-        if (m_GltfModel.textures[index].samplerIndex.has_value())
+        if (m_GltfAsset.textures[index].samplerIndex.has_value())
         {
-            size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
-            if (m_GltfModel.samplers[sampler].minFilter.has_value())
+            size_t sampler = m_GltfAsset.textures[index].samplerIndex.value();
+            if (m_GltfAsset.samplers[sampler].minFilter.has_value())
             {
-                filter = m_GltfModel.samplers[sampler].minFilter.value();
+                filter = m_GltfAsset.samplers[sampler].minFilter.value();
             }
         }
         return static_cast<int>(filter);
@@ -451,12 +453,12 @@ namespace GfxRenderEngine
     int FastgltfBuilder::GetMagFilter(uint index)
     {
         fastgltf::Filter filter = fastgltf::Filter::Linear;
-        if (m_GltfModel.textures[index].samplerIndex.has_value())
+        if (m_GltfAsset.textures[index].samplerIndex.has_value())
         {
-            size_t sampler = m_GltfModel.textures[index].samplerIndex.value();
-            if (m_GltfModel.samplers[sampler].magFilter.has_value())
+            size_t sampler = m_GltfAsset.textures[index].samplerIndex.value();
+            if (m_GltfAsset.samplers[sampler].magFilter.has_value())
             {
-                filter = m_GltfModel.samplers[sampler].magFilter.value();
+                filter = m_GltfAsset.samplers[sampler].magFilter.value();
             }
         }
         return static_cast<int>(filter);
@@ -464,7 +466,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadTextures()
     {
-        size_t numTextures = m_GltfModel.images.size();
+        size_t numTextures = m_GltfAsset.images.size();
         m_Textures.resize(numTextures);
         std::vector<std::future<std::shared_ptr<Texture>>> futures;
         futures.resize(numTextures);
@@ -476,7 +478,7 @@ namespace GfxRenderEngine
             {
                 ZoneScopedNC("FastgltfBuilder::LoadTextures", 0x0000ff);
 
-                fastgltf::Image& glTFImage = m_GltfModel.images[imageIndex];
+                fastgltf::Image& glTFImage = m_GltfAsset.images[imageIndex];
                 auto texture = Texture::Create();
 
                 // image data is of type std::variant: the data type can be a URI/filepath, an Array, or a BufferView
@@ -521,8 +523,8 @@ namespace GfxRenderEngine
                         },
                         [&](fastgltf::sources::BufferView& view) // load from buffer view
                         {
-                            auto& bufferView = m_GltfModel.bufferViews[view.bufferViewIndex];
-                            auto& bufferFromBufferView = m_GltfModel.buffers[bufferView.bufferIndex];
+                            auto& bufferView = m_GltfAsset.bufferViews[view.bufferViewIndex];
+                            auto& bufferFromBufferView = m_GltfAsset.buffers[bufferView.bufferIndex];
 
                             std::visit(
                                 fastgltf::visitor{
@@ -565,14 +567,14 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadMaterials()
     {
-        size_t numMaterials = m_GltfModel.materials.size();
+        size_t numMaterials = m_GltfAsset.materials.size();
         m_Materials.resize(numMaterials);
         m_MaterialTextures.resize(numMaterials);
 
         uint materialIndex = 0;
         for (Material& material : m_Materials)
         {
-            fastgltf::Material& glTFMaterial = m_GltfModel.materials[materialIndex];
+            fastgltf::Material& glTFMaterial = m_GltfAsset.materials[materialIndex];
             Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
             Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
 
@@ -587,7 +589,7 @@ namespace GfxRenderEngine
             if (glTFMaterial.pbrData.baseColorTexture.has_value())
             {
                 uint diffuseMapIndex = glTFMaterial.pbrData.baseColorTexture.value().textureIndex;
-                uint imageIndex = m_GltfModel.textures[diffuseMapIndex].imageIndex.value();
+                uint imageIndex = m_GltfAsset.textures[diffuseMapIndex].imageIndex.value();
                 materialTextures[Material::DIFFUSE_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
             }
@@ -596,7 +598,7 @@ namespace GfxRenderEngine
             if (glTFMaterial.normalTexture.has_value())
             {
                 uint normalMapIndex = glTFMaterial.normalTexture.value().textureIndex;
-                uint imageIndex = m_GltfModel.textures[normalMapIndex].imageIndex.value();
+                uint imageIndex = m_GltfAsset.textures[normalMapIndex].imageIndex.value();
                 materialTextures[Material::NORMAL_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterial.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
                 pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
@@ -612,7 +614,7 @@ namespace GfxRenderEngine
             if (glTFMaterial.pbrData.metallicRoughnessTexture.has_value())
             {
                 int metallicRoughnessMapIndex = glTFMaterial.pbrData.metallicRoughnessTexture.value().textureIndex;
-                uint imageIndex = m_GltfModel.textures[metallicRoughnessMapIndex].imageIndex.value();
+                uint imageIndex = m_GltfAsset.textures[metallicRoughnessMapIndex].imageIndex.value();
                 materialTextures[Material::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
             }
@@ -627,7 +629,7 @@ namespace GfxRenderEngine
             if (glTFMaterial.emissiveTexture.has_value())
             {
                 uint emissiveTextureIndex = glTFMaterial.emissiveTexture.value().textureIndex;
-                uint imageIndex = m_GltfModel.textures[emissiveTextureIndex].imageIndex.value();
+                uint imageIndex = m_GltfAsset.textures[emissiveTextureIndex].imageIndex.value();
                 materialTextures[Material::EMISSIVE_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
             }
@@ -644,11 +646,11 @@ namespace GfxRenderEngine
         auto& indices = modelData.m_Indices;
         auto& submeshes = modelData.m_Submeshes;
 
-        uint numPrimitives = m_GltfModel.meshes[meshIndex].primitives.size();
+        uint numPrimitives = m_GltfAsset.meshes[meshIndex].primitives.size();
         submeshes.resize(numPrimitives);
 
         uint primitiveIndex = 0;
-        for (const auto& glTFPrimitive : m_GltfModel.meshes[meshIndex].primitives)
+        for (const auto& glTFPrimitive : m_GltfAsset.meshes[meshIndex].primitives)
         {
             Submesh& submesh = submeshes[primitiveIndex];
             ++primitiveIndex;
@@ -686,21 +688,21 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("POSITION") != glTFPrimitive.attributes.end())
                 {
                     auto componentType =
-                        LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.findAttribute("POSITION")->second],
+                        LoadAccessor<float>(m_GltfAsset.accessors[glTFPrimitive.findAttribute("POSITION")->second],
                                             positionBuffer, &vertexCount);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex color
                 if (glTFPrimitive.findAttribute("COLOR_0") != glTFPrimitive.attributes.end())
                 {
-                    fastgltf::Accessor& accessor = m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second];
+                    fastgltf::Accessor& accessor = m_GltfAsset.accessors[glTFPrimitive.findAttribute("COLOR_0")->second];
                     colorBufferComponentType = accessor.componentType;
                     switch (colorBufferComponentType)
                     {
                         case fastgltf::ComponentType::Float:
                         {
                             const float* buffer;
-                            LoadAccessor<float>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                            LoadAccessor<float>(m_GltfAsset.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
                                                 buffer);
                             colorBuffer = buffer;
                             break;
@@ -708,7 +710,7 @@ namespace GfxRenderEngine
                         case fastgltf::ComponentType::UnsignedShort:
                         {
                             const uint16_t* buffer;
-                            LoadAccessor<uint16_t>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                            LoadAccessor<uint16_t>(m_GltfAsset.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
                                                    buffer);
                             colorBuffer = buffer;
                             break;
@@ -716,7 +718,7 @@ namespace GfxRenderEngine
                         case fastgltf::ComponentType::UnsignedByte:
                         {
                             const uint8_t* buffer;
-                            LoadAccessor<uint8_t>(m_GltfModel.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
+                            LoadAccessor<uint8_t>(m_GltfAsset.accessors[glTFPrimitive.findAttribute("COLOR_0")->second],
                                                   buffer);
                             colorBuffer = buffer;
                             break;
@@ -734,14 +736,14 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("NORMAL") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("NORMAL")->second], normalsBuffer);
+                        m_GltfAsset.accessors[glTFPrimitive.findAttribute("NORMAL")->second], normalsBuffer);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex tangents
                 if (glTFPrimitive.findAttribute("TANGENT") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("TANGENT")->second], tangentsBuffer);
+                        m_GltfAsset.accessors[glTFPrimitive.findAttribute("TANGENT")->second], tangentsBuffer);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
                 // Get buffer data for vertex texture coordinates
@@ -749,7 +751,7 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("TEXCOORD_0") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("TEXCOORD_0")->second], texCoordsBuffer);
+                        m_GltfAsset.accessors[glTFPrimitive.findAttribute("TEXCOORD_0")->second], texCoordsBuffer);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
 
@@ -757,7 +759,7 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("JOINTS_0") != glTFPrimitive.attributes.end())
                 {
                     jointsBufferComponentType = LoadAccessor<uint>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("JOINTS_0")->second], jointsBuffer);
+                        m_GltfAsset.accessors[glTFPrimitive.findAttribute("JOINTS_0")->second], jointsBuffer);
                     auto glComponentType = fastgltf::getGLComponentType(jointsBufferComponentType);
                     CORE_ASSERT((glComponentType == GL_BYTE) || (glComponentType == GL_UNSIGNED_BYTE),
                                 "unexpected component type " + std::to_string(glComponentType));
@@ -766,7 +768,7 @@ namespace GfxRenderEngine
                 if (glTFPrimitive.findAttribute("WEIGHTS_0") != glTFPrimitive.attributes.end())
                 {
                     auto componentType = LoadAccessor<float>(
-                        m_GltfModel.accessors[glTFPrimitive.findAttribute("WEIGHTS_0")->second], weightsBuffer);
+                        m_GltfAsset.accessors[glTFPrimitive.findAttribute("WEIGHTS_0")->second], weightsBuffer);
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                 }
 
@@ -867,14 +869,14 @@ namespace GfxRenderEngine
             // Indices
             if (glTFPrimitive.indicesAccessor.has_value())
             {
-                auto& accessor = m_GltfModel.accessors[glTFPrimitive.indicesAccessor.value()];
+                auto& accessor = m_GltfAsset.accessors[glTFPrimitive.indicesAccessor.value()];
                 indexCount = accessor.count;
 
                 // append indices for submesh to global index array
                 size_t globalIndicesOffset = indices.size();
                 indices.resize(indices.size() + indexCount);
                 uint* destination = indices.data() + globalIndicesOffset;
-                fastgltf::iterateAccessorWithIndex<uint>(m_GltfModel, accessor, [&](uint submeshIndex, size_t iterator)
+                fastgltf::iterateAccessorWithIndex<uint>(m_GltfAsset, accessor, [&](uint submeshIndex, size_t iterator)
                                                          { destination[iterator] = submeshIndex; });
             }
 
@@ -885,7 +887,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex)
     {
-        auto& node = m_GltfModel.nodes[gltfNodeIndex];
+        auto& node = m_GltfAsset.nodes[gltfNodeIndex];
 
         std::visit(
             fastgltf::visitor{
