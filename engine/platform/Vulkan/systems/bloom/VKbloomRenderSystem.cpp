@@ -267,9 +267,11 @@ namespace GfxRenderEngine
         bloomPipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         bloomPipelineLayoutInfo.pushConstantRangeCount = 1;
         bloomPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &bloomPipelineLayoutInfo, nullptr, &m_BloomPipelineLayout) !=
-            VK_SUCCESS)
+        auto result =
+            vkCreatePipelineLayout(VK_Core::m_Device->Device(), &bloomPipelineLayoutInfo, nullptr, &m_BloomPipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }

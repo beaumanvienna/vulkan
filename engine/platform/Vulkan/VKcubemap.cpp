@@ -164,9 +164,13 @@ namespace GfxRenderEngine
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create buffer!");
+            auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                CORE_HARD_STOP("failed to create buffer!");
+            }
         }
 
         VkMemoryRequirements memRequirements;

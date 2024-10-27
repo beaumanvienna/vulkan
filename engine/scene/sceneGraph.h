@@ -35,13 +35,12 @@ namespace GfxRenderEngine
     {
 
     public:
-        TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName);
+        TreeNode(entt::entity gameObject, const std::string& name);
         TreeNode(GfxRenderEngine::TreeNode const& other);
         ~TreeNode();
 
         entt::entity GetGameObject() const;
         const std::string& GetName() const;
-        const std::string& GetLongName() const;
         uint Children();
         uint GetChild(uint const childIndex);
         uint AddChild(uint const nodeIndex);
@@ -51,7 +50,6 @@ namespace GfxRenderEngine
     private:
         entt::entity m_GameObject;
         std::string m_Name;
-        std::string m_LongName;
         std::mutex m_Mutex;
         std::vector<uint> m_Children;
     };

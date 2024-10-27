@@ -59,9 +59,11 @@ namespace GfxRenderEngine
         postProcessingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         postProcessingPipelineLayoutInfo.pushConstantRangeCount = 1;
         postProcessingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &postProcessingPipelineLayoutInfo, nullptr,
-                                   &m_PostProcessingPipelineLayout) != VK_SUCCESS)
+        auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &postProcessingPipelineLayoutInfo, nullptr,
+                                             &m_PostProcessingPipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }

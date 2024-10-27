@@ -124,8 +124,10 @@ namespace GfxRenderEngine
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView) != VK_SUCCESS)
+        auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create texture image view!");
         }
     }
@@ -164,8 +166,10 @@ namespace GfxRenderEngine
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_DepthImageView) != VK_SUCCESS)
+        auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_DepthImageView);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create texture image view!");
         }
     }
@@ -188,9 +192,11 @@ namespace GfxRenderEngine
             framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_3DFramebuffers[i]) != VK_SUCCESS)
+            auto result = vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_3DFramebuffers[i]);
+            if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create framebuffer!");
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create framebuffer! Create3DFramebuffers()");
             }
         }
     }
@@ -212,10 +218,12 @@ namespace GfxRenderEngine
             framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_PostProcessingFramebuffers[i]) !=
-                VK_SUCCESS)
+            auto result =
+                vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_PostProcessingFramebuffers[i]);
+            if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create framebuffer!");
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create framebuffer! CreatePostProcessingFramebuffers()");
             }
         }
     }
@@ -237,9 +245,11 @@ namespace GfxRenderEngine
             framebufferInfo.height = m_RenderPassExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_GUIFramebuffers[i]) != VK_SUCCESS)
+            auto result = vkCreateFramebuffer(m_Device->Device(), &framebufferInfo, nullptr, &m_GUIFramebuffers[i]);
+            if (result != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create framebuffer!");
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create framebuffer! CreateGUIFramebuffers()");
             }
         }
     }
@@ -700,8 +710,10 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
 
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_3DRenderPass) != VK_SUCCESS)
+        auto result = vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_3DRenderPass);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create render pass!");
         }
     }
@@ -805,8 +817,10 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
 
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_PostProcessingRenderPass) != VK_SUCCESS)
+        auto result = vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_PostProcessingRenderPass);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create render pass!");
         }
     }
@@ -874,9 +888,11 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
 
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_GUIRenderPass) != VK_SUCCESS)
+        auto result = vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_GUIRenderPass);
+        if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create render pass!");
+            m_Device->PrintError(result);
+            LOG_CORE_CRITICAL("failed to create render pass! CreateGUIRenderPass()");
         }
     }
 

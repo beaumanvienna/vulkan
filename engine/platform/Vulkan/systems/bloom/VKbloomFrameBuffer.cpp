@@ -39,8 +39,10 @@ namespace GfxRenderEngine
         framebufferInfo.height = m_Attachment.m_Extent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(VK_Core::m_Device->Device(), &framebufferInfo, nullptr, &m_Framebuffer) != VK_SUCCESS)
+        auto result = vkCreateFramebuffer(VK_Core::m_Device->Device(), &framebufferInfo, nullptr, &m_Framebuffer);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create framebuffer!");
         }
     }

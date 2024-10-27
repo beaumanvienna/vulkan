@@ -24,13 +24,10 @@
 
 namespace GfxRenderEngine
 {
-    TreeNode::TreeNode(entt::entity gameObject, const std::string& name, const std::string& longName)
-        : m_GameObject(gameObject), m_LongName(longName), m_Name(name)
-    {
-    }
+    TreeNode::TreeNode(entt::entity gameObject, const std::string& name) : m_GameObject(gameObject), m_Name(name) {}
 
     TreeNode::TreeNode(GfxRenderEngine::TreeNode const& other)
-        : m_GameObject(other.m_GameObject), m_LongName(other.m_LongName), m_Name(other.m_Name), m_Children(other.m_Children)
+        : m_GameObject(other.m_GameObject), m_Name(other.m_Name), m_Children(other.m_Children)
     {
     }
 
@@ -39,8 +36,6 @@ namespace GfxRenderEngine
     entt::entity TreeNode::GetGameObject() const { return m_GameObject; }
 
     const std::string& TreeNode::GetName() const { return m_Name; }
-
-    const std::string& TreeNode::GetLongName() const { return m_LongName; }
 
     uint TreeNode::Children()
     {
@@ -68,7 +63,7 @@ namespace GfxRenderEngine
     {
         std::lock_guard<std::mutex> guard(m_Mutex);
         uint nodeIndex = m_Nodes.size();
-        m_Nodes.push_back({gameObject, name, name});
+        m_Nodes.push_back({gameObject, name});
         dictionary.Insert(name, gameObject);
         m_MapFromGameObjectToNode[gameObject] = nodeIndex;
         return nodeIndex;

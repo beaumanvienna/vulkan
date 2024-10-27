@@ -439,8 +439,10 @@ namespace GfxRenderEngine
         allocateInfo.commandPool = m_Device->GetCommandPool();
         allocateInfo.commandBufferCount = static_cast<uint>(m_CommandBuffers.size());
 
-        if (vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data()) != VK_SUCCESS)
+        auto result = vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data());
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to allocate command buffers");
         }
     }
@@ -463,17 +465,19 @@ namespace GfxRenderEngine
         ZoneScopedN("VK_Renderer::BeginFrame()");
         CORE_ASSERT(!m_FrameInProgress, "frame must not be in progress");
 
-        auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
-
-        if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            Recreate();
-            return nullptr;
-        }
+            auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
 
-        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-        {
-            LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+            if (result == VK_ERROR_OUT_OF_DATE_KHR)
+            {
+                Recreate();
+                return nullptr;
+            }
+
+            if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+            {
+                LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+            }
         }
 
         m_FrameInProgress = true;
@@ -483,11 +487,14 @@ namespace GfxRenderEngine
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to begin recording command buffer!");
+            auto result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            if (result != VK_SUCCESS)
+            {
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to allocate command buffers");
+            }
         }
-
         return commandBuffer;
     }
 
@@ -501,8 +508,10 @@ namespace GfxRenderEngine
         auto commandBuffer = GetCurrentCommandBuffer();
         {
             ZoneScopedN("vkEndCommandBuffer");
-            if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+            auto result = vkEndCommandBuffer(commandBuffer);
+            if (result != VK_SUCCESS)
             {
+                m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("recording of command buffer failed");
             }
         }
@@ -515,8 +524,8 @@ namespace GfxRenderEngine
         }
         else if (result != VK_SUCCESS)
         {
-            VK_Core::m_Device->PrintError(result);
-            LOG_CORE_WARN("failed to present swap chain image");
+            m_Device->PrintError(result);
+            LOG_CORE_CRITICAL("failed to present swap chain image");
         }
         m_FrameInProgress = false;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;

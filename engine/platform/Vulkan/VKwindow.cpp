@@ -309,8 +309,10 @@ namespace GfxRenderEngine
 
     void VK_Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
     {
-        if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
+        auto result = glfwCreateWindowSurface(instance, m_Window, nullptr, surface);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("Could not create window surface");
         }
     }

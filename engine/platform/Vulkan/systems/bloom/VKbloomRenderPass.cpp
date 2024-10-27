@@ -87,9 +87,11 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = 2;
         renderPassInfo.pDependencies = subpassDependencies.data();
 
-        if (vkCreateRenderPass(VK_Core::m_Device->Device(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
+        auto result = vkCreateRenderPass(VK_Core::m_Device->Device(), &renderPassInfo, nullptr, &m_RenderPass);
+        if (result != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create render pass!");
+            VK_Core::m_Device->PrintError(result);
+            LOG_CORE_CRITICAL("failed to create renderpass!");
         }
     }
 

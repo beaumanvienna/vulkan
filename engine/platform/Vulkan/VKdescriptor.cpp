@@ -163,7 +163,7 @@ namespace GfxRenderEngine
             if (result != VK_SUCCESS)
             {
                 VK_Core::m_Device->PrintError(result);
-                CORE_HARD_STOP("AllocateDescriptorSet");
+                CORE_HARD_STOP("AllocateDescriptorSet failed");
                 return false;
             }
         }

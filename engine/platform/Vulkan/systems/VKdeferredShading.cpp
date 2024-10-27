@@ -61,9 +61,11 @@ namespace GfxRenderEngine
         lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         lightingPipelineLayoutInfo.pushConstantRangeCount = 1;
         lightingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr,
-                                   &m_LightingPipelineLayout) != VK_SUCCESS)
+        auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr,
+                                             &m_LightingPipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }

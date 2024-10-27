@@ -154,11 +154,12 @@ namespace GfxRenderEngine
             createInfo.pNext = nullptr;
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
+        auto result = vkCreateInstance(&createInfo, nullptr, &m_Instance);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             CORE_HARD_STOP("failed to create instance");
         }
-
         if (HasGflwRequiredInstanceExtensions() != VK_SUCCESS)
         {
             CORE_HARD_STOP("required glfw extensions missing");
@@ -275,11 +276,12 @@ namespace GfxRenderEngine
             createInfo.enabledLayerCount = 0;
         }
 
-        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
+        auto result = vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
-
         vkGetDeviceQueue(m_Device, indices.m_GraphicsFamily, indices.m_QueueIndices[QueueTypes::GRAPHICS], &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.m_PresentFamily, indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
         // PrintAllSupportedFormats();
@@ -292,8 +294,10 @@ namespace GfxRenderEngine
         poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_GraphicsFamily;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool) != VK_SUCCESS)
+        auto result = vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create graphics command pool!");
         }
     }
@@ -665,8 +669,10 @@ namespace GfxRenderEngine
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        auto result = vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create vertex buffer!");
         }
 
@@ -678,10 +684,13 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        result = vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to allocate vertex buffer memory!");
         }
+
         {
             std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
             vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
@@ -827,11 +836,14 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
+            auto result = vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
+            }
         }
-
         // only vkBindImageMemory is externally synchronized in this function
         {
             std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
@@ -1019,6 +1031,11 @@ namespace GfxRenderEngine
             case VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR:
             {
                 LOG_CORE_CRITICAL("VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR");
+                break;
+            }
+            case VK_SUCCESS:
+            {
+                LOG_CORE_INFO("VK_SUCCES");
                 break;
             }
             default:
