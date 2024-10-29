@@ -30,39 +30,42 @@
 
 namespace GfxRenderEngine
 {
-
-    class TreeNode
-    {
-
-    public:
-        TreeNode(entt::entity gameObject, const std::string& name);
-        TreeNode(GfxRenderEngine::TreeNode const& other);
-        ~TreeNode();
-
-        entt::entity GetGameObject() const;
-        const std::string& GetName() const;
-        uint Children();
-        uint GetChild(uint const childIndex);
-        uint AddChild(uint const nodeIndex);
-        void SetGameObject(entt::entity gameObject);
-        std::vector<uint>& GetChildren() { return m_Children; }
-
-    private:
-        entt::entity m_GameObject;
-        std::string m_Name;
-        std::mutex m_Mutex;
-        std::vector<uint> m_Children;
-    };
-
     class SceneGraph
     {
+    public:
+        class TreeNode
+        {
+
+        public:
+            TreeNode(entt::entity gameObject, const std::string& name);
+            TreeNode(TreeNode const& other);
+            ~TreeNode();
+
+            const std::string& GetName() const;
+            uint GetChild(uint const childIndex);
+            std::vector<uint>& GetChildren() { return m_Children; }
+
+            uint Children();
+            entt::entity GetGameObject() const;
+
+        private:
+            uint AddChild(uint const nodeIndex);
+
+        private:
+            entt::entity m_GameObject;
+            std::string m_Name;
+            std::vector<uint> m_Children;
+
+            friend SceneGraph;
+        };
 
     public:
         static constexpr uint ROOT_NODE = 0;
         static constexpr uint NODE_INVALID = -1;
 
     public:
-        uint CreateNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary);
+        uint CreateNode(uint parentNode, entt::entity const gameObject, std::string const& name, Dictionary& dictionary);
+        uint CreateRootNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary);
         TreeNode& GetNode(uint const nodeIndex);
         TreeNode& GetNodeByGameObject(entt::entity const gameObject);
         TreeNode& GetRoot();
@@ -71,7 +74,7 @@ namespace GfxRenderEngine
         void TraverseLog(uint nodeIndex, uint indent = 0);
 
     private:
-        std::mutex m_Mutex;
+        std::mutex m_MutexSceneGraph;
         std::vector<TreeNode> m_Nodes;
         std::map<entt::entity, uint> m_MapFromGameObjectToNode;
     };

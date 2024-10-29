@@ -177,8 +177,7 @@ namespace GfxRenderEngine
                 {
                     name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
                 }
-                currentNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
-                m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+                currentNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
             }
         }
         ++hasMeshIndex;
@@ -197,8 +196,7 @@ namespace GfxRenderEngine
         auto entity = m_Registry.Create();
         auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
 
-        uint newNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
-        m_SceneGraph.GetNode(parentNode).AddChild(newNode);
+        uint newNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
 
         glm::vec3 scale;
         glm::quat rotation;

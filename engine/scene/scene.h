@@ -67,8 +67,8 @@ namespace GfxRenderEngine
         Registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
         SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-        TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
-        TreeNode& GetTreeNode(uint nodeIndex) { return m_SceneGraph.GetNode(nodeIndex); }
+        SceneGraph::TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
+        SceneGraph::TreeNode& GetTreeNode(uint nodeIndex) { return m_SceneGraph.GetNode(nodeIndex); }
         uint GetTreeNodeIndex(entt::entity entity) { return m_SceneGraph.GetTreeNodeIndex(entity); }
 
     protected:

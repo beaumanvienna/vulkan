@@ -85,8 +85,7 @@ namespace GfxRenderEngine
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.Create();
             auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
-            uint groupNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(groupNode);
+            uint groupNode = m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
 
             {
                 TransformComponent transform{};
@@ -166,8 +165,7 @@ namespace GfxRenderEngine
                 // create scene graph node and add to parent
                 auto name =
                     m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                currentNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
-                m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+                currentNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
             }
         }
         ++hasMeshIndex;
@@ -185,8 +183,7 @@ namespace GfxRenderEngine
 
         auto entity = m_Registry.Create();
         auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-        uint newNode = m_SceneGraph.CreateNode(entity, name, m_Dictionary);
-        m_SceneGraph.GetNode(parentNode).AddChild(newNode);
+        uint newNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
 
         TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
         if (fbxNodePtr->mParent == m_FbxScene->mRootNode)

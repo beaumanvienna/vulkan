@@ -796,8 +796,9 @@ namespace GfxRenderEngine
     void VK_Renderer::UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
                                            bool parentDirtyFlag)
     {
-        TreeNode& node = scene.GetTreeNode(nodeIndex);
+        auto& node = scene.GetTreeNode(nodeIndex);
         entt::entity gameObject = node.GetGameObject();
+
         auto& transform = scene.GetRegistry().get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
 

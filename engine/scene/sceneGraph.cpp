@@ -24,44 +24,47 @@
 
 namespace GfxRenderEngine
 {
-    TreeNode::TreeNode(entt::entity gameObject, const std::string& name) : m_GameObject(gameObject), m_Name(name) {}
+    SceneGraph::TreeNode::TreeNode(entt::entity gameObject, const std::string& name) : m_GameObject(gameObject), m_Name(name)
+    {
+    }
 
-    TreeNode::TreeNode(GfxRenderEngine::TreeNode const& other)
+    SceneGraph::TreeNode::TreeNode(TreeNode const& other)
         : m_GameObject(other.m_GameObject), m_Name(other.m_Name), m_Children(other.m_Children)
     {
     }
 
-    TreeNode::~TreeNode() {}
+    SceneGraph::TreeNode::~TreeNode() {}
 
-    entt::entity TreeNode::GetGameObject() const { return m_GameObject; }
+    entt::entity SceneGraph::TreeNode::GetGameObject() const { return m_GameObject; }
 
-    const std::string& TreeNode::GetName() const { return m_Name; }
+    const std::string& SceneGraph::TreeNode::GetName() const { return m_Name; }
 
-    uint TreeNode::Children()
+    uint SceneGraph::TreeNode::Children() { return m_Children.size(); }
+
+    uint SceneGraph::TreeNode::GetChild(uint const childIndex) { return m_Children[childIndex]; }
+
+    uint SceneGraph::TreeNode::AddChild(uint const nodeIndex)
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
-        return m_Children.size();
-    }
-
-    uint TreeNode::GetChild(uint const childIndex)
-    {
-        std::lock_guard<std::mutex> guard(m_Mutex);
-        return m_Children[childIndex];
-    }
-
-    uint TreeNode::AddChild(uint const nodeIndex)
-    {
-        std::lock_guard<std::mutex> guard(m_Mutex);
         uint childIndex = m_Children.size();
         m_Children.push_back(nodeIndex);
         return childIndex;
     }
 
-    void TreeNode::SetGameObject(entt::entity gameObject) { m_GameObject = gameObject; }
-
-    uint SceneGraph::CreateNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary)
+    uint SceneGraph::CreateNode(uint parentNode, entt::entity const gameObject, std::string const& name,
+                                Dictionary& dictionary)
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
+        uint nodeIndex = m_Nodes.size();
+        m_Nodes.push_back({gameObject, name});
+        dictionary.Insert(name, gameObject);
+        m_MapFromGameObjectToNode[gameObject] = nodeIndex;
+        m_Nodes[parentNode].AddChild(nodeIndex);
+        return nodeIndex;
+    }
+
+    uint SceneGraph::CreateRootNode(entt::entity const gameObject, std::string const& name, Dictionary& dictionary)
+    {
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
         uint nodeIndex = m_Nodes.size();
         m_Nodes.push_back({gameObject, name});
         dictionary.Insert(name, gameObject);
@@ -81,29 +84,29 @@ namespace GfxRenderEngine
         }
     }
 
-    TreeNode& SceneGraph::GetNode(uint const nodeIndex)
+    SceneGraph::TreeNode& SceneGraph::GetNode(uint const nodeIndex)
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
         return m_Nodes[nodeIndex];
     }
 
-    TreeNode& SceneGraph::GetNodeByGameObject(entt::entity const gameObject)
+    SceneGraph::TreeNode& SceneGraph::GetNodeByGameObject(entt::entity const gameObject)
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
         uint nodeIndex = m_MapFromGameObjectToNode[gameObject];
         return m_Nodes[nodeIndex];
     }
 
-    TreeNode& SceneGraph::GetRoot()
+    SceneGraph::TreeNode& SceneGraph::GetRoot()
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
         CORE_ASSERT(m_Nodes.size(), "SceneGraph::GetRoot(): scene graph is empty");
         return m_Nodes[SceneGraph::ROOT_NODE];
     }
 
     uint SceneGraph::GetTreeNodeIndex(entt::entity const gameObject)
     {
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_MutexSceneGraph);
         uint returnValue = NODE_INVALID;
 
         if (m_MapFromGameObjectToNode.find(gameObject) != m_MapFromGameObjectToNode.end())

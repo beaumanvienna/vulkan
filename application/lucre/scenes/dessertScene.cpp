@@ -67,8 +67,8 @@ namespace LucreApp
             m_Camera[CameraTypes::DefaultCamera] = m_Registry.Create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::DefaultCamera], cameraTransform);
-            uint cameraNode = m_SceneGraph.CreateNode(m_Camera[CameraTypes::DefaultCamera], "defaultCamera", m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(cameraNode);
+            m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, m_Camera[CameraTypes::DefaultCamera], "defaultCamera",
+                                    m_Dictionary);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
