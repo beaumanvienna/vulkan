@@ -46,19 +46,17 @@ namespace GfxRenderEngine
             TransformComponent transform{};
             m_Registry.emplace<TransformComponent>(entity, transform);
 
-            m_SceneGraph.CreateNode(entity, "root", m_Name + "::sceneRoot", m_Dictionary);
+            m_SceneGraph.CreateRootNode(entity, m_Name + "::sceneRoot", m_Dictionary);
         }
         {
             // create lights group
+            auto name = "SceneLights";
             auto entity = m_Registry.Create();
 
-            TransformComponent lightGroupTransform{};
-            m_Registry.emplace<TransformComponent>(entity, lightGroupTransform);
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(entity, transform);
 
-            auto shortName = "SceneLights";
-            auto longName = "SceneLights";
-            m_SceneLightsGroupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(m_SceneLightsGroupNode);
+            m_SceneLightsGroupNode = m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
         }
     }
 
@@ -77,10 +75,8 @@ namespace GfxRenderEngine
         m_Registry.emplace<PointLightComponent>(pointLight, pointLightComponent);
 
         // add to scene graph
-        std::string shortName = "light" + std::to_string(m_LightCounter);
-        std::string longName = "light" + std::to_string(m_LightCounter);
-        uint currentNode = m_SceneGraph.CreateNode(pointLight, shortName, longName, m_Dictionary);
-        m_SceneGraph.GetNode(m_SceneLightsGroupNode).AddChild(currentNode);
+        std::string name = "light" + std::to_string(m_LightCounter);
+        m_SceneGraph.CreateNode(m_SceneLightsGroupNode, pointLight, name, m_Dictionary);
         ++m_LightCounter;
 
         return pointLight;

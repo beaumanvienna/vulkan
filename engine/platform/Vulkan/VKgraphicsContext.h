@@ -49,7 +49,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) override;
-        virtual std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) override;
+        virtual std::shared_ptr<Model> LoadModel(const Model::ModelData& modelData) override;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) override;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) override
@@ -60,6 +60,8 @@ namespace GfxRenderEngine
         virtual uint GetContextWidth() const override { return m_Renderer->GetContextWidth(); }
         virtual uint GetContextHeight() const override { return m_Renderer->GetContextHeight(); }
         virtual bool MultiThreadingSupport() const override;
+        virtual void WaitIdle() const override;
+        virtual void ResetDescriptorPool(ThreadPool& threadPool) override;
 
     private:
         bool m_Initialized;

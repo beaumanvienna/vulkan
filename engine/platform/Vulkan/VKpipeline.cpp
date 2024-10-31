@@ -66,8 +66,8 @@ namespace GfxRenderEngine
                                              const std::string& filePathFragmentShader_SPV,
                                              const PipelineConfigInfo& configInfo)
     {
-        ASSERT(configInfo.pipelineLayout != nullptr);
-        ASSERT(configInfo.renderPass != nullptr);
+        CORE_ASSERT(configInfo.pipelineLayout != nullptr, "configInfo.pipelineLayout is null");
+        CORE_ASSERT(configInfo.renderPass != nullptr, "configInfo.renderPass");
 
         auto vertCode = readFile(filePathVertexShader_SPV);
         auto fragCode = readFile(filePathFragmentShader_SPV);
@@ -130,10 +130,14 @@ namespace GfxRenderEngine
         pipelineInfo.basePipelineIndex = -1;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(m_Device->Device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) !=
-            VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create graphics pipeline");
+            auto result = vkCreateGraphicsPipelines(m_Device->Device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                                    &m_GraphicsPipeline);
+            if (result != VK_SUCCESS)
+            {
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create graphics pipeline");
+            }
         }
     }
     void VK_Pipeline::CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
@@ -144,8 +148,10 @@ namespace GfxRenderEngine
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint*>(code.data());
 
-        if (vkCreateShaderModule(m_Device->Device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        auto result = vkCreateShaderModule(m_Device->Device(), &createInfo, nullptr, shaderModule);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create shader module");
         }
     }

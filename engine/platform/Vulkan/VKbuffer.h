@@ -62,7 +62,7 @@ namespace GfxRenderEngine
         VkResult Flush(VkDeviceSize size, VkDeviceSize offset);
         virtual bool Flush() override
         {
-            VkResult result = Flush(VK_WHOLE_SIZE /*VkDeviceSize size*/, 0 /*VkDeviceSize offset*/);
+            auto result = Flush(VK_WHOLE_SIZE /*VkDeviceSize size*/, 0 /*VkDeviceSize offset*/);
             return result == VkResult::VK_SUCCESS;
         }
         VkDescriptorBufferInfo DescriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);

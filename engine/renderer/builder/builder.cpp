@@ -29,7 +29,6 @@
 #include "renderer/builder/builder.h"
 #include "renderer/model.h"
 
-
 #include "VKmodel.h"
 
 namespace std
@@ -52,58 +51,39 @@ namespace GfxRenderEngine
     {
         m_Vertices.clear();
         m_Indices.clear();
-
+        m_Vertices.reserve(4);
+        m_Indices.reserve(6);
         // 0 - 1
         // | / |
         // 3 - 2
 
-        Vertex vertex[4];
-
         // index 0, 0.0f,  1.0f
-        vertex[0] = {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
-                     /*norm*/ {0.0f, 0.0f, 1.0f},
-                     /*uv*/ {sprite.m_Pos1X, sprite.m_Pos1Y},
-                     /*tangent*/ glm::vec3(0.0),
-                     glm::ivec4(0.0),
-                     glm::vec4(0.0f)};
-
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{-1.0f, 1.0f, 0.0f},
+                                /*col*/ glm::vec4{0.0f, 0.1f, 0.9f, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, 1.0f},
+                                /*uv*/ glm::vec2{sprite.m_Pos1X, sprite.m_Pos1Y});
         // index 1, 1.0f,  1.0f
-        vertex[1] = {/*pos*/ {1.0f, 1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.1f, 0.9f, 1.0f},
-                     /*norm*/ {0.0f, 0.0f, 1.0f},
-                     /*uv*/ {sprite.m_Pos2X, sprite.m_Pos1Y},
-                     /*tangent*/ glm::vec3(0.0),
-                     glm::ivec4(0.0),
-                     glm::vec4(0.0f)};
-
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{1.0f, 1.0f, 0.0f},
+                                /*col*/ glm::vec4{0.0f, 0.1f, 0.9f, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, 1.0f},
+                                /*uv*/ glm::vec2{sprite.m_Pos2X, sprite.m_Pos1Y});
         // index 2, 1.0f,  0.0f
-        vertex[2] = {/*pos*/ {1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
-                     /*norm*/ {0.0f, 0.0f, 1.0f},
-                     /*uv*/ {sprite.m_Pos2X, sprite.m_Pos2Y},
-                     /*tangent*/ glm::vec3(0.0),
-                     glm::ivec4(0.0),
-                     glm::vec4(0.0f)};
-
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{1.0f, -1.0f, 0.0f},
+                                /*col*/ glm::vec4{0.0f, 0.9f, 0.1f, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, 1.0f},
+                                /*uv*/ glm::vec2{sprite.m_Pos2X, sprite.m_Pos2Y});
         // index 3, 0.0f,  0.0f
-        vertex[3] = {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                     /*col*/ {0.0f, 0.9f, 0.1f, 1.0f},
-                     /*norm*/ {0.0f, 0.0f, 1.0f},
-                     /*uv*/ {sprite.m_Pos1X, sprite.m_Pos2Y},
-                     /*tangent*/ glm::vec3(0.0),
-                     glm::ivec4(0.0),
-                     glm::vec4(0.0f)};
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{-1.0f, -1.0f, 0.0f},
+                                /*col*/ glm::vec4{0.0f, 0.9f, 0.1f, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, 1.0f},
+                                /*uv*/ glm::vec2{sprite.m_Pos1X, sprite.m_Pos2Y});
 
-        for (int i = 0; i < 4; i++)
-            m_Vertices.push_back(vertex[i]);
-
-        m_Indices.push_back(0);
-        m_Indices.push_back(1);
-        m_Indices.push_back(3);
-        m_Indices.push_back(1);
-        m_Indices.push_back(2);
-        m_Indices.push_back(3);
+        m_Indices.emplace_back(0);
+        m_Indices.emplace_back(1);
+        m_Indices.emplace_back(3);
+        m_Indices.emplace_back(1);
+        m_Indices.emplace_back(2);
+        m_Indices.emplace_back(3);
     }
 
     void Builder::LoadParticle(glm::vec4 const& color)
@@ -111,58 +91,48 @@ namespace GfxRenderEngine
         m_Vertices.clear();
         m_Indices.clear();
 
+        m_Vertices.reserve(4);
+        m_Indices.reserve(6);
+
         // 0 - 1
         // | / |
         // 3 - 2
 
-        Vertex vertex[4]{// index 0, 0.0f,  1.0f
-                         {/*pos*/ {-1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z, 1.0f},
-                          /*norm*/ {0.0f, 0.0f, -1.0f},
-                          /*uv*/ {0.0f, 1.0f},
-                          /*tangent*/ glm::vec3(0.0),
-                          glm::ivec4(0.0),
-                          glm::vec4(0.0f)},
+        // index 0, 0.0f,  1.0f
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{-1.0f, 1.0f, 0.0f},
+                                /*col*/ glm::vec4{color.x, color.y, color.z, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f},
+                                /*uv*/ glm::vec2{0.0f, 1.0f});
 
-                         // index 1, 1.0f,  1.0f
-                         {/*pos*/ {1.0f, 1.0f, 0.0f},
-                          {color.x, color.y, color.z, 1.0f},
-                          /*norm*/ {0.0f, 0.0f, -1.0f},
-                          /*uv*/ {1.0f, 1.0f},
-                          /*tangent*/ glm::vec3(0.0),
-                          glm::ivec4(0.0),
-                          glm::vec4(0.0f)},
+        // index 1, 1.0f,  1.0f
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{1.0f, 1.0f, 0.0f},
+                                /*col*/ glm::vec4{color.x, color.y, color.z, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f},
+                                /*uv*/ glm::vec2{1.0f, 1.0f});
 
-                         // index 2, 1.0f,  0.0f
-                         {/*pos*/ {1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z, 1.0f},
-                          /*norm*/ {0.0f, 0.0f, -1.0f},
-                          /*uv*/ {1.0f, 0.0f},
-                          /*tangent*/ glm::vec3(0.0),
-                          glm::ivec4(0.0),
-                          glm::vec4(0.0f)},
+        // index 2, 1.0f,  0.0f
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{1.0f, -1.0f, 0.0f},
+                                /*col*/ glm::vec4{color.x, color.y, color.z, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f},
+                                /*uv*/ glm::vec2{1.0f, 0.0f});
 
-                         // index 3, 0.0f,  0.0f
-                         {/*pos*/ {-1.0f, -1.0f, 0.0f},
-                          {color.x, color.y, color.z, 1.0f},
-                          /*norm*/ {0.0f, 0.0f, -1.0f},
-                          /*uv*/ {0.0f, 0.0f},
-                          /*tangent*/ glm::vec3(0.0),
-                          glm::ivec4(0.0),
-                          glm::vec4(0.0f)}};
-        for (int i = 0; i < 4; i++)
-            m_Vertices.push_back(vertex[i]);
+        // index 3, 0.0f,  0.0f
+        m_Vertices.emplace_back(/*pos*/ glm::vec3{-1.0f, -1.0f, 0.0f},
+                                /*col*/ glm::vec4{color.x, color.y, color.z, 1.0f},
+                                /*norm*/ glm::vec3{0.0f, 0.0f, -1.0f},
+                                /*uv*/ glm::vec2{0.0f, 0.0f});
 
-        m_Indices.push_back(0);
-        m_Indices.push_back(1);
-        m_Indices.push_back(3);
-        m_Indices.push_back(1);
-        m_Indices.push_back(2);
-        m_Indices.push_back(3);
+        m_Indices.emplace_back(0);
+        m_Indices.emplace_back(1);
+        m_Indices.emplace_back(3);
+        m_Indices.emplace_back(1);
+        m_Indices.emplace_back(2);
+        m_Indices.emplace_back(3);
     }
 
     entt::entity Builder::LoadCubemap(std::vector<std::string> const& faces, Registry& registry)
     {
+        ZoneScopedN("Builder::LoadCubemap()");
         entt::entity entity;
         static constexpr uint VERTEX_COUNT = 36;
 
@@ -191,16 +161,13 @@ namespace GfxRenderEngine
 
         // create vertices
         {
+            m_Vertices.reserve(VERTEX_COUNT);
             for (uint i = 0; i < VERTEX_COUNT; i++)
             {
-                Vertex vertex = {/*pos*/ cubemapVertices[i],
-                                 /*col*/ {0.0f, 0.0f, 0.0f, 1.0f},
-                                 /*norm*/ {0.0f, 0.0f, 0.0f},
-                                 /*uv*/ {0.0f, 0.0f},
-                                 /*tangent*/ glm::vec3(0.0),
-                                 glm::ivec4(0.0),
-                                 glm::vec4(0.0f)};
-                m_Vertices.push_back(vertex);
+                m_Vertices.emplace_back(/*pos*/ std::move(cubemapVertices[i]),
+                                        /*col*/ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
+                                        /*norm*/ glm::vec3{0.0f, 0.0f, 0.0f},
+                                        /*uv*/ glm::vec2{0.0f, 0.0f});
             }
         }
 

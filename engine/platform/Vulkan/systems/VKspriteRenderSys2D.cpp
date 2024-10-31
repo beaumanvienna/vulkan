@@ -56,16 +56,17 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
-            VK_SUCCESS)
+        auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }
 
     void VK_RenderSystemSpriteRenderer2D::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 
@@ -79,8 +80,7 @@ namespace GfxRenderEngine
                                                    "bin-int/spriteRenderer2D.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
-                                                         Camera* camera)
+    void VK_RenderSystemSpriteRenderer2D::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry, Camera* camera)
     {
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1,
                                 &frameInfo.m_GlobalDescriptorSet, 0, nullptr);

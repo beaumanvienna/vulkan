@@ -439,8 +439,10 @@ namespace GfxRenderEngine
         allocateInfo.commandPool = m_Device->GetCommandPool();
         allocateInfo.commandBufferCount = static_cast<uint>(m_CommandBuffers.size());
 
-        if (vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data()) != VK_SUCCESS)
+        auto result = vkAllocateCommandBuffers(m_Device->Device(), &allocateInfo, m_CommandBuffers.data());
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to allocate command buffers");
         }
     }
@@ -454,26 +456,28 @@ namespace GfxRenderEngine
 
     VkCommandBuffer VK_Renderer::GetCurrentCommandBuffer() const
     {
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         return m_CommandBuffers[m_CurrentFrameIndex];
     }
 
     VkCommandBuffer VK_Renderer::BeginFrame()
     {
         ZoneScopedN("VK_Renderer::BeginFrame()");
-        ASSERT(!m_FrameInProgress);
+        CORE_ASSERT(!m_FrameInProgress, "frame must not be in progress");
 
-        auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
-
-        if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            Recreate();
-            return nullptr;
-        }
+            auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
 
-        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-        {
-            LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+            if (result == VK_ERROR_OUT_OF_DATE_KHR)
+            {
+                Recreate();
+                return nullptr;
+            }
+
+            if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+            {
+                LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+            }
         }
 
         m_FrameInProgress = true;
@@ -483,11 +487,14 @@ namespace GfxRenderEngine
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to begin recording command buffer!");
+            auto result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            if (result != VK_SUCCESS)
+            {
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to allocate command buffers");
+            }
         }
-
         return commandBuffer;
     }
 
@@ -496,13 +503,15 @@ namespace GfxRenderEngine
         {
             ZoneScopedNS("VK_Renderer::EndFrame()", 10);
         }
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
 
         auto commandBuffer = GetCurrentCommandBuffer();
         {
             ZoneScopedN("vkEndCommandBuffer");
-            if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+            auto result = vkEndCommandBuffer(commandBuffer);
+            if (result != VK_SUCCESS)
             {
+                m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("recording of command buffer failed");
             }
         }
@@ -515,7 +524,8 @@ namespace GfxRenderEngine
         }
         else if (result != VK_SUCCESS)
         {
-            LOG_CORE_WARN("failed to present swap chain image");
+            m_Device->PrintError(result);
+            LOG_CORE_CRITICAL("failed to present swap chain image");
         }
         m_FrameInProgress = false;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
@@ -532,8 +542,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginShadowRenderPass0(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -564,8 +574,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginShadowRenderPass1(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -647,8 +657,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -685,8 +695,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -718,8 +728,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::BeginGUIRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -747,8 +757,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndRenderPass(VkCommandBuffer commandBuffer)
     {
-        ASSERT(m_FrameInProgress);
-        ASSERT(commandBuffer == GetCurrentCommandBuffer());
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
         vkCmdEndRenderPass(commandBuffer);
     }
@@ -786,8 +796,9 @@ namespace GfxRenderEngine
     void VK_Renderer::UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
                                            bool parentDirtyFlag)
     {
-        TreeNode& node = scene.GetTreeNode(nodeIndex);
+        auto& node = scene.GetTreeNode(nodeIndex);
         entt::entity gameObject = node.GetGameObject();
+
         auto& transform = scene.GetRegistry().get<TransformComponent>(gameObject);
         bool dirtyFlag = transform.GetDirtyFlag() || parentDirtyFlag;
 
@@ -895,7 +906,7 @@ namespace GfxRenderEngine
 
     int VK_Renderer::GetFrameIndex() const
     {
-        ASSERT(m_FrameInProgress);
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         return m_CurrentFrameIndex;
     }
 

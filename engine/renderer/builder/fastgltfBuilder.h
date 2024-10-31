@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <future>
+
 #include <fastgltf/core.hpp>
 #include <fastgltf/types.hpp>
 #include <fastgltf/tools.hpp>
@@ -31,7 +33,9 @@
 #include "scene/gltf.h"
 #include "scene/material.h"
 #include "scene/registry.h"
+#include "renderer/model.h"
 #include "renderer/resourceDescriptor.h"
+#include "auxiliary/queue.h"
 
 namespace GfxRenderEngine
 {
@@ -43,7 +47,6 @@ namespace GfxRenderEngine
     class Dictionary;
     class InstanceBuffer;
     class Material;
-    class Model;
     class Scene;
     class SceneGraph;
     class SkeletalAnimations;
@@ -62,25 +65,20 @@ namespace GfxRenderEngine
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
         void SetDictionaryPrefix(std::string const&);
 
-    public:
-        std::vector<uint> m_Indices{};
-        std::vector<Vertex> m_Vertices{};
-        std::vector<Submesh> m_Submeshes{};
-
     private:
         void LoadTextures();
         void LoadMaterials();
-        void LoadVertexData(uint const meshIndex);
+        void LoadVertexData(uint const, Model::ModelData&);
         bool GetImageFormat(uint const imageIndex);
-        void AssignMaterial(Submesh& submesh, int const materialIndex);
+        void AssignMaterial(Submesh& submesh, int const materialIndex, InstanceBuffer* instanceBuffer);
         void LoadTransformationMatrix(TransformComponent& transform, int const gltfNodeIndex);
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(const std::vector<uint>& indices);
+        void CalculateTangents(Model::ModelData&);
+        void CalculateTangentsFromIndexBuffer(Model::ModelData&, const std::vector<uint>& indices);
 
-        bool MarkNode(fastgltf::Scene& scene, int const gltfNodeIndex);
-        void ProcessScene(fastgltf::Scene& scene, uint const parentNode);
-        void ProcessNode(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
-        uint CreateGameObject(fastgltf::Scene& scene, int const gltfNodeIndex, uint const parentNode);
+        bool MarkNode(int const gltfNodeIndex);
+        void ProcessScene(fastgltf::Scene& scene, uint const parentNode, uint instanceIndex);
+        void ProcessNode(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
+        uint CreateGameObject(fastgltf::Scene* scene, int const gltfNodeIndex, uint const parentNode, uint instanceIndex);
         int GetMinFilter(uint index);
         int GetMagFilter(uint index);
 
@@ -93,8 +91,8 @@ namespace GfxRenderEngine
         {
             CORE_ASSERT(accessor.bufferViewIndex.has_value(), "Loadaccessor: no buffer view index provided");
 
-            const fastgltf::BufferView& bufferView = m_GltfModel.bufferViews[accessor.bufferViewIndex.value()];
-            auto& buffer = m_GltfModel.buffers[bufferView.bufferIndex];
+            const fastgltf::BufferView& bufferView = m_GltfAsset.bufferViews[accessor.bufferViewIndex.value()];
+            auto& buffer = m_GltfAsset.buffers[bufferView.bufferIndex];
 
             const fastgltf::sources::Array* vector = std::get_if<fastgltf::sources::Array>(&buffer.data);
             CORE_ASSERT(vector, "FastgltfBuilder::LoadAccessor: unsupported data type");
@@ -117,26 +115,24 @@ namespace GfxRenderEngine
         std::string m_Filepath;
         std::string m_Basepath;
         std::string m_DictionaryPrefix;
-        fastgltf::Asset m_GltfModel;
-        std::shared_ptr<Model> m_Model;
+        fastgltf::Asset m_GltfAsset;
+        std::vector<std::shared_ptr<Model>> m_Models;
         std::vector<Material> m_Materials;
         std::vector<Material::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
 
         // scene graph
-        uint m_InstanceCount;
-        uint m_InstanceIndex;
+        uint m_InstanceCount{0};
         std::vector<bool> m_HasMesh;
-        entt::entity m_GameObject;
-
-        std::vector<entt::entity> m_InstancedObjects;
-        std::shared_ptr<InstanceBuffer> m_InstanceBuffer;
+        Atomic::Queue<std::future<bool>> m_NodeFuturesQueue;
+        std::unordered_map<int, entt::entity> m_InstancedObjects;
         Resources::ResourceBuffers m_ResourceBuffersPre;
-        uint m_RenderObject;
 
         Registry& m_Registry;
         SceneGraph& m_SceneGraph;
         Dictionary& m_Dictionary;
+
+        std::mutex m_Mutex;
 
         // skeletal animation
     private:

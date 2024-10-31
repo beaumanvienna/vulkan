@@ -99,8 +99,11 @@ namespace GfxRenderEngine
     VK_Buffer::~VK_Buffer()
     {
         Unmap();
-        vkDestroyBuffer(m_Device->Device(), m_Buffer, nullptr);
-        vkFreeMemory(m_Device->Device(), m_Memory, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyBuffer(m_Device->Device(), m_Buffer, nullptr);
+            vkFreeMemory(m_Device->Device(), m_Memory, nullptr);
+        }
     }
 
     /**
@@ -114,9 +117,18 @@ namespace GfxRenderEngine
      */
     VkResult VK_Buffer::Map(VkDeviceSize size, VkDeviceSize offset)
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         if (!(m_Buffer && m_Memory))
+        {
             LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
-        return vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
+        }
+        auto result = vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
+        if (result != VK_SUCCESS)
+        {
+            VK_Core::m_Device->PrintError(result);
+            CORE_HARD_STOP("VK_Buffer::Map");
+        }
+        return result;
     }
 
     void VK_Buffer::MapBuffer() { Map(); }
@@ -130,7 +142,10 @@ namespace GfxRenderEngine
     {
         if (m_Mapped)
         {
-            vkUnmapMemory(m_Device->Device(), m_Memory);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkUnmapMemory(m_Device->Device(), m_Memory);
+            }
             m_Mapped = nullptr;
         }
     }
@@ -179,7 +194,11 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        VkResult result = vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+        VkResult result;
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            result = vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+        }
         return result;
     }
 

@@ -128,6 +128,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImage(device, &imageInfo, nullptr, &m_CubemapImage);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create image!");
             }
         }
@@ -144,6 +145,7 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &m_CubemapImageMemory);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to allocate image memory in 'void VK_Cubemap::CreateImage'");
             }
         }
@@ -162,9 +164,13 @@ namespace GfxRenderEngine
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create buffer!");
+            auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                CORE_HARD_STOP("failed to create buffer!");
+            }
         }
 
         VkMemoryRequirements memRequirements;
@@ -179,6 +185,7 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to allocate buffer memory!");
             }
         }
@@ -280,6 +287,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Sampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
@@ -311,6 +319,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(device, &view, nullptr, &m_ImageView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create image view!");
             }
         }

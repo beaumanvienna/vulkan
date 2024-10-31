@@ -36,8 +36,9 @@ namespace GfxRenderEngine
         : m_Window{window}, m_Initialized{false}
     {
         // create a device
-        m_Device = std::make_unique<VK_Device>(window, threadPoolPrimary, threadPoolSecondary);
+        m_Device = std::make_unique<VK_Device>(window);
         VK_Core::m_Device = m_Device.get();
+        m_Device->LoadPool(threadPoolPrimary, threadPoolSecondary);
         m_Renderer = std::make_unique<VK_Renderer>(m_Window);
         m_Initialized = m_Renderer->Init();
     }
@@ -76,45 +77,48 @@ namespace GfxRenderEngine
 
     std::shared_ptr<Model> VK_Context::LoadModel(const Builder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const TerrainBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const GltfBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
-    std::shared_ptr<Model> VK_Context::LoadModel(const FastgltfBuilder& builder)
+    std::shared_ptr<Model> VK_Context::LoadModel(const Model::ModelData& modelData)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
-        auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
+        auto model = std::make_shared<VK_Model>(modelData);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const FbxBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const UFbxBuilder& builder)
     {
-        ASSERT(VK_Core::m_Device != nullptr);
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
         return model;
     }
 
     bool VK_Context::MultiThreadingSupport() const { return VK_Core::m_Device->MultiThreadingSupport(); }
+
+    void VK_Context::WaitIdle() const { VK_Core::m_Device->WaitIdle(); };
+
+    void VK_Context::ResetDescriptorPool(ThreadPool& threadPool) { VK_Core::m_Device->ResetPool(threadPool); };
 } // namespace GfxRenderEngine

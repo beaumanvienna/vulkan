@@ -81,6 +81,7 @@ namespace GfxRenderEngine
                 vkCreateImageView(VK_Core::m_Device->Device(), &viewInfo, nullptr, &m_EmissionMipmapViews[mipLevel]);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }
@@ -232,6 +233,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(VK_Core::m_Device->Device(), &samplerCreateInfo, nullptr, &m_Sampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
@@ -265,16 +267,18 @@ namespace GfxRenderEngine
         bloomPipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         bloomPipelineLayoutInfo.pushConstantRangeCount = 1;
         bloomPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &bloomPipelineLayoutInfo, nullptr, &m_BloomPipelineLayout) !=
-            VK_SUCCESS)
+        auto result =
+            vkCreatePipelineLayout(VK_Core::m_Device->Device(), &bloomPipelineLayoutInfo, nullptr, &m_BloomPipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }
 
     void VK_RenderSystemBloom::CreateBloomPipelines()
     {
-        ASSERT(m_BloomPipelineLayout != nullptr);
+        CORE_ASSERT(m_BloomPipelineLayout != nullptr, "m_BloomPipelineLayout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

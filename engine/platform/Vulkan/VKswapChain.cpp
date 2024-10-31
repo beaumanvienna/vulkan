@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -77,10 +77,9 @@ namespace GfxRenderEngine
         vkWaitForFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE,
                         std::numeric_limits<uint64>::max());
 
-        VkResult result =
-            vkAcquireNextImageKHR(m_Device->Device(), m_SwapChain, std::numeric_limits<uint64>::max(),
-                                  m_ImageAvailableSemaphores[m_CurrentFrame], // must be a not signaled semaphore
-                                  VK_NULL_HANDLE, imageIndex);
+        auto result = vkAcquireNextImageKHR(m_Device->Device(), m_SwapChain, std::numeric_limits<uint64>::max(),
+                                            m_ImageAvailableSemaphores[m_CurrentFrame], // must be a not signaled semaphore
+                                            VK_NULL_HANDLE, imageIndex);
 
         return result;
     }
@@ -89,7 +88,6 @@ namespace GfxRenderEngine
     {
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
-            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
             ZoneScopedN("SCB waitFence"); // SCB: submit command buffers
             PROFILE_SCOPE("waitFor ImagesInFlight");
             vkWaitForFences(m_Device->Device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
@@ -113,12 +111,14 @@ namespace GfxRenderEngine
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         {
-            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
             vkResetFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame]);
             {
                 ZoneScopedN("SCB queueSubmit");
-                if (vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS)
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                auto result = vkQueueSubmit(m_Device->GraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]);
+                if (result != VK_SUCCESS)
                 {
+                    VK_Core::m_Device->PrintError(result);
                     LOG_CORE_CRITICAL("failed to submit draw command buffer!");
                 }
             }
@@ -139,7 +139,7 @@ namespace GfxRenderEngine
         VkResult result{};
         {
             ZoneScopedN("vkQueuePresentKHR");
-            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_QueueAccessMutex);
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             result = vkQueuePresentKHR(m_Device->PresentQueue(), &presentInfo);
         }
 
@@ -201,6 +201,7 @@ namespace GfxRenderEngine
         auto result = vkCreateSwapchainKHR(m_Device->Device(), &createInfo, nullptr, &m_SwapChain);
         if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create swap chain!");
         }
 
@@ -235,6 +236,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_SwapChainImageViews[i]);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create texture image view!");
             }
         }

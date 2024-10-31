@@ -67,9 +67,8 @@ namespace LucreApp
             m_Camera[CameraTypes::DefaultCamera] = m_Registry.Create();
             TransformComponent cameraTransform{};
             m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::DefaultCamera], cameraTransform);
-            uint cameraNode = m_SceneGraph.CreateNode(m_Camera[CameraTypes::DefaultCamera], "defaultCamera", "defaultCamera",
-                                                      m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(cameraNode);
+            m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, m_Camera[CameraTypes::DefaultCamera], "defaultCamera",
+                                    m_Dictionary);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -196,7 +195,7 @@ namespace LucreApp
         }
 
         m_NonPlayableCharacters[NPC::Character4] =
-            m_Dictionary.Retrieve("SL::application/lucre/models/dancing/fbx/Dancing Michelle.fbx::0::Michelle");
+            m_Dictionary.Retrieve("SL::application/lucre/models/dancing/gltf/Dancing Michelle.glb::1::Scene::Michelle");
         if (m_NonPlayableCharacters[NPC::Character4] != entt::null)
         {
             auto& mesh = m_Registry.get<MeshComponent>(m_NonPlayableCharacters[NPC::Character4]);

@@ -117,8 +117,10 @@ namespace GfxRenderEngine
         renderPassInfo.dependencyCount = NUMBER_OF_DEPENDENCIES;
         renderPassInfo.pDependencies = dependencies.data();
 
-        if (vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_ShadowRenderPass) != VK_SUCCESS)
+        auto result = vkCreateRenderPass(m_Device->Device(), &renderPassInfo, nullptr, &m_ShadowRenderPass);
+        if (result != VK_SUCCESS)
         {
+            m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create render pass!");
         }
     }
@@ -157,9 +159,13 @@ namespace GfxRenderEngine
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageView) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ShadowDepthImageView);
+            if (result != VK_SUCCESS)
+            {
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create texture image view! (CreateShadowDepthResources)");
+            }
         }
 
         // sampler
@@ -183,6 +189,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_ShadowDepthSampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }

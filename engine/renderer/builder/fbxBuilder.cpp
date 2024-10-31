@@ -84,12 +84,8 @@ namespace GfxRenderEngine
         {
             // create group game object(s) for all instances to apply transform from JSON file to
             auto entity = m_Registry.Create();
-
-            std::string name = EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath);
-            auto shortName = m_DictionaryPrefix + "::" + name + "::" + std::to_string(m_InstanceIndex) + "::root";
-            auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
-            uint groupNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-            m_SceneGraph.GetRoot().AddChild(groupNode);
+            auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::root";
+            uint groupNode = m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
 
             {
                 TransformComponent transform{};
@@ -167,11 +163,9 @@ namespace GfxRenderEngine
                 }
 
                 // create scene graph node and add to parent
-                auto shortName = m_DictionaryPrefix + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                auto longName =
+                auto name =
                     m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-                currentNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-                m_SceneGraph.GetNode(parentNode).AddChild(currentNode);
+                currentNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
             }
         }
         ++hasMeshIndex;
@@ -188,12 +182,8 @@ namespace GfxRenderEngine
         std::string nodeName = std::string(fbxNodePtr->mName.C_Str());
 
         auto entity = m_Registry.Create();
-        auto shortName = m_DictionaryPrefix + "::" + EngineCore::GetFilenameWithoutPathAndExtension(m_Filepath) +
-                         "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-        auto longName = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
-
-        uint newNode = m_SceneGraph.CreateNode(entity, shortName, longName, m_Dictionary);
-        m_SceneGraph.GetNode(parentNode).AddChild(newNode);
+        auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(m_InstanceIndex) + "::" + nodeName;
+        uint newNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
 
         TransformComponent transform(LoadTransformationMatrix(fbxNodePtr));
         if (fbxNodePtr->mParent == m_FbxScene->mRootNode)
@@ -454,7 +444,7 @@ namespace GfxRenderEngine
         }
     }
 
-    // handle vertex data
+    // load vertex data
     void FbxBuilder::LoadVertexData(const aiNode* fbxNodePtr, int vertexColorSet, uint uvSet)
     {
         m_Vertices.clear();

@@ -90,5 +90,7 @@ namespace LucreApp
         SpriteSheet m_Atlas;
         bool m_InGameGuiIsRunning;
         bool m_DebugWindowIsRunning;
+
+        std::future<bool> m_StressTestFuture;
     };
 } // namespace LucreApp

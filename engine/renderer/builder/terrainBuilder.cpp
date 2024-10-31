@@ -220,8 +220,6 @@ namespace GfxRenderEngine
 
         { // create game objects for all instances
 
-            auto name = EngineCore::GetFilenameWithoutPath(terrainSpec.m_FilepathTerrainDescription);
-            name = EngineCore::GetFilenameWithoutExtension(name);
             InstanceTag instanceTag;
 
             for (int instanceIndex = 0; instanceIndex < instanceCount; ++instanceIndex)
@@ -233,11 +231,8 @@ namespace GfxRenderEngine
                 instanceTag.m_Instances.push_back(entity);
 
                 // add to scene graph
-                auto instanceStr = std::to_string(instanceIndex);
-                auto shortName = name + "::" + instanceStr;
-                auto longName = terrainSpec.m_FilepathTerrainDescription + "::" + instanceStr;
-                uint newNode = sceneGraph.CreateNode(entity, shortName, longName, dictionary);
-                sceneGraph.GetRoot().AddChild(newNode);
+                auto name = terrainSpec.m_FilepathTerrainDescription + "::" + std::to_string(instanceIndex);
+                sceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, dictionary);
 
                 // only for the 1st instance
                 if (!instanceIndex)
@@ -280,6 +275,8 @@ namespace GfxRenderEngine
                 transform.SetInstance(instanceTag.m_InstanceBuffer, instanceIndex);
                 registry.emplace<TransformComponent>(entity, transform);
 
+                auto shortName = EngineCore::GetFilenameWithoutPathAndExtension(terrainSpec.m_FilepathTerrainDescription) +
+                                 std::string("::") + std::to_string(instanceIndex);
                 MeshComponent mesh{shortName, model};
                 registry.emplace<MeshComponent>(entity, mesh);
                 registry.emplace<TerrainComponent>(entity, terrainComponent);
@@ -350,9 +347,8 @@ namespace GfxRenderEngine
                         dictionary.Retrieve(std::string("terrain::") + grassSpec.m_FilepathGrassModel + "::0::root");
                     if (grassEntityRoot != entt::null)
                     {
-                        TreeNode rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
-                        TreeNode grassNode =
-                            sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
+                        auto rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
+                        auto& grassNode = sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
                         GrassTag grassTag{grassInstances};
                         registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
 

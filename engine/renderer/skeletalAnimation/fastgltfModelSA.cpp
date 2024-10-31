@@ -35,7 +35,7 @@ namespace GfxRenderEngine
     void FastgltfBuilder::LoadSkeletonsGltf()
     {
 
-        size_t numberOfSkeletons = m_GltfModel.skins.size();
+        size_t numberOfSkeletons = m_GltfAsset.skins.size();
         if (!numberOfSkeletons)
         {
             return;
@@ -51,7 +51,7 @@ namespace GfxRenderEngine
 
         // use skeleton 0 from the glTF model to fill the skeleton
         {
-            const fastgltf::Skin& glTFSkin = m_GltfModel.skins[0];
+            const fastgltf::Skin& glTFSkin = m_GltfAsset.skins[0];
 
             // does it have information about joints?
             if (glTFSkin.inverseBindMatrices.has_value()) // glTFSkin.inverseBindMatrices refers to an gltf accessor
@@ -77,7 +77,7 @@ namespace GfxRenderEngine
                     size_t count = 0;
                     fastgltf::AccessorType type;
                     fastgltf::ComponentType componentType = LoadAccessor<glm::mat4>(
-                        m_GltfModel.accessors[glTFSkin.inverseBindMatrices.value()], inverseBindMatrices, &count, &type);
+                        m_GltfAsset.accessors[glTFSkin.inverseBindMatrices.value()], inverseBindMatrices, &count, &type);
                     CORE_ASSERT(type == fastgltf::AccessorType::Mat4, "unexpected type");
                     CORE_ASSERT(fastgltf::getGLComponentType(componentType) == GL_FLOAT, "unexpected component type");
                     // assert # of matrices matches # of joints
@@ -90,7 +90,7 @@ namespace GfxRenderEngine
                     int globalGltfNodeIndex = glTFSkin.joints[jointIndex];
                     auto& joint = joints[jointIndex]; // just a reference for easier code
                     joint.m_InverseBindMatrix = inverseBindMatrices[jointIndex];
-                    joint.m_Name = m_GltfModel.nodes[globalGltfNodeIndex].name;
+                    joint.m_Name = m_GltfAsset.nodes[globalGltfNodeIndex].name;
 
                     // set up map "global node" to "joint index"
                     m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndex] = jointIndex;
@@ -111,10 +111,10 @@ namespace GfxRenderEngine
             m_ShaderData->MapBuffer();
         }
 
-        size_t numberOfAnimations = m_GltfModel.animations.size();
+        size_t numberOfAnimations = m_GltfAsset.animations.size();
         for (size_t animationIndex = 0; animationIndex < numberOfAnimations; ++animationIndex)
         {
-            auto& gltfAnimation = m_GltfModel.animations[animationIndex];
+            auto& gltfAnimation = m_GltfAsset.animations[animationIndex];
             std::string name(gltfAnimation.name);
             LOG_CORE_INFO("name of animation: {0}", name);
             std::shared_ptr<SkeletalAnimation> animation = std::make_shared<SkeletalAnimation>(name);
@@ -134,7 +134,7 @@ namespace GfxRenderEngine
                     size_t count = 0;
                     const float* timestampBuffer;
                     fastgltf::ComponentType componentType =
-                        LoadAccessor<float>(m_GltfModel.accessors[glTFSampler.inputAccessor], timestampBuffer, &count);
+                        LoadAccessor<float>(m_GltfAsset.accessors[glTFSampler.inputAccessor], timestampBuffer, &count);
 
                     if (fastgltf::getGLComponentType(componentType) == GL_FLOAT)
                     {
@@ -155,7 +155,7 @@ namespace GfxRenderEngine
                     size_t count = 0;
                     fastgltf::AccessorType type;
                     const uint* buffer;
-                    LoadAccessor<uint>(m_GltfModel.accessors[glTFSampler.outputAccessor], buffer, &count, &type);
+                    LoadAccessor<uint>(m_GltfAsset.accessors[glTFSampler.outputAccessor], buffer, &count, &type);
 
                     switch (type)
                     {
@@ -246,13 +246,13 @@ namespace GfxRenderEngine
         joint.m_ParentJoint = parentJoint;
 
         // process children (if any)
-        size_t numberOfChildren = m_GltfModel.nodes[globalGltfNodeIndex].children.size();
+        size_t numberOfChildren = m_GltfAsset.nodes[globalGltfNodeIndex].children.size();
         if (numberOfChildren > 0)
         {
             joint.m_Children.resize(numberOfChildren);
             for (size_t childIndex = 0; childIndex < numberOfChildren; ++childIndex)
             {
-                uint globalGltfNodeIndexForChild = m_GltfModel.nodes[globalGltfNodeIndex].children[childIndex];
+                uint globalGltfNodeIndexForChild = m_GltfAsset.nodes[globalGltfNodeIndex].children[childIndex];
                 joint.m_Children[childIndex] = m_Skeleton->m_GlobalNodeToJointIndex[globalGltfNodeIndexForChild];
                 LoadJoint(globalGltfNodeIndexForChild, currentJoint);
             }

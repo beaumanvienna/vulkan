@@ -20,6 +20,8 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
+#include <cstdlib>
+#include <ctime>
 #include <thread>
 
 #include "engine.h"
@@ -73,11 +75,63 @@ namespace LucreApp
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
         camera.SetViewDirection(position, direction);
+#define STRESS_TEST
+#ifdef STRESS_TEST
+        { // stress test scene changing
+            std::srand(std::time(nullptr));
+            auto stressTest = []()
+            {
+                const uint numberOfScenes =
+                    static_cast<int>(GameState::State::MAX_STATES) - static_cast<int>(GameState::State::MAIN);
+                uint loopCounter{0};
+                uint previousRandomNumber{0};
+                while (Engine::m_Engine->IsRunning())
+                {
+                    std::this_thread::sleep_for(100ms);
+                    if (!Engine::m_Engine->IsRunning())
+                    {
+                        break;
+                    }
 
+                    // skip
+                    if (Engine::m_Engine->IsPaused() || (Lucre::m_Application->GetState() == GameState::State::SPLASH))
+                    {
+                        continue;
+                    }
+
+                    if (Lucre::m_Application->GetState() != GameState::State::CUTSCENE)
+                    {
+                        std::this_thread::sleep_for(2000ms);
+                        if (!Engine::m_Engine->IsRunning())
+                        {
+                            break;
+                        }
+                        uint randomNumber;
+                        do
+                        {
+                            randomNumber = 1 + std::rand() / ((RAND_MAX + 1u) / numberOfScenes);
+                        } while (randomNumber == previousRandomNumber);
+                        previousRandomNumber = randomNumber;
+                        uint sceneNumber = randomNumber + static_cast<int>(GameState::State::MAIN) - 1;
+                        LOG_APP_INFO("stress test: random number = {0}, sceneNumber = {1}, loop counter = {2}", randomNumber,
+                                     sceneNumber, ++loopCounter);
+                        SceneChangedEvent event(static_cast<GameState::State>(sceneNumber));
+                        Lucre::m_Application->OnAppEvent(event);
+                    }
+                }
+                return true;
+            };
+            m_StressTestFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(stressTest);
+        }
+#endif
         return true;
     }
 
-    void Lucre::Shutdown() { m_GameState.Stop(); }
+    void Lucre::Shutdown()
+    {
+        m_GameState.Stop();
+        m_StressTestFuture.get();
+    }
 
     void Lucre::OnUpdate(const Timestep& timestep)
     {
@@ -103,7 +157,7 @@ namespace LucreApp
 
     void Lucre::OnResize()
     {
-        ASSERT(m_CurrentScene);
+        CORE_ASSERT(m_CurrentScene, "m_CurrentScene is null");
         m_CurrentScene->OnResize();
         m_UIControllerIcon->Init();
         m_UI->OnResize();

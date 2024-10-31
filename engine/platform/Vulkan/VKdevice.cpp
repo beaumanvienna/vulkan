@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -74,8 +74,7 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_Device::VK_Device(VK_Window* window, ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
-        : m_Window{window}
+    VK_Device::VK_Device(VK_Window* window) : m_Window{window}
     {
         CreateInstance();
         SetupDebugMessenger();
@@ -83,7 +82,6 @@ namespace GfxRenderEngine
         PickPhysicalDevice();
         CreateLogicalDevice();
         CreateCommandPool();
-        m_LoadPool = std::make_unique<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
     }
 
     VK_Device::~VK_Device()
@@ -101,8 +99,16 @@ namespace GfxRenderEngine
         vkDestroyInstance(m_Instance, nullptr);
     }
 
+    void VK_Device::LoadPool(ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)
+    {
+        m_LoadPool = std::make_unique<VK_Pool>(m_Device, m_QueueFamilyIndices, threadPoolPrimary, threadPoolSecondary);
+    }
+
+    void VK_Device::ResetPool(ThreadPool& threadPool) { m_LoadPool->ResetDescriptorPools(threadPool); }
+
     void VK_Device::Shutdown()
     {
+        std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
         vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
     }
@@ -148,11 +154,12 @@ namespace GfxRenderEngine
             createInfo.pNext = nullptr;
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
+        auto result = vkCreateInstance(&createInfo, nullptr, &m_Instance);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             CORE_HARD_STOP("failed to create instance");
         }
-
         if (HasGflwRequiredInstanceExtensions() != VK_SUCCESS)
         {
             CORE_HARD_STOP("required glfw extensions missing");
@@ -269,11 +276,12 @@ namespace GfxRenderEngine
             createInfo.enabledLayerCount = 0;
         }
 
-        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
+        auto result = vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create logical device!");
         }
-
         vkGetDeviceQueue(m_Device, indices.m_GraphicsFamily, indices.m_QueueIndices[QueueTypes::GRAPHICS], &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.m_PresentFamily, indices.m_QueueIndices[QueueTypes::PRESENT], &m_PresentQueue);
         // PrintAllSupportedFormats();
@@ -286,8 +294,10 @@ namespace GfxRenderEngine
         poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_GraphicsFamily;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool) != VK_SUCCESS)
+        auto result = vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_GraphicsCommandPool);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create graphics command pool!");
         }
     }
@@ -392,6 +402,7 @@ namespace GfxRenderEngine
         auto result = CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger);
         if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to set up debug messenger!");
         }
     }
@@ -448,7 +459,7 @@ namespace GfxRenderEngine
 
     VkResult VK_Device::HasGflwRequiredInstanceExtensions()
     {
-        VkResult result = VK_SUCCESS;
+        auto result = VK_SUCCESS;
         uint extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -651,14 +662,17 @@ namespace GfxRenderEngine
     void VK_Device::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
                                  VkBuffer& buffer, VkDeviceMemory& bufferMemory)
     {
+        // no guard needed; none of the below are externally synchronized
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        auto result = vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create vertex buffer!");
         }
 
@@ -670,12 +684,17 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        result = vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to allocate vertex buffer memory!");
         }
 
-        vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+        }
     }
 
     VkCommandBuffer VK_Device::BeginSingleTimeCommands()
@@ -688,20 +707,29 @@ namespace GfxRenderEngine
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        }
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        }
 
         return commandBuffer;
     }
 
     void VK_Device::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     {
-        vkEndCommandBuffer(commandBuffer);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkEndCommandBuffer(commandBuffer);
+        }
         uint64_t& signalTimelineValue = m_LoadPool->GetSignalValue();
         ++signalTimelineValue;
         VkTimelineSemaphoreSubmitInfo timelineSemaphoreSubmitInfo{};
@@ -719,7 +747,7 @@ namespace GfxRenderEngine
         submitInfo.pSignalSemaphores = &signalSemaphore;
         {
             ZoneScopedN("ESTC vkQueueSubmit"); // ESTC = end single time commands
-            std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
             vkQueueSubmit(GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         }
 
@@ -735,14 +763,14 @@ namespace GfxRenderEngine
             {
                 ZoneScopedN("ESTC wait sema");
                 {
-                    std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
                     if (vkWaitSemaphores(m_Device, &waitInfo, 0 /* no timeout, return immediately*/) == VK_SUCCESS)
                     {
+                        std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
                         vkFreeCommandBuffers(m_Device, m_LoadPool->GetCommandPool(), 1, &commandBuffer);
                         break;
                     }
                 }
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(1ms);
             }
         }
     }
@@ -755,7 +783,10 @@ namespace GfxRenderEngine
         copyRegion.srcOffset = 0; // Optional
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+        }
 
         EndSingleTimeCommands(commandBuffer);
     }
@@ -778,16 +809,23 @@ namespace GfxRenderEngine
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
 
-        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        {
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        }
         EndSingleTimeCommands(commandBuffer);
     }
 
     void VK_Device::CreateImageWithInfo(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image,
                                         VkDeviceMemory& imageMemory)
     {
-        if (vkCreateImage(m_Device, &imageInfo, nullptr, &image) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create image!");
+            auto result = vkCreateImage(m_Device, &imageInfo, nullptr, &image);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to create image!");
+            }
         }
 
         VkMemoryRequirements memRequirements;
@@ -798,14 +836,23 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
+            auto result = vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to allocate image memory! in 'void VK_Device::CreateImageWithInfo'");
+            }
         }
-
-        if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS)
+        // only vkBindImageMemory is externally synchronized in this function
         {
-            LOG_CORE_CRITICAL("failed to bind image memory!");
+            std::lock_guard<std::mutex> guard(m_DeviceAccessMutex);
+            auto result = vkBindImageMemory(m_Device, image, imageMemory, 0);
+            if (result != VK_SUCCESS)
+            {
+                PrintError(result);
+                LOG_CORE_CRITICAL("failed to bind image memory!");
+            }
         }
     }
 
@@ -854,8 +901,149 @@ namespace GfxRenderEngine
     void VK_Device::WaitIdle()
     {
         ZoneScopedN("WaitIdle");
-        std::lock_guard<std::mutex> guard(m_QueueAccessMutex);
         vkDeviceWaitIdle(m_Device);
+    }
+
+    void VK_Device::PrintError(VkResult result)
+    {
+        switch (result)
+        {
+            case VK_NOT_READY:
+            {
+                LOG_CORE_CRITICAL("VK_NOT_READY");
+                break;
+            }
+            case VK_TIMEOUT:
+            {
+                LOG_CORE_CRITICAL("VK_TIMEOUT");
+                break;
+            }
+            case VK_INCOMPLETE:
+            {
+                LOG_CORE_CRITICAL("VK_INCOMPLETE");
+                break;
+            }
+            case VK_ERROR_OUT_OF_HOST_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_HOST_MEMORY");
+                break;
+            }
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+                break;
+            }
+            case VK_ERROR_INITIALIZATION_FAILED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INITIALIZATION_FAILED");
+                break;
+            }
+            case VK_ERROR_DEVICE_LOST:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_DEVICE_LOST");
+                break;
+            }
+            case VK_ERROR_MEMORY_MAP_FAILED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_MEMORY_MAP_FAILED");
+                break;
+            }
+            case VK_ERROR_EXTENSION_NOT_PRESENT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_EXTENSION_NOT_PRESENT");
+                break;
+            }
+            case VK_ERROR_FEATURE_NOT_PRESENT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FEATURE_NOT_PRESENT");
+                break;
+            }
+            case VK_ERROR_INCOMPATIBLE_DRIVER:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INCOMPATIBLE_DRIVER");
+                break;
+            }
+            case VK_ERROR_TOO_MANY_OBJECTS:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_TOO_MANY_OBJECTS");
+                break;
+            }
+            case VK_ERROR_FORMAT_NOT_SUPPORTED:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FORMAT_NOT_SUPPORTED");
+                break;
+            }
+            case VK_ERROR_FRAGMENTED_POOL:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FRAGMENTED_POOL");
+                break;
+            }
+            case VK_ERROR_UNKNOWN:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_UNKNOWN");
+                break;
+            }
+            case VK_ERROR_OUT_OF_POOL_MEMORY:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_POOL_MEMORY");
+                break;
+            }
+            case VK_ERROR_INVALID_EXTERNAL_HANDLE:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INVALID_EXTERNAL_HANDLE");
+                break;
+            }
+            case VK_ERROR_FRAGMENTATION:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_FRAGMENTATION");
+                break;
+            }
+            case VK_PIPELINE_COMPILE_REQUIRED:
+            {
+                LOG_CORE_CRITICAL("VK_PIPELINE_COMPILE_REQUIRED");
+                break;
+            }
+            case VK_ERROR_SURFACE_LOST_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_SURFACE_LOST_KHR");
+                break;
+            }
+            case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_NATIVE_WINDOW_IN_USE_KHR");
+                break;
+            }
+            case VK_ERROR_OUT_OF_DATE_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_OUT_OF_DATE_KHR");
+                break;
+            }
+            case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_INCOMPATIBLE_DISPLAY_KHR");
+                break;
+            }
+            case VK_ERROR_VALIDATION_FAILED_EXT:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_VALIDATION_FAILED_EXT");
+                break;
+            }
+            case VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR:
+            {
+                LOG_CORE_CRITICAL("VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR");
+                break;
+            }
+            case VK_SUCCESS:
+            {
+                LOG_CORE_INFO("VK_SUCCES");
+                break;
+            }
+            default:
+            {
+                LOG_CORE_CRITICAL("VK_Device::PrintError: error not in list");
+                break;
+            }
+        }
     }
 
     void VK_Device::PrintAllSupportedFormats()

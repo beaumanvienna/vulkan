@@ -64,6 +64,7 @@ namespace GfxRenderEngine
         auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &pool_info, nullptr, &m_DescriptorPool);
         if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             throw std::runtime_error("failed to set up descriptor pool for imgui");
         }
 

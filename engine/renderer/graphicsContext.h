@@ -60,7 +60,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Builder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) = 0;
-        virtual std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) = 0;
+        virtual std::shared_ptr<Model> LoadModel(const Model::ModelData& modelData) = 0;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
@@ -68,6 +68,8 @@ namespace GfxRenderEngine
         virtual uint GetContextWidth() const = 0;
         virtual uint GetContextHeight() const = 0;
         virtual bool MultiThreadingSupport() const = 0;
+        virtual void WaitIdle() const = 0;
+        virtual void ResetDescriptorPool(ThreadPool& threadPool) = 0;
 
         static std::shared_ptr<GraphicsContext> Create(void* window, ThreadPool& threadPoolPrimary,
                                                        ThreadPool& threadPoolSecondary);

@@ -22,6 +22,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "VKcore.h"
 #include "VKpool.h"
 #include "VKswapChain.h"
 
@@ -40,9 +41,13 @@ namespace GfxRenderEngine
             poolInfo.queueFamilyIndex = m_QueueFamilyIndices.m_GraphicsFamily;
             poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
             VkCommandPool commandPool;
-            if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create graphics command pool!");
+                auto result = vkCreateCommandPool(m_Device, &poolInfo, nullptr, &commandPool);
+                if (result != VK_SUCCESS)
+                {
+                    VK_Core::m_Device->PrintError(result);
+                    LOG_CORE_CRITICAL("failed to create graphics command pool!");
+                }
             }
             return commandPool;
         };
@@ -72,8 +77,10 @@ namespace GfxRenderEngine
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             semaphoreInfo.pNext = &timelineCreateInfo;
             {
-                if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &uploadSemaphore) != VK_SUCCESS)
+                auto result = vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &uploadSemaphore);
+                if (result != VK_SUCCESS)
                 {
+                    VK_Core::m_Device->PrintError(result);
                     CORE_HARD_STOP("failed to create synchronization objects in VK_Pool::CreateSyncObjects()!");
                 }
             }

@@ -57,8 +57,6 @@ namespace GfxRenderEngine
         virtual void StartScripts() = 0;
         virtual void ResetTimer() {}
 
-        void DestroyEntity(entt::entity entity);
-
         entt::entity CreatePointLight(const float intensity = 1.0f, const float radius = 0.1f,
                                       const glm::vec3& color = glm::vec3{1.0f, 1.0f, 1.0f});
         entt::entity CreateDirectionalLight(const float intensity = 1.0f,
@@ -69,8 +67,8 @@ namespace GfxRenderEngine
         Registry& GetRegistry() { return m_Registry; };
         Dictionary& GetDictionary() { return m_Dictionary; };
         SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-        TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
-        TreeNode& GetTreeNode(uint nodeIndex) { return m_SceneGraph.GetNode(nodeIndex); }
+        SceneGraph::TreeNode* GetTreeNode(entt::entity entity) { return &m_SceneGraph.GetNodeByGameObject(entity); }
+        SceneGraph::TreeNode& GetTreeNode(uint nodeIndex) { return m_SceneGraph.GetNode(nodeIndex); }
         uint GetTreeNodeIndex(entt::entity entity) { return m_SceneGraph.GetTreeNodeIndex(entity); }
 
     protected:

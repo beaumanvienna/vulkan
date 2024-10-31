@@ -55,16 +55,17 @@ namespace GfxRenderEngine
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
-            VK_SUCCESS)
+        auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
+        if (result != VK_SUCCESS)
         {
+            VK_Core::m_Device->PrintError(result);
             LOG_CORE_CRITICAL("failed to create pipeline layout!");
         }
     }
 
     void VK_RenderSystemCubemap::CreatePipeline(VkRenderPass renderPass)
     {
-        ASSERT(m_PipelineLayout != nullptr);
+        CORE_ASSERT(m_PipelineLayout != nullptr, "pipeline layout is null");
 
         PipelineConfigInfo pipelineConfig{};
 

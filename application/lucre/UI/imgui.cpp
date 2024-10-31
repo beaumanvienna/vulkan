@@ -301,7 +301,7 @@ namespace LucreApp
         m_CurrentItem = nullptr;
 
         m_VisibleModels.clear();
-        TreeNode& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
+        auto& rootNode = scene->GetTreeNode(SceneGraph::ROOT_NODE);
 
         { // insert root
             auto& label = rootNode.GetName();
@@ -313,7 +313,7 @@ namespace LucreApp
         // insert gltf files
         for (uint nodeIndex : rootNode.GetChildren())
         {
-            TreeNode& node = scene->GetTreeNode(nodeIndex);
+            auto& node = scene->GetTreeNode(nodeIndex);
             auto& label = node.GetName();
             auto entity = node.GetGameObject();
 
@@ -332,7 +332,7 @@ namespace LucreApp
     {
         if (depth < maxDepth)
         {
-            TreeNode& node = scene.GetTreeNode(nodeIndex);
+            auto& node = scene.GetTreeNode(nodeIndex);
             int gameObject = static_cast<int>(node.GetGameObject());
             ImGui::PushID(gameObject);
             std::string label = "entity " + std::to_string(gameObject) + " " + node.GetName();

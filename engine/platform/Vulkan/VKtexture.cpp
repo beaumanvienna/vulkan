@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -43,6 +43,7 @@ namespace GfxRenderEngine
     {
         auto device = VK_Core::m_Device->Device();
 
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkDestroyImage(device, m_TextureImage, nullptr);
         vkDestroyImageView(device, m_ImageView, nullptr);
         vkDestroySampler(device, m_Sampler, nullptr);
@@ -155,7 +156,10 @@ namespace GfxRenderEngine
             return;
         }
 
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        }
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }
@@ -186,6 +190,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImage(device, &imageInfo, nullptr, &m_TextureImage);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create image!");
             }
         }
@@ -202,12 +207,15 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to allocate image memory in 'void "
                                   "VK_Texture::CreateImage'");
             }
         }
-
-        vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+        }
     }
 
     void VK_Texture::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
@@ -221,9 +229,13 @@ namespace GfxRenderEngine
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         {
-            LOG_CORE_CRITICAL("failed to create buffer!");
+            auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create buffer!");
+            }
         }
 
         VkMemoryRequirements memRequirements;
@@ -238,11 +250,14 @@ namespace GfxRenderEngine
             auto result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to allocate buffer memory!");
             }
         }
-
-        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        }
     }
 
     bool VK_Texture::Create()
@@ -264,9 +279,15 @@ namespace GfxRenderEngine
                      stagingBufferMemory);
 
         void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+        }
         memcpy(data, m_LocalBuffer, static_cast<size_t>(imageSize));
-        vkUnmapMemory(device, stagingBufferMemory);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUnmapMemory(device, stagingBufferMemory);
+        }
 
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage(format, VK_IMAGE_TILING_OPTIMAL,
@@ -283,8 +304,11 @@ namespace GfxRenderEngine
 
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyBuffer(device, stagingBuffer, nullptr);
+            vkFreeMemory(device, stagingBufferMemory, nullptr);
+        }
 
         // Create a texture sampler
         // In Vulkan, textures are accessed by samplers
@@ -312,6 +336,7 @@ namespace GfxRenderEngine
             auto result = vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Sampler);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create sampler!");
             }
         }
@@ -343,6 +368,7 @@ namespace GfxRenderEngine
             auto result = vkCreateImageView(device, &view, nullptr, &m_ImageView);
             if (result != VK_SUCCESS)
             {
+                VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create image view!");
             }
         }
@@ -405,8 +431,11 @@ namespace GfxRenderEngine
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
-                                 nullptr, 0, nullptr, 1, &barrier);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                                     nullptr, 0, nullptr, 1, &barrier);
+            }
 
             VkImageBlit blit{};
             blit.srcOffsets[0] = {0, 0, 0};
@@ -421,22 +450,30 @@ namespace GfxRenderEngine
             blit.dstSubresource.mipLevel = i;
             blit.dstSubresource.baseArrayLayer = 0;
             blit.dstSubresource.layerCount = 1;
-
-            vkCmdBlitImage(commandBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_TextureImage,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, m_MinFilterMip);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkCmdBlitImage(commandBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_TextureImage,
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, m_MinFilterMip);
+            }
 
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-                                 nullptr, 0, nullptr, 1, &barrier);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                                     0, nullptr, 0, nullptr, 1, &barrier);
+            }
 
             if (mipWidth > 1)
+            {
                 mipWidth /= 2;
+            }
             if (mipHeight > 1)
+            {
                 mipHeight /= 2;
+            }
         }
 
         barrier.subresourceRange.baseMipLevel = m_MipLevels - 1;
@@ -445,8 +482,11 @@ namespace GfxRenderEngine
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-                             nullptr, 0, nullptr, 1, &barrier);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+        }
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
     }

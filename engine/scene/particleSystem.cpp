@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
+/* Engine Copyright (c) 2022 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -12,12 +12,12 @@
    The above copyright notice and this permission notice shall be
    included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "core.h"
@@ -30,7 +30,7 @@ namespace GfxRenderEngine
     ParticleSystem::ParticleSystem(uint poolSize, SpriteSheet* spritesheet, float amplification)
         : m_ParticlePool{poolSize}, m_PoolIndex{0}, m_Spritesheet{spritesheet}
     {
-        ASSERT(poolSize);
+        CORE_ASSERT(poolSize, "pool size is zero");
         auto numberOfSprites = m_Spritesheet->GetNumberOfSprites();
         m_AnimationSprites.resize(numberOfSprites);
         for (uint i = 0; i < numberOfSprites; i++)
@@ -52,24 +52,23 @@ namespace GfxRenderEngine
     {
         Particle& particle = m_ParticlePool[m_PoolIndex];
 
-        glm::vec3 variationVelocity  = glm::vec3
-        {
+        glm::vec3 variationVelocity = glm::vec3{
             variation.m_Velocity.x * EngineCore::RandomPlusMinusOne(),
             variation.m_Velocity.y * EngineCore::RandomPlusMinusOne(),
             variation.m_Velocity.z * EngineCore::RandomPlusMinusOne(),
         };
-        particle.m_Velocity          = spec.m_Velocity + variationVelocity;
-        particle.m_Acceleration      = spec.m_Acceleration;
+        particle.m_Velocity = spec.m_Velocity + variationVelocity;
+        particle.m_Acceleration = spec.m_Acceleration;
 
-        particle.m_RotationSpeed     = spec.m_RotationSpeed;
+        particle.m_RotationSpeed = spec.m_RotationSpeed;
 
-        particle.m_StartColor        = spec.m_StartColor;
-        particle.m_EndColor          = spec.m_EndColor;
+        particle.m_StartColor = spec.m_StartColor;
+        particle.m_EndColor = spec.m_EndColor;
 
-        particle.m_StartSize         = spec.m_StartSize;
-        particle.m_FinalSize         = spec.m_FinalSize;
+        particle.m_StartSize = spec.m_StartSize;
+        particle.m_FinalSize = spec.m_FinalSize;
 
-        particle.m_LifeTime          = spec.m_LifeTime;
+        particle.m_LifeTime = spec.m_LifeTime;
         particle.m_RemainingLifeTime = particle.m_LifeTime;
 
         particle.m_Enabled = true;
@@ -85,14 +84,14 @@ namespace GfxRenderEngine
         m_Registry.emplace<MeshComponent>(particle.m_Entity, mesh);
 
         TransformComponent transform{};
-        transform.SetTranslation(glm::vec3
-        {
+        transform.SetTranslation(glm::vec3{
             spec.m_Position.x + variation.m_Position.x * EngineCore::RandomPlusMinusOne(),
             spec.m_Position.y + variation.m_Position.y * EngineCore::RandomPlusMinusOne(),
             spec.m_Position.z + variation.m_Position.z * EngineCore::RandomPlusMinusOne(),
         });
         transform.SetScale(glm::vec3{1.0f} * particle.m_StartSize);
-        transform.SetRotation(glm::vec3{spec.m_Rotation.x, spec.m_Rotation.y, spec.m_Rotation.z + variation.m_Rotation.z * EngineCore::RandomPlusMinusOne()});
+        transform.SetRotation(glm::vec3{spec.m_Rotation.x, spec.m_Rotation.y,
+                                        spec.m_Rotation.z + variation.m_Rotation.z * EngineCore::RandomPlusMinusOne()});
         m_Registry.emplace<TransformComponent>(particle.m_Entity, transform);
 
         particle.m_SmokeAnimation.Create(100ms /* per frame */, m_Spritesheet);
@@ -148,4 +147,4 @@ namespace GfxRenderEngine
             }
         }
     }
-}
+} // namespace GfxRenderEngine

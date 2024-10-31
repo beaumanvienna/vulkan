@@ -55,10 +55,12 @@ namespace GfxRenderEngine
 
         bool Start();
         void WaitInitialized();
+        void WaitIdle() const;
         void OnUpdate();
         void OnEvent(Event& event);
         void PostRender();
         void QueueEvent(std::unique_ptr<Event>& event);
+        void ResetDescriptorPools();
         void Shutdown(bool switchOffComputer = false);
         void Quit();
 
@@ -85,12 +87,12 @@ namespace GfxRenderEngine
         float GetDesktopWidth() const { return static_cast<float>(m_Window->GetDesktopWidth()); }
         float GetDesktopHeight() const { return static_cast<float>(m_Window->GetDesktopHeight()); }
 
-        std::shared_ptr<Model> LoadModel(const Builder& builder) { return m_GraphicsContext->LoadModel(builder); }
-        std::shared_ptr<Model> LoadModel(const TerrainBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
-        std::shared_ptr<Model> LoadModel(const GltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
-        std::shared_ptr<Model> LoadModel(const FastgltfBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
-        std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
-        std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+        std::shared_ptr<Model> LoadModel(const Builder&);
+        std::shared_ptr<Model> LoadModel(const TerrainBuilder&);
+        std::shared_ptr<Model> LoadModel(const GltfBuilder&);
+        std::shared_ptr<Model> LoadModel(const Model::ModelData&);
+        std::shared_ptr<Model> LoadModel(const FbxBuilder&);
+        std::shared_ptr<Model> LoadModel(const UFbxBuilder&);
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }

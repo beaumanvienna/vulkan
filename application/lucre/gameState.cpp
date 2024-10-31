@@ -58,7 +58,11 @@ namespace LucreApp
         SetNextState(State::TERRAIN);
     }
 
-    void GameState::Stop() { GetScene()->Stop(); }
+    void GameState::Stop()
+    {
+        GetScene()->Stop();
+        DestroyScene(m_State);
+    }
 
     std::string GameState::StateToString(State state) const
     {
@@ -249,7 +253,7 @@ namespace LucreApp
 
     void GameState::Load(GameState::State state)
     {
-        ASSERT(!IsLoaded(state));
+        CORE_ASSERT(!IsLoaded(state), "!IsLoaded(state)");
         if (m_LoadingState != State::NULL_STATE)
         {
             return;
@@ -449,8 +453,10 @@ namespace LucreApp
     void GameState::DestroyScene(const State state)
     {
         std::lock_guard lock(m_Mutex);
+        Engine::m_Engine->WaitIdle();
         m_StateLoaded[static_cast<int>(state)] = false;
         m_Scenes[static_cast<int>(state)] = nullptr;
         m_DeleteScene = State::NULL_STATE;
+        Engine::m_Engine->ResetDescriptorPools();
     }
 } // namespace LucreApp
