@@ -173,8 +173,16 @@ namespace GfxRenderEngine
 
     void Engine::SignalHandler(int signal)
     {
+        static bool sigIntReceived{false};
+        if ((signal == SIGINT) && sigIntReceived)
+        {
+            LOG_CORE_INFO("force shudown");
+            // force shudown
+            exit(1);
+        }
         if (signal == SIGINT)
         {
+            sigIntReceived = true;
             LOG_CORE_INFO("Received signal SIGINT, exiting");
             Engine::m_Engine->Shutdown();
         }
