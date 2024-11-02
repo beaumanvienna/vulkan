@@ -1,0 +1,12 @@
+{
+    "file format identifier": 1.2,
+    "description": "iceberg 3",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "heightMapPath": "application/lucre/models/ice/iceberg3.png",
+    "colorMapPath": "application/lucre/models/ice/iceberg3_color.png",
+    "material":
+    {
+        "roughness": 0.7,
+        "metallic": 0.1
+    }
+}

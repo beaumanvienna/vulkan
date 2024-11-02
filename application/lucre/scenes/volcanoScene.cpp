@@ -105,6 +105,10 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
+
+        {
+            m_Water = m_Dictionary.Retrieve("SL::application/lucre/models/ice/darkWater.glb::0::Scene::Water");
+        }
     }
 
     void VolcanoScene::Load()
@@ -121,10 +125,9 @@ namespace LucreApp
     void VolcanoScene::LoadModels()
     {
         {
-            std::vector<std::string> faces = {
-                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
+            std::vector<std::string> faces = {"application/lucre/models/ice/px.png", "application/lucre/models/ice/nx.png",
+                                              "application/lucre/models/ice/py.png", "application/lucre/models/ice/ny.png",
+                                              "application/lucre/models/ice/pz.png", "application/lucre/models/ice/nz.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
@@ -207,6 +210,12 @@ namespace LucreApp
         if (m_CharacterAnimation)
         {
             m_CharacterAnimation->OnUpdate(timestep);
+        }
+
+        if (m_Water != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Water);
+            transform.AddRotation({0.0f, 0.02f * timestep, 0.0f});
         }
 
         {
