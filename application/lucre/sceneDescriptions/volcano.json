@@ -305,29 +305,6 @@
             ]
         },
         {
-            "filename": "application/lucre/models/ice/Blender 3.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            6.11, 6.11, 6.11
-                        ],
-                        "rotation":
-                        [
-                            0, 1.39554, 0
-                        ],
-                        "translation":
-                        [
-                            -11.6886, 20, 28.6411
-                        ]
-                    }
-                }
-            ]
-        },
-        {
             "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
             "instances":
             [
@@ -368,98 +345,6 @@
                         "translation":
                         [
                             6, 6.26463, -14.1572
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/ice/snowflake1.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.014, 0.014, 0.014
-                        ],
-                        "rotation":
-                        [
-                            1.5708, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -0.5, -0.427841, 8.56459
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/ice/snowflake2.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.014, 0.014, 0.014
-                        ],
-                        "rotation":
-                        [
-                            1.5708, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -1, -0.427841, 8.56459
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/ice/snowflake3.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.014, 0.014, 0.014
-                        ],
-                        "rotation":
-                        [
-                            1.5708, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -1.5, -0.427859, 8.56459
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/ice/snowflake4.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.014, 0.014, 0.014
-                        ],
-                        "rotation":
-                        [
-                            1.5708, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -2, -0.427841, 8.56459
                         ]
                     }
                 }
