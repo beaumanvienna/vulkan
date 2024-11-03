@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,37 +22,47 @@
 
 #pragma once
 
-#include <chrono>
-
 #include "engine.h"
+#include "scene/scene.h"
+#include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
 {
-    class Timestep
+    class Snow
     {
 
     public:
-        Timestep(std::chrono::duration<float, std::chrono::seconds::period> time);
-
-        std::chrono::duration<float, std::chrono::seconds::period> GetSeconds() const;
-        std::chrono::duration<float, std::chrono::milliseconds::period> GetMilliseconds() const;
-
-        void Print() const;
-        float Count() const;
-
-        Timestep& operator=(const std::chrono::duration<float, std::chrono::seconds::period>& timestep);
-        Timestep& operator-=(const Timestep& other);
-        Timestep operator-(const Timestep& other) const;
-        bool operator<=(const std::chrono::duration<float, std::chrono::seconds::period>& other) const;
-
-        operator float() const { return m_Timestep.count(); }
-        glm::vec3 operator*(const glm::vec3& other) const
-        {
-            auto ts = m_Timestep.count();
-            return glm::vec3(ts * other.x, ts * other.y, ts * other.z);
-        }
+        Snow(Scene& scene, std::string const& jsonFile);
+        void OnUpdate(Timestep timestep, entt::entity camera);
 
     private:
-        std::chrono::duration<float, std::chrono::seconds::period> m_Timestep;
+        struct SysDescription
+        {
+            std::optional<uint> m_PoolSize{0};
+            std::optional<std::string> m_Model;
+            std::optional<std::string> m_DictionaryPrefix;
+            std::optional<glm::vec3> m_Vertex1; // 0,0,0 coordinate for cubic snow volume
+            std::optional<glm::vec3> m_Vertex2; // 1,1,1 coordinate for cubic snow volume
+        };
+
+        struct Particle
+        {
+            glm::vec3 m_Velocity;
+            glm::vec3 m_RotationSpeed;
+            entt::entity m_Entity;
+        };
+
+    private:
+        static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
+        void ParseSysDescription(std::string const& jsonFile);
+
+    private:
+        Scene& m_Scene;
+        Registry& m_Registry;
+        Dictionary& m_Dictionary;
+        SysDescription m_SysDescription;
+        bool m_Initialized{false};
+        uint m_PoolIndex{0};
+        std::vector<Particle> m_ParticlePool;
     };
 } // namespace GfxRenderEngine

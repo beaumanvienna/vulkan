@@ -39,7 +39,8 @@ namespace LucreApp
 {
 
     VolcanoScene::VolcanoScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this},
+          m_SnowParticleSystems{{*this, "snow1.json"}, {*this, "snow2.json"}, {*this, "snow3.json"}, {*this, "snow4.json"}}
     {
     }
 
@@ -210,6 +211,11 @@ namespace LucreApp
         if (m_CharacterAnimation)
         {
             m_CharacterAnimation->OnUpdate(timestep);
+        }
+
+        for (auto& snowParticleSystem : m_SnowParticleSystems)
+        {
+            snowParticleSystem.OnUpdate(timestep, m_Camera);
         }
 
         if (m_Water != entt::null)

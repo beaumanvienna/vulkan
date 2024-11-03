@@ -33,6 +33,7 @@
 
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
+#include "particleSystem/snow.h"
 #include "characterAnimation.h"
 #include "lucre.h"
 
@@ -91,6 +92,8 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
+        static constexpr uint NUM_SNOW_PARTICLE_SYSTEMS = 4;
+        Snow m_SnowParticleSystems[NUM_SNOW_PARTICLE_SYSTEMS];
 
     private:
         struct Group2
