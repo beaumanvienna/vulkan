@@ -45,7 +45,7 @@ layout(set = 1, binding = 1) uniform SkeletalAnimationShaderData
     mat4 m_FinalJointsMatrices[MAX_JOINTS];
 } skeletalAnimation;
 
-layout(set = 1, binding = 0) uniform InstanceUniformBuffer
+layout(set = 1, binding = 0) readonly buffer InstanceUniformBuffer
 {
     InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;

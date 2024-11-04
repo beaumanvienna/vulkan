@@ -73,6 +73,17 @@ namespace GfxRenderEngine
                 m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
                 m_BufferSize = m_AlignmentSize * m_InstanceCount;
                 m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+#ifdef DEBUG
+                auto maxUniformBufferRange = m_Device->m_Properties.limits.maxUniformBufferRange;
+                if (m_BufferSize > maxUniformBufferRange)
+                {
+                    std::string str =
+                        std::string("VK_Buffer::VK_Buffer, usage BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU, buffer size ") +
+                        std::to_string(m_BufferSize) + std::string(" is larger than ") +
+                        std::to_string(maxUniformBufferRange);
+                    CORE_HARD_STOP(str);
+                }
+#endif
                 break;
             }
             case Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU:

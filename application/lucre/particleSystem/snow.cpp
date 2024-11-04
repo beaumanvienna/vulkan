@@ -184,7 +184,11 @@ namespace GfxRenderEngine
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number");
                 int64 poolSize = sceneObject.value().get_int64();
+#ifdef DEBUG
+                m_SysDescription.m_PoolSize = std::min(poolSize, 500L);
+#else
                 m_SysDescription.m_PoolSize = poolSize;
+#endif
             }
             else if (sceneObjectKey == "prefix dictionary")
             {

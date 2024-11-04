@@ -36,7 +36,7 @@ struct InstanceData
     mat4 m_NormalMatrix;
 };
 
-layout(set = 1, binding = 0) uniform InstanceUniformBuffer
+layout(set = 1, binding = 0) readonly buffer InstanceUniformBuffer
 {
     InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;

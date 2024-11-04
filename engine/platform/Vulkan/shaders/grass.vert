@@ -75,7 +75,7 @@ layout(set = 2, binding = 3) uniform ParameterBuffer
     float m_ScaleY;
 } parameters;
 
-layout(set = 2, binding = 0) uniform InstanceUniformBuffer
+layout(set = 2, binding = 0) readonly buffer InstanceUniformBuffer
 {
     BaseModelData m_BaseModelData;
 } baseTransform;
