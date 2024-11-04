@@ -182,6 +182,25 @@ namespace LucreApp
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
+
+            {
+                m_Penguin = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/ice/penguin.glb::0::Scene::Linux Penguin (Left Leg)");
+                if (m_Penguin != entt::null)
+                {
+                    if (m_Registry.all_of<SkeletalAnimationTag>(m_Penguin))
+                    {
+                        auto& mesh = m_Registry.get<MeshComponent>(m_Penguin);
+                        SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                        animations.SetRepeatAll(true);
+                        animations.Start();
+                    }
+                    else
+                    {
+                        LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Penguin));
+                    }
+                }
+            }
         }
     }
 

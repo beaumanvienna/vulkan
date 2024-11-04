@@ -191,6 +191,80 @@
     "fastgltf files":
     [
         {
+            "filename": "application/lucre/models/ice/penguin.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.01, 0.01, 0.01
+                        ],
+                        "rotation":
+                        [
+                            0, 3.83972, 0
+                        ],
+                        "translation":
+                        [
+                            4.74126, -0.653, 29.5884
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.01, 0.01, 0.01
+                        ],
+                        "rotation":
+                        [
+                            0, 4.18879, 0
+                        ],
+                        "translation":
+                        [
+                            3.09508, -0.653, 28.8451
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.01, 0.01, 0.01
+                        ],
+                        "rotation":
+                        [
+                            0, 3.49066, 0
+                        ],
+                        "translation":
+                        [
+                            4.76773, -0.653, 28.8089
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.01, 0.01, 0.01
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -0.698132, -3.14159
+                        ],
+                        "translation":
+                        [
+                            3.9467, -0.652997, 28.9033
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/models/ice/sailboat.glb",
             "instances":
             [
