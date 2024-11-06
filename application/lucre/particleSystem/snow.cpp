@@ -24,8 +24,11 @@
 #include "auxiliary/file.h"
 #include "auxiliary/random.h"
 #include "particleSystem/snow.h"
+#include "renderer/instanceBuffer.h"
 #include "renderer/builder/fastgltfBuilder.h"
+
 using namespace simdjson;
+
 namespace GfxRenderEngine
 {
     Snow::Snow(Scene& scene, std::string const& jsonFile)
@@ -35,37 +38,56 @@ namespace GfxRenderEngine
         ParseSysDescription(jsonFile);
         if (!m_Initialized)
         {
-            LOG_CORE_CRITICAL("Snow::Snow failed to initialize!");
+            LOG_CORE_CRITICAL("Snow::Snow failed to initialize! (ParseSysDescription)");
             return;
         }
 
         // load model with m_PoolSize instances
+        std::vector<entt::entity> snowflakeFirstInstances;
         {
-            FastgltfBuilder builder(m_SysDescription.m_Model.value(), m_Scene);
-            builder.SetDictionaryPrefix("snow");
-            builder.Load(m_SysDescription.m_PoolSize.value());
+            auto& dictionaryPrefix = m_SysDescription.m_DictionaryPrefix.value();
+            auto& model = m_SysDescription.m_Model.value();
+            auto& sceneGraph = m_Scene.GetSceneGraph();
+            auto& numberOfInstances = m_SysDescription.m_PoolSize.value();
+
+            // create group node
+            auto entity = m_Registry.Create();
+            auto name = dictionaryPrefix + "::" + model + "::root";
+            int groupNode = sceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
+            TransformComponent transform{};
+            m_Registry.emplace<TransformComponent>(entity, transform);
+
+            FastgltfBuilder builder(model, m_Scene, groupNode);
+            builder.SetDictionaryPrefix(dictionaryPrefix);
+            m_Initialized = builder.Load(numberOfInstances, snowflakeFirstInstances);
+        }
+
+        if (!m_Initialized || !snowflakeFirstInstances.size())
+        {
+            LOG_CORE_CRITICAL("Snow::Snow failed to initialize! (load model)");
+            return;
         }
 
         // set up particles
         {
             m_ParticlePool.resize(m_SysDescription.m_PoolSize.value());
             auto prefix = std::string(m_SysDescription.m_DictionaryPrefix.value()) + "::";
-            auto& model = m_SysDescription.m_Model.value();
             auto& vertex1 = m_SysDescription.m_Vertex1.value();
             auto& vertex2 = m_SysDescription.m_Vertex2.value();
             auto volumeSize = (vertex2 - vertex1) / 2.0f;
-            uint idx{0};
-            for (auto& particle : m_ParticlePool)
+            auto& snowflake = snowflakeFirstInstances[0];
+
+            if (snowflake != entt::null)
             {
-                auto key = prefix + model + "::" + std::to_string(idx) + "::root";
-                entt::entity snowflake = m_Dictionary.Retrieve(key);
-                if (snowflake != entt::null)
+                auto& instances = m_Registry.get<InstanceTag>(snowflake).m_Instances;
+                uint index{0};
+                for (auto& particle : m_ParticlePool)
                 {
-                    particle.m_Entity = snowflake;
                     particle.m_RotationSpeed = {0.0f, 0.0f, EngineCore::RandomPlusMinusOne()};
                     particle.m_Velocity = {0.0f, -1.0f + EngineCore::RandomPlusMinusOne(), 0.0f};
 
-                    auto& transform = m_Registry.get<TransformComponent>(snowflake);
+                    auto& transform = m_Registry.get<TransformComponent>(instances[index]);
+                    particle.m_Transform = &transform;
                     transform.SetRotation(
                         {glm::half_pi<float>(), 0.0f, glm::pi<float>() * EngineCore::RandomPlusMinusOne()});
                     transform.SetTranslation(
@@ -73,20 +95,20 @@ namespace GfxRenderEngine
                          (vertex1.y + volumeSize.y) + (volumeSize.y * EngineCore::RandomPlusMinusOne()),
                          (vertex1.z + volumeSize.z) + (volumeSize.z * EngineCore::RandomPlusMinusOne())});
                     transform.SetScale(0.014f);
+                    ++index;
                 }
-                ++idx;
             }
         }
     }
 
-    void Snow::OnUpdate(Timestep timestep, entt::entity camera)
+    void Snow::OnUpdate(Timestep timestep, TransformComponent& cameraTransform)
     {
-        auto& cameraTransform = m_Registry.get<TransformComponent>(camera);
+        ZoneScopedNC("Snow::OnUpdate", 0x00ff00);
         auto& vertex1 = m_SysDescription.m_Vertex1.value();
         auto& vertex2 = m_SysDescription.m_Vertex2.value();
         for (auto& particle : m_ParticlePool)
         {
-            auto& transform = m_Registry.get<TransformComponent>(particle.m_Entity);
+            auto& transform = *particle.m_Transform;
             float rotationSpeedZ = particle.m_RotationSpeed.z;
             transform.AddRotation({0.0f, 0.0f, timestep * rotationSpeedZ});
             transform.SetRotationY(cameraTransform.GetRotation().y);
@@ -184,11 +206,7 @@ namespace GfxRenderEngine
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::number), "type must be number");
                 int64 poolSize = sceneObject.value().get_int64();
-#ifdef DEBUG
-                m_SysDescription.m_PoolSize = std::min(poolSize, 500L);
-#else
                 m_SysDescription.m_PoolSize = poolSize;
-#endif
             }
             else if (sceneObjectKey == "prefix dictionary")
             {

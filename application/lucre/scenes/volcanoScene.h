@@ -95,6 +95,7 @@ namespace LucreApp
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
         static constexpr uint NUM_SNOW_PARTICLE_SYSTEMS = 4;
         Snow m_SnowParticleSystems[NUM_SNOW_PARTICLE_SYSTEMS];
+        std::array<std::future<bool>, NUM_SNOW_PARTICLE_SYSTEMS> m_Futures;
 
     private:
         struct Group2

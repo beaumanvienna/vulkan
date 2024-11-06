@@ -35,9 +35,9 @@ namespace GfxRenderEngine
 {
     FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers)
         : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
-          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}
+          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
+          m_Basepath{EngineCore::GetPathWithoutFilename(filepath)}, m_GroupNode{Gltf::GLTF_NOT_USED}
     {
-        m_Basepath = EngineCore::GetPathWithoutFilename(filepath);
         if (resourceBuffers)
         {
             // optionally: additional resources not originating from a 3D file can be provided here
@@ -46,6 +46,13 @@ namespace GfxRenderEngine
             // along with the instance and skeletal animation buffer
             m_ResourceBuffersPre = *resourceBuffers;
         }
+    }
+
+    FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene, int groupNode)
+        : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
+          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()},
+          m_Basepath{EngineCore::GetPathWithoutFilename(filepath)}, m_GroupNode{groupNode}
+    {
     }
 
     bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
@@ -126,14 +133,21 @@ namespace GfxRenderEngine
         m_InstanceCount = instanceCount;
         for (uint instanceIndex = 0; instanceIndex < m_InstanceCount; ++instanceIndex)
         {
-            // create group game object(s) for all instances to apply transform from JSON file to
-            auto entity = m_Registry.Create();
-            auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) + "::root";
-            uint groupNode = m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
+            uint groupNode;
+            if (m_GroupNode == Gltf::GLTF_NOT_USED)
+            { // create group game object(s) for all instances to apply transform from JSON file to
+                auto entity = m_Registry.Create();
+                auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) + "::root";
+                groupNode = m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
 
+                {
+                    TransformComponent transform{};
+                    m_Registry.emplace<TransformComponent>(entity, transform);
+                }
+            }
+            else
             {
-                TransformComponent transform{};
-                m_Registry.emplace<TransformComponent>(entity, transform);
+                groupNode = static_cast<uint>(m_GroupNode);
             }
 
             // a scene ID was provided
@@ -150,6 +164,13 @@ namespace GfxRenderEngine
             }
         }
         return Gltf::GLTF_LOAD_SUCCESS;
+    }
+
+    bool FastgltfBuilder::Load(uint const instanceCount, std::vector<entt::entity>& firstInstances)
+    {
+        bool returnValue = Load(instanceCount);
+        firstInstances = m_FirstInstances;
+        return returnValue;
     }
 
     bool FastgltfBuilder::MarkNode(int const gltfNodeIndex)
@@ -287,6 +308,7 @@ namespace GfxRenderEngine
                 {
                     std::lock_guard<std::mutex> guard(m_Mutex);
                     m_InstancedObjects[gltfNodeIndex] = entity;
+                    m_FirstInstances.push_back(entity);
                 }
 
                 // create model for 1st instance

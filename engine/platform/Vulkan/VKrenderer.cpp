@@ -818,7 +818,10 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+            {
+                ZoneScopedNC("UpdateTransformCache", 0xffff00);
+                UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+            }
 
             auto& registry = scene.GetRegistry();
 

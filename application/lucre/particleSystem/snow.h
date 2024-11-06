@@ -24,6 +24,7 @@
 
 #include "engine.h"
 #include "scene/scene.h"
+#include "scene/components.h"
 #include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
@@ -33,7 +34,7 @@ namespace GfxRenderEngine
 
     public:
         Snow(Scene& scene, std::string const& jsonFile);
-        void OnUpdate(Timestep timestep, entt::entity camera);
+        void OnUpdate(Timestep timestep, TransformComponent& cameraTransform);
 
     private:
         struct SysDescription
@@ -49,7 +50,7 @@ namespace GfxRenderEngine
         {
             glm::vec3 m_Velocity;
             glm::vec3 m_RotationSpeed;
-            entt::entity m_Entity;
+            TransformComponent* m_Transform;
         };
 
     private:

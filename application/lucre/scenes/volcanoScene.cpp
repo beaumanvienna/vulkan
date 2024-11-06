@@ -232,9 +232,24 @@ namespace LucreApp
             m_CharacterAnimation->OnUpdate(timestep);
         }
 
-        for (auto& snowParticleSystem : m_SnowParticleSystems)
-        {
-            snowParticleSystem.OnUpdate(timestep, m_Camera);
+        { // update particle systems
+            auto& threadpool = Engine::m_Engine->m_PoolPrimary;
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+            uint index{0};
+            for (auto& snowParticleSystem : m_SnowParticleSystems)
+            {
+                auto task = [&]()
+                {
+                    snowParticleSystem.OnUpdate(timestep, cameraTransform);
+                    return true;
+                };
+                m_Futures[index] = threadpool.SubmitTask(task);
+                ++index;
+            }
+            for (auto& future : m_Futures)
+            {
+                future.get();
+            }
         }
 
         if (m_Water != entt::null)

@@ -61,8 +61,10 @@ namespace GfxRenderEngine
     public:
         FastgltfBuilder() = delete;
         FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers = nullptr);
+        FastgltfBuilder(const std::string& filepath, Scene& scene, int groupNode);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
+        bool Load(uint const instanceCount, std::vector<entt::entity>& firstInstances);
         void SetDictionaryPrefix(std::string const&);
 
     private:
@@ -123,6 +125,8 @@ namespace GfxRenderEngine
 
         // scene graph
         uint m_InstanceCount{0};
+        std::vector<entt::entity> m_FirstInstances;
+        int m_GroupNode;
         std::vector<bool> m_HasMesh;
         Atomic::Queue<std::future<bool>> m_NodeFuturesQueue;
         std::unordered_map<int, entt::entity> m_InstancedObjects;
