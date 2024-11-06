@@ -58,6 +58,7 @@ namespace GfxRenderEngine
         void ParseSysDescription(std::string const& jsonFile);
 
     private:
+        static constexpr bool NO_SCENE_GRAPH = false;
         Scene& m_Scene;
         Registry& m_Registry;
         Dictionary& m_Dictionary;

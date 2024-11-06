@@ -166,8 +166,9 @@ namespace GfxRenderEngine
         return Gltf::GLTF_LOAD_SUCCESS;
     }
 
-    bool FastgltfBuilder::Load(uint const instanceCount, std::vector<entt::entity>& firstInstances)
+    bool FastgltfBuilder::Load(uint const instanceCount, std::vector<entt::entity>& firstInstances, bool useSceneGraph)
     {
+        m_UseSceneGraph = useSceneGraph;
         bool returnValue = Load(instanceCount);
         firstInstances = m_FirstInstances;
         return returnValue;
@@ -234,19 +235,22 @@ namespace GfxRenderEngine
                 }
                 else // one or more children have a mesh, but not this one --> create group node
                 {
-                    std::lock_guard<std::mutex> guard(m_Mutex);
-                    // create game object and transform component
-                    auto entity = m_Registry.Create();
-
-                    // create scene graph node and add to parent
-                    auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) +
-                                "::" + std::string(scene->name) + "::" + nodeName;
-                    currentNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
-
+                    if (m_UseSceneGraph)
                     {
-                        TransformComponent transform{};
-                        LoadTransformationMatrix(transform, gltfNodeIndex);
-                        m_Registry.emplace<TransformComponent>(entity, transform);
+                        std::lock_guard<std::mutex> guard(m_Mutex);
+                        // create game object and transform component
+                        auto entity = m_Registry.Create();
+
+                        // create scene graph node and add to parent
+                        auto name = m_DictionaryPrefix + "::" + m_Filepath + "::" + std::to_string(instanceIndex) +
+                                    "::" + std::string(scene->name) + "::" + nodeName;
+                        currentNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
+
+                        {
+                            TransformComponent transform{};
+                            LoadTransformationMatrix(transform, gltfNodeIndex);
+                            m_Registry.emplace<TransformComponent>(entity, transform);
+                        }
                     }
                 }
             }
@@ -273,9 +277,13 @@ namespace GfxRenderEngine
         int cameraIndex = node.cameraIndex.has_value() ? node.cameraIndex.value() : Gltf::GLTF_NOT_USED;
 
         auto entity = m_Registry.Create();
-        auto baseName = "::" + std::to_string(instanceIndex) + "::" + std::string(scene->name) + "::" + nodeName;
-        auto name = m_DictionaryPrefix + "::" + m_Filepath + baseName;
-        uint newNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
+        uint newNode{0};
+        if (m_UseSceneGraph)
+        {
+            auto baseName = "::" + std::to_string(instanceIndex) + "::" + std::string(scene->name) + "::" + nodeName;
+            auto name = m_DictionaryPrefix + "::" + m_Filepath + baseName;
+            newNode = m_SceneGraph.CreateNode(parentNode, entity, name, m_Dictionary);
+        }
 
         TransformComponent transform{};
         LoadTransformationMatrix(transform, gltfNodeIndex);

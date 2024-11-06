@@ -59,7 +59,7 @@ namespace GfxRenderEngine
 
             FastgltfBuilder builder(model, m_Scene, groupNode);
             builder.SetDictionaryPrefix(dictionaryPrefix);
-            m_Initialized = builder.Load(numberOfInstances, snowflakeFirstInstances);
+            m_Initialized = builder.Load(numberOfInstances, snowflakeFirstInstances, NO_SCENE_GRAPH);
         }
 
         if (!m_Initialized || !snowflakeFirstInstances.size())
@@ -118,6 +118,7 @@ namespace GfxRenderEngine
             {
                 transform.AddTranslation({0.0f, vertex2.y + vertex1.y, 0.0f});
             }
+            transform.SetMat4Global();
         }
     }
 
