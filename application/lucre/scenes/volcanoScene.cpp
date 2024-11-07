@@ -39,7 +39,8 @@ namespace LucreApp
 {
 
     VolcanoScene::VolcanoScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this},
+          m_SnowParticleSystems{{*this, "snow1.json"}, {*this, "snow2.json"}, {*this, "snow3.json"}, {*this, "snow4.json"}}
     {
     }
 
@@ -105,6 +106,10 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
+
+        {
+            m_Water = m_Dictionary.Retrieve("SL::application/lucre/models/ice/darkWater.glb::0::Scene::Water");
+        }
     }
 
     void VolcanoScene::Load()
@@ -121,10 +126,9 @@ namespace LucreApp
     void VolcanoScene::LoadModels()
     {
         {
-            std::vector<std::string> faces = {
-                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
+            std::vector<std::string> faces = {"application/lucre/models/ice/px.png", "application/lucre/models/ice/nx.png",
+                                              "application/lucre/models/ice/py.png", "application/lucre/models/ice/ny.png",
+                                              "application/lucre/models/ice/pz.png", "application/lucre/models/ice/nz.png"};
 
             Builder builder;
             m_Skybox = builder.LoadCubemap(faces, m_Registry);
@@ -178,6 +182,25 @@ namespace LucreApp
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
+
+            {
+                m_Penguin = m_Dictionary.Retrieve(
+                    "SL::application/lucre/models/ice/penguin.glb::0::Scene::Linux Penguin (Left Leg)");
+                if (m_Penguin != entt::null)
+                {
+                    if (m_Registry.all_of<SkeletalAnimationTag>(m_Penguin))
+                    {
+                        auto& mesh = m_Registry.get<MeshComponent>(m_Penguin);
+                        SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                        animations.SetRepeatAll(true);
+                        animations.Start();
+                    }
+                    else
+                    {
+                        LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Penguin));
+                    }
+                }
+            }
         }
     }
 
@@ -207,6 +230,32 @@ namespace LucreApp
         if (m_CharacterAnimation)
         {
             m_CharacterAnimation->OnUpdate(timestep);
+        }
+
+        { // update particle systems
+            auto& threadpool = Engine::m_Engine->m_PoolPrimary;
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+            uint index{0};
+            for (auto& snowParticleSystem : m_SnowParticleSystems)
+            {
+                auto task = [&]()
+                {
+                    snowParticleSystem.OnUpdate(timestep, cameraTransform);
+                    return true;
+                };
+                m_Futures[index] = threadpool.SubmitTask(task);
+                ++index;
+            }
+            for (auto& future : m_Futures)
+            {
+                future.get();
+            }
+        }
+
+        if (m_Water != entt::null)
+        {
+            auto& transform = m_Registry.get<TransformComponent>(m_Water);
+            transform.AddRotation({0.0f, 0.02f * timestep, 0.0f});
         }
 
         {

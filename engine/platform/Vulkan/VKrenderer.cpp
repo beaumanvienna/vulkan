@@ -125,18 +125,18 @@ namespace GfxRenderEngine
 
         m_ResourceDescriptorSetLayouts[Rt::RtInstance] =
             VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .Build();
 
         m_ResourceDescriptorSetLayouts[Rt::RtInstanceSA] =
             VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for animation
                 .Build();
 
         m_ResourceDescriptorSetLayouts[Rt::RtGrass] =
             VK_DescriptorSetLayout::Builder()
-                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // dummy
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for height map
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader parameters
@@ -818,7 +818,10 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+            {
+                ZoneScopedNC("UpdateTransformCache", 0xffff00);
+                UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+            }
 
             auto& registry = scene.GetRegistry();
 

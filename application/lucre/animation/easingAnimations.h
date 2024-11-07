@@ -110,6 +110,7 @@ namespace LucreApp
             }
         }
         void Stop() { m_IsRunning = false; }
+        bool IsRunning() const { return m_IsRunning; }
         bool Run(float speedXY[dimensions])
         {
             for (uint index = 0; index < dimensions; ++index)

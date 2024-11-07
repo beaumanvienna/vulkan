@@ -218,7 +218,7 @@ namespace GfxRenderEngine
             }
             if (i == 0)
             {
-                layerSize = m_Width * m_Height * m_BytesPerPixel;
+                layerSize = m_Width * m_Height * 4;
                 imageSize = layerSize * NUMBER_OF_CUBEMAP_IMAGES;
 
                 CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

@@ -1,0 +1,10 @@
+{
+    "file format identifier": 1.2,
+    "description": "snow particle system 2",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "model": "application/lucre/models/ice/snowflake2.glb",
+    "pool size": 4000,
+    "prefix dictionary": "snow",
+    "cubic volume vertex 0,0,0": [-30.0, -1.0, -10.0],
+    "cubic volume vertex 1,1,1": [20.0, 15.0, 40.0]
+}

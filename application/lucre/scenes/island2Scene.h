@@ -122,6 +122,7 @@ namespace LucreApp
             Character10,
             MaxNPC
         };
+
         // game objects
         entt::entity m_Skybox;
         entt::entity m_NonPlayableCharacters[NPC::MaxNPC];
@@ -140,6 +141,7 @@ namespace LucreApp
         std::array<EasingAnimations<ANIMATE_X_Y>, NUMBER_OF_MOVING_LIGHTS> m_EasingAnimation;
         void AssignAnimation(EasingAnimations<ANIMATE_X_Y>& easingAnimation);
         bool m_RunLightAnimation;
+        TimePoint m_SceneStartTime{0ms};
 
     private:
         struct BananaComponent

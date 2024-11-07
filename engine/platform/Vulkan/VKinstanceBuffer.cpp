@@ -31,7 +31,8 @@ namespace GfxRenderEngine
 {
     VK_InstanceBuffer::VK_InstanceBuffer(uint numInstances) : m_NumInstances(numInstances), m_Dirty{true}
     {
-        m_Ubo = std::make_shared<VK_Buffer>(numInstances * sizeof(InstanceData));
+        m_Ubo = std::make_shared<VK_Buffer>(numInstances * sizeof(InstanceData),
+                                            Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
         m_Ubo->MapBuffer();
         m_DataInstances.resize(numInstances);
     }

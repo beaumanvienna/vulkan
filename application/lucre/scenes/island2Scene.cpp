@@ -233,6 +233,7 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
+        m_SceneStartTime = Engine::m_Engine->GetTime();
     }
 
     void Island2Scene::Load()
@@ -323,16 +324,14 @@ namespace LucreApp
     {
         if (m_RunLightAnimation)
         {
-            static TimePoint sceneStartTime = Engine::m_Engine->GetTime();
-            auto animateLight = [&](bool& isRunning, int light, Duration delay)
+            auto animateLight = [&](int light, Duration delay)
             {
                 TimePoint currenTime = Engine::m_Engine->GetTime();
-                if (!isRunning && (currenTime - sceneStartTime > delay))
+                if (!m_EasingAnimation[light].IsRunning() && (currenTime - m_SceneStartTime > delay))
                 {
-                    isRunning = true;
                     m_EasingAnimation[light].Start();
                 }
-                if (isRunning)
+                if (m_EasingAnimation[light].IsRunning())
                 {
                     float speedXY[ANIMATE_X_Y] = {0.0f, 0.0f};
                     m_EasingAnimation[light].Run(speedXY);
@@ -341,42 +340,14 @@ namespace LucreApp
                     transform.AddTranslation({speedXY[0] * speedFactor, speedXY[1] * speedFactor, 0.0f});
                 }
             };
-
-            int light = 0;
-            if (m_MovingLights[light] != entt::null)
+            std::array<Duration, NUMBER_OF_MOVING_LIGHTS> startDelays{3s, 2s, 1s, 3s, 2s, 1s};
+            int light{0};
+            for (auto& startDelay : startDelays)
             {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 3s);
-                ++light;
-            }
-            if (m_MovingLights[light] != entt::null)
-            {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 2s);
-                ++light;
-            }
-            if (m_MovingLights[light] != entt::null)
-            {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 1s);
-                ++light;
-            }
-            if (m_MovingLights[light] != entt::null)
-            {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 3s);
-                ++light;
-            }
-            if (m_MovingLights[light] != entt::null)
-            {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 2s);
-                ++light;
-            }
-            if (m_MovingLights[light] != entt::null)
-            {
-                static bool isRunning = false;
-                animateLight(isRunning, light, 1s);
+                if (m_MovingLights[light] != entt::null)
+                {
+                    animateLight(light, startDelay);
+                }
                 ++light;
             }
         }

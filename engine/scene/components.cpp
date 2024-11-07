@@ -219,6 +219,22 @@ namespace GfxRenderEngine
         m_Parent = parent;
     }
 
+    // no scene graph
+    void TransformComponent::SetMat4Global()
+    {
+        if (m_InstanceBuffer)
+        {
+            auto mat4Global = GetMat4Local();
+            auto normalMatrix = glm::transpose(glm::inverse(glm::mat3(mat4Global)));
+            m_InstanceBuffer->SetInstanceData(m_InstanceIndex, mat4Global, normalMatrix);
+        }
+        else
+        {
+            m_Mat4Global = GetMat4Local();
+            m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
+        }
+    }
+
     void TransformComponent::SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex)
     {
         m_InstanceIndex = instanceIndex;

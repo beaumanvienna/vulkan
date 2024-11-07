@@ -48,7 +48,7 @@ namespace GfxRenderEngine
         void MeasureBySpec(Size sz, float contentWidth, MeasureSpec spec, float* measured)
         {
             *measured = sz;
-            if (sz == WRAP_CONTENT)
+            if (sz == static_cast<float>(WRAP_CONTENT))
             {
                 if (spec.type == UNSPECIFIED)
                 {
@@ -63,7 +63,7 @@ namespace GfxRenderEngine
                     *measured = spec.size;
                 }
             }
-            else if (sz == FILL_PARENT)
+            else if (sz == static_cast<float>(FILL_PARENT))
             {
                 if (spec.type == UNSPECIFIED)
                 {
@@ -515,7 +515,7 @@ namespace GfxRenderEngine
         {
             if (!layoutParams)
             {
-                if (layoutParams_->width == WRAP_CONTENT)
+                if (layoutParams_->width == static_cast<float>(WRAP_CONTENT))
                     layoutParams_->width = FILL_PARENT;
             }
         }
@@ -525,7 +525,7 @@ namespace GfxRenderEngine
         {
             if (!layoutParams)
             {
-                if (layoutParams_->width == WRAP_CONTENT)
+                if (layoutParams_->width == static_cast<float>(WRAP_CONTENT))
                     layoutParams_->width = FILL_PARENT;
             }
         }

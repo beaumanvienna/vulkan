@@ -33,6 +33,7 @@
 
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
+#include "particleSystem/snow.h"
 #include "characterAnimation.h"
 #include "lucre.h"
 
@@ -78,9 +79,10 @@ namespace LucreApp
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1;
+        entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1, m_Water;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
+        entt::entity m_Penguin;
 
         //------
         void LoadTerrain();
@@ -91,6 +93,9 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
+        static constexpr uint NUM_SNOW_PARTICLE_SYSTEMS = 4;
+        Snow m_SnowParticleSystems[NUM_SNOW_PARTICLE_SYSTEMS];
+        std::array<std::future<bool>, NUM_SNOW_PARTICLE_SYSTEMS> m_Futures;
 
     private:
         struct Group2

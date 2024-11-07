@@ -75,7 +75,7 @@ namespace LucreApp
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
         camera.SetViewDirection(position, direction);
-#define STRESS_TEST
+// #define STRESS_TEST
 #ifdef STRESS_TEST
         { // stress test scene changing
             std::srand(std::time(nullptr));
@@ -130,7 +130,9 @@ namespace LucreApp
     void Lucre::Shutdown()
     {
         m_GameState.Stop();
+#ifdef STRESS_TEST
         m_StressTestFuture.get();
+#endif
     }
 
     void Lucre::OnUpdate(const Timestep& timestep)

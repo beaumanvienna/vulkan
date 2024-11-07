@@ -68,7 +68,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 2, binding = 0) uniform InstanceUniformBuffer
+layout(set = 2, binding = 0) readonly buffer InstanceUniformBuffer
 {
     InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
