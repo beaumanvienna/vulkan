@@ -5,6 +5,29 @@
     "terrain":
     [
         {
+            "filename": "application/lucre/terrainDescriptions/ice island.json",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.099, 4.48743, 0.099
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.34536, 3.14159
+                        ],
+                        "translation":
+                        [
+                            4.56263, -1.76119, 35.0361
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "filename": "application/lucre/terrainDescriptions/iceberg1.json",
             "instances":
             [

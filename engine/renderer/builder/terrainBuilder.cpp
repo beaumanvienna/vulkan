@@ -295,7 +295,7 @@ namespace GfxRenderEngine
                 Image heightMap(grassSpec.m_FilepathGrassHeightMap);
                 Image densityMap(grassSpec.m_FilepathDensityMap);
                 CORE_ASSERT((heightMap.Width() == densityMap.Width()) && (heightMap.Height() == densityMap.Height()),
-                            "dimesnion must match");
+                            "dimensions must match");
                 uint heightMapSize = heightMap.Size();
                 Resources::ResourceBuffers resourceBuffers;
                 uint grassInstances = 0;

@@ -1,0 +1,35 @@
+{
+    "file format identifier": 1.2,
+    "description": "ice island",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "heightMapPath": "application/lucre/models/ice/ice island heightmap.png",
+    "colorMapPath": "application/lucre/models/ice/ice island colormap.png",
+    "material":
+    {
+        "roughness": 0.5,
+        "metallic": 0.4
+    },
+    "grass":
+    {
+        "modelPath": "application/lucre/models/ice/crystal.glb",
+        "heightMapPath": "application/lucre/models/ice/ice island heightmap.png",
+        "denistyMapPath": "application/lucre/models/ice/ice island density map.png",
+        "transform":
+        {
+            "scale":
+            [
+                0.099, 0.0185, 0.099
+            ],
+            "rotation":
+            [
+                -3.14159, -1.34536, 3.14159
+            ],
+            "translation":
+            [
+                4.647, -1.790, 35.030
+            ]
+        }, 
+        "scaleXZ": 2.5,
+        "scaleY": 7
+    }
+}
