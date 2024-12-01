@@ -31,6 +31,25 @@
 
 namespace GfxRenderEngine
 {
+
+    template <class T> void PushConstants(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout,
+                                          VkShaderStageFlags stageFlags, uint32_t offset, T const& values)
+    {
+        vkCmdPushConstants(commandBuffer, pipelineLayout, stageFlags, offset, sizeof(T), &values);
+    }
+
+    template <class... T> void PushConstants(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout,
+                                             VkShaderStageFlags stageFlags, T const&... values)
+    {
+        uint offset{};
+        auto pushConstants = [&](auto element)
+        {
+            PushConstants(commandBuffer, pipelineLayout, stageFlags, element);
+            offset += sizeof(element);
+        };
+        (pushConstants(values), ...);
+    }
+
     class VK_Window;
 
     class VK_Device

@@ -30,6 +30,7 @@
 #include "scene/scene.h"
 #include "scene/sceneLoader.h"
 #include "scene/sceneLoaderJSON.h"
+#include "particleSystem/candles.h"
 
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
@@ -91,6 +92,7 @@ namespace LucreApp
 
         // animation
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
+        Candles m_CandleParticleSystem;
 
     private:
         struct Group2

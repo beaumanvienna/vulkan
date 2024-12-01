@@ -39,7 +39,7 @@ namespace LucreApp
 {
 
     Reserved0Scene::Reserved0Scene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"}
     {
     }
 
@@ -209,6 +209,11 @@ namespace LucreApp
             m_CharacterAnimation->OnUpdate(timestep);
         }
 
+        { // update particle systems
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+            m_CandleParticleSystem.OnUpdate(timestep, cameraTransform);
+        }
+
         {
             auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
             float scaleX = lightbulbTransform.GetScale().x;
@@ -273,8 +278,8 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({1.792f, 4.220f, -13.696f});
-        cameraTransform.SetRotation({-0.074769905f, 3.01f, 0.0f});
+        cameraTransform.SetTranslation({4.8f, 80.229f, -137.9f});
+        cameraTransform.SetRotation({-0.445058959f, 3.122394032f, 0.0f});
 
         // global camera transform is not yet available
         // because UpdateTransformCache didn't run yet

@@ -22,39 +22,49 @@
 
 #pragma once
 
-#include "scene/registry.h"
+#include "engine.h"
+#include "scene/scene.h"
+#include "scene/components.h"
+#include "auxiliary/timestep.h"
 
 namespace GfxRenderEngine
 {
-
-    class Cubemap;
-    class Model;
-    class Scene;
-    struct Submesh;
-    struct Vertex;
-
-    class Builder
+    class Candles
     {
 
     public:
-        Builder() = default;
-
-        void LoadParticle(glm::vec4 const& color);
-        void LoadSprite(Sprite const& sprite, float const amplification = 0.0f, int const unlit = 0,
-                        glm::vec4 const& color = glm::vec4(1.0f));
-        entt::entity LoadCubemap(std::vector<std::string> const& faces, Registry& registry);
+        Candles(Scene& scene, std::string const& jsonFile);
+        void OnUpdate(Timestep timestep, TransformComponent& cameraTransform);
 
     private:
-        void CalculateTangents();
-        void CalculateTangentsFromIndexBuffer(std::vector<uint> const& indices);
+        struct SysDescription
+        {
+            std::optional<uint> m_PoolSize{0};
+            std::optional<std::string> m_Model;
+            std::optional<std::string> m_DictionaryPrefix;
+            std::optional<glm::vec3> m_Vertex1; // 0,0,0 coordinate for cubic candle volume
+            std::optional<glm::vec3> m_Vertex2; // 1,1,1 coordinate for cubic candle volume
+        };
 
-    public:
-        std::vector<Vertex> m_Vertices;
-        std::vector<uint> m_Indices;
-        std::vector<Submesh> m_Submeshes;
+        struct Particle
+        {
+            glm::vec3 m_Velocity;
+            glm::vec3 m_RotationSpeed;
+            TransformComponent* m_Transform;
+        };
 
-        // cubemap
-        std::vector<std::shared_ptr<Cubemap>> m_Cubemaps;
-        std::vector<Submesh> m_CubemapSubmeshes;
+    private:
+        static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
+        void ParseSysDescription(std::string const& jsonFile);
+
+    private:
+        static constexpr bool NO_SCENE_GRAPH = false;
+        Scene& m_Scene;
+        Registry& m_Registry;
+        Dictionary& m_Dictionary;
+        SysDescription m_SysDescription;
+        bool m_Initialized{false};
+        uint m_PoolIndex{0};
+        std::vector<Particle> m_ParticlePool;
     };
 } // namespace GfxRenderEngine
