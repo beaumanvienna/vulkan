@@ -1,8 +1,6 @@
 /* Engine Copyright (c) 2024 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
+
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -25,13 +23,22 @@
 
 #version 450
 #include "engine/platform/Vulkan/pointlights.h"
-#include "engine/platform/Vulkan/resource.h"
+// 0 - 1
+// | / |
+// 3 - 2
+vec2 positions[6] = vec2[]
+(
+    vec2(-1.0,  1.0), // 0
+    vec2( 1.0,  1.0), // 1
+    vec2(-1.0, -1.0), // 3
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 uv;
-layout(location = 4) in vec3 tangent;
+    vec2( 1.0,  1.0), // 1
+    vec2( 1.0, -1.0), // 2
+    vec2(-1.0, -1.0)  // 3
+);
+
+// out
+layout(location = 0) out vec4 fragColor;
 
 struct PointLight
 {
@@ -43,12 +50,6 @@ struct DirectionalLight
 {
     vec4 m_Direction; // ignore w
     vec4 m_Color;     // w is intensity
-};
-
-struct InstanceData
-{
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -64,30 +65,17 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 2, binding = 0) readonly buffer InstanceBuffer
+layout(push_constant) uniform Push
 {
-    InstanceData m_InstanceData[MAX_INSTANCE];
-} uboInstanced;
+    mat4 m_ModelMatrix;
+} push;
 
-layout(location = 0) out vec3 fragPosition;
-layout(location = 1) out vec4 fragColor;
-layout(location = 2) out vec3 fragNormal;
-layout(location = 3) out vec2 fragUV;
-layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
-
     // projection * view * model * position
-    gl_Position = ubo.m_Projection * ubo.m_View * modelMatrix * vec4(position, 1.0);
+    vec2 position = positions[gl_VertexIndex];
+    gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position.x, 0.0, position.y, 1.0);
 
-    vec4 positionWorld = modelMatrix * vec4(position, 1.0);
-    fragPosition = positionWorld.xyz;
-    fragNormal = mat3(normalMatrix) * normal;
-    fragTangent = mat3(normalMatrix) * tangent;
-
-    fragUV = uv;
-    fragColor = color;
+    fragColor = vec4(0.1, 0.1, 0.1, 0.8);
 }

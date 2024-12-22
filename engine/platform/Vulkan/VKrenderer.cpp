@@ -174,6 +174,9 @@ namespace GfxRenderEngine
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_MaterialDescriptorSetLayouts[Mt::MtDiffuse]->GetDescriptorSetLayout()};
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsWater1 = {
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout()};
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
@@ -262,6 +265,9 @@ namespace GfxRenderEngine
                 .WriteImage(2, imageInfo1)
                 .Build(m_GlobalDescriptorSets[i]);
         }
+
+        m_RenderSystemWater1 =
+            std::make_unique<VK_RenderSystemWater1>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsWater1);
 
         m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
         m_RenderSystemPbrSA =
@@ -844,6 +850,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
+            m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry);
             // sprites
             m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
@@ -967,7 +974,9 @@ namespace GfxRenderEngine
             "bloomUp.vert",
             "bloomUp.frag",
             "bloomDown.vert",
-            "bloomDown.frag"
+            "bloomDown.frag",
+            "water1.vert",
+            "water1.frag"
         };
         // clang-format on
 

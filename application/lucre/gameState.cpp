@@ -55,7 +55,7 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        SetNextState(State::VOLCANO);
+        SetNextState(State::RESERVED0);
     }
 
     void GameState::Stop()

@@ -39,6 +39,7 @@
 #include "systems/VKspriteRenderSys2D.h"
 #include "systems/VKdebugRenderSys.h"
 #include "systems/VKlightSys.h"
+#include "systems/VKwater1Sys.h"
 #include "systems/VKguiRenderSys.h"
 
 #include "systems/VKpbrSys.h"
@@ -152,6 +153,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderPass> m_RenderPass;
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
+        std::unique_ptr<VK_RenderSystemWater1> m_RenderSystemWater1;
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
         std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;

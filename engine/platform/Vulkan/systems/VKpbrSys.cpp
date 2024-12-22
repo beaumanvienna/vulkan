@@ -97,7 +97,7 @@ namespace GfxRenderEngine
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.Get().view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
-            entt::exclude<SkeletalAnimationTag, GrassTag>);
+            entt::exclude<SkeletalAnimationTag, GrassTag, TerrainTag>);
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);

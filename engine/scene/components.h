@@ -228,4 +228,15 @@ namespace GfxRenderEngine
     {
         uint m_InstanceCount{0};
     };
+
+    struct Water1Component
+    {
+        glm::vec3 m_Scale;
+        glm::vec3 m_Translation;
+    };
+
+    struct TerrainTag
+    {
+        uint m_TerrainID;
+    };
 } // namespace GfxRenderEngine

@@ -105,6 +105,30 @@ namespace LucreApp
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
         }
+
+        {
+            m_Terrain1 = m_Dictionary.Retrieve("SL::application/lucre/models/plane4.glb::0::root");
+            if (m_Terrain1 != entt::null)
+            {
+                Water1Component water1Component{.m_Scale = {25.0f, 1.0f, 50.0f}, .m_Translation = {0.0f, 2.0f, 0.0f}};
+                m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
+            }
+        }
+
+        {
+            auto terrain1 = m_Dictionary.Retrieve("SL::application/lucre/models/plane4.glb::0::Scene::mountains");
+            if (terrain1 != entt::null)
+            {
+                TerrainTag terrainTag{.m_TerrainID = 0};
+                m_Registry.emplace<TerrainTag>(terrain1, terrainTag);
+            }
+            auto terrain2 = m_Dictionary.Retrieve("SL::application/lucre/models/plane1.glb::0::Scene::mountains");
+            if (terrain2 != entt::null)
+            {
+                TerrainTag terrainTag{.m_TerrainID = 0};
+                m_Registry.emplace<TerrainTag>(terrain2, terrainTag);
+            }
+        }
     }
 
     void Reserved0Scene::Load()
@@ -177,6 +201,25 @@ namespace LucreApp
                 float far = 40.0f;
                 m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
+            }
+        }
+
+        {
+            m_Penguin =
+                m_Dictionary.Retrieve("SL::application/lucre/models/ice/penguin.glb::0::Scene::Linux Penguin (Left Leg)");
+            if (m_Penguin != entt::null)
+            {
+                if (m_Registry.all_of<SkeletalAnimationTag>(m_Penguin))
+                {
+                    auto& mesh = m_Registry.get<MeshComponent>(m_Penguin);
+                    SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                    animations.SetRepeatAll(true);
+                    animations.Start();
+                }
+                else
+                {
+                    LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Penguin));
+                }
             }
         }
     }
@@ -278,8 +321,8 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({4.8f, 80.229f, -137.9f});
-        cameraTransform.SetRotation({-0.445058959f, 3.122394032f, 0.0f});
+        cameraTransform.SetTranslation({4.027f, 0.817f, -10.658f});
+        cameraTransform.SetRotation({-0.074769905f, 3.11448769f, 0.0f});
 
         // global camera transform is not yet available
         // because UpdateTransformCache didn't run yet
