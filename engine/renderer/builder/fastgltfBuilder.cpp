@@ -599,17 +599,17 @@ namespace GfxRenderEngine
         m_MaterialTextures.resize(numMaterials);
 
         uint materialIndex = 0;
-        for (Material& material : m_Materials)
+        for (PbrMaterial& material : m_Materials)
         {
             fastgltf::Material& glTFMaterial = m_GltfAsset.materials[materialIndex];
-            Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
-            Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
+            PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material.m_PbrMaterialProperties;
+            PbrMaterial::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
 
             // diffuse color aka base color factor
             // used as constant color, if no diffuse texture is provided
             // else, multiplied in the shader with each sample from the diffuse texture
             {
-                pbrMaterial.m_DiffuseColor = glm::make_vec4(glTFMaterial.pbrData.baseColorFactor.data());
+                pbrMaterialProperties.m_DiffuseColor = glm::make_vec4(glTFMaterial.pbrData.baseColorFactor.data());
             }
 
             // diffuse map aka basecolor aka albedo
@@ -617,8 +617,8 @@ namespace GfxRenderEngine
             {
                 uint diffuseMapIndex = glTFMaterial.pbrData.baseColorTexture.value().textureIndex;
                 uint imageIndex = m_GltfAsset.textures[diffuseMapIndex].imageIndex.value();
-                materialTextures[Material::DIFFUSE_MAP_INDEX] = m_Textures[imageIndex];
-                pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = m_Textures[imageIndex];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
             }
 
             // normal map
@@ -626,15 +626,15 @@ namespace GfxRenderEngine
             {
                 uint normalMapIndex = glTFMaterial.normalTexture.value().textureIndex;
                 uint imageIndex = m_GltfAsset.textures[normalMapIndex].imageIndex.value();
-                materialTextures[Material::NORMAL_MAP_INDEX] = m_Textures[imageIndex];
-                pbrMaterial.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
-                pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                materialTextures[PbrMaterial::NORMAL_MAP_INDEX] = m_Textures[imageIndex];
+                pbrMaterialProperties.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_NORMAL_MAP;
             }
 
             // constant values for roughness and metallicness
             {
-                pbrMaterial.m_Roughness = glTFMaterial.pbrData.roughnessFactor;
-                pbrMaterial.m_Metallic = glTFMaterial.pbrData.metallicFactor;
+                pbrMaterialProperties.m_Roughness = glTFMaterial.pbrData.roughnessFactor;
+                pbrMaterialProperties.m_Metallic = glTFMaterial.pbrData.metallicFactor;
             }
 
             // texture for roughness and metallicness
@@ -642,14 +642,14 @@ namespace GfxRenderEngine
             {
                 int metallicRoughnessMapIndex = glTFMaterial.pbrData.metallicRoughnessTexture.value().textureIndex;
                 uint imageIndex = m_GltfAsset.textures[metallicRoughnessMapIndex].imageIndex.value();
-                materialTextures[Material::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[imageIndex];
-                pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
+                materialTextures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[imageIndex];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
             // emissive color and emissive strength
             {
-                pbrMaterial.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
-                pbrMaterial.m_EmissiveStrength = glTFMaterial.emissiveStrength;
+                pbrMaterialProperties.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                pbrMaterialProperties.m_EmissiveStrength = glTFMaterial.emissiveStrength;
             }
 
             // emissive texture
@@ -657,8 +657,8 @@ namespace GfxRenderEngine
             {
                 uint emissiveTextureIndex = glTFMaterial.emissiveTexture.value().textureIndex;
                 uint imageIndex = m_GltfAsset.textures[emissiveTextureIndex].imageIndex.value();
-                materialTextures[Material::EMISSIVE_MAP_INDEX] = m_Textures[imageIndex];
-                pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
+                materialTextures[PbrMaterial::EMISSIVE_MAP_INDEX] = m_Textures[imageIndex];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_EMISSIVE_MAP;
             }
 
             ++materialIndex;
@@ -695,7 +695,7 @@ namespace GfxRenderEngine
                 size_t materialIndex = glTFPrimitive.materialIndex.value();
                 CORE_ASSERT(materialIndex < m_Materials.size(),
                             "LoadVertexData: glTFPrimitive.materialIndex must be less than m_Materials.size()");
-                diffuseColor = m_Materials[materialIndex].m_PbrMaterial.m_DiffuseColor;
+                diffuseColor = m_Materials[materialIndex].m_PbrMaterialProperties.m_DiffuseColor;
             }
 
             // Vertices
@@ -940,7 +940,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material& material = submesh.m_Material;
+            PbrMaterial& material = submesh.m_Material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)

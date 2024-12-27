@@ -217,14 +217,14 @@ namespace GfxRenderEngine
                                     VK_Submesh const& submesh)
     {
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(Material::PbrMaterial), &submesh.m_Material.m_PbrMaterial);
+                           sizeof(PbrMaterial::PbrMaterialProperties), &submesh.m_Material.m_PbrMaterialProperties);
     }
 
     void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                          VK_Submesh const& submesh)
     {
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(Material::PbrMultiMaterial), &submesh.m_Material.m_PbrMaterial);
+                           sizeof(PbrMaterial::PbrMultiMaterial), &submesh.m_Material.m_PbrMaterialProperties);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)

@@ -95,20 +95,20 @@ namespace GfxRenderEngine
             else if (terrainAttributesKey == "material")
             {
                 CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::object), "type must be object");
-                Material::PbrMaterial& pbrMaterial = terrainSpec.m_PbrMaterial;
+                PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = terrainSpec.m_PbrMaterialProperties;
                 ondemand::object materialJSON = terrainAttributes.value();
                 for (auto materialComponent : materialJSON)
                 {
                     std::string_view materialComponentKey = materialComponent.unescaped_key();
                     if (materialComponentKey == "roughness")
                     {
-                        pbrMaterial.m_Roughness = materialComponent.value().get_double();
-                        terrainSpec.m_PbrMaterial.m_Roughness = pbrMaterial.m_Roughness;
+                        pbrMaterialProperties.m_Roughness = materialComponent.value().get_double();
+                        terrainSpec.m_PbrMaterialProperties.m_Roughness = pbrMaterialProperties.m_Roughness;
                     }
                     else if (materialComponentKey == "metallic")
                     {
-                        pbrMaterial.m_Metallic = materialComponent.value().get_double();
-                        terrainSpec.m_PbrMaterial.m_Metallic = pbrMaterial.m_Metallic;
+                        pbrMaterialProperties.m_Metallic = materialComponent.value().get_double();
+                        terrainSpec.m_PbrMaterialProperties.m_Metallic = pbrMaterialProperties.m_Metallic;
                     }
                     else
                     {

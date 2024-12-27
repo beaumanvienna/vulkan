@@ -32,7 +32,7 @@ namespace GfxRenderEngine
     class Texture;
     class Buffer;
     class MaterialDescriptor;
-    class Material
+    class PbrMaterial
     {
     public:
         enum TextureIndices
@@ -47,7 +47,7 @@ namespace GfxRenderEngine
         };
 
         // fixed-size array for material textures
-        typedef std::array<std::shared_ptr<Texture>, Material::NUM_TEXTURES> MaterialTextures;
+        typedef std::array<std::shared_ptr<Texture>, NUM_TEXTURES> MaterialTextures;
 
         enum MaterialFeatures // bitset
         {
@@ -60,7 +60,7 @@ namespace GfxRenderEngine
             HAS_EMISSIVE_MAP = GLSL_HAS_EMISSIVE_MAP
         };
 
-        struct PbrMaterial
+        struct PbrMaterialProperties
         { // align data to blocks of 16 bytes
             // byte 0 to 15
             uint m_Features{0};
@@ -84,13 +84,13 @@ namespace GfxRenderEngine
             // byte 64 to 128
             glm::vec4 m_Spare4[4];
         };
-        using PbrMultiMaterial = PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
+        using PbrMultiMaterial = PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
 
     public:
-        PbrMaterial m_PbrMaterial;
+        PbrMaterialProperties m_PbrMaterialProperties;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
         MaterialTextures m_MaterialTextures;
     };
-    using MultiMaterial = Material[GLSL_NUM_MULTI_MATERIAL];
+    using MultiMaterial = PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 
 } // namespace GfxRenderEngine

@@ -46,7 +46,7 @@ namespace GfxRenderEngine
     class Buffer;
     class Dictionary;
     class InstanceBuffer;
-    class Material;
+    class PbrMaterial;
     class Scene;
     class SceneGraph;
     class SkeletalAnimations;
@@ -119,8 +119,8 @@ namespace GfxRenderEngine
         std::string m_DictionaryPrefix;
         fastgltf::Asset m_GltfAsset;
         std::vector<std::shared_ptr<Model>> m_Models;
-        std::vector<Material> m_Materials;
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<PbrMaterial> m_Materials;
+        std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
 
         // scene graph

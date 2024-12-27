@@ -311,9 +311,9 @@ namespace GfxRenderEngine
     void UFbxBuilder::LoadMaterial(const ufbx_material* fbxMaterial, ufbx_material_pbr_map materialProperty,
                                    int materialIndex)
     {
-        Material& material = m_Materials[materialIndex];
-        Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
-        Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
+        PbrMaterial& material = m_Materials[materialIndex];
+        PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material.m_PbrMaterialProperties;
+        PbrMaterial::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
         switch (materialProperty)
         {
             case UFBX_MATERIAL_PBR_BASE_COLOR: // aka albedo aka diffuse color
@@ -327,20 +327,20 @@ namespace GfxRenderEngine
                     {
                         if (auto texture = LoadTexture(materialMap, Texture::USE_SRGB))
                         {
-                            materialTextures[Material::DIFFUSE_MAP_INDEX] = texture;
-                            pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
-                            pbrMaterial.m_DiffuseColor.r = baseFactor;
-                            pbrMaterial.m_DiffuseColor.g = baseFactor;
-                            pbrMaterial.m_DiffuseColor.b = baseFactor;
-                            pbrMaterial.m_DiffuseColor.a = baseFactor;
+                            materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = texture;
+                            pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
+                            pbrMaterialProperties.m_DiffuseColor.r = baseFactor;
+                            pbrMaterialProperties.m_DiffuseColor.g = baseFactor;
+                            pbrMaterialProperties.m_DiffuseColor.b = baseFactor;
+                            pbrMaterialProperties.m_DiffuseColor.a = baseFactor;
                         }
                     }
                     else // constant material property
                     {
-                        pbrMaterial.m_DiffuseColor.r = materialMap.value_vec4.x * baseFactor;
-                        pbrMaterial.m_DiffuseColor.g = materialMap.value_vec4.y * baseFactor;
-                        pbrMaterial.m_DiffuseColor.b = materialMap.value_vec4.z * baseFactor;
-                        pbrMaterial.m_DiffuseColor.a = materialMap.value_vec4.w * baseFactor;
+                        pbrMaterialProperties.m_DiffuseColor.r = materialMap.value_vec4.x * baseFactor;
+                        pbrMaterialProperties.m_DiffuseColor.g = materialMap.value_vec4.y * baseFactor;
+                        pbrMaterialProperties.m_DiffuseColor.b = materialMap.value_vec4.z * baseFactor;
+                        pbrMaterialProperties.m_DiffuseColor.a = materialMap.value_vec4.w * baseFactor;
                     }
                 }
                 break;
@@ -354,13 +354,13 @@ namespace GfxRenderEngine
                     {
                         if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
                         {
-                            materialTextures[Material::ROUGHNESS_MAP_INDEX] = texture;
-                            pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
+                            materialTextures[PbrMaterial::ROUGHNESS_MAP_INDEX] = texture;
+                            pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_MAP;
                         }
                     }
                     else // constant material property
                     {
-                        pbrMaterial.m_Roughness = materialMap.value_real;
+                        pbrMaterialProperties.m_Roughness = materialMap.value_real;
                     }
                 }
                 break;
@@ -374,13 +374,13 @@ namespace GfxRenderEngine
                     {
                         if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
                         {
-                            materialTextures[Material::METALLIC_MAP_INDEX] = texture;
-                            pbrMaterial.m_Features |= Material::HAS_METALLIC_MAP;
+                            materialTextures[PbrMaterial::METALLIC_MAP_INDEX] = texture;
+                            pbrMaterialProperties.m_Features |= PbrMaterial::HAS_METALLIC_MAP;
                         }
                     }
                     else // constant material property
                     {
-                        pbrMaterial.m_Metallic = materialMap.value_real;
+                        pbrMaterialProperties.m_Metallic = materialMap.value_real;
                     }
                 }
                 break;
@@ -392,8 +392,8 @@ namespace GfxRenderEngine
                 {
                     if (auto texture = LoadTexture(materialMap, Texture::USE_UNORM))
                     {
-                        materialTextures[Material::NORMAL_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                        materialTextures[PbrMaterial::NORMAL_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_NORMAL_MAP;
                     }
                 }
                 break;
@@ -405,15 +405,15 @@ namespace GfxRenderEngine
                 {
                     if (auto texture = LoadTexture(materialMap, Texture::USE_SRGB))
                     {
-                        materialTextures[Material::EMISSIVE_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
-                        pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
+                        materialTextures[PbrMaterial::EMISSIVE_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_EMISSIVE_MAP;
+                        pbrMaterialProperties.m_EmissiveColor = glm::vec3(1.0f);
                     }
                 }
                 else
                 {
                     glm::vec3 emissiveColor(materialMap.value_vec3.x, materialMap.value_vec3.y, materialMap.value_vec3.z);
-                    pbrMaterial.m_EmissiveColor = emissiveColor;
+                    pbrMaterialProperties.m_EmissiveColor = emissiveColor;
                 }
                 break;
             }
@@ -422,7 +422,7 @@ namespace GfxRenderEngine
                 ufbx_material_map const& materialMap = fbxMaterial->pbr.emission_factor;
                 if (materialMap.has_value)
                 {
-                    pbrMaterial.m_EmissiveStrength = materialMap.value_real;
+                    pbrMaterialProperties.m_EmissiveStrength = materialMap.value_real;
                 }
                 break;
             }
@@ -692,7 +692,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material& material = submesh.m_Material;
+            PbrMaterial& material = submesh.m_Material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)

@@ -53,7 +53,7 @@ namespace GfxRenderEngine
 
         void LoadMaterials();
         std::shared_ptr<Texture> LoadTexture(std::string const& filepath, bool useSRGB);
-        void LoadProperties(const aiMaterial* fbxMaterial, Material::PbrMaterial& pbrMaterial);
+        void LoadProperties(const aiMaterial* fbxMaterial, PbrMaterial::PbrMaterialProperties& pbrMaterialProperties);
         void LoadMap(const aiMaterial* fbxMaterial, aiTextureType textureType, int materialIndex);
         void AssignMaterial(Submesh& submesh, int const materialIndex);
         glm::mat4 LoadTransformationMatrix(const aiNode* fbxNodePtr);
@@ -71,9 +71,9 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         std::string m_DictionaryPrefix;
         const aiScene* m_FbxScene;
-        std::vector<Material> m_Materials;
+        std::vector<PbrMaterial> m_Materials;
         std::vector<std::shared_ptr<Texture>> m_Textures;
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;
         std::shared_ptr<InstanceBuffer> m_InstanceBuffer;

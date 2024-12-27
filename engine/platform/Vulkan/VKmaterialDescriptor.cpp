@@ -32,7 +32,7 @@ namespace GfxRenderEngine
 {
 
     VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
-                                                 Material::MaterialTextures& textures)
+                                                 PbrMaterial::MaterialTextures& textures)
         : m_MaterialType{materialType}
     {
         switch (materialType)
@@ -50,14 +50,15 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture> metallicMap;
                 std::shared_ptr<Texture>& dummy = textureAtlas;
 
-                diffuseMap = textures[Material::DIFFUSE_MAP_INDEX] ? textures[Material::DIFFUSE_MAP_INDEX] : dummy;
-                normalMap = textures[Material::NORMAL_MAP_INDEX] ? textures[Material::NORMAL_MAP_INDEX] : dummy;
-                roughnessMetallicMap = textures[Material::ROUGHNESS_METALLIC_MAP_INDEX]
-                                           ? textures[Material::ROUGHNESS_METALLIC_MAP_INDEX]
+                diffuseMap = textures[PbrMaterial::DIFFUSE_MAP_INDEX] ? textures[PbrMaterial::DIFFUSE_MAP_INDEX] : dummy;
+                normalMap = textures[PbrMaterial::NORMAL_MAP_INDEX] ? textures[PbrMaterial::NORMAL_MAP_INDEX] : dummy;
+                roughnessMetallicMap = textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
+                                           ? textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
                                            : dummy;
-                emissiveMap = textures[Material::EMISSIVE_MAP_INDEX] ? textures[Material::EMISSIVE_MAP_INDEX] : dummy;
-                roughnessMap = textures[Material::ROUGHNESS_MAP_INDEX] ? textures[Material::ROUGHNESS_MAP_INDEX] : dummy;
-                metallicMap = textures[Material::METALLIC_MAP_INDEX] ? textures[Material::METALLIC_MAP_INDEX] : dummy;
+                emissiveMap = textures[PbrMaterial::EMISSIVE_MAP_INDEX] ? textures[PbrMaterial::EMISSIVE_MAP_INDEX] : dummy;
+                roughnessMap =
+                    textures[PbrMaterial::ROUGHNESS_MAP_INDEX] ? textures[PbrMaterial::ROUGHNESS_MAP_INDEX] : dummy;
+                metallicMap = textures[PbrMaterial::METALLIC_MAP_INDEX] ? textures[PbrMaterial::METALLIC_MAP_INDEX] : dummy;
 
                 {
                     auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();

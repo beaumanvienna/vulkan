@@ -28,7 +28,7 @@
 namespace GfxRenderEngine
 {
     std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialTypes,
-                                                                   Material::MaterialTextures& textures)
+                                                                   PbrMaterial::MaterialTextures& textures)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
 

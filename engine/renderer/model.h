@@ -102,7 +102,7 @@ namespace GfxRenderEngine
         uint m_IndexCount;
         uint m_VertexCount;
         uint m_InstanceCount;
-        Material m_Material;
+        PbrMaterial m_Material;
         Resources m_Resources;
     };
 

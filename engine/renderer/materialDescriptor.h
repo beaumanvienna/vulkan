@@ -50,7 +50,7 @@ namespace GfxRenderEngine
         virtual ~MaterialDescriptor() = default;
 
         static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
-                                                          Material::MaterialTextures& textures);
+                                                          PbrMaterial::MaterialTextures& textures);
         static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 
