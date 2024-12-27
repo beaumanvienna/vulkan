@@ -117,8 +117,9 @@ namespace LucreApp
             auto terrain = m_Dictionary.Retrieve("SL::application/lucre/models/terrain/terrain1.glb::0::Scene::terrain");
             if (terrain != entt::null)
             {
-                TerrainTag terrainTag{.m_TerrainID = 0};
-                m_Registry.emplace<TerrainTag>(terrain, terrainTag);
+                m_Registry.remove<PbrMaterialTag>(terrain);
+                PbrMultiMaterialTag pbrMultiMaterialTag{};
+                m_Registry.emplace<PbrMultiMaterialTag>(terrain, pbrMultiMaterialTag);
             }
         }
     }

@@ -113,7 +113,7 @@ namespace GfxRenderEngine
             {
                 case MaterialDescriptor::MaterialType::MtPbr:
                 {
-                    m_SubmeshesPbrMap.push_back(vkSubmesh);
+                    m_SubmeshesPbr.push_back(vkSubmesh);
                     break;
                 }
                 case MaterialDescriptor::MaterialType::MtCubemap:
@@ -220,6 +220,13 @@ namespace GfxRenderEngine
                            sizeof(Material::PbrMaterial), &submesh.m_Material.m_PbrMaterial);
     }
 
+    void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                         VK_Submesh const& submesh)
+    {
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(Material::PbrMultiMaterial), &submesh.m_Material.m_PbrMaterial);
+    }
+
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
         if (m_HasIndexBuffer)
@@ -268,7 +275,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
@@ -276,9 +283,19 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for (auto& submesh : m_SubmeshesPbr)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
+            PushConstantsPbrMulti(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
     void VK_Model::DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
@@ -295,7 +312,7 @@ namespace GfxRenderEngine
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                        const VkDescriptorSet& shadowDescriptorSet)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }

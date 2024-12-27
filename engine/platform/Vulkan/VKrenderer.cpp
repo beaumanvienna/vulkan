@@ -123,6 +123,23 @@ namespace GfxRenderEngine
                                                                     VK_SHADER_STAGE_FRAGMENT_BIT) // metallic map
                                                         .Build();
 
+        m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti] =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL) // diffuse color map
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL) // normal map
+                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL) // roughness metallic map
+                .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL) // emissive map
+                .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL) // roughness map
+                .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
+                            MaterialDescriptor::NUM_MULTI_MATERIAL)                                     // metallic map
+                .AddBinding(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // control texture
+                .Build();
+
         m_ResourceDescriptorSetLayouts[Rt::RtInstance] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader data for instances
@@ -180,6 +197,11 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrMultiMaterial = {
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti]->GetDescriptorSetLayout(),
             m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGrass = {
@@ -268,6 +290,9 @@ namespace GfxRenderEngine
 
         m_RenderSystemWater1 =
             std::make_unique<VK_RenderSystemWater1>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsWater1);
+
+        m_RenderSystemPbrMultiMaterial = std::make_unique<VK_RenderSystemPbrMultiMaterial>(
+            m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrMultiMaterial);
 
         m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
         m_RenderSystemPbrSA =
@@ -835,6 +860,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry);
         }
     }
 
@@ -976,7 +1002,9 @@ namespace GfxRenderEngine
             "bloomDown.vert",
             "bloomDown.frag",
             "water1.vert",
-            "water1.frag"
+            "water1.frag",
+            "pbrMultiMaterial.vert",
+            "pbrMultiMaterial.frag"
         };
         // clang-format on
 

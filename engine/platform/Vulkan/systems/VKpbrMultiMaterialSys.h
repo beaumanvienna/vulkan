@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -23,38 +23,39 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "renderer/texture.h"
-#include "renderer/cubemap.h"
-#include "scene/material.h"
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
+#include "VKdevice.h"
+#include "VKpipeline.h"
+#include "VKframeInfo.h"
+#include "VKdescriptor.h"
 
 namespace GfxRenderEngine
 {
-
-    class MaterialDescriptor
+    class VK_RenderSystemPbrMultiMaterial
     {
-    public:
-        enum MaterialType
-        {
-            MtPbr = 0,
-            MtCubemap,
-            MtDiffuse,
-            MtPbrMulti,
-            NUM_TYPES
-        };
-
-        static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
 
     public:
-        virtual ~MaterialDescriptor() = default;
+        VK_RenderSystemPbrMultiMaterial(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemPbrMultiMaterial();
 
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
-                                                          Material::MaterialTextures& textures);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
-                                                          std::shared_ptr<Cubemap> const& cubemap);
+        VK_RenderSystemPbrMultiMaterial(const VK_RenderSystemPbrMultiMaterial&) = delete;
+        VK_RenderSystemPbrMultiMaterial& operator=(const VK_RenderSystemPbrMultiMaterial&) = delete;
 
-    public:
-        virtual MaterialDescriptor::MaterialType GetMaterialType() const = 0;
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+
+    private:
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
     };
 } // namespace GfxRenderEngine

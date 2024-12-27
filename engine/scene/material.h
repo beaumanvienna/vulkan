@@ -84,11 +84,13 @@ namespace GfxRenderEngine
             // byte 64 to 128
             glm::vec4 m_Spare4[4];
         };
+        using PbrMultiMaterial = PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 
     public:
         PbrMaterial m_PbrMaterial;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
         MaterialTextures m_MaterialTextures;
     };
+    using MultiMaterial = Material[GLSL_NUM_MULTI_MATERIAL];
 
 } // namespace GfxRenderEngine

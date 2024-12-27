@@ -45,6 +45,7 @@
 #include "systems/VKpbrSys.h"
 #include "systems/VKpbrSASys.h"
 #include "systems/VKgrassSys.h"
+#include "systems/VKpbrMultiMaterialSys.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
@@ -154,6 +155,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
         std::unique_ptr<VK_RenderSystemWater1> m_RenderSystemWater1;
+        std::unique_ptr<VK_RenderSystemPbrMultiMaterial> m_RenderSystemPbrMultiMaterial;
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
         std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;
