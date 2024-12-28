@@ -797,7 +797,8 @@ namespace GfxRenderEngine
                 if (orientation_ == ORIENT_HORIZONTAL)
                 {
                     MeasureSpec v = MeasureSpec(AT_MOST, measuredHeight_ - margins.vert());
-                    if (measuredHeight_ == 0.0f && (vert.type == UNSPECIFIED || layoutParams_->height == WRAP_CONTENT))
+                    if (measuredHeight_ == 0.0f &&
+                        (vert.type == UNSPECIFIED || layoutParams_->height == static_cast<float>(WRAP_CONTENT)))
                     {
                         v.type = UNSPECIFIED;
                     }
@@ -807,7 +808,8 @@ namespace GfxRenderEngine
                 else
                 {
                     MeasureSpec h = MeasureSpec(AT_MOST, measuredWidth_ - margins.horiz());
-                    if (measuredWidth_ == 0.0f && (horiz.type == UNSPECIFIED || layoutParams_->width == WRAP_CONTENT))
+                    if (measuredWidth_ == 0.0f &&
+                        (horiz.type == UNSPECIFIED || layoutParams_->width == static_cast<float>(WRAP_CONTENT)))
                     {
                         h.type = UNSPECIFIED;
                     }
@@ -1143,8 +1145,10 @@ namespace GfxRenderEngine
 
             MeasureViews(dc, horiz, vert);
 
-            const bool unspecifiedWidth = layoutParams_->width == WRAP_CONTENT && (overflow_ || horiz.type == UNSPECIFIED);
-            const bool unspecifiedHeight = layoutParams_->height == WRAP_CONTENT && (overflow_ || vert.type == UNSPECIFIED);
+            const bool unspecifiedWidth =
+                layoutParams_->width == static_cast<float>(WRAP_CONTENT) && (overflow_ || horiz.type == UNSPECIFIED);
+            const bool unspecifiedHeight =
+                layoutParams_->height == static_cast<float>(WRAP_CONTENT) && (overflow_ || vert.type == UNSPECIFIED);
             if (unspecifiedWidth || unspecifiedHeight)
             {
                 MeasureSpec h = unspecifiedWidth ? MeasureSpec(AT_MOST, measuredWidth_) : horiz;
@@ -1204,11 +1208,11 @@ namespace GfxRenderEngine
 
                 views_[i]->Measure(dc, specW, specH);
 
-                if (layoutParams_->width == WRAP_CONTENT)
+                if (layoutParams_->width == static_cast<float>(WRAP_CONTENT))
                 {
                     measuredWidth_ = std::max(measuredWidth_, views_[i]->GetMeasuredWidth());
                 }
-                if (layoutParams_->height == WRAP_CONTENT)
+                if (layoutParams_->height == static_cast<float>(WRAP_CONTENT))
                 {
                     measuredHeight_ = std::max(measuredHeight_, views_[i]->GetMeasuredHeight());
                 }

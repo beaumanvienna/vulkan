@@ -34,7 +34,7 @@
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/builder/ufbxBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 #include "scene/scene.h"
 
 #include "VKdevice.h"

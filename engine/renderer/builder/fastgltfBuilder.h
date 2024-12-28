@@ -31,7 +31,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 
 #include "scene/gltf.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 #include "scene/registry.h"
 #include "renderer/model.h"
 #include "renderer/resourceDescriptor.h"

@@ -189,10 +189,11 @@ namespace GfxRenderEngine
             Submesh submesh{};
             submesh.m_FirstVertex = 0;
             submesh.m_VertexCount = VERTEX_COUNT;
-
+            auto material = std::make_shared<PbrMaterial>();
+            submesh.m_Material = material;
             { // create material descriptor
-                auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtCubemap, m_Cubemaps[0]);
-                submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                auto materialDescriptor = MaterialDescriptor::Create(Material::MtCubemap, m_Cubemaps[0]);
+                material->m_MaterialDescriptor = materialDescriptor;
             }
 
             m_Submeshes.push_back(submesh);

@@ -116,7 +116,7 @@ namespace GfxRenderEngine
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
-        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
+        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(Material::MaterialType materialType);
         VK_DescriptorSetLayout& GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourceType);
         virtual std::shared_ptr<Texture> GetTextureAtlas() override;
 
@@ -189,7 +189,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
         // material descriptor set layouts
-        using Mt = MaterialDescriptor::MaterialType;
+        using Mt = Material::MaterialType;
         std::array<std::unique_ptr<VK_DescriptorSetLayout>, Mt::NUM_TYPES> m_MaterialDescriptorSetLayouts;
         // resource descriptor set layouts
         using Rt = ResourceDescriptor::ResourceType;

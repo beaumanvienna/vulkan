@@ -27,7 +27,7 @@
 #include "engine.h"
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 
 namespace GfxRenderEngine
 {
@@ -35,26 +35,14 @@ namespace GfxRenderEngine
     class MaterialDescriptor
     {
     public:
-        enum MaterialType
-        {
-            MtPbr = 0,
-            MtCubemap,
-            MtDiffuse,
-            MtPbrMulti,
-            NUM_TYPES
-        };
-
-        static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
-
-    public:
         virtual ~MaterialDescriptor() = default;
 
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
+        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           PbrMaterial::MaterialTextures& textures);
-        static std::shared_ptr<MaterialDescriptor> Create(MaterialDescriptor::MaterialType materialTypes,
+        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 
     public:
-        virtual MaterialDescriptor::MaterialType GetMaterialType() const = 0;
+        virtual Material::MaterialType GetMaterialType() const = 0;
     };
 } // namespace GfxRenderEngine

@@ -823,18 +823,19 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            PbrMaterial& material = submesh.m_Material;
+            auto material = std::make_shared<PbrMaterial>();
+            submesh.m_Material = material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)
             {
-                material = m_Materials[materialIndex];
-                material.m_MaterialTextures = m_MaterialTextures[materialIndex];
+                *material = m_Materials[materialIndex];
+                material->m_MaterialTextures = m_MaterialTextures[materialIndex];
             }
 
             // create material descriptor
-            material.m_MaterialDescriptor =
-                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, material.m_MaterialTextures);
+            material->m_MaterialDescriptor =
+                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
         }
 
         { // resources

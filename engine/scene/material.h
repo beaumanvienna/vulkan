@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,75 +22,27 @@
 
 #pragma once
 
-#include <memory>
-
-#include "engine/platform/Vulkan/material.h"
 #include "engine.h"
+#include "engine/platform/Vulkan/material.h"
 
 namespace GfxRenderEngine
 {
-    class Texture;
-    class Buffer;
+
     class MaterialDescriptor;
-    class PbrMaterial
+    class Material
     {
     public:
-        enum TextureIndices
+        enum MaterialType
         {
-            DIFFUSE_MAP_INDEX = 0,
-            NORMAL_MAP_INDEX,
-            ROUGHNESS_MAP_INDEX,
-            METALLIC_MAP_INDEX,
-            ROUGHNESS_METALLIC_MAP_INDEX,
-            EMISSIVE_MAP_INDEX,
-            NUM_TEXTURES
+            MtPbr = 0,
+            MtCubemap,
+            MtDiffuse,
+            MtPbrMulti,
+            NUM_TYPES
         };
 
-        // fixed-size array for material textures
-        typedef std::array<std::shared_ptr<Texture>, NUM_TEXTURES> MaterialTextures;
-
-        enum MaterialFeatures // bitset
-        {
-            HAS_DIFFUSE_MAP = GLSL_HAS_DIFFUSE_MAP,
-            HAS_NORMAL_MAP = GLSL_HAS_NORMAL_MAP,
-            HAS_ROUGHNESS_MAP = GLSL_HAS_ROUGHNESS_MAP,
-            HAS_METALLIC_MAP = GLSL_HAS_METALLIC_MAP,
-            HAS_ROUGHNESS_METALLIC_MAP = GLSL_HAS_ROUGHNESS_METALLIC_MAP,
-            HAS_EMISSIVE_COLOR = GLSL_HAS_EMISSIVE_COLOR,
-            HAS_EMISSIVE_MAP = GLSL_HAS_EMISSIVE_MAP
-        };
-
-        struct PbrMaterialProperties
-        { // align data to blocks of 16 bytes
-            // byte 0 to 15
-            uint m_Features{0};
-            float m_Roughness{0.0f};
-            float m_Metallic{0.0f};
-            float m_Spare0{0.0f}; // padding
-
-            // byte 16 to 31
-            glm::vec4 m_DiffuseColor{1.0f, 1.0f, 1.0f, 1.0f};
-
-            // byte 32 to 47
-            glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
-            float m_EmissiveStrength{1.0f};
-
-            // byte 48 to 63
-            float m_NormalMapIntensity{1.0f};
-            float m_Spare1{0.0f}; // padding
-            float m_Spare2{0.0f}; // padding
-            float m_Spare3{0.0f}; // padding
-
-            // byte 64 to 128
-            glm::vec4 m_Spare4[4];
-        };
-        using PbrMultiMaterial = PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
-
-    public:
-        PbrMaterialProperties m_PbrMaterialProperties;
+        static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
-        MaterialTextures m_MaterialTextures;
     };
-    using MultiMaterial = PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 
 } // namespace GfxRenderEngine

@@ -248,13 +248,15 @@ namespace GfxRenderEngine
                     submesh.m_VertexCount = m_Vertices.size();
                     submesh.m_InstanceCount = instanceCount;
 
-                    submesh.m_Material.m_PbrMaterialProperties = terrainSpec.m_PbrMaterialProperties;
+                    auto material = std::make_shared<PbrMaterial>();
+                    material->m_PbrMaterialProperties = terrainSpec.m_PbrMaterialProperties;
+                    submesh.m_Material = material;
 
                     { // create material descriptor
                         PbrMaterial::MaterialTextures materialTextures;
 
-                        auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
-                        submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                        auto materialDescriptor = MaterialDescriptor::Create(Material::MtPbr, materialTextures);
+                        material->m_MaterialDescriptor = materialDescriptor;
                     }
                     { // create resource descriptor
                         Resources::ResourceBuffers resourceBuffers;

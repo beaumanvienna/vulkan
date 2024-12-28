@@ -96,7 +96,7 @@ namespace GfxRenderEngine
     VK_Submesh::VK_Submesh(Submesh const& submesh)
         : Submesh{submesh.m_FirstIndex,    submesh.m_FirstVertex, submesh.m_IndexCount, submesh.m_VertexCount,
                   submesh.m_InstanceCount, submesh.m_Material,    submesh.m_Resources},
-          m_MaterialDescriptor(submesh.m_Material.m_MaterialDescriptor),
+          m_MaterialDescriptor(submesh.m_Material->m_MaterialDescriptor),
           m_ResourceDescriptor(submesh.m_Resources.m_ResourceDescriptor)
     {
     }
@@ -107,16 +107,16 @@ namespace GfxRenderEngine
         {
             VK_Submesh vkSubmesh(submesh);
 
-            MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+            Material::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
 
             switch (materialType)
             {
-                case MaterialDescriptor::MaterialType::MtPbr:
+                case Material::MaterialType::MtPbr:
                 {
                     m_SubmeshesPbr.push_back(vkSubmesh);
                     break;
                 }
-                case MaterialDescriptor::MaterialType::MtCubemap:
+                case Material::MaterialType::MtCubemap:
                 {
                     m_SubmeshesCubemap.push_back(vkSubmesh);
                     break;
@@ -216,15 +216,17 @@ namespace GfxRenderEngine
     void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                     VK_Submesh const& submesh)
     {
+        auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PbrMaterial::PbrMaterialProperties), &submesh.m_Material.m_PbrMaterialProperties);
+                           sizeof(PbrMaterial::PbrMaterialProperties), &pbrMaterialProperties);
     }
 
     void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                          VK_Submesh const& submesh)
     {
+        auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PbrMaterial::PbrMultiMaterial), &submesh.m_Material.m_PbrMaterialProperties);
+                           sizeof(PbrMaterial::PbrMultiMaterial), &pbrMaterialProperties);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)

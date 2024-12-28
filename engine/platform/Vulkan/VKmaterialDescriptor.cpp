@@ -31,13 +31,13 @@
 namespace GfxRenderEngine
 {
 
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
                                                  PbrMaterial::MaterialTextures& textures)
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialType::MtPbr:
+            case Material::MaterialType::MtPbr:
             {
                 auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
                 auto textureAtlas = renderer->gTextureAtlas;
@@ -87,13 +87,13 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
                                                  std::shared_ptr<Cubemap> const& cubemap)
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialType::MtCubemap:
+            case Material::MaterialType::MtCubemap:
             {
                 VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
 
@@ -128,12 +128,11 @@ namespace GfxRenderEngine
 
     VK_MaterialDescriptor::~VK_MaterialDescriptor() {}
 
-    MaterialDescriptor::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
+    Material::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
 
     const VkDescriptorSet& VK_MaterialDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
 
-    VK_DescriptorSetLayout&
-    VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType)
+    VK_DescriptorSetLayout& VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(Material::MaterialType materialType)
     {
         auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
         return renderer->GetMaterialDescriptorSetLayout(materialType);
