@@ -83,12 +83,14 @@ namespace GfxRenderEngine
             // byte 64 to 128
             glm::vec4 m_Spare4[4];
         };
-        using PbrMultiMaterial = PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
+
+    public:
+        virtual ~PbrMaterial() {}
+        [[nodiscard]] virtual MaterialType GetType() const { return MaterialType::MtPbr; }
 
     public:
         PbrMaterialProperties m_PbrMaterialProperties;
         MaterialTextures m_MaterialTextures;
     };
-    using MultiMaterial = PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 
 } // namespace GfxRenderEngine

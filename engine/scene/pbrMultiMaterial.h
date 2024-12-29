@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,38 +22,32 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <memory>
 
-#include "renderer/materialDescriptor.h"
-#include "VKdescriptor.h"
+#include "engine/scene/material.h"
+#include "engine/scene/pbrMaterial.h"
 
 namespace GfxRenderEngine
 {
-    class VK_Renderer;
-    class VK_MaterialDescriptor : public MaterialDescriptor
+    class PbrMultiMaterial : public Material
     {
+    public:
+        struct PbrMultiMaterialProperties
+        {
+            PbrMaterial::PbrMaterialProperties m_PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
+        };
+        struct PbrMultiMaterialTextures
+        {
+            PbrMaterial::MaterialTextures m_MaterialTextures[GLSL_NUM_MULTI_MATERIAL];
+        };
 
     public:
-        VK_MaterialDescriptor(Material::MaterialType materialType, PbrMaterial::MaterialTextures& textures);
-        VK_MaterialDescriptor(Material::MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
-
-        VK_MaterialDescriptor(Material::MaterialType materialType, PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures,
-                              std::shared_ptr<Texture>& controlTexture);
-
-        VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
-        VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor);
-
-        virtual ~VK_MaterialDescriptor();
+        virtual ~PbrMultiMaterial() {}
+        [[nodiscard]] virtual MaterialType GetType() const { return MaterialType::MtPbrMulti; }
 
     public:
-        virtual Material::MaterialType GetMaterialType() const override;
-        const VkDescriptorSet& GetDescriptorSet() const;
-
-    private:
-        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(Material::MaterialType materialType);
-
-    private:
-        Material::MaterialType m_MaterialType;
-        VkDescriptorSet m_DescriptorSet{nullptr};
+        PbrMultiMaterialProperties m_PbrMultiMaterialProperties;
+        PbrMultiMaterialTextures m_PbrMultiMaterialTextures;
     };
+
 } // namespace GfxRenderEngine

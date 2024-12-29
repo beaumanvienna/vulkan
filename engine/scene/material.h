@@ -41,6 +41,11 @@ namespace GfxRenderEngine
             NUM_TYPES
         };
 
+    public:
+        virtual ~Material() {}
+        [[nodiscard]] virtual MaterialType GetType() const = 0;
+
+    public:
         static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
     };

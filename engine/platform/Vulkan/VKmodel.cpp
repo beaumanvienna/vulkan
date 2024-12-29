@@ -107,13 +107,18 @@ namespace GfxRenderEngine
         {
             VK_Submesh vkSubmesh(submesh);
 
-            Material::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+            Material::MaterialType materialType = vkSubmesh.m_Material->GetType();
 
             switch (materialType)
             {
                 case Material::MaterialType::MtPbr:
                 {
                     m_SubmeshesPbr.push_back(vkSubmesh);
+                    break;
+                }
+                case Material::MaterialType::MtPbrMulti:
+                {
+                    m_SubmeshesPbrMulti.push_back(vkSubmesh);
                     break;
                 }
                 case Material::MaterialType::MtCubemap:
@@ -224,9 +229,12 @@ namespace GfxRenderEngine
     void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                          VK_Submesh const& submesh)
     {
-        auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
+        auto pbrMultiMaterial = static_cast<PbrMultiMaterial*>(submesh.m_Material.get());
+        CORE_ASSERT(pbrMultiMaterial->GetType() == Material::MaterialType::MtPbrMulti,
+                    "material must be MaterialType::MtPbrMulti");
+        auto& pbrMultiMaterialProperties = pbrMultiMaterial->m_PbrMultiMaterialProperties;
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PbrMaterial::PbrMultiMaterial), &pbrMaterialProperties);
+                           sizeof(PbrMultiMaterial::PbrMultiMaterialProperties), &pbrMultiMaterialProperties);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)

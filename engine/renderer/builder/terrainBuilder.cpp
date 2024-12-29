@@ -181,9 +181,48 @@ namespace GfxRenderEngine
         return true;
     }
 
+    bool TerrainBuilder::LoadMesh(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
+    {
+        bool meshFound = !terrainSpec.m_FilepathMesh.empty() && // 3D model for terrain provided?
+                         EngineCore::FileExists(terrainSpec.m_FilepathMesh) &&
+                         !EngineCore::IsDirectory(terrainSpec.m_FilepathMesh);
+        if (!meshFound)
+        {
+            return false;
+        }
+        bool controlTextureFound = !terrainSpec.m_FilepathControlTexture.empty() && // control texture provided?
+                                   EngineCore::FileExists(terrainSpec.m_FilepathControlTexture) &&
+                                   !EngineCore::IsDirectory(terrainSpec.m_FilepathControlTexture);
+        if (!controlTextureFound)
+        {
+            return false;
+        }
+
+        auto controlTexture = Texture::Create();
+        controlTexture->Init(terrainSpec.m_FilepathControlTexture, true);
+
+        auto material = std::make_shared<PbrMultiMaterial>();
+        FastgltfBuilder fastgltfBuilder(terrainSpec.m_FilepathMesh, scene, material);
+        fastgltfBuilder.Load(instanceCount);
+
+        // create material descriptor
+        material->m_MaterialDescriptor =                                     //
+            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti,   //
+                                       material->m_PbrMultiMaterialTextures, //
+                                       controlTexture);
+
+        return true;
+    }
+
     bool TerrainBuilder::LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
         ZoneScopedNC("TerrainBuilder::LoadTerrain", 0xFF0000);
+
+        if (LoadMesh(scene, instanceCount, terrainSpec))
+        {
+            return true;
+        }
+
         TerrainComponent terrainComponent{};
         auto& registry = scene.GetRegistry();
         auto& sceneGraph = scene.GetSceneGraph();

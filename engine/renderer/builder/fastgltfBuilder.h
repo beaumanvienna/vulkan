@@ -61,6 +61,7 @@ namespace GfxRenderEngine
     public:
         FastgltfBuilder() = delete;
         FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers = nullptr);
+        FastgltfBuilder(const std::string& filepath, Scene& scene, std::shared_ptr<Material> material);
         FastgltfBuilder(const std::string& filepath, Scene& scene, int groupNode);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
@@ -122,6 +123,8 @@ namespace GfxRenderEngine
         std::vector<PbrMaterial> m_Materials;
         std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
+        Material::MaterialType m_MaterialType{Material::MaterialType::MtPbr};
+        std::shared_ptr<Material> m_ExternalMaterial;
 
         // scene graph
         uint m_InstanceCount{0};

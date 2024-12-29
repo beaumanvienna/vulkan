@@ -28,6 +28,7 @@
 #include "renderer/texture.h"
 #include "renderer/cubemap.h"
 #include "scene/pbrMaterial.h"
+#include "scene/pbrMultiMaterial.h"
 
 namespace GfxRenderEngine
 {
@@ -39,6 +40,9 @@ namespace GfxRenderEngine
 
         static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           PbrMaterial::MaterialTextures& textures);
+        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
+                                                          PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures,
+                                                          std::shared_ptr<Texture>& controlTexture);
         static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 

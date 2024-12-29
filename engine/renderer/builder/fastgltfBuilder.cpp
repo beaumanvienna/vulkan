@@ -55,6 +55,14 @@ namespace GfxRenderEngine
     {
     }
 
+    FastgltfBuilder::FastgltfBuilder(const std::string& filepath, Scene& scene, std::shared_ptr<Material> material)
+        : m_Filepath{filepath}, m_SkeletalAnimation{false}, m_Registry{scene.GetRegistry()},
+          m_SceneGraph{scene.GetSceneGraph()}, m_Dictionary{scene.GetDictionary()}, m_ExternalMaterial{material},
+          m_Basepath{EngineCore::GetPathWithoutFilename(filepath)}, m_GroupNode{Gltf::GLTF_NOT_USED}
+    {
+        m_MaterialType = material->GetType();
+    }
+
     bool FastgltfBuilder::Load(uint const instanceCount, int const sceneID)
     {
         PROFILE_SCOPE("FastgltfBuilder::Load");
@@ -465,6 +473,7 @@ namespace GfxRenderEngine
 
     int FastgltfBuilder::GetMinFilter(uint index)
     {
+        CORE_ASSERT(index < m_GltfAsset.textures.size(), "GetMinFilter(uint index) out of bounds");
         fastgltf::Filter filter = fastgltf::Filter::Linear;
         if (m_GltfAsset.textures[index].samplerIndex.has_value())
         {
@@ -479,6 +488,7 @@ namespace GfxRenderEngine
 
     int FastgltfBuilder::GetMagFilter(uint index)
     {
+        CORE_ASSERT(index < m_GltfAsset.textures.size(), "GetMagFilter(uint index) out of bounds");
         fastgltf::Filter filter = fastgltf::Filter::Linear;
         if (m_GltfAsset.textures[index].samplerIndex.has_value())
         {
@@ -934,25 +944,45 @@ namespace GfxRenderEngine
     void FastgltfBuilder::AssignMaterial(Submesh& submesh, int const materialIndex, InstanceBuffer* instanceBuffer)
     {
         ZoneScopedN("AssignMaterial");
-        { // material
-            if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
-            {
-                LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
+        if (!(static_cast<size_t>(materialIndex) < m_Materials.size()))
+        {
+            LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
+        }
+
+        switch (m_MaterialType)
+        {
+            case Material::MaterialType::MtPbr:
+            { // pbr material
+
+                auto material = std::make_shared<PbrMaterial>();
+                submesh.m_Material = material;
+
+                // material
+                if (materialIndex != Gltf::GLTF_NOT_USED)
+                {
+                    *material = m_Materials[materialIndex];
+                    material->m_MaterialTextures = m_MaterialTextures[materialIndex];
+                }
+
+                // create material descriptor
+                material->m_MaterialDescriptor =
+                    MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
+                break;
             }
-
-            auto material = std::make_shared<PbrMaterial>();
-            submesh.m_Material = material;
-
-            // material
-            if (materialIndex != Gltf::GLTF_NOT_USED)
-            {
-                *material = m_Materials[materialIndex];
-                material->m_MaterialTextures = m_MaterialTextures[materialIndex];
+            case Material::MaterialType::MtPbrMulti:
+            { // pbr multi material
+                submesh.m_Material = m_ExternalMaterial;
+                PbrMultiMaterial& material = *static_cast<PbrMultiMaterial*>(m_ExternalMaterial.get());
+                material.m_PbrMultiMaterialProperties = {m_Materials[0].m_PbrMaterialProperties,
+                                                         m_Materials[0].m_PbrMaterialProperties};
+                material.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], m_MaterialTextures[1]};
+                // the material descriptor is handled externally
+                break;
             }
-
-            // create material descriptor
-            material->m_MaterialDescriptor =
-                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
+            default:
+            {
+                LOG_CORE_CRITICAL("unsupported material type");
+            }
         }
 
         { // resources
