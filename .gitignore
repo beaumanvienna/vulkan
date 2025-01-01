@@ -63,3 +63,5 @@ renderdoc.cap
 /*.scene
 /*.json
 dessert._*
+application/lucre/models/terrain/plane1.glb
+application/lucre/models/terrain/terrain1.glb
