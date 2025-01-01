@@ -34,8 +34,10 @@ namespace GfxRenderEngine
     {
 
     public:
-        VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType, Material::MaterialTextures& textures);
-        VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
+        VK_MaterialDescriptor(Material::MaterialType materialType, PbrMaterial::MaterialTextures& textures);
+        VK_MaterialDescriptor(Material::MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
+        VK_MaterialDescriptor(Material::MaterialType materialType,
+                              PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures);
 
         VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
         VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor);
@@ -43,14 +45,14 @@ namespace GfxRenderEngine
         virtual ~VK_MaterialDescriptor();
 
     public:
-        virtual MaterialDescriptor::MaterialType GetMaterialType() const override;
+        virtual Material::MaterialType GetMaterialType() const override;
         const VkDescriptorSet& GetDescriptorSet() const;
 
     private:
-        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
+        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(Material::MaterialType materialType);
 
     private:
-        MaterialDescriptor::MaterialType m_MaterialType;
+        Material::MaterialType m_MaterialType;
         VkDescriptorSet m_DescriptorSet{nullptr};
     };
 } // namespace GfxRenderEngine

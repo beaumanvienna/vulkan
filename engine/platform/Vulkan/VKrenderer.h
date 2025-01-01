@@ -45,6 +45,7 @@
 #include "systems/VKpbrSys.h"
 #include "systems/VKpbrSASys.h"
 #include "systems/VKgrassSys.h"
+#include "systems/VKpbrMultiMaterialSys.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
@@ -115,7 +116,7 @@ namespace GfxRenderEngine
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
-        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType);
+        VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(Material::MaterialType materialType);
         VK_DescriptorSetLayout& GetResourceDescriptorSetLayout(ResourceDescriptor::ResourceType resourceType);
         virtual std::shared_ptr<Texture> GetTextureAtlas() override;
 
@@ -154,6 +155,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
         std::unique_ptr<VK_RenderSystemWater1> m_RenderSystemWater1;
+        std::unique_ptr<VK_RenderSystemPbrMultiMaterial> m_RenderSystemPbrMultiMaterial;
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
         std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;
@@ -187,7 +189,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_PostProcessingDescriptorSetLayout;
         // material descriptor set layouts
-        using Mt = MaterialDescriptor::MaterialType;
+        using Mt = Material::MaterialType;
         std::array<std::unique_ptr<VK_DescriptorSetLayout>, Mt::NUM_TYPES> m_MaterialDescriptorSetLayouts;
         // resource descriptor set layouts
         using Rt = ResourceDescriptor::ResourceType;

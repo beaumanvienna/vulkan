@@ -1,6 +1,6 @@
 {
     "file format identifier": 1.2,
-    "description": "height map 2",
+    "description": "Lucre Island",
     "author": "Copyright (c) 2024 Engine Development Team",
     "heightMapPath": "application/lucre/models/assets/terrain/lucreIsland1 heightmap.png",
     "colorMapPath": "application/lucre/models/assets/terrain/lucreIsland1 colormap.png",

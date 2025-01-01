@@ -39,7 +39,7 @@
 #include "tinygltf/tiny_gltf.h"
 
 #include "engine.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 #include "scene/sceneGraph.h"
 #include "scene/components.h"
 #include "scene/dictionary.h"
@@ -102,7 +102,7 @@ namespace GfxRenderEngine
         uint m_IndexCount;
         uint m_VertexCount;
         uint m_InstanceCount;
-        Material m_Material;
+        std::shared_ptr<Material> m_Material;
         Resources m_Resources;
     };
 

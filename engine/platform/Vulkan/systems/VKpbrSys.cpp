@@ -46,7 +46,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(Material::PbrMaterial);
+        pushConstantRange.size = sizeof(PbrMaterial::PbrMaterialProperties);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -97,7 +97,7 @@ namespace GfxRenderEngine
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
         auto view = registry.Get().view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
-            entt::exclude<SkeletalAnimationTag, GrassTag, TerrainTag>);
+            entt::exclude<SkeletalAnimationTag, GrassTag>);
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);

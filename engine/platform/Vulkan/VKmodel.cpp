@@ -96,7 +96,7 @@ namespace GfxRenderEngine
     VK_Submesh::VK_Submesh(Submesh const& submesh)
         : Submesh{submesh.m_FirstIndex,    submesh.m_FirstVertex, submesh.m_IndexCount, submesh.m_VertexCount,
                   submesh.m_InstanceCount, submesh.m_Material,    submesh.m_Resources},
-          m_MaterialDescriptor(submesh.m_Material.m_MaterialDescriptor),
+          m_MaterialDescriptor(submesh.m_Material->m_MaterialDescriptor),
           m_ResourceDescriptor(submesh.m_Resources.m_ResourceDescriptor)
     {
     }
@@ -107,16 +107,21 @@ namespace GfxRenderEngine
         {
             VK_Submesh vkSubmesh(submesh);
 
-            MaterialDescriptor::MaterialType materialType = vkSubmesh.m_MaterialDescriptor.GetMaterialType();
+            Material::MaterialType materialType = vkSubmesh.m_Material->GetType();
 
             switch (materialType)
             {
-                case MaterialDescriptor::MaterialType::MtPbr:
+                case Material::MaterialType::MtPbr:
                 {
-                    m_SubmeshesPbrMap.push_back(vkSubmesh);
+                    m_SubmeshesPbr.push_back(vkSubmesh);
                     break;
                 }
-                case MaterialDescriptor::MaterialType::MtCubemap:
+                case Material::MaterialType::MtPbrMulti:
+                {
+                    m_SubmeshesPbrMulti.push_back(vkSubmesh);
+                    break;
+                }
+                case Material::MaterialType::MtCubemap:
                 {
                     m_SubmeshesCubemap.push_back(vkSubmesh);
                     break;
@@ -216,8 +221,20 @@ namespace GfxRenderEngine
     void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                     VK_Submesh const& submesh)
     {
+        auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
         vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(Material::PbrMaterial), &submesh.m_Material.m_PbrMaterial);
+                           sizeof(PbrMaterial::PbrMaterialProperties), &pbrMaterialProperties);
+    }
+
+    void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                         VK_Submesh const& submesh)
+    {
+        auto pbrMultiMaterial = static_cast<PbrMultiMaterial*>(submesh.m_Material.get());
+        CORE_ASSERT(pbrMultiMaterial->GetType() == Material::MaterialType::MtPbrMulti,
+                    "material must be MaterialType::MtPbrMulti");
+        auto& pbrMultiMaterialProperties = pbrMultiMaterial->m_PbrMultiMaterialProperties;
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(PbrMultiMaterial::PbrMultiMaterialProperties), &pbrMultiMaterialProperties);
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
@@ -268,7 +285,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
@@ -276,9 +293,34 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for (auto& submesh : m_SubmeshesPbrMulti)
+        {
+
+            VK_MaterialDescriptor& materialDescriptor =
+                *static_cast<VK_MaterialDescriptor*>(submesh.m_Material->m_MaterialDescriptor.get());
+            const VkDescriptorSet& materialDescriptorSet = materialDescriptor.GetDescriptorSet();
+            const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet,
+                                                           resourceDescriptorSet};
+            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                    pipelineLayout,                  // VkPipelineLayout       layout,
+                                    0,                               // uint32_t               firstSet,
+                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                    0,                               // uint32_t               dynamicOffsetCount,
+                                    nullptr                          // const uint32_t*        pDynamicOffsets);
+            );
+            PushConstantsPbrMulti(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
     void VK_Model::DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
@@ -295,7 +337,7 @@ namespace GfxRenderEngine
     void VK_Model::DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                        const VkDescriptorSet& shadowDescriptorSet)
     {
-        for (auto& submesh : m_SubmeshesPbrMap)
+        for (auto& submesh : m_SubmeshesPbr)
         {
             DrawShadowInstancedInternal(frameInfo, pipelineLayout, submesh, shadowDescriptorSet);
         }

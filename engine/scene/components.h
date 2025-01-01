@@ -203,6 +203,11 @@ namespace GfxRenderEngine
         float m_EmissiveStrength{1.f};
     };
 
+    struct PbrMultiMaterialTag
+    {
+        float m_EmissiveStrength{1.f};
+    };
+
     struct InstanceTag
     {
         std::vector<entt::entity> m_Instances;
@@ -233,10 +238,5 @@ namespace GfxRenderEngine
     {
         glm::vec3 m_Scale;
         glm::vec3 m_Translation;
-    };
-
-    struct TerrainTag
-    {
-        uint m_TerrainID;
     };
 } // namespace GfxRenderEngine

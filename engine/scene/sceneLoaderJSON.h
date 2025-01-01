@@ -60,6 +60,7 @@ namespace GfxRenderEngine
             // assets
             Gltf::GltfFiles m_GltfFiles;
             std::vector<Terrain::TerrainDescription> m_TerrainDescriptions;
+            std::vector<Terrain::TerrainDescription> m_TerrainDescriptionsMultiMaterial;
             Gltf::GltfFiles m_FastgltfFiles;
             Fbx::FbxFiles m_FbxFiles;
             Fbx::FbxFiles m_UFbxFiles;
@@ -93,7 +94,12 @@ namespace GfxRenderEngine
         void ParseTerrainDescription(ondemand::object terrainDescription,
                                      std::vector<Terrain::TerrainDescription>& terrainDescriptions,
                                      TerrainInfo& terrainInfo);
+        void ParseTerrainMultiMaterialDescription(ondemand::object terrainDescription,
+                                                  std::vector<Terrain::TerrainDescription>& terrainDescriptions,
+                                                  TerrainInfo& terrainInfo);
+
         void FinalizeTerrainDescriptions();
+        void FinalizeTerrainMultiMaterialDescriptions();
 
         glm::vec3 ConvertToVec3(ondemand::array arrayJSON);
 
@@ -129,6 +135,7 @@ namespace GfxRenderEngine
         void SerializeInstance(int indent, Obj::Instance const& instance, bool noComma);
 
         void SerializeTerrrainDescriptions(int indent, bool noComma);
+        void SerializeTerrrainMultiMaterialDescriptions(int indent, bool noComma);
         void SerializeTerrrainDescription(int indent, Terrain::TerrainDescription const& terrainDescription, bool noComma);
         void SerializeInstances(int indent, std::vector<Terrain::Instance> const& instances);
         void SerializeInstance(int indent, Terrain::Instance const& instance, bool noComma);
@@ -138,9 +145,11 @@ namespace GfxRenderEngine
         static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
         Scene& m_Scene;
+        std::string m_FilepathMesh;
 
         SceneDescriptionFile m_SceneDescriptionFile;
 
         std::vector<TerrainInfo> m_TerrainInfos;
+        std::vector<TerrainInfo> m_TerrainInfosMultiMaterial;
     };
 } // namespace GfxRenderEngine

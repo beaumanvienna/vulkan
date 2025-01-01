@@ -27,8 +27,8 @@
 
 namespace GfxRenderEngine
 {
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialTypes,
-                                                                   Material::MaterialTextures& textures)
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(Material::MaterialType materialTypes,
+                                                                   PbrMaterial::MaterialTextures& textures)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;
 
@@ -45,7 +45,25 @@ namespace GfxRenderEngine
         return materialDescriptor;
     }
 
-    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(MaterialType materialTypes,
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(Material::MaterialType materialTypes,
+                                                                   PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures)
+    {
+        std::shared_ptr<MaterialDescriptor> materialDescriptor;
+
+        switch (RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialTypes, multiTextures);
+                break;
+            default:
+                materialDescriptor = nullptr;
+                break;
+        }
+
+        return materialDescriptor;
+    }
+
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(Material::MaterialType materialTypes,
                                                                    std::shared_ptr<Cubemap> const& cubemap)
     {
         std::shared_ptr<MaterialDescriptor> materialDescriptor;

@@ -34,7 +34,7 @@
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/builder/ufbxBuilder.h"
 #include "renderer/builder/fbxBuilder.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 #include "scene/scene.h"
 
 #include "VKdevice.h"
@@ -105,6 +105,9 @@ namespace GfxRenderEngine
 
         void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                               VK_Submesh const& submesh);
+        void PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                   VK_Submesh const& submesh);
+
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                              VK_Submesh const& submesh);
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
@@ -115,6 +118,7 @@ namespace GfxRenderEngine
 
         // draw pbr materials
         void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount);
 
         // draw shadow
@@ -138,8 +142,8 @@ namespace GfxRenderEngine
         bool m_HasIndexBuffer{false};
         std::unique_ptr<VK_Buffer> m_IndexBuffer;
 
-        std::vector<VK_Submesh> m_SubmeshesPbrMap{};
-        std::vector<VK_Submesh> m_SubmeshesPbrSAMap{};
+        std::vector<VK_Submesh> m_SubmeshesPbr{};
+        std::vector<VK_Submesh> m_SubmeshesPbrMulti{};
         std::vector<VK_Submesh> m_SubmeshesCubemap{};
     };
 } // namespace GfxRenderEngine

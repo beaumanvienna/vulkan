@@ -71,7 +71,7 @@ namespace GfxRenderEngine
         std::string m_Basepath;
         std::string m_DictionaryPrefix;
         ufbx_scene* m_FbxScene;
-        std::vector<Material> m_Materials;
+        std::vector<PbrMaterial> m_Materials;
         std::unordered_map<std::string, uint> m_MaterialNameToIndex;
         bool m_FbxNoBuiltInTangents;
         std::shared_ptr<Model> m_Model;
@@ -79,7 +79,7 @@ namespace GfxRenderEngine
         std::vector<entt::entity> m_InstancedObjects;
         uint m_RenderObject;
         std::vector<std::shared_ptr<Texture>> m_Textures;
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
 
         // scene graph
         uint m_InstanceCount;

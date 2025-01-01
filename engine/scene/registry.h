@@ -45,6 +45,12 @@ namespace GfxRenderEngine
             return m_Registry.emplace<Component>(entity, std::forward<Args>(args)...);
         }
 
+        template <typename Component> decltype(auto) remove(const entt::entity entity)
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.remove<Component>(entity);
+        }
+
         template <typename Component> [[nodiscard]] decltype(auto) get([[maybe_unused]] const entt::entity entity)
         {
             std::lock_guard<std::mutex> guard(m_Mutex);

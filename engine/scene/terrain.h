@@ -77,8 +77,9 @@ namespace GfxRenderEngine
             std::string m_FilepathTerrainDescription;
             std::string m_FilepathHeightMap;
             std::string m_FilepathColorMap;
-            Material::PbrMaterial m_PbrMaterial{};
+            PbrMaterial::PbrMaterialProperties m_PbrMaterialProperties{};
             GrassSpec m_GrassSpec;
+            std::string m_FilepathMesh;
         };
 
     } // namespace Terrain

@@ -20,37 +20,34 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "renderer/camera.h"
-#include "scene/scene.h"
-
 #include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKgrassSys.h"
+#include "systems/VKpbrMultiMaterialSys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemGrass::VK_RenderSystemGrass(VkRenderPass renderPass,
-                                               std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemPbrMultiMaterial::VK_RenderSystemPbrMultiMaterial(
+        VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemGrass::~VK_RenderSystemGrass()
+    VK_RenderSystemPbrMultiMaterial::~VK_RenderSystemPbrMultiMaterial()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemGrass::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemPbrMultiMaterial::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(PbrMaterial::PbrMaterialProperties);
+        pushConstantRange.size = sizeof(PbrMultiMaterial::PbrMultiMaterialProperties);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -66,7 +63,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemGrass::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemPbrMultiMaterial::CreatePipeline(VkRenderPass renderPass)
     {
         CORE_ASSERT(m_PipelineLayout != nullptr, "no pipeline layout");
 
@@ -92,15 +89,15 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/grass.vert.spv", "bin-int/pbr.frag.spv",
-                                                   pipelineConfig);
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrMultiMaterial.vert.spv",
+                                                   "bin-int/pbrMultiMaterial.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemGrass::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
+    void VK_RenderSystemPbrMultiMaterial::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag, GrassTag>();
+        auto view = registry.Get().view<MeshComponent, TransformComponent, PbrMultiMaterialTag, InstanceTag>();
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
@@ -111,9 +108,8 @@ namespace GfxRenderEngine
             }
             if (mesh.m_Enabled)
             {
-                int instanceCount = view.get<GrassTag>(mainInstance).m_InstanceCount;
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawGrass(frameInfo, m_PipelineLayout, instanceCount);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawPbrMulti(frameInfo, m_PipelineLayout);
             }
         }
     }

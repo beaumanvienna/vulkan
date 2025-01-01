@@ -483,18 +483,19 @@ namespace GfxRenderEngine
         m_MaterialTextures.resize(numMaterials);
 
         uint materialIndex = 0;
-        for (Material& material : m_Materials)
+        for (PbrMaterial& material : m_Materials)
         {
             tinygltf::Material glTFMaterial = m_GltfModel.materials[materialIndex];
-            Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
-            Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
+            PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material.m_PbrMaterialProperties;
+            PbrMaterial::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
 
             // diffuse color aka base color factor
             // used as constant color, if no diffuse texture is provided
             // else, multiplied in the shader with each sample from the diffuse texture
             if (glTFMaterial.values.find("baseColorFactor") != glTFMaterial.values.end())
             {
-                pbrMaterial.m_DiffuseColor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
+                pbrMaterialProperties.m_DiffuseColor =
+                    glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
             }
 
             // diffuse map aka basecolor aka albedo
@@ -502,16 +503,16 @@ namespace GfxRenderEngine
             {
                 int diffuseTextureIndex = glTFMaterial.pbrMetallicRoughness.baseColorTexture.index;
                 tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                materialTextures[Material::DIFFUSE_MAP_INDEX] = m_Textures[diffuseTexture.source];
-                pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = m_Textures[diffuseTexture.source];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
             }
             else if (glTFMaterial.values.find("baseColorTexture") != glTFMaterial.values.end())
             {
                 LOG_CORE_WARN("using legacy field values/baseColorTexture");
                 int diffuseTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
                 tinygltf::Texture& diffuseTexture = m_GltfModel.textures[diffuseTextureIndex];
-                materialTextures[Material::DIFFUSE_MAP_INDEX] = m_Textures[diffuseTexture.source];
-                pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = m_Textures[diffuseTexture.source];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
             }
 
             // normal map
@@ -519,15 +520,15 @@ namespace GfxRenderEngine
             {
                 int normalTextureIndex = glTFMaterial.normalTexture.index;
                 tinygltf::Texture& normalTexture = m_GltfModel.textures[normalTextureIndex];
-                materialTextures[Material::NORMAL_MAP_INDEX] = m_Textures[normalTexture.source];
-                pbrMaterial.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
-                pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                materialTextures[PbrMaterial::NORMAL_MAP_INDEX] = m_Textures[normalTexture.source];
+                pbrMaterialProperties.m_NormalMapIntensity = glTFMaterial.normalTexture.scale;
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_NORMAL_MAP;
             }
 
             // constant values for roughness and metallicness
             {
-                pbrMaterial.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
-                pbrMaterial.m_Metallic = glTFMaterial.pbrMetallicRoughness.metallicFactor;
+                pbrMaterialProperties.m_Roughness = glTFMaterial.pbrMetallicRoughness.roughnessFactor;
+                pbrMaterialProperties.m_Metallic = glTFMaterial.pbrMetallicRoughness.metallicFactor;
             }
 
             // texture for roughness and metallicness
@@ -535,16 +536,16 @@ namespace GfxRenderEngine
             {
                 int MetallicRoughnessTextureIndex = glTFMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
                 tinygltf::Texture& metallicRoughnessTexture = m_GltfModel.textures[MetallicRoughnessTextureIndex];
-                materialTextures[Material::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[metallicRoughnessTexture.source];
-                pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_METALLIC_MAP;
+                materialTextures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[metallicRoughnessTexture.source];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_METALLIC_MAP;
             }
 
             // emissive color and emissive strength
             if (glTFMaterial.emissiveFactor.size() == 3)
             {
-                pbrMaterial.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
+                pbrMaterialProperties.m_EmissiveColor = glm::make_vec3(glTFMaterial.emissiveFactor.data());
 
-                pbrMaterial.m_EmissiveStrength = 1.0f; // default is 1.0f
+                pbrMaterialProperties.m_EmissiveStrength = 1.0f; // default is 1.0f
                 auto it = glTFMaterial.extensions.find("KHR_materials_emissive_strength");
                 if (it != glTFMaterial.extensions.end())
                 {
@@ -554,7 +555,7 @@ namespace GfxRenderEngine
                         auto emissiveStrength = extension.Get("emissiveStrength");
                         if (emissiveStrength.IsReal())
                         {
-                            pbrMaterial.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
+                            pbrMaterialProperties.m_EmissiveStrength = emissiveStrength.GetNumberAsDouble();
                         }
                     }
                 }
@@ -565,8 +566,8 @@ namespace GfxRenderEngine
             {
                 int emissiveTextureIndex = glTFMaterial.emissiveTexture.index;
                 tinygltf::Texture& emissiveTexture = m_GltfModel.textures[emissiveTextureIndex];
-                materialTextures[Material::EMISSIVE_MAP_INDEX] = m_Textures[emissiveTexture.source];
-                pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
+                materialTextures[PbrMaterial::EMISSIVE_MAP_INDEX] = m_Textures[emissiveTexture.source];
+                pbrMaterialProperties.m_Features |= PbrMaterial::HAS_EMISSIVE_MAP;
             }
 
             ++materialIndex;
@@ -602,7 +603,7 @@ namespace GfxRenderEngine
                 size_t materialIndex = glTFPrimitive.material;
                 CORE_ASSERT(materialIndex < m_Materials.size(),
                             "LoadVertexData: glTFPrimitive.materialIndex must be less than m_Materials.size()");
-                diffuseColor = m_Materials[materialIndex].m_PbrMaterial.m_DiffuseColor;
+                diffuseColor = m_Materials[materialIndex].m_PbrMaterialProperties.m_DiffuseColor;
             }
 
             // Vertices
@@ -822,18 +823,19 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material& material = submesh.m_Material;
+            auto material = std::make_shared<PbrMaterial>();
+            submesh.m_Material = material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)
             {
-                material = m_Materials[materialIndex];
-                material.m_MaterialTextures = m_MaterialTextures[materialIndex];
+                *material = m_Materials[materialIndex];
+                material->m_MaterialTextures = m_MaterialTextures[materialIndex];
             }
 
             // create material descriptor
-            material.m_MaterialDescriptor =
-                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, material.m_MaterialTextures);
+            material->m_MaterialDescriptor =
+                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
         }
 
         { // resources

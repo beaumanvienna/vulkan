@@ -86,10 +86,10 @@ namespace GfxRenderEngine
         tinygltf::Model m_GltfModel;
         tinygltf::TinyGLTF m_GltfLoader;
         std::shared_ptr<Model> m_Model;
-        std::vector<Material> m_Materials;
+        std::vector<PbrMaterial> m_Materials;
         uint m_TextureOffset;
         std::vector<std::shared_ptr<Texture>> m_Textures{};
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
 
         // scene graph
         uint m_InstanceCount;

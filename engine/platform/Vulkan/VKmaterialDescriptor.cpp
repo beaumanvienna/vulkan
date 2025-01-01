@@ -31,13 +31,13 @@
 namespace GfxRenderEngine
 {
 
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
-                                                 Material::MaterialTextures& textures)
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
+                                                 PbrMaterial::MaterialTextures& textures)
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialType::MtPbr:
+            case Material::MaterialType::MtPbr:
             {
                 auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
                 auto textureAtlas = renderer->gTextureAtlas;
@@ -50,14 +50,15 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture> metallicMap;
                 std::shared_ptr<Texture>& dummy = textureAtlas;
 
-                diffuseMap = textures[Material::DIFFUSE_MAP_INDEX] ? textures[Material::DIFFUSE_MAP_INDEX] : dummy;
-                normalMap = textures[Material::NORMAL_MAP_INDEX] ? textures[Material::NORMAL_MAP_INDEX] : dummy;
-                roughnessMetallicMap = textures[Material::ROUGHNESS_METALLIC_MAP_INDEX]
-                                           ? textures[Material::ROUGHNESS_METALLIC_MAP_INDEX]
+                diffuseMap = textures[PbrMaterial::DIFFUSE_MAP_INDEX] ? textures[PbrMaterial::DIFFUSE_MAP_INDEX] : dummy;
+                normalMap = textures[PbrMaterial::NORMAL_MAP_INDEX] ? textures[PbrMaterial::NORMAL_MAP_INDEX] : dummy;
+                roughnessMetallicMap = textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
+                                           ? textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
                                            : dummy;
-                emissiveMap = textures[Material::EMISSIVE_MAP_INDEX] ? textures[Material::EMISSIVE_MAP_INDEX] : dummy;
-                roughnessMap = textures[Material::ROUGHNESS_MAP_INDEX] ? textures[Material::ROUGHNESS_MAP_INDEX] : dummy;
-                metallicMap = textures[Material::METALLIC_MAP_INDEX] ? textures[Material::METALLIC_MAP_INDEX] : dummy;
+                emissiveMap = textures[PbrMaterial::EMISSIVE_MAP_INDEX] ? textures[PbrMaterial::EMISSIVE_MAP_INDEX] : dummy;
+                roughnessMap =
+                    textures[PbrMaterial::ROUGHNESS_MAP_INDEX] ? textures[PbrMaterial::ROUGHNESS_MAP_INDEX] : dummy;
+                metallicMap = textures[PbrMaterial::METALLIC_MAP_INDEX] ? textures[PbrMaterial::METALLIC_MAP_INDEX] : dummy;
 
                 {
                     auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
@@ -86,13 +87,89 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_MaterialDescriptor::VK_MaterialDescriptor(MaterialDescriptor::MaterialType materialType,
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
+                                                 PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures)
+        : m_MaterialType{materialType}
+    {
+        switch (materialType)
+        {
+            case Material::MaterialType::MtPbrMulti:
+            {
+                auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
+                auto textureAtlas = renderer->gTextureAtlas;
+                std::vector<VkDescriptorImageInfo> imageInfo0Vec;
+                std::vector<VkDescriptorImageInfo> imageInfo1Vec;
+                std::vector<VkDescriptorImageInfo> imageInfo2Vec;
+                std::vector<VkDescriptorImageInfo> imageInfo3Vec;
+                std::vector<VkDescriptorImageInfo> imageInfo4Vec;
+                std::vector<VkDescriptorImageInfo> imageInfo5Vec;
+
+                for (uint materialIndex = 0; materialIndex < PbrMultiMaterial::NUM_MULTI_MATERIAL; ++materialIndex)
+                {
+                    // textures
+                    std::shared_ptr<Texture> diffuseMap;
+                    std::shared_ptr<Texture> normalMap;
+                    std::shared_ptr<Texture> roughnessMetallicMap;
+                    std::shared_ptr<Texture> emissiveMap;
+                    std::shared_ptr<Texture> roughnessMap;
+                    std::shared_ptr<Texture> metallicMap;
+                    std::shared_ptr<Texture>& dummy = textureAtlas;
+                    auto& textures = multiTextures.m_MaterialTextures[materialIndex];
+
+                    diffuseMap = textures[PbrMaterial::DIFFUSE_MAP_INDEX] ? textures[PbrMaterial::DIFFUSE_MAP_INDEX] : dummy;
+                    normalMap = textures[PbrMaterial::NORMAL_MAP_INDEX] ? textures[PbrMaterial::NORMAL_MAP_INDEX] : dummy;
+                    roughnessMetallicMap = textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
+                                               ? textures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX]
+                                               : dummy;
+                    emissiveMap =
+                        textures[PbrMaterial::EMISSIVE_MAP_INDEX] ? textures[PbrMaterial::EMISSIVE_MAP_INDEX] : dummy;
+                    roughnessMap =
+                        textures[PbrMaterial::ROUGHNESS_MAP_INDEX] ? textures[PbrMaterial::ROUGHNESS_MAP_INDEX] : dummy;
+                    metallicMap =
+                        textures[PbrMaterial::METALLIC_MAP_INDEX] ? textures[PbrMaterial::METALLIC_MAP_INDEX] : dummy;
+
+                    {
+                        auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
+                        auto& imageInfo1 = static_cast<VK_Texture*>(normalMap.get())->GetDescriptorImageInfo();
+                        auto& imageInfo2 = static_cast<VK_Texture*>(roughnessMetallicMap.get())->GetDescriptorImageInfo();
+                        auto& imageInfo3 = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
+                        auto& imageInfo4 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
+                        auto& imageInfo5 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
+
+                        imageInfo0Vec.push_back(imageInfo0);
+                        imageInfo1Vec.push_back(imageInfo1);
+                        imageInfo2Vec.push_back(imageInfo2);
+                        imageInfo3Vec.push_back(imageInfo3);
+                        imageInfo4Vec.push_back(imageInfo4);
+                        imageInfo5Vec.push_back(imageInfo5);
+                    }
+                }
+
+                VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
+                    .WriteImage(0, imageInfo0Vec)
+                    .WriteImage(1, imageInfo1Vec)
+                    .WriteImage(2, imageInfo2Vec)
+                    .WriteImage(3, imageInfo3Vec)
+                    .WriteImage(4, imageInfo4Vec)
+                    .WriteImage(5, imageInfo5Vec)
+                    .Build(m_DescriptorSet);
+                break;
+            }
+            default:
+            {
+                CORE_ASSERT(false, "unsupported material type");
+                break;
+            }
+        }
+    }
+
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
                                                  std::shared_ptr<Cubemap> const& cubemap)
         : m_MaterialType{materialType}
     {
         switch (materialType)
         {
-            case MaterialDescriptor::MaterialType::MtCubemap:
+            case Material::MaterialType::MtCubemap:
             {
                 VkDescriptorImageInfo cubemapInfo = static_cast<VK_Cubemap*>(cubemap.get())->GetDescriptorImageInfo();
 
@@ -127,12 +204,11 @@ namespace GfxRenderEngine
 
     VK_MaterialDescriptor::~VK_MaterialDescriptor() {}
 
-    MaterialDescriptor::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
+    Material::MaterialType VK_MaterialDescriptor::GetMaterialType() const { return m_MaterialType; }
 
     const VkDescriptorSet& VK_MaterialDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }
 
-    VK_DescriptorSetLayout&
-    VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(MaterialDescriptor::MaterialType materialType)
+    VK_DescriptorSetLayout& VK_MaterialDescriptor::GetMaterialDescriptorSetLayout(Material::MaterialType materialType)
     {
         auto renderer = static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer());
         return renderer->GetMaterialDescriptorSetLayout(materialType);

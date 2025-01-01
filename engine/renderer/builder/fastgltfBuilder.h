@@ -31,7 +31,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 
 #include "scene/gltf.h"
-#include "scene/material.h"
+#include "scene/pbrMaterial.h"
 #include "scene/registry.h"
 #include "renderer/model.h"
 #include "renderer/resourceDescriptor.h"
@@ -46,7 +46,7 @@ namespace GfxRenderEngine
     class Buffer;
     class Dictionary;
     class InstanceBuffer;
-    class Material;
+    class PbrMaterial;
     class Scene;
     class SceneGraph;
     class SkeletalAnimations;
@@ -61,6 +61,7 @@ namespace GfxRenderEngine
     public:
         FastgltfBuilder() = delete;
         FastgltfBuilder(const std::string& filepath, Scene& scene, Resources::ResourceBuffers* resourceBuffers = nullptr);
+        FastgltfBuilder(const std::string& filepath, Scene& scene, std::shared_ptr<Material> material);
         FastgltfBuilder(const std::string& filepath, Scene& scene, int groupNode);
 
         bool Load(uint const instanceCount = 1, int const sceneID = Gltf::GLTF_NOT_USED);
@@ -119,9 +120,11 @@ namespace GfxRenderEngine
         std::string m_DictionaryPrefix;
         fastgltf::Asset m_GltfAsset;
         std::vector<std::shared_ptr<Model>> m_Models;
-        std::vector<Material> m_Materials;
-        std::vector<Material::MaterialTextures> m_MaterialTextures{};
+        std::vector<PbrMaterial> m_Materials;
+        std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
+        Material::MaterialType m_MaterialType{Material::MaterialType::MtPbr};
+        std::shared_ptr<Material> m_ExternalMaterial;
 
         // scene graph
         uint m_InstanceCount{0};

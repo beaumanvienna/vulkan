@@ -18,15 +18,23 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-// material
-#define GLSL_HAS_DIFFUSE_MAP (0x1 << 0x0)
-#define GLSL_HAS_NORMAL_MAP (0x1 << 0x1)
-#define GLSL_HAS_ROUGHNESS_MAP (0x1 << 0x2)
-#define GLSL_HAS_METALLIC_MAP (0x1 << 0x3)
-#define GLSL_HAS_ROUGHNESS_METALLIC_MAP (0x1 << 0x4)
-#define GLSL_HAS_EMISSIVE_COLOR (0x1 << 0x5)
-#define GLSL_HAS_EMISSIVE_MAP (0x1 << 0x6)
+#pragma once
+#include "scene/terrain.h"
 
-#define GLSL_NUM_MULTI_MATERIAL 4
+namespace GfxRenderEngine
+{
+    class Scene;
+    class Image;
+
+    class TerrainBuilderMultiMaterial
+    {
+
+    public:
+        TerrainBuilderMultiMaterial() = default;
+
+        bool LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
+        bool LoadMesh(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec);
+    };
+} // namespace GfxRenderEngine

@@ -290,9 +290,9 @@ namespace GfxRenderEngine
             return;
         }
 
-        Material& material = m_Materials[materialIndex];
-        Material::PbrMaterial& pbrMaterial = material.m_PbrMaterial;
-        Material::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
+        PbrMaterial& material = m_Materials[materialIndex];
+        PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material.m_PbrMaterialProperties;
+        PbrMaterial::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
 
         aiString aiFilepath;
         auto getTexture = fbxMaterial->GetTexture(textureType, 0 /* first map*/, &aiFilepath);
@@ -308,8 +308,8 @@ namespace GfxRenderEngine
                     auto texture = LoadTexture(filepath, Texture::USE_SRGB);
                     if (texture)
                     {
-                        materialTextures[Material::DIFFUSE_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_DIFFUSE_MAP;
+                        materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
                     }
                     break;
                 }
@@ -318,8 +318,8 @@ namespace GfxRenderEngine
                     auto texture = LoadTexture(filepath, Texture::USE_UNORM);
                     if (texture)
                     {
-                        materialTextures[Material::NORMAL_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_NORMAL_MAP;
+                        materialTextures[PbrMaterial::NORMAL_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_NORMAL_MAP;
                     }
                     break;
                 }
@@ -328,8 +328,8 @@ namespace GfxRenderEngine
                     auto texture = LoadTexture(filepath, Texture::USE_UNORM);
                     if (texture)
                     {
-                        materialTextures[Material::ROUGHNESS_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_ROUGHNESS_MAP;
+                        materialTextures[PbrMaterial::ROUGHNESS_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_MAP;
                     }
                     break;
                 }
@@ -338,8 +338,8 @@ namespace GfxRenderEngine
                     auto texture = LoadTexture(filepath, Texture::USE_UNORM);
                     if (texture)
                     {
-                        materialTextures[Material::METALLIC_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_METALLIC_MAP;
+                        materialTextures[PbrMaterial::METALLIC_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_METALLIC_MAP;
                     }
                     break;
                 }
@@ -348,9 +348,9 @@ namespace GfxRenderEngine
                     auto texture = LoadTexture(filepath, Texture::USE_SRGB);
                     if (texture)
                     {
-                        materialTextures[Material::EMISSIVE_MAP_INDEX] = texture;
-                        pbrMaterial.m_Features |= Material::HAS_EMISSIVE_MAP;
-                        pbrMaterial.m_EmissiveColor = glm::vec3(1.0f);
+                        materialTextures[PbrMaterial::EMISSIVE_MAP_INDEX] = texture;
+                        pbrMaterialProperties.m_Features |= PbrMaterial::HAS_EMISSIVE_MAP;
+                        pbrMaterialProperties.m_EmissiveColor = glm::vec3(1.0f);
                     }
                     break;
                 }
@@ -362,26 +362,26 @@ namespace GfxRenderEngine
         }
     }
 
-    void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, Material::PbrMaterial& pbrMaterial)
+    void FbxBuilder::LoadProperties(const aiMaterial* fbxMaterial, PbrMaterial::PbrMaterialProperties& pbrMaterialProperties)
     {
         { // diffuse
             aiColor3D diffuseColor;
             if (fbxMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_DiffuseColor.r = diffuseColor.r;
-                pbrMaterial.m_DiffuseColor.g = diffuseColor.g;
-                pbrMaterial.m_DiffuseColor.b = diffuseColor.b;
+                pbrMaterialProperties.m_DiffuseColor.r = diffuseColor.r;
+                pbrMaterialProperties.m_DiffuseColor.g = diffuseColor.g;
+                pbrMaterialProperties.m_DiffuseColor.b = diffuseColor.b;
             }
         }
         { // roughness
             float roughnessFactor;
             if (fbxMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_Roughness = roughnessFactor;
+                pbrMaterialProperties.m_Roughness = roughnessFactor;
             }
             else
             {
-                pbrMaterial.m_Roughness = 0.1f;
+                pbrMaterialProperties.m_Roughness = 0.1f;
             }
         }
 
@@ -389,15 +389,15 @@ namespace GfxRenderEngine
             float metallicFactor;
             if (fbxMaterial->Get(AI_MATKEY_REFLECTIVITY, metallicFactor) == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_Metallic = metallicFactor;
+                pbrMaterialProperties.m_Metallic = metallicFactor;
             }
             else if (fbxMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_Metallic = metallicFactor;
+                pbrMaterialProperties.m_Metallic = metallicFactor;
             }
             else
             {
-                pbrMaterial.m_Metallic = 0.886f;
+                pbrMaterialProperties.m_Metallic = 0.886f;
             }
         }
 
@@ -406,7 +406,7 @@ namespace GfxRenderEngine
             auto result = fbxMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emission);
             if (result == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_EmissiveColor = glm::vec3(emission.r, emission.g, emission.b);
+                pbrMaterialProperties.m_EmissiveColor = glm::vec3(emission.r, emission.g, emission.b);
             }
         }
 
@@ -415,11 +415,11 @@ namespace GfxRenderEngine
             auto result = fbxMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveStrength);
             if (result == aiReturn_SUCCESS)
             {
-                pbrMaterial.m_EmissiveStrength = emissiveStrength;
+                pbrMaterialProperties.m_EmissiveStrength = emissiveStrength;
             }
         }
 
-        pbrMaterial.m_NormalMapIntensity = 1.0f;
+        pbrMaterialProperties.m_NormalMapIntensity = 1.0f;
     }
 
     void FbxBuilder::LoadMaterials()
@@ -432,9 +432,9 @@ namespace GfxRenderEngine
             const aiMaterial* fbxMaterial = m_FbxScene->mMaterials[materialIndex];
             // PrintMaps(fbxMaterial);
 
-            Material& material = m_Materials[materialIndex];
+            PbrMaterial& material = m_Materials[materialIndex];
 
-            LoadProperties(fbxMaterial, material.m_PbrMaterial);
+            LoadProperties(fbxMaterial, material.m_PbrMaterialProperties);
 
             LoadMap(fbxMaterial, aiTextureType_DIFFUSE, materialIndex);
             LoadMap(fbxMaterial, aiTextureType_NORMALS, materialIndex);
@@ -546,11 +546,11 @@ namespace GfxRenderEngine
                         aiColor4D& colorFbx = mesh->mColors[vertexColorSet][fbxVertexIndex];
                         glm::vec3 linearColor = glm::pow(glm::vec3(colorFbx.r, colorFbx.g, colorFbx.b), glm::vec3(2.2f));
                         vertexColor = glm::vec4(linearColor.r, linearColor.g, linearColor.b, colorFbx.a);
-                        vertex.m_Color = vertexColor * m_Materials[materialIndex].m_PbrMaterial.m_DiffuseColor;
+                        vertex.m_Color = vertexColor * m_Materials[materialIndex].m_PbrMaterialProperties.m_DiffuseColor;
                     }
                     else
                     {
-                        vertex.m_Color = m_Materials[materialIndex].m_PbrMaterial.m_DiffuseColor;
+                        vertex.m_Color = m_Materials[materialIndex].m_PbrMaterialProperties.m_DiffuseColor;
                     }
                 }
                 ++vertexIndex;
@@ -659,18 +659,19 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("AssignMaterial: materialIndex must be less than m_Materials.size()");
             }
 
-            Material& material = submesh.m_Material;
+            auto material = std::make_shared<PbrMaterial>();
+            submesh.m_Material = material;
 
             // material
             if (materialIndex != Gltf::GLTF_NOT_USED)
             {
-                material = m_Materials[materialIndex];
-                material.m_MaterialTextures = m_MaterialTextures[materialIndex];
+                *material = m_Materials[materialIndex];
+                material->m_MaterialTextures = m_MaterialTextures[materialIndex];
             }
 
             // create material descriptor
-            material.m_MaterialDescriptor =
-                MaterialDescriptor::Create(MaterialDescriptor::MaterialType::MtPbr, material.m_MaterialTextures);
+            material->m_MaterialDescriptor =
+                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
         }
 
         { // resources

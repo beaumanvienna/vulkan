@@ -181,9 +181,37 @@ namespace GfxRenderEngine
         return true;
     }
 
+    bool TerrainBuilder::LoadMesh(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
+    {
+        bool meshFound = !terrainSpec.m_FilepathMesh.empty() && // 3D model for terrain provided?
+                         EngineCore::FileExists(terrainSpec.m_FilepathMesh) &&
+                         !EngineCore::IsDirectory(terrainSpec.m_FilepathMesh);
+        if (!meshFound)
+        {
+            return false;
+        }
+
+        auto material = std::make_shared<PbrMultiMaterial>();
+        FastgltfBuilder fastgltfBuilder(terrainSpec.m_FilepathMesh, scene, material);
+        fastgltfBuilder.Load(instanceCount);
+
+        // create material descriptor
+        material->m_MaterialDescriptor =                                   //
+            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, //
+                                       material->m_PbrMultiMaterialTextures);
+
+        return true;
+    }
+
     bool TerrainBuilder::LoadTerrain(Scene& scene, int instanceCount, Terrain::TerrainSpec const& terrainSpec)
     {
         ZoneScopedNC("TerrainBuilder::LoadTerrain", 0xFF0000);
+
+        if (LoadMesh(scene, instanceCount, terrainSpec))
+        {
+            return true;
+        }
+
         TerrainComponent terrainComponent{};
         auto& registry = scene.GetRegistry();
         auto& sceneGraph = scene.GetSceneGraph();
@@ -248,13 +276,15 @@ namespace GfxRenderEngine
                     submesh.m_VertexCount = m_Vertices.size();
                     submesh.m_InstanceCount = instanceCount;
 
-                    submesh.m_Material.m_PbrMaterial = terrainSpec.m_PbrMaterial;
+                    auto material = std::make_shared<PbrMaterial>();
+                    material->m_PbrMaterialProperties = terrainSpec.m_PbrMaterialProperties;
+                    submesh.m_Material = material;
 
                     { // create material descriptor
-                        Material::MaterialTextures materialTextures;
+                        PbrMaterial::MaterialTextures materialTextures;
 
-                        auto materialDescriptor = MaterialDescriptor::Create(MaterialDescriptor::MtPbr, materialTextures);
-                        submesh.m_Material.m_MaterialDescriptor = materialDescriptor;
+                        auto materialDescriptor = MaterialDescriptor::Create(Material::MtPbr, materialTextures);
+                        material->m_MaterialDescriptor = materialDescriptor;
                     }
                     { // create resource descriptor
                         Resources::ResourceBuffers resourceBuffers;

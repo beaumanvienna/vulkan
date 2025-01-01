@@ -24,6 +24,7 @@
 #include "auxiliary/file.h"
 #include "scene/sceneLoaderJSON.h"
 #include "scene/terrainLoaderJSON.h"
+#include "scene/terrainLoaderJSONMulti.h"
 
 namespace GfxRenderEngine
 {
@@ -96,7 +97,31 @@ namespace GfxRenderEngine
                     ++terrainCounter;
                 }
             }
+            else if (sceneObjectKey == "terrainMultiMaterial")
+            {
+                CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::array), "type must be array");
+                ondemand::array terrainDescriptions = sceneObject.value().get_array();
+                {
+                    int count = terrainDescriptions.count_elements();
+                    if (count == 1)
+                    {
+                        LOG_CORE_INFO("loading 1 terrain");
+                    }
+                    else
+                    {
+                        LOG_CORE_INFO("loading {0} terrain descriptions", count);
+                    }
+                }
 
+                m_TerrainInfosMultiMaterial.resize(terrainDescriptions.count_elements());
+                uint terrainCounter = 0;
+                for (auto terrainDescription : terrainDescriptions)
+                {
+                    ParseTerrainMultiMaterialDescription(terrainDescription, m_SceneDescriptionFile.m_TerrainDescriptions,
+                                                         m_TerrainInfosMultiMaterial[terrainCounter]);
+                    ++terrainCounter;
+                }
+            }
             else if (sceneObjectKey == "description")
             {
                 CORE_ASSERT((sceneObject.value().type() == ondemand::json_type::string), "type must be string");
@@ -346,6 +371,7 @@ namespace GfxRenderEngine
             }
         }
         FinalizeTerrainDescriptions();
+        FinalizeTerrainMultiMaterialDescriptions();
     }
 
     void SceneLoaderJSON::ParseGltfFile(ondemand::object gltfFileJSON, bool fast, SceneLoaderJSON::GltfInfo& gltfInfo)
@@ -753,6 +779,85 @@ namespace GfxRenderEngine
         }
     }
 
+    void SceneLoaderJSON::ParseTerrainMultiMaterialDescription(ondemand::object terrainDescription,
+                                                               std::vector<Terrain::TerrainDescription>& terrainDescriptions,
+                                                               TerrainInfo& terrainInfo)
+    {
+        std::string filename;
+
+        for (auto terrainDescriptionObject : terrainDescription)
+        {
+            std::string_view terrainDescriptionObjectKey = terrainDescriptionObject.unescaped_key();
+
+            if (terrainDescriptionObjectKey == "filename")
+            {
+                std::string_view filenameStringView = terrainDescriptionObject.value().get_string();
+                filename = std::string(filenameStringView);
+                if (EngineCore::FileExists(filename))
+                {
+                    LOG_CORE_INFO("Scene loader found {0}", filename);
+                }
+                else
+                {
+                    LOG_CORE_CRITICAL("terrain description not found: {0}", filename);
+                    return;
+                }
+            }
+            else if (terrainDescriptionObjectKey == "instances")
+            {
+                // get array of terrain instances
+                ondemand::array instances = terrainDescriptionObject.value();
+                int instanceCount = instances.count_elements();
+
+                if (!instanceCount)
+                {
+                    LOG_CORE_ERROR("no instances found (json file broken): {0}", filename);
+                    return;
+                }
+
+                auto loadTerrain = [this, filename, instanceCount]()
+                {
+                    TerrainLoaderJSONMulti terrainLoaderJSONMulti(m_Scene);
+                    return terrainLoaderJSONMulti.Deserialize(filename, instanceCount, m_FilepathMesh);
+                };
+
+                terrainInfo.m_LoadFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(loadTerrain);
+                terrainInfo.m_Filename = filename;
+                terrainInfo.m_InstanceCount = instanceCount;
+                terrainInfo.m_InstanceTransforms.resize(instanceCount);
+
+                {
+                    uint instanceIndex = 0;
+                    for (auto instance : instances)
+                    {
+                        ondemand::object instanceObjects = instance.value();
+                        for (auto instanceObject : instanceObjects)
+                        {
+                            std::string_view instanceObjectKey = instanceObject.unescaped_key();
+
+                            if (instanceObjectKey == "transform")
+                            {
+                                CORE_ASSERT((instanceObject.value().type() == ondemand::json_type::object),
+                                            "type must be object");
+                                TransformComponent& transform = terrainInfo.m_InstanceTransforms[instanceIndex];
+                                ParseTransform(instanceObject.value(), transform);
+                            }
+                            else
+                            {
+                                LOG_CORE_CRITICAL("unrecognized terrain instance object");
+                            }
+                        }
+                        ++instanceIndex;
+                    }
+                }
+            }
+            else
+            {
+                LOG_CORE_CRITICAL("unrecognized terrain description object");
+            }
+        }
+    }
+
     std::vector<Terrain::TerrainDescription>& SceneLoaderJSON::GetTerrainDescriptions()
     {
         return m_SceneDescriptionFile.m_TerrainDescriptions;
@@ -784,6 +889,47 @@ namespace GfxRenderEngine
                 for (auto& terrainInstance : terrainInstances)
                 {
                     std::string name = terrainInfo.m_Filename + std::string("::") + std::to_string(instanceIndex);
+                    entt::entity entity = m_Scene.m_Dictionary.Retrieve(name);
+                    CORE_ASSERT(entity != entt::null, "couldn't find entity");
+                    terrainInstance.m_Entity = entity;
+                    TransformComponent& transform = m_Scene.m_Registry.get<TransformComponent>(entity);
+                    transform.SetScale(terrainInfo.m_InstanceTransforms[instanceIndex].GetScale());
+                    transform.SetRotation(terrainInfo.m_InstanceTransforms[instanceIndex].GetRotation());
+                    transform.SetTranslation(terrainInfo.m_InstanceTransforms[instanceIndex].GetTranslation());
+
+                    ++instanceIndex;
+                }
+            }
+        }
+    }
+
+    void SceneLoaderJSON::FinalizeTerrainMultiMaterialDescriptions()
+    {
+        for (auto& terrainInfo : m_TerrainInfosMultiMaterial)
+        {
+            if (!terrainInfo.m_LoadFuture.has_value())
+            {
+                // file was not loaded (probably not found on disk)
+                continue;
+            }
+            auto& loadFuture = terrainInfo.m_LoadFuture.value();
+            if (!loadFuture.get())
+            {
+                continue;
+            }
+            Terrain::TerrainDescription terrainDescriptionScene(terrainInfo.m_Filename);
+            m_SceneDescriptionFile.m_TerrainDescriptionsMultiMaterial.push_back(terrainDescriptionScene);
+
+            std::vector<Terrain::Instance>& terrainInstances =
+                m_SceneDescriptionFile.m_TerrainDescriptionsMultiMaterial.back().m_Instances;
+            terrainInstances.resize(terrainInfo.m_InstanceCount);
+
+            {
+                uint instanceIndex = 0;
+                for (auto& terrainInstance : terrainInstances)
+                {
+                    std::string name = std::string("TLMM::") + m_FilepathMesh + // terrain loader multi material
+                                       std::string("::") + std::to_string(instanceIndex) + std::string("::root");
                     entt::entity entity = m_Scene.m_Dictionary.Retrieve(name);
                     CORE_ASSERT(entity != entt::null, "couldn't find entity");
                     terrainInstance.m_Entity = entity;

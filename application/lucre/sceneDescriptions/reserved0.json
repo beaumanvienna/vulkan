@@ -28,8 +28,57 @@
             ]
         }
     ],
+    "terrainMultiMaterial":
+    [
+        {
+            "filename": "application/lucre/terrainDescriptions/terrain1.json",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1.33093, 1.5, 1.54767
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -10.9892, -4.4496, 1.19157
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
     "fastgltf files":
     [
+        {
+            "filename": "application/lucre/models/external_3D_files/measured/2m.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.323799, -2.10549, 0
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/assets/Sponza/glTF/Sponza.gltf",
             "instances":
@@ -112,11 +161,11 @@
                         ],
                         "rotation":
                         [
-                            0, 3.83972, 0
+                            -3.14159, -0.698127, -3.14159
                         ],
                         "translation":
                         [
-                            4.74126, -0.653, 0
+                            -2.85519, -2, -5.15315
                         ]
                     }
                 },
@@ -129,11 +178,11 @@
                         ],
                         "rotation":
                         [
-                            0, 4.18879, 0
+                            -3.14159, -1.0472, -3.14159
                         ],
                         "translation":
                         [
-                            3.64108, -0.653, 0
+                            -3.38277, -2, -4.05522
                         ]
                     }
                 },
@@ -142,7 +191,7 @@
                     {
                         "scale":
                         [
-                            0.00999999, 0.01, 0.00999999
+                            0.00999997, 0.01, 0.00999997
                         ],
                         "rotation":
                         [
@@ -150,7 +199,7 @@
                         ],
                         "translation":
                         [
-                            4.37833, -0.653, 0.141733
+                            -1.48155, -2, -4.65439
                         ]
                     }
                 },
@@ -167,14 +216,14 @@
                         ],
                         "translation":
                         [
-                            3.26095, -0.653, -0.817254
+                            -2.46564, -2, -6.26672
                         ]
                     }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/plane4.glb",
+            "filename": "application/lucre/models/terrain/plane1.glb",
             "instances":
             [
                 {
@@ -190,30 +239,7 @@
                         ],
                         "translation":
                         [
-                            -2.12319, -3.53, -1.23215
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/plane1.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1.5, 1
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -2.12319, -3.55, -1.23215
+                            -1.38243, -3.53, -1.23215
                         ]
                     }
                 }
