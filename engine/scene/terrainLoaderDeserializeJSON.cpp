@@ -131,14 +131,6 @@ namespace GfxRenderEngine
                 terrainSpec.m_FilepathMesh = std::string(meshPath);
                 LOG_CORE_INFO("mesh path: {0}", terrainSpec.m_FilepathMesh);
             }
-            else if (terrainAttributesKey == "controlTexture")
-            {
-                CORE_ASSERT((terrainAttributes.value().type() == ondemand::json_type::string),
-                            "control texture path must be string");
-                std::string_view controlTexturePath = terrainAttributes.value().get_string();
-                terrainSpec.m_FilepathControlTexture = std::string(controlTexturePath);
-                LOG_CORE_INFO("control texture path: {0}", terrainSpec.m_FilepathControlTexture);
-            }
             else
             {
                 LOG_CORE_CRITICAL("unrecognized terrain object '" + std::string(terrainAttributesKey) + "'");

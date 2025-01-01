@@ -136,8 +136,7 @@ namespace GfxRenderEngine
                 .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
                             Material::NUM_MULTI_MATERIAL) // roughness map
                 .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL)                                               // metallic map
-                .AddBinding(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // control texture
+                            Material::NUM_MULTI_MATERIAL) // metallic map
                 .Build();
 
         m_ResourceDescriptorSetLayouts[Rt::RtInstance] =

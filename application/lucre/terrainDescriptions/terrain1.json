@@ -2,6 +2,5 @@
     "file format identifier": 1.2,
     "description": "terrain 1",
     "author": "Copyright (c) 2024 Engine Development Team",
-    "mesh": "application/lucre/models/terrain/terrain1.glb",
-    "controlTexture": "application/lucre/models/terrain/controlTexture.png"
+    "mesh": "application/lucre/models/terrain/terrain1.glb"
 }

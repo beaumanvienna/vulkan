@@ -33,7 +33,6 @@ layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap[GLSL_NUM_MUL
 layout(set = 1, binding = 3) uniform sampler2D emissiveMap[GLSL_NUM_MULTI_MATERIAL];
 layout(set = 1, binding = 4) uniform sampler2D roughnessMap[GLSL_NUM_MULTI_MATERIAL];
 layout(set = 1, binding = 5) uniform sampler2D metallicMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 6) uniform sampler2D controlMap;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
@@ -78,9 +77,6 @@ struct PbrMaterial
     float m_Spare1; // padding
     float m_Spare2; // padding
     float m_Spare3; // padding
-
-    // byte 64 to 128
-    vec4 m_Spare4[4];
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -103,18 +99,9 @@ layout(push_constant) uniform Push
 
 void main()
 {
-    float contribution[4];
-    vec4 controlMapSample = texture(controlMap, fragUV);
-    contribution[0] = controlMapSample.r;
-    contribution[1] = controlMapSample.g;
-    contribution[2] = controlMapSample.b;
-    contribution[3] = controlMapSample.a;
-    
     // position
     outPosition = vec4(fragPosition, 1.0);
-    outColor = vec4(0.0, 0.0, 0.0, 0.0);
-    outNormal = vec4(0.0, 0.0, 1.0, 1.0);
-    
+
     // normal
     vec3 N = normalize(fragNormal);
     vec3 T = normalize(fragTangent);
@@ -122,35 +109,37 @@ void main()
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
-    
+
+    vec4 col[GLSL_NUM_MULTI_MATERIAL];
+    vec4 normal[GLSL_NUM_MULTI_MATERIAL];
+    vec4 material[GLSL_NUM_MULTI_MATERIAL];
+    vec4 emissive[GLSL_NUM_MULTI_MATERIAL];
+
+
     for (int i = 0; i < GLSL_NUM_MULTI_MATERIAL; ++i)
     {
         // color
-        vec4 col;
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_DIFFUSE_MAP))
         {
-            col = texture(diffuseMap[i], fragUV) * push.m_PbrMaterial[i].m_DiffuseColor;
+            col[i] = texture(diffuseMap[i], fragUV) * push.m_PbrMaterial[i].m_DiffuseColor;
         }
         else
         {
-            col = vec4(fragColor.r, fragColor.g, fragColor.b, fragColor.a);
+            col[i] = vec4(fragColor.r, fragColor.g, fragColor.b, fragColor.a);
         }
-        outColor = outColor + col * contribution[i];
 
         // normal
-        vec4 normal;
         float normalMapIntensity = push.m_PbrMaterial[i].m_NormalMapIntensity;
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_NORMAL_MAP))
         {
             vec3 normalTangentSpace = texture(normalMap[i],fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
             normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
-            normal = vec4(normalize(TBN * normalTangentSpace), 1.0);
+            normal[i] = vec4(normalize(TBN * normalTangentSpace), 1.0);
         }
         else
         {
-            normal = vec4(N, 1.0);
+            normal[i] = vec4(N, 1.0);
         }
-        outNormal = mix(outNormal, normal, contribution[i]);
 
         // roughness, metallic
         float roughness;
@@ -180,18 +169,45 @@ void main()
                 metallic = push.m_PbrMaterial[i].m_Metallic;
             }
         }
-        outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
+        material[i] = vec4(normalMapIntensity, roughness, metallic, 0.0);
 
         // emissive material
         vec4 emissiveColor = vec4(push.m_PbrMaterial[i].m_EmissiveColor.r, push.m_PbrMaterial[i].m_EmissiveColor.g, push.m_PbrMaterial[i].m_EmissiveColor.b, 1.0);
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_EMISSIVE_MAP))
         {
             vec4 fragEmissiveColor = texture(emissiveMap[i], fragUV);
-            outEmissive = fragEmissiveColor * emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
+            emissive[i] = fragEmissiveColor * emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
         }
         else
         {
-            outEmissive = emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
+            emissive[i] = emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
         }
     }
+
+    float vertical;
+    vertical = smoothstep(0.5, 0.6, N.y);
+
+    float altitude;
+    altitude = smoothstep(8.7, 9.0, fragPosition.y);
+    
+    
+    float lowness;
+    lowness = smoothstep(1.3, 1.6, fragPosition.y);
+
+    // col
+    outColor = mix(col[0], col[3], altitude);
+    outColor = mix(col[2], outColor, lowness);
+    outColor = mix(col[1], outColor, vertical);
+
+    // normal
+    outNormal = mix(normal[1], normal[0], vertical);
+    outNormal = mix(outNormal, normal[3], altitude);
+
+    // material
+    outMaterial = mix(material[1], material[0], vertical);
+    outMaterial = mix(outMaterial, material[3], altitude);
+
+    // emissive
+    outEmissive = mix(emissive[1], emissive[0], vertical);
+    outEmissive = mix(outEmissive, emissive[3], altitude);
 }

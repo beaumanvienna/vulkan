@@ -36,6 +36,8 @@ namespace GfxRenderEngine
 
     void SceneLoaderJSON::SerializeScene(int indent)
     {
+        size_t terrainCount = m_SceneDescriptionFile.m_TerrainDescriptions.size();
+        size_t terrainMultiMaterialCount = m_SceneDescriptionFile.m_TerrainDescriptionsMultiMaterial.size();
         size_t gltfFileCount = m_SceneDescriptionFile.m_GltfFiles.m_GltfFilesFromScene.size();
         size_t fastgltfFileCount = m_SceneDescriptionFile.m_FastgltfFiles.m_GltfFilesFromScene.size();
         size_t fbxFileCount = m_SceneDescriptionFile.m_FbxFiles.m_FbxFilesFromScene.size();
@@ -49,11 +51,17 @@ namespace GfxRenderEngine
         SerializeString(indent, "description", m_SceneDescriptionFile.m_Description);
         SerializeString(indent, "author", m_SceneDescriptionFile.m_Author);
 
-        if (fastgltfFileCount) // terrain
+        if (terrainCount) // terrain
+        {
+            bool noComma = (terrainMultiMaterialCount == 0) && (fastgltfFileCount == 0) && (gltfFileCount == 0) && (fbxFileCount == 0) && (ufbxFileCount == 0) &&
+                           (objFileCount == 0);
+            SerializeTerrrainDescriptions(indent, noComma);
+        }
+        if (terrainMultiMaterialCount) // terrainMultiMaterial
         {
             bool noComma = (fastgltfFileCount == 0) && (gltfFileCount == 0) && (fbxFileCount == 0) && (ufbxFileCount == 0) &&
                            (objFileCount == 0);
-            SerializeTerrrainDescriptions(indent, noComma);
+            SerializeTerrrainMultiMaterialDescriptions(indent, noComma);
         }
         if (fastgltfFileCount) // fastgltf
         {
@@ -372,6 +380,24 @@ namespace GfxRenderEngine
         size_t terrainDescriptionCount = m_SceneDescriptionFile.m_TerrainDescriptions.size();
         size_t terrainDescriptionIndex = 0;
         for (auto& terrainDescription : m_SceneDescriptionFile.m_TerrainDescriptions)
+        {
+            bool noCommaLocal = ((terrainDescriptionIndex + 1) == terrainDescriptionCount);
+            SerializeTerrrainDescription(indent, terrainDescription, noCommaLocal);
+            ++terrainDescriptionIndex;
+        }
+        m_OutputFile << indentStr << "]" << (noComma ? "" : ",") << "\n";
+    }
+    
+
+    void SceneLoaderJSON::SerializeTerrrainMultiMaterialDescriptions(int indent, bool noComma)
+    {
+        std::string indentStr(indent, ' ');
+        m_OutputFile << indentStr << "\"terrainMultiMaterial\":\n";
+        m_OutputFile << indentStr << "[\n";
+        indent += 4;
+        size_t terrainDescriptionCount = m_SceneDescriptionFile.m_TerrainDescriptionsMultiMaterial.size();
+        size_t terrainDescriptionIndex = 0;
+        for (auto& terrainDescription : m_SceneDescriptionFile.m_TerrainDescriptionsMultiMaterial)
         {
             bool noCommaLocal = ((terrainDescriptionIndex + 1) == terrainDescriptionCount);
             SerializeTerrrainDescription(indent, terrainDescription, noCommaLocal);

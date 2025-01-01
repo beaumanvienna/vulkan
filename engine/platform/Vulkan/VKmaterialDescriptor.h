@@ -36,9 +36,8 @@ namespace GfxRenderEngine
     public:
         VK_MaterialDescriptor(Material::MaterialType materialType, PbrMaterial::MaterialTextures& textures);
         VK_MaterialDescriptor(Material::MaterialType materialType, std::shared_ptr<Cubemap> const& cubemap);
-
-        VK_MaterialDescriptor(Material::MaterialType materialType, PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures,
-                              std::shared_ptr<Texture>& controlTexture);
+        VK_MaterialDescriptor(Material::MaterialType materialType,
+                              PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures);
 
         VK_MaterialDescriptor(VK_MaterialDescriptor const& other);
         VK_MaterialDescriptor(std::shared_ptr<MaterialDescriptor> const& materialDescriptor);

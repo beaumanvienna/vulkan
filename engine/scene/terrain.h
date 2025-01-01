@@ -80,7 +80,6 @@ namespace GfxRenderEngine
             PbrMaterial::PbrMaterialProperties m_PbrMaterialProperties{};
             GrassSpec m_GrassSpec;
             std::string m_FilepathMesh;
-            std::string m_FilepathControlTexture;
         };
 
     } // namespace Terrain

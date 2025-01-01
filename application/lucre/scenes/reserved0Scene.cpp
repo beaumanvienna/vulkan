@@ -107,14 +107,15 @@ namespace LucreApp
         }
 
         {
-            m_Terrain1 = m_Dictionary.Retrieve("SL::application/lucre/models/terrain/terrain1.glb::0::root");
+            // TLMM = terrain loader multi material
+            m_Terrain1 = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::root");
             if (m_Terrain1 != entt::null)
             {
                 Water1Component water1Component{.m_Scale = {25.0f, 1.0f, 50.0f}, .m_Translation = {0.0f, 1.728f, 0.0f}};
                 m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
             }
 
-            auto terrain = m_Dictionary.Retrieve("SL::application/lucre/models/terrain/terrain1.glb::0::Scene::terrain");
+            auto terrain = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::Scene::terrain");
             if (terrain != entt::null)
             {
                 m_Registry.remove<PbrMaterialTag>(terrain);
@@ -314,7 +315,7 @@ namespace LucreApp
         m_CameraController->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
 
-        cameraTransform.SetTranslation({4.027f, 0.817f, -10.658f});
+        cameraTransform.SetTranslation({-3.485f, 3.625f, -32.261f});
         cameraTransform.SetRotation({-0.074769905f, 3.11448769f, 0.0f});
 
         // global camera transform is not yet available

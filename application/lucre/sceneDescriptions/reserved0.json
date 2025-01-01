@@ -26,7 +26,10 @@
                     }
                 }
             ]
-        },
+        }
+    ],
+    "terrainMultiMaterial":
+    [
         {
             "filename": "application/lucre/terrainDescriptions/terrain1.json",
             "instances":
@@ -36,7 +39,7 @@
                     {
                         "scale":
                         [
-                            1, 1.5, 1
+                            1.33093, 1.5, 1.54767
                         ],
                         "rotation":
                         [
@@ -44,7 +47,7 @@
                         ],
                         "translation":
                         [
-                            -0.622098, -3.23777, -1.23215
+                            -10.9892, -4.4496, 1.19157
                         ]
                     }
                 }
@@ -53,6 +56,29 @@
     ],
     "fastgltf files":
     [
+        {
+            "filename": "application/lucre/models/external_3D_files/measured/2m.gltf",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            0.323799, -2.10549, 0
+                        ]
+                    }
+                }
+            ]
+        },
         {
             "filename": "application/lucre/models/assets/Sponza/glTF/Sponza.gltf",
             "instances":
@@ -135,11 +161,11 @@
                         ],
                         "rotation":
                         [
-                            0, 3.83972, 0
+                            -3.14159, -0.698127, -3.14159
                         ],
                         "translation":
                         [
-                            4.74126, -0.785, 0
+                            -2.85519, -2, -5.15315
                         ]
                     }
                 },
@@ -152,11 +178,11 @@
                         ],
                         "rotation":
                         [
-                            0, 4.18879, 0
+                            -3.14159, -1.0472, -3.14159
                         ],
                         "translation":
                         [
-                            3.64108, -0.785, 0
+                            -3.38277, -2, -4.05522
                         ]
                     }
                 },
@@ -165,7 +191,7 @@
                     {
                         "scale":
                         [
-                            0.00999998, 0.01, 0.00999998
+                            0.00999997, 0.01, 0.00999997
                         ],
                         "rotation":
                         [
@@ -173,7 +199,7 @@
                         ],
                         "translation":
                         [
-                            4.37833, -0.784963, 0.141733
+                            -1.48155, -2, -4.65439
                         ]
                     }
                 },
@@ -190,7 +216,7 @@
                         ],
                         "translation":
                         [
-                            3.26095, -0.786382, -0.817254
+                            -2.46564, -2, -6.26672
                         ]
                     }
                 }
@@ -213,7 +239,7 @@
                         ],
                         "translation":
                         [
-                            -1.07286, -3.53, -1.23215
+                            -1.38243, -3.53, -1.23215
                         ]
                     }
                 }

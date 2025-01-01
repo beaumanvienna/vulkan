@@ -973,9 +973,19 @@ namespace GfxRenderEngine
             { // pbr multi material
                 submesh.m_Material = m_ExternalMaterial;
                 PbrMultiMaterial& material = *static_cast<PbrMultiMaterial*>(m_ExternalMaterial.get());
-                material.m_PbrMultiMaterialProperties = {m_Materials[0].m_PbrMaterialProperties,
-                                                         m_Materials[0].m_PbrMaterialProperties};
-                material.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], m_MaterialTextures[1]};
+
+                if ((m_Materials.size() < GLSL_NUM_MULTI_MATERIAL) || (m_MaterialTextures.size() < GLSL_NUM_MULTI_MATERIAL))
+                {
+                    CORE_HARD_STOP("fastgltfLoader: number of multi materials insufficient");
+                }
+                material.m_PbrMultiMaterialProperties = {m_Materials[0].m_PbrMaterialProperties, //
+                                                         m_Materials[1].m_PbrMaterialProperties, //
+                                                         m_Materials[2].m_PbrMaterialProperties, //
+                                                         m_Materials[3].m_PbrMaterialProperties};
+                material.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], //
+                                                       m_MaterialTextures[1], //
+                                                       m_MaterialTextures[2], //
+                                                       m_MaterialTextures[3]};
                 // the material descriptor is handled externally
                 break;
             }

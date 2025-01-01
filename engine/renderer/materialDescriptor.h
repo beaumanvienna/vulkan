@@ -41,8 +41,7 @@ namespace GfxRenderEngine
         static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           PbrMaterial::MaterialTextures& textures);
         static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures,
-                                                          std::shared_ptr<Texture>& controlTexture);
+                                                          PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures);
         static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
                                                           std::shared_ptr<Cubemap> const& cubemap);
 

@@ -88,8 +88,7 @@ namespace GfxRenderEngine
     }
 
     VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
-                                                 PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures,
-                                                 std::shared_ptr<Texture>& controlTexture)
+                                                 PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures)
         : m_MaterialType{materialType}
     {
         switch (materialType)
@@ -146,8 +145,6 @@ namespace GfxRenderEngine
                     }
                 }
 
-                auto& imageInfoCtrl = static_cast<VK_Texture*>(controlTexture.get())->GetDescriptorImageInfo();
-
                 VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
                     .WriteImage(0, imageInfo0Vec)
                     .WriteImage(1, imageInfo1Vec)
@@ -155,7 +152,6 @@ namespace GfxRenderEngine
                     .WriteImage(3, imageInfo3Vec)
                     .WriteImage(4, imageInfo4Vec)
                     .WriteImage(5, imageInfo5Vec)
-                    .WriteImage(6, imageInfoCtrl)
                     .Build(m_DescriptorSet);
                 break;
             }

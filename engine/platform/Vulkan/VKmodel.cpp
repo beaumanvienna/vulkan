@@ -295,9 +295,24 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
-        for (auto& submesh : m_SubmeshesPbr)
+        for (auto& submesh : m_SubmeshesPbrMulti)
         {
-            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
+
+            VK_MaterialDescriptor& materialDescriptor =
+                *static_cast<VK_MaterialDescriptor*>(submesh.m_Material->m_MaterialDescriptor.get());
+            const VkDescriptorSet& materialDescriptorSet = materialDescriptor.GetDescriptorSet();
+            const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
+            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet,
+                                                           resourceDescriptorSet};
+            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                    pipelineLayout,                  // VkPipelineLayout       layout,
+                                    0,                               // uint32_t               firstSet,
+                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                    0,                               // uint32_t               dynamicOffsetCount,
+                                    nullptr                          // const uint32_t*        pDynamicOffsets);
+            );
             PushConstantsPbrMulti(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }

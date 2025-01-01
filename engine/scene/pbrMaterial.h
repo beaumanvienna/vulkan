@@ -79,9 +79,6 @@ namespace GfxRenderEngine
             float m_Spare1{0.0f}; // padding
             float m_Spare2{0.0f}; // padding
             float m_Spare3{0.0f}; // padding
-
-            // byte 64 to 128
-            glm::vec4 m_Spare4[4];
         };
 
     public:

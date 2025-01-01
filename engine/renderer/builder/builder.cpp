@@ -26,6 +26,7 @@
 #include "core.h"
 #include "scene/scene.h"
 #include "auxiliary/hash.h"
+#include "scene/cubemapMaterial.h"
 #include "renderer/builder/builder.h"
 #include "renderer/model.h"
 
@@ -189,7 +190,7 @@ namespace GfxRenderEngine
             Submesh submesh{};
             submesh.m_FirstVertex = 0;
             submesh.m_VertexCount = VERTEX_COUNT;
-            auto material = std::make_shared<PbrMaterial>();
+            auto material = std::make_shared<CubemapMaterial>();
             submesh.m_Material = material;
             { // create material descriptor
                 auto materialDescriptor = MaterialDescriptor::Create(Material::MtCubemap, m_Cubemaps[0]);
