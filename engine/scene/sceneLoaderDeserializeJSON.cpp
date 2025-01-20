@@ -113,12 +113,15 @@ namespace GfxRenderEngine
                     }
                 }
 
-                m_TerrainInfosMultiMaterial.resize(terrainDescriptions.count_elements());
+                size_t terrainDescriptionsSize = terrainDescriptions.count_elements();
+                m_TerrainInfosMultiMaterial.resize(terrainDescriptionsSize);
+                m_FilepathMeshVector.resize(terrainDescriptionsSize);
+
                 uint terrainCounter = 0;
                 for (auto terrainDescription : terrainDescriptions)
                 {
                     ParseTerrainMultiMaterialDescription(terrainDescription, m_SceneDescriptionFile.m_TerrainDescriptions,
-                                                         m_TerrainInfosMultiMaterial[terrainCounter]);
+                                                         m_TerrainInfosMultiMaterial[terrainCounter], terrainCounter);
                     ++terrainCounter;
                 }
             }
@@ -781,10 +784,9 @@ namespace GfxRenderEngine
 
     void SceneLoaderJSON::ParseTerrainMultiMaterialDescription(ondemand::object terrainDescription,
                                                                std::vector<Terrain::TerrainDescription>& terrainDescriptions,
-                                                               TerrainInfo& terrainInfo)
+                                                               TerrainInfo& terrainInfo, uint terrainCounter)
     {
         std::string filename;
-
         for (auto terrainDescriptionObject : terrainDescription)
         {
             std::string_view terrainDescriptionObjectKey = terrainDescriptionObject.unescaped_key();
@@ -815,10 +817,11 @@ namespace GfxRenderEngine
                     return;
                 }
 
-                auto loadTerrain = [this, filename, instanceCount]()
+                std::string* filepathMesh = &m_FilepathMeshVector[terrainCounter];
+                auto loadTerrain = [this, filename, instanceCount, filepathMesh]()
                 {
                     TerrainLoaderJSONMulti terrainLoaderJSONMulti(m_Scene);
-                    return terrainLoaderJSONMulti.Deserialize(filename, instanceCount, m_FilepathMesh);
+                    return terrainLoaderJSONMulti.Deserialize(filename, instanceCount, filepathMesh);
                 };
 
                 terrainInfo.m_LoadFuture = Engine::m_Engine->m_PoolPrimary.SubmitTask(loadTerrain);
@@ -905,7 +908,7 @@ namespace GfxRenderEngine
 
     void SceneLoaderJSON::FinalizeTerrainMultiMaterialDescriptions()
     {
-        for (auto& terrainInfo : m_TerrainInfosMultiMaterial)
+        for (uint index{0}; auto& terrainInfo : m_TerrainInfosMultiMaterial)
         {
             if (!terrainInfo.m_LoadFuture.has_value())
             {
@@ -928,7 +931,7 @@ namespace GfxRenderEngine
                 uint instanceIndex = 0;
                 for (auto& terrainInstance : terrainInstances)
                 {
-                    std::string name = std::string("TLMM::") + m_FilepathMesh + // terrain loader multi material
+                    std::string name = std::string("TLMM::") + m_FilepathMeshVector[index] + // terrain loader multi material
                                        std::string("::") + std::to_string(instanceIndex) + std::string("::root");
                     entt::entity entity = m_Scene.m_Dictionary.Retrieve(name);
                     CORE_ASSERT(entity != entt::null, "couldn't find entity");
@@ -941,6 +944,7 @@ namespace GfxRenderEngine
                     ++instanceIndex;
                 }
             }
+            ++index;
         }
     }
 } // namespace GfxRenderEngine

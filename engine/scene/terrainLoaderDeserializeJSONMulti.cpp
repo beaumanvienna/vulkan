@@ -31,7 +31,7 @@ namespace GfxRenderEngine
     TerrainLoaderJSONMulti::TerrainLoaderJSONMulti(Scene& scene) : m_Scene(scene) {}
 
     bool TerrainLoaderJSONMulti::Deserialize(std::string const& filepath, int instanceCount, //
-                                             std::string& filepathMesh)
+                                             std::string* filepathModel)
     {
         if (!EngineCore::FileExists(filepath))
         {
@@ -40,7 +40,7 @@ namespace GfxRenderEngine
         }
 
         LOG_CORE_INFO("TerrainLoaderJSONMulti: loading {0}", filepath);
-
+        std::string& filepathMesh = *filepathModel;
         ondemand::parser parser;
         padded_string json = padded_string::load(filepath);
 

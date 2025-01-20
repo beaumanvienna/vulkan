@@ -1,0 +1,6 @@
+{
+    "file format identifier": 1.2,
+    "description": "terrain Gaea",
+    "author": "Copyright (c) 2024 Engine Development Team",
+    "mesh": "application/lucre/models/terrain/terrainGaea.glb"
+}

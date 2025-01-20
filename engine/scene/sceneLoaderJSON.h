@@ -96,7 +96,7 @@ namespace GfxRenderEngine
                                      TerrainInfo& terrainInfo);
         void ParseTerrainMultiMaterialDescription(ondemand::object terrainDescription,
                                                   std::vector<Terrain::TerrainDescription>& terrainDescriptions,
-                                                  TerrainInfo& terrainInfo);
+                                                  TerrainInfo& terrainInfo, uint terrainCounter);
 
         void FinalizeTerrainDescriptions();
         void FinalizeTerrainMultiMaterialDescriptions();
@@ -145,7 +145,7 @@ namespace GfxRenderEngine
         static constexpr double SUPPORTED_FILE_FORMAT_VERSION = 1.2;
 
         Scene& m_Scene;
-        std::string m_FilepathMesh;
+        std::vector<std::string> m_FilepathMeshVector;
 
         SceneDescriptionFile m_SceneDescriptionFile;
 

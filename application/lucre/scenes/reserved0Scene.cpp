@@ -47,6 +47,7 @@ namespace LucreApp
 
     void Reserved0Scene::Start()
     {
+        LOG_APP_CRITICAL("void Reserved0Scene::Start()");
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
@@ -121,6 +122,15 @@ namespace LucreApp
                 m_Registry.remove<PbrMaterialTag>(terrain);
                 PbrMultiMaterialTag pbrMultiMaterialTag{};
                 m_Registry.emplace<PbrMultiMaterialTag>(terrain, pbrMultiMaterialTag);
+            }
+
+            auto gaea =
+                m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrainGaea.glb::0::Scene::TerrainGaea");
+            if (gaea != entt::null)
+            {
+                m_Registry.remove<PbrMaterialTag>(gaea);
+                PbrMultiMaterialTag pbrMultiMaterialTag{};
+                m_Registry.emplace<PbrMultiMaterialTag>(gaea, pbrMultiMaterialTag);
             }
         }
     }

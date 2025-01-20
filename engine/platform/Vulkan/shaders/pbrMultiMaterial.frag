@@ -115,13 +115,15 @@ void main()
     vec4 material[GLSL_NUM_MULTI_MATERIAL];
     vec4 emissive[GLSL_NUM_MULTI_MATERIAL];
 
+    float uvScale[GLSL_NUM_MULTI_MATERIAL] = {4.0, 1.0, 1.0, 4.0};
 
     for (int i = 0; i < GLSL_NUM_MULTI_MATERIAL; ++i)
     {
+        vec2 uv = uvScale[i] * fragUV;
         // color
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_DIFFUSE_MAP))
         {
-            col[i] = texture(diffuseMap[i], fragUV) * push.m_PbrMaterial[i].m_DiffuseColor;
+            col[i] = texture(diffuseMap[i], uv) * push.m_PbrMaterial[i].m_DiffuseColor;
         }
         else
         {
@@ -132,7 +134,7 @@ void main()
         float normalMapIntensity = push.m_PbrMaterial[i].m_NormalMapIntensity;
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_NORMAL_MAP))
         {
-            vec3 normalTangentSpace = texture(normalMap[i],fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
+            vec3 normalTangentSpace = texture(normalMap[i],uv).xyz * 2 - vec3(1.0, 1.0, 1.0);
             normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
             normal[i] = vec4(normalize(TBN * normalTangentSpace), 1.0);
         }
@@ -147,14 +149,14 @@ void main()
 
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_ROUGHNESS_METALLIC_MAP))
         {
-            roughness = texture(roughnessMetallicMap[i], fragUV).g;
-            metallic = texture(roughnessMetallicMap[i], fragUV).b;
+            roughness = texture(roughnessMetallicMap[i], uv).g;
+            metallic = texture(roughnessMetallicMap[i], uv).b;
         }
         else
         {
             if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_ROUGHNESS_MAP))
             {
-                roughness = texture(roughnessMap[i], fragUV).r; // gray scale
+                roughness = texture(roughnessMap[i], uv).r; // gray scale
             }
             else
             {
@@ -162,7 +164,7 @@ void main()
             }
             if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_METALLIC_MAP))
             {
-                metallic = texture(metallicMap[i], fragUV).r; // gray scale
+                metallic = texture(metallicMap[i], uv).r; // gray scale
             }
             else
             {
@@ -175,7 +177,7 @@ void main()
         vec4 emissiveColor = vec4(push.m_PbrMaterial[i].m_EmissiveColor.r, push.m_PbrMaterial[i].m_EmissiveColor.g, push.m_PbrMaterial[i].m_EmissiveColor.b, 1.0);
         if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_EMISSIVE_MAP))
         {
-            vec4 fragEmissiveColor = texture(emissiveMap[i], fragUV);
+            vec4 fragEmissiveColor = texture(emissiveMap[i], uv);
             emissive[i] = fragEmissiveColor * emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
         }
         else

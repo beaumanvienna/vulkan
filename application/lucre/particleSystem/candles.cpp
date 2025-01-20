@@ -94,7 +94,7 @@ namespace GfxRenderEngine
                         {(vertex1.x + volumeSize.x) + (volumeSize.x * EngineCore::RandomPlusMinusOne()),
                          (vertex1.y + volumeSize.y) + (volumeSize.y * EngineCore::RandomPlusMinusOne()),
                          (vertex1.z + volumeSize.z) + (volumeSize.z * EngineCore::RandomPlusMinusOne())});
-                    transform.SetScale(1.0f);
+                    transform.SetScale(0.2f);
                     ++index;
                 }
             }
