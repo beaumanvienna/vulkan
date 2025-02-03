@@ -23,7 +23,7 @@
 #version 450
 
 // inputs 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform Push
 {
     mat4 m_Mat4;
     vec2 m_UV[2];

@@ -29,7 +29,7 @@
 layout(location = 0) in vec3  position;
 layout(location = 3) in vec2  uv; // keep default vertex layout
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform Push
 {
     mat4 m_MVP;
 } push;

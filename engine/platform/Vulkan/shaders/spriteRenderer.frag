@@ -61,7 +61,7 @@ layout(set = 0, binding = 1) uniform sampler2D tex1;
 
 layout (location = 0) out vec4 outColor;
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform Push
 {
     mat4 m_ModelMatrix;
     mat4 m_NormalMatrix;

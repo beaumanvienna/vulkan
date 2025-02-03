@@ -29,7 +29,7 @@ layout(set = 0, binding = 0) uniform sampler2D emissiveMap;
 layout(location = 0)  in  vec2  fragUV;
 layout(location = 0) out  vec4  outEmissive;
 
-layout(push_constant) uniform VK_PushConstantDataBloom
+layout(push_constant, std430) uniform VK_PushConstantDataBloom
 {
     vec2 m_SrcResolution;
     float m_FilterRadius;

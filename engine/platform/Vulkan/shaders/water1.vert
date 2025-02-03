@@ -65,7 +65,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform Push
 {
     mat4 m_ModelMatrix;
 } push;

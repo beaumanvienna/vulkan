@@ -59,7 +59,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(location = 0) out vec2 fragOffset;
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform Push
 {
     vec4 m_Position;
     vec4 m_ColorRadius; // w is radius
