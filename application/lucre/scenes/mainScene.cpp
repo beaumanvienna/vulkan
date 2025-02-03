@@ -227,6 +227,7 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         m_Renderer->SubmitShadows(m_Registry);
         m_Renderer->Renderpass3D(m_Registry);
 

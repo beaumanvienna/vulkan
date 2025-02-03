@@ -27,6 +27,7 @@
 #include "VKrenderer.h"
 
 #include "systems/pushConstantData.h"
+#include "renderer/shader.h"
 
 namespace GfxRenderEngine
 {
@@ -222,8 +223,12 @@ namespace GfxRenderEngine
                                     VK_Submesh const& submesh)
     {
         auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
-        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PbrMaterial::PbrMaterialProperties), &pbrMaterialProperties);
+        vkCmdPushConstants(frameInfo.m_CommandBuffer,                  // VkCommandBuffer     commandBuffer,
+                           pipelineLayout,                             // VkPipelineLayout    layout,
+                           VK_SHADER_STAGE_FRAGMENT_BIT,               // VkShaderStageFlags  stageFlags,
+                           sizeof(VertexCtrl),                         // uint32_t            offset,
+                           sizeof(PbrMaterial::PbrMaterialProperties), // uint32_t            size,
+                           &pbrMaterialProperties);                    // const void*         pValues
     }
 
     void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
@@ -233,8 +238,12 @@ namespace GfxRenderEngine
         CORE_ASSERT(pbrMultiMaterial->GetType() == Material::MaterialType::MtPbrMulti,
                     "material must be MaterialType::MtPbrMulti");
         auto& pbrMultiMaterialProperties = pbrMultiMaterial->m_PbrMultiMaterialProperties;
-        vkCmdPushConstants(frameInfo.m_CommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PbrMultiMaterial::PbrMultiMaterialProperties), &pbrMultiMaterialProperties);
+        vkCmdPushConstants(frameInfo.m_CommandBuffer,                            // VkCommandBuffer     commandBuffer,
+                           pipelineLayout,                                       // VkPipelineLayout    layout,
+                           VK_SHADER_STAGE_FRAGMENT_BIT,                         // VkShaderStageFlags  stageFlags,
+                           sizeof(VertexCtrl),                                   // uint32_t            offset,
+                           sizeof(PbrMultiMaterial::PbrMultiMaterialProperties), // uint32_t            size,
+                           &pbrMultiMaterialProperties);                         // const void*         pValues
     }
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)

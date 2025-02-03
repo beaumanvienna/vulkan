@@ -28,6 +28,7 @@
 #include <vulkan/vulkan.h>
 
 #include "engine.h"
+#include "renderer/shader.h"
 
 #include "VKdevice.h"
 #include "VKpipeline.h"
@@ -50,13 +51,16 @@ namespace GfxRenderEngine
         VK_RenderSystemGrass& operator=(const VK_RenderSystemGrass&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+        void SetVertexCtrl(VertexCtrl const& vertexCtrl);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
+        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
 
     private:
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        VertexCtrl m_VertexCtrl{};
     };
 } // namespace GfxRenderEngine

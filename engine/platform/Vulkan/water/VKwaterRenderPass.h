@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2024 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -30,7 +30,7 @@
 namespace GfxRenderEngine
 {
     class VK_SwapChain;
-    class VK_RenderPass
+    class VK_WaterRenderPass
     {
 
     public:
@@ -54,47 +54,15 @@ namespace GfxRenderEngine
             NUMBER_OF_ATTACHMENTS
         };
 
-        enum class SubPassesPostProcessing
-        {
-            SUBPASS_BLOOM = 0,
-            NUMBER_OF_SUBPASSES
-        };
-
-        enum class RenderTargetsPostProcessing
-        {
-            ATTACHMENT_COLOR = 0,
-            INPUT_ATTACHMENT_3DPASS_COLOR,
-            INPUT_ATTACHMENT_GBUFFER_EMISSION,
-            NUMBER_OF_ATTACHMENTS
-        };
-
-        enum class SubPassesGUI
-        {
-            SUBPASS_GUI = 0,
-            NUMBER_OF_SUBPASSES
-        };
-
-        enum class RenderTargetsGUI
-        {
-            ATTACHMENT_COLOR = 0,
-            NUMBER_OF_ATTACHMENTS
-        };
-
-        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS =
-            (int)RenderTargets3D::NUMBER_OF_ATTACHMENTS - (int)RenderTargets3D::ATTACHMENT_GBUFFER_POSITION;
-        static constexpr int NUMBER_OF_POSTPROCESSING_INPUT_ATTACHMENTS =
-            (int)RenderTargetsPostProcessing::NUMBER_OF_ATTACHMENTS -
-            (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR;
-        static constexpr int NUMBER_OF_POSTPROCESSING_OUPUT_ATTACHMENTS =
-            (int)RenderTargetsPostProcessing::INPUT_ATTACHMENT_3DPASS_COLOR; // 1st input attachment == number of output
-                                                                             // attachments
+        static constexpr int NUMBER_OF_GBUFFER_ATTACHMENTS = static_cast<int>(RenderTargets3D::NUMBER_OF_ATTACHMENTS) -
+                                                             static_cast<int>(RenderTargets3D::ATTACHMENT_GBUFFER_POSITION);
 
     public:
-        VK_RenderPass(VK_SwapChain* swapChain);
-        ~VK_RenderPass();
+        VK_WaterRenderPass(VK_SwapChain& swapChain, VkExtent2D extent2D);
+        ~VK_WaterRenderPass();
 
-        VK_RenderPass(const VK_RenderPass&) = delete;
-        VK_RenderPass& operator=(const VK_RenderPass&) = delete;
+        VK_WaterRenderPass(const VK_WaterRenderPass&) = delete;
+        VK_WaterRenderPass& operator=(const VK_WaterRenderPass&) = delete;
 
         VkImageView GetImageViewColorAttachment() { return m_ColorAttachmentView; }
         VkImageView GetImageViewGBufferPosition() { return m_GBufferPositionView; }
@@ -106,13 +74,9 @@ namespace GfxRenderEngine
         VkImage GetImageEmission() const { return m_GBufferEmissionImage; }
         VkFormat GetFormatEmission() const { return m_BufferEmissionFormat; }
 
-        VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
-        VkFramebuffer GetPostProcessingFrameBuffer(int index) { return m_PostProcessingFramebuffers[index]; }
-        VkFramebuffer GetGUIFrameBuffer(int index) { return m_GUIFramebuffers[index]; }
+        VkFramebuffer Get3DFrameBuffer() { return m_3DFramebuffer; }
 
         VkRenderPass Get3DRenderPass() { return m_3DRenderPass; }
-        VkRenderPass GetPostProcessingRenderPass() { return m_PostProcessingRenderPass; }
-        VkRenderPass GetGUIRenderPass() { return m_GUIRenderPass; }
 
         VkExtent2D GetExtent() const { return m_RenderPassExtent; }
 
@@ -121,12 +85,7 @@ namespace GfxRenderEngine
         void CreateDepthResources();
 
         void Create3DRenderPass();
-        void CreatePostProcessingRenderPass();
-        void CreateGUIRenderPass();
-
-        void Create3DFramebuffers();
-        void CreatePostProcessingFramebuffers();
-        void CreateGUIFramebuffers();
+        void Create3DFramebuffer();
 
         void CreateGBufferImages();
         void CreateGBufferImageViews();
@@ -134,7 +93,7 @@ namespace GfxRenderEngine
 
     private:
         VK_Device* m_Device;
-        VK_SwapChain* m_SwapChain;     // constructor initialized
+        VK_SwapChain& m_SwapChain;     // constructor initialized
         VkExtent2D m_RenderPassExtent; // constructor initialized
 
         VkFormat m_DepthFormat{VkFormat::VK_FORMAT_UNDEFINED};
@@ -168,12 +127,8 @@ namespace GfxRenderEngine
         VkDeviceMemory m_GBufferMaterialImageMemory{nullptr};
         VkDeviceMemory m_GBufferEmissionImageMemory{nullptr};
 
-        std::vector<VkFramebuffer> m_3DFramebuffers;
-        std::vector<VkFramebuffer> m_PostProcessingFramebuffers;
-        std::vector<VkFramebuffer> m_GUIFramebuffers;
+        VkFramebuffer m_3DFramebuffer;
 
         VkRenderPass m_3DRenderPass{nullptr};
-        VkRenderPass m_PostProcessingRenderPass{nullptr};
-        VkRenderPass m_GUIRenderPass{nullptr};
     };
 } // namespace GfxRenderEngine

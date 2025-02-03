@@ -47,7 +47,6 @@ namespace LucreApp
 
     void Reserved0Scene::Start()
     {
-        LOG_APP_CRITICAL("void Reserved0Scene::Start()");
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
@@ -112,7 +111,7 @@ namespace LucreApp
             m_Terrain1 = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::root");
             if (m_Terrain1 != entt::null)
             {
-                Water1Component water1Component{.m_Scale = {25.0f, 1.0f, 50.0f}, .m_Translation = {0.0f, 1.728f, 0.0f}};
+                Water1Component water1Component{.m_Scale = {25.0f, 1.0f, 50.0f}, .m_Translation = {0.0f, 1.5f, 0.0f}};
                 m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
             }
 
@@ -279,23 +278,55 @@ namespace LucreApp
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
-        m_Renderer->Renderpass3D(m_Registry);
 
-        ApplyDebugSettings();
+        if (m_Terrain1 != entt::null)
+        { // water
+            auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
+            float heightWater = water1Component.m_Translation.y;
 
-        // opaque objects
-        m_Renderer->Submit(*this);
+            static constexpr bool refraction = false;
+            static constexpr bool reflection = true;
+            std::array<bool, Renderer::WaterPasses::NUMBER_OF_WATER_PASSES> passes = {refraction, reflection};
+            for (bool pass : passes)
+            {
+                float sign = pass == reflection ? 1.0f : -1.0f;
+                glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
+                m_Renderer->RenderpassWater(m_Registry, m_CameraController->GetCamera(), pass, waterPlane);
+                // opaque objects
+                m_Renderer->Submit(*this);
 
-        // light opaque objects
-        m_Renderer->NextSubpass();
-        m_Renderer->LightingPass();
+                // light opaque objects
+                m_Renderer->NextSubpass();
+                m_Renderer->LightingPass();
 
-        // transparent objects
-        m_Renderer->NextSubpass();
-        m_Renderer->TransparencyPass(m_Registry);
+                // transparent objects
+                m_Renderer->NextSubpass();
+                m_Renderer->TransparencyPassWater(m_Registry);
+
+                m_Renderer->EndRenderpassWater();
+            }
+        }
+
+        { // 3D
+            m_Renderer->Renderpass3D(m_Registry);
+
+            ApplyDebugSettings();
+
+            // opaque objects
+            m_Renderer->Submit(*this);
+
+            // light opaque objects
+            m_Renderer->NextSubpass();
+            m_Renderer->LightingPass();
+
+            // transparent objects
+            m_Renderer->NextSubpass();
+            m_Renderer->TransparencyPass(m_Registry);
+        }
 
         // post processing
         m_Renderer->PostProcessingRenderpass();

@@ -451,7 +451,14 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::RecreateRenderpass() { m_RenderPass = std::make_unique<VK_RenderPass>(m_SwapChain.get()); }
+    void VK_Renderer::RecreateRenderpass()
+    {
+        m_RenderPass = std::make_unique<VK_RenderPass>(m_SwapChain.get());
+        m_WaterRenderPass[WaterPasses::REFRACTION] =
+            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
+        m_WaterRenderPass[WaterPasses::REFLECTION] =
+            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{320, 180});
+    }
 
     void VK_Renderer::RecreateShadowMaps()
     {
@@ -525,6 +532,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("failed to allocate command buffers");
             }
         }
+
         return commandBuffer;
     }
 
@@ -685,6 +693,56 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::BeginWaterRenderPass(VkCommandBuffer commandBuffer, WaterPasses pass)
+    {
+        CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
+        CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
+
+        VK_WaterRenderPass& renderPass = *m_WaterRenderPass[static_cast<uint>(pass)].get();
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderPass.Get3DRenderPass();
+        renderPassInfo.framebuffer = renderPass.Get3DFrameBuffer();
+
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = renderPass.GetExtent();
+
+        std::array<VkClearValue, static_cast<uint>(VK_WaterRenderPass::RenderTargets3D::NUMBER_OF_ATTACHMENTS)>
+            clearValues{};
+        clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
+        clearValues[1].depthStencil = {1.0f, 0};
+        clearValues[2].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+        clearValues[3].color = {{0.5f, 0.5f, 0.1f, 1.0f}};
+        clearValues[4].color = {{0.5f, 0.1f, 0.5f, 1.0f}};
+        clearValues[5].color = {{0.5f, 0.7f, 0.2f, 1.0f}};
+        clearValues[6].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
+        renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(renderPass.GetExtent().width);
+        viewport.height = static_cast<float>(renderPass.GetExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        VkRect2D scissor{{0, 0}, m_SwapChain->GetSwapChainExtent()};
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    }
+
+    void VK_Renderer::EndRenderpassWater()
+    {
+        VertexCtrl vertexCtrl = {};
+        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
+        EndRenderPass(m_CurrentCommandBuffer);
+    }
+
     void VK_Renderer::Begin3DRenderPass(VkCommandBuffer commandBuffer)
     {
         CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
@@ -807,6 +865,30 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::RenderpassWater(Registry& registry, Camera& camera, bool reflection, glm::vec4 const& clippingPlane)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            GlobalUniformBuffer ubo{};
+            ubo.m_Projection = camera.GetProjectionMatrix();
+            ubo.m_View = camera.GetViewMatrix();
+            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
+            m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+            m_UniformBuffers[m_CurrentFrameIndex]->Flush();
+
+            VertexCtrl vertexCtrl;
+            vertexCtrl.m_ClippingPlane = clippingPlane;
+            vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
+
+            m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
+
+            BeginWaterRenderPass(m_CurrentCommandBuffer, reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION);
+        }
+    }
+
     void VK_Renderer::Renderpass3D(Registry& registry)
     {
         if (m_CurrentCommandBuffer)
@@ -848,11 +930,6 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            {
-                ZoneScopedNC("UpdateTransformCache", 0xffff00);
-                UpdateTransformCache(scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
-            }
-
             auto& registry = scene.GetRegistry();
 
             // 3D objects
@@ -883,6 +960,14 @@ namespace GfxRenderEngine
                 m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
             m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
+        }
+    }
+
+    void VK_Renderer::TransparencyPassWater(Registry& registry)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
         }
     }
 

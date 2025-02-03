@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team 
+/* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
    *
    * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
@@ -63,7 +63,7 @@ struct PbrMaterial
     int m_Features;
     float m_Roughness;
     float m_Metallic;
-    float m_Spare0; // padding
+    float m_NormalMapIntensity;
 
     // byte 16 to 31
     vec4 m_DiffuseColor;
@@ -71,12 +71,6 @@ struct PbrMaterial
     // byte 32 to 47
     vec3 m_EmissiveColor;
     float m_EmissiveStrength;
-
-    // byte 48 to 63
-    float m_NormalMapIntensity;
-    float m_Spare1; // padding
-    float m_Spare2; // padding
-    float m_Spare3; // padding
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -92,9 +86,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform PushFragment
 {
-    PbrMaterial m_PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
+    layout(offset = 32) PbrMaterial m_PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 } push;
 
 void main()

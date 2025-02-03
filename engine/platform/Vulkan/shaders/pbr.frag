@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team 
+/* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
    *
    * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
@@ -58,6 +58,21 @@ struct DirectionalLight
     vec4 m_Color;     // w is intensity
 };
 
+struct PbrMaterialProperties
+{ 
+    int m_Features;
+    float m_Roughness;
+    float m_Metallic;
+    float m_NormalMapIntensity;
+
+    // byte 16 to 31
+    vec4 m_DiffuseColor;
+
+    // byte 32 to 47
+    vec3 m_EmissiveColor;
+    float m_EmissiveStrength;
+};
+
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     mat4 m_Projection;
@@ -71,25 +86,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant) uniform Push
+layout(push_constant, std430) uniform PushFragment
 {
-    int m_Features;
-    float m_Roughness;
-    float m_Metallic;
-    float m_Spare0; // padding
-
-    // byte 16 to 31
-    vec4 m_DiffuseColor;
-
-    // byte 32 to 47
-    vec3 m_EmissiveColor;
-    float m_EmissiveStrength;
-
-    // byte 48 to 63
-    float m_NormalMapIntensity;
-    float m_Spare1; // padding
-    float m_Spare2; // padding
-    float m_Spare3; // padding
+    layout(offset = 32) PbrMaterialProperties m_PbrMaterialProperties;
 } push;
 
 void main()
@@ -99,9 +98,9 @@ void main()
 
     // color
     vec4 col;
-    if (bool(push.m_Features & GLSL_HAS_DIFFUSE_MAP))
+    if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_DIFFUSE_MAP))
     {
-        col = texture(diffuseMap, fragUV) * push.m_DiffuseColor;
+        col = texture(diffuseMap, fragUV) * push.m_PbrMaterialProperties.m_DiffuseColor;
     }
     else
     {
@@ -121,9 +120,9 @@ void main()
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
 
-    float normalMapIntensity  = push.m_NormalMapIntensity;
+    float normalMapIntensity  = push.m_PbrMaterialProperties.m_NormalMapIntensity;
     vec3 normalTangentSpace;
-    if (bool(push.m_Features & GLSL_HAS_NORMAL_MAP))
+    if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_NORMAL_MAP))
     {
         normalTangentSpace = texture(normalMap,fragUV).xyz * 2 - vec3(1.0, 1.0, 1.0);
         normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
@@ -137,41 +136,41 @@ void main()
     // roughness, metallic
     float roughness;
     float metallic;
-    if (bool(push.m_Features & GLSL_HAS_ROUGHNESS_METALLIC_MAP))
+    if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_ROUGHNESS_METALLIC_MAP))
     {
         roughness = texture(roughnessMetallicMap, fragUV).g;
         metallic = texture(roughnessMetallicMap, fragUV).b;
     }
     else
     {
-        if (bool(push.m_Features & GLSL_HAS_ROUGHNESS_MAP))
+        if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_ROUGHNESS_MAP))
         {
             roughness = texture(roughnessMap, fragUV).r; // gray scale
         }
         else
         {
-            roughness = push.m_Roughness;
+            roughness = push.m_PbrMaterialProperties.m_Roughness;
         }
-        if (bool(push.m_Features & GLSL_HAS_METALLIC_MAP))
+        if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_METALLIC_MAP))
         {
             metallic = texture(metallicMap, fragUV).r; // gray scale
         }
         else
         {
-            metallic = push.m_Metallic;
+            metallic = push.m_PbrMaterialProperties.m_Metallic;
         }
     }
     outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
 
     // emissive material
-    vec4 emissiveColor = vec4(push.m_EmissiveColor.r, push.m_EmissiveColor.g, push.m_EmissiveColor.b, 1.0);
-    if (bool(push.m_Features & GLSL_HAS_EMISSIVE_MAP))
+    vec4 emissiveColor = vec4(push.m_PbrMaterialProperties.m_EmissiveColor.r, push.m_PbrMaterialProperties.m_EmissiveColor.g, push.m_PbrMaterialProperties.m_EmissiveColor.b, 1.0);
+    if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_EMISSIVE_MAP))
     {
         vec4 fragEmissiveColor = texture(emissiveMap, fragUV);        
-        outEmissive = fragEmissiveColor * emissiveColor * push.m_EmissiveStrength;
+        outEmissive = fragEmissiveColor * emissiveColor * push.m_PbrMaterialProperties.m_EmissiveStrength;
     }
     else
     {
-        outEmissive = emissiveColor * push.m_EmissiveStrength;
+        outEmissive = emissiveColor * push.m_PbrMaterialProperties.m_EmissiveStrength;
     }
 }

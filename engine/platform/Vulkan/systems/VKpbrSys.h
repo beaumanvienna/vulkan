@@ -29,6 +29,7 @@
 
 #include "engine.h"
 #include "renderer/camera.h"
+#include "renderer/shader.h"
 #include "scene/scene.h"
 
 #include "VKdevice.h"
@@ -49,13 +50,16 @@ namespace GfxRenderEngine
         VK_RenderSystemPbr& operator=(const VK_RenderSystemPbr&) = delete;
 
         void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+        void SetVertexCtrl(VertexCtrl const& vertexCtrl);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
+        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
 
     private:
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        VertexCtrl m_VertexCtrl{};
     };
 } // namespace GfxRenderEngine

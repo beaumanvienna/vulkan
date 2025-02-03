@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,44 +22,25 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
-
 #include "engine.h"
-#include "renderer/camera.h"
-#include "renderer/shader.h"
-#include "scene/scene.h"
-
-#include "VKdevice.h"
-#include "VKpipeline.h"
-#include "VKframeInfo.h"
-#include "VKdescriptor.h"
+#include "engine/platform/Vulkan/shader.h"
 
 namespace GfxRenderEngine
 {
-    class VK_RenderSystemPbrSA
+
+    enum ControlFeatures // bitset
     {
-
-    public:
-        VK_RenderSystemPbrSA(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        ~VK_RenderSystemPbrSA();
-
-        VK_RenderSystemPbrSA(const VK_RenderSystemPbrSA&) = delete;
-        VK_RenderSystemPbrSA& operator=(const VK_RenderSystemPbrSA&) = delete;
-
-        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
-        void SetVertexCtrl(VertexCtrl const& vertexCtrl);
-
-    private:
-        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
-        void CreatePipeline(VkRenderPass renderPass);
-        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
-
-    private:
-        VkPipelineLayout m_PipelineLayout;
-        std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VertexCtrl m_VertexCtrl{};
+        ENABLE_CLIPPING_PLANE = GLSL_ENABLE_CLIPPING_PLANE
     };
+
+    struct VertexCtrl
+    {
+        // byte 0 to 15
+        glm::vec4 m_ClippingPlane{0.0f};
+
+        // byte 16 to 31
+        int m_Features{0};
+        glm::vec3 m_Spare0{0.0f};
+    };
+
 } // namespace GfxRenderEngine

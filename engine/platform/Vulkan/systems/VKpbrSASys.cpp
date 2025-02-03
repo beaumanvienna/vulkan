@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -46,17 +46,24 @@ namespace GfxRenderEngine
 
     void VK_RenderSystemPbrSA::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(PbrMaterial::PbrMaterialProperties);
+        VkPushConstantRange pushConstantRange0{};
+        pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange0.offset = 0;
+        pushConstantRange0.size = sizeof(VertexCtrl);
+
+        VkPushConstantRange pushConstantRange1{};
+        pushConstantRange1.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange1.offset = sizeof(VertexCtrl);
+        pushConstantRange1.size = sizeof(PbrMaterial::PbrMaterialProperties);
+
+        std::array<VkPushConstantRange, 2> pushConstantRanges = {pushConstantRange0, pushConstantRange1};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        pipelineLayoutInfo.pushConstantRangeCount = pushConstantRanges.size();
+        pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
         auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
         if (result != VK_SUCCESS)
         {
@@ -95,9 +102,22 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
+    void VK_RenderSystemPbrSA::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
+
+    void VK_RenderSystemPbrSA::PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo)
+    {
+        vkCmdPushConstants(frameInfo.m_CommandBuffer,  // VkCommandBuffer     commandBuffer,
+                           m_PipelineLayout,           // VkPipelineLayout    layout,
+                           VK_SHADER_STAGE_VERTEX_BIT, // VkShaderStageFlags  stageFlags,
+                           0,                          // uint32_t            offset,
+                           sizeof(VertexCtrl),         // uint32_t            size,
+                           &m_VertexCtrl);             // const void*         pValues
+    }
+
     void VK_RenderSystemPbrSA::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+        PushConstantsVertexCtrl(frameInfo);
 
         auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag, SkeletalAnimationTag>();
         for (auto mainInstance : view)

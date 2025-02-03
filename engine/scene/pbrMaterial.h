@@ -65,7 +65,7 @@ namespace GfxRenderEngine
             uint m_Features{0};
             float m_Roughness{0.0f};
             float m_Metallic{0.0f};
-            float m_Spare0{0.0f}; // padding
+            float m_NormalMapIntensity{1.0f};
 
             // byte 16 to 31
             glm::vec4 m_DiffuseColor{1.0f, 1.0f, 1.0f, 1.0f};
@@ -73,12 +73,6 @@ namespace GfxRenderEngine
             // byte 32 to 47
             glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
             float m_EmissiveStrength{1.0f};
-
-            // byte 48 to 63
-            float m_NormalMapIntensity{1.0f};
-            float m_Spare1{0.0f}; // padding
-            float m_Spare2{0.0f}; // padding
-            float m_Spare3{0.0f}; // padding
         };
 
     public:

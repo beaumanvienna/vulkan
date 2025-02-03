@@ -39,7 +39,6 @@
 #include "systems/VKspriteRenderSys2D.h"
 #include "systems/VKdebugRenderSys.h"
 #include "systems/VKlightSys.h"
-#include "systems/VKwater1Sys.h"
 #include "systems/VKguiRenderSys.h"
 
 #include "systems/VKpbrSys.h"
@@ -49,6 +48,9 @@
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
+
+#include "water/VKwater1Sys.h"
+#include "water/VKwaterRenderPass.h"
 
 #include "VKdevice.h"
 #include "VKswapChain.h"
@@ -82,6 +84,7 @@ namespace GfxRenderEngine
         void EndFrame();
         void BeginShadowRenderPass0(VkCommandBuffer commandBuffer);
         void BeginShadowRenderPass1(VkCommandBuffer commandBuffer);
+        void BeginWaterRenderPass(VkCommandBuffer commandBuffer, WaterPasses pass);
         void Begin3DRenderPass(VkCommandBuffer commandBuffer);
         void BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer);
         void BeginGUIRenderPass(VkCommandBuffer commandBuffer);
@@ -91,6 +94,9 @@ namespace GfxRenderEngine
         virtual bool Init() override;
         virtual void BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(Registry& registry) override;
+        virtual void RenderpassWater(Registry& registry, Camera& camera, bool reflection,
+                                     glm::vec4 const& clippingPlane) override;
+        virtual void EndRenderpassWater() override;
         virtual void SubmitShadows(Registry& registry,
                                    const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
         virtual void Submit(Scene& scene) override;
@@ -98,6 +104,7 @@ namespace GfxRenderEngine
         virtual void LightingPass() override;
         virtual void PostProcessingRenderpass() override;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem) override;
+        virtual void TransparencyPassWater(Registry& registry) override;
         virtual void Submit2D(Camera* camera, Registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
@@ -111,7 +118,8 @@ namespace GfxRenderEngine
         virtual void Draw(const Sprite& sprite, const glm::mat4& position, const glm::vec4& color,
                           const float textureID = 1.0f) override;
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) override { m_ShowDebugShadowMap = showDebugShadowMap; }
-
+        virtual void UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
+                                          bool parentDirtyFlag) override;
         virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) override;
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
@@ -132,7 +140,6 @@ namespace GfxRenderEngine
         void RecreateRenderpass();
         void RecreateShadowMaps();
         void CompileShaders();
-        void UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4, bool parentDirtyFlag);
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
         void CreatePostProcessingDescriptorSets();
@@ -152,6 +159,7 @@ namespace GfxRenderEngine
             NUMBER_OF_SHADOW_MAPS
         };
         std::unique_ptr<VK_RenderPass> m_RenderPass;
+        std::array<std::unique_ptr<VK_WaterRenderPass>, NUMBER_OF_WATER_PASSES> m_WaterRenderPass;
         std::unique_ptr<VK_ShadowMap> m_ShadowMap[NUMBER_OF_SHADOW_MAPS];
 
         std::unique_ptr<VK_RenderSystemWater1> m_RenderSystemWater1;

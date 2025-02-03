@@ -35,6 +35,13 @@ namespace GfxRenderEngine
 
     class Renderer
     {
+    public:
+        enum WaterPasses
+        {
+            REFRACTION = 0,
+            REFLECTION,
+            NUMBER_OF_WATER_PASSES
+        };
 
     public:
         virtual ~Renderer() = default;
@@ -48,11 +55,15 @@ namespace GfxRenderEngine
         virtual void LightingPass() = 0;
         virtual void PostProcessingRenderpass() = 0;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
+        virtual void TransparencyPassWater(Registry& registry) = 0;
         virtual void Submit2D(Camera* camera, Registry& registry) = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
         virtual void BeginFrame(Camera* camera) = 0;
+        virtual void RenderpassWater(Registry& registry, Camera& camera, bool reflection,
+                                     glm::vec4 const& clippingPlane) = 0;
+        virtual void EndRenderpassWater() = 0;
         virtual void Renderpass3D(Registry& registry) = 0;
         virtual void EndScene() = 0;
 
@@ -64,6 +75,8 @@ namespace GfxRenderEngine
         virtual float GetAmbientLightIntensity() = 0;
 
         virtual void ShowDebugShadowMap(bool showDebugShadowMap) = 0;
+        virtual void UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
+                                          bool parentDirtyFlag) = 0;
         virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) = 0;
         virtual std::shared_ptr<Texture> GetTextureAtlas() = 0;
     };

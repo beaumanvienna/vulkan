@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team 
+/* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -23,6 +23,7 @@
 #version 450
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
+#include "engine/platform/Vulkan/shader.h"
 
 layout(location = 0) in vec3  position;
 layout(location = 1) in vec4  color;
@@ -53,6 +54,21 @@ struct GrassShaderData
     int m_Height;
     int m_Index;
 };
+
+struct VertexCtrl
+{
+    // byte 0 to 15
+    vec4 m_ClippingPlane;
+
+    // byte 16 to 31
+    int m_Features;
+    vec3 m_Spare0;
+};
+
+layout(push_constant, std430) uniform PushVertex
+{
+    layout(offset = 0) VertexCtrl m_VertexCtrl;
+} push;
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {
@@ -171,6 +187,11 @@ void main()
     vec4 positionWorld = baseModelMatrix * localTransform * vec4(position, 1.0);
     // projection * view * model * position
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
+    if (bool(push.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
+    {
+        gl_ClipDistance[0] = dot(positionWorld, push.m_VertexCtrl.m_ClippingPlane);
+        //gl_ClipDistance[0] = dot(positionWorld, vec4(0.0, -1.0, 0.0, 1.0)); // refraction
+    }
 
     fragPosition = positionWorld.xyz;
 

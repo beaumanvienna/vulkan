@@ -26,7 +26,7 @@
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKwater1Sys.h"
+#include "water/VKwater1Sys.h"
 
 namespace GfxRenderEngine
 {
