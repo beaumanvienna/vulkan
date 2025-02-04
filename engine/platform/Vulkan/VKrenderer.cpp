@@ -320,6 +320,7 @@ namespace GfxRenderEngine
 
         CreateShadowMapDescriptorSets();
         CreateLightingDescriptorSets();
+        CreateLightingDescriptorSetsWater();
         CreatePostProcessingDescriptorSets();
 
         m_RenderSystemDeferredShading = std::make_unique<VK_RenderSystemDeferredShading>(
@@ -393,6 +394,40 @@ namespace GfxRenderEngine
                 .WriteImage(3, imageInfoGBufferMaterialInputAttachment)
                 .WriteImage(4, imageInfoGBufferEmissionInputAttachment)
                 .Build(m_LightingDescriptorSets[i]);
+        }
+    }
+
+    void VK_Renderer::CreateLightingDescriptorSetsWater()
+    {
+        for (uint i = 0; i < WaterPasses::NUMBER_OF_WATER_PASSES; ++i)
+        {
+            VkDescriptorImageInfo imageInfoGBufferPositionInputAttachment{};
+            imageInfoGBufferPositionInputAttachment.imageView = m_WaterRenderPass[i]->GetImageViewGBufferPosition();
+            imageInfoGBufferPositionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferNormalInputAttachment{};
+            imageInfoGBufferNormalInputAttachment.imageView = m_WaterRenderPass[i]->GetImageViewGBufferNormal();
+            imageInfoGBufferNormalInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferColorInputAttachment{};
+            imageInfoGBufferColorInputAttachment.imageView = m_WaterRenderPass[i]->GetImageViewGBufferColor();
+            imageInfoGBufferColorInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferMaterialInputAttachment{};
+            imageInfoGBufferMaterialInputAttachment.imageView = m_WaterRenderPass[i]->GetImageViewGBufferMaterial();
+            imageInfoGBufferMaterialInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkDescriptorImageInfo imageInfoGBufferEmissionInputAttachment{};
+            imageInfoGBufferEmissionInputAttachment.imageView = m_WaterRenderPass[i]->GetImageViewGBufferEmission();
+            imageInfoGBufferEmissionInputAttachment.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VK_DescriptorWriter(*m_LightingDescriptorSetLayout)
+                .WriteImage(0, imageInfoGBufferPositionInputAttachment)
+                .WriteImage(1, imageInfoGBufferNormalInputAttachment)
+                .WriteImage(2, imageInfoGBufferColorInputAttachment)
+                .WriteImage(3, imageInfoGBufferMaterialInputAttachment)
+                .WriteImage(4, imageInfoGBufferEmissionInputAttachment)
+                .Build(m_LightingDescriptorSetsWater[i]);
         }
     }
 
@@ -574,6 +609,7 @@ namespace GfxRenderEngine
         RecreateSwapChain();
         RecreateRenderpass();
         CreateLightingDescriptorSets();
+        CreateLightingDescriptorSetsWater();
         CreateRenderSystemBloom();
         CreatePostProcessingDescriptorSets();
     }
@@ -960,6 +996,16 @@ namespace GfxRenderEngine
                 m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
             m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
+        }
+    }
+
+    void VK_Renderer::LightingPassWater(bool reflection)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            auto& lightingDescriptorSet = reflection ? m_LightingDescriptorSetsWater[WaterPasses::REFLECTION]
+                                                     : m_LightingDescriptorSetsWater[WaterPasses::REFRACTION];
+            m_RenderSystemDeferredShading->LightingPass(m_FrameInfo, &lightingDescriptorSet);
         }
     }
 

@@ -53,6 +53,7 @@ namespace GfxRenderEngine
         virtual void Submit(Scene& scene) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
+        virtual void LightingPassWater(bool reflection) = 0;
         virtual void PostProcessingRenderpass() = 0;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
         virtual void TransparencyPassWater(Registry& registry) = 0;

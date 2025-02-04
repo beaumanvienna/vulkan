@@ -51,7 +51,7 @@ namespace GfxRenderEngine
         VK_RenderSystemDeferredShading(const VK_RenderSystemDeferredShading&) = delete;
         VK_RenderSystemDeferredShading& operator=(const VK_RenderSystemDeferredShading&) = delete;
 
-        void LightingPass(const VK_FrameInfo& frameInfo);
+        void LightingPass(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet = nullptr);
 
     private:
         void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);

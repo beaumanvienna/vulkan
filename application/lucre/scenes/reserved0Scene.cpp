@@ -301,7 +301,7 @@ namespace LucreApp
 
                 // light opaque objects
                 m_Renderer->NextSubpass();
-                m_Renderer->LightingPass();
+                m_Renderer->LightingPassWater(pass);
 
                 // transparent objects
                 m_Renderer->NextSubpass();

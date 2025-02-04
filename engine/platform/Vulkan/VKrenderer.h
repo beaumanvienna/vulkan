@@ -102,6 +102,7 @@ namespace GfxRenderEngine
         virtual void Submit(Scene& scene) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
+        virtual void LightingPassWater(bool reflection) override;
         virtual void PostProcessingRenderpass() override;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem) override;
         virtual void TransparencyPassWater(Registry& registry) override;
@@ -142,6 +143,7 @@ namespace GfxRenderEngine
         void CompileShaders();
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
+        void CreateLightingDescriptorSetsWater();
         void CreatePostProcessingDescriptorSets();
         void CreateRenderSystemBloom();
         void Recreate();
@@ -212,6 +214,7 @@ namespace GfxRenderEngine
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_ShadowMapDescriptorSets;
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_LightingDescriptorSets;
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_PostProcessingDescriptorSets;
+        std::array<VkDescriptorSet, WaterPasses::NUMBER_OF_WATER_PASSES> m_LightingDescriptorSetsWater;
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

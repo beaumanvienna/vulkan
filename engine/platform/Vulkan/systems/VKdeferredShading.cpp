@@ -89,13 +89,14 @@ namespace GfxRenderEngine
                                                            "bin-int/deferredShading.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemDeferredShading::LightingPass(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemDeferredShading::LightingPass(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet)
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 
-        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet,
-                                                       m_LightingDescriptorSets[frameInfo.m_FrameIndex],
-                                                       m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
+        std::vector<VkDescriptorSet> descriptorSets = {
+            frameInfo.m_GlobalDescriptorSet,
+            lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
+            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
 
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 m_LightingPipelineLayout, // VkPipelineLayout layout
