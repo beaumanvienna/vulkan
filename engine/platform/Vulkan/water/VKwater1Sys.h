@@ -49,7 +49,8 @@ namespace GfxRenderEngine
         VK_RenderSystemWater1(const VK_RenderSystemWater1&) = delete;
         VK_RenderSystemWater1& operator=(const VK_RenderSystemWater1&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
+                            VkDescriptorSet& refractionReflectionDescriptorSet);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);

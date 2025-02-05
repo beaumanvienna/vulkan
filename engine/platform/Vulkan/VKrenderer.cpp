@@ -183,6 +183,13 @@ namespace GfxRenderEngine
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // cubemap
                 .Build();
 
+        m_DescriptorSetLayoutRefractionReflection = VK_DescriptorSetLayout::Builder()
+                                                        .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // refraction
+                                                        .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // reflection
+                                                        .Build();
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsDefaultDiffuse = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout()};
 
@@ -191,7 +198,8 @@ namespace GfxRenderEngine
             m_MaterialDescriptorSetLayouts[Mt::MtDiffuse]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsWater1 = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_DescriptorSetLayoutRefractionReflection->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
@@ -321,6 +329,7 @@ namespace GfxRenderEngine
         CreateShadowMapDescriptorSets();
         CreateLightingDescriptorSets();
         CreateLightingDescriptorSetsWater();
+        CreateDescriptorSetRefractionReflection();
         CreatePostProcessingDescriptorSets();
 
         m_RenderSystemDeferredShading = std::make_unique<VK_RenderSystemDeferredShading>(
@@ -429,6 +438,17 @@ namespace GfxRenderEngine
                 .WriteImage(4, imageInfoGBufferEmissionInputAttachment)
                 .Build(m_LightingDescriptorSetsWater[i]);
         }
+    }
+
+    void VK_Renderer::CreateDescriptorSetRefractionReflection()
+    {
+        auto& imageInfoRefraction = m_WaterRenderPass[WaterPasses::REFRACTION]->GetDescriptorImageInfo();
+        auto& imageInfoReflection = m_WaterRenderPass[WaterPasses::REFLECTION]->GetDescriptorImageInfo();
+
+        VK_DescriptorWriter(*m_DescriptorSetLayoutRefractionReflection)
+            .WriteImage(0, imageInfoRefraction)
+            .WriteImage(1, imageInfoReflection)
+            .Build(m_RefractionReflectionDescriptorSet);
     }
 
     void VK_Renderer::CreatePostProcessingDescriptorSets()
@@ -610,6 +630,7 @@ namespace GfxRenderEngine
         RecreateRenderpass();
         CreateLightingDescriptorSets();
         CreateLightingDescriptorSetsWater();
+        CreateDescriptorSetRefractionReflection();
         CreateRenderSystemBloom();
         CreatePostProcessingDescriptorSets();
     }
@@ -988,7 +1009,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry, m_RefractionReflectionDescriptorSet);
             // sprites
             m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);

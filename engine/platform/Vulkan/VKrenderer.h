@@ -144,6 +144,7 @@ namespace GfxRenderEngine
         void CreateShadowMapDescriptorSets();
         void CreateLightingDescriptorSets();
         void CreateLightingDescriptorSetsWater();
+        void CreateDescriptorSetRefractionReflection();
         void CreatePostProcessingDescriptorSets();
         void CreateRenderSystemBloom();
         void Recreate();
@@ -201,6 +202,7 @@ namespace GfxRenderEngine
         // material descriptor set layouts
         using Mt = Material::MaterialType;
         std::array<std::unique_ptr<VK_DescriptorSetLayout>, Mt::NUM_TYPES> m_MaterialDescriptorSetLayouts;
+        std::unique_ptr<VK_DescriptorSetLayout> m_DescriptorSetLayoutRefractionReflection;
         // resource descriptor set layouts
         using Rt = ResourceDescriptor::ResourceType;
         std::array<std::unique_ptr<VK_DescriptorSetLayout>, Rt::NUM_TYPES> m_ResourceDescriptorSetLayouts;
@@ -215,6 +217,7 @@ namespace GfxRenderEngine
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_LightingDescriptorSets;
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_PostProcessingDescriptorSets;
         std::array<VkDescriptorSet, WaterPasses::NUMBER_OF_WATER_PASSES> m_LightingDescriptorSetsWater;
+        VkDescriptorSet m_RefractionReflectionDescriptorSet;
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;

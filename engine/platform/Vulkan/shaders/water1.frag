@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team 
+/* Engine Copyright (c) 2025 Engine Development Team 
    *
 
    Permission is hereby granted, free of charge, to any person
@@ -22,12 +22,15 @@
 
 #version 450
 
-layout(location = 0)      in  vec4 fragColor;
-
+layout(location = 0)      in  vec2 fragUV;
 layout (location = 0)     out vec4 outColor;
+
+layout(set = 1, binding = 0) uniform sampler2D refractionTexture;
+layout(set = 1, binding = 1) uniform sampler2D reflectionTexture;
 
 void main()
 {
-    // color
-    outColor = fragColor;
+    vec4 refraction = texture(refractionTexture, fragUV);
+    vec4 reflection = texture(reflectionTexture, fragUV);
+    outColor = mix(refraction, reflection, 0.5);
 }

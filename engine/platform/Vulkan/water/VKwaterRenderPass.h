@@ -80,6 +80,8 @@ namespace GfxRenderEngine
 
         VkExtent2D GetExtent() const { return m_RenderPassExtent; }
 
+        const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo; }
+
     private:
         void CreateColorAttachmentResources();
         void CreateDepthResources();
@@ -130,5 +132,9 @@ namespace GfxRenderEngine
         VkFramebuffer m_3DFramebuffer;
 
         VkRenderPass m_3DRenderPass{nullptr};
+
+        VkDescriptorImageInfo m_DescriptorImageInfo{};
+        VkSampler m_Sampler{nullptr};
+        VkImageLayout m_ImageLayout{};
     };
 } // namespace GfxRenderEngine

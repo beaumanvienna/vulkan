@@ -61,6 +61,7 @@ namespace GfxRenderEngine
         vkDestroyImageView(m_Device->Device(), m_ColorAttachmentView, nullptr);
         vkDestroyImage(m_Device->Device(), m_ColorAttachmentImage, nullptr);
         vkFreeMemory(m_Device->Device(), m_ColorAttachmentImageMemory, nullptr);
+        vkDestroySampler(m_Device->Device(), m_Sampler, nullptr);
 
         vkDestroyFramebuffer(m_Device->Device(), m_3DFramebuffer, nullptr);
         vkDestroyRenderPass(m_Device->Device(), m_3DRenderPass, nullptr);
@@ -83,7 +84,8 @@ namespace GfxRenderEngine
         imageInfo.format = format;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        imageInfo.usage =
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.flags = 0;
@@ -102,12 +104,44 @@ namespace GfxRenderEngine
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView);
-        if (result != VK_SUCCESS)
         {
-            m_Device->PrintError(result);
-            LOG_CORE_CRITICAL("failed to create texture image view!");
+            auto result = vkCreateImageView(m_Device->Device(), &viewInfo, nullptr, &m_ColorAttachmentView);
+            if (result != VK_SUCCESS)
+            {
+                m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create texture image view!");
+            }
         }
+
+        // sampler
+        VkSamplerCreateInfo samplerCreateInfo{};
+        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.compareEnable = VK_TRUE;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_LESS;
+        samplerCreateInfo.mipLodBias = 0.0f;
+        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = 1;
+        samplerCreateInfo.maxAnisotropy = 1.0;
+        samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+        {
+            auto result = vkCreateSampler(m_Device->Device(), &samplerCreateInfo, nullptr, &m_Sampler);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create sampler!");
+            }
+        }
+
+        m_DescriptorImageInfo.sampler = m_Sampler;
+        m_DescriptorImageInfo.imageView = m_ColorAttachmentView;
+        m_DescriptorImageInfo.imageLayout = m_ImageLayout;
     }
 
     void VK_WaterRenderPass::CreateDepthResources()
@@ -408,7 +442,8 @@ namespace GfxRenderEngine
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        colorAttachment.finalLayout = m_ImageLayout;
 
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = static_cast<uint>(RenderTargets3D::ATTACHMENT_COLOR);

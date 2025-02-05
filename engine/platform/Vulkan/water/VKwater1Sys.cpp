@@ -81,9 +81,11 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
-    void VK_RenderSystemWater1::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
+    void VK_RenderSystemWater1::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
+                                               VkDescriptorSet& refractionReflectionDescriptorSet)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
+
         auto view = registry.Get().view<Water1Component, TransformComponent>();
         for (auto mainInstance : view)
         {
@@ -104,7 +106,8 @@ namespace GfxRenderEngine
             }
 
             { // bind descriptor sets
-                std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet};
+                std::array<VkDescriptorSet, 2> descriptorSets = {frameInfo.m_GlobalDescriptorSet,
+                                                                 refractionReflectionDescriptorSet};
                 vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
                                         m_PipelineLayout,                // VkPipelineLayout       layout,

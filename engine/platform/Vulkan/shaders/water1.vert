@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team 
+/* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
 
 
@@ -37,8 +37,16 @@ vec2 positions[6] = vec2[]
     vec2(-1.0, -1.0)  // 3
 );
 
-// out
-layout(location = 0) out vec4 fragColor;
+vec2 UVs[6] = vec2[]
+(
+    vec2(0.0, 0.0), // 0
+    vec2(1.0, 0.0), // 1
+    vec2(0.0, 1.0), // 3
+
+    vec2(1.0, 0.0), // 1
+    vec2(1.0, 1.0), // 2
+    vec2(0.0, 1.0)  // 3
+);
 
 struct PointLight
 {
@@ -70,12 +78,12 @@ layout(push_constant, std430) uniform Push
     mat4 m_ModelMatrix;
 } push;
 
+layout(location = 0) out vec2 fragUV;
 
 void main()
 {
     // projection * view * model * position
     vec2 position = positions[gl_VertexIndex];
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position.x, 0.0, position.y, 1.0);
-
-    fragColor = vec4(0.1, 0.1, 0.1, 0.8);
+    fragUV = UVs[gl_VertexIndex];
 }
