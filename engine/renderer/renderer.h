@@ -51,12 +51,13 @@ namespace GfxRenderEngine
         virtual void SubmitShadows(Registry& registry,
                                    const std::vector<DirectionalLightComponent*>& directionalLights = {}) = 0;
         virtual void Submit(Scene& scene) = 0;
+        virtual void SubmitWater(Scene& scene, bool reflection) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
         virtual void LightingPassWater(bool reflection) = 0;
         virtual void PostProcessingRenderpass() = 0;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem = nullptr) = 0;
-        virtual void TransparencyPassWater(Registry& registry) = 0;
+        virtual void TransparencyPassWater(Registry& registry, bool reflection) = 0;
         virtual void Submit2D(Camera* camera, Registry& registry) = 0;
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;

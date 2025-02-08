@@ -77,6 +77,7 @@ namespace LucreApp
         std::shared_ptr<CameraController> m_CameraController;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
+        Camera m_ReflectionCamera;
 
         // game objects
         entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1;

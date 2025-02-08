@@ -22,7 +22,7 @@
 
 #version 450
 
-layout(location = 0)      in  vec2 fragUV;
+layout(location = 0)      in  vec4 clipSpace;
 layout (location = 0)     out vec4 outColor;
 
 layout(set = 1, binding = 0) uniform sampler2D refractionTexture;
@@ -30,7 +30,11 @@ layout(set = 1, binding = 1) uniform sampler2D reflectionTexture;
 
 void main()
 {
-    vec4 refraction = texture(refractionTexture, fragUV);
-    vec4 reflection = texture(reflectionTexture, fragUV);
-    outColor = mix(refraction, reflection, 0.5);
+    vec2 ndc = (clipSpace.xy/clipSpace.w) / 2.0 + 0.5;
+    vec2 ndc_flipped = vec2(ndc.x, 1.0 - ndc.y);
+    vec4 refraction = texture(refractionTexture, ndc);
+    vec4 reflection = texture(reflectionTexture, ndc_flipped);
+    outColor = mix(refraction, reflection, 0.2);
+    //outColor = refraction;
+    //outColor = reflection;
 }

@@ -37,17 +37,6 @@ vec2 positions[6] = vec2[]
     vec2(-1.0, -1.0)  // 3
 );
 
-vec2 UVs[6] = vec2[]
-(
-    vec2(0.0, 0.0), // 0
-    vec2(1.0, 0.0), // 1
-    vec2(0.0, 1.0), // 3
-
-    vec2(1.0, 0.0), // 1
-    vec2(1.0, 1.0), // 2
-    vec2(0.0, 1.0)  // 3
-);
-
 struct PointLight
 {
     vec4 m_Position; // ignore w
@@ -78,12 +67,12 @@ layout(push_constant, std430) uniform Push
     mat4 m_ModelMatrix;
 } push;
 
-layout(location = 0) out vec2 fragUV;
+layout(location = 0) out vec4 clipSpace;
 
 void main()
 {
     // projection * view * model * position
     vec2 position = positions[gl_VertexIndex];
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position.x, 0.0, position.y, 1.0);
-    fragUV = UVs[gl_VertexIndex];
+    clipSpace = gl_Position;
 }

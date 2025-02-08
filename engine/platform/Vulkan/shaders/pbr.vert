@@ -102,7 +102,6 @@ void main()
     if (bool(push.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
     {
         gl_ClipDistance[0] = dot(positionWorld, push.m_VertexCtrl.m_ClippingPlane);
-        //gl_ClipDistance[0] = dot(positionWorld, vec4(0.0, -1.0, 0.0, 1.0)); // refraction
     }
 
     fragPosition = positionWorld.xyz;

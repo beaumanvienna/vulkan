@@ -39,7 +39,8 @@ namespace LucreApp
 {
 
     Reserved0Scene::Reserved0Scene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"},
+          m_ReflectionCamera(Camera::PERSPECTIVE_PROJECTION)
     {
     }
 
@@ -288,16 +289,28 @@ namespace LucreApp
             auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
             float heightWater = water1Component.m_Translation.y;
 
+            m_ReflectionCamera = m_CameraController->GetCamera();
+            auto view = m_Registry.view<TransformComponent>();
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
+            glm::vec3 position = cameraTransform.GetTranslation();
+            glm::vec3 rotation = cameraTransform.GetRotation();
+
+            position.y = position.y - 2 * (position.y - heightWater);
+
+            m_ReflectionCamera.SetViewYXZ(position, rotation);
+
             static constexpr bool refraction = false;
             static constexpr bool reflection = true;
             std::array<bool, Renderer::WaterPasses::NUMBER_OF_WATER_PASSES> passes = {refraction, reflection};
+
             for (bool pass : passes)
             {
-                float sign = pass == reflection ? 1.0f : -1.0f;
+                float sign = (pass == reflection) ? 1.0f : -1.0f;
                 glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
-                m_Renderer->RenderpassWater(m_Registry, m_CameraController->GetCamera(), pass, waterPlane);
+                auto& camera = (pass == reflection) ? m_ReflectionCamera : m_CameraController->GetCamera();
+                m_Renderer->RenderpassWater(m_Registry, camera, pass, waterPlane);
                 // opaque objects
-                m_Renderer->Submit(*this);
+                m_Renderer->SubmitWater(*this, pass);
 
                 // light opaque objects
                 m_Renderer->NextSubpass();
@@ -305,7 +318,7 @@ namespace LucreApp
 
                 // transparent objects
                 m_Renderer->NextSubpass();
-                m_Renderer->TransparencyPassWater(m_Registry);
+                m_Renderer->TransparencyPassWater(m_Registry, pass);
 
                 m_Renderer->EndRenderpassWater();
             }

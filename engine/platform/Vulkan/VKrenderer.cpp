@@ -53,7 +53,7 @@ namespace GfxRenderEngine
         RecreateShadowMaps();
         CreateCommandBuffers();
 
-        for (uint i = 0; i < m_ShadowUniformBuffers0.size(); i++)
+        for (uint i = 0; i < m_ShadowUniformBuffers0.size(); ++i)
         {
             m_ShadowUniformBuffers0[i] =
                 std::make_unique<VK_Buffer>(sizeof(ShadowUniformBuffer),
@@ -63,7 +63,7 @@ namespace GfxRenderEngine
             m_ShadowUniformBuffers0[i]->Map();
         }
 
-        for (uint i = 0; i < m_ShadowUniformBuffers1.size(); i++)
+        for (uint i = 0; i < m_ShadowUniformBuffers1.size(); ++i)
         {
             m_ShadowUniformBuffers1[i] =
                 std::make_unique<VK_Buffer>(sizeof(ShadowUniformBuffer),
@@ -73,7 +73,7 @@ namespace GfxRenderEngine
             m_ShadowUniformBuffers1[i]->Map();
         }
 
-        for (uint i = 0; i < m_UniformBuffers.size(); i++)
+        for (uint i = 0; i < m_UniformBuffers.size(); ++i)
         {
             m_UniformBuffers[i] =
                 std::make_unique<VK_Buffer>(sizeof(GlobalUniformBuffer),
@@ -81,6 +81,16 @@ namespace GfxRenderEngine
                                             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                             m_Device->m_Properties.limits.minUniformBufferOffsetAlignment);
             m_UniformBuffers[i]->Map();
+        }
+
+        for (uint i = 0; i < m_UniformBuffersWater.size(); ++i)
+        {
+            m_UniformBuffersWater[i] =
+                std::make_unique<VK_Buffer>(sizeof(GlobalUniformBuffer),
+                                            1, // uint instanceCount
+                                            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                            m_Device->m_Properties.limits.minUniformBufferOffsetAlignment);
+            m_UniformBuffersWater[i]->Map();
         }
 
         m_ShadowUniformBufferDescriptorSetLayout =
@@ -97,6 +107,13 @@ namespace GfxRenderEngine
                 .Build();
 
         m_GlobalDescriptorSetLayout =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // projection, view , lights
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // spritesheet
+                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // font atlas
+                .Build();
+
+        m_GlobalDescriptorSetLayoutWater =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS) // projection, view , lights
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // spritesheet
@@ -293,6 +310,16 @@ namespace GfxRenderEngine
                 .WriteImage(1, imageInfo0)
                 .WriteImage(2, imageInfo1)
                 .Build(m_GlobalDescriptorSets[i]);
+        }
+
+        for (uint i = 0; i < m_GlobalDescriptorSetsWater.size(); ++i)
+        {
+            VkDescriptorBufferInfo bufferInfo = m_UniformBuffersWater[i]->DescriptorInfo();
+            VK_DescriptorWriter(*m_GlobalDescriptorSetLayoutWater)
+                .WriteBuffer(0, bufferInfo)
+                .WriteImage(1, imageInfo0)
+                .WriteImage(2, imageInfo1)
+                .Build(m_GlobalDescriptorSetsWater[i]);
         }
 
         m_RenderSystemWater1 =
@@ -512,7 +539,7 @@ namespace GfxRenderEngine
         m_WaterRenderPass[WaterPasses::REFRACTION] =
             std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
         m_WaterRenderPass[WaterPasses::REFLECTION] =
-            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{320, 180});
+            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
     }
 
     void VK_Renderer::RecreateShadowMaps()
@@ -930,8 +957,16 @@ namespace GfxRenderEngine
             ubo.m_Projection = camera.GetProjectionMatrix();
             ubo.m_View = camera.GetViewMatrix();
             ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
-            m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-            m_UniformBuffers[m_CurrentFrameIndex]->Flush();
+            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+            m_UniformBuffersWater[renderpassIndex]->WriteToBuffer(&ubo);
+            m_UniformBuffersWater[renderpassIndex]->Flush();
+
+            m_FrameInfoWater[renderpassIndex] = {m_CurrentFrameIndex,
+                                                 m_CurrentImageIndex,
+                                                 0.0f, /* m_FrameTime */
+                                                 m_CurrentCommandBuffer,
+                                                 &camera,
+                                                 m_GlobalDescriptorSetsWater[renderpassIndex]};
 
             VertexCtrl vertexCtrl;
             vertexCtrl.m_ClippingPlane = clippingPlane;
@@ -942,7 +977,7 @@ namespace GfxRenderEngine
             m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
 
-            BeginWaterRenderPass(m_CurrentCommandBuffer, reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION);
+            BeginWaterRenderPass(m_CurrentCommandBuffer, renderpassIndex);
         }
     }
 
@@ -997,6 +1032,21 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::SubmitWater(Scene& scene, bool reflection)
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            auto& registry = scene.GetRegistry();
+            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+
+            // 3D objects
+            m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+        }
+    }
+
     void VK_Renderer::LightingPass()
     {
         if (m_CurrentCommandBuffer)
@@ -1016,7 +1066,7 @@ namespace GfxRenderEngine
             if (particleSystem)
                 m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_RefractionReflectionDescriptorSet, m_ShowDebugShadowMap);
         }
     }
 
@@ -1026,15 +1076,17 @@ namespace GfxRenderEngine
         {
             auto& lightingDescriptorSet = reflection ? m_LightingDescriptorSetsWater[WaterPasses::REFLECTION]
                                                      : m_LightingDescriptorSetsWater[WaterPasses::REFRACTION];
-            m_RenderSystemDeferredShading->LightingPass(m_FrameInfo, &lightingDescriptorSet);
+            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+            m_RenderSystemDeferredShading->LightingPass(m_FrameInfoWater[renderpassIndex], &lightingDescriptorSet);
         }
     }
 
-    void VK_Renderer::TransparencyPassWater(Registry& registry)
+    void VK_Renderer::TransparencyPassWater(Registry& registry, bool reflection)
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
+            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+            m_RenderSystemCubemap->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
         }
     }
 

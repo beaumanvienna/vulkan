@@ -53,6 +53,7 @@ namespace GfxRenderEngine
 
         ProjectionType GetProjectionType() const { return m_ProjectionType; }
         const glm::vec3& GetPosition() const { return m_Position; }
+        const glm::vec3& GetRotation() const { return m_Rotation; }
         const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
         const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const std::string& GetName() const { return m_Name; }

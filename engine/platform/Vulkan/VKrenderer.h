@@ -100,12 +100,13 @@ namespace GfxRenderEngine
         virtual void SubmitShadows(Registry& registry,
                                    const std::vector<DirectionalLightComponent*>& directionalLights = {}) override;
         virtual void Submit(Scene& scene) override;
+        virtual void SubmitWater(Scene& scene, bool reflection) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
         virtual void LightingPassWater(bool reflection) override;
         virtual void PostProcessingRenderpass() override;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem) override;
-        virtual void TransparencyPassWater(Registry& registry) override;
+        virtual void TransparencyPassWater(Registry& registry, bool reflection) override;
         virtual void Submit2D(Camera* camera, Registry& registry) override;
         virtual void GUIRenderpass(Camera* camera) override;
         virtual void EndScene() override;
@@ -218,6 +219,10 @@ namespace GfxRenderEngine
         std::array<VkDescriptorSet, VK_SwapChain::MAX_FRAMES_IN_FLIGHT> m_PostProcessingDescriptorSets;
         std::array<VkDescriptorSet, WaterPasses::NUMBER_OF_WATER_PASSES> m_LightingDescriptorSetsWater;
         VkDescriptorSet m_RefractionReflectionDescriptorSet;
+        std::array<std::unique_ptr<VK_Buffer>, WaterPasses::NUMBER_OF_WATER_PASSES> m_UniformBuffersWater;
+        std::array<VkDescriptorSet, WaterPasses::NUMBER_OF_WATER_PASSES> m_GlobalDescriptorSetsWater;
+        std::unique_ptr<VK_DescriptorSetLayout> m_GlobalDescriptorSetLayoutWater;
+        std::array<VK_FrameInfo, WaterPasses::NUMBER_OF_WATER_PASSES> m_FrameInfoWater = {};
 
         float m_AmbientLightIntensity;
         glm::mat4 m_GUIViewProjectionMatrix;
