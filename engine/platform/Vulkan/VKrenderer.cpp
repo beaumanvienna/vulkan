@@ -1066,7 +1066,7 @@ namespace GfxRenderEngine
             if (particleSystem)
                 m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
             m_LightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_RefractionReflectionDescriptorSet, m_ShowDebugShadowMap);
+            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
         }
     }
 
