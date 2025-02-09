@@ -33,8 +33,6 @@ layout(set = 1, binding = 0) uniform sampler2D refractionTexture;
 layout(set = 1, binding = 1) uniform sampler2D reflectionTexture;
 layout(set = 2, binding = 0) uniform sampler2D duDvMap;
 
-
-
 layout(push_constant, std430) uniform Push
 {
     mat4 m_ModelMatrix;

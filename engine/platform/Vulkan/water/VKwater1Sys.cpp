@@ -126,29 +126,29 @@ namespace GfxRenderEngine
                 vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
                                    sizeof(VK_PushConstantWater1), &pushConstantWater1);
             }
-        }
 
-        { // bind descriptor sets
-            std::array<VkDescriptorSet, 3> descriptorSets = {frameInfo.m_GlobalDescriptorSet,
-                                                             refractionReflectionDescriptorSet, m_WaterTextureDescriptorSet};
-            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
-                                    m_PipelineLayout,                // VkPipelineLayout       layout,
-                                    0,                               // uint32_t               firstSet,
-                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
-                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
-                                    0,                               // uint32_t               dynamicOffsetCount,
-                                    nullptr                          // const uint32_t*        pDynamicOffsets);
-            );
-        }
+            { // bind descriptor sets
+                std::array<VkDescriptorSet, 3> descriptorSets = {
+                    frameInfo.m_GlobalDescriptorSet, refractionReflectionDescriptorSet, m_WaterTextureDescriptorSet};
+                vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                        m_PipelineLayout,                // VkPipelineLayout       layout,
+                                        0,                               // uint32_t               firstSet,
+                                        descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                        descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                        0,                               // uint32_t               dynamicOffsetCount,
+                                        nullptr                          // const uint32_t*        pDynamicOffsets);
+                );
+            }
 
-        {                                        // draw call
-            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
-                      VERTEX_COUNT_QUAD,         // uint32_t        vertexCount
-                      1,                         // uint32_t        instanceCount
-                      0,                         // uint32_t        firstVertex
-                      0                          // uint32_t        firstInstance
-            );
+            {                                        // draw call
+                vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                          VERTEX_COUNT_QUAD,         // uint32_t        vertexCount
+                          1,                         // uint32_t        instanceCount
+                          0,                         // uint32_t        firstVertex
+                          0                          // uint32_t        firstInstance
+                );
+            }
         }
     }
 } // namespace GfxRenderEngine
