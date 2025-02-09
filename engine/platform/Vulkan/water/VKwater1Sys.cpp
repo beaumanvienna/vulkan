@@ -20,6 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "core.h"
 #include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKinstanceBuffer.h"
@@ -49,10 +50,28 @@ namespace GfxRenderEngine
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_PushConstantWater1);
 
+        // create desciptor set layout
+        m_WaterTextureLayout =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // duDvMap
+                .Build();
+
+        // create texture
+        std::string path("resources/images/waterDUDV.png");
+        m_WaterTexture = std::make_unique<VK_Texture>();
+        m_WaterTexture->Init(path, Texture::USE_UNORM);
+
+        // create descriptor set
+        auto& imageInfo0 = m_WaterTexture->GetDescriptorImageInfo();
+        VK_DescriptorWriter(*m_WaterTextureLayout).WriteImage(0, imageInfo0).Build(m_WaterTextureDescriptorSet);
+
+        std::vector<VkDescriptorSetLayout> localDescriptorSetLayouts = descriptorSetLayouts;
+        localDescriptorSetLayouts.push_back(m_WaterTextureLayout->GetDescriptorSetLayout());
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
-        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint>(localDescriptorSetLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = localDescriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
@@ -100,33 +119,36 @@ namespace GfxRenderEngine
                 glm::mat4 modelMatrix = glm::scale( // Scale first
                     translationMatrix,              // Translate second
                     scale);
-                VK_PushConstantWater1 pushConstantWater1 = {transform.GetMat4Global() * modelMatrix};
+                static constexpr float STATIC_MOVE_FACTOR = 0.05f;
+                m_MoveFactor += STATIC_MOVE_FACTOR * Engine::m_Engine->GetTimestep();
+                VK_PushConstantWater1 pushConstantWater1 = {.m_ModelMatrix = transform.GetMat4Global() * modelMatrix,
+                                                            .m_Values = glm::vec4(m_MoveFactor, 0.0f, 0.0f, 0.0f)};
                 vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
                                    sizeof(VK_PushConstantWater1), &pushConstantWater1);
             }
+        }
 
-            { // bind descriptor sets
-                std::array<VkDescriptorSet, 2> descriptorSets = {frameInfo.m_GlobalDescriptorSet,
-                                                                 refractionReflectionDescriptorSet};
-                vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
-                                        m_PipelineLayout,                // VkPipelineLayout       layout,
-                                        0,                               // uint32_t               firstSet,
-                                        descriptorSets.size(),           // uint32_t               descriptorSetCount,
-                                        descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
-                                        0,                               // uint32_t               dynamicOffsetCount,
-                                        nullptr                          // const uint32_t*        pDynamicOffsets);
-                );
-            }
+        { // bind descriptor sets
+            std::array<VkDescriptorSet, 3> descriptorSets = {frameInfo.m_GlobalDescriptorSet,
+                                                             refractionReflectionDescriptorSet, m_WaterTextureDescriptorSet};
+            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                    m_PipelineLayout,                // VkPipelineLayout       layout,
+                                    0,                               // uint32_t               firstSet,
+                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                    0,                               // uint32_t               dynamicOffsetCount,
+                                    nullptr                          // const uint32_t*        pDynamicOffsets);
+            );
+        }
 
-            {                                        // draw call
-                vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
-                          VERTEX_COUNT_QUAD,         // uint32_t        vertexCount
-                          1,                         // uint32_t        instanceCount
-                          0,                         // uint32_t        firstVertex
-                          0                          // uint32_t        firstInstance
-                );
-            }
+        {                                        // draw call
+            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                      VERTEX_COUNT_QUAD,         // uint32_t        vertexCount
+                      1,                         // uint32_t        instanceCount
+                      0,                         // uint32_t        firstVertex
+                      0                          // uint32_t        firstInstance
+            );
         }
     }
 } // namespace GfxRenderEngine

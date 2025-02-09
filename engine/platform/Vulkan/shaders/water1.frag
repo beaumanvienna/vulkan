@@ -22,19 +22,49 @@
 
 #version 450
 
+// in 
 layout(location = 0)      in  vec4 clipSpace;
-layout (location = 0)     out vec4 outColor;
+layout(location = 1)      in  vec2  fragUV;
+
+// out
+layout(location = 0)      out vec4 outColor;
 
 layout(set = 1, binding = 0) uniform sampler2D refractionTexture;
 layout(set = 1, binding = 1) uniform sampler2D reflectionTexture;
+layout(set = 2, binding = 0) uniform sampler2D duDvMap;
+
+
+
+layout(push_constant, std430) uniform Push
+{
+    mat4 m_ModelMatrix;
+    vec4 m_Values;
+} push;
+
+const float waveStrength = 0.02;
 
 void main()
 {
+    // UVs for refraction and reflection textures
     vec2 ndc = (clipSpace.xy/clipSpace.w) / 2.0 + 0.5;
     vec2 ndc_flipped = vec2(ndc.x, 1.0 - ndc.y);
+
+    // du dv map
+    float moveFactor = push.m_Values.x;
+    vec2 distortion1 = (texture(duDvMap, vec2(fragUV.x + moveFactor, fragUV.y)).rg * 2.0 - 1.0) * waveStrength;
+    vec2 distortion2 = (texture(duDvMap, vec2(-fragUV.x + moveFactor, fragUV.y + moveFactor)).rg * 2.0 - 1.0) * waveStrength;
+    vec2 distortion = distortion1 + distortion2;
+    ndc += distortion1;
+    ndc = clamp(ndc, 0.001, 0.999);
+    ndc_flipped += distortion1;
+    ndc_flipped = clamp(ndc_flipped, 0.001, 0.999);
+
     vec4 refraction = texture(refractionTexture, ndc);
     vec4 reflection = texture(reflectionTexture, ndc_flipped);
     outColor = mix(refraction, reflection, 0.2);
+    vec4 blue = vec4(0.0, 0.3, 0.5, 1.0);
+    outColor = mix(outColor, blue, 0.05);
     //outColor = refraction;
     //outColor = reflection;
+    //outColor = vec4(duDv, 0.0, 1.0);
 }

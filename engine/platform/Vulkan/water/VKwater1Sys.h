@@ -29,6 +29,7 @@
 #include "scene/scene.h"
 #include "VKframeInfo.h"
 #include "VKpipeline.h"
+#include "VKtexture.h"
 
 namespace GfxRenderEngine
 {
@@ -38,6 +39,7 @@ namespace GfxRenderEngine
         struct VK_PushConstantWater1
         {
             glm::mat4 m_ModelMatrix;
+            glm::vec4 m_Values;
         };
 
         static constexpr uint32_t VERTEX_COUNT_QUAD = 6;
@@ -57,7 +59,11 @@ namespace GfxRenderEngine
         void CreatePipeline(VkRenderPass renderPass);
 
     private:
+        float m_MoveFactor{0.0f};
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
+        std::unique_ptr<VK_DescriptorSetLayout> m_WaterTextureLayout;
+        std::unique_ptr<VK_Texture> m_WaterTexture;
+        VkDescriptorSet m_WaterTextureDescriptorSet;
     };
 } // namespace GfxRenderEngine

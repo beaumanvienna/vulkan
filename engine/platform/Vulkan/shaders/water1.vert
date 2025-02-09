@@ -37,6 +37,17 @@ vec2 positions[6] = vec2[]
     vec2(-1.0, -1.0)  // 3
 );
 
+vec2 UVs[6] = vec2[]
+(
+    vec2( 0.0,  1.0), // 0
+    vec2( 1.0,  1.0), // 1
+    vec2( 0.0,  0.0), // 3
+
+    vec2( 1.0,  1.0), // 1
+    vec2( 1.0,  0.0), // 2
+    vec2( 0.0,  0.0)  // 3
+);
+
 struct PointLight
 {
     vec4 m_Position; // ignore w
@@ -65,9 +76,13 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 layout(push_constant, std430) uniform Push
 {
     mat4 m_ModelMatrix;
+    vec4 m_Values;
 } push;
 
 layout(location = 0) out vec4 clipSpace;
+layout(location = 1) out vec2  fragUV;
+
+const float tiling = 6.0;
 
 void main()
 {
@@ -75,4 +90,5 @@ void main()
     vec2 position = positions[gl_VertexIndex];
     gl_Position = ubo.m_Projection * ubo.m_View * push.m_ModelMatrix * vec4(position.x, 0.0, position.y, 1.0);
     clipSpace = gl_Position;
+    fragUV = UVs[gl_VertexIndex] * tiling;
 }
