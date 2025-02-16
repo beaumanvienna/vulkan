@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -34,6 +34,7 @@
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
 #include "reserved0Scene.h"
+#include "renderer/builder/grassBuilder.h"
 
 namespace LucreApp
 {
@@ -132,6 +133,20 @@ namespace LucreApp
                 PbrMultiMaterialTag pbrMultiMaterialTag{};
                 m_Registry.emplace<PbrMultiMaterialTag>(gaea, pbrMultiMaterialTag);
             }
+        }
+
+        {
+            Scene& scene = *this;
+            Grass::GrassSpec grassSpec{.m_FilepathGrassModel = "application/lucre/models/assets/grass/grass1.glb",
+                                       .m_FilepathGrassMask =
+                                           "application/lucre/models/mario/mario section 01 - grass mask.glb",
+                                       .m_Rotation = glm::vec3{-3.14159f, 0.0f, -3.14159f},
+                                       .m_Translation = glm::vec3{7.872f, -0.553f, 45.137f},
+                                       .m_Scale = glm::vec3{2.5f, 2.5f, 2.5f},
+                                       .m_ScaleXZ = 0.1f,
+                                       .m_ScaleY = 0.05f};
+            GrassBuilder builder(grassSpec, scene);
+            builder.Build();
         }
     }
 

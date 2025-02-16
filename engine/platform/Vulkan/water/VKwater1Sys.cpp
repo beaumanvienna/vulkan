@@ -46,7 +46,7 @@ namespace GfxRenderEngine
     void VK_RenderSystemWater1::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(VK_PushConstantWater1);
 
@@ -123,7 +123,8 @@ namespace GfxRenderEngine
                 m_MoveFactor += STATIC_MOVE_FACTOR * Engine::m_Engine->GetTimestep();
                 VK_PushConstantWater1 pushConstantWater1 = {.m_ModelMatrix = transform.GetMat4Global() * modelMatrix,
                                                             .m_Values = glm::vec4(m_MoveFactor, 0.0f, 0.0f, 0.0f)};
-                vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                                    sizeof(VK_PushConstantWater1), &pushConstantWater1);
             }
 

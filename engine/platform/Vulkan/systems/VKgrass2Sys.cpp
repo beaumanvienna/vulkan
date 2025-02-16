@@ -20,28 +20,32 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "renderer/camera.h"
+#include "scene/scene.h"
+
 #include "VKcore.h"
 #include "VKswapChain.h"
 #include "VKinstanceBuffer.h"
 #include "VKrenderPass.h"
 #include "VKmodel.h"
 
-#include "systems/VKpbrSys.h"
+#include "systems/VKgrass2Sys.h"
 
 namespace GfxRenderEngine
 {
-    VK_RenderSystemPbr::VK_RenderSystemPbr(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    VK_RenderSystemGrass2::VK_RenderSystemGrass2(VkRenderPass renderPass,
+                                                 std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         CreatePipelineLayout(descriptorSetLayouts);
         CreatePipeline(renderPass);
     }
 
-    VK_RenderSystemPbr::~VK_RenderSystemPbr()
+    VK_RenderSystemGrass2::~VK_RenderSystemGrass2()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_PipelineLayout, nullptr);
     }
 
-    void VK_RenderSystemPbr::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    void VK_RenderSystemGrass2::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange0{};
         pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -69,7 +73,7 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_RenderSystemPbr::CreatePipeline(VkRenderPass renderPass)
+    void VK_RenderSystemGrass2::CreatePipeline(VkRenderPass renderPass)
     {
         CORE_ASSERT(m_PipelineLayout != nullptr, "no pipeline layout");
 
@@ -95,13 +99,13 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline =
-            std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbr.vert.spv", "bin-int/pbr.frag.spv", pipelineConfig);
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/grass2.vert.spv", "bin-int/pbr.frag.spv",
+                                                   pipelineConfig);
     }
 
-    void VK_RenderSystemPbr::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
+    void VK_RenderSystemGrass2::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
 
-    void VK_RenderSystemPbr::PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemGrass2::PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo)
     {
         vkCmdPushConstants(frameInfo.m_CommandBuffer,  // VkCommandBuffer     commandBuffer,
                            m_PipelineLayout,           // VkPipelineLayout    layout,
@@ -111,13 +115,12 @@ namespace GfxRenderEngine
                            &m_VertexCtrl);             // const void*         pValues
     }
 
-    void VK_RenderSystemPbr::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
+    void VK_RenderSystemGrass2::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
     {
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
         PushConstantsVertexCtrl(frameInfo);
 
-        auto view = registry.Get().view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
-            entt::exclude<SkeletalAnimationTag, GrassTag, Grass2Tag>);
+        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag, Grass2Tag>();
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
@@ -128,8 +131,9 @@ namespace GfxRenderEngine
             }
             if (mesh.m_Enabled)
             {
+                int instanceCount = view.get<Grass2Tag>(mainInstance).m_InstanceCount;
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawPbr(frameInfo, m_PipelineLayout);
+                static_cast<VK_Model*>(mesh.m_Model.get())->DrawGrass(frameInfo, m_PipelineLayout, instanceCount);
             }
         }
     }

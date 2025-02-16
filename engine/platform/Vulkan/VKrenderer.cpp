@@ -335,6 +335,9 @@ namespace GfxRenderEngine
         m_RenderSystemGrass =
             std::make_unique<VK_RenderSystemGrass>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
 
+        m_RenderSystemGrass2 =
+            std::make_unique<VK_RenderSystemGrass2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
+
         m_RenderSystemShadowInstanced = std::make_unique<VK_RenderSystemShadowInstanced>(
             m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
             m_ShadowMap[ShadowMaps::LOW_RES]->GetShadowRenderPass(), descriptorSetLayoutsShadowInstanced);
@@ -823,6 +826,7 @@ namespace GfxRenderEngine
         m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
         EndRenderPass(m_CurrentCommandBuffer);
     }
@@ -975,6 +979,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
 
             BeginWaterRenderPass(m_CurrentCommandBuffer, renderpassIndex);
@@ -1028,6 +1033,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry);
         }
     }
@@ -1043,6 +1049,7 @@ namespace GfxRenderEngine
             m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
         }
     }
@@ -1188,6 +1195,7 @@ namespace GfxRenderEngine
             "pbr.frag",
             "pbrSA.vert",
             "grass.vert",
+            "grass2.vert",
             "deferredShading.vert",
             "deferredShading.frag",
             "skybox.vert",

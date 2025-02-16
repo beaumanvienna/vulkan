@@ -234,6 +234,11 @@ namespace GfxRenderEngine
         uint m_InstanceCount{0};
     };
 
+    struct Grass2Tag
+    {
+        uint m_InstanceCount{0};
+    };
+
     struct Water1Component
     {
         glm::vec3 m_Scale;

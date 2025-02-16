@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -44,6 +44,7 @@
 #include "systems/VKpbrSys.h"
 #include "systems/VKpbrSASys.h"
 #include "systems/VKgrassSys.h"
+#include "systems/VKgrass2Sys.h"
 #include "systems/VKpbrMultiMaterialSys.h"
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
@@ -171,6 +172,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
         std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;
+        std::unique_ptr<VK_RenderSystemGrass2> m_RenderSystemGrass2;
         std::unique_ptr<VK_RenderSystemShadowInstanced> m_RenderSystemShadowInstanced;
         std::unique_ptr<VK_RenderSystemShadowAnimatedInstanced> m_RenderSystemShadowAnimatedInstanced;
         std::unique_ptr<VK_RenderSystemDeferredShading> m_RenderSystemDeferredShading;

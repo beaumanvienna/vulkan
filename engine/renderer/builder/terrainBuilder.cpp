@@ -316,11 +316,11 @@ namespace GfxRenderEngine
         { // populate landscape
             // create a height map on the GPU for grass locations and load a grass model
             Terrain::GrassSpec const& grassSpec = terrainSpec.m_GrassSpec;
-            bool GrassModelFound = EngineCore::FileExists(grassSpec.m_FilepathGrassModel) &&
+            bool grassModelFound = EngineCore::FileExists(grassSpec.m_FilepathGrassModel) &&
                                    !EngineCore::IsDirectory(grassSpec.m_FilepathGrassModel);
             bool densityMapFound = EngineCore::FileExists(grassSpec.m_FilepathDensityMap) &&
                                    !EngineCore::IsDirectory(grassSpec.m_FilepathDensityMap);
-            if (GrassModelFound && densityMapFound)
+            if (grassModelFound && densityMapFound)
             {
                 Image heightMap(grassSpec.m_FilepathGrassHeightMap);
                 Image densityMap(grassSpec.m_FilepathDensityMap);
