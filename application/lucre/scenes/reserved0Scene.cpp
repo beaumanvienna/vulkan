@@ -41,7 +41,7 @@ namespace LucreApp
 
     Reserved0Scene::Reserved0Scene(const std::string& filepath, const std::string& alternativeFilepath)
         : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"},
-          m_ReflectionCamera(Camera::PERSPECTIVE_PROJECTION)
+          m_LaunchVolcanoTimer(1000), m_ReflectionCamera(Camera::PERSPECTIVE_PROJECTION)
     {
     }
 
@@ -82,11 +82,24 @@ namespace LucreApp
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
 
+        m_LaunchVolcanoTimer.SetEventCallback(
+            [](uint in, void* data)
+            {
+                std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+                Engine::m_Engine->QueueEvent(event);
+                return 0u;
+            });
+
+        {
+            std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
+            Engine::m_Engine->QueueEvent(event);
+        }
+
         {
             // place static lights for beach scene
             float intensity = 5.0f;
             float lightRadius = 0.1f;
-            float height1 = 0.4f;
+            float height1 = 5.4f;
             std::vector<glm::vec3> lightPositions = {{5.6, height1, 0.7}};
 
             for (size_t i = 0; i < lightPositions.size(); ++i)
@@ -141,8 +154,8 @@ namespace LucreApp
                                        .m_FilepathGrassMask =
                                            "application/lucre/models/mario/mario section 01 - grass mask.glb",
                                        .m_Rotation = glm::vec3{-3.14159f, 0.0f, -3.14159f},
-                                       .m_Translation = glm::vec3{7.872f, -0.553f, 45.137f},
-                                       .m_Scale = glm::vec3{2.5f, 2.5f, 2.5f},
+                                       .m_Translation = glm::vec3{7.717f, 3.491f, 45.133f},
+                                       .m_Scale = glm::vec3{2.352f, 2.352f, 2.352f},
                                        .m_ScaleXZ = 0.1f,
                                        .m_ScaleY = 0.05f};
             GrassBuilder builder(grassSpec, scene);
@@ -154,6 +167,7 @@ namespace LucreApp
     {
         m_SceneLoaderJSON.Deserialize(m_Filepath, m_AlternativeFilepath);
         ImGUI::SetupSlider(this);
+        InitPhysics();
         LoadModels();
         LoadTerrain();
         LoadScripts();
@@ -241,6 +255,63 @@ namespace LucreApp
                 }
             }
         }
+
+        {
+            m_Mario = m_Dictionary.Retrieve("SL::application/lucre/models/mario/mario animated.glb::0::Scene::mario mesh");
+            if (m_Mario != entt::null)
+            {
+                if (m_Registry.all_of<SkeletalAnimationTag>(m_Mario))
+                {
+                    auto& mesh = m_Registry.get<MeshComponent>(m_Mario);
+                    SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
+                    animations.SetRepeatAll(true);
+                    animations.Start();
+                }
+                else
+                {
+                    LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Mario));
+                }
+            }
+        }
+
+        {
+            FastgltfBuilder builder("application/lucre/models/mario/banana_minion_rush.glb", *this);
+            builder.SetDictionaryPrefix("mainScene");
+            builder.Load(MAX_B /*instance(s)*/);
+
+            for (uint i = 0; i < MAX_B; ++i)
+            {
+                m_Banana[i] = m_Dictionary.Retrieve(
+                    "mainScene::application/lucre/models/mario/banana_minion_rush.glb::" + std::to_string(i) + "::root");
+
+                TransformComponent transform{};
+                if (i < 12)
+                {
+                    transform.SetTranslation(glm::vec3{5.0f + 0.5 * i, 3.5f, 45.1736});
+                }
+                else
+                {
+                    transform.SetTranslation(glm::vec3{5.0f + 0.5 * (i - 12), 3.5f, 44.1736});
+                }
+                m_Registry.emplace<BananaComponent>(m_Banana[i], true);
+
+                b2BodyDef bodyDef;
+                bodyDef.type = b2_dynamicBody;
+                bodyDef.position.Set(0.0f, -1.0f);
+                auto body = m_World->CreateBody(&bodyDef);
+
+                b2CircleShape circle;
+                circle.m_radius = 0.001f;
+
+                b2FixtureDef fixtureDef;
+                fixtureDef.shape = &circle;
+                fixtureDef.density = 1.0f;
+                fixtureDef.friction = 0.2f;
+                fixtureDef.restitution = 0.4f;
+                body->CreateFixture(&fixtureDef);
+                m_Registry.emplace<RigidbodyComponent>(m_Banana[i], RigidbodyComponent::DYNAMIC, body);
+            }
+        }
     }
 
     void Reserved0Scene::LoadScripts() {}
@@ -264,6 +335,15 @@ namespace LucreApp
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_CameraController->SetView(cameraTransform.GetMat4Global());
+        }
+
+        SimulatePhysics(timestep);
+        UpdateBananas(timestep);
+
+        if (m_StartTimer)
+        {
+            m_StartTimer = false;
+            m_LaunchVolcanoTimer.Start();
         }
 
         if (m_CharacterAnimation)
@@ -375,6 +455,22 @@ namespace LucreApp
                 m_CameraController->SetZoomFactor(zoomFactor);
                 return true;
             });
+
+        dispatcher.Dispatch<KeyPressedEvent>(
+            [this](KeyPressedEvent keyboardEvent)
+            {
+                switch (keyboardEvent.GetKeyCode())
+                {
+                    case ENGINE_KEY_R:
+                        ResetScene();
+                        ResetBananas();
+                        break;
+                    case ENGINE_KEY_G:
+                        FireVolcano();
+                        break;
+                }
+                return false;
+            });
     }
 
     void Reserved0Scene::OnResize() { m_CameraController->SetProjection(); }
@@ -419,6 +515,136 @@ namespace LucreApp
         if (ImGUI::m_UseAmbientLightIntensity)
         {
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
+        }
+    }
+
+    void Reserved0Scene::InitPhysics()
+    {
+        std::srand(time(nullptr));
+        m_World = std::make_unique<b2World>(GRAVITY);
+
+        {
+            b2BodyDef groundBodyDef;
+            groundBodyDef.position.Set(0.0f, 0.0f);
+
+            m_GroundBody = m_World->CreateBody(&groundBodyDef);
+            b2PolygonShape groundBox;
+            groundBox.SetAsBox(50.0f, 0.04f);
+            m_GroundBody->CreateFixture(&groundBox, 0.0f);
+        }
+
+        {
+            b2BodyDef localGroundBodyDef;
+            localGroundBodyDef.position.Set(0.0f, -10.0f);
+
+            b2Body* localGroundBody = m_World->CreateBody(&localGroundBodyDef);
+            b2PolygonShape localGroundBox;
+            localGroundBox.SetAsBox(50.0f, 0.1f);
+            localGroundBody->CreateFixture(&localGroundBox, 0.0f);
+        }
+    }
+
+    void Reserved0Scene::FireVolcano()
+    {
+        m_Fire = true;
+        m_GroundBody->SetTransform(b2Vec2(0.0f, -10.0f), 0.0f);
+
+        auto view = m_Registry.view<BananaComponent, RigidbodyComponent>();
+        for (auto banana : view)
+        {
+            auto& rigidbody = view.get<RigidbodyComponent>(banana);
+            auto body = static_cast<b2Body*>(rigidbody.m_Body);
+            body->SetTransform(b2Vec2(0.0f, -8.f), 0.0f);
+        }
+    }
+
+    void Reserved0Scene::ResetBananas()
+    {
+        m_GroundBody->SetTransform(b2Vec2(0.0f, 0.0f), 0.0f);
+        auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
+
+        uint i = 0;
+        for (auto banana : view)
+        {
+            auto& transform = view.get<TransformComponent>(banana);
+            auto& rigidbody = view.get<RigidbodyComponent>(banana);
+            auto body = static_cast<b2Body*>(rigidbody.m_Body);
+            body->SetLinearVelocity(b2Vec2(0.0f, 0.01f));
+            body->SetAngularVelocity(0.0f);
+            if (i < 12)
+            {
+                body->SetTransform(b2Vec2(7.0f + 0.5 * i, 6.0f + i * 1.0f), 0.0f);
+                transform.SetTranslationZ(47.1f);
+            }
+            else
+            {
+                body->SetTransform(b2Vec2(7.0f + 0.5 * (i - 12), 6.0f + i * 1.0f), 0.0f);
+                transform.SetTranslationZ(43.0f);
+            }
+            i++;
+        }
+    }
+
+    void Reserved0Scene::SimulatePhysics(const Timestep& timestep)
+    {
+        float step = timestep;
+
+        int velocityIterations = 6;
+        int positionIterations = 2;
+        m_World->Step(step, velocityIterations, positionIterations);
+    }
+
+    void Reserved0Scene::UpdateBananas(const Timestep& timestep)
+    {
+        auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
+
+        static constexpr float ROTATIONAL_SPEED = 3.0f;
+        auto rotationDelta = ROTATIONAL_SPEED * timestep;
+        for (auto banana : view)
+        {
+            auto& transform = view.get<TransformComponent>(banana);
+            auto& rigidbody = view.get<RigidbodyComponent>(banana);
+            auto body = static_cast<b2Body*>(rigidbody.m_Body);
+            b2Vec2 position = body->GetPosition();
+            transform.SetTranslationX(position.x - 2.5f);
+            transform.SetTranslationY(position.y + 3.5f);
+            transform.SetRotationY(transform.GetRotation().y + rotationDelta);
+        }
+
+        static uint index = 0;
+        if (m_Fire) // from volcano
+        {
+            static auto start = Engine::m_Engine->GetTime();
+            if ((Engine::m_Engine->GetTime() - start) > 100ms)
+            {
+                if (index < MAX_B)
+                {
+                    // random values in [-1.0f, 1.0f]
+                    float rVal = 2 * (static_cast<float>(rand()) / RAND_MAX) - 1.0f;
+                    // get new start time
+                    start = Engine::m_Engine->GetTime();
+
+                    // move to backgound on z-axis
+                    auto& transform = m_Registry.get<TransformComponent>(m_Banana[index]);
+                    transform.SetTranslationZ(5.0f);
+
+                    auto& rigidbody = m_Registry.get<RigidbodyComponent>(m_Banana[index]);
+                    auto body = static_cast<b2Body*>(rigidbody.m_Body);
+                    body->SetLinearVelocity(b2Vec2(0.1f + rVal * 4, 5.0f));
+                    body->SetTransform(b2Vec2(0.0f, 3.2f), 0.0f);
+
+                    index++;
+                }
+                else if ((Engine::m_Engine->GetTime() - start) > 1500ms)
+                {
+                    ResetBananas();
+                    m_Fire = false;
+                }
+            }
+        }
+        else
+        {
+            index = 0;
         }
     }
 } // namespace LucreApp

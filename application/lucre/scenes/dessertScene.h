@@ -139,10 +139,6 @@ namespace LucreApp
         entt::entity m_MovingLights[NUMBER_OF_MOVING_LIGHTS];
 
     private:
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
         struct Group1
         {
             bool m_Rotated;

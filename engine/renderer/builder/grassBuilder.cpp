@@ -22,6 +22,9 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "gtc/type_ptr.hpp"
+#include <cstdlib>
+#include <ctime>
+#include <random>
 
 #include "engine.h"
 #include "renderer/builder/grassBuilder.h"
@@ -126,6 +129,8 @@ namespace GfxRenderEngine
             return Gltf::GLTF_LOAD_FAILURE;
         }
 
+        std::srand(std::time(0));
+
         for (auto& maskData : m_MaskData)
         {
             Resources::ResourceBuffers resourceBuffers;
@@ -150,6 +155,16 @@ namespace GfxRenderEngine
                         translationX = (p0.x + p1.x + p2.x + p3.x) / 4.0f;
                         translationY = (p0.y + p1.y + p2.y + p3.y) / 4.0f;
                         translationZ = (p0.z + p1.z + p2.z + p3.z) / 4.0f;
+
+                        { // randomize X
+                            float randomValue = (std::rand() / static_cast<float>(RAND_MAX)) - 0.5f;
+                            translationX += randomValue * 0.01f;
+                        }
+
+                        { // randomize Z
+                            float randomValue = (std::rand() / static_cast<float>(RAND_MAX)) - 0.5f;
+                            translationZ += randomValue * 0.01f;
+                        }
                     }
 
                     { // rotation
@@ -159,6 +174,11 @@ namespace GfxRenderEngine
                         rotationX = 0.0f;
                         rotationY = 0.0f;
                         rotationZ = 0.0f;
+
+                        { // randomize Y
+                            float randomValue = std::rand() / static_cast<float>(RAND_MAX);
+                            rotationY += randomValue * 0.1f;
+                        }
                     }
                     ++quadIndex;
                 }

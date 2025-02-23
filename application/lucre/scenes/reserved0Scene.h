@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "box2d/box2d.h"
+
 #include "engine.h"
 #include "renderer/cameraController.h"
 #include "renderer/cubemap.h"
@@ -62,6 +64,11 @@ namespace LucreApp
     private:
         void LoadModels();
         void ResetScene();
+        void InitPhysics();
+        void FireVolcano();
+        void ResetBananas();
+        void UpdateBananas(const Timestep& timestep);
+        void SimulatePhysics(const Timestep& timestep);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
         void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
                                  const std::shared_ptr<Camera>& lightView, int renderpass);
@@ -83,7 +90,7 @@ namespace LucreApp
         entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
-        entt::entity m_Penguin, m_Terrain1;
+        entt::entity m_Penguin, m_Terrain1, m_Mario;
 
         //------
         void LoadTerrain();
@@ -96,7 +103,21 @@ namespace LucreApp
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
         Candles m_CandleParticleSystem;
 
+        // physics
+        const b2Vec2 GRAVITY{0.0f, -9.81f};
+        std::unique_ptr<b2World> m_World;
+        b2Body* m_GroundBody{nullptr};
+        bool m_Fire{false};
+        bool m_StartTimer{true};
+        Timer m_LaunchVolcanoTimer;
+        static constexpr uint MAX_B = 24;
+        entt::entity m_Banana[MAX_B];
+
     private:
+        struct BananaComponent
+        {
+            bool m_IsOnTheGround;
+        };
         struct Group2
         {
             bool m_Rotated;

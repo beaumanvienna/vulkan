@@ -144,10 +144,6 @@ namespace LucreApp
         TimePoint m_SceneStartTime{0ms};
 
     private:
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
         struct Group1
         {
             bool m_Rotated;

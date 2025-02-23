@@ -109,10 +109,6 @@ namespace LucreApp
         bool m_RunCameraAnimation;
 
     private:
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
         struct Group1
         {
             bool m_Rotated;

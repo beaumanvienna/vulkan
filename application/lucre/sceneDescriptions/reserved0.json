@@ -70,7 +70,7 @@
                         ],
                         "translation":
                         [
-                            -43.3376, -28.5, 302.92
+                            -23.638, -28.5, 302.92
                         ]
                     }
                 }
@@ -343,11 +343,11 @@
                         ],
                         "rotation":
                         [
-                            -3.14159, -1.0472, -3.14159
+                            -3.14159, 1.35626, -3.14158
                         ],
                         "translation":
                         [
-                            5.41517, 3.87594, 44.1474
+                            5.36333, 3.98824, 43.9758
                         ]
                     }
                 },
@@ -364,7 +364,7 @@
                         ],
                         "translation":
                         [
-                            5.6632, 3.876, 45.3907
+                            5.6632, 3.99238, 45.3907
                         ]
                     }
                 },
@@ -427,7 +427,99 @@
                         ],
                         "translation":
                         [
-                            7.8688, 3.545, 45.138
+                            7.8688, 3.63108, 45.138
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/racetrack.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.57045, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -38.5278, -2.48508, 103.991
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/mario animated.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.339353, 0.339354, 0.339353
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -1.0472, -3.14159
+                        ],
+                        "translation":
+                        [
+                            7.468, 3.40516, 45.1736
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/kart.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.339353, 0.339354, 0.339353
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.27955, -3.14159
+                        ],
+                        "translation":
+                        [
+                            17.8006, 4.41109, 71.3278
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/yoshiBike.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.339353, 0.339354, 0.339353
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 1.27955, -3.14159
+                        ],
+                        "translation":
+                        [
+                            17.636, 4.48929, 70.7787
                         ]
                     }
                 }
