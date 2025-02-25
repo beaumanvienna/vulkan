@@ -65,6 +65,7 @@ project "lucre"
         "yaml-cpp",
         "fastgltf",
         "ufbx",
+        "Jolt",
         "box2d",
         "shaderc",
         "shaderc_util",
@@ -277,6 +278,8 @@ project "lucre"
         os.rmdir("./vendor/fastgltf/bin-int")
         os.rmdir("./vendor/ufbx/bin")
         os.rmdir("./vendor/ufbx/bin-int")
+        os.rmdir("./vendor/jolt/Jolt/bin")
+        os.rmdir("./vendor/jolt/Jolt/bin-int")
         os.rmdir("./vendor/assetImporter/bin")
         os.rmdir("./vendor/assetImporter/bin-int")
         os.remove("./vendor/assetImporter/Makefile")
