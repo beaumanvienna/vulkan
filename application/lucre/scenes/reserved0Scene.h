@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -33,6 +33,7 @@
 #include "scene/sceneLoader.h"
 #include "scene/sceneLoaderJSON.h"
 #include "particleSystem/candles.h"
+#include "physics/physics.h"
 
 #include "gamepadInputController.h"
 #include "keyboardInputController.h"
@@ -103,7 +104,7 @@ namespace LucreApp
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
         Candles m_CandleParticleSystem;
 
-        // physics
+        // physics box2D
         const b2Vec2 GRAVITY{0.0f, -9.81f};
         std::unique_ptr<b2World> m_World;
         b2Body* m_GroundBody{nullptr};
@@ -112,6 +113,9 @@ namespace LucreApp
         Timer m_LaunchVolcanoTimer;
         static constexpr uint MAX_B = 24;
         entt::entity m_Banana[MAX_B];
+
+        // physics Jolt
+        std::unique_ptr<Physics> m_Physics;
 
     private:
         struct BananaComponent

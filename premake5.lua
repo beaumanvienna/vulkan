@@ -17,7 +17,10 @@ project "lucre"
 
     defines
     {
-        "LUCRE_VERSION=\"0.4.2\""
+        "LUCRE_VERSION=\"0.4.2\"",
+        "JPH_PROFILE_ENABLED",
+        "JPH_DEBUG_RENDERER",
+        "JPH_OBJECT_STREAM"
     }
 
     files 
@@ -47,7 +50,8 @@ project "lucre"
         "vendor/glm",
         "vendor/stb",
         "vendor/thread-pool/include",
-        "vendor/tracy/include"
+        "vendor/tracy/include",
+        "vendor/jolt/"
     }
 
     libdirs

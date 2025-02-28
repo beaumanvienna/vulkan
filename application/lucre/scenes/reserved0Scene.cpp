@@ -520,6 +520,7 @@ namespace LucreApp
 
     void Reserved0Scene::InitPhysics()
     {
+        // box2D
         std::srand(time(nullptr));
         m_World = std::make_unique<b2World>(GRAVITY);
 
@@ -542,6 +543,10 @@ namespace LucreApp
             localGroundBox.SetAsBox(50.0f, 0.1f);
             localGroundBody->CreateFixture(&localGroundBox, 0.0f);
         }
+        // Jolt
+        m_Physics = Physics::Create(*this);
+        m_Physics->CreateGroundPlane();
+        m_Physics->CreateSphere();
     }
 
     void Reserved0Scene::FireVolcano()
@@ -587,11 +592,14 @@ namespace LucreApp
 
     void Reserved0Scene::SimulatePhysics(const Timestep& timestep)
     {
+        // box2D
         float step = timestep;
 
         int velocityIterations = 6;
         int positionIterations = 2;
         m_World->Step(step, velocityIterations, positionIterations);
+        // Jolt
+        m_Physics->OnUpdate(timestep);
     }
 
     void Reserved0Scene::UpdateBananas(const Timestep& timestep)
