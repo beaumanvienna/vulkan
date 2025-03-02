@@ -75,6 +75,7 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep) override;
         virtual void CreateGroundPlane() override;
         virtual void CreateSphere() override;
+        virtual void CreateMushroom() override;
 
     private:
         /// Class that determines if two object layers can collide
@@ -241,8 +242,15 @@ namespace GfxRenderEngine
         Registry& m_Registry;
         Dictionary& m_Dictionary;
         JPH::BodyID m_GroundID; // set invalid by default constructor
-        JPH::BodyID m_SphereID;
+        std::vector<JPH::BodyID> m_SphereID;
+        std::vector<JPH::BodyID> m_MushroomID;
 
-        entt::entity m_GameObject{entt::null};
+        enum GameObjects
+        {
+            GAME_OBJECT_SPHERE = 0,
+            GAME_OBJECT_MUSHROOM,
+            NUM_GAME_OBJECTS,
+        };
+        std::array<entt::entity, GameObjects::NUM_GAME_OBJECTS> m_GameObjects;
     };
 } // namespace GfxRenderEngine

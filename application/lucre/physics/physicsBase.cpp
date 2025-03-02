@@ -20,11 +20,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include "physics/physicsBase.h"
-
 #include <Jolt/Jolt.h>
-
-// Jolt includes
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/TempAllocator.h>
@@ -36,7 +32,10 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
+#include "core.h"
 #include "scene/components.h"
+#include "physics/physicsBase.h"
+#include "renderer/instanceBuffer.h"
 
 namespace GfxRenderEngine
 {
@@ -68,7 +67,9 @@ namespace GfxRenderEngine
         m_PhysicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface,
                              object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 
-        m_GameObject = m_Dictionary.Retrieve("SL::application/lucre/models/mario/sphere.glb::0::root");
+        // update global model matrices
+        auto renderer = Engine::m_Engine->GetRenderer();
+        renderer->UpdateTransformCache(m_Scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
     }
 
     void PhysicsBase::CreateGroundPlane()
@@ -86,7 +87,7 @@ namespace GfxRenderEngine
 
         // Define body creation settings
         JPH::BodyCreationSettings settings(groundShape,              // Shape
-                                           JPH::Vec3(0, 0.8f, 0),    // Position (y = 0.8 to sit at y = 1.2)
+                                           JPH::Vec3(0, 2.6f, 0),    // Position (y = 2.6 to sit at y = 3)
                                            JPH::Quat::sIdentity(),   // No rotation
                                            JPH::EMotionType::Static, // Static body
                                            Layers::NON_MOVING        // Collision layer
@@ -96,41 +97,146 @@ namespace GfxRenderEngine
         m_GroundID = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
     }
 
+    void PhysicsBase::CreateMushroom()
+    {
+        auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_MUSHROOM];
+        gameObject = m_Dictionary.Retrieve("SL::application/lucre/models/mario/mushroom.glb::0::Scene::mushroom");
+
+        if (gameObject == entt::null)
+        {
+            return;
+        }
+
+        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        auto& instanceTag = m_Registry.get<InstanceTag>(gameObject);
+        auto& instanceBuffer = instanceTag.m_InstanceBuffer;
+        std::vector<entt::entity>& instances = instanceTag.m_Instances;
+        m_MushroomID.resize(instances.size());
+
+        for (size_t index{0}; index < instances.size(); ++index)
+        {
+            auto& mushroomID = m_MushroomID[index];
+            auto& modelMatrix = instanceBuffer->GetModelMatrix(index);
+            float translationX = modelMatrix[3][0];
+            float translationY = modelMatrix[3][1];
+            float translationZ = modelMatrix[3][2];
+            std::cout << "mushroom translationX: " << translationX << ", " << "translationY: " << translationY << ", "
+                      << "translationZ: " << translationZ << std::endl;
+            // Now create a dynamic body to bounce on the floor
+            // Note that this uses the shorthand version of creating and adding a body to the world
+            JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f),
+                                                      JPH::RVec3(translationX, translationY, translationZ),
+                                                      JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, Layers::MOVING);
+            mushroomID = bodyInterface.CreateAndAddBody(sphere_settings, JPH::EActivation::Activate);
+            // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
+            // (note that if we had used CreateBody then we could have set the velocity straight on the body before
+            // adding it to the physics system)
+            bodyInterface.SetAngularVelocity(mushroomID, JPH::Vec3(0.0f, 1.0f, 0.0f));
+            bodyInterface.SetLinearVelocity(mushroomID, 2.0f * JPH::Vec3(-1.0f, 0.0f, -2.5f));
+            bodyInterface.SetRestitution(mushroomID, 0.8f);
+
+            std::string str = std::string("SL::application/lucre/models/mario/mushroom.glb::") + std::to_string(index) +
+                              std::string("::root");
+            auto entity = m_Dictionary.Retrieve(str);
+            if (entity != entt::null)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(entity);
+                transform.SetTranslation({0.0f, 0.0f, 0.0f});
+            }
+        }
+    }
+
     void PhysicsBase::CreateSphere()
     {
-        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_SPHERE];
+        gameObject = m_Dictionary.Retrieve("SL::application/lucre/models/mario/sphere.glb::0::Scene::Sphere");
 
-        // Now create a dynamic body to bounce on the floor
-        // Note that this uses the shorthand version of creating and adding a body to the world
-        JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f), JPH::RVec3(0.0_r, 8.0_r, 0.0_r),
-                                                  JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, Layers::MOVING);
-        m_SphereID = bodyInterface.CreateAndAddBody(sphere_settings, JPH::EActivation::Activate);
-        // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
-        // (note that if we had used CreateBody then we could have set the velocity straight on the body before adding it to
-        // the physics system)
-        bodyInterface.SetLinearVelocity(m_SphereID, JPH::Vec3(0.0f, -5.0f, 0.0f));
-        bodyInterface.SetRestitution(m_SphereID, 0.8f);
+        if (gameObject == entt::null)
+        {
+            return;
+        }
+
+        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        auto& instanceTag = m_Registry.get<InstanceTag>(gameObject);
+        auto& instanceBuffer = instanceTag.m_InstanceBuffer;
+        std::vector<entt::entity>& instances = instanceTag.m_Instances;
+        m_SphereID.resize(instances.size());
+
+        // update global model matrices
+        auto renderer = Engine::m_Engine->GetRenderer();
+        renderer->UpdateTransformCache(m_Scene, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+        for (size_t index{0}; index < instances.size(); ++index)
+        {
+            auto& sphereID = m_SphereID[index];
+            auto& modelMatrix = instanceBuffer->GetModelMatrix(index);
+            float translationX = modelMatrix[3][0];
+            float translationY = modelMatrix[3][1];
+            float translationZ = modelMatrix[3][2];
+            std::cout << "translationX: " << translationX << ", " << "translationY: " << translationY << ", "
+                      << "translationZ: " << translationZ << std::endl;
+            // Now create a dynamic body to bounce on the floor
+            // Note that this uses the shorthand version of creating and adding a body to the world
+            JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f),
+                                                      JPH::RVec3(translationX, translationY, translationZ),
+                                                      JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, Layers::MOVING);
+            sphereID = bodyInterface.CreateAndAddBody(sphere_settings, JPH::EActivation::Activate);
+            // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
+            // (note that if we had used CreateBody then we could have set the velocity straight on the body before
+            // adding it to the physics system)
+            bodyInterface.SetLinearVelocity(sphereID, JPH::Vec3(0.0f, -5.0f, 0.0f));
+            bodyInterface.SetRestitution(sphereID, 0.8f);
+
+            std::string str = std::string("SL::application/lucre/models/mario/sphere.glb::") + std::to_string(index) +
+                              std::string("::root");
+            auto entity = m_Dictionary.Retrieve(str);
+            if (entity != entt::null)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(entity);
+                transform.SetTranslation({0.0f, 0.0f, 0.0f});
+            }
+        }
     }
 
     void PhysicsBase::OnUpdate(Timestep timestep)
     {
-        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
 
         // If you take larger steps than 1 / 60th of a second you need to do multiple collision steps in order to keep the
         // simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
         const int cCollisionSteps = 1;
 
         // Step the world
-        m_PhysicsSystem.Update(timestep, cCollisionSteps, m_pTempAllocator.get(), m_pJobSystem.get());
+        float speedFactor = 1.0f;
+        m_PhysicsSystem.Update(timestep * speedFactor, cCollisionSteps, m_pTempAllocator.get(), m_pJobSystem.get());
 
-        { // Output current position and velocity of the sphere
-            JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(m_SphereID);
-            [[maybe_unused]] JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(m_SphereID);
+        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
 
-            if (m_GameObject != entt::null)
+        if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_SPHERE]; gameObject != entt::null)
+        {
+            auto& instanceTag = m_Registry.get<InstanceTag>(gameObject);
+            std::vector<entt::entity>& instances = instanceTag.m_Instances;
+
+            for (uint index{0}; auto& entity : instances)
             {
-                auto& transform = m_Registry.get<TransformComponent>(m_GameObject);
+                auto& sphereID = m_SphereID[index];
+                JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(sphereID);
+                auto& transform = m_Registry.get<TransformComponent>(entity);
                 transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
+                ++index;
+            }
+        }
+
+        if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_MUSHROOM]; gameObject != entt::null)
+        {
+            auto& instanceTag = m_Registry.get<InstanceTag>(gameObject);
+            std::vector<entt::entity>& instances = instanceTag.m_Instances;
+
+            for (uint index{0}; auto& entity : instances)
+            {
+                auto& mushroomID = m_MushroomID[index];
+                JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(mushroomID);
+                auto& transform = m_Registry.get<TransformComponent>(entity);
+                transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
+                ++index;
             }
         }
     }

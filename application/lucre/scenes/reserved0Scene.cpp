@@ -547,6 +547,7 @@ namespace LucreApp
         m_Physics = Physics::Create(*this);
         m_Physics->CreateGroundPlane();
         m_Physics->CreateSphere();
+        m_Physics->CreateMushroom();
     }
 
     void Reserved0Scene::FireVolcano()

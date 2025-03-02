@@ -38,6 +38,7 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep) = 0;
         virtual void CreateGroundPlane() = 0;
         virtual void CreateSphere() = 0;
+        virtual void CreateMushroom() = 0;
 
         static std::unique_ptr<Physics> Create(Scene& scene);
     };
