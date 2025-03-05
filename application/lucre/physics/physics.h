@@ -36,9 +36,9 @@ namespace GfxRenderEngine
     public:
         virtual ~Physics() = default;
         virtual void OnUpdate(Timestep timestep) = 0;
-        virtual void CreateGroundPlane() = 0;
-        virtual void CreateSphere() = 0;
-        virtual void CreateMushroom() = 0;
+        virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) = 0;
+        virtual void LoadModels() = 0;
+        virtual void Draw() = 0;
 
         static std::unique_ptr<Physics> Create(Scene& scene);
     };

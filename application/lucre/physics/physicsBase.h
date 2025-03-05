@@ -34,6 +34,8 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
+#include <Jolt/Physics/Body/BodyManager.h>
+#include <Jolt/Renderer/DebugRenderer.h>
 
 #include "engine.h"
 #include "scene/scene.h"
@@ -73,9 +75,13 @@ namespace GfxRenderEngine
         // PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
         virtual void OnUpdate(Timestep timestep) override;
-        virtual void CreateGroundPlane() override;
-        virtual void CreateSphere() override;
-        virtual void CreateMushroom() override;
+        virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) override;
+        virtual void LoadModels() override;
+        virtual void Draw() override;
+
+    private:
+        void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
+        void CreateMushroom(glm::vec3 const& scale, glm::vec3 const& translation);
 
     private:
         /// Class that determines if two object layers can collide
@@ -238,16 +244,23 @@ namespace GfxRenderEngine
         std::unique_ptr<JPH::JobSystemThreadPool> m_pJobSystem;
 
     private:
+        JPH::BodyManager::DrawSettings m_DrawSettings;
+        std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
+
+    private:
         Scene& m_Scene;
         Registry& m_Registry;
         Dictionary& m_Dictionary;
+        std::string m_DictionaryPrefix;
+        static constexpr bool NO_SCENE_GRAPH = false;
         JPH::BodyID m_GroundID; // set invalid by default constructor
-        std::vector<JPH::BodyID> m_SphereID;
-        std::vector<JPH::BodyID> m_MushroomID;
+        JPH::BodyID m_SphereID;
+        JPH::BodyID m_MushroomID;
 
         enum GameObjects
         {
-            GAME_OBJECT_SPHERE = 0,
+            GAME_OBJECT_GROUND_PLANE = 0,
+            GAME_OBJECT_SPHERE,
             GAME_OBJECT_MUSHROOM,
             NUM_GAME_OBJECTS,
         };

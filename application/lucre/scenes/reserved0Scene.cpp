@@ -436,6 +436,9 @@ namespace LucreApp
             m_Renderer->TransparencyPass(m_Registry);
         }
 
+        // physics debug visualization
+        m_Physics->Draw();
+
         // post processing
         m_Renderer->PostProcessingRenderpass();
 
@@ -545,9 +548,12 @@ namespace LucreApp
         }
         // Jolt
         m_Physics = Physics::Create(*this);
-        m_Physics->CreateGroundPlane();
-        m_Physics->CreateSphere();
-        m_Physics->CreateMushroom();
+        glm::vec3 scaleGroundPlane{5.0f, 0.4f, 50.0f};
+        float heigtWaterSurface{5.0f};
+        float zFightingOffset{0.00f};
+        glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
+        m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 50x50 plane, with a small thickness
+        m_Physics->LoadModels();
     }
 
     void Reserved0Scene::FireVolcano()
