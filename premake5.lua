@@ -35,6 +35,7 @@ project "lucre"
         "application",
         "application/lucre",
         "engine",
+        "engine/JoltDebugRenderer",
         "vendor",
         "vendor/imgui",
         "resources",

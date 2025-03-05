@@ -34,6 +34,7 @@ project "engine"
         "./",
         "engine",
         "engine/platform/Vulkan",
+        "engine/JoltDebugRenderer",
         "vendor",
         "vendor/glfw/include",
         "vendor/stb",
@@ -55,7 +56,8 @@ project "engine"
         "vendor/sdl/include",
         "vendor/sdl_mixer/include",
         "vendor/thread-pool/include",
-        "vendor/tracy/include"
+        "vendor/tracy/include",
+        "vendor/jolt/"
     }
 
     libdirs

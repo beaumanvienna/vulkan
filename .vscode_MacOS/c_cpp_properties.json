@@ -13,6 +13,7 @@
                 "vendor/yaml-cpp/include",
                 "vendor/fastgltf/include",
                 ".",
+                "engine/JoltDebugRenderer",
                 "engine/platform/Vulkan",
                 "vendor/assetImporter/include",
                 "vendor/tinyObjLoader",

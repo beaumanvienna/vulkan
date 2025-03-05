@@ -14,6 +14,7 @@
                 "vendor/fastgltf/include",
                 ".",
                 "engine/platform/Vulkan",
+                "engine/JoltDebugRenderer",
                 "vendor/assetImporter/include",
                 "vendor/tinyObjLoader",
                 "vendor/fastgltf/include/",

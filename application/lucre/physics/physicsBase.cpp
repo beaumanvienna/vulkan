@@ -32,6 +32,9 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
+#include <Renderer/DebugRendererImp.h>
+#include "engine/JoltDebugRenderer/Renderer/VK/RendererVK.h"
+
 #include "scene/components.h"
 #include "physics/physicsBase.h"
 #include "renderer/instanceBuffer.h"
@@ -65,6 +68,15 @@ namespace GfxRenderEngine
 
         m_PhysicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface,
                              object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
+        // Create renderer
+        m_Renderer = std::make_unique<RendererVK>();
+
+        // Create font
+        m_Font = std::make_unique<Font>(m_Renderer.get());
+        m_Font->Create("Roboto-Regular", 24);
+
+        // debug renderer
+        m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), m_Font.get());
     }
 
     void PhysicsBase::LoadModels()

@@ -35,7 +35,12 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyManager.h>
+
+// debug rendering
+#include <TestFramework.h>
+#include <Renderer/Renderer.h>
 #include <Jolt/Renderer/DebugRenderer.h>
+#include <Renderer/Font.h>
 
 #include "engine.h"
 #include "scene/scene.h"
@@ -72,7 +77,7 @@ namespace GfxRenderEngine
     class PhysicsBase : public Physics
     {
     public:
-        // PhysicsBase() = delete;
+        PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
         virtual void OnUpdate(Timestep timestep) override;
         virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) override;
@@ -246,6 +251,9 @@ namespace GfxRenderEngine
     private:
         JPH::BodyManager::DrawSettings m_DrawSettings;
         std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
+
+        std::unique_ptr<Renderer> m_Renderer;
+        std::unique_ptr<Font> m_Font;
 
     private:
         Scene& m_Scene;
