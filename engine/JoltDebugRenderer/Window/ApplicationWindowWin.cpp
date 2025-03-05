@@ -1,7 +1,7 @@
 // Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
 // SPDX-FileCopyrightText: 2024 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
-
+#ifdef _WIN32
 #include <TestFramework.h>
 
 #include <Window/ApplicationWindowWin.h>
@@ -105,3 +105,4 @@ void ApplicationWindowWin::MainLoop(RenderCallback inRenderCallback)
 			return;
 	}
 }
+#endif
