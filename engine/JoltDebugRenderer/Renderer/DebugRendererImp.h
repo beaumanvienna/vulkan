@@ -46,7 +46,7 @@
 #include "TestFramework.h"
 #include <Renderer/Renderer.h>
 
-class Renderer;
+class RendererJPH;
 class Font;
 
 /// Implementation of DebugRenderer
@@ -56,8 +56,8 @@ public:
     JPH_OVERRIDE_NEW_DELETE
 
     /// Constructor
-    DebugRendererImp(Renderer* inRenderer, const Font* inFont);
-
+    DebugRendererImp(RendererJPH* inRenderer, const Font* inFont);
+    void CompileShaders();
     /// Implementation of DebugRenderer interface
     virtual void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override;
     virtual void DrawTriangle(RVec3Arg inV1, RVec3Arg inV2, RVec3Arg inV3, ColorArg inColor,
@@ -69,9 +69,6 @@ public:
                               ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode,
                               ECastShadow inCastShadow, EDrawMode inDrawMode) override;
     virtual void DrawText3D(RVec3Arg inPosition, const string_view& inString, ColorArg inColor, float inHeight) override;
-
-    /// Draw all primitives from the light source
-    void DrawShadowPass();
 
     /// Draw all primitives that were added
     void Draw();
@@ -96,17 +93,12 @@ private:
     /// Ensure that the current locked primitive has space for a primitive consisting inVtxSize vertices
     void EnsurePrimitiveSpace(int inVtxSize);
 
-    Renderer* mRenderer;
+    RendererJPH* mRenderer;
 
     /// Shaders for triangles
     unique_ptr<PipelineState> mTriangleStateBF;
     unique_ptr<PipelineState> mTriangleStateFF;
     unique_ptr<PipelineState> mTriangleStateWire;
-
-    /// Shaders for shadow pass for triangles
-    unique_ptr<PipelineState> mShadowStateBF;
-    unique_ptr<PipelineState> mShadowStateFF;
-    unique_ptr<PipelineState> mShadowStateWire;
 
     /// Lock that protects the triangle batches from being accessed from multiple threads
     Mutex mPrimitivesLock;
@@ -173,7 +165,7 @@ private:
     InstanceMap mTempPrimitives;
     InstanceMap mPrimitivesBackFacing;
     int mNumInstances = 0;
-    Ref<RenderInstances> mInstancesBuffer[Renderer::cFrameCount];
+    Ref<RenderInstances> mInstancesBuffer[RendererJPH::cFrameCount];
 
     /// Primitive that is being built + its properties
     Ref<RenderPrimitive> mLockedPrimitive;

@@ -105,6 +105,7 @@ namespace GfxRenderEngine
 
         VkImage GetImageEmission() const { return m_GBufferEmissionImage; }
         VkFormat GetFormatEmission() const { return m_BufferEmissionFormat; }
+        VkFormat GetDepthFormat() const { return m_DepthFormat; }
 
         VkFramebuffer Get3DFrameBuffer(int index) { return m_3DFramebuffers[index]; }
         VkFramebuffer GetPostProcessingFrameBuffer(int index) { return m_PostProcessingFramebuffers[index]; }

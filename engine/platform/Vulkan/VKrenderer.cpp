@@ -538,7 +538,12 @@ namespace GfxRenderEngine
 
     void VK_Renderer::RecreateRenderpass()
     {
+        // 3D renderpass
         m_RenderPass = std::make_unique<VK_RenderPass>(m_SwapChain.get());
+        VK_Core::m_ColorAttachmentFormat = m_SwapChain->GetSwapChainImageFormat();
+        VK_Core::m_DepthAttachmentFormat = m_RenderPass->GetDepthFormat();
+
+        // water renderpasses
         m_WaterRenderPass[WaterPasses::REFRACTION] =
             std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
         m_WaterRenderPass[WaterPasses::REFLECTION] =
@@ -1243,7 +1248,10 @@ namespace GfxRenderEngine
             futures[futureCounter] = threadPool.SubmitTask(compileThread);
             ++futureCounter;
         }
-        threadPool.Wait();
+        for (auto& future : futures)
+        {
+            future.get();
+        }
         m_ShadersCompiled = true;
     }
 

@@ -18,6 +18,10 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/Font.h>
 
+#include "core.h"
+#include "auxiliary/file.h"
+#include "VKshader.h"
+
 #ifndef JPH_DEBUG_RENDERER
 // Hack to still compile DebugRenderer inside the test framework when Jolt is compiled without
 #define JPH_DEBUG_RENDERER
@@ -25,12 +29,13 @@
 #undef JPH_DEBUG_RENDERER
 #endif // !JPH_DEBUG_RENDERER
 
-DebugRendererImp::DebugRendererImp(Renderer* inRenderer, const Font* inFont) : mRenderer(inRenderer), mFont(inFont)
+DebugRendererImp::DebugRendererImp(RendererJPH* inRenderer, const Font* inFont) : mRenderer(inRenderer), mFont(inFont)
 {
     // Create input layout for lines
     const PipelineState::EInputDescription line_vertex_desc[] = {PipelineState::EInputDescription::Position,
                                                                  PipelineState::EInputDescription::Color};
 
+    CompileShaders();
     // Lines
     Ref<VertexShader> vtx_line = mRenderer->CreateVertexShader("LineVertexShader");
     Ref<PixelShader> pix_line = mRenderer->CreatePixelShader("LinePixelShader");
@@ -62,26 +67,11 @@ DebugRendererImp::DebugRendererImp(Renderer* inRenderer, const Font* inFont) : m
         PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Wireframe, PipelineState::ETopology::Triangle,
         PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 
-    // Shadow pass
-    Ref<VertexShader> vtx_shadow = mRenderer->CreateVertexShader("TriangleDepthVertexShader");
-    Ref<PixelShader> pix_shadow = mRenderer->CreatePixelShader("TriangleDepthPixelShader");
-    mShadowStateBF = mRenderer->CreatePipelineState(
-        vtx_shadow, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_shadow, PipelineState::EDrawPass::Shadow,
-        PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle, PipelineState::EDepthTest::On,
-        PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
-    mShadowStateFF = mRenderer->CreatePipelineState(
-        vtx_shadow, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_shadow, PipelineState::EDrawPass::Shadow,
-        PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle, PipelineState::EDepthTest::On,
-        PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
-    mShadowStateWire = mRenderer->CreatePipelineState(
-        vtx_shadow, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_shadow, PipelineState::EDrawPass::Shadow,
-        PipelineState::EFillMode::Wireframe, PipelineState::ETopology::Triangle, PipelineState::EDepthTest::On,
-        PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
-
     // Create instances buffer
-    for (uint n = 0; n < Renderer::cFrameCount; ++n)
+    for (uint n = 0; n < RendererJPH::cFrameCount; ++n)
+    {
         mInstancesBuffer[n] = mRenderer->CreateRenderInstances();
-
+    }
     // Create empty batch
     Vertex empty_vertex{Float3(0, 0, 0), Float3(1, 0, 0), Float2(0, 0), Color::sWhite};
     uint32 empty_indices[] = {0, 0, 0};
@@ -89,6 +79,59 @@ DebugRendererImp::DebugRendererImp(Renderer* inRenderer, const Font* inFont) : m
 
     // Initialize base class
     DebugRenderer::Initialize();
+}
+
+void DebugRendererImp::CompileShaders()
+{
+
+    if (!EngineCore::FileExists("bin-int"))
+    {
+        LOG_CORE_WARN("creating bin directory for spirv files");
+        EngineCore::CreateDirectory("bin-int");
+    }
+    // clang-format off
+    std::vector<std::string> shaderFilenames = {
+        "FontPixelShader.frag",
+        "LinePixelShader.frag",
+        "TriangleDepthPixelShader.frag",
+        "TrianglePixelShader.frag",
+        "UIPixelShader.frag",
+        "UIVertexShader.vert",
+        "FontVertexShader.vert",
+        "LineVertexShader.vert",
+        "TriangleDepthVertexShader.vert",
+        "TriangleVertexShader.vert",
+        "UIPixelShaderUntextured.frag"
+    };
+    // clang-format on
+
+    ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+    std::vector<std::future<bool>> futures;
+    futures.resize(shaderFilenames.size());
+
+    for (uint futureCounter{0}; auto& filename : shaderFilenames)
+    {
+        auto compileThread = [filename, futureCounter]() -> bool
+        {
+            ZoneScopedN("compileTread");
+            ZoneTransientN(variableName, std::string(std::to_string(futureCounter)).c_str(), true);
+            bool isOk = true;
+            std::string spirvFilename = std::string("bin-int/") + filename + std::string(".spv");
+            if (!EngineCore::FileExists(spirvFilename))
+            {
+                std::string name = std::string("engine/JoltDebugRenderer/Shaders/VK/") + filename;
+                VK_Shader shader{name, spirvFilename};
+                isOk = shader.IsOk();
+            }
+            return isOk;
+        };
+        futures[futureCounter] = threadPool.SubmitTask(compileThread);
+        ++futureCounter;
+    }
+    for (auto& future : futures)
+    {
+        future.get();
+    }
 }
 
 void DebugRendererImp::DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor)
@@ -288,144 +331,8 @@ void DebugRendererImp::DrawLines()
     }
 }
 
-void DebugRendererImp::DrawShadowPass()
-{
-    JPH_PROFILE_FUNCTION();
-
-    lock_guard lock(mPrimitivesLock);
-
-    // Finish the last primitive
-    FinalizePrimitive();
-
-    // Get the camera and light frustum for culling
-    Vec3 camera_pos(mRenderer->GetCameraState().mPos - mRenderer->GetBaseOffset());
-    const Frustum& camera_frustum = mRenderer->GetCameraFrustum();
-    const Frustum& light_frustum = mRenderer->GetLightFrustum();
-
-    // Resize instances buffer and copy all visible instance data into it
-    if (mNumInstances > 0)
-    {
-        // Create instances buffer
-        RenderInstances* instances_buffer = mInstancesBuffer[mRenderer->GetCurrentFrameIndex()];
-        instances_buffer->CreateBuffer(2 * mNumInstances, sizeof(Instance));
-        Instance* dst_instance = reinterpret_cast<Instance*>(instances_buffer->Lock());
-
-        // Next write index
-        int dst_index = 0;
-
-        // This keeps track of which instances use which lod, first array: 0 = light pass, 1 = geometry pass
-        Array<Array<int>> lod_indices[2];
-
-        for (InstanceMap* primitive_map : {&mPrimitives, &mTempPrimitives, &mPrimitivesBackFacing, &mWireframePrimitives})
-            for (InstanceMap::value_type& v : *primitive_map)
-            {
-                // Get LODs
-                const Array<LOD>& geometry_lods = v.first->mLODs;
-                size_t num_lods = geometry_lods.size();
-                JPH_ASSERT(num_lods > 0);
-
-                // Ensure that our lod index array is big enough (to avoid reallocating memory too often)
-                if (lod_indices[0].size() < num_lods)
-                    lod_indices[0].resize(num_lods);
-                if (lod_indices[1].size() < num_lods)
-                    lod_indices[1].resize(num_lods);
-
-                // Iterate over all instances
-                const Array<InstanceWithLODInfo>& instances = v.second.mInstances;
-                for (size_t i = 0; i < instances.size(); ++i)
-                {
-                    const InstanceWithLODInfo& src_instance = instances[i];
-
-                    // Check if it overlaps with the light or camera frustum
-                    bool light_overlaps = light_frustum.Overlaps(src_instance.mWorldSpaceBounds);
-                    bool camera_overlaps = camera_frustum.Overlaps(src_instance.mWorldSpaceBounds);
-                    if (light_overlaps || camera_overlaps)
-                    {
-                        // Figure out which LOD to use
-                        const LOD& lod =
-                            v.first->GetLOD(camera_pos, src_instance.mWorldSpaceBounds, src_instance.mLODScaleSq);
-                        size_t lod_index = &lod - geometry_lods.data();
-
-                        // Store which index goes in which LOD
-                        if (light_overlaps)
-                            lod_indices[0][lod_index].push_back((int)i);
-                        if (camera_overlaps)
-                            lod_indices[1][lod_index].push_back((int)i);
-                    }
-                }
-
-                // Loop over both passes: 0 = light, 1 = geometry
-                Array<int>* start_idx[] = {&v.second.mLightStartIdx, &v.second.mGeometryStartIdx};
-                for (int type = 0; type < 2; ++type)
-                {
-                    // Reserve space for instance indices
-                    Array<int>& type_start_idx = *start_idx[type];
-                    type_start_idx.resize(num_lods + 1);
-
-                    // Write out geometry pass instances
-                    for (size_t lod = 0; lod < num_lods; ++lod)
-                    {
-                        // Write start index for this LOD
-                        type_start_idx[lod] = dst_index;
-
-                        // Copy instances
-                        Array<int>& this_lod_indices = lod_indices[type][lod];
-                        for (int i : this_lod_indices)
-                        {
-                            const Instance& src_instance = instances[i];
-                            dst_instance[dst_index++] = src_instance;
-                        }
-
-                        // Prepare for next iteration (will preserve memory)
-                        this_lod_indices.clear();
-                    }
-
-                    // Write out end of last LOD
-                    type_start_idx.back() = dst_index;
-                }
-            }
-
-        instances_buffer->Unlock();
-    }
-
-    if (!mPrimitives.empty() || !mTempPrimitives.empty())
-    {
-        // Front face culling, we want to render the back side of the geometry for casting shadows
-        mShadowStateFF->Activate();
-
-        // Draw all primitives as seen from the light
-        if (mNumInstances > 0)
-            for (InstanceMap::value_type& v : mPrimitives)
-                DrawInstances(v.first, v.second.mLightStartIdx);
-        for (InstanceMap::value_type& v : mTempPrimitives)
-            DrawInstances(v.first, v.second.mLightStartIdx);
-    }
-
-    if (!mPrimitivesBackFacing.empty())
-    {
-        // Back face culling, we want to render the front side of back facing geometry
-        mShadowStateBF->Activate();
-
-        // Draw all primitives as seen from the light
-        for (InstanceMap::value_type& v : mPrimitivesBackFacing)
-            DrawInstances(v.first, v.second.mLightStartIdx);
-    }
-
-    if (!mWireframePrimitives.empty())
-    {
-        // Switch to wireframe mode
-        mShadowStateWire->Activate();
-
-        // Draw all wireframe primitives as seen from the light
-        for (InstanceMap::value_type& v : mWireframePrimitives)
-            DrawInstances(v.first, v.second.mLightStartIdx);
-    }
-}
-
 void DebugRendererImp::DrawTriangles()
 {
-    // Bind the shadow map texture
-    mRenderer->GetShadowMap()->Bind();
 
     if (!mPrimitives.empty() || !mTempPrimitives.empty())
     {
@@ -447,7 +354,9 @@ void DebugRendererImp::DrawTriangles()
 
         // Draw all back primitives
         for (InstanceMap::value_type& v : mPrimitivesBackFacing)
+        {
             DrawInstances(v.first, v.second.mGeometryStartIdx);
+        }
     }
 
     if (!mWireframePrimitives.empty())
@@ -457,7 +366,9 @@ void DebugRendererImp::DrawTriangles()
 
         // Draw all wireframe primitives
         for (InstanceMap::value_type& v : mWireframePrimitives)
+        {
             DrawInstances(v.first, v.second.mGeometryStartIdx);
+        }
     }
 }
 
@@ -482,6 +393,7 @@ void DebugRendererImp::DrawTexts()
 
 void DebugRendererImp::Draw()
 {
+    std::cout << std::endl << "********* void DebugRendererImp::Draw() *********" << std::endl;
     DrawLines();
     DrawTriangles();
     DrawTexts();

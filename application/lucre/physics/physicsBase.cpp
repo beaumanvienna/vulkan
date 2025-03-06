@@ -70,10 +70,11 @@ namespace GfxRenderEngine
                              object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
         // Create renderer
         m_Renderer = std::make_unique<RendererVK>();
+        m_Renderer->Initialize();
 
         // Create font
         m_Font = std::make_unique<Font>(m_Renderer.get());
-        m_Font->Create("Roboto-Regular", 24);
+        // m_Font->Create("Roboto-Regular", 24);
 
         // debug renderer
         m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), m_Font.get());

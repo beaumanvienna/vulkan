@@ -252,7 +252,7 @@ namespace GfxRenderEngine
         JPH::BodyManager::DrawSettings m_DrawSettings;
         std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
 
-        std::unique_ptr<Renderer> m_Renderer;
+        std::unique_ptr<RendererJPH> m_Renderer;
         std::unique_ptr<Font> m_Font;
 
     private:

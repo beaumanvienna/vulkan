@@ -32,6 +32,8 @@ namespace GfxRenderEngine
     {
 
     public:
+        static VkFormat m_ColorAttachmentFormat;
+        static VkFormat m_DepthAttachmentFormat;
         static VK_Device* m_Device;
     };
 } // namespace GfxRenderEngine

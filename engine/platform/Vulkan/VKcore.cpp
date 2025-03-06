@@ -25,5 +25,7 @@
 
 namespace GfxRenderEngine
 {
-    VK_Device* VK_Core::m_Device;
-}
+    VkFormat VK_Core::m_ColorAttachmentFormat{VK_FORMAT_UNDEFINED};
+    VkFormat VK_Core::m_DepthAttachmentFormat{VK_FORMAT_UNDEFINED};
+    VK_Device* VK_Core::m_Device{nullptr};
+} // namespace GfxRenderEngine
