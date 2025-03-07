@@ -121,16 +121,20 @@ namespace GfxRenderEngine
         }
     }
 
-    void PhysicsBase::Draw()
+    void PhysicsBase::Draw(GfxRenderEngine::Camera const& cam0)
     {
         if (!m_DebugRenderer)
         {
             return;
         }
+
+        JPH::CameraState camera(cam0);
+        m_Renderer->BeginFrame(camera, 1.0f /*world scale*/);
         m_PhysicsSystem.DrawBodies(m_DrawSettings,        // const BodyManager::DrawSettings &inSettings
                                    m_DebugRenderer.get(), // DebugRenderer* inRenderer
                                    nullptr                // const BodyDrawFilter* inBodyFilter = nullptr
         );
+        m_Renderer->EndFrame();
     }
 
 } // namespace GfxRenderEngine

@@ -82,7 +82,7 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep) override;
         virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) override;
         virtual void LoadModels() override;
-        virtual void Draw() override;
+        virtual void Draw(GfxRenderEngine::Camera const& cam0) override;
 
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
@@ -252,7 +252,7 @@ namespace GfxRenderEngine
         JPH::BodyManager::DrawSettings m_DrawSettings;
         std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
 
-        std::unique_ptr<RendererJPH> m_Renderer;
+        std::unique_ptr<Renderer> m_Renderer;
         std::unique_ptr<Font> m_Font;
 
     private:

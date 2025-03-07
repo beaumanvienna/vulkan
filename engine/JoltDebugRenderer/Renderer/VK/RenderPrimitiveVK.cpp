@@ -2,99 +2,123 @@
 // SPDX-FileCopyrightText: 2024 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
+/* Engine Copyright (c) 2025 Engine Development Team
+   https://github.com/beaumanvienna/vulkan
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to deal in the Software without restriction,
+   including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software,
+   and to permit persons to whom the Software is furnished to do so,
+   subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+
 #include <TestFramework.h>
 
 #include <Renderer/VK/RenderPrimitiveVK.h>
 #include <Renderer/VK/FatalErrorIfFailedVK.h>
-
-void RenderPrimitiveVK::ReleaseVertexBuffer()
+namespace JPH
 {
-	mRenderer->FreeBuffer(mVertexBuffer);
-	mVertexBufferDeviceLocal = false;
+    void RenderPrimitiveVK::ReleaseVertexBuffer()
+    {
+        mRenderer->FreeBuffer(mVertexBuffer);
+        mVertexBufferDeviceLocal = false;
 
-	RenderPrimitive::ReleaseVertexBuffer();
-}
+        RenderPrimitive::ReleaseVertexBuffer();
+    }
 
-void RenderPrimitiveVK::ReleaseIndexBuffer()
-{
-	mRenderer->FreeBuffer(mIndexBuffer);
-	mIndexBufferDeviceLocal = false;
+    void RenderPrimitiveVK::ReleaseIndexBuffer()
+    {
+        mRenderer->FreeBuffer(mIndexBuffer);
+        mIndexBufferDeviceLocal = false;
 
-	RenderPrimitive::ReleaseIndexBuffer();
-}
+        RenderPrimitive::ReleaseIndexBuffer();
+    }
 
-void RenderPrimitiveVK::CreateVertexBuffer(int inNumVtx, int inVtxSize, const void *inData)
-{
-	RenderPrimitive::CreateVertexBuffer(inNumVtx, inVtxSize, inData);
+    void RenderPrimitiveVK::CreateVertexBuffer(int inNumVtx, int inVtxSize, const void* inData)
+    {
+        RenderPrimitive::CreateVertexBuffer(inNumVtx, inVtxSize, inData);
 
-	VkDeviceSize size = VkDeviceSize(inNumVtx) * inVtxSize;
-	if (inData != nullptr)
-	{
-		mRenderer->CreateDeviceLocalBuffer(inData, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, mVertexBuffer);
-		mVertexBufferDeviceLocal = true;
-	}
-	else
-		mRenderer->CreateBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mVertexBuffer);
-}
+        VkDeviceSize size = VkDeviceSize(inNumVtx) * inVtxSize;
+        if (inData != nullptr)
+        {
+            mRenderer->CreateDeviceLocalBuffer(inData, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, mVertexBuffer);
+            mVertexBufferDeviceLocal = true;
+        }
+        else
+            mRenderer->CreateBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                    mVertexBuffer);
+    }
 
-void *RenderPrimitiveVK::LockVertexBuffer()
-{
-	JPH_ASSERT(!mVertexBufferDeviceLocal);
+    void* RenderPrimitiveVK::LockVertexBuffer()
+    {
+        JPH_ASSERT(!mVertexBufferDeviceLocal);
 
-	void *data;
-	FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory, mVertexBuffer.mOffset, VkDeviceSize(mNumVtx) * mVtxSize, 0, &data));
-	return data;
-}
+        void* data;
+        FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory, mVertexBuffer.mOffset,
+                                       VkDeviceSize(mNumVtx) * mVtxSize, 0, &data));
+        return data;
+    }
 
-void RenderPrimitiveVK::UnlockVertexBuffer()
-{
-	vkUnmapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory);
-}
+    void RenderPrimitiveVK::UnlockVertexBuffer() { vkUnmapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory); }
 
-void RenderPrimitiveVK::CreateIndexBuffer(int inNumIdx, const uint32 *inData)
-{
-	RenderPrimitive::CreateIndexBuffer(inNumIdx, inData);
+    void RenderPrimitiveVK::CreateIndexBuffer(int inNumIdx, const uint32* inData)
+    {
+        RenderPrimitive::CreateIndexBuffer(inNumIdx, inData);
 
-	VkDeviceSize size = VkDeviceSize(inNumIdx) * sizeof(uint32);
-	if (inData != nullptr)
-	{
-		mRenderer->CreateDeviceLocalBuffer(inData, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, mIndexBuffer);
-		mIndexBufferDeviceLocal = true;
-	}
-	else
-		mRenderer->CreateBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mIndexBuffer);
-}
+        VkDeviceSize size = VkDeviceSize(inNumIdx) * sizeof(uint32);
+        if (inData != nullptr)
+        {
+            mRenderer->CreateDeviceLocalBuffer(inData, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, mIndexBuffer);
+            mIndexBufferDeviceLocal = true;
+        }
+        else
+            mRenderer->CreateBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                    mIndexBuffer);
+    }
 
-uint32 *RenderPrimitiveVK::LockIndexBuffer()
-{
-	JPH_ASSERT(!mIndexBufferDeviceLocal);
+    uint32* RenderPrimitiveVK::LockIndexBuffer()
+    {
+        JPH_ASSERT(!mIndexBufferDeviceLocal);
 
-	void *data;
-	vkMapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory, mIndexBuffer.mOffset, VkDeviceSize(mNumIdx) * sizeof(uint32), 0, &data);
-	return reinterpret_cast<uint32 *>(data);
-}
+        void* data;
+        vkMapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory, mIndexBuffer.mOffset,
+                    VkDeviceSize(mNumIdx) * sizeof(uint32), 0, &data);
+        return reinterpret_cast<uint32*>(data);
+    }
 
-void RenderPrimitiveVK::UnlockIndexBuffer()
-{
-	vkUnmapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory);
-}
+    void RenderPrimitiveVK::UnlockIndexBuffer() { vkUnmapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory); }
 
-void RenderPrimitiveVK::Draw() const
-{
-	VkCommandBuffer command_buffer = mRenderer->GetCommandBuffer();
+    void RenderPrimitiveVK::Draw() const
+    {
+        VkCommandBuffer command_buffer = mRenderer->GetCommandBuffer();
 
-	VkBuffer vertex_buffers[] = { mVertexBuffer.mBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+        VkBuffer vertex_buffers[] = {mVertexBuffer.mBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
-	if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
-	{
-		vkCmdDraw(command_buffer, mNumVtxToDraw, 1, 0, 0);
-	}
-	else
-	{
-		vkCmdBindIndexBuffer(command_buffer, mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
+        if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
+        {
+            vkCmdDraw(command_buffer, mNumVtxToDraw, 1, 0, 0);
+        }
+        else
+        {
+            vkCmdBindIndexBuffer(command_buffer, mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdDrawIndexed(command_buffer, mNumIdxToDraw, 1, 0, 0, 0);
-	}
-}
+            vkCmdDrawIndexed(command_buffer, mNumIdxToDraw, 1, 0, 0, 0);
+        }
+    }
+} // namespace JPH

@@ -2,28 +2,54 @@
 // SPDX-FileCopyrightText: 2021 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
+/* Engine Copyright (c) 2025 Engine Development Team
+   https://github.com/beaumanvienna/vulkan
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to deal in the Software without restriction,
+   including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software,
+   and to permit persons to whom the Software is furnished to do so,
+   subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+
 #pragma once
 
 #include <Jolt/Core/Reference.h>
 
-/// Forward declares
-class Surface;
-
-class Texture : public RefTarget<Texture>
+namespace JPH
 {
-public:
-	/// Constructor
-										Texture(int inWidth, int inHeight) : mWidth(inWidth), mHeight(inHeight) { }
-	virtual								~Texture() = default;
 
-	/// Get dimensions of texture
-	inline int							GetWidth() const		{ return mWidth; }
-	inline int							GetHeight() const		{ return mHeight; }
+    /// Forward declares
+    class Surface;
 
-	/// Bind texture to the pixel shader
-	virtual void						Bind() const = 0;
+    class Texture : public RefTarget<Texture>
+    {
+    public:
+        /// Constructor
+        Texture(int inWidth, int inHeight) : mWidth(inWidth), mHeight(inHeight) {}
+        virtual ~Texture() = default;
 
-protected:
-	int									mWidth;
-	int									mHeight;
-};
+        /// Get dimensions of texture
+        inline int GetWidth() const { return mWidth; }
+        inline int GetHeight() const { return mHeight; }
+
+        /// Bind texture to the pixel shader
+        virtual void Bind() const = 0;
+
+    protected:
+        int mWidth;
+        int mHeight;
+    };
+} // namespace JPH

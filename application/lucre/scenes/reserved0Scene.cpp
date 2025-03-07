@@ -437,7 +437,7 @@ namespace LucreApp
         }
 
         // physics debug visualization
-        m_Physics->Draw();
+        m_Physics->Draw(m_CameraController->GetCamera());
 
         // post processing
         m_Renderer->PostProcessingRenderpass();

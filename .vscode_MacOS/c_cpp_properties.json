@@ -44,7 +44,8 @@
                 "ZoneTransientN(x, y, z)",
                 "JPH_PROFILE_ENABLED",
                 "JPH_DEBUG_RENDERER",
-                "JPH_OBJECT_STREAM"
+                "JPH_OBJECT_STREAM",
+                "JPH_ENABLE_VULKAN"
             ],
             "cStandard": "c17",
             "cppStandard": "c++20"

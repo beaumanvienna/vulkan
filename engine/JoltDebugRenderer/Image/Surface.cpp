@@ -2,219 +2,247 @@
 // SPDX-FileCopyrightText: 2021 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
+/* Engine Copyright (c) 2025 Engine Development Team
+   https://github.com/beaumanvienna/vulkan
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to deal in the Software without restriction,
+   including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software,
+   and to permit persons to whom the Software is furnished to do so,
+   subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+
 #include <TestFramework.h>
 
 #include <Image/Surface.h>
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// FormatDescription
-//
-// Description of a surface format
-//////////////////////////////////////////////////////////////////////////////////////////
-
-// Format descriptions
-static FormatDescription sFormats[] =
+namespace JPH
 {
-	//				   Description	BPP		#CMP	Closest 8 Bit				Closest Alpha				Red Mask	Green Mask	Blue Mask	Alpha Mask
-	FormatDescription("A4L4",		8,		2,		ESurfaceFormat::A8L8,		ESurfaceFormat::A4L4,		0x0000000f, 0x0000000f, 0x0000000f, 0x000000f0),
-	FormatDescription("L8",			8,		1,		ESurfaceFormat::L8,			ESurfaceFormat::A8L8,		0x000000ff,	0x000000ff,	0x000000ff, 0x00000000),
-	FormatDescription("A8",			8,		1,		ESurfaceFormat::A8,			ESurfaceFormat::A8,			0x00000000,	0x00000000,	0x00000000, 0x000000ff),
-	FormatDescription("A8L8",		16,		2,		ESurfaceFormat::A8L8,		ESurfaceFormat::A8L8,		0x000000ff, 0x000000ff, 0x000000ff, 0x0000ff00),
-	FormatDescription("R5G6B5",		16,		3,		ESurfaceFormat::R8G8B8,		ESurfaceFormat::A1R5G5B5,	0x0000f800,	0x000007e0,	0x0000001f, 0x00000000),
-	FormatDescription("X1R5G5B5",	16,		3,		ESurfaceFormat::R8G8B8,		ESurfaceFormat::A1R5G5B5,	0x00007c00,	0x000003e0,	0x0000001f, 0x00000000),
-	FormatDescription("X4R4G4B4",	16,		3,		ESurfaceFormat::R8G8B8,		ESurfaceFormat::A4R4G4B4,	0x00000f00,	0x000000f0,	0x0000000f, 0x00000000),
-	FormatDescription("A1R5G5B5",	16,		4,		ESurfaceFormat::A8R8G8B8,	ESurfaceFormat::A1R5G5B5,	0x00007c00,	0x000003e0,	0x0000001f, 0x00008000),
-	FormatDescription("A4R4G4B4",	16,		4,		ESurfaceFormat::A8R8G8B8,	ESurfaceFormat::A4R4G4B4,	0x00000f00,	0x000000f0,	0x0000000f, 0x0000f000),
-	FormatDescription("R8G8B8",		24,		3,		ESurfaceFormat::R8G8B8,		ESurfaceFormat::A8R8G8B8,	0x00ff0000,	0x0000ff00,	0x000000ff, 0x00000000),
-	FormatDescription("B8G8R8",		24,		3,		ESurfaceFormat::B8G8R8,		ESurfaceFormat::A8B8G8R8,	0x000000ff,	0x0000ff00,	0x00ff0000, 0x00000000),
-	FormatDescription("X8R8G8B8",	32,		3,		ESurfaceFormat::X8R8G8B8,	ESurfaceFormat::A8R8G8B8,	0x00ff0000,	0x0000ff00,	0x000000ff, 0x00000000),
-	FormatDescription("X8B8G8R8",	32,		3,		ESurfaceFormat::X8B8G8R8,	ESurfaceFormat::A8B8G8R8,	0x000000ff,	0x0000ff00,	0x00ff0000, 0x00000000),
-	FormatDescription("A8R8G8B8",	32,		4,		ESurfaceFormat::A8R8G8B8,	ESurfaceFormat::A8R8G8B8,	0x00ff0000,	0x0000ff00,	0x000000ff, 0xff000000),
-	FormatDescription("A8B8G8R8",	32,		4,		ESurfaceFormat::A8B8G8R8,	ESurfaceFormat::A8B8G8R8,	0x000000ff,	0x0000ff00,	0x00ff0000, 0xff000000),
-	FormatDescription("Invalid",	0,		0,		ESurfaceFormat::Invalid,	ESurfaceFormat::Invalid,	0x00000000,	0x00000000,	0x00000000, 0x00000000),
-};
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // FormatDescription
+    //
+    // Description of a surface format
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-FormatDescription::FormatDescription(const char *inFormatName, int inBitsPerPixel, int inNumberOfComponents, ESurfaceFormat inClosest8BitFormat, ESurfaceFormat inClosestAlphaFormat, uint32 inRedMask, uint32 inGreenMask, uint32 inBlueMask, uint32 inAlphaMask) :
-	mFormatName(inFormatName),
-	mBitsPerPixel(inBitsPerPixel),
-	mNumberOfComponents(inNumberOfComponents),
-	mClosest8BitFormat(inClosest8BitFormat),
-	mClosestAlphaFormat(inClosestAlphaFormat),
-	mRedMask(inRedMask),
-	mGreenMask(inGreenMask),
-	mBlueMask(inBlueMask),
-	mAlphaMask(inAlphaMask)
-{
-}
+    // Format descriptions
+    static FormatDescription sFormats[] = {
+        //				   Description	BPP		#CMP	Closest 8 Bit
+        // Closest Alpha				Red Mask	Green Mask	Blue Mask	Alpha Mask
+        FormatDescription("A4L4", 8, 2, ESurfaceFormat::A8L8, ESurfaceFormat::A4L4, 0x0000000f, 0x0000000f, 0x0000000f,
+                          0x000000f0),
+        FormatDescription("L8", 8, 1, ESurfaceFormat::L8, ESurfaceFormat::A8L8, 0x000000ff, 0x000000ff, 0x000000ff,
+                          0x00000000),
+        FormatDescription("A8", 8, 1, ESurfaceFormat::A8, ESurfaceFormat::A8, 0x00000000, 0x00000000, 0x00000000,
+                          0x000000ff),
+        FormatDescription("A8L8", 16, 2, ESurfaceFormat::A8L8, ESurfaceFormat::A8L8, 0x000000ff, 0x000000ff, 0x000000ff,
+                          0x0000ff00),
+        FormatDescription("R5G6B5", 16, 3, ESurfaceFormat::R8G8B8, ESurfaceFormat::A1R5G5B5, 0x0000f800, 0x000007e0,
+                          0x0000001f, 0x00000000),
+        FormatDescription("X1R5G5B5", 16, 3, ESurfaceFormat::R8G8B8, ESurfaceFormat::A1R5G5B5, 0x00007c00, 0x000003e0,
+                          0x0000001f, 0x00000000),
+        FormatDescription("X4R4G4B4", 16, 3, ESurfaceFormat::R8G8B8, ESurfaceFormat::A4R4G4B4, 0x00000f00, 0x000000f0,
+                          0x0000000f, 0x00000000),
+        FormatDescription("A1R5G5B5", 16, 4, ESurfaceFormat::A8R8G8B8, ESurfaceFormat::A1R5G5B5, 0x00007c00, 0x000003e0,
+                          0x0000001f, 0x00008000),
+        FormatDescription("A4R4G4B4", 16, 4, ESurfaceFormat::A8R8G8B8, ESurfaceFormat::A4R4G4B4, 0x00000f00, 0x000000f0,
+                          0x0000000f, 0x0000f000),
+        FormatDescription("R8G8B8", 24, 3, ESurfaceFormat::R8G8B8, ESurfaceFormat::A8R8G8B8, 0x00ff0000, 0x0000ff00,
+                          0x000000ff, 0x00000000),
+        FormatDescription("B8G8R8", 24, 3, ESurfaceFormat::B8G8R8, ESurfaceFormat::A8B8G8R8, 0x000000ff, 0x0000ff00,
+                          0x00ff0000, 0x00000000),
+        FormatDescription("X8R8G8B8", 32, 3, ESurfaceFormat::X8R8G8B8, ESurfaceFormat::A8R8G8B8, 0x00ff0000, 0x0000ff00,
+                          0x000000ff, 0x00000000),
+        FormatDescription("X8B8G8R8", 32, 3, ESurfaceFormat::X8B8G8R8, ESurfaceFormat::A8B8G8R8, 0x000000ff, 0x0000ff00,
+                          0x00ff0000, 0x00000000),
+        FormatDescription("A8R8G8B8", 32, 4, ESurfaceFormat::A8R8G8B8, ESurfaceFormat::A8R8G8B8, 0x00ff0000, 0x0000ff00,
+                          0x000000ff, 0xff000000),
+        FormatDescription("A8B8G8R8", 32, 4, ESurfaceFormat::A8B8G8R8, ESurfaceFormat::A8B8G8R8, 0x000000ff, 0x0000ff00,
+                          0x00ff0000, 0xff000000),
+        FormatDescription("Invalid", 0, 0, ESurfaceFormat::Invalid, ESurfaceFormat::Invalid, 0x00000000, 0x00000000,
+                          0x00000000, 0x00000000),
+    };
 
-uint32 FormatDescription::Encode(ColorArg inColor) const
-{
-	uint32 col = 0;
-	uint32 written_mask = 0;
+    FormatDescription::FormatDescription(const char* inFormatName, int inBitsPerPixel, int inNumberOfComponents,
+                                         ESurfaceFormat inClosest8BitFormat, ESurfaceFormat inClosestAlphaFormat,
+                                         uint32 inRedMask, uint32 inGreenMask, uint32 inBlueMask, uint32 inAlphaMask)
+        : mFormatName(inFormatName), mBitsPerPixel(inBitsPerPixel), mNumberOfComponents(inNumberOfComponents),
+          mClosest8BitFormat(inClosest8BitFormat), mClosestAlphaFormat(inClosestAlphaFormat), mRedMask(inRedMask),
+          mGreenMask(inGreenMask), mBlueMask(inBlueMask), mAlphaMask(inAlphaMask)
+    {
+    }
 
-	// Loop through all components
-	for (int c = 0; c < 4; ++c)
-	{
-		// Check that we have not yet written this part of the color yet
-		uint32 mask = GetComponentMask(c);
-		if ((written_mask & mask) != 0) continue;
-		written_mask |= mask;
+    uint32 FormatDescription::Encode(ColorArg inColor) const
+    {
+        uint32 col = 0;
+        uint32 written_mask = 0;
 
-		// Or in this component
-		col |= int(round((1.0f / 255.0f) * mask * inColor(c))) & mask;
-	}
+        // Loop through all components
+        for (int c = 0; c < 4; ++c)
+        {
+            // Check that we have not yet written this part of the color yet
+            uint32 mask = GetComponentMask(c);
+            if ((written_mask & mask) != 0)
+                continue;
+            written_mask |= mask;
 
-	return col;
-}
+            // Or in this component
+            col |= int(round((1.0f / 255.0f) * mask * inColor(c))) & mask;
+        }
 
-const Color FormatDescription::Decode(uint32 inColor) const
-{
-	Color col(0, 0, 0, 0);
+        return col;
+    }
 
-	// Loop through all components
-	for (int c = 0; c < 4; ++c)
-	{
-		uint32 mask = GetComponentMask(c);
-		if (mask != 0)
-		{
-			uint32 shift = CountTrailingZeros(mask);
-			uint32 shifted_color = (inColor & mask) >> shift;
-			uint32 shifted_mask = mask >> shift;
-			col(c) = uint8((255 * shifted_color + 127) / shifted_mask);
-		}
-		else
-			col(c) = 255;
-	}
+    const Color FormatDescription::Decode(uint32 inColor) const
+    {
+        Color col(0, 0, 0, 0);
 
-	return col;
-}
+        // Loop through all components
+        for (int c = 0; c < 4; ++c)
+        {
+            uint32 mask = GetComponentMask(c);
+            if (mask != 0)
+            {
+                uint32 shift = CountTrailingZeros(mask);
+                uint32 shifted_color = (inColor & mask) >> shift;
+                uint32 shifted_mask = mask >> shift;
+                col(c) = uint8((255 * shifted_color + 127) / shifted_mask);
+            }
+            else
+                col(c) = 255;
+        }
 
-const FormatDescription &GetFormatDescription(ESurfaceFormat inFormat)
-{
-	if (inFormat <= ESurfaceFormat::Invalid)
-		return sFormats[uint(inFormat)];
+        return col;
+    }
 
-	return sFormats[uint(ESurfaceFormat::Invalid)];
-}
+    const FormatDescription& GetFormatDescription(ESurfaceFormat inFormat)
+    {
+        if (inFormat <= ESurfaceFormat::Invalid)
+            return sFormats[uint(inFormat)];
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// Surface
-//
-// Class that contains an image in arbitrary format
-//////////////////////////////////////////////////////////////////////////////////////////
+        return sFormats[uint(ESurfaceFormat::Invalid)];
+    }
 
-Surface::Surface(int inWidth, int inHeight, ESurfaceFormat inFormat) :
-	mFormat(inFormat),
-	mWidth(inWidth),
-	mHeight(inHeight),
-	mLength(0),
-	mLockMode(ESurfaceLockMode::None),
-	mStride(0),
-	mData(nullptr)
-{
-}
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Surface
+    //
+    // Class that contains an image in arbitrary format
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-Surface::~Surface()
-{
-	JPH_ASSERT(!IsLocked());
-	JPH_ASSERT(mData == nullptr);
-	JPH_ASSERT(mStride == 0);
-	JPH_ASSERT(mLength == 0);
-}
+    Surface::Surface(int inWidth, int inHeight, ESurfaceFormat inFormat)
+        : mFormat(inFormat), mWidth(inWidth), mHeight(inHeight), mLength(0), mLockMode(ESurfaceLockMode::None), mStride(0),
+          mData(nullptr)
+    {
+    }
 
-void Surface::Lock(ESurfaceLockMode inMode) const
-{
-	// Check if this resource can be locked
-	JPH_ASSERT(!IsLocked());
-	JPH_ASSERT((uint(inMode) & uint(ESurfaceLockMode::ReadWrite)) != 0);
+    Surface::~Surface()
+    {
+        JPH_ASSERT(!IsLocked());
+        JPH_ASSERT(mData == nullptr);
+        JPH_ASSERT(mStride == 0);
+        JPH_ASSERT(mLength == 0);
+    }
 
-	// Store mode
-	mLockMode = inMode;
+    void Surface::Lock(ESurfaceLockMode inMode) const
+    {
+        // Check if this resource can be locked
+        JPH_ASSERT(!IsLocked());
+        JPH_ASSERT((uint(inMode) & uint(ESurfaceLockMode::ReadWrite)) != 0);
 
-	// Lock the buffer
-	HardwareLock();
+        // Store mode
+        mLockMode = inMode;
 
-	// Check that data and stride were filled in
-	JPH_ASSERT(mData != nullptr);
-	JPH_ASSERT(mStride > 0);
-	JPH_ASSERT(mLength > 0);
-}
+        // Lock the buffer
+        HardwareLock();
 
-void Surface::UnLock() const
-{
-	// Check if this resource was locked
-	JPH_ASSERT(IsLocked());
+        // Check that data and stride were filled in
+        JPH_ASSERT(mData != nullptr);
+        JPH_ASSERT(mStride > 0);
+        JPH_ASSERT(mLength > 0);
+    }
 
-	// Unlock the hardware resource
-	HardwareUnLock();
+    void Surface::UnLock() const
+    {
+        // Check if this resource was locked
+        JPH_ASSERT(IsLocked());
 
-	// Reset members, so we are sure they will be set next time
-	mLockMode = ESurfaceLockMode::None;
-	mStride = 0;
-	mLength = 0;
-	mData = nullptr;
-}
+        // Unlock the hardware resource
+        HardwareUnLock();
 
-void Surface::Clear(ColorArg inColor)
-{
-	Lock(ESurfaceLockMode::Write);
+        // Reset members, so we are sure they will be set next time
+        mLockMode = ESurfaceLockMode::None;
+        mStride = 0;
+        mLength = 0;
+        mData = nullptr;
+    }
 
-	// Get image properties
-	int bpp = GetBytesPerPixel();
-	int width = GetWidth();
-	int height = GetHeight();
+    void Surface::Clear(ColorArg inColor)
+    {
+        Lock(ESurfaceLockMode::Write);
 
-	// Determine clear color
-	uint32 col = GetFormatDescription().Encode(inColor);
+        // Get image properties
+        int bpp = GetBytesPerPixel();
+        int width = GetWidth();
+        int height = GetHeight();
 
-	// Clear the image
-	for (int y = 0; y < height; ++y)
-	{
-		uint8 *d		= GetScanLine(y);
-		uint8 *d_end	= GetScanLine(y) + width * bpp;
+        // Determine clear color
+        uint32 col = GetFormatDescription().Encode(inColor);
 
-		while (d < d_end)
-		{
-			memcpy(d, &col, bpp);
-			d += bpp;
-		}
-	}
+        // Clear the image
+        for (int y = 0; y < height; ++y)
+        {
+            uint8* d = GetScanLine(y);
+            uint8* d_end = GetScanLine(y) + width * bpp;
 
-	UnLock();
-}
+            while (d < d_end)
+            {
+                memcpy(d, &col, bpp);
+                d += bpp;
+            }
+        }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// SoftwareSurface
-//
-// Class that contains an image in arbitrary format
-//////////////////////////////////////////////////////////////////////////////////////////
+        UnLock();
+    }
 
-SoftwareSurface::SoftwareSurface(int inWidth, int inHeight, ESurfaceFormat inFormat, int inStride) :
-	Surface(inWidth, inHeight, inFormat)
-{
-	// Determine stride and length
-	mPixelStride = inStride == 0? ((mWidth * GetBytesPerPixel() + 3) & ~3) : inStride;
-	mPixelLength = mPixelStride * inHeight;
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // SoftwareSurface
+    //
+    // Class that contains an image in arbitrary format
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-	// Allocate pixel data
-	JPH_ASSERT(mPixelLength > 0);
-	mPixelData = new uint8 [mPixelLength];
-}
+    SoftwareSurface::SoftwareSurface(int inWidth, int inHeight, ESurfaceFormat inFormat, int inStride)
+        : Surface(inWidth, inHeight, inFormat)
+    {
+        // Determine stride and length
+        mPixelStride = inStride == 0 ? ((mWidth * GetBytesPerPixel() + 3) & ~3) : inStride;
+        mPixelLength = mPixelStride * inHeight;
 
-SoftwareSurface::~SoftwareSurface()
-{
-	delete [] mPixelData;
-}
+        // Allocate pixel data
+        JPH_ASSERT(mPixelLength > 0);
+        mPixelData = new uint8[mPixelLength];
+    }
 
-void SoftwareSurface::HardwareLock() const
-{
-	// Get pointer to data
-	mData = mPixelData;
-	mStride = mPixelStride;
-	mLength = mPixelLength;
-}
+    SoftwareSurface::~SoftwareSurface() { delete[] mPixelData; }
 
-void SoftwareSurface::HardwareUnLock() const
-{
-}
+    void SoftwareSurface::HardwareLock() const
+    {
+        // Get pointer to data
+        mData = mPixelData;
+        mStride = mPixelStride;
+        mLength = mPixelLength;
+    }
 
+    void SoftwareSurface::HardwareUnLock() const {}
+
+} // namespace JPH
