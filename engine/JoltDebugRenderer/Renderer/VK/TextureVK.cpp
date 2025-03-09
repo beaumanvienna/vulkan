@@ -161,15 +161,46 @@ namespace JPH
     TextureVK::TextureVK(RendererVK* inRenderer, int inWidth, int inHeight)
         : Texture(inWidth, inHeight), mRenderer(inRenderer)
     {
-        VkFormat vk_format = VK_Core::m_ColorAttachmentFormat;
+        BufferVK staging_buffer;
+        mRenderer->CreateBuffer(VkDeviceSize(mWidth) * mHeight * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer);
+
+        VkFormat vk_format = VK_FORMAT_B8G8R8A8_UNORM;
 
         // Create render target
-        mRenderer->CreateImage(mWidth, mHeight, vk_format, VK_IMAGE_TILING_OPTIMAL,
-                               VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                   VK_IMAGE_USAGE_SAMPLED_BIT,
-                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+        mRenderer->CreateImage(mWidth,                                                       //
+                               mHeight,                                                      //
+                               vk_format,                                                    //
+                               VK_IMAGE_TILING_OPTIMAL,                                      //
+                               VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, //
+                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,                          //
+                               mImage,                                                       //
+                               mImageMemory);
 
-        CreateImageViewAndDescriptorSet(vk_format, VK_IMAGE_ASPECT_DEPTH_BIT, mRenderer->GetTextureSamplerRepeat());
+        VkCommandBuffer command_buffer = VK_Core::m_Device->BeginSingleTimeCommands();
+
+        // Make the image suitable for transferring to
+        TransitionImageLayout(command_buffer, mImage, vk_format, VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        // Copy the data to the destination image
+        VkBufferImageCopy region = {};
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.layerCount = 1;
+        region.imageExtent = {uint32(mWidth), uint32(mHeight), 1};
+        vkCmdCopyBufferToImage(command_buffer, staging_buffer.mBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                               &region);
+
+        // Make the image suitable for sampling
+        TransitionImageLayout(command_buffer, mImage, vk_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        VK_Core::m_Device->EndSingleTimeCommands(command_buffer);
+
+        // Destroy temporary buffer
+        mRenderer->FreeBuffer(staging_buffer);
+
+        CreateImageViewAndDescriptorSet(vk_format, VK_IMAGE_ASPECT_COLOR_BIT, mRenderer->GetTextureSamplerRepeat());
     }
 
     TextureVK::~TextureVK()
@@ -189,8 +220,13 @@ namespace JPH
     void TextureVK::Bind() const
     {
         if (mDescriptorSet != VK_NULL_HANDLE)
+        {
             vkCmdBindDescriptorSets(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     mRenderer->GetPipelineLayout(), 1, 1, &mDescriptorSet, 0, nullptr);
+
+            std::cout << "vkCmdBindDescriptorSets (TextureVK::Bind()) mRenderer->GetPipelineLayout(): "
+                      << mRenderer->GetPipelineLayout() << ", mDescriptorSet: " << mDescriptorSet << endl;
+        }
     }
 
     void TextureVK::CreateImageViewAndDescriptorSet(VkFormat inFormat, VkImageAspectFlags inAspectFlags, VkSampler inSampler)

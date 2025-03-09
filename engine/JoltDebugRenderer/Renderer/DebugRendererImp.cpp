@@ -65,7 +65,7 @@ namespace JPH
         mLineState = mRenderer->CreatePipelineState(
             vtx_line, line_vertex_desc, std::size(line_vertex_desc), pix_line, PipelineState::EDrawPass::Normal,
             PipelineState::EFillMode::Solid, PipelineState::ETopology::Line, PipelineState::EDepthTest::On,
-            PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
+            PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface, "LineShader");
 
         // Create input layout for triangles
         const PipelineState::EInputDescription triangles_vertex_desc[] = {
@@ -80,15 +80,18 @@ namespace JPH
         mTriangleStateBF = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
+            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
+            "TriangleShader Backface Solid");
         mTriangleStateFF = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
+            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace,
+            "TriangleShader FrontFace");
         mTriangleStateWire = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Wireframe, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
+            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
+            "TriangleShader Backface Wireframe");
 
         // Create instances buffer
         for (uint n = 0; n < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; ++n)
@@ -198,6 +201,7 @@ namespace JPH
                                         ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode,
                                         ECastShadow inCastShadow, EDrawMode inDrawMode)
     {
+        std::cout << "DebugRendererImp::DrawGeometry(" << std::endl;
         lock_guard lock(mPrimitivesLock);
 
         RVec3 offset = mRenderer->GetBaseOffset();
@@ -356,6 +360,8 @@ namespace JPH
 
     void DebugRendererImp::DrawTriangles()
     {
+        // Bind the shadow map texture
+        mRenderer->GetShadowMap()->Bind();
 
         if (!mPrimitives.empty() || !mTempPrimitives.empty())
         {
@@ -364,10 +370,17 @@ namespace JPH
 
             // Draw all primitives
             if (mNumInstances > 0)
+            {
                 for (InstanceMap::value_type& v : mPrimitives)
+                {
                     DrawInstances(v.first, v.second.mGeometryStartIdx);
+                }
+            }
+
             for (InstanceMap::value_type& v : mTempPrimitives)
+            {
                 DrawInstances(v.first, v.second.mGeometryStartIdx);
+            }
         }
 
         if (!mPrimitivesBackFacing.empty())
@@ -414,9 +427,120 @@ namespace JPH
         }
     }
 
+    void DebugRendererImp::DrawPass()
+    {
+        JPH_PROFILE_FUNCTION();
+
+        lock_guard lock(mPrimitivesLock);
+
+        // Finish the last primitive
+        FinalizePrimitive();
+
+        // Get the camera and light frustum for culling
+        Vec3 camera_pos(mRenderer->GetCameraState().mPos - mRenderer->GetBaseOffset());
+        const Frustum& camera_frustum = mRenderer->GetCameraFrustum();
+        const Frustum& light_frustum = mRenderer->GetLightFrustum();
+
+        // Resize instances buffer and copy all visible instance data into it
+        if (mNumInstances > 0)
+        {
+            // Create instances buffer
+            RenderInstances* instances_buffer = mInstancesBuffer[mRenderer->GetCurrentFrameIndex()];
+            instances_buffer->CreateBuffer(2 * mNumInstances, sizeof(Instance));
+            Instance* dst_instance = reinterpret_cast<Instance*>(instances_buffer->Lock());
+
+            // Next write index
+            int dst_index = 0;
+
+            // This keeps track of which instances use which lod, first array: 0 = light pass, 1 = geometry pass
+            Array<Array<int>> lod_indices[2];
+
+            for (InstanceMap* primitive_map :
+                 {&mPrimitives, &mTempPrimitives, &mPrimitivesBackFacing, &mWireframePrimitives})
+                for (InstanceMap::value_type& v : *primitive_map)
+                {
+                    // Get LODs
+                    const Array<LOD>& geometry_lods = v.first->mLODs;
+                    size_t num_lods = geometry_lods.size();
+                    JPH_ASSERT(num_lods > 0);
+
+                    // Ensure that our lod index array is big enough (to avoid reallocating memory too often)
+                    if (lod_indices[0].size() < num_lods)
+                    {
+                        lod_indices[0].resize(num_lods);
+                    }
+                    if (lod_indices[1].size() < num_lods)
+                    {
+                        lod_indices[1].resize(num_lods);
+                    }
+
+                    // Iterate over all instances
+                    const Array<InstanceWithLODInfo>& instances = v.second.mInstances;
+                    for (size_t i = 0; i < instances.size(); ++i)
+                    {
+                        const InstanceWithLODInfo& src_instance = instances[i];
+
+                        // Check if it overlaps with the light or camera frustum
+                        bool light_overlaps = light_frustum.Overlaps(src_instance.mWorldSpaceBounds);
+                        bool camera_overlaps = camera_frustum.Overlaps(src_instance.mWorldSpaceBounds);
+                        if (light_overlaps || camera_overlaps)
+                        {
+                            // Figure out which LOD to use
+                            const LOD& lod =
+                                v.first->GetLOD(camera_pos, src_instance.mWorldSpaceBounds, src_instance.mLODScaleSq);
+                            size_t lod_index = &lod - geometry_lods.data();
+
+                            // Store which index goes in which LOD
+                            if (light_overlaps)
+                            {
+                                lod_indices[0][lod_index].push_back((int)i);
+                            }
+                            if (camera_overlaps)
+                            {
+                                lod_indices[1][lod_index].push_back((int)i);
+                            }
+                        }
+                    }
+
+                    // Loop over both passes: 0 = light, 1 = geometry
+                    Array<int>* start_idx[] = {&v.second.mLightStartIdx, &v.second.mGeometryStartIdx};
+                    for (int type = 0; type < 2; ++type)
+                    {
+                        // Reserve space for instance indices
+                        Array<int>& type_start_idx = *start_idx[type];
+                        type_start_idx.resize(num_lods + 1);
+
+                        // Write out geometry pass instances
+                        for (size_t lod = 0; lod < num_lods; ++lod)
+                        {
+                            // Write start index for this LOD
+                            type_start_idx[lod] = dst_index;
+
+                            // Copy instances
+                            Array<int>& this_lod_indices = lod_indices[type][lod];
+                            for (int i : this_lod_indices)
+                            {
+                                const Instance& src_instance = instances[i];
+                                dst_instance[dst_index++] = src_instance;
+                            }
+
+                            // Prepare for next iteration (will preserve memory)
+                            this_lod_indices.clear();
+                        }
+
+                        // Write out end of last LOD
+                        type_start_idx.back() = dst_index;
+                    }
+                }
+
+            instances_buffer->Unlock();
+        }
+    }
+
     void DebugRendererImp::Draw()
     {
         std::cout << std::endl << "********* void DebugRendererImp::Draw() *********" << std::endl;
+        DrawPass();
         DrawLines();
         DrawTriangles();
         DrawTexts();
@@ -472,4 +596,37 @@ namespace JPH
         ClearTexts();
         NextFrame();
     }
+    // clang-format off
+    //    mDescriptorSetLayoutTexture: 0x6b4bb60000000235
+    //    mPipelineLayout: 0x682e8d0000000236
+    //    mDescriptorSets[i]: 0x4f75530000000238
+    //    mDescriptorSets[i]: 0x6218d20000000239
+    //    mGraphicsPipeline: 0x1bba8c000000023f with layout 0x682e8d0000000236, name LineShader
+    //    mGraphicsPipeline: 0x1064180000000242 with layout 0x682e8d0000000236, name TriangleShader Backface Solid
+    //    mGraphicsPipeline: 0x9d29090000000243 with layout 0x682e8d0000000236, name TriangleShader FrontFace
+    //    mGraphicsPipeline: 0x5a32ee0000000244 with layout 0x682e8d0000000236, name TriangleShader Backface Wireframe
+    //    
+    //    RendererVK::SetProjectionMode() vkCmdBindDescriptorSets 0x6218d20000000239, frame index: 1 with pipeline layout 0x682e8d0000000236
+    //    BodyManager::Draw
+    //    Draw the shape
+    //    BoxShape::Draw(
+    //    DebugRenderer::DrawBox(
+    //    DebugRendererImp::DrawGeometry(
+    //    
+    //    ********* void DebugRendererImp::Draw() *********
+    //    PipelineStateVK::Activate() vkCmdBindPipeline 0x1bba8c000000023f
+    //    RenderPrimitiveVK::Draw() vkCmdBindVertexBuffers, vertex_buffers: 0x7ffe22c25638, mVertexBuffer.mSize: 384
+    //    RenderPrimitiveVK::Draw() vkCmdDraw, vertex count: 24
+    //    PipelineStateVK::Activate() vkCmdBindPipeline 0x5a32ee0000000244
+    //    RenderInstancesVK::Draw() vkCmdBindVertexBuffers, buffers: 0x7ffe22c25560, mVertexBuffer.mSize: 864, mInstancesBuffer.mSize: 288
+    //    RenderInstancesVK::Draw() vkCmdDrawIndexed, index count: 36, num instances: 1, start instance: 1
+    //
+    //    validation layer: Validation Error: [ VUID-vkCmdDrawIndexed-None-08600 ] Object 0: handle = 0x5a32ee0000000244, 
+    //    type = VK_OBJECT_TYPE_PIPELINE; Object 1: handle = 0x682e8d0000000236, type = VK_OBJECT_TYPE_PIPELINE_LAYOUT; | MessageID = 0x381a0272 | vkCmdDrawIndexed():  
+    //    The VkPipeline 0x5a32ee0000000244[] (created with VkPipelineLayout 0x682e8d0000000236[]) statically uses descriptor set (index #1) which is not compatible with the currently 
+    //    bound descriptor set's pipeline layout (VkPipelineLayout 0x682e8d0000000236[]). The Vulkan spec states: For each set n that is statically used by a bound shader, 
+    //    a descriptor set must have been bound to n at the same pipeline bind point, with a VkPipelineLayout that is compatible for set n, with the VkPipelineLayout used to create 
+    //    the current VkPipeline or the VkDescriptorSetLayout array used to create the current VkShaderEXT, as described in Pipeline Layout Compatibility 
+    //    (https://vulkan.lunarg.com/doc/view/1.3.283.0/linux/1.3-extensions/vkspec.html#VUID-vkCmdDrawIndexed-None-08600)
+    // clang-format on
 } // namespace JPH

@@ -87,6 +87,7 @@ namespace GfxRenderEngine
         void BeginShadowRenderPass1(VkCommandBuffer commandBuffer);
         void BeginWaterRenderPass(VkCommandBuffer commandBuffer, WaterPasses pass);
         void Begin3DRenderPass(VkCommandBuffer commandBuffer);
+        VkRenderPass Get3DRenderPass() { return m_RenderPass->Get3DRenderPass(); }
         void BeginPostProcessingRenderPass(VkCommandBuffer commandBuffer);
         void BeginGUIRenderPass(VkCommandBuffer commandBuffer);
         void EndRenderPass(VkCommandBuffer commandBuffer);

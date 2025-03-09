@@ -171,7 +171,7 @@ namespace JPH
         mPipelineState = mRenderer->CreatePipelineState(
             vtx, vertex_desc, std::size(vertex_desc), pix, PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Solid,
             PipelineState::ETopology::Triangle, PipelineState::EDepthTest::Off, PipelineState::EBlendMode::AlphaBlend,
-            PipelineState::ECullMode::Backface);
+            PipelineState::ECullMode::Backface, "FontShader");
 
         // Create texture
         mTexture = mRenderer->CreateTexture(surface);

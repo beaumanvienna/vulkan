@@ -57,15 +57,16 @@ namespace JPH
                             uint inInputDescriptionCount, const PixelShader* inPixelShader,
                             PipelineState::EDrawPass inDrawPass, PipelineState::EFillMode inFillMode,
                             PipelineState::ETopology inTopology, PipelineState::EDepthTest inDepthTest,
-                            PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode) override;
+                            PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode,
+                            std::string const& debugName) override;
         virtual RenderPrimitive* CreateRenderPrimitive(PipelineState::ETopology inType) override;
         virtual RenderInstances* CreateRenderInstances() override;
-
+        virtual Texture* GetShadowMap() const override { return mShadowMap.GetPtr(); }
         VkDevice GetDevice() const { return mDevice; }
         VkDescriptorPool GetDescriptorPool() const { return mDescriptorPool; }
         VkDescriptorSetLayout GetDescriptorSetLayoutTexture() const { return mDescriptorSetLayoutTexture; }
         VkSampler GetTextureSamplerRepeat() const { return mTextureSamplerRepeat; }
-        VkRenderPass GetRenderPass() const { return mRenderPass; }
+        VkRenderPass GetRenderPass() const;
         VkPipelineLayout GetPipelineLayout() const { return mPipelineLayout; }
         VkCommandBuffer GetCommandBuffer();
 
@@ -106,11 +107,9 @@ namespace JPH
         VkDescriptorSet mDescriptorSets[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         VkDescriptorSet mDescriptorSetsOrtho[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         VkSampler mTextureSamplerRepeat = VK_NULL_HANDLE;
-        VkRenderPass mRenderPass = VK_NULL_HANDLE;
         VkPipelineLayout mPipelineLayout = VK_NULL_HANDLE;
-        Array<VkFramebuffer> mSwapChainFramebuffers;
         uint32 mImageIndex = 0;
-
+        Ref<TextureVK> mShadowMap;
         unique_ptr<ConstantBufferVK> mVertexShaderConstantBufferProjection[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         unique_ptr<ConstantBufferVK> mVertexShaderConstantBufferOrtho[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];
         unique_ptr<ConstantBufferVK> mPixelShaderConstantBuffer[VK_SwapChain::MAX_FRAMES_IN_FLIGHT];

@@ -29,13 +29,16 @@
 #include <Renderer/VK/PipelineStateVK.h>
 #include <Renderer/VK/RendererVK.h>
 #include <Renderer/VK/FatalErrorIfFailedVK.h>
+
+#include "VKrenderPass.h"
+
 namespace JPH
 {
     PipelineStateVK::PipelineStateVK(RendererVK* inRenderer, const VertexShaderVK* inVertexShader,
                                      const EInputDescription* inInputDescription, uint inInputDescriptionCount,
                                      const PixelShaderVK* inPixelShader, EDrawPass inDrawPass, EFillMode inFillMode,
                                      ETopology inTopology, EDepthTest inDepthTest, EBlendMode inBlendMode,
-                                     ECullMode inCullMode)
+                                     ECullMode inCullMode, std::string const& debugName)
         : mRenderer(inRenderer), mVertexShader(inVertexShader), mPixelShader(inPixelShader)
     {
         VkPipelineShaderStageCreateInfo shader_stages[] = {inVertexShader->mStageInfo, inPixelShader->mStageInfo};
@@ -87,7 +90,9 @@ namespace JPH
             }
 
         for (uint32 i = 0; i < uint32(attribute_descriptions.size()); ++i)
+        {
             attribute_descriptions[i].location = i;
+        }
 
         VkVertexInputBindingDescription binding_description[2];
         binding_description[0].binding = 0;
@@ -139,29 +144,22 @@ namespace JPH
         VkPipelineColorBlendAttachmentState color_blend_attachment = {};
         color_blend_attachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        switch (inBlendMode)
-        {
-            case EBlendMode::Write:
-                color_blend_attachment.blendEnable = VK_FALSE;
-                break;
+        color_blend_attachment.blendEnable = VK_FALSE;
 
-            case EBlendMode::AlphaBlend:
-                color_blend_attachment.blendEnable = VK_TRUE;
-                color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-                color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-                color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-                color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-                color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-                color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-                break;
+        // color attachment, no blending
+        static constexpr uint NUM_ATT = 1;
+        std::array<VkPipelineColorBlendAttachmentState, static_cast<uint>(NUM_ATT)> blAttachments;
+        for (uint i = 0; i < NUM_ATT; ++i)
+        {
+            blAttachments[i] = color_blend_attachment;
         }
 
         VkPipelineColorBlendStateCreateInfo color_blending = {};
         color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         color_blending.logicOpEnable = VK_FALSE;
         color_blending.logicOp = VK_LOGIC_OP_COPY;
-        color_blending.attachmentCount = 1;
-        color_blending.pAttachments = &color_blend_attachment;
+        color_blending.attachmentCount = NUM_ATT;
+        color_blending.pAttachments = blAttachments.data();
 
         VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         VkPipelineDynamicStateCreateInfo dynamic_state = {};
@@ -183,8 +181,11 @@ namespace JPH
         pipeline_info.pDynamicState = &dynamic_state;
         pipeline_info.layout = mRenderer->GetPipelineLayout();
         pipeline_info.renderPass = mRenderer->GetRenderPass();
+        pipeline_info.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
         FatalErrorIfFailed(vkCreateGraphicsPipelines(mRenderer->GetDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr,
                                                      &mGraphicsPipeline));
+        std::cout << "mGraphicsPipeline: " << mGraphicsPipeline << " with layout " << mRenderer->GetPipelineLayout()
+                  << ", name " << debugName << endl;
     }
 
     PipelineStateVK::~PipelineStateVK()
@@ -196,6 +197,7 @@ namespace JPH
 
     void PipelineStateVK::Activate()
     {
+        std::cout << "PipelineStateVK::Activate() vkCmdBindPipeline " << mGraphicsPipeline << std::endl;
         vkCmdBindPipeline(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
     }
 } // namespace JPH

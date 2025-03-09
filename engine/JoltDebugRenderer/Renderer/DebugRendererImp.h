@@ -73,6 +73,8 @@ namespace JPH
                                   ECastShadow inCastShadow, EDrawMode inDrawMode) override;
         virtual void DrawText3D(RVec3Arg inPosition, const string_view& inString, ColorArg inColor, float inHeight) override;
 
+        void DrawPass();
+
         /// Draw all primitives that were added
         void Draw();
 

@@ -109,15 +109,19 @@ namespace JPH
         VkBuffer vertex_buffers[] = {mVertexBuffer.mBuffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
+        std::cout << "RenderPrimitiveVK::Draw() vkCmdBindVertexBuffers, vertex_buffers: " << vertex_buffers
+                  << ", mVertexBuffer.mSize: " << mVertexBuffer.mSize << std::endl;
         if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
         {
+            std::cout << " RenderPrimitiveVK::Draw() vkCmdDraw, vertex count: " << mNumVtxToDraw << std::endl;
             vkCmdDraw(command_buffer, mNumVtxToDraw, 1, 0, 0);
         }
         else
         {
+            std::cout << "RenderPrimitiveVK::Draw() vkCmdBindIndexBuffer, mIndexBuffer.mBuffer: " << mIndexBuffer.mBuffer
+                      << ", mIndexBuffer.Size: " << mIndexBuffer.mSize << std::endl;
             vkCmdBindIndexBuffer(command_buffer, mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
-
+            std::cout << "RenderPrimitiveVK::Draw() vkCmdDrawIndex, index count: " << mNumIdxToDraw << std::endl;
             vkCmdDrawIndexed(command_buffer, mNumIdxToDraw, 1, 0, 0, 0);
         }
     }

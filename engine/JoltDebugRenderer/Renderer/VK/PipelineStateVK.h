@@ -41,7 +41,7 @@ namespace JPH
         PipelineStateVK(RendererVK* inRenderer, const VertexShaderVK* inVertexShader,
                         const EInputDescription* inInputDescription, uint inInputDescriptionCount,
                         const PixelShaderVK* inPixelShader, EDrawPass inDrawPass, EFillMode inFillMode, ETopology inTopology,
-                        EDepthTest inDepthTest, EBlendMode inBlendMode, ECullMode inCullMode);
+                        EDepthTest inDepthTest, EBlendMode inBlendMode, ECullMode inCullMode, std::string const& debugName);
         virtual ~PipelineStateVK() override;
 
         /// Make this pipeline state active (any primitives rendered after this will use this state)

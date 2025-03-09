@@ -78,6 +78,10 @@ namespace GfxRenderEngine
 
         // debug renderer
         m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), m_Font.get());
+
+        m_DrawSettings.mDrawShape = true;
+        m_DrawSettings.mDrawBoundingBox = true;
+        m_DrawSettings.mDrawShapeWireframe = true;
     }
 
     void PhysicsBase::LoadModels()
@@ -130,10 +134,12 @@ namespace GfxRenderEngine
 
         JPH::CameraState camera(cam0);
         m_Renderer->BeginFrame(camera, 1.0f /*world scale*/);
+        static_cast<DebugRendererImp*>(m_DebugRenderer.get())->Clear();
         m_PhysicsSystem.DrawBodies(m_DrawSettings,        // const BodyManager::DrawSettings &inSettings
                                    m_DebugRenderer.get(), // DebugRenderer* inRenderer
                                    nullptr                // const BodyDrawFilter* inBodyFilter = nullptr
         );
+        static_cast<DebugRendererImp*>(m_DebugRenderer.get())->Draw();
         m_Renderer->EndFrame();
     }
 

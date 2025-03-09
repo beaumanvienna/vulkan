@@ -57,6 +57,7 @@ namespace GfxRenderEngine
         const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
         const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const std::string& GetName() const { return m_Name; }
+        float GetFOVY() const { return m_Fovy; }
 
     private:
         void RecalculateViewMatrix();
@@ -71,5 +72,6 @@ namespace GfxRenderEngine
 
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
+        float m_Fovy{0};
     };
 } // namespace GfxRenderEngine

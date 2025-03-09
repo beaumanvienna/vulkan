@@ -64,6 +64,9 @@ namespace JPH
         // Trace allocation stats
         Trace("VK: Max allocations: %u, max size: %u MB", mMaxNumAllocations, uint32(mMaxTotalAllocated >> 20));
 
+        // Destroy the shadow map
+        mShadowMap = nullptr;
+
         // Release constant buffers
         for (unique_ptr<ConstantBufferVK>& cb : mVertexShaderConstantBufferProjection)
         {
@@ -160,7 +163,7 @@ namespace JPH
         texture_dsl.bindingCount = 1;
         texture_dsl.pBindings = &texture_layout_binding;
         FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &texture_dsl, nullptr, &mDescriptorSetLayoutTexture));
-
+        std::cout << "mDescriptorSetLayoutTexture: " << mDescriptorSetLayoutTexture << std::endl;
         // Create pipeline layout
         VkPipelineLayoutCreateInfo pipeline_layout = {};
         VkDescriptorSetLayout layout_handles[] = {mDescriptorSetLayoutUBO, mDescriptorSetLayoutTexture};
@@ -169,7 +172,7 @@ namespace JPH
         pipeline_layout.pSetLayouts = layout_handles;
         pipeline_layout.pushConstantRangeCount = 0;
         FatalErrorIfFailed(vkCreatePipelineLayout(mDevice, &pipeline_layout, nullptr, &mPipelineLayout));
-
+        std::cout << "mPipelineLayout: " << mPipelineLayout << std::endl;
         // Create descriptor pool
         VkDescriptorPoolSize descriptor_pool_sizes[] = {
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 128},
@@ -214,6 +217,7 @@ namespace JPH
             descriptor_write[1].descriptorCount = 1;
             descriptor_write[1].pBufferInfo = &ps_buffer_info;
             vkUpdateDescriptorSets(mDevice, 2, descriptor_write, 0, nullptr);
+            std::cout << "mDescriptorSets[i]: " << mDescriptorSets[i] << std::endl;
         }
 
         // Allocate descriptor sets for 2d rendering
@@ -249,57 +253,8 @@ namespace JPH
         sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
         FatalErrorIfFailed(vkCreateSampler(mDevice, &sampler_info, nullptr, &mTextureSamplerRepeat));
 
-        {
-            // Create normal render pass
-            VkAttachmentDescription attachments_normal[2] = {};
-            VkAttachmentDescription& color_attachment = attachments_normal[0];
-            color_attachment.format = VK_Core::m_ColorAttachmentFormat;
-            color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            VkAttachmentReference color_attachment_ref = {};
-            color_attachment_ref.attachment = 0;
-            color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            VkAttachmentDescription& depth_attachment = attachments_normal[1];
-            depth_attachment.format = VK_Core::m_DepthAttachmentFormat;
-            depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            VkAttachmentReference depth_attachment_ref = {};
-            depth_attachment_ref.attachment = 1;
-            depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            VkSubpassDescription subpass_normal = {};
-            subpass_normal.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpass_normal.colorAttachmentCount = 1;
-            subpass_normal.pColorAttachments = &color_attachment_ref;
-            subpass_normal.pDepthStencilAttachment = &depth_attachment_ref;
-            VkSubpassDependency dependencies_normal = {};
-            dependencies_normal.srcSubpass = VK_SUBPASS_EXTERNAL;
-            dependencies_normal.dstSubpass = 0;
-            dependencies_normal.srcStageMask =
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            dependencies_normal.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            dependencies_normal.dstStageMask =
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-            dependencies_normal.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
-            VkRenderPassCreateInfo render_pass_normal = {};
-            render_pass_normal.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            render_pass_normal.attachmentCount = std::size(attachments_normal);
-            render_pass_normal.pAttachments = attachments_normal;
-            render_pass_normal.subpassCount = 1;
-            render_pass_normal.pSubpasses = &subpass_normal;
-            render_pass_normal.dependencyCount = 1;
-            render_pass_normal.pDependencies = &dependencies_normal;
-            FatalErrorIfFailed(vkCreateRenderPass(mDevice, &render_pass_normal, nullptr, &mRenderPass));
-        }
+        // Create depth only texture (no color buffer, as seen from light)
+        mShadowMap = new TextureVK(this, cShadowMapSize, cShadowMapSize);
     }
 
     void RendererVK::BeginFrame(const CameraState& inCamera, float inWorldScale)
@@ -332,11 +287,6 @@ namespace JPH
     {
         JPH_PROFILE_FUNCTION();
 
-        VkCommandBuffer command_buffer = GetCommandBuffer();
-        vkCmdEndRenderPass(command_buffer);
-
-        FatalErrorIfFailed(vkEndCommandBuffer(command_buffer));
-
         Renderer::EndFrame();
     }
 
@@ -345,6 +295,8 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 3d rendering
+        std::cout << "RendererVK::SetProjectionMode() vkCmdBindDescriptorSets " << mDescriptorSets[mFrameIndex]
+                  << ", frame index: " << mFrameIndex << " with pipeline layout " << mPipelineLayout << std::endl;
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSets[mFrameIndex], 0, nullptr);
     }
@@ -354,6 +306,8 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 2d rendering
+        std::cout << "RendererVK::SetProjectionMode() vkCmdBindDescriptorSets" << mDescriptorSetsOrtho[mFrameIndex]
+                  << ", frame index: " << mFrameIndex << " with pipeline layout " << mPipelineLayout << std::endl;
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSetsOrtho[mFrameIndex], 0, nullptr);
     }
@@ -392,11 +346,12 @@ namespace JPH
         const VertexShader* inVertexShader, const PipelineState::EInputDescription* inInputDescription,
         uint inInputDescriptionCount, const PixelShader* inPixelShader, PipelineState::EDrawPass inDrawPass,
         PipelineState::EFillMode inFillMode, PipelineState::ETopology inTopology, PipelineState::EDepthTest inDepthTest,
-        PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode)
+        PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode, std::string const& debugName)
     {
         return make_unique<PipelineStateVK>(this, static_cast<const VertexShaderVK*>(inVertexShader), inInputDescription,
                                             inInputDescriptionCount, static_cast<const PixelShaderVK*>(inPixelShader),
-                                            inDrawPass, inFillMode, inTopology, inDepthTest, inBlendMode, inCullMode);
+                                            inDrawPass, inFillMode, inTopology, inDepthTest, inBlendMode, inCullMode,
+                                            debugName);
     }
 
     RenderPrimitive* RendererVK::CreateRenderPrimitive(PipelineState::ETopology inType)
@@ -573,21 +528,22 @@ namespace JPH
                                  VkImageUsageFlags inUsage, VkMemoryPropertyFlags inProperties, VkImage& outImage,
                                  VkDeviceMemory& outMemory)
     {
-        VkImageCreateInfo image_info = {};
-        image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_info.imageType = VK_IMAGE_TYPE_2D;
-        image_info.extent.width = inWidth;
-        image_info.extent.height = inHeight;
-        image_info.extent.depth = 1;
-        image_info.mipLevels = 1;
-        image_info.arrayLayers = 1;
-        image_info.format = inFormat;
-        image_info.tiling = inTiling;
-        image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_info.usage = inUsage;
-        image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-        image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        FatalErrorIfFailed(vkCreateImage(mDevice, &image_info, nullptr, &outImage));
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = inWidth;
+        imageInfo.extent.height = inHeight;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = inFormat;
+        imageInfo.tiling = inTiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = inUsage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        FatalErrorIfFailed(vkCreateImage(mDevice, &imageInfo, nullptr, &outImage));
 
         VkMemoryRequirements mem_requirements;
         vkGetImageMemoryRequirements(mDevice, outImage, &mem_requirements);
@@ -631,6 +587,11 @@ namespace JPH
     {
         JPH_ASSERT(mInFrame);
         return static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer())->GetCurrentCommandBuffer();
+    }
+
+    VkRenderPass RendererVK::GetRenderPass() const
+    { //
+        return static_cast<VK_Renderer*>(Engine::m_Engine->GetRenderer())->Get3DRenderPass();
     }
 
 #ifdef JPH_ENABLE_VULKAN

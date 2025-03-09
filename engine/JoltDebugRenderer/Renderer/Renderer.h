@@ -83,18 +83,20 @@ namespace JPH
         virtual Ref<PixelShader> CreatePixelShader(const char* inName) = 0;
 
         /// Create pipeline state object that defines the complete state of how primitives should be rendered
-        virtual unique_ptr<PipelineState>
-        CreatePipelineState(const VertexShader* inVertexShader, const PipelineState::EInputDescription* inInputDescription,
-                            uint inInputDescriptionCount, const PixelShader* inPixelShader,
-                            PipelineState::EDrawPass inDrawPass, PipelineState::EFillMode inFillMode,
-                            PipelineState::ETopology inTopology, PipelineState::EDepthTest inDepthTest,
-                            PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode) = 0;
+        virtual unique_ptr<PipelineState> CreatePipelineState(
+            const VertexShader* inVertexShader, const PipelineState::EInputDescription* inInputDescription,
+            uint inInputDescriptionCount, const PixelShader* inPixelShader, PipelineState::EDrawPass inDrawPass,
+            PipelineState::EFillMode inFillMode, PipelineState::ETopology inTopology, PipelineState::EDepthTest inDepthTest,
+            PipelineState::EBlendMode inBlendMode, PipelineState::ECullMode inCullMode, std::string const& debugName) = 0;
 
         /// Create a render primitive
         virtual RenderPrimitive* CreateRenderPrimitive(PipelineState::ETopology inType) = 0;
 
         /// Create render instances object to allow drawing batches of objects
         virtual RenderInstances* CreateRenderInstances() = 0;
+
+        /// Get the shadow map texture
+        virtual Texture* GetShadowMap() const = 0;
 
         /// Get the camera state / frustum (only valid between BeginFrame() / EndFrame())
         const CameraState& GetCameraState() const
@@ -118,6 +120,9 @@ namespace JPH
             JPH_ASSERT(mInFrame);
             return mLightFrustum;
         }
+
+        /// Size of the shadow map will be cShadowMapSize x cShadowMapSize pixels
+        static const uint cShadowMapSize = 4096;
 
         /// Which frame is currently rendering (to keep track of which buffers are free to overwrite)
         uint GetCurrentFrameIndex() const

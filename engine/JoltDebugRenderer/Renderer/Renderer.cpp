@@ -44,14 +44,19 @@ namespace JPH
             mPos = RVec3{pos.x, pos.y, pos.z};
         }
         { // Vec3 mForward; ///< Camera forward vector
-            const glm::vec3& rot = cam0.GetRotation();
-            mForward = Vec3{rot.x, rot.y, rot.z};
+            const auto& viewMatrix = cam0.GetViewMatrix();
+            glm::vec3 forward = glm::normalize(glm::vec3{viewMatrix[2].x, viewMatrix[2].y, viewMatrix[2].z});
+
+            mForward = JPH::Vec3{forward.x, forward.y, forward.z};
         }
         { // Vec3 mUp;      ///< Camera up vector
-            mUp = Vec3{0.0f, -1.0f, 0.0f};
+            const auto& viewMatrix = cam0.GetViewMatrix();
+            glm::vec3 up = glm::normalize(glm::vec3{viewMatrix[1].x, viewMatrix[1].y, viewMatrix[1].z});
+
+            mUp = JPH::Vec3{up.x, up.y, up.z};
         }
         { // float mFOVY;   ///< Field of view in radians in up direction
-            mFOVY = DegreesToRadians(70.0f);
+            mFOVY = cam0.GetFOVY();
         }
     }
 
@@ -68,7 +73,7 @@ namespace JPH
 
     void Renderer::BeginFrame(const CameraState& inCamera, float inWorldScale)
     {
-        // Mark that we're in the frame
+        // Mark that we are inside the frame
         JPH_ASSERT(!mInFrame);
         mInFrame = true;
 
