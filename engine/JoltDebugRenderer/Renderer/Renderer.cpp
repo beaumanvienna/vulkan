@@ -132,4 +132,12 @@ namespace JPH
         JPH_ASSERT(mInFrame);
         mInFrame = false;
     }
+
+    void CameraState::Print()
+    {
+        std::cout << "mPos: " << mPos.GetX() << ", " << mPos.GetY() << ", " << mPos.GetZ() << "\n"                 //
+                  << "mForward: " << mForward.GetX() << ", " << mForward.GetY() << ", " << mForward.GetZ() << "\n" //
+                  << "mUp: " << mUp.GetX() << ", " << mUp.GetY() << ", " << mUp.GetZ() << "\n"                     //
+                  << "mFOVY: " << mFOVY << std::endl;
+    }
 } // namespace JPH

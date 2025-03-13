@@ -253,7 +253,7 @@ namespace JPH
         sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
         FatalErrorIfFailed(vkCreateSampler(mDevice, &sampler_info, nullptr, &mTextureSamplerRepeat));
 
-        // Create depth only texture (no color buffer, as seen from light)
+        // Create dummy texture
         mShadowMap = new TextureVK(this, cShadowMapSize, cShadowMapSize);
     }
 
@@ -278,6 +278,17 @@ namespace JPH
 
         // Recycle the buffers that were freed
         mBufferCache.swap(mFreedBuffers[mFrameIndex]);
+
+        // Set constants for vertex shader in projection mode
+        VertexShaderConstantBuffer* vs =
+            mVertexShaderConstantBufferProjection[mFrameIndex]->Map<VertexShaderConstantBuffer>();
+        *vs = mVSBuffer;
+        mVertexShaderConstantBufferProjection[mFrameIndex]->Unmap();
+
+        // Set constants for pixel shader
+        PixelShaderConstantBuffer* ps = mPixelShaderConstantBuffer[mFrameIndex]->Map<PixelShaderConstantBuffer>();
+        *ps = mPSBuffer;
+        mPixelShaderConstantBuffer[mFrameIndex]->Unmap();
 
         // Switch to 3d projection mode
         SetProjectionMode();
