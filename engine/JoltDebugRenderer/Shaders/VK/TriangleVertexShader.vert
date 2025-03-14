@@ -17,6 +17,12 @@ layout(location = 2) out vec2 oTex;
 layout(location = 3) out vec4 oPositionL;
 layout(location = 4) out vec4 oColor;
 
+layout(push_constant, std430) uniform Push
+{
+    mat4 m_Projection;
+    mat4 m_View;
+} push;
+
 void main() 
 {
     // Get world position
@@ -24,8 +30,8 @@ void main()
     vec4 world_pos = iModel * pos;
 
     // Transform the position from world space to homogeneous projection space
-    vec4 proj_pos = c.View * world_pos;
-    proj_pos = c.Projection * proj_pos;
+    vec4 proj_pos = push.m_View * world_pos;
+    proj_pos = push.m_Projection * proj_pos;
     gl_Position = proj_pos;
 
     // Transform the position from world space to projection space of the light

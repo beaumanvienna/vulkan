@@ -111,6 +111,15 @@ namespace JPH
         vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
         std::cout << "RenderPrimitiveVK::Draw() vkCmdBindVertexBuffers, vertex_buffers: " << vertex_buffers
                   << ", mVertexBuffer.mSize: " << mVertexBuffer.mSize << std::endl;
+        { // push camera
+            auto& cam0 = mRenderer->GetCam0();
+            RendererVK::PushConstants pushConstants{};
+            pushConstants.m_Projection = cam0.GetProjectionMatrix();
+            pushConstants.m_View = cam0.GetViewMatrix();
+
+            vkCmdPushConstants(command_buffer, mRenderer->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, 128,
+                               &pushConstants);
+        }
         if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
         {
             std::cout << " RenderPrimitiveVK::Draw() vkCmdDraw, vertex count: " << mNumVtxToDraw << std::endl;

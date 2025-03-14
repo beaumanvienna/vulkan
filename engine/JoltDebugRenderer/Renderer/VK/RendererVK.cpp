@@ -170,7 +170,12 @@ namespace JPH
         pipeline_layout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout.setLayoutCount = std::size(layout_handles);
         pipeline_layout.pSetLayouts = layout_handles;
-        pipeline_layout.pushConstantRangeCount = 0;
+        pipeline_layout.pushConstantRangeCount = 1;
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = 128;
+        pipeline_layout.pPushConstantRanges = &pushConstantRange;
         FatalErrorIfFailed(vkCreatePipelineLayout(mDevice, &pipeline_layout, nullptr, &mPipelineLayout));
         std::cout << "mPipelineLayout: " << mPipelineLayout << std::endl;
         // Create descriptor pool
@@ -257,11 +262,12 @@ namespace JPH
         mShadowMap = new TextureVK(this, cShadowMapSize, cShadowMapSize);
     }
 
-    void RendererVK::BeginFrame(const CameraState& inCamera, float inWorldScale)
+    void RendererVK::BeginFrame(const CameraState& inCamera, float inWorldScale, GfxRenderEngine::Camera const& cam0)
     {
+        std::cout << "RendererVK::BeginFrame" << std::endl;
         JPH_PROFILE_FUNCTION();
 
-        Renderer::BeginFrame(inCamera, inWorldScale);
+        Renderer::BeginFrame(inCamera, inWorldScale, cam0);
 
         // Update frame index
         mFrameIndex = (mFrameIndex + 1) % VK_SwapChain::MAX_FRAMES_IN_FLIGHT;

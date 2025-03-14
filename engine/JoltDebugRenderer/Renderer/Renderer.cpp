@@ -71,8 +71,10 @@ namespace JPH
                      Vec4(0.0f, 0.0f, inNear, 0.0f));
     }
 
-    void Renderer::BeginFrame(const CameraState& inCamera, float inWorldScale)
+    void Renderer::BeginFrame(const CameraState& inCamera, float inWorldScale, GfxRenderEngine::Camera const& cam0)
     {
+        std::cout << "Renderer::BeginFrame" << std::endl;
+        m_Cam0 = cam0;
         // Mark that we are inside the frame
         JPH_ASSERT(!mInFrame);
         mInFrame = true;

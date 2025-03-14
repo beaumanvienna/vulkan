@@ -40,12 +40,20 @@ namespace JPH
     class RendererVK : public Renderer
     {
     public:
+        struct PushConstants
+        {
+            glm::mat4 m_Projection;
+            glm::mat4 m_View;
+        };
+
+    public:
         /// Destructor
         virtual ~RendererVK() override;
 
         // See: Renderer
         virtual void Initialize() override;
-        virtual void BeginFrame(const CameraState& inCamera, float inWorldScale) override;
+        virtual void BeginFrame(const CameraState& inCamera, float inWorldScale,
+                                GfxRenderEngine::Camera const& cam0) override;
         virtual void EndFrame() override;
         virtual void SetProjectionMode() override;
         virtual void SetOrthoMode() override;

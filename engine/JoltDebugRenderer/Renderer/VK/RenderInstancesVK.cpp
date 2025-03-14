@@ -66,6 +66,15 @@ namespace JPH
         std::cout << "RenderInstancesVK::Draw() vkCmdBindVertexBuffers, buffers: " << buffers
                   << ", mVertexBuffer.mSize: " << primitive->mVertexBuffer.mSize
                   << ", mInstancesBuffer.mSize: " << mInstancesBuffer.mSize << std::endl;
+
+        auto& cam0 = mRenderer->GetCam0();
+        RendererVK::PushConstants pushConstants{};
+        pushConstants.m_Projection = cam0.GetProjectionMatrix();
+        pushConstants.m_View = cam0.GetViewMatrix();
+
+        vkCmdPushConstants(command_buffer, mRenderer->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, 128,
+                           &pushConstants);
+
         if (primitive->mIndexBuffer.mBuffer == VK_NULL_HANDLE)
         {
             std::cout << " RenderInstancesVK::Draw() vkCmdDraw, vertex count: " << primitive->mNumVtxToDraw

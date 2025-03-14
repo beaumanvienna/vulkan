@@ -68,7 +68,7 @@ namespace JPH
         virtual void Initialize() = 0;
 
         /// Start / end drawing a frame
-        virtual void BeginFrame(const CameraState& inCamera, float inWorldScale);
+        virtual void BeginFrame(const CameraState& inCamera, float inWorldScale, GfxRenderEngine::Camera const& cam0);
         virtual void EndFrame();
 
         /// Switch between orthographic and 3D projection mode
@@ -133,6 +133,8 @@ namespace JPH
             return mFrameIndex;
         }
 
+        GfxRenderEngine::Camera& GetCam0() { return m_Cam0; };
+
         /// Create a platform specific Renderer instance
         static Renderer* sCreate();
 
@@ -151,12 +153,13 @@ namespace JPH
             Vec4 mLightPos;
         };
 
-        float mPerspectiveYSign = 1.0f; ///< Sign for the Y coordinate in the projection matrix (1 for DX, -1 for Vulkan)
-        bool mInFrame = false;          ///< If we're within a BeginFrame() / EndFrame() pair
+        float mPerspectiveYSign = -1.0f; ///< Sign for the Y coordinate in the projection matrix (1 for DX, -1 for Vulkan)
+        bool mInFrame = false;           ///< If we're within a BeginFrame() / EndFrame() pair
         CameraState mCameraState;
         RVec3 mBaseOffset{RVec3::sZero()}; ///< Offset to subtract from the camera position to deal with large worlds
         Frustum mCameraFrustum;
         Frustum mLightFrustum;
+        GfxRenderEngine::Camera m_Cam0{GfxRenderEngine::Camera::PERSPECTIVE_PROJECTION};
         uint mFrameIndex = 0; ///< Current frame index (0 or 1)
         VertexShaderConstantBuffer mVSBuffer;
         VertexShaderConstantBuffer mVSBufferOrtho;
