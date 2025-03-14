@@ -73,11 +73,11 @@ namespace GfxRenderEngine
         m_Renderer->Initialize();
 
         // Create font
-        m_Font = std::make_unique<Font>(m_Renderer.get());
+        // m_Font = std::make_unique<Font>(m_Renderer.get());
         // m_Font->Create("Roboto-Regular", 24);
 
         // debug renderer
-        m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), m_Font.get());
+        m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), nullptr /*m_Font.get()*/);
 
         m_DrawSettings.mDrawShape = true;
         m_DrawSettings.mDrawBoundingBox = true;

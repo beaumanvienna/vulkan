@@ -64,7 +64,7 @@ namespace JPH
         Ref<PixelShader> pix_line = mRenderer->CreatePixelShader("LinePixelShader");
         mLineState = mRenderer->CreatePipelineState(
             vtx_line, line_vertex_desc, std::size(line_vertex_desc), pix_line, PipelineState::EDrawPass::Normal,
-            PipelineState::EFillMode::Solid, PipelineState::ETopology::Line, PipelineState::EDepthTest::On,
+            PipelineState::EFillMode::Solid, PipelineState::ETopology::Line, PipelineState::EDepthTest::Off,
             PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface, "LineShader");
 
         // Create input layout for triangles
@@ -80,17 +80,17 @@ namespace JPH
         mTriangleStateBF = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
+            PipelineState::EDepthTest::Off, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
             "TriangleShader Backface Solid");
         mTriangleStateFF = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Solid, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace,
+            PipelineState::EDepthTest::Off, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace,
             "TriangleShader FrontFace");
         mTriangleStateWire = mRenderer->CreatePipelineState(
             vtx_triangle, triangles_vertex_desc, std::size(triangles_vertex_desc), pix_triangle,
             PipelineState::EDrawPass::Normal, PipelineState::EFillMode::Wireframe, PipelineState::ETopology::Triangle,
-            PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
+            PipelineState::EDepthTest::Off, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface,
             "TriangleShader Backface Wireframe");
 
         // Create instances buffer

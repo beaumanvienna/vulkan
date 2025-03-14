@@ -74,7 +74,7 @@ namespace GfxRenderEngine
             int groupNode = sceneGraph.CreateNode(SceneGraph::ROOT_NODE, entity, name, m_Dictionary);
             TransformComponent transform{};
             transform.SetScale(scale);
-            transform.SetTranslation(translation);
+            transform.SetTranslation(glm::vec3{translation.x, translation.y - (scale.y / 2.0f), translation.z});
             m_Registry.emplace<TransformComponent>(entity, transform);
 
             FastgltfBuilder builder(filepath, m_Scene, groupNode);

@@ -139,7 +139,8 @@ namespace JPH
         depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depth_stencil.depthTestEnable = inDepthTest == EDepthTest::On ? VK_TRUE : VK_FALSE;
         depth_stencil.depthWriteEnable = inDepthTest == EDepthTest::On ? VK_TRUE : VK_FALSE;
-        depth_stencil.depthCompareOp = VK_COMPARE_OP_GREATER; // Reverse-Z, greater is closer
+        depth_stencil.depthCompareOp =
+            VK_COMPARE_OP_LESS; // GfxRenderEngine // jolt: VK_COMPARE_OP_GREATER; // Reverse-Z, greater is closer
 
         VkPipelineColorBlendAttachmentState color_blend_attachment = {};
         color_blend_attachment.colorWriteMask =
