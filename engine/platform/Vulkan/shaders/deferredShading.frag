@@ -156,13 +156,13 @@ void main()
 
     vec3 camPos = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
 
-    vec3 N = normalize(normal);
-    vec3 V = normalize(camPos - fragPosition);
+    vec3 N = normalize(normal); // surface normal 
+    vec3 V = normalize(camPos - fragPosition); // viewing vector
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
     vec3 fragColor = albedo.rgb;
-    vec3 F0 = vec3(0.04); 
+    vec3 F0 = vec3(0.04);  // base reflectance
     F0 = mix(F0, fragColor, metallic);
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -171,17 +171,18 @@ void main()
     {
         PointLight light = ubo.m_PointLights[i];
         // calculate per-light radiance
-        vec3 L = normalize(light.m_Position.xyz - fragPosition);
-        vec3 H = normalize(V + L);
+        vec3 L = normalize(light.m_Position.xyz - fragPosition); // inicdence vector
+        vec3 H = normalize(V + L); // halfway vector
         float distance = length(light.m_Position.xyz - fragPosition);
-        float attenuation = 1.0 / (distance * distance);
+        float attenuation = 1.0 / (distance * distance); // attenuation of the light (not micro facet)
         float lightIntensity = light.m_Color.w;
-        vec3 radiance = light.m_Color.rgb * lightIntensity * attenuation;
+        vec3 radiance = light.m_Color.rgb * lightIntensity * attenuation; // overall color and intensity
 
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);  
-        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        float NDF = DistributionGGX(N, H, roughness);   // normal distribution function from microfacet theory
+                                                        // the distribution function describes the fraction of micro facets in the dir of perfect reflection (halfway)
+        float G   = GeometrySmith(N, V, L, roughness);  // geometric attenuation
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); // Fresnel 
 
         vec3 numerator    = NDF * G * F; 
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
