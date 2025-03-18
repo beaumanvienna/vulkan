@@ -249,11 +249,11 @@ namespace GfxRenderEngine
         std::unique_ptr<JPH::JobSystemThreadPool> m_pJobSystem;
 
     private:
-        JPH::BodyManager::DrawSettings m_DrawSettings;
-        std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
-
         std::unique_ptr<Renderer> m_Renderer;
         std::unique_ptr<Font> m_Font;
+
+        JPH::BodyManager::DrawSettings m_DrawSettings;
+        std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
 
     private:
         Scene& m_Scene;
