@@ -185,8 +185,6 @@ namespace JPH
         pipeline_info.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_TRANSPARENCY);
         FatalErrorIfFailed(vkCreateGraphicsPipelines(mRenderer->GetDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr,
                                                      &mGraphicsPipeline));
-        std::cout << "mGraphicsPipeline: " << mGraphicsPipeline << " with layout " << mRenderer->GetPipelineLayout()
-                  << ", name " << debugName << endl;
     }
 
     PipelineStateVK::~PipelineStateVK()
@@ -198,7 +196,6 @@ namespace JPH
 
     void PipelineStateVK::Activate()
     {
-        std::cout << "PipelineStateVK::Activate() vkCmdBindPipeline " << mGraphicsPipeline << std::endl;
         vkCmdBindPipeline(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
     }
 } // namespace JPH

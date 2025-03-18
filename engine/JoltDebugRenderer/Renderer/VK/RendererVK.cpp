@@ -163,7 +163,7 @@ namespace JPH
         texture_dsl.bindingCount = 1;
         texture_dsl.pBindings = &texture_layout_binding;
         FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &texture_dsl, nullptr, &mDescriptorSetLayoutTexture));
-        std::cout << "mDescriptorSetLayoutTexture: " << mDescriptorSetLayoutTexture << std::endl;
+
         // Create pipeline layout
         VkPipelineLayoutCreateInfo pipeline_layout = {};
         VkDescriptorSetLayout layout_handles[] = {mDescriptorSetLayoutUBO, mDescriptorSetLayoutTexture};
@@ -177,7 +177,7 @@ namespace JPH
         pushConstantRange.size = 128;
         pipeline_layout.pPushConstantRanges = &pushConstantRange;
         FatalErrorIfFailed(vkCreatePipelineLayout(mDevice, &pipeline_layout, nullptr, &mPipelineLayout));
-        std::cout << "mPipelineLayout: " << mPipelineLayout << std::endl;
+
         // Create descriptor pool
         VkDescriptorPoolSize descriptor_pool_sizes[] = {
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 128},
@@ -222,7 +222,6 @@ namespace JPH
             descriptor_write[1].descriptorCount = 1;
             descriptor_write[1].pBufferInfo = &ps_buffer_info;
             vkUpdateDescriptorSets(mDevice, 2, descriptor_write, 0, nullptr);
-            std::cout << "mDescriptorSets[i]: " << mDescriptorSets[i] << std::endl;
         }
 
         // Allocate descriptor sets for 2d rendering
@@ -264,7 +263,6 @@ namespace JPH
 
     void RendererVK::BeginFrame(const CameraState& inCamera, float inWorldScale, GfxRenderEngine::Camera const& cam0)
     {
-        std::cout << "RendererVK::BeginFrame" << std::endl;
         JPH_PROFILE_FUNCTION();
 
         Renderer::BeginFrame(inCamera, inWorldScale, cam0);
@@ -312,8 +310,6 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 3d rendering
-        std::cout << "RendererVK::SetProjectionMode() vkCmdBindDescriptorSets " << mDescriptorSets[mFrameIndex]
-                  << ", frame index: " << mFrameIndex << " with pipeline layout " << mPipelineLayout << std::endl;
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSets[mFrameIndex], 0, nullptr);
     }
@@ -323,8 +319,6 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 2d rendering
-        std::cout << "RendererVK::SetProjectionMode() vkCmdBindDescriptorSets" << mDescriptorSetsOrtho[mFrameIndex]
-                  << ", frame index: " << mFrameIndex << " with pipeline layout " << mPipelineLayout << std::endl;
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSetsOrtho[mFrameIndex], 0, nullptr);
     }

@@ -906,7 +906,6 @@ void BodyManager::Draw(const DrawSettings& inDrawSettings, const PhysicsSettings
                        DebugRenderer* inRenderer, const BodyDrawFilter* inBodyFilter)
 {
     JPH_PROFILE_FUNCTION();
-    std::cout << "BodyManager::Draw" << std::endl;
     LockAllBodies();
 
     for (const Body* body : mBodies)
@@ -1034,7 +1033,6 @@ void BodyManager::Draw(const DrawSettings& inDrawSettings, const PhysicsSettings
             // Draw the shape
             if (inDrawSettings.mDrawShape)
             {
-                std::cout << "Draw the shape\n";
                 body->mShape->Draw(inRenderer, body->GetCenterOfMassTransform(), Vec3::sOne(), color,
                                    inDrawSettings.mDrawShapeColor == EShapeColor::MaterialColor,
                                    inDrawSettings.mDrawShapeWireframe || is_sensor);

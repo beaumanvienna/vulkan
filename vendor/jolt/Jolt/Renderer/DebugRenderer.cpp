@@ -767,7 +767,6 @@ void DebugRenderer::DrawBox(RMat44Arg inMatrix, const AABox& inBox, ColorArg inC
                             EDrawMode inDrawMode)
 {
     JPH_PROFILE_FUNCTION();
-    std::cout << "DebugRenderer::DrawBox(" << std::endl;
     Mat44 m = Mat44::sScale(
         Vec3::sMax(inBox.GetExtent(), Vec3::sReplicate(1.0e-6f))); // Prevent div by zero when one of the edges has length 0
     m.SetTranslation(inBox.GetCenter());
@@ -787,7 +786,6 @@ void DebugRenderer::DrawSphere(RVec3Arg inCenter, float inRadius, ColorArg inCol
 void DebugRenderer::DrawUnitSphere(RMat44Arg inMatrix, ColorArg inColor, ECastShadow inCastShadow, EDrawMode inDrawMode)
 {
     JPH_PROFILE_FUNCTION();
-    std::cout << "DebugRenderer::DrawUnitSphere(" << std::endl;
     DrawGeometry(inMatrix, inColor, mSphere, ECullMode::CullBackFace, inCastShadow, inDrawMode);
 }
 

@@ -53,8 +53,6 @@ namespace JPH
         Vec3 mForward; ///< Camera forward vector
         Vec3 mUp;      ///< Camera up vector
         float mFOVY;   ///< Field of view in radians in up direction
-
-        void Print();
     };
 
     /// Responsible for rendering primitives to the screen

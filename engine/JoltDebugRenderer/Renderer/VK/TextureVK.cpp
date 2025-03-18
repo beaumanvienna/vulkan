@@ -223,9 +223,6 @@ namespace JPH
         {
             vkCmdBindDescriptorSets(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     mRenderer->GetPipelineLayout(), 1, 1, &mDescriptorSet, 0, nullptr);
-
-            std::cout << "vkCmdBindDescriptorSets (TextureVK::Bind()) mRenderer->GetPipelineLayout(): "
-                      << mRenderer->GetPipelineLayout() << ", mDescriptorSet: " << mDescriptorSet << endl;
         }
     }
 

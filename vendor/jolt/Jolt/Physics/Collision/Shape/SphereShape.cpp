@@ -207,7 +207,6 @@ void SphereShape::GetSubmergedVolume(Mat44Arg inCenterOfMassTransform, Vec3Arg i
 void SphereShape::Draw(DebugRenderer* inRenderer, RMat44Arg inCenterOfMassTransform, Vec3Arg inScale, ColorArg inColor,
                        bool inUseMaterialColors, bool inDrawWireframe) const
 {
-    std::cout << "void SphereShape::Draw(" << std::endl;
     DebugRenderer::EDrawMode draw_mode =
         inDrawWireframe ? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid;
     inRenderer->DrawUnitSphere(inCenterOfMassTransform * Mat44::sScale(mRadius * inScale.Abs().GetX()),

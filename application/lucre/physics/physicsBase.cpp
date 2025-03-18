@@ -133,7 +133,6 @@ namespace GfxRenderEngine
         }
 
         JPH::CameraState camera(cam0);
-        camera.Print();
         m_Renderer->BeginFrame(camera, 1.0f /*world scale*/, cam0);
         static_cast<DebugRendererImp*>(m_DebugRenderer.get())->Clear();
         m_PhysicsSystem.DrawBodies(m_DrawSettings,        // const BodyManager::DrawSettings &inSettings

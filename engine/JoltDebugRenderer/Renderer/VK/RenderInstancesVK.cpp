@@ -63,9 +63,6 @@ namespace JPH
         VkBuffer buffers[] = {primitive->mVertexBuffer.mBuffer, mInstancesBuffer.mBuffer};
         VkDeviceSize offsets[] = {0, 0};
         vkCmdBindVertexBuffers(command_buffer, 0, 2, buffers, offsets);
-        std::cout << "RenderInstancesVK::Draw() vkCmdBindVertexBuffers, buffers: " << buffers
-                  << ", mVertexBuffer.mSize: " << primitive->mVertexBuffer.mSize
-                  << ", mInstancesBuffer.mSize: " << mInstancesBuffer.mSize << std::endl;
 
         auto& cam0 = mRenderer->GetCam0();
         RendererVK::PushConstants pushConstants{};
@@ -77,18 +74,11 @@ namespace JPH
 
         if (primitive->mIndexBuffer.mBuffer == VK_NULL_HANDLE)
         {
-            std::cout << " RenderInstancesVK::Draw() vkCmdDraw, vertex count: " << primitive->mNumVtxToDraw
-                      << ", num instances: " << inNumInstances << std::endl;
             vkCmdDraw(command_buffer, primitive->mNumVtxToDraw, inNumInstances, 0, inStartInstance);
         }
         else
         {
-            std::cout << "RenderInstancesVK::Draw() vkCmdBindIndexBuffer, primitive->mIndexBuffer.mBuffer: "
-                      << primitive->mIndexBuffer.mBuffer
-                      << ", primitive->mIndexBuffer.mSize: " << primitive->mIndexBuffer.mSize << std::endl;
             vkCmdBindIndexBuffer(command_buffer, primitive->mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
-            std::cout << "RenderInstancesVK::Draw() vkCmdDrawIndexed, index count: " << primitive->mNumIdxToDraw
-                      << ", num instances: " << inNumInstances << ", start instance: " << inStartInstance << std::endl;
             vkCmdDrawIndexed(command_buffer, primitive->mNumIdxToDraw, inNumInstances, 0, 0, inStartInstance);
         }
     }

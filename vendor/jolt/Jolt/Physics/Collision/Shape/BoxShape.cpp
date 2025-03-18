@@ -149,7 +149,6 @@ Vec3 BoxShape::GetSurfaceNormal(const SubShapeID& inSubShapeID, Vec3Arg inLocalS
 void BoxShape::Draw(DebugRenderer* inRenderer, RMat44Arg inCenterOfMassTransform, Vec3Arg inScale, ColorArg inColor,
                     bool inUseMaterialColors, bool inDrawWireframe) const
 {
-    std::cout << "BoxShape::Draw(" << std::endl;
     DebugRenderer::EDrawMode draw_mode =
         inDrawWireframe ? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid;
     inRenderer->DrawBox(inCenterOfMassTransform * Mat44::sScale(inScale.Abs()), GetLocalBounds(),

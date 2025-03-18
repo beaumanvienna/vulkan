@@ -73,7 +73,6 @@ namespace JPH
 
     void Renderer::BeginFrame(const CameraState& inCamera, float inWorldScale, GfxRenderEngine::Camera const& cam0)
     {
-        std::cout << "Renderer::BeginFrame" << std::endl;
         m_Cam0 = cam0;
         // Mark that we are inside the frame
         JPH_ASSERT(!mInFrame);
@@ -133,13 +132,5 @@ namespace JPH
         // Mark that we're no longer in the frame
         JPH_ASSERT(mInFrame);
         mInFrame = false;
-    }
-
-    void CameraState::Print()
-    {
-        std::cout << "mPos: " << mPos.GetX() << ", " << mPos.GetY() << ", " << mPos.GetZ() << "\n"                 //
-                  << "mForward: " << mForward.GetX() << ", " << mForward.GetY() << ", " << mForward.GetZ() << "\n" //
-                  << "mUp: " << mUp.GetX() << ", " << mUp.GetY() << ", " << mUp.GetZ() << "\n"                     //
-                  << "mFOVY: " << mFOVY << std::endl;
     }
 } // namespace JPH

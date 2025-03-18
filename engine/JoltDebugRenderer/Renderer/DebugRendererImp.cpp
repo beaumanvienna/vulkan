@@ -201,7 +201,6 @@ namespace JPH
                                         ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode,
                                         ECastShadow inCastShadow, EDrawMode inDrawMode)
     {
-        std::cout << "DebugRendererImp::DrawGeometry(" << std::endl;
         lock_guard lock(mPrimitivesLock);
 
         RVec3 offset = mRenderer->GetBaseOffset();
@@ -539,7 +538,6 @@ namespace JPH
 
     void DebugRendererImp::Draw()
     {
-        std::cout << std::endl << "********* void DebugRendererImp::Draw() *********" << std::endl;
         DrawPass();
         DrawLines();
         DrawTriangles();
@@ -596,37 +594,4 @@ namespace JPH
         ClearTexts();
         NextFrame();
     }
-    // clang-format off
-    //    mDescriptorSetLayoutTexture: 0x6b4bb60000000235
-    //    mPipelineLayout: 0x682e8d0000000236
-    //    mDescriptorSets[i]: 0x4f75530000000238
-    //    mDescriptorSets[i]: 0x6218d20000000239
-    //    mGraphicsPipeline: 0x1bba8c000000023f with layout 0x682e8d0000000236, name LineShader
-    //    mGraphicsPipeline: 0x1064180000000242 with layout 0x682e8d0000000236, name TriangleShader Backface Solid
-    //    mGraphicsPipeline: 0x9d29090000000243 with layout 0x682e8d0000000236, name TriangleShader FrontFace
-    //    mGraphicsPipeline: 0x5a32ee0000000244 with layout 0x682e8d0000000236, name TriangleShader Backface Wireframe
-    //    
-    //    RendererVK::SetProjectionMode() vkCmdBindDescriptorSets 0x6218d20000000239, frame index: 1 with pipeline layout 0x682e8d0000000236
-    //    BodyManager::Draw
-    //    Draw the shape
-    //    BoxShape::Draw(
-    //    DebugRenderer::DrawBox(
-    //    DebugRendererImp::DrawGeometry(
-    //    
-    //    ********* void DebugRendererImp::Draw() *********
-    //    PipelineStateVK::Activate() vkCmdBindPipeline 0x1bba8c000000023f
-    //    RenderPrimitiveVK::Draw() vkCmdBindVertexBuffers, vertex_buffers: 0x7ffe22c25638, mVertexBuffer.mSize: 384
-    //    RenderPrimitiveVK::Draw() vkCmdDraw, vertex count: 24
-    //    PipelineStateVK::Activate() vkCmdBindPipeline 0x5a32ee0000000244
-    //    RenderInstancesVK::Draw() vkCmdBindVertexBuffers, buffers: 0x7ffe22c25560, mVertexBuffer.mSize: 864, mInstancesBuffer.mSize: 288
-    //    RenderInstancesVK::Draw() vkCmdDrawIndexed, index count: 36, num instances: 1, start instance: 1
-    //
-    //    validation layer: Validation Error: [ VUID-vkCmdDrawIndexed-None-08600 ] Object 0: handle = 0x5a32ee0000000244, 
-    //    type = VK_OBJECT_TYPE_PIPELINE; Object 1: handle = 0x682e8d0000000236, type = VK_OBJECT_TYPE_PIPELINE_LAYOUT; | MessageID = 0x381a0272 | vkCmdDrawIndexed():  
-    //    The VkPipeline 0x5a32ee0000000244[] (created with VkPipelineLayout 0x682e8d0000000236[]) statically uses descriptor set (index #1) which is not compatible with the currently 
-    //    bound descriptor set's pipeline layout (VkPipelineLayout 0x682e8d0000000236[]). The Vulkan spec states: For each set n that is statically used by a bound shader, 
-    //    a descriptor set must have been bound to n at the same pipeline bind point, with a VkPipelineLayout that is compatible for set n, with the VkPipelineLayout used to create 
-    //    the current VkPipeline or the VkDescriptorSetLayout array used to create the current VkShaderEXT, as described in Pipeline Layout Compatibility 
-    //    (https://vulkan.lunarg.com/doc/view/1.3.283.0/linux/1.3-extensions/vkspec.html#VUID-vkCmdDrawIndexed-None-08600)
-    // clang-format on
 } // namespace JPH
