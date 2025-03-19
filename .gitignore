@@ -5,6 +5,8 @@ application/lucre/models/dancing
 application/lucre/models/guybrush_animated_gltf
 application/lucre/models/Kaya
 application/lucre/models/sonic
+application/lucre/models/mario/
+application/lucre/models/terrain
 vendor/VulkanSDK
 *.spv
 bin
