@@ -120,11 +120,19 @@ namespace JPH
         // Copy data to upload texture
         surface->Lock(ESurfaceLockMode::Read);
         void* data;
-        vkMapMemory(device, staging_buffer.mMemory, staging_buffer.mOffset, image_size, 0, &data);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkMapMemory(device, staging_buffer.mMemory, staging_buffer.mOffset, image_size, 0, &data);
+        }
         for (int y = 0; y < mHeight; ++y)
+        {
             memcpy(reinterpret_cast<uint8*>(data) + y * mWidth * bpp, surface->GetData() + y * surface->GetStride(),
                    mWidth * bpp);
-        vkUnmapMemory(device, staging_buffer.mMemory);
+        }
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUnmapMemory(device, staging_buffer.mMemory);
+        }
         surface->UnLock();
 
         // Create destination image
@@ -143,8 +151,11 @@ namespace JPH
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.layerCount = 1;
         region.imageExtent = {uint32(mWidth), uint32(mHeight), 1};
-        vkCmdCopyBufferToImage(command_buffer, staging_buffer.mBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                               &region);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdCopyBufferToImage(command_buffer, staging_buffer.mBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                                   &region);
+        }
 
         // Make the image suitable for sampling
         TransitionImageLayout(command_buffer, mImage, vk_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -188,8 +199,11 @@ namespace JPH
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.layerCount = 1;
         region.imageExtent = {uint32(mWidth), uint32(mHeight), 1};
-        vkCmdCopyBufferToImage(command_buffer, staging_buffer.mBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                               &region);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdCopyBufferToImage(command_buffer, staging_buffer.mBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                                   &region);
+        }
 
         // Make the image suitable for sampling
         TransitionImageLayout(command_buffer, mImage, vk_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -210,8 +224,10 @@ namespace JPH
             VkDevice device = mRenderer->GetDevice();
 
             vkDeviceWaitIdle(device);
-
-            vkDestroyImageView(device, mImageView, nullptr);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkDestroyImageView(device, mImageView, nullptr);
+            }
 
             mRenderer->DestroyImage(mImage, mImageMemory);
         }
@@ -221,6 +237,7 @@ namespace JPH
     {
         if (mDescriptorSet != VK_NULL_HANDLE)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkCmdBindDescriptorSets(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     mRenderer->GetPipelineLayout(), 1, 1, &mDescriptorSet, 0, nullptr);
         }
@@ -240,7 +257,10 @@ namespace JPH
         descriptor_set_alloc_info.descriptorPool = mRenderer->GetDescriptorPool();
         descriptor_set_alloc_info.descriptorSetCount = 1;
         descriptor_set_alloc_info.pSetLayouts = &layout;
-        FatalErrorIfFailed(vkAllocateDescriptorSets(device, &descriptor_set_alloc_info, &mDescriptorSet));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkAllocateDescriptorSets(device, &descriptor_set_alloc_info, &mDescriptorSet));
+        }
 
         VkDescriptorImageInfo image_info = {};
         image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -255,7 +275,10 @@ namespace JPH
         descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptor_write.descriptorCount = 1;
         descriptor_write.pImageInfo = &image_info;
-        vkUpdateDescriptorSets(device, 1, &descriptor_write, 0, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUpdateDescriptorSets(device, 1, &descriptor_write, 0, nullptr);
+        }
     }
 
     void TextureVK::TransitionImageLayout(VkCommandBuffer inCommandBuffer, VkImage inImage, VkFormat inFormat,
@@ -276,16 +299,22 @@ namespace JPH
         {
             barrier.srcAccessMask = 0;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            vkCmdPipelineBarrier(inCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
-                                 nullptr, 0, nullptr, 1, &barrier);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkCmdPipelineBarrier(inCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                                     0, nullptr, 0, nullptr, 1, &barrier);
+            }
         }
         else if (inOldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
                  inNewLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            vkCmdPipelineBarrier(inCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-                                 0, nullptr, 0, nullptr, 1, &barrier);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkCmdPipelineBarrier(inCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                     0, 0, nullptr, 0, nullptr, 1, &barrier);
+            }
         }
     }
 } // namespace JPH

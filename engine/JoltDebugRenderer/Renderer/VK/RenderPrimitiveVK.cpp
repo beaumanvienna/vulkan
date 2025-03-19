@@ -28,6 +28,9 @@
 
 #include <Renderer/VK/RenderPrimitiveVK.h>
 #include <Renderer/VK/FatalErrorIfFailedVK.h>
+
+#include "VKcore.h"
+
 namespace JPH
 {
     void RenderPrimitiveVK::ReleaseVertexBuffer()
@@ -69,12 +72,19 @@ namespace JPH
         JPH_ASSERT(!mVertexBufferDeviceLocal);
 
         void* data;
-        FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory, mVertexBuffer.mOffset,
-                                       VkDeviceSize(mNumVtx) * mVtxSize, 0, &data));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory, mVertexBuffer.mOffset,
+                                           VkDeviceSize(mNumVtx) * mVtxSize, 0, &data));
+        }
         return data;
     }
 
-    void RenderPrimitiveVK::UnlockVertexBuffer() { vkUnmapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory); }
+    void RenderPrimitiveVK::UnlockVertexBuffer()
+    {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+        vkUnmapMemory(mRenderer->GetDevice(), mVertexBuffer.mMemory);
+    }
 
     void RenderPrimitiveVK::CreateIndexBuffer(int inNumIdx, const uint32* inData)
     {
@@ -99,12 +109,19 @@ namespace JPH
         JPH_ASSERT(!mIndexBufferDeviceLocal);
 
         void* data;
-        vkMapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory, mIndexBuffer.mOffset,
-                    VkDeviceSize(mNumIdx) * sizeof(uint32), 0, &data);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkMapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory, mIndexBuffer.mOffset,
+                        VkDeviceSize(mNumIdx) * sizeof(uint32), 0, &data);
+        }
         return reinterpret_cast<uint32*>(data);
     }
 
-    void RenderPrimitiveVK::UnlockIndexBuffer() { vkUnmapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory); }
+    void RenderPrimitiveVK::UnlockIndexBuffer()
+    {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+        vkUnmapMemory(mRenderer->GetDevice(), mIndexBuffer.mMemory);
+    }
 
     void RenderPrimitiveVK::Draw() const
     {
@@ -112,7 +129,10 @@ namespace JPH
 
         VkBuffer vertex_buffers[] = {mVertexBuffer.mBuffer};
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+        }
 
         { // push camera
             auto& cam0 = mRenderer->GetCam0();
@@ -120,17 +140,22 @@ namespace JPH
             pushConstants.m_Projection = cam0.GetProjectionMatrix();
             pushConstants.m_View = cam0.GetViewMatrix();
 
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkCmdPushConstants(command_buffer, mRenderer->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, 128,
                                &pushConstants);
         }
-        if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
+
         {
-            vkCmdDraw(command_buffer, mNumVtxToDraw, 1, 0, 0);
-        }
-        else
-        {
-            vkCmdBindIndexBuffer(command_buffer, mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdDrawIndexed(command_buffer, mNumIdxToDraw, 1, 0, 0, 0);
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            if (mIndexBuffer.mBuffer == VK_NULL_HANDLE)
+            {
+                vkCmdDraw(command_buffer, mNumVtxToDraw, 1, 0, 0);
+            }
+            else
+            {
+                vkCmdBindIndexBuffer(command_buffer, mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdDrawIndexed(command_buffer, mNumIdxToDraw, 1, 0, 0, 0);
+            }
         }
     }
 } // namespace JPH

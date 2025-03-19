@@ -29,6 +29,9 @@
 #include <Renderer/VK/RenderInstancesVK.h>
 #include <Renderer/VK/RenderPrimitiveVK.h>
 #include <Renderer/VK/FatalErrorIfFailedVK.h>
+
+#include "VKcore.h"
+
 namespace JPH
 {
     void RenderInstancesVK::Clear() { mRenderer->FreeBuffer(mInstancesBuffer); }
@@ -45,12 +48,17 @@ namespace JPH
     void* RenderInstancesVK::Lock()
     {
         void* data;
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mInstancesBuffer.mMemory, mInstancesBuffer.mOffset,
                                        mInstancesBuffer.mSize, 0, &data));
         return data;
     }
 
-    void RenderInstancesVK::Unlock() { vkUnmapMemory(mRenderer->GetDevice(), mInstancesBuffer.mMemory); }
+    void RenderInstancesVK::Unlock()
+    {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+        vkUnmapMemory(mRenderer->GetDevice(), mInstancesBuffer.mMemory);
+    }
 
     void RenderInstancesVK::Draw(RenderPrimitive* inPrimitive, int inStartInstance, int inNumInstances) const
     {
@@ -62,24 +70,30 @@ namespace JPH
 
         VkBuffer buffers[] = {primitive->mVertexBuffer.mBuffer, mInstancesBuffer.mBuffer};
         VkDeviceSize offsets[] = {0, 0};
-        vkCmdBindVertexBuffers(command_buffer, 0, 2, buffers, offsets);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBindVertexBuffers(command_buffer, 0, 2, buffers, offsets);
+        }
 
         auto& cam0 = mRenderer->GetCam0();
         RendererVK::PushConstants pushConstants{};
         pushConstants.m_Projection = cam0.GetProjectionMatrix();
         pushConstants.m_View = cam0.GetViewMatrix();
 
-        vkCmdPushConstants(command_buffer, mRenderer->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, 128,
-                           &pushConstants);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdPushConstants(command_buffer, mRenderer->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, 128,
+                               &pushConstants);
 
-        if (primitive->mIndexBuffer.mBuffer == VK_NULL_HANDLE)
-        {
-            vkCmdDraw(command_buffer, primitive->mNumVtxToDraw, inNumInstances, 0, inStartInstance);
-        }
-        else
-        {
-            vkCmdBindIndexBuffer(command_buffer, primitive->mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdDrawIndexed(command_buffer, primitive->mNumIdxToDraw, inNumInstances, 0, 0, inStartInstance);
+            if (primitive->mIndexBuffer.mBuffer == VK_NULL_HANDLE)
+            {
+                vkCmdDraw(command_buffer, primitive->mNumVtxToDraw, inNumInstances, 0, inStartInstance);
+            }
+            else
+            {
+                vkCmdBindIndexBuffer(command_buffer, primitive->mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdDrawIndexed(command_buffer, primitive->mNumIdxToDraw, inNumInstances, 0, 0, inStartInstance);
+            }
         }
     }
 } // namespace JPH

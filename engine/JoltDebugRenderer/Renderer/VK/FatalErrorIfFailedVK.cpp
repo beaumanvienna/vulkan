@@ -34,6 +34,8 @@ namespace JPH
     void FatalErrorIfFailed(VkResult inVkResult)
     {
         if (inVkResult != VK_SUCCESS)
+        {
             FatalError("Vulkan error returned: %d", inVkResult);
+        }
     }
 } // namespace JPH

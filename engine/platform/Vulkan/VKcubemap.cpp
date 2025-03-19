@@ -224,14 +224,20 @@ namespace GfxRenderEngine
                 CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
                              stagingBufferMemory);
-                vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+                {
+                    std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                    vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+                }
                 memAddress = reinterpret_cast<uint64>(data);
             }
             memcpy(reinterpret_cast<void*>(memAddress), static_cast<void*>(pixels), static_cast<size_t>(layerSize));
             stbi_image_free(pixels);
             memAddress += layerSize;
         }
-        vkUnmapMemory(device, stagingBufferMemory);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUnmapMemory(device, stagingBufferMemory);
+        }
 
         VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
         CreateImage(format,                                                       /*VkFormat format                 */

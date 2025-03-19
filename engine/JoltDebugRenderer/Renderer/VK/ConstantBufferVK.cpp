@@ -29,6 +29,7 @@
 #include <Renderer/VK/ConstantBufferVK.h>
 #include <Renderer/VK/RendererVK.h>
 #include <Renderer/VK/FatalErrorIfFailedVK.h>
+#include "VKcore.h"
 namespace JPH
 {
     ConstantBufferVK::ConstantBufferVK(RendererVK* inRenderer, VkDeviceSize inBufferSize) : mRenderer(inRenderer)
@@ -42,9 +43,17 @@ namespace JPH
     void* ConstantBufferVK::MapInternal()
     {
         void* data = nullptr;
-        FatalErrorIfFailed(vkMapMemory(mRenderer->GetDevice(), mBuffer.mMemory, mBuffer.mOffset, mBuffer.mSize, 0, &data));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(
+                vkMapMemory(mRenderer->GetDevice(), mBuffer.mMemory, mBuffer.mOffset, mBuffer.mSize, 0, &data));
+        }
         return data;
     }
 
-    void ConstantBufferVK::Unmap() { vkUnmapMemory(mRenderer->GetDevice(), mBuffer.mMemory); }
+    void ConstantBufferVK::Unmap()
+    {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+        vkUnmapMemory(mRenderer->GetDevice(), mBuffer.mMemory);
+    }
 } // namespace JPH

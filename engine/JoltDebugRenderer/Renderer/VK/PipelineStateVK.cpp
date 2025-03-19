@@ -190,12 +190,15 @@ namespace JPH
     PipelineStateVK::~PipelineStateVK()
     {
         vkDeviceWaitIdle(mRenderer->GetDevice());
-
-        vkDestroyPipeline(mRenderer->GetDevice(), mGraphicsPipeline, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyPipeline(mRenderer->GetDevice(), mGraphicsPipeline, nullptr);
+        }
     }
 
     void PipelineStateVK::Activate()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkCmdBindPipeline(mRenderer->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
     }
 } // namespace JPH

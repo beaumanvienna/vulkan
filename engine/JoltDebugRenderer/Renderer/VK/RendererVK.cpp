@@ -100,26 +100,29 @@ namespace JPH
             }
         }
 
-        // Free all blocks in the memory cache
-        for (MemoryCache::value_type& mc : mMemoryCache)
         {
-            for (Memory& m : mc.second)
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+
+            // Free all blocks in the memory cache
+            for (MemoryCache::value_type& mc : mMemoryCache)
             {
-                if (m.mOffset == 0)
+                for (Memory& m : mc.second)
                 {
-                    vkFreeMemory(mDevice, m.mMemory, nullptr); // Don't care about memory tracking anymore
+                    if (m.mOffset == 0)
+                    {
+                        vkFreeMemory(mDevice, m.mMemory, nullptr); // Don't care about memory tracking anymore
+                    }
                 }
             }
+            vkDestroyPipelineLayout(mDevice, mPipelineLayout, nullptr);
+
+            vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
+
+            vkDestroySampler(mDevice, mTextureSamplerRepeat, nullptr);
+
+            vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayoutUBO, nullptr);
+            vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayoutTexture, nullptr);
         }
-
-        vkDestroyPipelineLayout(mDevice, mPipelineLayout, nullptr);
-
-        vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
-
-        vkDestroySampler(mDevice, mTextureSamplerRepeat, nullptr);
-
-        vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayoutUBO, nullptr);
-        vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayoutTexture, nullptr);
     }
 
     void RendererVK::Initialize()
@@ -150,7 +153,10 @@ namespace JPH
         ubo_dsl.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         ubo_dsl.bindingCount = std::size(ubo_layout_binding);
         ubo_dsl.pBindings = ubo_layout_binding;
-        FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &ubo_dsl, nullptr, &mDescriptorSetLayoutUBO));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &ubo_dsl, nullptr, &mDescriptorSetLayoutUBO));
+        }
 
         // Create descriptor set layout for the texture binding
         VkDescriptorSetLayoutBinding texture_layout_binding = {};
@@ -162,7 +168,10 @@ namespace JPH
         texture_dsl.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         texture_dsl.bindingCount = 1;
         texture_dsl.pBindings = &texture_layout_binding;
-        FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &texture_dsl, nullptr, &mDescriptorSetLayoutTexture));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkCreateDescriptorSetLayout(mDevice, &texture_dsl, nullptr, &mDescriptorSetLayoutTexture));
+        }
 
         // Create pipeline layout
         VkPipelineLayoutCreateInfo pipeline_layout = {};
@@ -176,7 +185,10 @@ namespace JPH
         pushConstantRange.offset = 0;
         pushConstantRange.size = 128;
         pipeline_layout.pPushConstantRanges = &pushConstantRange;
-        FatalErrorIfFailed(vkCreatePipelineLayout(mDevice, &pipeline_layout, nullptr, &mPipelineLayout));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkCreatePipelineLayout(mDevice, &pipeline_layout, nullptr, &mPipelineLayout));
+        }
 
         // Create descriptor pool
         VkDescriptorPoolSize descriptor_pool_sizes[] = {
@@ -188,7 +200,10 @@ namespace JPH
         descriptor_info.poolSizeCount = std::size(descriptor_pool_sizes);
         descriptor_info.pPoolSizes = descriptor_pool_sizes;
         descriptor_info.maxSets = 256;
-        FatalErrorIfFailed(vkCreateDescriptorPool(mDevice, &descriptor_info, nullptr, &mDescriptorPool));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkCreateDescriptorPool(mDevice, &descriptor_info, nullptr, &mDescriptorPool));
+        }
 
         // Allocate descriptor sets for 3d rendering
         Array<VkDescriptorSetLayout> layouts(VK_SwapChain::MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayoutUBO);
@@ -197,7 +212,10 @@ namespace JPH
         descriptor_set_alloc_info.descriptorPool = mDescriptorPool;
         descriptor_set_alloc_info.descriptorSetCount = VK_SwapChain::MAX_FRAMES_IN_FLIGHT;
         descriptor_set_alloc_info.pSetLayouts = layouts.data();
-        FatalErrorIfFailed(vkAllocateDescriptorSets(mDevice, &descriptor_set_alloc_info, mDescriptorSets));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkAllocateDescriptorSets(mDevice, &descriptor_set_alloc_info, mDescriptorSets));
+        }
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; ++i)
         {
             VkDescriptorBufferInfo vs_buffer_info = {};
@@ -221,11 +239,17 @@ namespace JPH
             descriptor_write[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptor_write[1].descriptorCount = 1;
             descriptor_write[1].pBufferInfo = &ps_buffer_info;
-            vkUpdateDescriptorSets(mDevice, 2, descriptor_write, 0, nullptr);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkUpdateDescriptorSets(mDevice, 2, descriptor_write, 0, nullptr);
+            }
         }
 
         // Allocate descriptor sets for 2d rendering
-        FatalErrorIfFailed(vkAllocateDescriptorSets(mDevice, &descriptor_set_alloc_info, mDescriptorSetsOrtho));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkAllocateDescriptorSets(mDevice, &descriptor_set_alloc_info, mDescriptorSetsOrtho));
+        }
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; ++i)
         {
             VkDescriptorBufferInfo vs_buffer_info = {};
@@ -239,7 +263,10 @@ namespace JPH
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptor_write.descriptorCount = 1;
             descriptor_write.pBufferInfo = &vs_buffer_info;
-            vkUpdateDescriptorSets(mDevice, 1, &descriptor_write, 0, nullptr);
+            {
+                std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+                vkUpdateDescriptorSets(mDevice, 1, &descriptor_write, 0, nullptr);
+            }
         }
 
         // Create regular texture sampler
@@ -255,7 +282,10 @@ namespace JPH
         sampler_info.minLod = 0.0f;
         sampler_info.maxLod = VK_LOD_CLAMP_NONE;
         sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        FatalErrorIfFailed(vkCreateSampler(mDevice, &sampler_info, nullptr, &mTextureSamplerRepeat));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkCreateSampler(mDevice, &sampler_info, nullptr, &mTextureSamplerRepeat));
+        }
 
         // Create dummy texture
         mShadowMap = new TextureVK(this, cShadowMapSize, cShadowMapSize);
@@ -310,6 +340,7 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 3d rendering
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSets[mFrameIndex], 0, nullptr);
     }
@@ -319,6 +350,7 @@ namespace JPH
         JPH_ASSERT(mInFrame);
 
         // Bind descriptor set for 2d rendering
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkCmdBindDescriptorSets(GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
                                 &mDescriptorSetsOrtho[mFrameIndex], 0, nullptr);
     }
@@ -384,7 +416,10 @@ namespace JPH
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = inSize;
         alloc_info.memoryTypeIndex = FindMemoryType(inMemoryTypeBits, inProperties);
-        FatalErrorIfFailed(vkAllocateMemory(mDevice, &alloc_info, nullptr, &outMemory));
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            FatalErrorIfFailed(vkAllocateMemory(mDevice, &alloc_info, nullptr, &outMemory));
+        }
 
         // Track allocation
         ++mNumAllocations;
@@ -397,7 +432,10 @@ namespace JPH
 
     void RendererVK::FreeMemory(VkDeviceMemory inMemory, VkDeviceSize inSize)
     {
-        vkFreeMemory(mDevice, inMemory, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkFreeMemory(mDevice, inMemory, nullptr);
+        }
 
         // Track free
         --mNumAllocations;
@@ -464,7 +502,10 @@ namespace JPH
         }
 
         // Bind the memory to the buffer
-        vkBindBufferMemory(mDevice, outBuffer.mBuffer, outBuffer.mMemory, outBuffer.mOffset);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindBufferMemory(mDevice, outBuffer.mBuffer, outBuffer.mMemory, outBuffer.mOffset);
+        }
     }
 
     void RendererVK::CopyBuffer(VkBuffer inSrc, VkBuffer inDst, VkDeviceSize inSize)
@@ -480,9 +521,15 @@ namespace JPH
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer);
 
         void* data;
-        vkMapMemory(mDevice, staging_buffer.mMemory, staging_buffer.mOffset, inSize, 0, &data);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkMapMemory(mDevice, staging_buffer.mMemory, staging_buffer.mOffset, inSize, 0, &data);
+        }
         memcpy(data, inData, (size_t)inSize);
-        vkUnmapMemory(mDevice, staging_buffer.mMemory);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUnmapMemory(mDevice, staging_buffer.mMemory);
+        }
 
         CreateBuffer(inSize, inUsage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outBuffer);
 
@@ -502,14 +549,21 @@ namespace JPH
     void RendererVK::FreeBufferInternal(BufferVK& ioBuffer)
     {
         // Destroy the buffer
-        vkDestroyBuffer(mDevice, ioBuffer.mBuffer, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyBuffer(mDevice, ioBuffer.mBuffer, nullptr);
+        }
         ioBuffer.mBuffer = VK_NULL_HANDLE;
 
         if (ioBuffer.mAllocatedSize > cMaxAllocSize)
+        {
             FreeMemory(ioBuffer.mMemory, ioBuffer.mAllocatedSize);
+        }
         else
+        {
             mMemoryCache[{ioBuffer.mAllocatedSize, ioBuffer.mUsage, ioBuffer.mProperties}].push_back(
                 {ioBuffer.mMemory, ioBuffer.mOffset});
+        }
         ioBuffer.mMemory = VK_NULL_HANDLE;
     }
 
@@ -560,8 +614,10 @@ namespace JPH
         vkGetImageMemoryRequirements(mDevice, outImage, &mem_requirements);
 
         AllocateMemory(mem_requirements.size, mem_requirements.memoryTypeBits, inProperties, outMemory);
-
-        vkBindImageMemory(mDevice, outImage, outMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindImageMemory(mDevice, outImage, outMemory, 0);
+        }
     }
 
     void RendererVK::DestroyImage(VkImage inImage, VkDeviceMemory inMemory)
@@ -569,7 +625,10 @@ namespace JPH
         VkMemoryRequirements mem_requirements;
         vkGetImageMemoryRequirements(mDevice, inImage, &mem_requirements);
 
-        vkDestroyImage(mDevice, inImage, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyImage(mDevice, inImage, nullptr);
+        }
 
         FreeMemory(inMemory, mem_requirements.size);
     }
