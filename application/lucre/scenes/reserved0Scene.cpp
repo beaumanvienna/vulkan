@@ -126,7 +126,7 @@ namespace LucreApp
             m_Terrain1 = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::root");
             if (m_Terrain1 != entt::null)
             {
-                Water1Component water1Component{.m_Scale = {25.0f, 1.0f, 50.0f}, .m_Translation = {0.0f, 1.5f, 0.0f}};
+                Water1Component water1Component{.m_Scale = {500.0f, 1.0f, 500.0f}, .m_Translation = {0.0f, 3.0f, 0.0f}};
                 m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
             }
 
@@ -160,6 +160,79 @@ namespace LucreApp
                                        .m_ScaleY = 0.05f};
             GrassBuilder builder(grassSpec, scene);
             builder.Build();
+        }
+
+        { // physics
+            m_Car = m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::root");
+            m_Wheels[0] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::0::root");
+            m_Wheels[1] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::1::root");
+            m_Wheels[2] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::2::root");
+            m_Wheels[3] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::3::root");
+            if ((m_Car != entt::null) && (m_Wheels[0] != entt::null) && (m_Wheels[1] != entt::null) &&
+                (m_Wheels[2] != entt::null) && (m_Wheels[3] != entt::null))
+            {
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_CAR, m_Car);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_FRONT_LEFT, m_Wheels[0]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_FRONT_RIGHT, m_Wheels[1]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_REAR_LEFT, m_Wheels[2]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_REAR_RIGHT, m_Wheels[3]);
+
+                auto createWheelTranslation = [](glm::vec3 const& translation)
+                {
+                    glm::mat4 translationTransform =
+                        glm::translate(glm::mat4(1.0f), glm::vec3{translation.x, translation.y, translation.z});
+                    return translationTransform;
+                };
+
+                auto createWheelScale = [](glm::vec3 const& scale)
+                {
+                    glm::mat4 scaleTransform = glm::scale(glm::vec3{scale.x, scale.y, scale.z});
+                    return scaleTransform;
+                };
+
+                {
+                    float wheelScale = 1.0f;
+                    float liftWheels = 0.11f;
+                    {
+                        glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{-0.418f, liftWheels, -0.414f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_LEFT, wheelTranslationTransform);
+                        m_Physics->SetWheelScale(Physics::WHEEL_FRONT_LEFT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{0.418f, liftWheels, -0.414f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_RIGHT, wheelTranslationTransform);
+                        m_Physics->SetWheelScale(Physics::WHEEL_FRONT_RIGHT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{-0.35f, liftWheels, 0.596f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_LEFT, wheelTranslationTransform);
+                        m_Physics->SetWheelScale(Physics::WHEEL_REAR_LEFT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{0.35f, liftWheels, 0.596f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_RIGHT, wheelTranslationTransform);
+                        m_Physics->SetWheelScale(Physics::WHEEL_REAR_RIGHT, wheelScaleTransform);
+                    }
+                }
+            }
+
+            auto racingLoop = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racing loop.glb::0::root");
+            if (racingLoop != entt::null)
+            {
+                m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb");
+            }
         }
     }
 
@@ -548,11 +621,20 @@ namespace LucreApp
         }
         // Jolt
         m_Physics = Physics::Create(*this);
-        glm::vec3 scaleGroundPlane{5.0f, 0.4f, 50.0f};
-        float heigtWaterSurface{5.0f};
-        float zFightingOffset{0.00f};
-        glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
-        m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 50x50 plane, with a small thickness
+        {
+            glm::vec3 scaleGroundPlane{5.0f, 0.4f, 50.0f};
+            float heigtWaterSurface{5.0f};
+            float zFightingOffset{0.00f};
+            glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
+            m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 5x50 plane, with a small thickness
+        }
+        {
+            glm::vec3 scaleGroundPlane{500.0f, 0.4f, 500.0f};
+            float heigtWaterSurface{3.0f};
+            float zFightingOffset{-0.050f};
+            glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
+            m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 100x50 plane, with a small thickness
+        }
         m_Physics->LoadModels();
     }
 
@@ -606,7 +688,8 @@ namespace LucreApp
         int positionIterations = 2;
         m_World->Step(step, velocityIterations, positionIterations);
         // Jolt
-        m_Physics->OnUpdate(timestep);
+        m_GamepadInputController->MoveVehicle(timestep, m_VehicleControl);
+        m_Physics->OnUpdate(timestep, m_VehicleControl);
     }
 
     void Reserved0Scene::UpdateBananas(const Timestep& timestep)

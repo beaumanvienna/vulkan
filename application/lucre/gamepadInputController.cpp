@@ -109,4 +109,39 @@ namespace LucreApp
             }
         }
     }
+
+    void GamepadInputController::MoveVehicle(const Timestep& timestep, Physics::VehicleControl& vehicleControl)
+    {
+
+        {
+            glm::vec2 controllerAxisInputLeft =
+                Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);
+
+            if (std::abs(controllerAxisInputLeft.y) > m_Deadzone)
+            {
+                vehicleControl.inForward = controllerAxisInputLeft.y;
+            }
+            else
+            {
+                vehicleControl.inForward = 0.0f;
+            }
+
+            if (std::abs(controllerAxisInputLeft.x) > m_Deadzone)
+            {
+                vehicleControl.inRight = controllerAxisInputLeft.x;
+            }
+            else
+            {
+                vehicleControl.inRight = 0.0f;
+            }
+        }
+
+        vehicleControl.inBrake = 0.0f;
+
+        {
+            bool buttonPressed = Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, //
+                                                                  Controller::Controller::BUTTON_A);
+            vehicleControl.inHandBrake = buttonPressed ? 1.0f : 0.0f;
+        }
+    }
 } // namespace LucreApp

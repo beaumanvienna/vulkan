@@ -70,6 +70,12 @@ namespace GfxRenderEngine
             return m_Registry.all_of<Component...>(entity);
         }
 
+        [[nodiscard]] bool valid(const entt::entity entity)
+        {
+            std::lock_guard<std::mutex> guard(m_Mutex);
+            return m_Registry.valid(entity);
+        }
+
     private:
         std::mutex m_Mutex;
         entt::registry m_Registry;

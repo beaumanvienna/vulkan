@@ -91,7 +91,8 @@ namespace LucreApp
         entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
-        entt::entity m_Penguin, m_Terrain1, m_Mario;
+        entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car;
+        std::array<entt::entity, 4> m_Wheels;
 
         //------
         void LoadTerrain();
@@ -116,6 +117,7 @@ namespace LucreApp
 
         // physics Jolt
         std::unique_ptr<Physics> m_Physics;
+        Physics::VehicleControl m_VehicleControl{};
 
     private:
         struct BananaComponent

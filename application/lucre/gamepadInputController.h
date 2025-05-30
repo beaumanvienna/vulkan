@@ -27,6 +27,7 @@
 #include "engine.h"
 #include "scene/scene.h"
 #include "momentum.h"
+#include "physics/physics.h"
 
 namespace LucreApp
 {
@@ -48,6 +49,7 @@ namespace LucreApp
 
         void GetTransform(TransformComponent& transform, bool scale = false);
         void MoveInPlaneXZ(const Timestep& timestep, TransformComponent& transform);
+        void MoveVehicle(const Timestep& timestep, Physics::VehicleControl& vehicleControl);
 
     private:
         float m_Deadzone;

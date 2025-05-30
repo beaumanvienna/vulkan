@@ -31,15 +31,24 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyManager.h>
 
+// vehicle
+#include <Jolt/Physics/Vehicle/VehicleCollisionTester.h>
+#include <Jolt/Physics/Vehicle/VehicleConstraint.h>
+#include <Jolt/Physics/Vehicle/WheeledVehicleController.h>
+
 // debug rendering
 #include <TestFramework.h>
 #include <Renderer/Renderer.h>
+#include <Renderer/DebugRendererImp.h>
 #include <Jolt/Renderer/DebugRenderer.h>
+#include "engine/JoltDebugRenderer/Renderer/VK/RendererVK.h"
 #include <Renderer/Font.h>
 
 #include "engine.h"
@@ -79,14 +88,20 @@ namespace GfxRenderEngine
     public:
         PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
-        virtual void OnUpdate(Timestep timestep) override;
+        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) override;
         virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) override;
         virtual void LoadModels() override;
+        virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) override;
+        virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
+        virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) override;
+        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath) override;
 
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
         void CreateMushroom(glm::vec3 const& scale, glm::vec3 const& translation);
+        void CreateVehicle(glm::vec3 const& scale, glm::vec3 const& translation);
+        void SyncPhysicsToGraphics();
 
     private:
         /// Class that determines if two object layers can collide
@@ -248,6 +263,19 @@ namespace GfxRenderEngine
         // of your own job scheduler. JobSystemThreadPool is an example implementation.
         std::unique_ptr<JPH::JobSystemThreadPool> m_pJobSystem;
 
+        inline glm::mat4& ConvertToGLMMat4(JPH::RMat44& jphMat) { return *reinterpret_cast<glm::mat4*>(&jphMat); }
+        inline JPH::Vec3 const& ConvertToVec3(glm::vec3 const& vec3GLM)
+        {
+            return *reinterpret_cast<JPH::Vec3 const*>(&vec3GLM);
+        }
+        inline JPH::Quat const ConvertToQuat(glm::vec3 const& vec3EulerAnglesGLM)
+        {
+            glm::quat quaternion = glm::quat(vec3EulerAnglesGLM);
+            glm::quat* ptr = &quaternion;
+            JPH::Quat* ptrQuatJPH = reinterpret_cast<JPH::Quat*>(ptr);
+            return *ptrQuatJPH;
+        }
+
     private:
         std::unique_ptr<Renderer> m_Renderer;
         std::unique_ptr<Font> m_Font;
@@ -264,14 +292,46 @@ namespace GfxRenderEngine
         JPH::BodyID m_GroundID; // set invalid by default constructor
         JPH::BodyID m_SphereID;
         JPH::BodyID m_MushroomID;
+        std::vector<JPH::BodyID> m_ActiveBodies;
 
-        enum GameObjects
-        {
-            GAME_OBJECT_GROUND_PLANE = 0,
-            GAME_OBJECT_SPHERE,
-            GAME_OBJECT_MUSHROOM,
-            NUM_GAME_OBJECTS,
-        };
         std::array<entt::entity, GameObjects::NUM_GAME_OBJECTS> m_GameObjects;
+        std::array<glm::mat4, Physics::NUM_WHEELS> m_WheelTranslation;
+        std::array<glm::mat4, Physics::NUM_WHEELS> m_WheelScale;
+
+        // vehicle
+        Body* mCarBody;                            ///< The vehicle
+        Ref<VehicleConstraint> mVehicleConstraint; ///< The vehicle constraint
+        Ref<VehicleCollisionTester> mTesters[3];   ///< Collision testers for the wheel
+
+        static inline float sInitialRollAngle = 0;
+        static inline float sMaxRollAngle = 1.0472;       // 60 degree
+        static inline float sMaxSteeringAngle = 0.523599; // 30 degree
+        static inline int sCollisionMode = 2;
+        static inline bool sFourWheelDrive = false;
+        static inline bool sAntiRollbar = true;
+        static inline bool sLimitedSlipDifferentials = true;
+        static inline bool sOverrideGravity = false; ///< If true, gravity is overridden to always oppose the ground normal
+        static inline float sMaxEngineTorque = 500.0f;
+        static inline float sClutchStrength = 10.0f;
+        static inline float sFrontCasterAngle = 0.0f;
+        static inline float sFrontKingPinAngle = 0.0f;
+        static inline float sFrontCamber = 0.0f;
+        static inline float sFrontToe = 0.0f;
+        static inline float sFrontSuspensionForwardAngle = 0.0f;
+        static inline float sFrontSuspensionSidewaysAngle = 0.0f;
+        static inline float sFrontSuspensionMinLength = 0.3f;
+        static inline float sFrontSuspensionMaxLength = 0.5f;
+        static inline float sFrontSuspensionFrequency = 1.5f;
+        static inline float sFrontSuspensionDamping = 0.5f;
+        static inline float sRearSuspensionForwardAngle = 0.0f;
+        static inline float sRearSuspensionSidewaysAngle = 0.0f;
+        static inline float sRearCasterAngle = 0.0f;
+        static inline float sRearKingPinAngle = 0.0f;
+        static inline float sRearCamber = 0.0f;
+        static inline float sRearToe = 0.0f;
+        static inline float sRearSuspensionMinLength = 0.3f;
+        static inline float sRearSuspensionMaxLength = 0.5f;
+        static inline float sRearSuspensionFrequency = 1.5f;
+        static inline float sRearSuspensionDamping = 0.5f;
     };
 } // namespace GfxRenderEngine

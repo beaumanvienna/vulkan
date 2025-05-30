@@ -32,13 +32,47 @@ namespace GfxRenderEngine
 {
     class Physics
     {
+    public:
+        struct VehicleControl
+        {
+            float inForward{0.0f};
+            float inRight{0.0f};
+            float inBrake{0.0f};
+            float inHandBrake{0.0f};
+        };
+
+        enum GameObjects
+        {
+            GAME_OBJECT_GROUND_PLANE = 0,
+            GAME_OBJECT_SPHERE,
+            GAME_OBJECT_MUSHROOM,
+            GAME_OBJECT_CAR,
+            GAME_OBJECT_WHEEL_FRONT_LEFT,
+            GAME_OBJECT_WHEEL_FRONT_RIGHT,
+            GAME_OBJECT_WHEEL_REAR_LEFT,
+            GAME_OBJECT_WHEEL_REAR_RIGHT,
+            NUM_GAME_OBJECTS
+        };
+
+        enum WheelNumbers
+        {
+            WHEEL_FRONT_LEFT = 0,
+            WHEEL_FRONT_RIGHT,
+            WHEEL_REAR_LEFT,
+            WHEEL_REAR_RIGHT,
+            NUM_WHEELS
+        };
 
     public:
         virtual ~Physics() = default;
-        virtual void OnUpdate(Timestep timestep) = 0;
+        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) = 0;
         virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) = 0;
         virtual void LoadModels() = 0;
+        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath) = 0;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) = 0;
+        virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) = 0;
+        virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) = 0;
+        virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& scale) = 0;
 
         static std::unique_ptr<Physics> Create(Scene& scene);
     };

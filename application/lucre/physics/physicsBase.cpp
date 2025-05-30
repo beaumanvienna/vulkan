@@ -1,3 +1,9 @@
+// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
+// SPDX-FileCopyrightText: 2021 Jorrit Rouwe
+// SPDX-License-Identifier: MIT
+
+// file vendor/jolt/src/HelloWorld.cpp from Jolt merged into Lucre
+
 /* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
@@ -20,24 +26,11 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#include <Jolt/Jolt.h>
-#include <Jolt/RegisterTypes.h>
-#include <Jolt/Core/Factory.h>
-#include <Jolt/Core/TempAllocator.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
-#include <Jolt/Physics/PhysicsSettings.h>
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Body/BodyActivationListener.h>
-
-#include <Renderer/DebugRendererImp.h>
-#include "engine/JoltDebugRenderer/Renderer/VK/RendererVK.h"
-
 #include "scene/components.h"
 #include "physics/physicsBase.h"
 #include "renderer/instanceBuffer.h"
+#include "renderer/model.h"
+#include "renderer/builder/fastgltfVertexLoader.h"
 
 namespace GfxRenderEngine
 {
@@ -96,14 +89,25 @@ namespace GfxRenderEngine
             glm::vec3 translation{0.0f, 6.0f, 18.0f};
             CreateMushroom(scale, translation);
         }
+        {
+            glm::vec3 scale{1.0f, 1.0f, 1.0f};
+            glm::vec3 translation{0.0f, 6.0f, 18.0f};
+            CreateVehicle(scale, translation);
+        }
     }
 
-    void PhysicsBase::OnUpdate(Timestep timestep)
+    void PhysicsBase::OnUpdate(Timestep timestep, VehicleControl const& vehicleControl)
     {
 
         // If you take larger steps than 1 / 60th of a second you need to do multiple collision steps in order to keep the
         // simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
         const int cCollisionSteps = 1;
+
+        { // update vehicle
+            auto vehicleController = static_cast<WheeledVehicleController*>(mVehicleConstraint->GetController());
+            vehicleController->SetDriverInput(vehicleControl.inForward, vehicleControl.inRight, vehicleControl.inBrake,
+                                              vehicleControl.inHandBrake);
+        }
 
         // Step the world
         float speedFactor = 1.0f;
@@ -123,6 +127,42 @@ namespace GfxRenderEngine
             auto& transform = m_Registry.get<TransformComponent>(gameObject);
             transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
         }
+
+        // car body
+        if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_CAR]; gameObject != entt::null)
+        {
+            auto carID = mCarBody->GetID();
+            JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(carID);
+            JPH::Quat rotation = bodyInterface.GetRotation(carID);
+            auto& transform = m_Registry.get<TransformComponent>(gameObject);
+            transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
+            transform.SetRotation(glm::quat(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ()));
+        }
+
+        // wheels
+        if ((m_GameObjects[GameObjects::GAME_OBJECT_WHEEL_FRONT_LEFT] != entt::null) &&
+            (m_GameObjects[GameObjects::GAME_OBJECT_WHEEL_FRONT_RIGHT] != entt::null) &&
+            (m_GameObjects[GameObjects::GAME_OBJECT_WHEEL_REAR_LEFT] != entt::null) &&
+            (m_GameObjects[GameObjects::GAME_OBJECT_WHEEL_REAR_RIGHT] != entt::null))
+        {
+            for (uint w = 0; w < Physics::NUM_WHEELS; ++w)
+            {
+                JPH::RMat44 wheelTransformJPH = mVehicleConstraint->GetWheelLocalTransform(w,               // wheel index
+                                                                                           Vec3::sAxisX(),  // inWheelRight
+                                                                                           Vec3::sAxisY()); // inWheelUp
+                glm::mat4 wheelLocalTransformGLM =
+                    m_WheelTranslation[w] * ConvertToGLMMat4(wheelTransformJPH) * m_WheelScale[w];
+
+                auto carID = mCarBody->GetID();
+                JPH::RMat44 carTransformJPH = bodyInterface.GetWorldTransform(carID);
+                glm::mat4 carTransformGLM = ConvertToGLMMat4(carTransformJPH);
+                glm::mat4 wheelGlobalTransformGLM = carTransformGLM * wheelLocalTransformGLM;
+
+                entt::entity wheelGameObject = m_GameObjects[GAME_OBJECT_WHEEL_FRONT_LEFT + w];
+                auto& transform = m_Registry.get<TransformComponent>(wheelGameObject);
+                transform.SetMat4Local(wheelGlobalTransformGLM);
+            }
+        }
     }
 
     void PhysicsBase::Draw(GfxRenderEngine::Camera const& cam0)
@@ -141,6 +181,70 @@ namespace GfxRenderEngine
         );
         static_cast<DebugRendererImp*>(m_DebugRenderer.get())->Draw();
         m_Renderer->EndFrame();
+    }
+
+    void PhysicsBase::SyncPhysicsToGraphics()
+    {
+        auto& lockInterface = m_PhysicsSystem.GetBodyLockInterface();
+        // iterate through all active physics bodies
+        for (const JPH::BodyID& bodyID : m_ActiveBodies)
+        {
+            // scoped lock for the body for multi-threadding
+            JPH::BodyLockRead lock(lockInterface, bodyID);
+            if (lock.Succeeded())
+            {
+                const JPH::Body& body = lock.GetBody();
+
+                // Get physics transform
+                JPH::Vec3 position = body.GetPosition();
+                JPH::Quat rotation = body.GetRotation();
+
+                // Update corresponding graphics object
+                auto entityID = static_cast<entt::entity>(body.GetUserData());
+                if (m_Registry.valid(entityID) && m_Registry.all_of<TransformComponent>(entityID))
+                {
+                    glm::vec3 eulerAngles{rotation.GetEulerAngles().GetX(), rotation.GetEulerAngles().GetY(),
+                                          rotation.GetEulerAngles().GetZ()};
+                    const glm::quat rotationGraphics = glm::quat(eulerAngles);
+                    TransformComponent& transform = m_Registry.get<TransformComponent>(entityID);
+                    transform.SetRotation(rotationGraphics);
+                    transform.SetTranslation({position.GetX(), position.GetY(), position.GetZ()});
+                }
+            }
+        }
+    }
+
+    void PhysicsBase::SetGameObject(uint gameObject, entt::entity gameObjectID) { m_GameObjects[gameObject] = gameObjectID; }
+
+    void PhysicsBase::SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation)
+    {
+        m_WheelTranslation[wheelNumber] = translation;
+    }
+
+    void PhysicsBase::SetWheelScale(uint wheelNumber, glm::mat4 const& scale) { m_WheelScale[wheelNumber] = scale; }
+
+    void PhysicsBase::CreateMeshTerrain(entt::entity entityID, const std::string& filepath)
+    {
+        if (m_Registry.valid(entityID) && m_Registry.all_of<TransformComponent>(entityID))
+        {
+            TransformComponent& transformComponent = m_Registry.get<TransformComponent>(entityID);
+
+            TriangleList triangles;
+            FastgltfVertexLoader fastgltfVertexLoader(filepath, triangles);
+            if (fastgltfVertexLoader.Load())
+            {
+                // Floor
+                JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+                Body& floor = *bodyInterface.CreateBody(BodyCreationSettings(new MeshShapeSettings(triangles),
+                                                                             RVec3::sZero(), Quat::sIdentity(),
+                                                                             EMotionType::Static, Layers::NON_MOVING));
+                bodyInterface.AddBody(floor.GetID(), EActivation::DontActivate);
+                JPH::Vec3 const& position = ConvertToVec3(transformComponent.GetTranslation());
+                bodyInterface.SetPosition(floor.GetID(), position, EActivation::DontActivate);
+                JPH::Quat const quaternion = ConvertToQuat(transformComponent.GetRotation());
+                bodyInterface.SetRotation(floor.GetID(), quaternion, EActivation::DontActivate);
+            }
+        }
     }
 
 } // namespace GfxRenderEngine
