@@ -65,10 +65,6 @@ namespace GfxRenderEngine
         m_Renderer = std::make_unique<RendererVK>();
         m_Renderer->Initialize();
 
-        // Create font
-        // m_Font = std::make_unique<Font>(m_Renderer.get());
-        // m_Font->Create("Roboto-Regular", 24);
-
         // debug renderer
         m_DebugRenderer = std::make_unique<DebugRendererImp>(m_Renderer.get(), nullptr /*m_Font.get()*/);
 
@@ -90,9 +86,10 @@ namespace GfxRenderEngine
             CreateMushroom(scale, translation);
         }
         {
-            glm::vec3 scale{1.0f, 1.0f, 1.0f};
-            glm::vec3 translation{0.0f, 6.0f, 18.0f};
-            CreateVehicle(scale, translation);
+            RVec3 position(2.00273f, 15.0f, 30.1575f);
+            glm::vec3 rotation(0.0f, 1.41213f, 0.0f);
+            JPH::Quat const quaternion = ConvertToQuat(rotation);
+            CreateVehicle(position, quaternion);
         }
     }
 
@@ -102,7 +99,13 @@ namespace GfxRenderEngine
         // If you take larger steps than 1 / 60th of a second you need to do multiple collision steps in order to keep the
         // simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
         const int cCollisionSteps = 1;
-
+        // On user input, assure that the car is active
+        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        auto carID = mCarBody->GetID();
+        if (vehicleControl.inRight != 0.0f || vehicleControl.inForward != 0.0f)
+        {
+            bodyInterface.ActivateBody(carID);
+        }
         { // update vehicle
             auto vehicleController = static_cast<WheeledVehicleController*>(mVehicleConstraint->GetController());
             vehicleController->SetDriverInput(vehicleControl.inForward, vehicleControl.inRight, vehicleControl.inBrake,
@@ -112,8 +115,6 @@ namespace GfxRenderEngine
         // Step the world
         float speedFactor = 1.0f;
         m_PhysicsSystem.Update(timestep * speedFactor, cCollisionSteps, m_pTempAllocator.get(), m_pJobSystem.get());
-
-        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
 
         if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_MUSHROOM]; gameObject != entt::null)
         {
@@ -131,7 +132,6 @@ namespace GfxRenderEngine
         // car body
         if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_CAR]; gameObject != entt::null)
         {
-            auto carID = mCarBody->GetID();
             JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(carID);
             JPH::Quat rotation = bodyInterface.GetRotation(carID);
             auto& transform = m_Registry.get<TransformComponent>(gameObject);
@@ -153,7 +153,6 @@ namespace GfxRenderEngine
                 glm::mat4 wheelLocalTransformGLM =
                     m_WheelTranslation[w] * ConvertToGLMMat4(wheelTransformJPH) * m_WheelScale[w];
 
-                auto carID = mCarBody->GetID();
                 JPH::RMat44 carTransformJPH = bodyInterface.GetWorldTransform(carID);
                 glm::mat4 carTransformGLM = ConvertToGLMMat4(carTransformJPH);
                 glm::mat4 wheelGlobalTransformGLM = carTransformGLM * wheelLocalTransformGLM;

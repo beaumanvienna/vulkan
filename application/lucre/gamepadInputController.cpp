@@ -136,11 +136,16 @@ namespace LucreApp
             }
         }
 
-        vehicleControl.inBrake = 0.0f;
-
         {
             bool buttonPressed = Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, //
                                                                   Controller::Controller::BUTTON_A);
+            vehicleControl.inBrake = buttonPressed ? 1.0f : 0.0f;
+            ;
+        }
+
+        {
+            bool buttonPressed = Input::IsControllerButtonPressed(Controller::FIRST_CONTROLLER, //
+                                                                  Controller::Controller::BUTTON_B);
             vehicleControl.inHandBrake = buttonPressed ? 1.0f : 0.0f;
         }
     }

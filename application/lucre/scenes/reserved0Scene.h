@@ -53,7 +53,7 @@ namespace LucreApp
         virtual void Stop() override;
 
         virtual void OnUpdate(const Timestep& timestep) override;
-        virtual Camera& GetCamera() override { return m_CameraController->GetCamera(); }
+        virtual Camera& GetCamera() override;
         virtual void OnEvent(Event& event) override;
         virtual void OnResize() override;
 
@@ -76,19 +76,46 @@ namespace LucreApp
         void ApplyDebugSettings();
 
     private:
+        enum CameraTypes
+        {
+            DefaultCamera = 0,
+            AttachedToCar1,
+            AttachedToCar2,
+            ShadowMapHiRes,
+            ShadowMapLowRes,
+            MaxCameraTypes
+        };
+
+        class CameraControllers
+        {
+        public:
+            CameraControllers() = default;
+            std::shared_ptr<CameraController>& GetActiveCameraController();
+            int GetActiveCameraIndex() { return m_ActiveCamera; };
+            std::shared_ptr<CameraController>& SetActiveCameraController(int index);
+            std::shared_ptr<CameraController>& SetActiveCameraController(CameraTypes cameraType);
+            void SetProjectionAll();
+
+            std::shared_ptr<CameraController>& operator[](int index);
+            CameraControllers& operator++();
+
+        private:
+            int m_ActiveCamera = static_cast<uint>(CameraTypes::DefaultCamera);
+            std::shared_ptr<CameraController> m_CameraController[CameraTypes::MaxCameraTypes];
+        };
+
         Renderer* m_Renderer;
-
         SceneLoaderJSON m_SceneLoaderJSON;
-        // SceneLoader m_SceneLoader;
 
-        // the camera is keyboard-controlled
-        std::shared_ptr<CameraController> m_CameraController;
-        std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
+        // all things camera
+        CameraControllers m_CameraControllers;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
         Camera m_ReflectionCamera;
+        std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
 
         // game objects
-        entt::entity m_Camera, m_Skybox, m_Lightbulb0, m_Lightbulb1;
+        entt::entity m_Camera[CameraTypes::MaxCameraTypes];
+        entt::entity m_Skybox, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car;
@@ -118,6 +145,7 @@ namespace LucreApp
         // physics Jolt
         std::unique_ptr<Physics> m_Physics;
         Physics::VehicleControl m_VehicleControl{};
+        bool m_DrawDebugMesh{true};
 
     private:
         struct BananaComponent

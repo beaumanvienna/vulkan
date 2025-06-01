@@ -100,7 +100,7 @@ namespace GfxRenderEngine
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
         void CreateMushroom(glm::vec3 const& scale, glm::vec3 const& translation);
-        void CreateVehicle(glm::vec3 const& scale, glm::vec3 const& translation);
+        void CreateVehicle(RVec3 const& position, JPH::Quat const& quaternion);
         void SyncPhysicsToGraphics();
 
     private:
@@ -332,6 +332,6 @@ namespace GfxRenderEngine
         static inline float sRearSuspensionMinLength = 0.3f;
         static inline float sRearSuspensionMaxLength = 0.5f;
         static inline float sRearSuspensionFrequency = 1.5f;
-        static inline float sRearSuspensionDamping = 0.5f;
+        static inline float sRearSuspensionDamping = 1.0f;
     };
 } // namespace GfxRenderEngine

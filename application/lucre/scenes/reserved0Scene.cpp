@@ -63,12 +63,14 @@ namespace LucreApp
             float zfar = 1500.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
-            m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
+            m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
+            m_CameraControllers[CameraTypes::DefaultCamera]->GetCamera().SetName("default camera");
 
-            m_Camera = m_Registry.Create();
+            m_Camera[CameraTypes::DefaultCamera] = m_Registry.Create();
             TransformComponent cameraTransform{};
-            m_Registry.emplace<TransformComponent>(m_Camera, cameraTransform);
-            m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, m_Camera, "defaultCamera", m_Dictionary);
+            m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::DefaultCamera], cameraTransform);
+            m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, m_Camera[CameraTypes::DefaultCamera], "defaultCamera",
+                                    m_Dictionary);
             ResetScene();
 
             KeyboardInputControllerSpec keyboardInputControllerSpec{};
@@ -171,6 +173,35 @@ namespace LucreApp
             if ((m_Car != entt::null) && (m_Wheels[0] != entt::null) && (m_Wheels[1] != entt::null) &&
                 (m_Wheels[2] != entt::null) && (m_Wheels[3] != entt::null))
             {
+                // set up 2nd camera
+                m_Camera[CameraTypes::AttachedToCar1] =
+                    m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::Scene::CarCamera1");
+
+                if (m_Camera[CameraTypes::AttachedToCar1] != entt::null)
+                {
+                    auto& cameraComponent =
+                        m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar1]);
+                    m_CameraControllers[CameraTypes::AttachedToCar1] = std::make_shared<CameraController>(cameraComponent);
+                    m_CameraControllers[CameraTypes::AttachedToCar1]->GetCamera().SetName("camera attached to car");
+
+                    auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar1]);
+                    cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
+                }
+                // set up 3rd camera
+                m_Camera[CameraTypes::AttachedToCar2] =
+                    m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::Scene::CarCamera2");
+
+                if (m_Camera[CameraTypes::AttachedToCar2] != entt::null)
+                {
+                    auto& cameraComponent =
+                        m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar2]);
+                    m_CameraControllers[CameraTypes::AttachedToCar2] = std::make_shared<CameraController>(cameraComponent);
+                    m_CameraControllers[CameraTypes::AttachedToCar2]->GetCamera().SetName("camera attached to car");
+
+                    auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar2]);
+                    cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
+                }
+
                 m_Physics->SetGameObject(Physics::GAME_OBJECT_CAR, m_Car);
                 m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_FRONT_LEFT, m_Wheels[0]);
                 m_Physics->SetGameObject(Physics::GAME_OBJECT_WHEEL_FRONT_RIGHT, m_Wheels[1]);
@@ -192,7 +223,7 @@ namespace LucreApp
 
                 {
                     float wheelScale = 1.0f;
-                    float liftWheels = 0.11f;
+                    float liftWheels = 0.11f - 0.2f;
                     {
                         glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
                         glm::vec3 translation{-0.418f, liftWheels, -0.414f};
@@ -400,14 +431,15 @@ namespace LucreApp
     void Reserved0Scene::OnUpdate(const Timestep& timestep)
     {
         ZoneScopedNC("Reserved0Scene", 0x0000ff);
+
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
-            auto view = m_Registry.view<TransformComponent>();
-            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraController->SetView(cameraTransform.GetMat4Global());
+            m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
         }
 
         SimulatePhysics(timestep);
@@ -425,7 +457,8 @@ namespace LucreApp
         }
 
         { // update particle systems
-            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
             m_CandleParticleSystem.OnUpdate(timestep, cameraTransform);
         }
 
@@ -446,7 +479,7 @@ namespace LucreApp
         SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        m_Renderer->BeginFrame(&m_CameraControllers.GetActiveCameraController()->GetCamera());
         m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
@@ -457,9 +490,11 @@ namespace LucreApp
             auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
             float heightWater = water1Component.m_Translation.y;
 
-            m_ReflectionCamera = m_CameraController->GetCamera();
+            m_ReflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
             auto view = m_Registry.view<TransformComponent>();
-            auto& cameraTransform = view.get<TransformComponent>(m_Camera);
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
+
             glm::vec3 position = cameraTransform.GetTranslation();
             glm::vec3 rotation = cameraTransform.GetRotation();
 
@@ -475,7 +510,8 @@ namespace LucreApp
             {
                 float sign = (pass == reflection) ? 1.0f : -1.0f;
                 glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
-                auto& camera = (pass == reflection) ? m_ReflectionCamera : m_CameraController->GetCamera();
+                auto& camera =
+                    (pass == reflection) ? m_ReflectionCamera : m_CameraControllers.GetActiveCameraController()->GetCamera();
                 m_Renderer->RenderpassWater(m_Registry, camera, pass, waterPlane);
                 // opaque objects
                 m_Renderer->SubmitWater(*this, pass);
@@ -510,7 +546,10 @@ namespace LucreApp
         }
 
         // physics debug visualization
-        m_Physics->Draw(m_CameraController->GetCamera());
+        if (m_DrawDebugMesh)
+        {
+            m_Physics->Draw(m_CameraControllers.GetActiveCameraController()->GetCamera());
+        }
 
         // post processing
         m_Renderer->PostProcessingRenderpass();
@@ -526,9 +565,9 @@ namespace LucreApp
         dispatcher.Dispatch<MouseScrolledEvent>(
             [this](MouseScrolledEvent l_Event)
             {
-                auto zoomFactor = m_CameraController->GetZoomFactor();
+                auto zoomFactor = m_CameraControllers.GetActiveCameraController()->GetZoomFactor();
                 zoomFactor -= l_Event.GetY() * 0.1f;
-                m_CameraController->SetZoomFactor(zoomFactor);
+                m_CameraControllers.GetActiveCameraController()->SetZoomFactor(zoomFactor);
                 return true;
             });
 
@@ -537,24 +576,39 @@ namespace LucreApp
             {
                 switch (keyboardEvent.GetKeyCode())
                 {
+                    case ENGINE_KEY_N:
+                    {
+                        ++m_CameraControllers;
+                        break;
+                    }
+                    case ENGINE_KEY_B:
+                    {
+                        m_DrawDebugMesh = !m_DrawDebugMesh;
+                        break;
+                    }
                     case ENGINE_KEY_R:
+                    {
                         ResetScene();
                         ResetBananas();
                         break;
+                    }
                     case ENGINE_KEY_G:
+                    {
                         FireVolcano();
                         break;
+                    }
                 }
                 return false;
             });
     }
 
-    void Reserved0Scene::OnResize() { m_CameraController->SetProjection(); }
+    void Reserved0Scene::OnResize() { m_CameraControllers.GetActiveCameraController()->SetProjection(); }
 
     void Reserved0Scene::ResetScene()
     {
-        m_CameraController->SetZoomFactor(1.0f);
-        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera);
+        m_CameraControllers.SetActiveCameraController(CameraTypes::DefaultCamera);
+        m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
         cameraTransform.SetTranslation({-3.485f, 3.625f, -25});
         cameraTransform.SetRotation({-0.074769905f, 3.11448769f, 0.0f});
@@ -562,7 +616,7 @@ namespace LucreApp
         // global camera transform is not yet available
         // because UpdateTransformCache didn't run yet
         // for default camera: global == local transform
-        m_CameraController->SetView(cameraTransform.GetMat4Local());
+        m_CameraControllers[CameraTypes::DefaultCamera]->SetView(cameraTransform.GetMat4Local());
     }
 
     void Reserved0Scene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
@@ -743,6 +797,77 @@ namespace LucreApp
         else
         {
             index = 0;
+        }
+    }
+
+    Camera& Reserved0Scene::GetCamera() { return m_CameraControllers.GetActiveCameraController()->GetCamera(); }
+
+    std::shared_ptr<CameraController>& Reserved0Scene::CameraControllers::GetActiveCameraController()
+    {
+        return m_CameraController[m_ActiveCamera];
+    }
+
+    std::shared_ptr<CameraController>& Reserved0Scene::CameraControllers::operator[](int index)
+    {
+        if ((index >= CameraTypes::MaxCameraTypes))
+        {
+            LOG_APP_ERROR("wrong camera indexed");
+        }
+        return m_CameraController[index];
+    }
+
+    Reserved0Scene::CameraControllers& Reserved0Scene::CameraControllers::operator++()
+    {
+        int maxChecks = static_cast<int>(CameraTypes::MaxCameraTypes);
+        int nextActiveCamera = m_ActiveCamera;
+        for (int iterator = 0; iterator < maxChecks; ++iterator)
+        {
+            ++nextActiveCamera;
+            if (nextActiveCamera < maxChecks)
+            {
+                if (m_CameraController[nextActiveCamera])
+                {
+                    m_ActiveCamera = nextActiveCamera;
+                    break;
+                }
+            }
+            else
+            {
+                // default camera is always there
+                m_ActiveCamera = static_cast<int>(CameraTypes::DefaultCamera);
+                break;
+            }
+        }
+        LOG_APP_INFO("switching to camera {0}", m_ActiveCamera);
+        return *this;
+    }
+
+    std::shared_ptr<CameraController>& Reserved0Scene::CameraControllers::SetActiveCameraController(CameraTypes cameraType)
+    {
+        return SetActiveCameraController(static_cast<int>(cameraType));
+    }
+
+    std::shared_ptr<CameraController>& Reserved0Scene::CameraControllers::SetActiveCameraController(int index)
+    {
+        if ((index < static_cast<int>(CameraTypes::MaxCameraTypes)) && m_CameraController[index])
+        {
+            m_ActiveCamera = index;
+        }
+        else
+        {
+            LOG_APP_ERROR("couldn't change camera");
+        }
+        return m_CameraController[m_ActiveCamera];
+    }
+
+    void Reserved0Scene::CameraControllers::SetProjectionAll()
+    {
+        for (uint index = 0; index < CameraTypes::MaxCameraTypes; ++index)
+        {
+            if (m_CameraController[index])
+            {
+                m_CameraController[index]->SetProjection();
+            }
         }
     }
 } // namespace LucreApp

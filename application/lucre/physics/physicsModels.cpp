@@ -178,7 +178,7 @@ namespace GfxRenderEngine
         bodyInterface.SetRestitution(m_SphereID, 0.8f);
     }
 
-    void PhysicsBase::CreateVehicle(glm::vec3 const& scale, glm::vec3 const& translation)
+    void PhysicsBase::CreateVehicle(RVec3 const& position, JPH::Quat const& quaternion)
     {
         LOG_APP_INFO("PhysicsBase::CreateVehicle");
         JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
@@ -194,9 +194,6 @@ namespace GfxRenderEngine
         mTesters[2] = new VehicleCollisionTesterCastCylinder(Layers::MOVING);
 
         // Create vehicle body
-        RVec3 position(2.00273f, 12.0f, 30.1575f);
-        glm::vec3 rotation(0.0f, 1.41213f, 0.0f);
-        JPH::Quat const quaternion = ConvertToQuat(rotation);
 
         RefConst<Shape> car_shape =
             OffsetCenterOfMassShapeSettings(Vec3(0, -half_vehicle_height, 0),
