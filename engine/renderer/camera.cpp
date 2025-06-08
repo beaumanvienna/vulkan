@@ -22,6 +22,7 @@
 
 #include "renderer/camera.h"
 #include "transform/matrix.h"
+#include "glm/gtx/euler_angles.hpp"
 
 namespace GfxRenderEngine
 {
@@ -48,7 +49,7 @@ namespace GfxRenderEngine
     void Camera::SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far)
     {
         m_ProjectionType = ORTHOGRAPHIC_PROJECTION;
-        m_ProjectionMatrix = glm::ortho(-left, -right, bottom, top, near, far);
+        m_ProjectionMatrix = glm::ortho(left, right, bottom, top, near, far);
     }
 
     void Camera::SetPerspectiveProjection(float fovy, float aspect, float near, float far)
@@ -68,6 +69,7 @@ namespace GfxRenderEngine
     void Camera::SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up)
     {
         m_Position = position;
+        m_Direction = glm::normalize(direction);
 
         // create orthonormal basis
         const glm::vec3 w{glm::normalize(direction)};
@@ -102,12 +104,16 @@ namespace GfxRenderEngine
         static glm::mat4 lookAt = glm::lookAt(cameraPosition, target, up);
         m_ViewMatrix = lookAt * glm::inverse(modelMatrix);
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+
+        glm::vec3 forward{0.0f, 0.0f, -1.0f}; // For right-handed
+        m_Direction = glm::normalize(glm::mat3(modelMatrix) * forward);
     }
 
     void Camera::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
     {
         m_Position = position;
-        m_Rotation = glm::vec3{rotation.x, rotation.y + glm::pi<float>(), rotation.z + glm::pi<float>()};
+        m_Rotation = rotation;
+        m_Direction = GetForwardFromEuler(rotation);
 
         const float c3 = glm::cos(m_Rotation.z);
         const float s3 = glm::sin(m_Rotation.z);
@@ -131,7 +137,17 @@ namespace GfxRenderEngine
         m_ViewMatrix[3][0] = -glm::dot(u, position);
         m_ViewMatrix[3][1] = -glm::dot(v, position);
         m_ViewMatrix[3][2] = -glm::dot(w, position);
-
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+    }
+
+    glm::vec3 Camera::GetForwardFromEuler(glm::vec3 const& eulerAngles)
+    {
+        // Convert Euler angles (in radians) to a quaternion
+        glm::quat rotationQuat = glm::quat(eulerAngles);
+
+        // Forward is negative Z in OpenGL-style right-handed coordinate system
+        glm::vec3 forward = rotationQuat * glm::vec3(0.0f, 0.0f, -1.0f);
+
+        return glm::normalize(forward);
     }
 } // namespace GfxRenderEngine

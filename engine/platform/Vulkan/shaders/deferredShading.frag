@@ -333,7 +333,7 @@ void main()
                 // Check if the sample is in light
                 litCount += texture(shadowMapTextureHiRes, pcfCoordinatePlusReference).x;
             }
-            litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.15);
+            litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.0);
         }
         // add to outgoing radiance Lo
         Lo += (kD * fragColor / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
