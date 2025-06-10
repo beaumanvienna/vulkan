@@ -62,7 +62,4 @@ void main()
     outColor = mix(refraction, reflection, 0.2);
     vec4 blue = vec4(0.0, 0.3, 0.5, 1.0);
     outColor = mix(outColor, blue, 0.05);
-    //outColor = refraction;
-    //outColor = reflection;
-    //outColor = vec4(duDv, 0.0, 1.0);
 }

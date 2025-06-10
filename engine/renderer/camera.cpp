@@ -112,7 +112,7 @@ namespace GfxRenderEngine
     void Camera::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
     {
         m_Position = position;
-        m_Rotation = rotation;
+        m_Rotation = glm::vec3{rotation.x, rotation.y + glm::pi<float>(), rotation.z + glm::pi<float>()};
         m_Direction = GetForwardFromEuler(rotation);
 
         const float c3 = glm::cos(m_Rotation.z);

@@ -135,7 +135,7 @@ namespace GfxRenderEngine
             JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(carID);
             JPH::Quat rotation = bodyInterface.GetRotation(carID);
             auto& transform = m_Registry.get<TransformComponent>(gameObject);
-            transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
+            transform.SetTranslation(glm::vec3{position.GetX(), position.GetY() + m_CarHeightOffset, position.GetZ()});
             transform.SetRotation(glm::quat(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ()));
         }
 
@@ -222,7 +222,7 @@ namespace GfxRenderEngine
 
     void PhysicsBase::SetWheelScale(uint wheelNumber, glm::mat4 const& scale) { m_WheelScale[wheelNumber] = scale; }
 
-    void PhysicsBase::CreateMeshTerrain(entt::entity entityID, const std::string& filepath)
+    void PhysicsBase::CreateMeshTerrain(entt::entity entityID, const std::string& filepath, float friction)
     {
         if (m_Registry.valid(entityID) && m_Registry.all_of<TransformComponent>(entityID))
         {
@@ -242,8 +242,11 @@ namespace GfxRenderEngine
                 bodyInterface.SetPosition(floor.GetID(), position, EActivation::DontActivate);
                 JPH::Quat const quaternion = ConvertToQuat(transformComponent.GetRotation());
                 bodyInterface.SetRotation(floor.GetID(), quaternion, EActivation::DontActivate);
+                bodyInterface.SetFriction(floor.GetID(), friction);
             }
         }
     }
+
+    void PhysicsBase::SetCarHeightOffset(float carHeightOffset) { m_CarHeightOffset = carHeightOffset; }
 
 } // namespace GfxRenderEngine

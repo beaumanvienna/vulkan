@@ -42,7 +42,7 @@ namespace LucreApp
 
     Reserved0Scene::Reserved0Scene(const std::string& filepath, const std::string& alternativeFilepath)
         : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"},
-          m_LaunchVolcanoTimer(1000), m_ReflectionCamera(Camera::PERSPECTIVE_PROJECTION)
+          m_LaunchVolcanoTimer(1000)
     {
     }
 
@@ -258,12 +258,14 @@ namespace LucreApp
                         m_Physics->SetWheelScale(Physics::WHEEL_REAR_RIGHT, wheelScaleTransform);
                     }
                 }
+                m_Physics->SetCarHeightOffset(0.2f);
             }
 
             auto racingLoop = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racing loop.glb::0::root");
             if (racingLoop != entt::null)
             {
-                m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb");
+                float friction = 2.0f;
+                m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb", friction);
             }
         }
     }
@@ -463,7 +465,7 @@ namespace LucreApp
             m_CandleParticleSystem.OnUpdate(timestep, cameraTransform);
         }
 
-        {
+        { // directional light / shadow maps
             enum ShadowRenderPass
             {
                 HIGH_RESOLUTION = 0,
@@ -517,7 +519,7 @@ namespace LucreApp
                     glm::vec3 cross = glm::cross(directionToLight, activeCameraDirection);
                     glm::vec3 lightRotationAdjustmentNorm{-cross.z, -cross.y, -cross.x};
                     glm::vec3 lightRotationAdjustment =
-                        lightRotationAdjustmentNorm * lightBulbDistanceInCameraPlane / 4.0f; // fudge factor
+                        lightRotationAdjustmentNorm * lightBulbDistanceInCameraPlane / 8.0f; // fudge factor
 
                     glm::vec3 lightbulbPosition = inFrontOfCamera + vectorToLight + lightRotationAdjustment;
                     lightbulbTransform.SetTranslation(lightbulbPosition);
@@ -552,7 +554,7 @@ namespace LucreApp
             auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
             float heightWater = water1Component.m_Translation.y;
 
-            m_ReflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
+            Camera reflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
             auto view = m_Registry.view<TransformComponent>();
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
@@ -562,7 +564,7 @@ namespace LucreApp
 
             position.y = position.y - 2 * (position.y - heightWater);
 
-            m_ReflectionCamera.SetViewYXZ(position, rotation);
+            reflectionCamera.SetViewYXZ(position, rotation);
 
             static constexpr bool refraction = false;
             static constexpr bool reflection = true;
@@ -573,7 +575,7 @@ namespace LucreApp
                 float sign = (pass == reflection) ? 1.0f : -1.0f;
                 glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
                 auto& camera =
-                    (pass == reflection) ? m_ReflectionCamera : m_CameraControllers.GetActiveCameraController()->GetCamera();
+                    (pass == reflection) ? reflectionCamera : m_CameraControllers.GetActiveCameraController()->GetCamera();
                 m_Renderer->RenderpassWater(m_Registry, camera, pass, waterPlane);
                 // opaque objects
                 m_Renderer->SubmitWater(*this, pass);
@@ -672,7 +674,7 @@ namespace LucreApp
         m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
-        cameraTransform.SetTranslation({-3.0f, 3.0f, -25});
+        cameraTransform.SetTranslation({-3.0f, 6.0f, -25});
         cameraTransform.SetRotation({0.0f, TransformComponent::DEGREES_180, 0.0f});
 
         // global camera transform is not yet available

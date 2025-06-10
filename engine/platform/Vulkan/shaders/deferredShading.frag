@@ -174,7 +174,7 @@ void main()
         vec3 L = normalize(light.m_Position.xyz - fragPosition); // inicdence vector
         vec3 H = normalize(V + L); // halfway vector
         float distance = length(light.m_Position.xyz - fragPosition);
-        float attenuation = 1.0 / (distance * distance); // attenuation of the light (not micro facet)
+        float attenuation = 1.0 / (distance * distance * distance * distance); // attenuation of the light (not micro facet)
         float lightIntensity = light.m_Color.w;
         vec3 radiance = light.m_Color.rgb * lightIntensity * attenuation; // overall color and intensity
 

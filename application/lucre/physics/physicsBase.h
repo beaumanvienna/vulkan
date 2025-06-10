@@ -95,7 +95,8 @@ namespace GfxRenderEngine
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) override;
-        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath) override;
+        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) override;
+        virtual void SetCarHeightOffset(float carHeightOffset) override;
 
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
@@ -333,5 +334,6 @@ namespace GfxRenderEngine
         static inline float sRearSuspensionMaxLength = 0.5f;
         static inline float sRearSuspensionFrequency = 1.5f;
         static inline float sRearSuspensionDamping = 1.0f;
+        float m_CarHeightOffset;
     };
 } // namespace GfxRenderEngine

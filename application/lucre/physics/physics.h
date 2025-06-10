@@ -68,11 +68,12 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) = 0;
         virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) = 0;
         virtual void LoadModels() = 0;
-        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath) = 0;
+        virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) = 0;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) = 0;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) = 0;
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) = 0;
         virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& scale) = 0;
+        virtual void SetCarHeightOffset(float carHeightOffset) = 0;
 
         static std::unique_ptr<Physics> Create(Scene& scene);
     };

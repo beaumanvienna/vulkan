@@ -196,13 +196,13 @@ namespace GfxRenderEngine
         // Create vehicle body
 
         RefConst<Shape> car_shape =
-            OffsetCenterOfMassShapeSettings(Vec3(0, -half_vehicle_height, 0),
+            OffsetCenterOfMassShapeSettings(Vec3(0, -half_vehicle_height * 2.0f, 0),
                                             new BoxShape(Vec3(half_vehicle_width, half_vehicle_height, half_vehicle_length)))
                 .Create()
                 .Get();
         BodyCreationSettings car_body_settings(car_shape, position, quaternion, EMotionType::Dynamic, Layers::MOVING);
         car_body_settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
-        car_body_settings.mMassPropertiesOverride.mMass = 1500.0f;
+        car_body_settings.mMassPropertiesOverride.mMass = 1500.0f * 2.0f;
         mCarBody = bodyInterface.CreateBody(car_body_settings);
         bodyInterface.AddBody(mCarBody->GetID(), EActivation::Activate);
 
@@ -224,6 +224,19 @@ namespace GfxRenderEngine
         Vec3 rear_wheel_forward = Vec3(-Sin(sRearToe), 0, Cos(sRearToe));
         Vec3 flip_x(-1, 1, 1);
 
+        const float scaleFriction = 1.0f;
+        JPH::LinearCurve longitudinalFriction;
+        longitudinalFriction.Reserve(3);
+        longitudinalFriction.AddPoint(0.0f, 0.0f * scaleFriction);
+        longitudinalFriction.AddPoint(0.06f, 1.2f * scaleFriction);
+        longitudinalFriction.AddPoint(0.2f, 1.0f * scaleFriction);
+
+        JPH::LinearCurve lateralFriction;
+        lateralFriction.Reserve(3);
+        lateralFriction.AddPoint(0.0f, 0.0f * scaleFriction);
+        lateralFriction.AddPoint(3.0f, 1.2f * scaleFriction);
+        lateralFriction.AddPoint(20.0f, 1.0f * scaleFriction);
+
         // Wheels, left front
         WheelSettingsWV* w1 = new WheelSettingsWV;
         w1->mPosition = Vec3(half_vehicle_width, -0.9f * half_vehicle_height, half_vehicle_length - 2.0f * wheel_radius);
@@ -237,6 +250,8 @@ namespace GfxRenderEngine
         w1->mSuspensionSpring.mDamping = sFrontSuspensionDamping;
         w1->mMaxSteerAngle = sMaxSteeringAngle;
         w1->mMaxHandBrakeTorque = 0.0f; // Front wheel doesn't have hand brake
+        w1->mLateralFriction = lateralFriction;
+        w1->mLongitudinalFriction = longitudinalFriction;
 
         // Right front
         WheelSettingsWV* w2 = new WheelSettingsWV;
@@ -251,6 +266,8 @@ namespace GfxRenderEngine
         w2->mSuspensionSpring.mDamping = sFrontSuspensionDamping;
         w2->mMaxSteerAngle = sMaxSteeringAngle;
         w2->mMaxHandBrakeTorque = 0.0f; // Front wheel doesn't have hand brake
+        w2->mLateralFriction = lateralFriction;
+        w2->mLongitudinalFriction = longitudinalFriction;
 
         // Left rear
         WheelSettingsWV* w3 = new WheelSettingsWV;
@@ -264,6 +281,8 @@ namespace GfxRenderEngine
         w3->mSuspensionSpring.mFrequency = sRearSuspensionFrequency;
         w3->mSuspensionSpring.mDamping = sRearSuspensionDamping;
         w3->mMaxSteerAngle = 0.0f;
+        w3->mLateralFriction = lateralFriction;
+        w3->mLongitudinalFriction = longitudinalFriction;
 
         // Right rear
         WheelSettingsWV* w4 = new WheelSettingsWV;
@@ -277,6 +296,8 @@ namespace GfxRenderEngine
         w4->mSuspensionSpring.mFrequency = sRearSuspensionFrequency;
         w4->mSuspensionSpring.mDamping = sRearSuspensionDamping;
         w4->mMaxSteerAngle = 0.0f;
+        w2->mLateralFriction = lateralFriction;
+        w2->mLongitudinalFriction = longitudinalFriction;
 
         vehicle.mWheels = {w1, w2, w3, w4};
 
