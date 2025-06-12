@@ -87,7 +87,7 @@ namespace GfxRenderEngine
         }
         {
             RVec3 position(2.00273f, 15.0f, 30.1575f);
-            glm::vec3 rotation(0.0f, 1.41213f, 0.0f);
+            glm::vec3 rotation(0.0f, 1.4f, 0.0f);
             JPH::Quat const quaternion = ConvertToQuat(rotation);
             CreateVehicle(position, quaternion);
         }

@@ -119,7 +119,7 @@ namespace GfxRenderEngine
                 glm::mat4 modelMatrix = glm::scale( // Scale first
                     translationMatrix,              // Translate second
                     scale);
-                static constexpr float STATIC_MOVE_FACTOR = 0.05f;
+                static constexpr float STATIC_MOVE_FACTOR = 0.0125f;
                 m_MoveFactor += STATIC_MOVE_FACTOR * Engine::m_Engine->GetTimestep();
                 VK_PushConstantWater1 pushConstantWater1 = {.m_ModelMatrix = transform.GetMat4Global() * modelMatrix,
                                                             .m_Values = glm::vec4(m_MoveFactor, 0.0f, 0.0f, 0.0f)};

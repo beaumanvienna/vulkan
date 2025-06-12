@@ -425,7 +425,7 @@ namespace GfxRenderEngine
                 float zfar = pOrthographic->zfar;
                 float znear = pOrthographic->znear;
 
-                OrthographicCameraComponent orthographicCameraComponent(xmag, ymag, zfar, znear);
+                OrthographicCameraComponent orthographicCameraComponent(xmag, ymag, znear, zfar);
                 m_Registry.emplace<OrthographicCameraComponent>(entity, orthographicCameraComponent);
             }
             else if (const auto* pPerspective = std::get_if<fastgltf::Camera::Perspective>(&glTFCamera.camera))
@@ -435,7 +435,7 @@ namespace GfxRenderEngine
                 float zfar = pPerspective->zfar.has_value() ? pPerspective->zfar.value() : 500.0f;
                 float znear = pPerspective->znear;
 
-                PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+                PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
                 m_Registry.emplace<PerspectiveCameraComponent>(entity, perspectiveCameraComponent);
             }
         }

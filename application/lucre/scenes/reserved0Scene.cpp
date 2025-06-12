@@ -23,8 +23,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "auxiliary/math.h"
 #include "auxiliary/debug.h"
+#include <glm/gtx/matrix_decompose.hpp>
+
+#include "auxiliary/math.h"
 #include "core.h"
 #include "events/event.h"
 #include "events/keyEvent.h"
@@ -53,6 +55,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
+        m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         ImGUI::m_AmbientLightIntensity = 0.177;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
@@ -63,7 +66,7 @@ namespace LucreApp
             float znear = 0.1f;
             float zfar = 1500.0f;
 
-            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
             m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
             m_CameraControllers[CameraTypes::DefaultCamera]->GetCamera().SetName("default camera");
 
@@ -183,7 +186,7 @@ namespace LucreApp
                     auto& cameraComponent =
                         m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar1]);
                     m_CameraControllers[CameraTypes::AttachedToCar1] = std::make_shared<CameraController>(cameraComponent);
-                    m_CameraControllers[CameraTypes::AttachedToCar1]->GetCamera().SetName("camera attached to car");
+                    m_CameraControllers[CameraTypes::AttachedToCar1]->GetCamera().SetName("camera 1 attached to car");
 
                     auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar1]);
                     cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
@@ -197,7 +200,7 @@ namespace LucreApp
                     auto& cameraComponent =
                         m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar2]);
                     m_CameraControllers[CameraTypes::AttachedToCar2] = std::make_shared<CameraController>(cameraComponent);
-                    m_CameraControllers[CameraTypes::AttachedToCar2]->GetCamera().SetName("camera attached to car");
+                    m_CameraControllers[CameraTypes::AttachedToCar2]->GetCamera().SetName("camera 2 attached to car");
 
                     auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar2]);
                     cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
@@ -339,7 +342,7 @@ namespace LucreApp
                 float top = 14.0f;
                 float near = 0.1f;
                 float far = 40.0f;
-                m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+                m_LightView1->SetOrthographicProjection(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
@@ -496,7 +499,7 @@ namespace LucreApp
                 float top = width / 2.0f * scaleX;
                 float near = 0.1f * scaleX;
                 float far = 200.0f * scaleX;
-                lightView->SetOrthographicProjection3D(left, right, -bottom, -top, near, far);
+                lightView->SetOrthographicProjection(left, right, bottom, top, near, far);
                 { // put the directional light in front of the currently active camera
                     // retrieve camera position and camera look at direction
                     int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
@@ -552,19 +555,19 @@ namespace LucreApp
         if (m_Terrain1 != entt::null)
         { // water
             auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
-            float heightWater = water1Component.m_Translation.y;
+            float& heightWater = water1Component.m_Translation.y;
 
             Camera reflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
             auto view = m_Registry.view<TransformComponent>();
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
-            glm::vec3 position = cameraTransform.GetTranslation();
-            glm::vec3 rotation = cameraTransform.GetRotation();
+            glm::mat4 mat4Camera = cameraTransform.GetMat4Global();
+            float& positionY = mat4Camera[3].y;
 
-            position.y = position.y - 2 * (position.y - heightWater);
+            positionY = positionY - 2 * (positionY - heightWater); // mirror around water surface
 
-            reflectionCamera.SetViewYXZ(position, rotation);
+            reflectionCamera.SetView(mat4Camera);
 
             static constexpr bool refraction = false;
             static constexpr bool reflection = true;
@@ -674,7 +677,7 @@ namespace LucreApp
         m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
-        cameraTransform.SetTranslation({-3.0f, 6.0f, -25});
+        cameraTransform.SetTranslation({-3.0f, 6.0f, -25.0f});
         cameraTransform.SetRotation({0.0f, TransformComponent::DEGREES_180, 0.0f});
 
         // global camera transform is not yet available
@@ -686,10 +689,7 @@ namespace LucreApp
     void Reserved0Scene::SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView)
     {
         auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
-
-        glm::vec3 position = lightbulbTransform.GetTranslation();
-        glm::vec3 rotation = lightbulbTransform.GetRotation();
-        lightView->SetViewYXZ(position, rotation);
+        lightView->SetView(lightbulbTransform.GetMat4Global());
     }
 
     void Reserved0Scene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,

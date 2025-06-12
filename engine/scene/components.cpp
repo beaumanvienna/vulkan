@@ -190,8 +190,6 @@ namespace GfxRenderEngine
         auto translation = glm::translate(glm::mat4(1.0f), glm::vec3{m_Translation.x, m_Translation.y, m_Translation.z});
 
         m_Mat4Local = translation * rotation * scale;
-
-        m_Dirty = false;
     }
 
     const glm::mat4& TransformComponent::GetMat4Local()
@@ -217,6 +215,7 @@ namespace GfxRenderEngine
             m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
         }
         m_Parent = parent;
+        m_Dirty = false;
     }
 
     // no scene graph
@@ -233,6 +232,7 @@ namespace GfxRenderEngine
             m_Mat4Global = GetMat4Local();
             m_NormalMatrix = glm::transpose(glm::inverse(glm::mat3(m_Mat4Global)));
         }
+        m_Dirty = false;
     }
 
     void TransformComponent::SetInstance(std::shared_ptr<InstanceBuffer>& instanceBuffer, uint instanceIndex)

@@ -49,6 +49,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
+        m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         ImGUI::m_AmbientLightIntensity = 0.12;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
@@ -58,7 +59,7 @@ namespace LucreApp
             float znear = 0.1f;
             float zfar = 500.0f;
 
-            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
             m_CameraController = std::make_shared<CameraController>(perspectiveCameraComponent);
 
             m_Camera = m_Registry.Create();

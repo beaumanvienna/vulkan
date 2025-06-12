@@ -42,12 +42,9 @@ namespace GfxRenderEngine
         Camera(ProjectionType projectionType);
 
         void SetOrthographicProjection(float left, float right, float bottom, float top, float near, float far);
-        void SetOrthographicProjection3D(float left, float right, float bottom, float top, float near, float far);
         void SetPerspectiveProjection(float fovy, float aspect, float near, float far);
-        void SetProjection(float left, float right, float bottom, float top, float near, float far);
         void SetViewDirection(const glm::vec3& position, const glm::vec3& direction,
-                              const glm::vec3& up = glm::vec3{0.f, -1.f, 0.f});
-        void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
+                              const glm::vec3& up = glm::vec3{0.0f, 1.0f, 0.0f});
         void SetView(const glm::mat4& modelMatrix);
         void SetName(const std::string& name) { m_Name = name; }
 

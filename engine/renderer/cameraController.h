@@ -34,17 +34,23 @@ namespace GfxRenderEngine
     class CameraController
     {
     public:
-        CameraController(OrthographicCameraComponent& orthographicCameraComponent);
+        enum OrthographicProjectionType
+        {
+            PROJECTION3D = 0,
+            PROJECTION2D
+        };
+        CameraController(OrthographicCameraComponent& orthographicCameraComponent,
+                         OrthographicProjectionType orthographicProjectionType);
         CameraController(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetProjection();
+        void SetProjection2D(OrthographicCameraComponent& orthographicCameraComponent);
         void SetProjection(OrthographicCameraComponent& orthographicCameraComponent);
         void SetProjection(PerspectiveCameraComponent& perspectiveCameraComponent);
 
         void SetZoomFactor(float factor);
         float GetZoomFactor() const { return m_ZoomFactor; }
 
-        void SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation);
         void SetView(const glm::mat4& modelMatrix);
 
         Camera& GetCamera() { return *m_Camera; }

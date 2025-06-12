@@ -82,5 +82,12 @@ namespace GfxRenderEngine
             }
             std::cout << std::endl;
         }
+
+        static void PrintQuaternion(const std::string& name, const glm::quat& quaternion)
+        {
+            std::cout << name << " ";
+            std::cout << quaternion.w << " " << quaternion.x << " " << quaternion.y << " " << quaternion.z;
+            std::cout << std::endl;
+        }
     };
 } // namespace GfxRenderEngine

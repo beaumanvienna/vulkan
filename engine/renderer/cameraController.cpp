@@ -29,10 +29,19 @@
 namespace GfxRenderEngine
 {
 
-    CameraController::CameraController(OrthographicCameraComponent& orthographicCameraComponent) : m_ZoomFactor{1.0f}
+    CameraController::CameraController(OrthographicCameraComponent& orthographicCameraComponent,
+                                       OrthographicProjectionType orthographicProjectionType)
+        : m_ZoomFactor{1.0f}
     {
         m_Camera = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
-        SetProjection(orthographicCameraComponent);
+        if (orthographicProjectionType == OrthographicProjectionType::PROJECTION2D)
+        {
+            SetProjection2D(orthographicCameraComponent);
+        }
+        else
+        {
+            SetProjection(orthographicCameraComponent);
+        }
     }
 
     CameraController::CameraController(PerspectiveCameraComponent& perspectiveCameraComponent) : m_ZoomFactor{1.0f}
@@ -58,7 +67,7 @@ namespace GfxRenderEngine
         m_Camera->SetPerspectiveProjection(m_Fovy * m_ZoomFactor, m_Aspect, m_ZNear, m_ZFar);
     }
 
-    void CameraController::SetProjection(OrthographicCameraComponent& orthographicCameraComponent)
+    void CameraController::SetProjection2D(OrthographicCameraComponent& orthographicCameraComponent)
     {
         m_XMag = orthographicCameraComponent.m_XMag;
         m_YMag = orthographicCameraComponent.m_YMag;
@@ -73,8 +82,35 @@ namespace GfxRenderEngine
         float orthoTop = 0.0f;
         float orthoNear = m_ZNear;
         float orthoFar = m_ZFar;
-        m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor, orthoRight * m_ZoomFactor, orthoBottom * m_ZoomFactor,
-                                            orthoTop * m_ZoomFactor, orthoNear, orthoFar);
+        m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor,   //
+                                            orthoRight * m_ZoomFactor,  //
+                                            orthoBottom * m_ZoomFactor, //
+                                            orthoTop * m_ZoomFactor,    //
+                                            orthoNear,                  //
+                                            orthoFar);
+    }
+
+    void CameraController::SetProjection(OrthographicCameraComponent& orthographicCameraComponent)
+    {
+        m_XMag = orthographicCameraComponent.m_XMag;
+        m_YMag = orthographicCameraComponent.m_YMag;
+        m_ZNear = orthographicCameraComponent.m_ZNear;
+        m_ZFar = orthographicCameraComponent.m_ZFar;
+        m_Aspect = Engine::m_Engine->GetWindowAspectRatio(); // aspect ratio of main window
+
+        float normalize = Engine::m_Engine->GetWindowWidth();
+        float orthoLeft = -normalize / 2.0f;
+        float orthoRight = normalize / 2.0f;
+        float orthoBottom = -normalize / m_Aspect / 2.0f;
+        float orthoTop = normalize / m_Aspect / 2.0f;
+        float orthoNear = m_ZNear;
+        float orthoFar = m_ZFar;
+        m_Camera->SetOrthographicProjection(orthoLeft * m_ZoomFactor,   //
+                                            orthoRight * m_ZoomFactor,  //
+                                            orthoBottom * m_ZoomFactor, //
+                                            orthoTop * m_ZoomFactor,    //
+                                            orthoNear,                  //
+                                            orthoFar);
     }
 
     void CameraController::SetProjection()
@@ -109,11 +145,6 @@ namespace GfxRenderEngine
                 break;
             }
         }
-    }
-
-    void CameraController::SetViewYXZ(const glm::vec3& position, const glm::vec3& rotation)
-    {
-        m_Camera->SetViewYXZ(position, rotation);
     }
 
     void CameraController::SetView(const glm::mat4& modelMatrix) { m_Camera->SetView(modelMatrix); }

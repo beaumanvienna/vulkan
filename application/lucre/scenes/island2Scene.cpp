@@ -51,6 +51,7 @@ namespace LucreApp
         m_IsRunning = true;
 
         m_Renderer = Engine::m_Engine->GetRenderer();
+        m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         ImGUI::m_AmbientLightIntensity = 0.177;
         m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
 
@@ -61,7 +62,7 @@ namespace LucreApp
             float znear = 0.1f;
             float zfar = 500.0f;
 
-            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, zfar, znear);
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
             m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
             m_CameraControllers[CameraTypes::DefaultCamera]->GetCamera().SetName("default camera");
             m_Camera[CameraTypes::DefaultCamera] = m_Registry.Create();
@@ -304,7 +305,7 @@ namespace LucreApp
                 float top = 14.0f;
                 float near = 0.1f;
                 float far = 40.0f;
-                m_LightView1->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+                m_LightView1->SetOrthographicProjection(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
@@ -382,7 +383,7 @@ namespace LucreApp
             float top = 400.0f * scaleX;
             float near = 10.0f * scaleX;
             float far = 1000.0f * scaleX;
-            m_LightView0->SetOrthographicProjection3D(left, right, bottom, top, near, far);
+            m_LightView0->SetOrthographicProjection(left, right, bottom, top, near, far);
         }
         SetLightView(m_Lightbulb0, m_LightView0);
         SetLightView(m_Lightbulb1, m_LightView1);
@@ -490,10 +491,7 @@ namespace LucreApp
     {
         {
             auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
-
-            glm::vec3 position = lightbulbTransform.GetTranslation();
-            glm::vec3 rotation = lightbulbTransform.GetRotation();
-            lightView->SetViewYXZ(position, rotation);
+            lightView->SetView(lightbulbTransform.GetMat4Global());
         }
     }
 

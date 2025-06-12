@@ -40,9 +40,13 @@ namespace LucreApp
         m_Renderer = Engine::m_Engine->GetRenderer();
 
         // create orthogonal camera
-        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/, 1.0f /*m_YMag*/, 2.0f /*m_ZNear*/,
-                                                                -2.0f /*ZFar*/);
-        m_CameraController = std::make_shared<CameraController>(orthographicCameraComponent);
+        OrthographicCameraComponent orthographicCameraComponent(1.0f /*m_XMag*/,  //
+                                                                1.0f /*m_YMag*/,  //
+                                                                2.0f /*m_ZNear*/, //
+                                                                -2.0f /*ZFar*/);  //
+        m_CameraController =                                                      //
+            std::make_shared<CameraController>(orthographicCameraComponent,
+                                               CameraController::OrthographicProjectionType::PROJECTION2D);
         auto& camera = m_CameraController->GetCamera();
         auto position = glm::vec3(0.0f, 0.0f, 1.0f);
         auto direction = glm::vec3(0.0f, 0.0f, -1.0f);

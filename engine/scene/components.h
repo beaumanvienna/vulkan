@@ -141,7 +141,7 @@ namespace GfxRenderEngine
 
     struct OrthographicCameraComponent
     {
-        OrthographicCameraComponent(float xmag, float ymag, float zfar, float znear)
+        OrthographicCameraComponent(float xmag, float ymag, float znear, float zfar)
             : m_XMag(xmag), m_YMag(ymag), m_ZFar(zfar), m_ZNear(znear)
         {
         }
@@ -154,7 +154,7 @@ namespace GfxRenderEngine
 
     struct PerspectiveCameraComponent
     {
-        PerspectiveCameraComponent(float aspectRatio, float yfov, float zfar, float znear)
+        PerspectiveCameraComponent(float aspectRatio, float yfov, float znear, float zfar)
             : m_AspectRatio(aspectRatio), m_YFov(yfov), m_ZFar(zfar), m_ZNear(znear)
         {
         }
