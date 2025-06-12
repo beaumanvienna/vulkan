@@ -336,13 +336,6 @@ namespace LucreApp
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
                 m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
-                float left = -20.0f;
-                float right = 20.0f;
-                float bottom = -14.0f;
-                float top = 14.0f;
-                float near = 0.1f;
-                float far = 40.0f;
-                m_LightView1->SetOrthographicProjection(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }

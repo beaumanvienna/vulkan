@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -264,19 +264,19 @@ namespace LucreApp
         }
         { // directional lights
             {
-                m_Lightbulb0 = m_Dictionary.Retrieve(
-                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf::0::root");
+                m_Lightbulb0 =
+                    m_Dictionary.Retrieve("SL::application/lucre/models/external_3D_files/lightBulb/lightBulb.glb::0::root");
                 if (m_Lightbulb0 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb0 not found");
                     m_Lightbulb0 = m_Registry.Create();
-                    TransformComponent transform{};
+                    TransformComponent lightbulbTransform{};
 
-                    transform.SetScale({0.01, 0.01, 0.01});
-                    transform.SetRotation({-0.888632, -0.571253, -0.166816});
-                    transform.SetTranslation({1.5555, 4, -4.13539});
+                    lightbulbTransform.SetScale({1.0f, 1.0f, 1.0f});
+                    lightbulbTransform.SetRotation({-0.888632, -0.571253, -0.166816});
+                    lightbulbTransform.SetTranslation({1.5555, 4, -4.13539});
 
-                    m_Registry.emplace<TransformComponent>(m_Lightbulb0, transform);
+                    m_Registry.emplace<TransformComponent>(m_Lightbulb0, lightbulbTransform);
                 }
 
                 m_LightView0 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
@@ -285,27 +285,20 @@ namespace LucreApp
 
             {
                 m_Lightbulb1 = m_Dictionary.Retrieve(
-                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf::0::root");
+                    "SL::application/lucre/models/external_3D_files/lightBulb/lightBulb2.glb::0::root");
                 if (m_Lightbulb1 == entt::null)
                 {
                     LOG_APP_INFO("m_Lightbulb1 not found");
                     m_Lightbulb1 = m_Registry.Create();
                     TransformComponent transform{};
 
-                    transform.SetScale({0.00999934, 0.00999997, 0.00999993});
-                    transform.SetRotation({-1.11028, -0.546991, 0.165967});
-                    transform.SetTranslation({6, 6.26463, -14.1572});
+                    transform.SetScale({1.0f, 1.0f, 1.0f});
+                    transform.SetRotation({0.0f, 0.0f, 0.785398f});
+                    transform.SetTranslation({0.0f, -30.0f, 0.0f});
 
                     m_Registry.emplace<TransformComponent>(m_Lightbulb1, transform);
                 }
                 m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
-                float left = -20.0f;
-                float right = 20.0f;
-                float bottom = -14.0f;
-                float top = 14.0f;
-                float near = 0.1f;
-                float far = 40.0f;
-                m_LightView1->SetOrthographicProjection(left, right, bottom, top, near, far);
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
@@ -374,21 +367,82 @@ namespace LucreApp
             m_CharacterAnimation->OnUpdate(timestep);
         }
 
-        {
-            auto& lightbulbTransform = m_Registry.get<TransformComponent>(m_Lightbulb0);
-            float scaleX = lightbulbTransform.GetScale().x;
-            float left = -400.0f * scaleX;
-            float right = 400.0f * scaleX;
-            float bottom = -400.0f * scaleX;
-            float top = 400.0f * scaleX;
-            float near = 10.0f * scaleX;
-            float far = 1000.0f * scaleX;
-            m_LightView0->SetOrthographicProjection(left, right, bottom, top, near, far);
+        { // directional light / shadow maps
+            enum ShadowRenderPass
+            {
+                HIGH_RESOLUTION = 0,
+                LOW_RESOLUTION
+            };
+            struct Parameters
+            {
+                float m_Width;
+                float m_LightBulbDistanceInCameraPlane;
+                float m_LightBulbHeightOffset;
+            };
+            { // set rotation of low res shadow frustum to the one from high res
+                auto& lightbulbTransform0 = m_Registry.get<TransformComponent>(m_Lightbulb0);
+                auto& lightbulbTransform1 = m_Registry.get<TransformComponent>(m_Lightbulb1);
+                auto& rotation0 = lightbulbTransform0.GetRotation();
+                lightbulbTransform1.SetRotation(rotation0);
+            }
+            auto lightBulbUpdate = [&](const entt::entity directionalLightID, const entt::entity lightBulbID,
+                                       const std::shared_ptr<Camera>& lightView, uint renderpass,
+                                       Parameters const& parameters)
+            {
+                auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightBulbID);
+                float scaleX = lightbulbTransform.GetScale().x;
+                const float& width = parameters.m_Width;
+                float left = -width / 2.0f * scaleX;
+                float right = width / 2.0f * scaleX;
+                float bottom = -width / 2.0f * scaleX;
+                float top = width / 2.0f * scaleX;
+                float near = 0.1f * scaleX;
+                float far = 200.0f * scaleX;
+                lightView->SetOrthographicProjection(left, right, bottom, top, near, far);
+                { // put the directional light in front of the currently active camera
+                    // retrieve camera position and camera look at direction
+                    int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+                    auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
+                    auto& cameraPosition = cameraTransform.GetTranslation();
+                    Camera& activeCamera = GetCamera();
+                    glm::vec3 activeCameraDirection = activeCamera.GetDirection();
+                    const float& lightBulbDistanceInCameraPlane = parameters.m_LightBulbDistanceInCameraPlane;
+                    const float& lightBulbHeightOffset = parameters.m_LightBulbHeightOffset;
+
+                    // point in front of camera for the light to look at
+                    glm::vec3 vectorToPoint = activeCameraDirection * lightBulbDistanceInCameraPlane;
+                    glm::vec3 inFrontOfCamera = cameraPosition + vectorToPoint;
+
+                    // calculate vector to light
+                    glm::vec3 directionToLight = -lightView->GetDirection();
+                    glm::vec3 vectorToLight = directionToLight * lightBulbHeightOffset;
+
+                    // acount for rotation of light
+                    glm::vec3 cross = glm::cross(directionToLight, activeCameraDirection);
+                    glm::vec3 lightRotationAdjustmentNorm{-cross.z, -cross.y, -cross.x};
+                    glm::vec3 lightRotationAdjustment =
+                        lightRotationAdjustmentNorm * lightBulbDistanceInCameraPlane / 8.0f; // fudge factor
+
+                    glm::vec3 lightbulbPosition = inFrontOfCamera + vectorToLight + lightRotationAdjustment;
+                    lightbulbTransform.SetTranslation(lightbulbPosition);
+                }
+                SetLightView(lightBulbID, lightView);
+                SetDirectionalLight(directionalLightID, lightBulbID, lightView, renderpass /*shadow renderpass*/);
+            };
+
+            { // hi-res shadow map (1st cascade)
+                Parameters parameters{
+                    .m_Width = 10.0f, .m_LightBulbDistanceInCameraPlane = 5.0f, .m_LightBulbHeightOffset = 10.0f};
+                lightBulbUpdate(m_DirectionalLight0, m_Lightbulb0, m_LightView0, ShadowRenderPass::HIGH_RESOLUTION,
+                                parameters);
+            }
+            { // low-res shadow map (2nd cascade)
+                Parameters parameters{
+                    .m_Width = 40.0f, .m_LightBulbDistanceInCameraPlane = 40.0f, .m_LightBulbHeightOffset = 20.0f};
+                lightBulbUpdate(m_DirectionalLight1, m_Lightbulb1, m_LightView1, ShadowRenderPass::LOW_RESOLUTION,
+                                parameters);
+            }
         }
-        SetLightView(m_Lightbulb0, m_LightView0);
-        SetLightView(m_Lightbulb1, m_LightView1);
-        SetDirectionalLight(m_DirectionalLight0, m_Lightbulb0, m_LightView0, 0 /*shadow renderpass*/);
-        SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
         // draw new scene
         m_Renderer->BeginFrame(&m_CameraControllers.GetActiveCameraController()->GetCamera());
@@ -498,9 +552,8 @@ namespace LucreApp
     void Island2Scene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
                                            const std::shared_ptr<Camera>& lightView, int renderpass)
     {
-        auto& lightbulbTransform = m_Registry.get<TransformComponent>(lightbulb);
         auto& directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
-        directionalLightComponent.m_Direction = lightbulbTransform.GetRotation();
+        directionalLightComponent.m_Direction = lightView->GetDirection();
         directionalLightComponent.m_LightView = lightView.get();
         directionalLightComponent.m_RenderPass = renderpass;
     }

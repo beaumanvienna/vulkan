@@ -1341,7 +1341,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.glb",
             "instances":
             [
                 {
@@ -1349,22 +1349,22 @@
                     {
                         "scale":
                         [
-                            0.038, 0.038, 0.038
+                            1, 1, 1
                         ],
                         "rotation":
                         [
-                            -0.698132, -0.698132, 0.174533
+                            -1.22173, -2.98023e-08, 0.0872671
                         ],
                         "translation":
                         [
-                            2.27413, 5.61954, -3.7331
+                            -6.276, 43.0352, 24.0002
                         ]
                     }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf",
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.glb",
             "instances":
             [
                 {
@@ -1372,15 +1372,15 @@
                     {
                         "scale":
                         [
-                            0.00999934, 0.00999997, 0.00999993
+                            1, 1, 1
                         ],
                         "rotation":
                         [
-                            -1.11028, -0.546991, 0.165967
+                            -1.22173, -2.98023e-08, 0.0872671
                         ],
                         "translation":
                         [
-                            6, 6.26463, -14.1572
+                            -9.552, 79.6096, 112.735
                         ]
                     }
                 }
