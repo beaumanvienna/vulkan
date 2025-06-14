@@ -73,7 +73,7 @@ namespace GfxRenderEngine
         m_DrawSettings.mDrawShapeWireframe = true;
     }
 
-    void PhysicsBase::LoadModels()
+    void PhysicsBase::LoadModels(CarParameters const& carParameters)
     {
         {
             glm::vec3 scale{1.0f, 1.0f, 1.0f};
@@ -86,9 +86,8 @@ namespace GfxRenderEngine
             CreateMushroom(scale, translation);
         }
         {
-            RVec3 position(2.00273f, 15.0f, 30.1575f);
-            glm::vec3 rotation(0.0f, 1.4f, 0.0f);
-            JPH::Quat const quaternion = ConvertToQuat(rotation);
+            RVec3 position(carParameters.m_Position.x, carParameters.m_Position.y, carParameters.m_Position.z);
+            JPH::Quat const quaternion = ConvertToQuat(carParameters.m_Rotation);
             CreateVehicle(position, quaternion);
         }
     }
@@ -137,6 +136,10 @@ namespace GfxRenderEngine
             auto& transform = m_Registry.get<TransformComponent>(gameObject);
             transform.SetTranslation(glm::vec3{position.GetX(), position.GetY() + m_CarHeightOffset, position.GetZ()});
             transform.SetRotation(glm::quat(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ()));
+
+            // Jolt has forward = 0, 0, 1 while we have 0, 0, -1 -> flip around up axis
+            glm::vec3 up{0.0f, 1.0f, 0.0f};
+            transform.SetMat4Local(glm::rotate(transform.GetMat4Local(), TransformComponent::DEGREES_180, up));
         }
 
         // wheels

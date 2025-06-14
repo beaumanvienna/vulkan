@@ -187,9 +187,6 @@ namespace LucreApp
                         m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar1]);
                     m_CameraControllers[CameraTypes::AttachedToCar1] = std::make_shared<CameraController>(cameraComponent);
                     m_CameraControllers[CameraTypes::AttachedToCar1]->GetCamera().SetName("camera 1 attached to car");
-
-                    auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar1]);
-                    cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
                 }
                 // set up 3rd camera
                 m_Camera[CameraTypes::AttachedToCar2] =
@@ -201,9 +198,6 @@ namespace LucreApp
                         m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar2]);
                     m_CameraControllers[CameraTypes::AttachedToCar2] = std::make_shared<CameraController>(cameraComponent);
                     m_CameraControllers[CameraTypes::AttachedToCar2]->GetCamera().SetName("camera 2 attached to car");
-
-                    auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::AttachedToCar2]);
-                    cameraTransform.SetRotation(glm::vec3(0.0f, 3.141592654f, 0.0f));
                 }
 
                 m_Physics->SetGameObject(Physics::GAME_OBJECT_CAR, m_Car);
@@ -431,16 +425,6 @@ namespace LucreApp
     {
         ZoneScopedNC("Reserved0Scene", 0x0000ff);
 
-        if (Lucre::m_Application->KeyboardInputIsReleased())
-        {
-            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
-            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
-
-            m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
-        }
-
         SimulatePhysics(timestep);
         UpdateBananas(timestep);
 
@@ -459,6 +443,17 @@ namespace LucreApp
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
             m_CandleParticleSystem.OnUpdate(timestep, cameraTransform);
+        }
+
+        if (Lucre::m_Application->KeyboardInputIsReleased())
+        {
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
+
+            m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
+            m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
         }
 
         { // directional light / shadow maps
@@ -555,12 +550,29 @@ namespace LucreApp
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
-            glm::mat4 mat4Camera = cameraTransform.GetMat4Global();
-            float& positionY = mat4Camera[3].y;
+            { // use the global mat4 in case the camera is parented to another object (run UpdateTransformCache)
+                glm::mat4 const& mat4 = cameraTransform.GetMat4Global();
+                // retrieve camera scale, position, and rotation
+                glm::vec3 scale;
+                glm::quat rotationQuat;
+                glm::vec3 position{0.0f};
+                glm::vec3 skew;
+                glm::vec4 perspective;
 
-            positionY = positionY - 2 * (positionY - heightWater); // mirror around water surface
+                glm::decompose(mat4, scale, rotationQuat, position, skew, perspective);
+                glm::vec3 rotation = glm::eulerAngles(rotationQuat);
 
-            reflectionCamera.SetView(mat4Camera);
+                // mirror y around water surface and invert pith
+                position.y = position.y - 2 * (position.y - heightWater);
+                rotation.x = -rotation.x;
+
+                //  create model matrix for reflection camera
+                glm::mat4 T = glm::translate(glm::mat4(1.0f), position);
+                glm::mat4 R = glm::toMat4(glm::quat(rotation));
+                glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
+                // set up camera
+                reflectionCamera.SetView(T * R * S);
+            }
 
             static constexpr bool refraction = false;
             static constexpr bool reflection = true;
@@ -743,7 +755,12 @@ namespace LucreApp
             glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
             m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 100x50 plane, with a small thickness
         }
-        m_Physics->LoadModels();
+        Physics::CarParameters carParameters //
+            {
+                .m_Position = glm::vec3(2.0f, 20.0f, 30.0f),                        //
+                .m_Rotation = glm::vec3(0.0f, TransformComponent::DEGREES_90, 0.0f) //
+            };
+        m_Physics->LoadModels(carParameters);
     }
 
     void Reserved0Scene::FireVolcano()

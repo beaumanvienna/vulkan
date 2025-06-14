@@ -58,9 +58,6 @@ namespace GfxRenderEngine
         float GetFOVY() const { return m_Fovy; }
 
     private:
-        glm::vec3 GetForwardFromEuler(glm::vec3 const& eulerAngles);
-
-    private:
         std::string m_Name;
         ProjectionType m_ProjectionType;
 
