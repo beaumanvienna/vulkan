@@ -32,6 +32,7 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
+#include "auxiliary/file.h"
 #include "scene/components.h"
 #include "physics/physicsBase.h"
 #include "renderer/instanceBuffer.h"
@@ -39,8 +40,11 @@
 
 namespace GfxRenderEngine
 {
-    void PhysicsBase::CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation)
+    void PhysicsBase::CreateGroundPlane(GroundSpec const& groundSpec)
     {
+        glm::vec3 const& scale = groundSpec.m_Scale;
+        glm::vec3 const& translation = groundSpec.m_Position;
+        std::string const& filepath = groundSpec.m_Filepath;
         // The main way to interact with the bodies in the physics system is through the body interface. There is a locking
         // and a non-locking variant of this. We're going to use the locking version (even though we're not planning to
         // access bodies from multiple threads)
@@ -63,8 +67,8 @@ namespace GfxRenderEngine
         // Create the body
         m_GroundID = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
 
+        if (EngineCore::FileExists(filepath))
         {
-            std::string filepath("application/lucre/models/mario/debug box.glb");
             auto& sceneGraph = m_Scene.GetSceneGraph();
             auto& entity = m_GameObjects[GAME_OBJECT_GROUND_PLANE];
 

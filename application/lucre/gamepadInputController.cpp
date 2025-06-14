@@ -112,7 +112,6 @@ namespace LucreApp
 
     void GamepadInputController::MoveVehicle(const Timestep& timestep, Physics::VehicleControl& vehicleControl)
     {
-
         {
             glm::vec2 controllerAxisInputLeft =
                 Input::GetControllerStick(Controller::FIRST_CONTROLLER, Controller::LEFT_STICK);

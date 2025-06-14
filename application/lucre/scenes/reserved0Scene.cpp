@@ -132,7 +132,8 @@ namespace LucreApp
             m_Terrain1 = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::root");
             if (m_Terrain1 != entt::null)
             {
-                Water1Component water1Component{.m_Scale = {500.0f, 1.0f, 500.0f}, .m_Translation = {0.0f, 3.0f, 0.0f}};
+                Water1Component water1Component{.m_Scale = {500.0f, 1.0f, 500.0f},
+                                                .m_Translation = {0.0f, WATER_HEIGHT, 0.0f}};
                 m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
             }
 
@@ -492,7 +493,8 @@ namespace LucreApp
                     // retrieve camera position and camera look at direction
                     int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
                     auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
-                    auto& cameraPosition = cameraTransform.GetTranslation();
+                    auto& cameraMat4 = cameraTransform.GetMat4Global();
+                    glm::vec3 cameraPosition{cameraMat4[3]};
                     Camera& activeCamera = GetCamera();
                     glm::vec3 activeCameraDirection = activeCamera.GetDirection();
                     const float& lightBulbDistanceInCameraPlane = parameters.m_LightBulbDistanceInCameraPlane;
@@ -742,19 +744,28 @@ namespace LucreApp
         // Jolt
         m_Physics = Physics::Create(*this);
         {
-            glm::vec3 scaleGroundPlane{5.0f, 0.4f, 50.0f};
-            float heigtWaterSurface{5.0f};
-            float zFightingOffset{0.00f};
-            glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
-            m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 5x50 plane, with a small thickness
+            float heigtWaterSurface{WATER_HEIGHT};
+            float zOffset{2.0f};
+            float scaleY{0.4f};
+            Physics::GroundSpec groundSpec{
+                .m_Scale{5.0f, scaleY, 50.0f},                                 //
+                .m_Position{0.0f, zOffset + heigtWaterSurface - scaleY, 0.0f}, //
+                .m_Filepath{"application/lucre/models/mario/debug box.glb"}    //
+            };
+            m_Physics->CreateGroundPlane(groundSpec); // 5x50 plane, with a small thickness
         }
         {
-            glm::vec3 scaleGroundPlane{500.0f, 0.4f, 500.0f};
-            float heigtWaterSurface{3.0f};
+            float heigtWaterSurface{WATER_HEIGHT};
             float zFightingOffset{-0.050f};
-            glm::vec3 translationGroundPlane{0.0f, zFightingOffset + heigtWaterSurface - scaleGroundPlane.y, 0.0f};
-            m_Physics->CreateGroundPlane(scaleGroundPlane, translationGroundPlane); // 100x50 plane, with a small thickness
+            float scaleY{0.4f};
+            Physics::GroundSpec groundSpec{
+                .m_Scale{500.0f, scaleY, 500.0f},                                      //
+                .m_Position{0.0f, zFightingOffset + heigtWaterSurface - scaleY, 0.0f}, //
+                .m_Filepath{}                                                          //
+            };
+            m_Physics->CreateGroundPlane(groundSpec); // 500x500 plane, with a small thickness
         }
+
         Physics::CarParameters carParameters //
             {
                 .m_Position = glm::vec3(2.0f, 20.0f, 30.0f),                        //

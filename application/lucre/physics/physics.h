@@ -69,10 +69,17 @@ namespace GfxRenderEngine
             glm::vec3 m_Rotation{0.0f};
         };
 
+        struct GroundSpec
+        {
+            glm::vec3 m_Scale{0.0f};
+            glm::vec3 m_Position{0.0f};
+            std::string m_Filepath;
+        };
+
     public:
         virtual ~Physics() = default;
         virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) = 0;
-        virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) = 0;
+        virtual void CreateGroundPlane(GroundSpec const& groundSpec) = 0;
         virtual void LoadModels(CarParameters const& carParameters) = 0;
         virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) = 0;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) = 0;

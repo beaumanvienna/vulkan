@@ -120,9 +120,9 @@ namespace LucreApp
         entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car;
         std::array<entt::entity, 4> m_Wheels;
 
-        //------
+        // terrain, water
+        static constexpr float WATER_HEIGHT{3.0f};
         void LoadTerrain();
-        //------
 
         // some game objects can be controlled with a gamepad
         std::unique_ptr<GamepadInputController> m_GamepadInputController;

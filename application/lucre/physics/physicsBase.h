@@ -89,7 +89,7 @@ namespace GfxRenderEngine
         PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
         virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) override;
-        virtual void CreateGroundPlane(glm::vec3 const& scale, glm::vec3 const& translation) override;
+        virtual void CreateGroundPlane(GroundSpec const& groundSpec) override;
         virtual void LoadModels(CarParameters const& carParameters) override;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) override;
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
