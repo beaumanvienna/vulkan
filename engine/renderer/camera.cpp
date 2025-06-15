@@ -47,8 +47,13 @@ namespace GfxRenderEngine
 
     void Camera::SetViewDirection(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up)
     {
+        // direction and up do not need to be orthonormal,
+        // GLM will orthonormalize them internally
+        // f = normalize(center - eye) → forward direction
+        // s = normalize(cross(f, up)) → right direction
+        // u = cross(s, f) → up direction
         m_Position = position;
-        m_ViewMatrix = glm::lookAtRH(position, direction, up);
+        m_ViewMatrix = glm::lookAtRH(position, position + glm::normalize(direction), glm::normalize(up));
         m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
         m_Direction = glm::normalize(direction);
     }

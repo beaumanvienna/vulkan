@@ -84,6 +84,25 @@ namespace LucreApp
             m_GamepadInputController = std::make_unique<GamepadInputController>(gamepadInputControllerSpec);
         }
 
+        {
+            // set up car follow camera
+            float aspectRatio = 1.777f;
+            float yfov = 0.51f;
+            float znear = 0.1f;
+            float zfar = 1500.0f;
+
+            PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
+            m_CameraControllers[CameraTypes::CarFollow] = std::make_shared<CameraController>(perspectiveCameraComponent);
+            m_CameraControllers[CameraTypes::CarFollow]->GetCamera().SetName("car follow camera");
+
+            m_Camera[CameraTypes::CarFollow] = m_Registry.Create();
+            TransformComponent cameraTransform{};
+            cameraTransform.SetScale(glm::vec3(1.0f));
+            m_Registry.emplace<TransformComponent>(m_Camera[CameraTypes::CarFollow], cameraTransform);
+            m_SceneGraph.CreateNode(SceneGraph::ROOT_NODE, m_Camera[CameraTypes::CarFollow], "Car follow camera",
+                                    m_Dictionary);
+        }
+
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
@@ -450,9 +469,28 @@ namespace LucreApp
         {
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
-
-            m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            if (activeCameraIndex == CameraTypes::CarFollow)
+            {
+                if (m_Car != entt::null)
+                {
+                    float followDistance{-10.0f};
+                    float followHeight{1.0};
+                    auto& carTransform = m_Registry.get<TransformComponent>(m_Car);
+                    auto const& carMat4 = carTransform.GetMat4Local(); // assuming it has no parent
+                    glm::vec3 forward{0.0f, 0.0f, -1.0f};              // For right-handed
+                    glm::vec3 carForward = glm::normalize(glm::mat3(carMat4) * forward);
+                    glm::vec3 newPosition = carForward * followDistance + carTransform.GetTranslation();
+                    newPosition.y += followHeight;
+                    cameraTransform.SetTranslation(newPosition);
+                    glm::vec3 newRotation = carTransform.GetRotation();
+                    cameraTransform.SetRotation(newRotation);
+                }
+            }
+            else
+            {
+                m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+                m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            }
             m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
             m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
         }
@@ -552,28 +590,25 @@ namespace LucreApp
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
 
-            { // use the global mat4 in case the camera is parented to another object (run UpdateTransformCache)
-                glm::mat4 const& mat4 = cameraTransform.GetMat4Global();
-                // retrieve camera scale, position, and rotation
-                glm::vec3 scale;
-                glm::quat rotationQuat;
-                glm::vec3 position{0.0f};
-                glm::vec3 skew;
-                glm::vec4 perspective;
+            {
+                // use the global mat4 in case the camera is parented to another object (run UpdateTransformCache)
+                glm::mat4 const& originalMat4 = cameraTransform.GetMat4Global();
 
-                glm::decompose(mat4, scale, rotationQuat, position, skew, perspective);
-                glm::vec3 rotation = glm::eulerAngles(rotationQuat);
+                // direction
+                glm::vec3 originalDirection = reflectionCamera.GetDirection();
+                glm::vec3 newDirction{originalDirection.x, -originalDirection.y, originalDirection.z};
 
-                // mirror y around water surface and invert pith
-                position.y = position.y - 2 * (position.y - heightWater);
-                rotation.x = -rotation.x;
+                // retrieve camera position
+                glm::vec3 originalPosition{originalMat4[3]};
+                glm::vec3 newPosition //
+                    {
+                        originalPosition.x,                                          //
+                        originalPosition.y - 2 * (originalPosition.y - heightWater), //
+                        originalPosition.z                                           //
+                    };
 
-                //  create model matrix for reflection camera
-                glm::mat4 T = glm::translate(glm::mat4(1.0f), position);
-                glm::mat4 R = glm::toMat4(glm::quat(rotation));
-                glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
                 // set up camera
-                reflectionCamera.SetView(T * R * S);
+                reflectionCamera.SetViewDirection(newPosition, newDirction);
             }
 
             static constexpr bool refraction = false;

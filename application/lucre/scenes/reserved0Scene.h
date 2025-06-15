@@ -79,6 +79,7 @@ namespace LucreApp
         enum CameraTypes
         {
             DefaultCamera = 0,
+            CarFollow,
             AttachedToCar1,
             AttachedToCar2,
             ShadowMapHiRes,
