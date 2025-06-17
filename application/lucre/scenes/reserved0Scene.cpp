@@ -189,6 +189,7 @@ namespace LucreApp
         }
 
         { // physics
+            // car
             m_Car = m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::root");
             m_Wheels[0] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::0::root");
             m_Wheels[1] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheel.glb::1::root");
@@ -198,26 +199,14 @@ namespace LucreApp
                 (m_Wheels[2] != entt::null) && (m_Wheels[3] != entt::null))
             {
                 // set up 2nd camera
-                m_Camera[CameraTypes::AttachedToCar1] =
-                    m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::Scene::CarCamera1");
-
-                if (m_Camera[CameraTypes::AttachedToCar1] != entt::null)
-                {
-                    auto& cameraComponent =
-                        m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar1]);
-                    m_CameraControllers[CameraTypes::AttachedToCar1] = std::make_shared<CameraController>(cameraComponent);
-                    m_CameraControllers[CameraTypes::AttachedToCar1]->GetCamera().SetName("camera 1 attached to car");
-                }
-                // set up 3rd camera
-                m_Camera[CameraTypes::AttachedToCar2] =
+                m_Camera[CameraTypes::AttachedToCar] =
                     m_Dictionary.Retrieve("SL::application/lucre/models/mario/car10.glb::0::Scene::CarCamera2");
 
-                if (m_Camera[CameraTypes::AttachedToCar2] != entt::null)
+                if (m_Camera[CameraTypes::AttachedToCar] != entt::null)
                 {
-                    auto& cameraComponent =
-                        m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar2]);
-                    m_CameraControllers[CameraTypes::AttachedToCar2] = std::make_shared<CameraController>(cameraComponent);
-                    m_CameraControllers[CameraTypes::AttachedToCar2]->GetCamera().SetName("camera 2 attached to car");
+                    auto& cameraComponent = m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToCar]);
+                    m_CameraControllers[CameraTypes::AttachedToCar] = std::make_shared<CameraController>(cameraComponent);
+                    m_CameraControllers[CameraTypes::AttachedToCar]->GetCamera().SetName("camera attached to car");
                 }
 
                 m_Physics->SetGameObject(Physics::GAME_OBJECT_CAR, m_Car);
@@ -276,13 +265,102 @@ namespace LucreApp
                     }
                 }
                 m_Physics->SetCarHeightOffset(0.2f);
+
+                auto racingLoop = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racing loop.glb::0::root");
+                if (racingLoop != entt::null)
+                {
+                    float friction = 2.0f;
+                    m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb",
+                                                 friction);
+                }
             }
 
-            auto racingLoop = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racing loop.glb::0::root");
-            if (racingLoop != entt::null)
+            // kart
+            m_Kart = m_Dictionary.Retrieve("SL::application/lucre/models/mario/kart.glb::0::root");
+            m_WheelsKart[0] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheelKart.glb::0::root");
+            m_WheelsKart[1] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheelKart.glb::1::root");
+            m_WheelsKart[2] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheelKart.glb::2::root");
+            m_WheelsKart[3] = m_Dictionary.Retrieve("SL::application/lucre/models/mario/wheelKart.glb::3::root");
+            if ((m_Kart != entt::null) && (m_WheelsKart[0] != entt::null) && (m_WheelsKart[1] != entt::null) &&
+                (m_WheelsKart[2] != entt::null) && (m_WheelsKart[3] != entt::null))
             {
-                float friction = 2.0f;
-                m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb", friction);
+
+                // set up camera attached to kart
+                m_Camera[CameraTypes::AttachedToKart] =
+                    m_Dictionary.Retrieve("SL::application/lucre/models/mario/kart.glb::0::Scene::camera1");
+
+                if (m_Camera[CameraTypes::AttachedToKart] != entt::null)
+                {
+                    auto& cameraComponent =
+                        m_Registry.get<PerspectiveCameraComponent>(m_Camera[CameraTypes::AttachedToKart]);
+                    m_CameraControllers[CameraTypes::AttachedToKart] = std::make_shared<CameraController>(cameraComponent);
+                    m_CameraControllers[CameraTypes::AttachedToKart]->GetCamera().SetName("camera attached to kart");
+                }
+
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_KART, m_Kart);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_KART_WHEEL_FRONT_LEFT, m_WheelsKart[0]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_KART_WHEEL_FRONT_RIGHT, m_WheelsKart[1]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_KART_WHEEL_REAR_LEFT, m_WheelsKart[2]);
+                m_Physics->SetGameObject(Physics::GAME_OBJECT_KART_WHEEL_REAR_RIGHT, m_WheelsKart[3]);
+
+                auto createWheelTranslation = [](glm::vec3 const& translation)
+                {
+                    glm::mat4 translationTransform =
+                        glm::translate(glm::mat4(1.0f), glm::vec3{translation.x, translation.y, translation.z});
+                    return translationTransform;
+                };
+
+                auto createWheelScale = [](glm::vec3 const& scale)
+                {
+                    glm::mat4 scaleTransform = glm::scale(glm::vec3{scale.x, scale.y, scale.z});
+                    return scaleTransform;
+                };
+
+                {
+                    float wheelScale = 1.0f;
+                    float liftWheels = 0.0f;
+                    {
+                        glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{-0.85f, liftWheels, -0.17f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetKartWheelTranslation(Physics::WHEEL_FRONT_LEFT, wheelTranslationTransform);
+                        m_Physics->SetKartWheelScale(Physics::WHEEL_FRONT_LEFT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{0.85f, liftWheels, -0.17f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetKartWheelTranslation(Physics::WHEEL_FRONT_RIGHT, wheelTranslationTransform);
+                        m_Physics->SetKartWheelScale(Physics::WHEEL_FRONT_RIGHT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{-0.85f, liftWheels, 0.0f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetKartWheelTranslation(Physics::WHEEL_REAR_LEFT, wheelTranslationTransform);
+                        m_Physics->SetKartWheelScale(Physics::WHEEL_REAR_LEFT, wheelScaleTransform);
+                    }
+                    {
+                        glm::vec3 scale{wheelScale, wheelScale, wheelScale};
+                        glm::vec3 translation{0.85f, liftWheels, 0.0f};
+                        glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
+                        glm::mat4 wheelScaleTransform = createWheelScale(scale);
+                        m_Physics->SetKartWheelTranslation(Physics::WHEEL_REAR_RIGHT, wheelTranslationTransform);
+                        m_Physics->SetKartWheelScale(Physics::WHEEL_REAR_RIGHT, wheelScaleTransform);
+                    }
+                }
+                m_Physics->SetKartHeightOffset(-0.1f);
+
+                auto racetrack = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racetrack.glb::0::root");
+                if (racetrack != entt::null)
+                {
+                    float friction = 3.0f;
+                    m_Physics->CreateMeshTerrain(racetrack, "application/lucre/models/mario/racetrack collider mesh.glb",
+                                                 friction);
+                }
             }
         }
     }
@@ -445,7 +523,12 @@ namespace LucreApp
     {
         ZoneScopedNC("Reserved0Scene", 0x0000ff);
 
-        SimulatePhysics(timestep);
+        {
+            Physics::VehicleType vehicleType = m_CameraControllers.GetActiveCameraIndex() == CameraTypes::AttachedToKart
+                                                   ? Physics::VehicleType::KART
+                                                   : Physics::VehicleType::CAR;
+            SimulatePhysics(timestep, vehicleType);
+        }
         UpdateBananas(timestep);
 
         if (m_StartTimer)
@@ -806,7 +889,12 @@ namespace LucreApp
                 .m_Position = glm::vec3(2.0f, 20.0f, 30.0f),                        //
                 .m_Rotation = glm::vec3(0.0f, TransformComponent::DEGREES_90, 0.0f) //
             };
-        m_Physics->LoadModels(carParameters);
+
+        Physics::CarParameters kartParameters{
+            .m_Position = glm::vec3(18.0f, 8.0f, 71.0f),                        //
+            .m_Rotation = glm::vec3(0.0f, TransformComponent::DEGREES_90, 0.0f) //
+        };
+        m_Physics->LoadModels(carParameters, kartParameters);
     }
 
     void Reserved0Scene::FireVolcano()
@@ -850,7 +938,7 @@ namespace LucreApp
         }
     }
 
-    void Reserved0Scene::SimulatePhysics(const Timestep& timestep)
+    void Reserved0Scene::SimulatePhysics(const Timestep& timestep, Physics::VehicleType vehicleType)
     {
         // box2D
         float step = timestep;
@@ -860,7 +948,7 @@ namespace LucreApp
         m_World->Step(step, velocityIterations, positionIterations);
         // Jolt
         m_GamepadInputController->MoveVehicle(timestep, m_VehicleControl);
-        m_Physics->OnUpdate(timestep, m_VehicleControl);
+        m_Physics->OnUpdate(timestep, m_VehicleControl, vehicleType);
     }
 
     void Reserved0Scene::UpdateBananas(const Timestep& timestep)

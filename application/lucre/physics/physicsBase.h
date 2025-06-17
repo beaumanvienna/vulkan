@@ -88,20 +88,24 @@ namespace GfxRenderEngine
     public:
         PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
-        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) override;
+        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl, VehicleType vehicleType) override;
         virtual void CreateGroundPlane(GroundSpec const& groundSpec) override;
-        virtual void LoadModels(CarParameters const& carParameters) override;
+        virtual void LoadModels(CarParameters const& carParameters, CarParameters const& kartParameters) override;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) override;
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& translation) override;
+        virtual void SetKartWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
+        virtual void SetKartWheelScale(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) override;
         virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) override;
         virtual void SetCarHeightOffset(float carHeightOffset) override;
+        virtual void SetKartHeightOffset(float kartHeightOffset) override;
 
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
         void CreateMushroom(glm::vec3 const& scale, glm::vec3 const& translation);
-        void CreateVehicle(RVec3 const& position, JPH::Quat const& quaternion);
+        void CreateCar(RVec3 const& position, JPH::Quat const& quaternion);
+        void CreateKart(RVec3 const& position, JPH::Quat const& quaternion);
         void SyncPhysicsToGraphics();
 
     private:
@@ -298,42 +302,20 @@ namespace GfxRenderEngine
         std::array<entt::entity, GameObjects::NUM_GAME_OBJECTS> m_GameObjects;
         std::array<glm::mat4, Physics::NUM_WHEELS> m_WheelTranslation;
         std::array<glm::mat4, Physics::NUM_WHEELS> m_WheelScale;
+        std::array<glm::mat4, Physics::NUM_WHEELS> m_KartWheelTranslation;
+        std::array<glm::mat4, Physics::NUM_WHEELS> m_KartWheelScale;
 
-        // vehicle
-        Body* mCarBody;                            ///< The vehicle
-        Ref<VehicleConstraint> mVehicleConstraint; ///< The vehicle constraint
-        Ref<VehicleCollisionTester> mTesters[3];   ///< Collision testers for the wheel
+        // car
+        Body* mCarBody;                             ///< The vehicle
+        Ref<VehicleConstraint> mCarConstraint;      ///< The vehicle constraint
+        Ref<VehicleCollisionTester> mCarTesters[3]; ///< Collision testers for the wheel
 
-        static inline float sInitialRollAngle = 0;
-        static inline float sMaxRollAngle = 1.0472;       // 60 degree
-        static inline float sMaxSteeringAngle = 0.523599; // 30 degree
-        static inline int sCollisionMode = 2;
-        static inline bool sFourWheelDrive = false;
-        static inline bool sAntiRollbar = true;
-        static inline bool sLimitedSlipDifferentials = true;
-        static inline bool sOverrideGravity = false; ///< If true, gravity is overridden to always oppose the ground normal
-        static inline float sMaxEngineTorque = 500.0f;
-        static inline float sClutchStrength = 10.0f;
-        static inline float sFrontCasterAngle = 0.0f;
-        static inline float sFrontKingPinAngle = 0.0f;
-        static inline float sFrontCamber = 0.0f;
-        static inline float sFrontToe = 0.0f;
-        static inline float sFrontSuspensionForwardAngle = 0.0f;
-        static inline float sFrontSuspensionSidewaysAngle = 0.0f;
-        static inline float sFrontSuspensionMinLength = 0.3f;
-        static inline float sFrontSuspensionMaxLength = 0.5f;
-        static inline float sFrontSuspensionFrequency = 1.5f;
-        static inline float sFrontSuspensionDamping = 0.5f;
-        static inline float sRearSuspensionForwardAngle = 0.0f;
-        static inline float sRearSuspensionSidewaysAngle = 0.0f;
-        static inline float sRearCasterAngle = 0.0f;
-        static inline float sRearKingPinAngle = 0.0f;
-        static inline float sRearCamber = 0.0f;
-        static inline float sRearToe = 0.0f;
-        static inline float sRearSuspensionMinLength = 0.3f;
-        static inline float sRearSuspensionMaxLength = 0.5f;
-        static inline float sRearSuspensionFrequency = 1.5f;
-        static inline float sRearSuspensionDamping = 1.0f;
+        // kart
+        Body* mKartBody;                             ///< The vehicle
+        Ref<VehicleConstraint> mKartConstraint;      ///< The vehicle constraint
+        Ref<VehicleCollisionTester> mKartTesters[3]; ///< Collision testers for the wheel
+
         float m_CarHeightOffset;
+        float m_KartHeightOffset;
     };
 } // namespace GfxRenderEngine

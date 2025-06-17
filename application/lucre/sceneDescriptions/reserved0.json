@@ -21,7 +21,7 @@
                         ],
                         "translation":
                         [
-                            106.657, -8.01556, 12.2204
+                            106.657, 1, 12.2204
                         ]
                     }
                 }
@@ -222,7 +222,7 @@
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/measured/2m.gltf",
+            "filename": "application/lucre/models/external_3D_files/measured/2m.glb",
             "instances":
             [
                 {
@@ -238,14 +238,14 @@
                         ],
                         "translation":
                         [
-                            1.35825, 0.6, -6.16079
+                            1.35825, 3, -6.743
                         ]
                     }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/assets/Sponza/glTF/Sponza.gltf",
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.glb",
             "instances":
             [
                 {
@@ -253,22 +253,22 @@
                     {
                         "scale":
                         [
-                            13.9668, 0.850814, 29.9308
+                            1, 1, 1
                         ],
                         "rotation":
                         [
-                            3.14086, 1.5708, 0
+                            -0.698132, -2.98023e-08, 0.0872665
                         ],
                         "translation":
                         [
-                            -1.66177, -7.9057, 131.257
+                            7.06079, 21.9216, 104.366
                         ]
                     }
                 }
             ]
         },
         {
-            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb.gltf",
+            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.glb",
             "instances":
             [
                 {
@@ -276,38 +276,15 @@
                     {
                         "scale":
                         [
-                            0.10184, 0.10184, 0.10184
+                            1, 1, 1
                         ],
                         "rotation":
                         [
-                            -0.69813, -0.698129, 0.17453
+                            -0.698132, -2.98023e-08, 0.0872665
                         ],
                         "translation":
                         [
-                            26.0277, 53.9687, 47.7882
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/external_3D_files/lightBulb/lightBulb2.gltf",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            0.138909, 0.138917, 0.138917
-                        ],
-                        "rotation":
-                        [
-                            -0.887862, -0.546989, 0.165966
-                        ],
-                        "translation":
-                        [
-                            24.5323, 32.6685, -7.74611
+                            66.4998, 27.7854, 190.105
                         ]
                     }
                 }
@@ -330,7 +307,7 @@
                         ],
                         "translation":
                         [
-                            -2.35076, 1.3595, -5.66803
+                            -2.35076, 2.86329, -5.66803
                         ]
                     }
                 },
@@ -381,30 +358,7 @@
                         ],
                         "translation":
                         [
-                            -1.98596, 1.37087, -3.50736
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/terrain/plane1.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1.5, 1
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -1.38243, -3.5, -1.23215
+                            -1.98597, 2.86026, -3.50736
                         ]
                     }
                 }
@@ -428,29 +382,6 @@
                         "translation":
                         [
                             7.8688, 3.63108, 45.138
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "filename": "application/lucre/models/mario/racetrack.glb",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            -3.14159, 1.57045, -3.14159
-                        ],
-                        "translation":
-                        [
-                            -38.5278, -2.48508, 103.991
                         ]
                     }
                 }
@@ -488,15 +419,15 @@
                     {
                         "scale":
                         [
-                            0.339353, 0.339354, 0.339353
+                            0.999619, 0.999777, 0.999681
                         ],
                         "rotation":
                         [
-                            -3.14159, 1.27955, -3.14159
+                            3.12977, -0.748427, -3.12476
                         ],
                         "translation":
                         [
-                            17.8006, 4.41109, 71.3278
+                            -17.5977, 4.48904, 50.0647
                         ]
                     }
                 }
@@ -520,6 +451,320 @@
                         "translation":
                         [
                             17.636, 4.48929, 70.7787
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/car10.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.999015, 0.999817, 0.999216
+                        ],
+                        "rotation":
+                        [
+                            -3.08569, -0.831162, 3.13923
+                        ],
+                        "translation":
+                        [
+                            -36.7642, 15.0132, -47.6462
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/wheel.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            2.65846, -0.831162, 3.13923
+                        ],
+                        "translation":
+                        [
+                            -35.7019, 14.6079, -47.329
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -0.355138, -0.831162, 3.13923
+                        ],
+                        "translation":
+                        [
+                            -36.3517, 14.6092, -46.6169
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            0.163534, -0.831162, 3.13923
+                        ],
+                        "translation":
+                        [
+                            -36.9767, 14.5149, -48.584
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -0.42346, -0.831162, 3.13923
+                        ],
+                        "translation":
+                        [
+                            -37.7181, 14.5168, -47.7714
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/wheelKart.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            -0.620809, -0.748427, -3.12476
+                        ],
+                        "translation":
+                        [
+                            -17.6804, 4.56953, 50.4896
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0.943616, -0.748427, -3.12476
+                        ],
+                        "translation":
+                        [
+                            -17.1676, 4.57864, 50.0133
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            -1, -1, -1
+                        ],
+                        "rotation":
+                        [
+                            0.628765, -0.748427, -3.12476
+                        ],
+                        "translation":
+                        [
+                            -18.1432, 4.57003, 49.9914
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -2.81339, -0.748427, -3.12476
+                        ],
+                        "translation":
+                        [
+                            -17.6303, 4.57869, 49.515
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/racetrack.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            -38.5278, -2.48508, 103.991
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/racing loop.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -1.72128e-07, 0.28495, -7.61028e-07
+                        ],
+                        "translation":
+                        [
+                            -30.4022, 15, -14.0198
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/xyz.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, 0, 0
+                        ],
+                        "translation":
+                        [
+                            0, 0, 0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/slow sign.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.15, 0.15, 0.15
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            -21.3089, 13.1963, -72.0139
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.15, 0.15, 0.15
+                        ],
+                        "rotation":
+                        [
+                            0, 1.57045, 0
+                        ],
+                        "translation":
+                        [
+                            -21.6729, 13.0973, -79.6029
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.3, 0.3, 0.3
+                        ],
+                        "rotation":
+                        [
+                            2.0485e-08, -0.44402, 2.66596e-07
+                        ],
+                        "translation":
+                        [
+                            -93.4311, 9.70176, 99.0771
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.3, 0.3, 0.3
+                        ],
+                        "rotation":
+                        [
+                            0, -0.266937, 0
+                        ],
+                        "translation":
+                        [
+                            -96.0501, 10.1883, 85.3137
                         ]
                     }
                 }

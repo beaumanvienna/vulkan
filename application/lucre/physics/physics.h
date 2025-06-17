@@ -33,6 +33,12 @@ namespace GfxRenderEngine
     class Physics
     {
     public:
+        enum VehicleType
+        {
+            CAR = 0,
+            KART
+        };
+
         struct VehicleControl
         {
             float inForward{0.0f};
@@ -51,6 +57,11 @@ namespace GfxRenderEngine
             GAME_OBJECT_WHEEL_FRONT_RIGHT,
             GAME_OBJECT_WHEEL_REAR_LEFT,
             GAME_OBJECT_WHEEL_REAR_RIGHT,
+            GAME_OBJECT_KART,
+            GAME_OBJECT_KART_WHEEL_FRONT_LEFT,
+            GAME_OBJECT_KART_WHEEL_FRONT_RIGHT,
+            GAME_OBJECT_KART_WHEEL_REAR_LEFT,
+            GAME_OBJECT_KART_WHEEL_REAR_RIGHT,
             NUM_GAME_OBJECTS
         };
 
@@ -78,15 +89,18 @@ namespace GfxRenderEngine
 
     public:
         virtual ~Physics() = default;
-        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl) = 0;
+        virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl, VehicleType vehicleType) = 0;
         virtual void CreateGroundPlane(GroundSpec const& groundSpec) = 0;
-        virtual void LoadModels(CarParameters const& carParameters) = 0;
+        virtual void LoadModels(CarParameters const& carParameters, CarParameters const& kartParameters) = 0;
         virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) = 0;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) = 0;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) = 0;
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) = 0;
         virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& scale) = 0;
+        virtual void SetKartWheelTranslation(uint wheelNumber, glm::mat4 const& translation) = 0;
+        virtual void SetKartWheelScale(uint wheelNumber, glm::mat4 const& scale) = 0;
         virtual void SetCarHeightOffset(float carHeightOffset) = 0;
+        virtual void SetKartHeightOffset(float kartHeightOffset) = 0;
 
         static std::unique_ptr<Physics> Create(Scene& scene);
     };

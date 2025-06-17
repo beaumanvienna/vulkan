@@ -69,7 +69,7 @@ namespace LucreApp
         void FireVolcano();
         void ResetBananas();
         void UpdateBananas(const Timestep& timestep);
-        void SimulatePhysics(const Timestep& timestep);
+        void SimulatePhysics(const Timestep& timestep, Physics::VehicleType vehicleType);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
         void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
                                  const std::shared_ptr<Camera>& lightView, int renderpass);
@@ -80,8 +80,8 @@ namespace LucreApp
         {
             DefaultCamera = 0,
             CarFollow,
-            AttachedToCar1,
-            AttachedToCar2,
+            AttachedToCar,
+            AttachedToKart,
             ShadowMapHiRes,
             ShadowMapLowRes,
             MaxCameraTypes
@@ -118,8 +118,9 @@ namespace LucreApp
         entt::entity m_Skybox, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
-        entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car;
+        entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car, m_Kart;
         std::array<entt::entity, 4> m_Wheels;
+        std::array<entt::entity, 4> m_WheelsKart;
 
         // terrain, water
         static constexpr float WATER_HEIGHT{3.0f};
