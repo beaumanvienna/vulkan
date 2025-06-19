@@ -3,31 +3,43 @@ A Vulkan Render Engine<br/>
 <br/>
 <br/>
 <p align="center">
-  <img src="resources/images/meme.png">
+  <img src="resources/images/reservedScene.png">
 </p>
+<br/>
+<br/>
+
+Watch my game dev videos on my <a href="https://www.youtube.com/channel/UCb7glBOnGGHDYI4CIKYBV2A">YouTube channel</a>
+
 <br/>
 <br/>
 
 Features:
 
 - A Vulkan renderer with support for 2D and 3D scenes
-- Support for 3D file formats Obj Wavefront, glTF, and FBX
+- Support for 3D file formats Obj Wavefront (<a href="https://github.com/tinyobjloader/tinyobjloader">tinyobj</a>), glTF (<a href="https://github.com/spnda/fastgltf">fastgltf</a>), and FBX (<a href="https://github.com/ufbx/ufbx">ufbx</a> and <a href="https://github.com/assimp/assimp">asset importer</a>)
 - Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
-- Point lights, directional lights with shadows, and deferred shading, instancing of models on the GPU
+- Point lights, directional lights with cascaded shadows, and deferred shading, instancing of models on the GPU
 - Post-processing (Bloom), skeletal animations
-- Scene management with scene descriptions, background loading, and scene saving
-- Sound support and desktop volume settings (Linux only)
-- Hotplug gamepad support based on SDL2 and a controller database
-- Cross-platform resource system (Windows/Linux)
+- Scene management with scene descriptions, multi-threaded background loading, and scene saving based on <a href="https://github.com/simdjson/simdjson">simdjson</a>
+- Hotplug gamepad support based on <a href="https://github.com/libsdl-org/SDL">SDL2</a> and a <a href="https://github.com/mdqinc/SDL_GameControllerDB">controller database</a>
+- Cross-platform support for Linux, macOS, Windows
 - Particle system
+- Water shader with reflection and refraction cameras based on the <a href="https://www.youtube.com/playlist?list=PLRIWtICgwaX23jiqVByUs0bqhnalNTNZh">tutorial from ThinMatrix</a>
+- Mesh loading for height maps, including a color map and grass rendering
+- Mesh loading for grass placement
+- Collision mesh loading
 - Event system for mouse, keyboard, controller, window, and game events
 - Settings manager and a message logger
-- Entity component system based on EnTT
-- Physics simulator based on Box2D
-- In-game GUI with two themes and debug GUI based on ImGUI 
-- Sprite sheets, a sprite sheet generator, sprite sheet animations
-- Render-API abstraction and engine/application separation
-- Profiling JSON output file for chrome://tracing<br/>
+- Entity component system based on <a href="https://github.com/skypjack/entt">EnTT</a>
+- Physics simulator based on <a href="https://github.com/jrouwe/JoltPhysics">Jolt</a>
+- Physics simulator based on <a href="https://github.com/erincatto/box2d">Box2D</a>
+- In-game GUI with two themes and debug GUI based on <a href="https://github.com/ocornut/imgui">ImGUI</a> and  <a href="https://github.com/CedricGuillemet/ImGuizmo">ImGuizmo</a>
+- Sprite sheets, a sprite sheet generator, and sprite sheet animations
+- Thread Profiling with <a href="https://github.com/wolfpld/tracy">Tracy</a>
+- Profiling JSON output file for chrome://tracing
+- Resource system for images and shaders to be compiled into the app
+- Sound support and desktop volume settings (Linux only)
+- Render-API abstraction and engine/application separation<br/>
 
 Usage:<br/>
 
@@ -40,6 +52,7 @@ Usage:<br/>
 - The A button plays a test sound.
 - Press ESC or the guide button on the controller to exit.
 - Press "g" to fire the volcano and "r" to reset the scene.
+- Use a gamepad to drive the vehicles and walk with the character animations
 <br/>
 To blacklist a GPU, enter its name or a substring in engine.cfg.<br/>
 <br/>
@@ -48,20 +61,7 @@ Contributions: Please use https://en.wikipedia.org/wiki/Indentation_style#Allman
 
 ## How to clone the repository<br/>
 <br/>
-The repository contains larger 3D files and git may abort its download. If you experience this problem, follow <a href="https://stackoverflow.com/questions/66366582/github-unexpected-disconnect-while-reading-sideband-packet">these</a> instructions.  <br/><br/>
-In particular, add these lines to your global git configuration file, which is .gitconfig in your user home directory (~/.gitconfig), in order to fix this problem:<br/>
-
-```
-[core] 
-    packedGitLimit = 512m 
-    packedGitWindowSize = 512m 
-[pack] 
-    deltaCacheSize = 2047m 
-    packSizeLimit = 2047m 
-    windowMemory = 2047m
-```
-
-Then run:<br/>
+Run:<br/>
 
 ```
 git clone --recurse-submodules https://github.com/beaumanvienna/vulkan
