@@ -39,7 +39,9 @@ Features:
 - Profiling JSON output file for chrome://tracing
 - Resource system for images and shaders to be compiled into the app
 - Sound support and desktop volume settings (Linux only)
-- Render-API abstraction and engine/application separation<br/>
+- Render-API abstraction and engine/application separation
+- multi-threaded shader compilation with <a href="https://github.com/google/shaderc">shadec</a>
+- <a href="https://github.com/bshoshany/thread-pool">thread pool</a><br/>
 
 Usage:<br/>
 
