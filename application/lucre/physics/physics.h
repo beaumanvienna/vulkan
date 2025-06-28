@@ -85,6 +85,7 @@ namespace GfxRenderEngine
             glm::vec3 m_Scale{0.0f};
             glm::vec3 m_Position{0.0f};
             std::string m_Filepath;
+            float m_Friction{2.0f};
         };
 
     public:

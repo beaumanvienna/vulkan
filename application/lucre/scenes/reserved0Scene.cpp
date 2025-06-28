@@ -266,13 +266,29 @@ namespace LucreApp
                 }
                 m_Physics->SetCarHeightOffset(0.2f);
 
-                auto racingLoop = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racing loop.glb::0::root");
-                if (racingLoop != entt::null)
+                auto loadColliderMesh = [&](std::string const& retrieve, float friction, std::string colliderMesh)
                 {
-                    float friction = 2.0f;
-                    m_Physics->CreateMeshTerrain(racingLoop, "application/lucre/models/mario/racing loop surface.glb",
-                                                 friction);
-                }
+                    auto gameObject = m_Dictionary.Retrieve(retrieve);
+                    if (gameObject != entt::null)
+                    {
+                        m_Physics->CreateMeshTerrain(gameObject, colliderMesh, friction);
+                    }
+                };
+
+                loadColliderMesh("SL::application/lucre/models/mario/racing loop.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/racing loop surface with hole.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/ramp.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/ramp collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/rampSmall.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/rampSmall collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/downramp.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/downramp collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/medium kicker.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/medium kicker collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/medium kicker.glb::1::root", 2.0f,
+                                 "application/lucre/models/mario/medium kicker collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/kicker long.glb::0::root", 2.0f,
+                                 "application/lucre/models/mario/kicker long collider.glb");
             }
 
             // kart
@@ -644,13 +660,13 @@ namespace LucreApp
 
             { // hi-res shadow map (1st cascade)
                 Parameters parameters{
-                    .m_Width = 80.0f, .m_LightBulbDistanceInCameraPlane = 40.0f, .m_LightBulbHeightOffset = 40.0f};
+                    .m_Width = 80.0f, .m_LightBulbDistanceInCameraPlane = 20.0f, .m_LightBulbHeightOffset = 40.0f};
                 lightBulbUpdate(m_DirectionalLight0, m_Lightbulb0, m_LightView0, ShadowRenderPass::HIGH_RESOLUTION,
                                 parameters);
             }
             { // low-res shadow map (2nd cascade)
                 Parameters parameters{
-                    .m_Width = 250.0f, .m_LightBulbDistanceInCameraPlane = 125.0f, .m_LightBulbHeightOffset = 80.0f};
+                    .m_Width = 250.0f, .m_LightBulbDistanceInCameraPlane = 100.0f, .m_LightBulbHeightOffset = 80.0f};
                 lightBulbUpdate(m_DirectionalLight1, m_Lightbulb1, m_LightView1, ShadowRenderPass::LOW_RESOLUTION,
                                 parameters);
             }
@@ -865,22 +881,20 @@ namespace LucreApp
             float heigtWaterSurface{WATER_HEIGHT};
             float zOffset{2.0f};
             float scaleY{0.4f};
-            Physics::GroundSpec groundSpec{
-                .m_Scale{5.0f, scaleY, 50.0f},                                 //
-                .m_Position{0.0f, zOffset + heigtWaterSurface - scaleY, 0.0f}, //
-                .m_Filepath{"application/lucre/models/mario/debug box.glb"}    //
-            };
+            Physics::GroundSpec groundSpec{.m_Scale{5.0f, scaleY, 50.0f},                                 //
+                                           .m_Position{0.0f, zOffset + heigtWaterSurface - scaleY, 0.0f}, //
+                                           .m_Filepath{"application/lucre/models/mario/debug box.glb"},   //
+                                           .m_Friction{2.0f}};                                            //
             m_Physics->CreateGroundPlane(groundSpec); // 5x50 plane, with a small thickness
         }
         {
             float heigtWaterSurface{WATER_HEIGHT};
             float zFightingOffset{-0.050f};
             float scaleY{0.4f};
-            Physics::GroundSpec groundSpec{
-                .m_Scale{500.0f, scaleY, 500.0f},                                      //
-                .m_Position{0.0f, zFightingOffset + heigtWaterSurface - scaleY, 0.0f}, //
-                .m_Filepath{}                                                          //
-            };
+            Physics::GroundSpec groundSpec{.m_Scale{500.0f, scaleY, 500.0f},                                      //
+                                           .m_Position{0.0f, zFightingOffset + heigtWaterSurface - scaleY, 0.0f}, //
+                                           .m_Filepath{},                                                         //
+                                           .m_Friction{2.0f}};                                                    //
             m_Physics->CreateGroundPlane(groundSpec); // 500x500 plane, with a small thickness
         }
 

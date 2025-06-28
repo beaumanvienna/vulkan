@@ -65,8 +65,8 @@ namespace GfxRenderEngine
         );
 
         // Create the body
-        m_GroundID = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
-
+        auto groundID = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
+        bodyInterface.SetFriction(groundID, groundSpec.m_Friction);
         if (EngineCore::FileExists(filepath))
         {
             auto& sceneGraph = m_Scene.GetSceneGraph();
@@ -394,7 +394,7 @@ namespace GfxRenderEngine
         [[maybe_unused]] const float sMaxRollAngle = 1.0472;       // 60 degree
         [[maybe_unused]] const float sMaxSteeringAngle = 0.523599; // 30 degree
         [[maybe_unused]] const int sCollisionMode = 2;
-        [[maybe_unused]] const bool sFourWheelDrive = false;
+        [[maybe_unused]] const bool sFourWheelDrive = true;
         [[maybe_unused]] const bool sAntiRollbar = true;
         [[maybe_unused]] const bool sLimitedSlipDifferentials = true;
         [[maybe_unused]] const bool sOverrideGravity =

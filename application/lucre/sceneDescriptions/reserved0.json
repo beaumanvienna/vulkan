@@ -442,7 +442,7 @@
                     {
                         "scale":
                         [
-                            0.339353, 0.339354, 0.339353
+                            1, 1, 1
                         ],
                         "rotation":
                         [
@@ -450,7 +450,7 @@
                         ],
                         "translation":
                         [
-                            17.636, 4.48929, 70.7787
+                            26.5192, 4.48929, 80.04
                         ]
                     }
                 }
@@ -465,15 +465,15 @@
                     {
                         "scale":
                         [
-                            0.999015, 0.999817, 0.999216
+                            0.999804, 0.999825, 0.999007
                         ],
                         "rotation":
                         [
-                            -3.08569, -0.831162, 3.13923
+                            3.14144, 0.226121, 3.02659
                         ],
                         "translation":
                         [
-                            -36.7642, 15.0132, -47.6462
+                            -63.733, 5.33404, 140.261
                         ]
                     }
                 }
@@ -691,6 +691,138 @@
                         "translation":
                         [
                             0, 0, 0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/ramp.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.999999, 1, 0.999999
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -0.0967382, -3.14159
+                        ],
+                        "translation":
+                        [
+                            -14.2904, 15.3, -92.6469
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/downramp.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            -45.1045, 14.2546, -24.9741
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/medium kicker.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, -8.74228e-08, -3.14159
+                        ],
+                        "translation":
+                        [
+                            80.798, 5.52418, 44.334
+                        ]
+                    }
+                },
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            0.999907, 1, 0.999907
+                        ],
+                        "rotation":
+                        [
+                            -3.14159, 0.000592692, -3.14159
+                        ],
+                        "translation":
+                        [
+                            84.992, 4.03414, 44.334
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/kicker long.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1, 1, 1
+                        ],
+                        "rotation":
+                        [
+                            0, -0, 0
+                        ],
+                        "translation":
+                        [
+                            52.6171, 6.4, 44.3337
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "filename": "application/lucre/models/mario/rampSmall.glb",
+            "instances":
+            [
+                {
+                    "transform":
+                    {
+                        "scale":
+                        [
+                            1.00011, 0.999985, 1.00023
+                        ],
+                        "rotation":
+                        [
+                            3.1335, -0.41126, -3.1313
+                        ],
+                        "translation":
+                        [
+                            15.6646, 3.66896, 62.9549
                         ]
                     }
                 }

@@ -294,7 +294,6 @@ namespace GfxRenderEngine
         Dictionary& m_Dictionary;
         std::string m_DictionaryPrefix;
         static constexpr bool NO_SCENE_GRAPH = false;
-        JPH::BodyID m_GroundID; // set invalid by default constructor
         JPH::BodyID m_SphereID;
         JPH::BodyID m_MushroomID;
         std::vector<JPH::BodyID> m_ActiveBodies;
