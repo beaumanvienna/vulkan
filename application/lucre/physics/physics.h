@@ -93,6 +93,7 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl, VehicleType vehicleType) = 0;
         virtual void CreateGroundPlane(GroundSpec const& groundSpec) = 0;
         virtual void LoadModels(CarParameters const& carParameters, CarParameters const& kartParameters) = 0;
+        virtual void LoadRiggedModel(std::string const& filepath) = 0;
         virtual void CreateMeshTerrain(entt::entity, const std::string& filepath, float friction) = 0;
         virtual void Draw(GfxRenderEngine::Camera const& cam0) = 0;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) = 0;

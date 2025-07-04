@@ -193,7 +193,7 @@ namespace GfxRenderEngine
         [[maybe_unused]] const bool sLimitedSlipDifferentials = true;
         [[maybe_unused]] const bool sOverrideGravity =
             false; ///< If true, gravity is overridden to always oppose the ground normal
-        [[maybe_unused]] const float sMaxEngineTorque = 500.0f;
+        [[maybe_unused]] const float sMaxEngineTorque = 680.0f;
         [[maybe_unused]] const float sClutchStrength = 10.0f;
         [[maybe_unused]] const float sFrontCasterAngle = 0.0f;
         [[maybe_unused]] const float sFrontKingPinAngle = 0.0f;
@@ -217,11 +217,14 @@ namespace GfxRenderEngine
         [[maybe_unused]] const float sRearSuspensionDamping = 1.0f;
 
         JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
-        const float wheel_radius = 0.3f;
-        const float wheel_width = 0.1f;
-        const float half_vehicle_length = 2.0f;
-        const float half_vehicle_width = 0.9f;
-        const float half_vehicle_height = 0.2f;
+        const float wheel_radius = 0.22f;
+        const float wheel_width = 0.15f;
+        const float half_vehicle_length = 1.6f;
+        const float half_vehicle_width = 0.6f;
+        const float half_vehicle_height = 0.1f;
+        const float heightOffset = -0.5f; // prevent from tumbling
+        const float wheelHeight = 0.05f;
+        const float scaleFriction = 1.0f;
 
         // Create collision testers
         mCarTesters[0] = new VehicleCollisionTesterRay(Layers::MOVING);
@@ -231,13 +234,13 @@ namespace GfxRenderEngine
         // Create vehicle body
 
         RefConst<Shape> car_shape =
-            OffsetCenterOfMassShapeSettings(Vec3(0, -half_vehicle_height * 2.0f, 0),
+            OffsetCenterOfMassShapeSettings(Vec3(0.0f, heightOffset, 0.0f),
                                             new BoxShape(Vec3(half_vehicle_width, half_vehicle_height, half_vehicle_length)))
                 .Create()
                 .Get();
         BodyCreationSettings car_body_settings(car_shape, position, quaternion, EMotionType::Dynamic, Layers::MOVING);
         car_body_settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
-        car_body_settings.mMassPropertiesOverride.mMass = 1500.0f * 2.0f;
+        car_body_settings.mMassPropertiesOverride.mMass = 1500.0f;
         mCarBody = bodyInterface.CreateBody(car_body_settings);
         bodyInterface.AddBody(mCarBody->GetID(), EActivation::Activate);
 
@@ -259,7 +262,6 @@ namespace GfxRenderEngine
         Vec3 rear_wheel_forward = Vec3(-Sin(sRearToe), 0, Cos(sRearToe));
         Vec3 flip_x(-1, 1, 1);
 
-        const float scaleFriction = 1.0f;
         JPH::LinearCurve longitudinalFriction;
         longitudinalFriction.Reserve(3);
         longitudinalFriction.AddPoint(0.0f, 0.0f * scaleFriction);
@@ -272,9 +274,13 @@ namespace GfxRenderEngine
         lateralFriction.AddPoint(3.0f, 1.2f * scaleFriction);
         lateralFriction.AddPoint(20.0f, 1.0f * scaleFriction);
 
+        float frontX = 0.5f;
+        float frontZ = 0.975f;
+        float backX = 0.55f;
+        float backZ = -0.8f;
         // Wheels, left front
         WheelSettingsWV* w1 = new WheelSettingsWV;
-        w1->mPosition = Vec3(half_vehicle_width, -0.9f * half_vehicle_height, half_vehicle_length - 2.0f * wheel_radius);
+        w1->mPosition = Vec3(frontX, wheelHeight, frontZ);
         w1->mSuspensionDirection = front_suspension_dir;
         w1->mSteeringAxis = front_steering_axis;
         w1->mWheelUp = front_wheel_up;
@@ -290,7 +296,7 @@ namespace GfxRenderEngine
 
         // Right front
         WheelSettingsWV* w2 = new WheelSettingsWV;
-        w2->mPosition = Vec3(-half_vehicle_width, -0.9f * half_vehicle_height, half_vehicle_length - 2.0f * wheel_radius);
+        w2->mPosition = Vec3(-frontX, wheelHeight, frontZ);
         w2->mSuspensionDirection = flip_x * front_suspension_dir;
         w2->mSteeringAxis = flip_x * front_steering_axis;
         w2->mWheelUp = flip_x * front_wheel_up;
@@ -306,7 +312,7 @@ namespace GfxRenderEngine
 
         // Left rear
         WheelSettingsWV* w3 = new WheelSettingsWV;
-        w3->mPosition = Vec3(half_vehicle_width, -0.9f * half_vehicle_height, -half_vehicle_length + 2.0f * wheel_radius);
+        w3->mPosition = Vec3(backX, wheelHeight, backZ);
         w3->mSuspensionDirection = rear_suspension_dir;
         w3->mSteeringAxis = rear_steering_axis;
         w3->mWheelUp = rear_wheel_up;
@@ -321,7 +327,7 @@ namespace GfxRenderEngine
 
         // Right rear
         WheelSettingsWV* w4 = new WheelSettingsWV;
-        w4->mPosition = Vec3(-half_vehicle_width, -0.9f * half_vehicle_height, -half_vehicle_length + 2.0f * wheel_radius);
+        w4->mPosition = Vec3(-backX, wheelHeight, backZ);
         w4->mSuspensionDirection = flip_x * rear_suspension_dir;
         w4->mSteeringAxis = flip_x * rear_steering_axis;
         w4->mWheelUp = flip_x * rear_wheel_up;
@@ -428,8 +434,9 @@ namespace GfxRenderEngine
         const float half_vehicle_length = 0.725f;
         const float half_vehicle_width = 0.5f;
         const float half_vehicle_height = 0.1f;
+        const float heightOffset = -0.1f; // prevent from tumbling
+        const float wheelHeight = 0.3f;
         const float scaleFriction = 1.0f;
-        const float wheelHeight = 0.35f;
 
         // Create collision testers
         mKartTesters[0] = new VehicleCollisionTesterRay(Layers::MOVING);
@@ -439,7 +446,7 @@ namespace GfxRenderEngine
         // Create vehicle body
 
         RefConst<Shape> car_shape =
-            OffsetCenterOfMassShapeSettings(Vec3(0.0f, 0.0f, 0.0f),
+            OffsetCenterOfMassShapeSettings(Vec3(0.0f, heightOffset, 0.0f),
                                             new BoxShape(Vec3(half_vehicle_width, half_vehicle_height, half_vehicle_length)))
                 .Create()
                 .Get();
@@ -594,5 +601,7 @@ namespace GfxRenderEngine
         m_PhysicsSystem.AddConstraint(mKartConstraint);
         m_PhysicsSystem.AddStepListener(mKartConstraint);
     }
+
+    void PhysicsBase::LoadRiggedModel(std::string const& filepath) {}
 
 } // namespace GfxRenderEngine

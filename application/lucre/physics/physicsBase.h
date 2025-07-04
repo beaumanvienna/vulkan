@@ -91,6 +91,7 @@ namespace GfxRenderEngine
         virtual void OnUpdate(Timestep timestep, VehicleControl const& vehicleControl, VehicleType vehicleType) override;
         virtual void CreateGroundPlane(GroundSpec const& groundSpec) override;
         virtual void LoadModels(CarParameters const& carParameters, CarParameters const& kartParameters) override;
+        virtual void LoadRiggedModel(std::string const& filepath) override;
         virtual void SetGameObject(uint gameObject, entt::entity gameObjectID) override;
         virtual void SetWheelTranslation(uint wheelNumber, glm::mat4 const& translation) override;
         virtual void SetWheelScale(uint wheelNumber, glm::mat4 const& translation) override;
@@ -268,11 +269,13 @@ namespace GfxRenderEngine
         // of your own job scheduler. JobSystemThreadPool is an example implementation.
         std::unique_ptr<JPH::JobSystemThreadPool> m_pJobSystem;
 
-        inline glm::mat4& ConvertToGLMMat4(JPH::RMat44& jphMat) { return *reinterpret_cast<glm::mat4*>(&jphMat); }
+        inline glm::mat4& ConvertToMat4(JPH::RMat44& jphMat) { return *reinterpret_cast<glm::mat4*>(&jphMat); }
+        inline JPH::Vec3& ConvertToVec3(glm::vec3& vec3GLM) { return *reinterpret_cast<JPH::Vec3*>(&vec3GLM); }
         inline JPH::Vec3 const& ConvertToVec3(glm::vec3 const& vec3GLM)
         {
             return *reinterpret_cast<JPH::Vec3 const*>(&vec3GLM);
         }
+        inline glm::vec3& ConvertToVec3(JPH::Vec3& jphVec3) { return *reinterpret_cast<glm::vec3*>(&jphVec3); }
         inline JPH::Quat const ConvertToQuat(glm::vec3 const& vec3EulerAnglesGLM)
         {
             glm::quat quaternion = glm::quat(vec3EulerAnglesGLM);
@@ -280,10 +283,11 @@ namespace GfxRenderEngine
             JPH::Quat* ptrQuatJPH = reinterpret_cast<JPH::Quat*>(ptr);
             return *ptrQuatJPH;
         }
+        inline glm::quat const ConvertToQuat(JPH::Quat& jphQuat) { return *reinterpret_cast<glm::quat*>(&jphQuat); }
 
     private:
-        std::unique_ptr<Renderer> m_Renderer;
-        std::unique_ptr<Font> m_Font;
+        std::unique_ptr<JPH::Renderer> m_Renderer;
+        std::unique_ptr<JPH::Font> m_Font;
 
         JPH::BodyManager::DrawSettings m_DrawSettings;
         std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;

@@ -8,7 +8,7 @@ A Vulkan Render Engine<br/>
 <br/>
 <br/>
 
-Watch my game dev videos on my <a href="https://www.youtube.com/channel/UCb7glBOnGGHDYI4CIKYBV2A">YouTube channel</a>
+Watch my game engine dev videos on my <a href="https://www.youtube.com/channel/UCb7glBOnGGHDYI4CIKYBV2A">YouTube channel</a>
 
 <br/>
 <br/>

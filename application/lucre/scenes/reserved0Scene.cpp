@@ -230,10 +230,10 @@ namespace LucreApp
 
                 {
                     float wheelScale = 1.0f;
-                    float liftWheels = 0.11f - 0.2f;
+                    float liftWheels = 0.0f;
                     {
                         glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{-0.418f, liftWheels, -0.414f};
+                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_LEFT, wheelTranslationTransform);
@@ -241,7 +241,7 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.418f, liftWheels, -0.414f};
+                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_RIGHT, wheelTranslationTransform);
@@ -249,7 +249,7 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{-0.35f, liftWheels, 0.596f};
+                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_LEFT, wheelTranslationTransform);
@@ -257,14 +257,14 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.35f, liftWheels, 0.596f};
+                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_RIGHT, wheelTranslationTransform);
                         m_Physics->SetWheelScale(Physics::WHEEL_REAR_RIGHT, wheelScaleTransform);
                     }
                 }
-                m_Physics->SetCarHeightOffset(0.2f);
+                m_Physics->SetCarHeightOffset(0.6f);
 
                 auto loadColliderMesh = [&](std::string const& retrieve, float friction, std::string colliderMesh)
                 {

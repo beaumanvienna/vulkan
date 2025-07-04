@@ -99,11 +99,7 @@ namespace GfxRenderEngine
 
     void PhysicsBase::OnUpdate(Timestep timestep, VehicleControl const& vehicleControl, VehicleType vehicleType)
     {
-
-        // If you take larger steps than 1 / 60th of a second you need to do multiple collision steps in order to keep the
-        // simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
-        const int cCollisionSteps = 1;
-        // On user input, assure that the car is active
+        // pre-update
         JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
 
         auto updateVehiclePre = [&vehicleControl](Body* carBody,                         //
@@ -113,9 +109,10 @@ namespace GfxRenderEngine
             auto carID = carBody->GetID();
             if (vehicleControl.inRight != 0.0f || vehicleControl.inForward != 0.0f)
             {
+                // on user input, assure that the car is active
                 lBodyInterface.ActivateBody(carID);
             }
-            { // update vehicle
+            { // apply controller input
                 auto vehicleController = static_cast<WheeledVehicleController*>(carConstraint->GetController());
                 vehicleController->SetDriverInput(vehicleControl.inForward, vehicleControl.inRight, vehicleControl.inBrake,
                                                   vehicleControl.inHandBrake);
@@ -142,24 +139,37 @@ namespace GfxRenderEngine
             }
         };
 
-        // Step the world
+        // update: step the world
+        // if you take larger steps than 1 / 60th of a second you need to do multiple collision steps in order to keep the
+        // simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
+        const int cCollisionSteps = 1;
         float speedFactor = 1.0f;
         m_PhysicsSystem.Update(timestep * speedFactor, cCollisionSteps, m_pTempAllocator.get(), m_pJobSystem.get());
 
-        if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_MUSHROOM]; gameObject != entt::null)
+        // post-update
+        auto postUpdate = [&](entt::entity gameObjectID, JPH::BodyID joltID, bool rotate = true, bool translate = true)
         {
-            JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(m_MushroomID);
-            auto& transform = m_Registry.get<TransformComponent>(gameObject);
-            transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
-        }
-        if (auto& gameObject = m_GameObjects[GameObjects::GAME_OBJECT_SPHERE]; gameObject != entt::null)
-        {
-            JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(m_SphereID);
-            auto& transform = m_Registry.get<TransformComponent>(gameObject);
-            transform.SetTranslation(glm::vec3{position.GetX(), position.GetY(), position.GetZ()});
-        }
+            if (gameObjectID != entt::null)
+            {
+                auto& transform = m_Registry.get<TransformComponent>(gameObjectID);
 
-        auto updateVehiclePost = [&](JPH::BodyInterface& lBodyInterface, Ref<VehicleConstraint>& carConstraint,
+                if (rotate)
+                {
+                    JPH::Quat rotation = bodyInterface.GetRotation(joltID);
+                    transform.SetRotation(ConvertToQuat(rotation));
+                }
+                if (translate)
+                {
+                    JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(joltID);
+                    transform.SetTranslation(ConvertToVec3(position));
+                }
+            }
+        };
+
+        postUpdate(m_GameObjects[GameObjects::GAME_OBJECT_MUSHROOM], m_MushroomID, false /*rotate*/, true /*translate*/);
+        postUpdate(m_GameObjects[GameObjects::GAME_OBJECT_SPHERE], m_SphereID);
+
+        auto postUpdateVehicle = [&](JPH::BodyInterface& lBodyInterface, Ref<VehicleConstraint>& carConstraint,
                                      Registry& registry,
                                      std::array<entt::entity, Physics::GameObjects::NUM_GAME_OBJECTS>& gameObjects,
                                      Physics::GameObjects carBody, Physics::GameObjects frontLeft, float heightOffset,
@@ -172,11 +182,16 @@ namespace GfxRenderEngine
                 return;
             }
             {
-                JPH::RVec3 position = lBodyInterface.GetCenterOfMassPosition(carID);
-                JPH::Quat rotation = lBodyInterface.GetRotation(carID);
                 auto& transform = registry.get<TransformComponent>(gameObjects[carBody]);
-                transform.SetTranslation(glm::vec3{position.GetX(), position.GetY() + heightOffset, position.GetZ()});
-                transform.SetRotation(glm::quat(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ()));
+                {
+                    JPH::Quat rotation = lBodyInterface.GetRotation(carID);
+                    transform.SetRotation(ConvertToQuat(rotation));
+                }
+                {
+                    JPH::RVec3 position = lBodyInterface.GetCenterOfMassPosition(carID);
+                    position += JPH::RVec3(0.0f, heightOffset, 0.0f);
+                    transform.SetTranslation(ConvertToVec3(position));
+                }
 
                 // Jolt has forward = 0, 0, 1 while we have 0, 0, -1 -> flip around up axis
                 glm::vec3 up{0.0f, 1.0f, 0.0f};
@@ -197,10 +212,10 @@ namespace GfxRenderEngine
                                                                                           Vec3::sAxisX(),  // inWheelRight
                                                                                           Vec3::sAxisY()); // inWheelUp
                     glm::mat4 wheelLocalTransformGLM =
-                        wheelTranslation[w] * ConvertToGLMMat4(wheelTransformJPH) * wheelScale[w];
+                        wheelTranslation[w] * ConvertToMat4(wheelTransformJPH) * wheelScale[w];
 
                     JPH::RMat44 carTransformJPH = bodyInterface.GetWorldTransform(carID);
-                    glm::mat4 carTransformGLM = ConvertToGLMMat4(carTransformJPH);
+                    glm::mat4 carTransformGLM = ConvertToMat4(carTransformJPH);
                     glm::mat4 wheelGlobalTransformGLM = carTransformGLM * wheelLocalTransformGLM;
 
                     entt::entity wheelGameObject = gameObjects[frontLeft + w];
@@ -214,14 +229,14 @@ namespace GfxRenderEngine
         {
             case VehicleType::CAR:
             {
-                updateVehiclePost(bodyInterface, mCarConstraint, m_Registry, m_GameObjects, GameObjects::GAME_OBJECT_CAR,
+                postUpdateVehicle(bodyInterface, mCarConstraint, m_Registry, m_GameObjects, GameObjects::GAME_OBJECT_CAR,
                                   GameObjects::GAME_OBJECT_WHEEL_FRONT_LEFT, m_CarHeightOffset, m_WheelTranslation,
                                   m_WheelScale);
                 break;
             }
             case VehicleType::KART:
             {
-                updateVehiclePost(bodyInterface, mKartConstraint, m_Registry, m_GameObjects, GameObjects::GAME_OBJECT_KART,
+                postUpdateVehicle(bodyInterface, mKartConstraint, m_Registry, m_GameObjects, GameObjects::GAME_OBJECT_KART,
                                   GameObjects::GAME_OBJECT_KART_WHEEL_FRONT_LEFT, m_KartHeightOffset, m_KartWheelTranslation,
                                   m_KartWheelScale);
                 break;
