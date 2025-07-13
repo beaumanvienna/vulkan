@@ -18,7 +18,12 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+
+   The code for the class 'PhysicsBase' contains code from the examples
+   of the Jolt Physics Library, see https://github.com/jrouwe/JoltPhysics
+
+   */
 
 #pragma once
 
@@ -105,8 +110,8 @@ namespace GfxRenderEngine
     private:
         void CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation);
         void CreateMushroom(glm::vec3 const& scale, glm::vec3 const& translation);
-        void CreateCar(RVec3 const& position, JPH::Quat const& quaternion);
-        void CreateKart(RVec3 const& position, JPH::Quat const& quaternion);
+        void CreateCar(RVec3 const& position, JPH::Quat const& rotation);
+        void CreateKart(RVec3 const& position, JPH::Quat const& rotation);
         void SyncPhysicsToGraphics();
 
     private:

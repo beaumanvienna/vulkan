@@ -24,8 +24,13 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+   The code for the class 'PhysicsBase' contains code from the examples
+   of the Jolt Physics Library, see https://github.com/jrouwe/JoltPhysics
+
+   */
+#include "auxiliary/debug.h"
 #include "scene/components.h"
 #include "physics/physicsBase.h"
 #include "renderer/instanceBuffer.h"
@@ -183,19 +188,24 @@ namespace GfxRenderEngine
             }
             {
                 auto& transform = registry.get<TransformComponent>(gameObjects[carBody]);
-                {
+                { // rotation
                     JPH::Quat rotation = lBodyInterface.GetRotation(carID);
                     transform.SetRotation(ConvertToQuat(rotation));
                 }
-                {
-                    JPH::RVec3 position = lBodyInterface.GetCenterOfMassPosition(carID);
-                    position += JPH::RVec3(0.0f, heightOffset, 0.0f);
-                    transform.SetTranslation(ConvertToVec3(position));
+                { // translation
+                    // height offset to model space
+                    glm::vec3 upVector{0.0f, 1.0f, 0.0f};
+                    glm::vec3 heightOffsetModelSpace = glm::mat3(transform.GetMat4Local()) * upVector * heightOffset;
+                    // retrieve the center-of-mass position and add height offset
+                    JPH::Vec3 positionJPH = lBodyInterface.GetCenterOfMassPosition(carID);
+                    glm::vec3 position = ConvertToVec3(positionJPH) + heightOffsetModelSpace;
+                    // apply to game object
+                    transform.SetTranslation(position);
                 }
 
                 // Jolt has forward = 0, 0, 1 while we have 0, 0, -1 -> flip around up axis
-                glm::vec3 up{0.0f, 1.0f, 0.0f};
-                transform.SetMat4Local(glm::rotate(transform.GetMat4Local(), TransformComponent::DEGREES_180, up));
+                glm::vec3 upVector{0.0f, 1.0f, 0.0f};
+                transform.SetMat4Local(glm::rotate(transform.GetMat4Local(), TransformComponent::DEGREES_180, upVector));
             }
 
             // wheels

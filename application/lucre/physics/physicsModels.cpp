@@ -18,7 +18,12 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+   The code for the class 'PhysicsBase' contains code from the examples
+   of the Jolt Physics Library, see https://github.com/jrouwe/JoltPhysics
+
+   */
 
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -182,7 +187,7 @@ namespace GfxRenderEngine
         bodyInterface.SetRestitution(m_SphereID, 0.8f);
     }
 
-    void PhysicsBase::CreateCar(RVec3 const& position, JPH::Quat const& quaternion)
+    void PhysicsBase::CreateCar(RVec3 const& position, JPH::Quat const& rotation)
     {
         [[maybe_unused]] const float sInitialRollAngle = 0;
         [[maybe_unused]] const float sMaxRollAngle = 1.0472;       // 60 degree
@@ -238,7 +243,7 @@ namespace GfxRenderEngine
                                             new BoxShape(Vec3(half_vehicle_width, half_vehicle_height, half_vehicle_length)))
                 .Create()
                 .Get();
-        BodyCreationSettings car_body_settings(car_shape, position, quaternion, EMotionType::Dynamic, Layers::MOVING);
+        BodyCreationSettings car_body_settings(car_shape, position, rotation, EMotionType::Dynamic, Layers::MOVING);
         car_body_settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
         car_body_settings.mMassPropertiesOverride.mMass = 1500.0f;
         mCarBody = bodyInterface.CreateBody(car_body_settings);
@@ -394,7 +399,7 @@ namespace GfxRenderEngine
         m_PhysicsSystem.AddStepListener(mCarConstraint);
     }
 
-    void PhysicsBase::CreateKart(RVec3 const& position, JPH::Quat const& quaternion)
+    void PhysicsBase::CreateKart(RVec3 const& position, JPH::Quat const& rotation)
     {
         [[maybe_unused]] const float sInitialRollAngle = 0;
         [[maybe_unused]] const float sMaxRollAngle = 1.0472;       // 60 degree
@@ -428,7 +433,7 @@ namespace GfxRenderEngine
         [[maybe_unused]] const float sRearSuspensionFrequency = 1.5f;
         [[maybe_unused]] const float sRearSuspensionDamping = 1.0f;
 
-        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        // vehicle dimensions
         const float wheel_radius = 0.150f;
         const float wheel_width = 0.18f;
         const float half_vehicle_length = 0.725f;
@@ -438,19 +443,20 @@ namespace GfxRenderEngine
         const float wheelHeight = 0.3f;
         const float scaleFriction = 1.0f;
 
+        JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
+        
         // Create collision testers
         mKartTesters[0] = new VehicleCollisionTesterRay(Layers::MOVING);
         mKartTesters[1] = new VehicleCollisionTesterCastSphere(Layers::MOVING, 0.5f * wheel_width);
         mKartTesters[2] = new VehicleCollisionTesterCastCylinder(Layers::MOVING);
 
         // Create vehicle body
-
         RefConst<Shape> car_shape =
             OffsetCenterOfMassShapeSettings(Vec3(0.0f, heightOffset, 0.0f),
                                             new BoxShape(Vec3(half_vehicle_width, half_vehicle_height, half_vehicle_length)))
                 .Create()
                 .Get();
-        BodyCreationSettings car_body_settings(car_shape, position, quaternion, EMotionType::Dynamic, Layers::MOVING);
+        BodyCreationSettings car_body_settings(car_shape, position, rotation, EMotionType::Dynamic, Layers::MOVING);
         car_body_settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
         car_body_settings.mMassPropertiesOverride.mMass = 2500.0f;
         mKartBody = bodyInterface.CreateBody(car_body_settings);
