@@ -787,6 +787,7 @@ namespace LucreApp
                     case ENGINE_KEY_N:
                     {
                         ++m_CameraControllers;
+                        m_CameraControllers.GetActiveCameraController()->SetProjection();
                         break;
                     }
                     case ENGINE_KEY_B:

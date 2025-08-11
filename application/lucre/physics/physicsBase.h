@@ -18,7 +18,7 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    The code for the class 'PhysicsBase' contains code from the examples
    of the Jolt Physics Library, see https://github.com/jrouwe/JoltPhysics
@@ -90,6 +90,13 @@ namespace GfxRenderEngine
 
     class PhysicsBase : public Physics
     {
+    private:
+        std::unique_ptr<JPH::Renderer> m_Renderer;
+        std::unique_ptr<JPH::Font> m_Font;
+
+        JPH::BodyManager::DrawSettings m_DrawSettings;
+        std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
+
     public:
         PhysicsBase() = delete;
         PhysicsBase(Scene& scene);
@@ -289,13 +296,6 @@ namespace GfxRenderEngine
             return *ptrQuatJPH;
         }
         inline glm::quat const ConvertToQuat(JPH::Quat& jphQuat) { return *reinterpret_cast<glm::quat*>(&jphQuat); }
-
-    private:
-        std::unique_ptr<JPH::Renderer> m_Renderer;
-        std::unique_ptr<JPH::Font> m_Font;
-
-        JPH::BodyManager::DrawSettings m_DrawSettings;
-        std::unique_ptr<JPH::DebugRenderer> m_DebugRenderer;
 
     private:
         Scene& m_Scene;
