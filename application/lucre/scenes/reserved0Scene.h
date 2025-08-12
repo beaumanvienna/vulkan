@@ -74,6 +74,7 @@ namespace LucreApp
         void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
                                  const std::shared_ptr<Camera>& lightView, int renderpass);
         void ApplyDebugSettings();
+        void SetCameraTransform(const Timestep& timestep = Timestep(0.1s));
 
     private:
         enum CameraTypes
@@ -99,6 +100,7 @@ namespace LucreApp
 
             std::shared_ptr<CameraController>& operator[](int index);
             CameraControllers& operator++();
+            CameraControllers& operator--();
 
         private:
             int m_ActiveCamera = static_cast<uint>(CameraTypes::DefaultCamera);

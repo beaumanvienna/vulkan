@@ -379,6 +379,14 @@ namespace LucreApp
                 }
             }
         }
+
+        // set initial position for camera "CameraTypes::CarFollow"
+        if (m_Car != entt::null)
+        {
+            m_CameraControllers.SetActiveCameraController(CameraTypes::CarFollow);
+            SetCameraTransform();
+            m_CameraControllers.SetActiveCameraController(CameraTypes::DefaultCamera);
+        }
     }
 
     void Reserved0Scene::Load()
@@ -566,30 +574,12 @@ namespace LucreApp
 
         if (Lucre::m_Application->KeyboardInputIsReleased())
         {
+            SetCameraTransform(timestep);
+        }
+
+        { // set camera view
             int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
             auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
-            if (activeCameraIndex == CameraTypes::CarFollow)
-            {
-                if (m_Car != entt::null)
-                {
-                    float followDistance{-10.0f};
-                    float followHeight{1.0};
-                    auto& carTransform = m_Registry.get<TransformComponent>(m_Car);
-                    auto const& carMat4 = carTransform.GetMat4Local(); // assuming it has no parent
-                    glm::vec3 forward{0.0f, 0.0f, -1.0f};              // For right-handed
-                    glm::vec3 carForward = glm::normalize(glm::mat3(carMat4) * forward);
-                    glm::vec3 newPosition = carForward * followDistance + carTransform.GetTranslation();
-                    newPosition.y += followHeight;
-                    cameraTransform.SetTranslation(newPosition);
-                    glm::vec3 newRotation = carTransform.GetRotation();
-                    cameraTransform.SetRotation(newRotation);
-                }
-            }
-            else
-            {
-                m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
-                m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
-            }
             m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
             m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
         }
@@ -1062,6 +1052,27 @@ namespace LucreApp
         return *this;
     }
 
+    Reserved0Scene::CameraControllers& Reserved0Scene::CameraControllers::operator--()
+    {
+        int maxChecks = static_cast<int>(CameraTypes::MaxCameraTypes);
+        int nextActiveCamera = m_ActiveCamera;
+        for (int iterator = 0; iterator < maxChecks; ++iterator)
+        {
+            --nextActiveCamera;
+            if (nextActiveCamera < 0)
+            {
+                nextActiveCamera = maxChecks - 1;
+            }
+            if (m_CameraController[nextActiveCamera])
+            {
+                m_ActiveCamera = nextActiveCamera;
+                break;
+            }
+        }
+        LOG_APP_INFO("switching to camera {0}", m_ActiveCamera);
+        return *this;
+    }
+
     std::shared_ptr<CameraController>& Reserved0Scene::CameraControllers::SetActiveCameraController(CameraTypes cameraType)
     {
         return SetActiveCameraController(static_cast<int>(cameraType));
@@ -1088,6 +1099,34 @@ namespace LucreApp
             {
                 m_CameraController[index]->SetProjection();
             }
+        }
+    }
+
+    void Reserved0Scene::SetCameraTransform(const Timestep& timestep)
+    {
+        int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+        auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
+        if (activeCameraIndex == CameraTypes::CarFollow)
+        {
+            if (m_Car != entt::null)
+            {
+                float followDistance{-10.0f};
+                float followHeight{1.0};
+                auto& carTransform = m_Registry.get<TransformComponent>(m_Car);
+                auto const& carMat4 = carTransform.GetMat4Local(); // assuming it has no parent
+                glm::vec3 forward{0.0f, 0.0f, -1.0f};              // For right-handed
+                glm::vec3 carForward = glm::normalize(glm::mat3(carMat4) * forward);
+                glm::vec3 newPosition = carForward * followDistance + carTransform.GetTranslation();
+                newPosition.y += followHeight;
+                cameraTransform.SetTranslation(newPosition);
+                glm::vec3 newRotation = carTransform.GetRotation();
+                cameraTransform.SetRotation(newRotation);
+            }
+        }
+        else
+        {
+            m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
+            m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
         }
     }
 } // namespace LucreApp
