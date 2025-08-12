@@ -352,6 +352,12 @@ namespace LucreApp
 
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
+        }
+
+        { // set camera view
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[activeCameraIndex]);
+
             m_CameraControllers.GetActiveCameraController()->SetView(cameraTransform.GetMat4Global());
         }
 
