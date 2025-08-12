@@ -330,7 +330,7 @@ namespace GfxRenderEngine
         renderPassInfo.renderArea.extent = framebuffer->GetExtent();
 
         VkClearValue clearValue{};
-        clearValue.color = {{0.50f, 0.30f, 0.70f, 1.0f}};
+        clearValue.color = {{.0f, 0.0f, 0.0f, 1.0f}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearValue;
 
