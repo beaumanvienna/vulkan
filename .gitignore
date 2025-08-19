@@ -1,5 +1,6 @@
 .vscode
 .DS_Store
+application/lucre/models/filament
 application/lucre/models/funkyKong
 application/lucre/models/dancing
 application/lucre/models/guybrush_animated_gltf

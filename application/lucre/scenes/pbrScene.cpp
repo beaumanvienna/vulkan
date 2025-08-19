@@ -37,7 +37,6 @@
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
 #include "pbrScene.h"
-#include "renderer/builder/grassBuilder.h"
 
 namespace LucreApp
 {
@@ -121,7 +120,7 @@ namespace LucreApp
         }
 
         {
-            // place static lights for beach scene
+            // place static lights
             float intensity = 5.0f;
             float lightRadius = 0.1f;
             float height1 = 5.4f;
@@ -144,48 +143,6 @@ namespace LucreApp
             auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
-        }
-
-        {
-            // TLMM = terrain loader multi material
-            m_Terrain1 = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::root");
-            if (m_Terrain1 != entt::null)
-            {
-                Water1Component water1Component{.m_Scale = {500.0f, 1.0f, 500.0f},
-                                                .m_Translation = {0.0f, WATER_HEIGHT, 0.0f}};
-                m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
-            }
-
-            auto terrain = m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrain1.glb::0::Scene::terrain");
-            if (terrain != entt::null)
-            {
-                m_Registry.remove<PbrMaterialTag>(terrain);
-                PbrMultiMaterialTag pbrMultiMaterialTag{};
-                m_Registry.emplace<PbrMultiMaterialTag>(terrain, pbrMultiMaterialTag);
-            }
-
-            auto gaea =
-                m_Dictionary.Retrieve("TLMM::application/lucre/models/terrain/terrainGaea.glb::0::Scene::TerrainGaea");
-            if (gaea != entt::null)
-            {
-                m_Registry.remove<PbrMaterialTag>(gaea);
-                PbrMultiMaterialTag pbrMultiMaterialTag{};
-                m_Registry.emplace<PbrMultiMaterialTag>(gaea, pbrMultiMaterialTag);
-            }
-        }
-
-        {
-            Scene& scene = *this;
-            Grass::GrassSpec grassSpec{.m_FilepathGrassModel = "application/lucre/models/assets/grass/grass1.glb",
-                                       .m_FilepathGrassMask =
-                                           "application/lucre/models/mario/mario section 01 - grass mask.glb",
-                                       .m_Rotation = glm::vec3{-3.14159f, 0.0f, -3.14159f},
-                                       .m_Translation = glm::vec3{7.717f, 3.491f, 45.133f},
-                                       .m_Scale = glm::vec3{2.352f, 2.352f, 2.352f},
-                                       .m_ScaleXZ = 0.1f,
-                                       .m_ScaleY = 0.05f};
-            GrassBuilder builder(grassSpec, scene);
-            builder.Build();
         }
 
         { // physics
@@ -275,18 +232,6 @@ namespace LucreApp
                     }
                 };
 
-                loadColliderMesh("SL::application/lucre/models/mario/racing loop.glb::0::root", 2.0f,
-                                 "application/lucre/models/mario/racing loop surface with hole.glb");
-                loadColliderMesh("SL::application/lucre/models/mario/ramp.glb::0::root", 2.0f,
-                                 "application/lucre/models/mario/ramp collider.glb");
-                loadColliderMesh("SL::application/lucre/models/mario/rampSmall.glb::0::root", 2.0f,
-                                 "application/lucre/models/mario/rampSmall collider.glb");
-                loadColliderMesh("SL::application/lucre/models/mario/downramp.glb::0::root", 2.0f,
-                                 "application/lucre/models/mario/downramp collider.glb");
-                loadColliderMesh("SL::application/lucre/models/mario/medium kicker.glb::0::root", 2.0f,
-                                 "application/lucre/models/mario/medium kicker collider.glb");
-                loadColliderMesh("SL::application/lucre/models/mario/medium kicker.glb::1::root", 2.0f,
-                                 "application/lucre/models/mario/medium kicker collider.glb");
                 loadColliderMesh("SL::application/lucre/models/mario/kicker long.glb::0::root", 2.0f,
                                  "application/lucre/models/mario/kicker long collider.glb");
             }
@@ -369,14 +314,6 @@ namespace LucreApp
                     }
                 }
                 m_Physics->SetKartHeightOffset(-0.1f);
-
-                auto racetrack = m_Dictionary.Retrieve("SL::application/lucre/models/mario/racetrack.glb::0::root");
-                if (racetrack != entt::null)
-                {
-                    float friction = 3.0f;
-                    m_Physics->CreateMeshTerrain(racetrack, "application/lucre/models/mario/racetrack collider mesh.glb",
-                                                 friction);
-                }
             }
         }
 
@@ -453,43 +390,6 @@ namespace LucreApp
                 }
                 m_LightView1 = std::make_shared<Camera>(Camera::ProjectionType::ORTHOGRAPHIC_PROJECTION);
                 SetLightView(m_Lightbulb1, m_LightView1);
-            }
-        }
-
-        {
-            m_Penguin =
-                m_Dictionary.Retrieve("SL::application/lucre/models/ice/penguin.glb::0::Scene::Linux Penguin (Left Leg)");
-            if (m_Penguin != entt::null)
-            {
-                if (m_Registry.all_of<SkeletalAnimationTag>(m_Penguin))
-                {
-                    auto& mesh = m_Registry.get<MeshComponent>(m_Penguin);
-                    SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-                    animations.SetRepeatAll(true);
-                    animations.Start();
-                }
-                else
-                {
-                    LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Penguin));
-                }
-            }
-        }
-
-        {
-            m_Mario = m_Dictionary.Retrieve("SL::application/lucre/models/mario/mario animated.glb::0::Scene::mario mesh");
-            if (m_Mario != entt::null)
-            {
-                if (m_Registry.all_of<SkeletalAnimationTag>(m_Mario))
-                {
-                    auto& mesh = m_Registry.get<MeshComponent>(m_Mario);
-                    SkeletalAnimations& animations = mesh.m_Model->GetAnimations();
-                    animations.SetRepeatAll(true);
-                    animations.Start();
-                }
-                else
-                {
-                    LOG_APP_CRITICAL("entity {0} must have skeletal animation tag", static_cast<int>(m_Mario));
-                }
             }
         }
 
@@ -669,63 +569,6 @@ namespace LucreApp
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
 
-        if (m_Terrain1 != entt::null)
-        { // water
-            auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
-            float& heightWater = water1Component.m_Translation.y;
-
-            Camera reflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
-            auto view = m_Registry.view<TransformComponent>();
-            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
-            auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
-
-            {
-                // use the global mat4 in case the camera is parented to another object (run UpdateTransformCache)
-                glm::mat4 const& originalMat4 = cameraTransform.GetMat4Global();
-
-                // direction
-                glm::vec3 originalDirection = reflectionCamera.GetDirection();
-                glm::vec3 newDirction{originalDirection.x, -originalDirection.y, originalDirection.z};
-
-                // retrieve camera position
-                glm::vec3 originalPosition{originalMat4[3]};
-                glm::vec3 newPosition //
-                    {
-                        originalPosition.x,                                          //
-                        originalPosition.y - 2 * (originalPosition.y - heightWater), //
-                        originalPosition.z                                           //
-                    };
-
-                // set up camera
-                reflectionCamera.SetViewDirection(newPosition, newDirction);
-            }
-
-            static constexpr bool refraction = false;
-            static constexpr bool reflection = true;
-            std::array<bool, Renderer::WaterPasses::NUMBER_OF_WATER_PASSES> passes = {refraction, reflection};
-
-            for (bool pass : passes)
-            {
-                float sign = (pass == reflection) ? 1.0f : -1.0f;
-                glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
-                auto& camera =
-                    (pass == reflection) ? reflectionCamera : m_CameraControllers.GetActiveCameraController()->GetCamera();
-                m_Renderer->RenderpassWater(m_Registry, camera, pass, waterPlane);
-                // opaque objects
-                m_Renderer->SubmitWater(*this, pass);
-
-                // light opaque objects
-                m_Renderer->NextSubpass();
-                m_Renderer->LightingPassWater(pass);
-
-                // transparent objects
-                m_Renderer->NextSubpass();
-                m_Renderer->TransparencyPassWater(m_Registry, pass);
-
-                m_Renderer->EndRenderpassWater();
-            }
-        }
-
         { // 3D
             m_Renderer->Renderpass3D(m_Registry);
 
@@ -809,8 +652,8 @@ namespace LucreApp
         m_CameraControllers[CameraTypes::DefaultCamera]->SetZoomFactor(1.0f);
         auto& cameraTransform = m_Registry.get<TransformComponent>(m_Camera[CameraTypes::DefaultCamera]);
 
-        cameraTransform.SetTranslation({-3.0f, 6.0f, -25.0f});
-        cameraTransform.SetRotation({0.0f, TransformComponent::DEGREES_180, 0.0f});
+        cameraTransform.SetTranslation({-12.314f, 11.4f, 44.0f});
+        cameraTransform.SetRotation({glm::radians(-15.3f), 0.0f, 0.0f});
 
         // global camera transform is not yet available
         // because UpdateTransformCache didn't run yet
@@ -825,7 +668,7 @@ namespace LucreApp
     }
 
     void PBRScene::SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
-                                             const std::shared_ptr<Camera>& lightView, int renderpass)
+                                       const std::shared_ptr<Camera>& lightView, int renderpass)
     {
         auto& directionalLightComponent = m_Registry.get<DirectionalLightComponent>(directionalLight);
         directionalLightComponent.m_Direction = lightView->GetDirection();
@@ -896,7 +739,7 @@ namespace LucreApp
             };
 
         Physics::CarParameters kartParameters{
-            .m_Position = glm::vec3(18.0f, 8.0f, 71.0f),                        //
+            .m_Position = glm::vec3(2.1f, 5.0f, 32.0f),                         //
             .m_Rotation = glm::vec3(0.0f, TransformComponent::DEGREES_90, 0.0f) //
         };
         m_Physics->LoadModels(carParameters, kartParameters);
