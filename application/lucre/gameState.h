@@ -50,6 +50,7 @@ namespace LucreApp
             ISLAND_2,
             VOLCANO,
             RESERVED0,
+            PBR,
             MAX_STATES
         };
 

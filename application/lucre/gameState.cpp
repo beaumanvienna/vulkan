@@ -36,6 +36,7 @@
 #include "scenes/island2Scene.h"
 #include "scenes/volcanoScene.h"
 #include "scenes/reserved0Scene.h"
+#include "scenes/pbrScene.h"
 
 namespace LucreApp
 {
@@ -55,7 +56,7 @@ namespace LucreApp
         Load(State::SETTINGS);
 
         SetState(State::SPLASH);
-        SetNextState(State::RESERVED0);
+        SetNextState(State::PBR);
     }
 
     void GameState::Stop()
@@ -124,6 +125,11 @@ namespace LucreApp
                 str = "State::RESERVED0";
                 break;
             }
+            case State::PBR:
+            {
+                str = "State::PBR";
+                break;
+            }
             case State::SETTINGS:
             {
                 str = "State::SETTINGS";
@@ -177,6 +183,7 @@ namespace LucreApp
             case State::ISLAND_2:
             case State::VOLCANO:
             case State::RESERVED0:
+            case State::PBR:
             case State::NULL_STATE:
             case State::MAX_STATES:
             {
@@ -385,6 +392,21 @@ namespace LucreApp
                     ZoneScopedN("loadResreved0");
                     auto scenePtr = std::make_shared<Reserved0Scene>("reserved0.json",
                                                                      "application/lucre/sceneDescriptions/reserved0.json");
+                    SetupScene(state, scenePtr);
+                    GetScene(state)->Load();
+                    GetScene(state)->Start();
+                    SetLoaded(state);
+                };
+                ThreadPool& threadPool = Engine::m_Engine->m_PoolPrimary;
+                std::future<void> future = threadPool.SubmitTask(lambda);
+                break;
+            }
+            case State::PBR:
+            {
+                auto lambda = [this, state]()
+                {
+                    ZoneScopedN("loadPbr");
+                    auto scenePtr = std::make_shared<PBRScene>("pbr.json", "application/lucre/sceneDescriptions/pbr.json");
                     SetupScene(state, scenePtr);
                     GetScene(state)->Load();
                     GetScene(state)->Start();

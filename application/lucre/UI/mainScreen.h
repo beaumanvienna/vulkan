@@ -61,6 +61,7 @@ namespace LucreApp
         SCREEN_UI::EventReturn Scene6Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn Scene7Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn Scene8Click(SCREEN_UI::EventParams& e);
+        SCREEN_UI::EventReturn Scene9Click(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn OffClick(SCREEN_UI::EventParams& e);
         SCREEN_UI::EventReturn OffHold(SCREEN_UI::EventParams& e);
 
@@ -83,6 +84,7 @@ namespace LucreApp
             SCENE_BUTTON_6,
             SCENE_BUTTON_7,
             SCENE_BUTTON_8,
+            SCENE_BUTTON_9,
             NUM_SCENE_BUTTONS
         };
 

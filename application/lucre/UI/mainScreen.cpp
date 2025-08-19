@@ -63,6 +63,8 @@ namespace LucreApp
                                                                                   4 /* frames */);
         m_SpritesheetSceneButtons[SceneButtons::SCENE_BUTTON_8].AddSpritesheetRow(m_Spritesheet.GetSprite(I_SCENE_No_8_R),
                                                                                   4 /* frames */);
+        m_SpritesheetSceneButtons[SceneButtons::SCENE_BUTTON_9].AddSpritesheetRow(m_Spritesheet.GetSprite(I_SCENE_No_9_R),
+                                                                                  4 /* frames */);
     }
 
     void MainScreen::OnDetach() {}
@@ -202,6 +204,12 @@ namespace LucreApp
         createButton(m_SpritesheetSceneButtons[SceneButtons::SCENE_BUTTON_8], m_SceneButtons[SCENE_BUTTON_8], I_GEAR);
         m_SceneButtons[SCENE_BUTTON_8]->OnClick.Handle(this, &MainScreen::Scene8Click);
         topline->Add(m_SceneButtons[SCENE_BUTTON_8]);
+        topline->Add(new SCREEN_UI::Spacer(UI::g_Common->m_IconSpacer, 0.0f));
+
+        // scene 9 button
+        createButton(m_SpritesheetSceneButtons[SceneButtons::SCENE_BUTTON_9], m_SceneButtons[SCENE_BUTTON_9], I_GEAR);
+        m_SceneButtons[SCENE_BUTTON_9]->OnClick.Handle(this, &MainScreen::Scene9Click);
+        topline->Add(m_SceneButtons[SCENE_BUTTON_9]);
 
         float verticalSpacerBottomline =
             UI::g_Common->m_AvailableHeight - 2 * UI::g_Common->m_IconHeight - 2 * UI::g_Common->m_MarginLeftRight;
@@ -342,6 +350,15 @@ namespace LucreApp
         if (Lucre::m_Application->GetState() != GameState::State::RESERVED0)
         {
             SceneChangedEvent event(GameState::State::RESERVED0);
+            Lucre::m_Application->OnAppEvent(event);
+        }
+        return SCREEN_UI::EVENT_DONE;
+    }
+    SCREEN_UI::EventReturn MainScreen::Scene9Click(SCREEN_UI::EventParams& e)
+    {
+        if (Lucre::m_Application->GetState() != GameState::State::PBR)
+        {
+            SceneChangedEvent event(GameState::State::PBR);
             Lucre::m_Application->OnAppEvent(event);
         }
         return SCREEN_UI::EVENT_DONE;
