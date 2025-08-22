@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include "box2d/box2d.h"
-
 #include "engine.h"
 #include "renderer/cameraController.h"
 #include "renderer/cubemap.h"
@@ -66,9 +64,6 @@ namespace LucreApp
         void LoadModels();
         void ResetScene();
         void InitPhysics();
-        void FireVolcano();
-        void ResetBananas();
-        void UpdateBananas(const Timestep& timestep);
         void SimulatePhysics(const Timestep& timestep, Physics::VehicleType vehicleType);
         void SetLightView(const entt::entity lightbulb, const std::shared_ptr<Camera>& lightView);
         void SetDirectionalLight(const entt::entity directionalLight, const entt::entity lightbulb,
@@ -77,6 +72,36 @@ namespace LucreApp
         void SetCameraTransform(const Timestep& timestep = Timestep(0.1s));
 
     private:
+        class IBLBuilder
+        {
+        public:
+            enum IBLTextures
+            {
+                BRDFIntegrationMap = 0,
+                environment,
+                envPrefilteredDiffuse,
+                envPrefilteredSpecularLevel0,
+                envPrefilteredSpecularLevel1,
+                envPrefilteredSpecularLevel2,
+                envPrefilteredSpecularLevel3,
+                envPrefilteredSpecularLevel4,
+                envPrefilteredSpecularLevel5,
+                NUM_IBL_TEXTURES
+            };
+            using IBLTextureFilenames = std::array<std::string, IBLTextures::NUM_IBL_TEXTURES>;
+
+        public:
+            IBLBuilder() = delete;
+            IBLBuilder(IBLTextureFilenames const& filenames);
+            bool IsInitialized() { return m_Initialzed; }
+
+        private:
+            static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTextures::NUM_IBL_TEXTURES -
+                                                         IBLTextures::envPrefilteredSpecularLevel0};
+            std::array<std::shared_ptr<Texture>, IBLTextures::NUM_IBL_TEXTURES> m_IBLTextures;
+            bool m_Initialzed;
+        };
+
         enum CameraTypes
         {
             DefaultCamera = 0,
@@ -120,12 +145,12 @@ namespace LucreApp
         entt::entity m_Skybox, m_Lightbulb0, m_Lightbulb1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
-        entt::entity m_Penguin, m_Terrain1, m_Mario, m_Car, m_Kart;
+        entt::entity m_Car, m_Kart;
         std::array<entt::entity, 4> m_Wheels;
         std::array<entt::entity, 4> m_WheelsKart;
 
-        // terrain, water
-        static constexpr float WATER_HEIGHT{3.0f};
+        // terrain
+        static constexpr float TERRAIN_HEIGHT{3.0f};
         void LoadTerrain();
 
         // some game objects can be controlled with a gamepad
@@ -135,26 +160,12 @@ namespace LucreApp
         std::unique_ptr<CharacterAnimation> m_CharacterAnimation;
         Candles m_CandleParticleSystem;
 
-        // physics box2D
-        const b2Vec2 GRAVITY{0.0f, -9.81f};
-        std::unique_ptr<b2World> m_World;
-        b2Body* m_GroundBody{nullptr};
-        bool m_Fire{false};
-        bool m_StartTimer{true};
-        Timer m_LaunchVolcanoTimer;
-        static constexpr uint MAX_B = 24;
-        entt::entity m_Banana[MAX_B];
-
         // physics Jolt
         std::unique_ptr<Physics> m_Physics;
         Physics::VehicleControl m_VehicleControl{};
         bool m_DrawDebugMesh{true};
 
     private:
-        struct BananaComponent
-        {
-            bool m_IsOnTheGround;
-        };
         struct Group2
         {
             bool m_Rotated;

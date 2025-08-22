@@ -19,6 +19,7 @@ project "engine"
         "vendor/glfw/**.h", 
         "vendor/glfw/**.cpp",
         "vendor/stb/**.cpp",
+        "vendor/tinyexr/**.cpp",
         "vendor/imGuizmo/ImGuizmo.h",
         "vendor/imGuizmo/ImGuizmo.cpp",
         "vendor/imgui/backends/imgui_impl_glfw.cpp",

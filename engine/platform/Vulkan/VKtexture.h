@@ -40,6 +40,8 @@ namespace GfxRenderEngine
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter,
                           int magFilter) override;
+        virtual bool Init(const uint width, const uint height, float* data, const uint numberOfChannels,
+                          bool linearFilter = true) override;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) override;
         virtual int GetWidth() const override { return m_Width; }
@@ -52,7 +54,7 @@ namespace GfxRenderEngine
         const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 
     private:
-        bool Create();
+        bool Create(const uint numberOfChannels = 4, const uint bytesPerChannel = 1, const bool generateMipmaps = true);
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
         void CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);

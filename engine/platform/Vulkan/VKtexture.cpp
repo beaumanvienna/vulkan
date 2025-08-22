@@ -114,6 +114,31 @@ namespace GfxRenderEngine
         return ok;
     }
 
+    // texture with floats
+    bool VK_Texture::Init(const uint width, const uint height, float* data, const uint numberOfChannels, bool linearFilter)
+    {
+        bool ok = false;
+        m_FileName = "float data";
+        m_Width = width;
+        m_Height = height;
+        m_LocalBuffer = reinterpret_cast<uchar*>(data);
+        linearFilter ? m_MinFilter = VK_FILTER_LINEAR : m_MinFilter = VK_FILTER_NEAREST;
+        linearFilter ? m_MagFilter = VK_FILTER_LINEAR : m_MagFilter = VK_FILTER_NEAREST;
+        m_MinFilterMip = VK_FILTER_LINEAR;
+        m_MipLevels = 0;
+        if (m_LocalBuffer)
+        {
+            const uint bytePerChannel = sizeof(float);
+            bool generateMipmaps = false;
+            ok = Create(numberOfChannels, bytePerChannel, generateMipmaps);
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", m_FileName);
+        }
+        return ok;
+    }
+
     void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
@@ -260,17 +285,17 @@ namespace GfxRenderEngine
         }
     }
 
-    bool VK_Texture::Create()
+    bool VK_Texture::Create(const uint numberOfChannels, const uint bytesPerChannel, const bool generateMipmaps)
     {
-        auto device = VK_Core::m_Device->Device();
-
-        VkDeviceSize imageSize = m_Width * m_Height * 4;
-
         if (!m_LocalBuffer)
         {
             LOG_CORE_CRITICAL("failed to load texture image!");
             return false;
         }
+
+        auto device = VK_Core::m_Device->Device();
+
+        VkDeviceSize imageSize = m_Width * m_Height * numberOfChannels * bytesPerChannel;
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -289,7 +314,37 @@ namespace GfxRenderEngine
             vkUnmapMemory(device, stagingBufferMemory);
         }
 
-        VkFormat format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+        VkFormat format;
+        switch (bytesPerChannel)
+        {
+            case 1:
+            {
+                format = m_sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+                break;
+            }
+            case 4:
+            {
+                if (numberOfChannels == 4)
+                {
+                    format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                }
+                else if (numberOfChannels == 3)
+                {
+                    format = VK_FORMAT_R32G32B32_SFLOAT;
+                }
+                else
+                {
+                    format = VK_FORMAT_UNDEFINED;
+                    CORE_HARD_STOP("VK_Texture: number of channels not supported");
+                }
+                break;
+            }
+            default:
+            {
+                format = VK_FORMAT_UNDEFINED;
+                CORE_HARD_STOP("VK_Texture: bytes per channel not supported");
+            }
+        };
         CreateImage(format, VK_IMAGE_TILING_OPTIMAL,
                     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -300,7 +355,10 @@ namespace GfxRenderEngine
                                              static_cast<uint>(m_Height), 1 /*layerCount*/
         );
 
-        GenerateMipmaps();
+        if (generateMipmaps)
+        {
+            GenerateMipmaps();
+        }
 
         m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

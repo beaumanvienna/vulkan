@@ -25,6 +25,8 @@
 
 #include "auxiliary/debug.h"
 #include <glm/gtx/matrix_decompose.hpp>
+#include "tinyexr/tinyexr.h"
+#include "stb_image.h"
 
 #include "auxiliary/math.h"
 #include "core.h"
@@ -36,14 +38,14 @@
 
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
+#include "auxiliary/file.h"
 #include "pbrScene.h"
 
 namespace LucreApp
 {
 
     PBRScene::PBRScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"},
-          m_LaunchVolcanoTimer(1000)
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"}
     {
     }
 
@@ -105,14 +107,6 @@ namespace LucreApp
         StartScripts();
         m_SceneGraph.TraverseLog(SceneGraph::ROOT_NODE);
         m_Dictionary.List();
-
-        m_LaunchVolcanoTimer.SetEventCallback(
-            [](uint in, void* data)
-            {
-                std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
-                Engine::m_Engine->QueueEvent(event);
-                return 0u;
-            });
 
         {
             std::unique_ptr<Event> event = std::make_unique<KeyPressedEvent>(ENGINE_KEY_G);
@@ -324,6 +318,22 @@ namespace LucreApp
             SetCameraTransform();
             m_CameraControllers.SetActiveCameraController(CameraTypes::DefaultCamera);
         }
+
+        // IBL
+        {
+            IBLBuilder::IBLTextureFilenames iblTextureFilenames{
+                "application/lucre/scenes/pbrScene/BRDFIntegrationMap.exr",                       // BRDFIntegrationMap
+                "application/lucre/scenes/pbrScene/TeatroMassimo1k.hdr",                          // environment
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredDiffuse.exr",        // envPrefilteredDiffuse
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel0.exr", // envPrefilteredSpecularLevel0
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel1.exr", // envPrefilteredSpecularLevel1
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel2.exr", // envPrefilteredSpecularLevel2
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel3.exr", // envPrefilteredSpecularLevel3
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel4.exr", // envPrefilteredSpecularLevel4
+                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel5.exr" // envPrefilteredSpecularLevel5
+            };
+            IBLBuilder iblBuilder(iblTextureFilenames);
+        }
     }
 
     void PBRScene::Load()
@@ -392,45 +402,6 @@ namespace LucreApp
                 SetLightView(m_Lightbulb1, m_LightView1);
             }
         }
-
-        {
-            FastgltfBuilder builder("application/lucre/models/mario/banana_minion_rush.glb", *this);
-            builder.SetDictionaryPrefix("mainScene");
-            builder.Load(MAX_B /*instance(s)*/);
-
-            for (uint i = 0; i < MAX_B; ++i)
-            {
-                m_Banana[i] = m_Dictionary.Retrieve(
-                    "mainScene::application/lucre/models/mario/banana_minion_rush.glb::" + std::to_string(i) + "::root");
-
-                TransformComponent transform{};
-                if (i < 12)
-                {
-                    transform.SetTranslation(glm::vec3{5.0f + 0.5 * i, 3.5f, 45.1736});
-                }
-                else
-                {
-                    transform.SetTranslation(glm::vec3{5.0f + 0.5 * (i - 12), 3.5f, 44.1736});
-                }
-                m_Registry.emplace<BananaComponent>(m_Banana[i], true);
-
-                b2BodyDef bodyDef;
-                bodyDef.type = b2_dynamicBody;
-                bodyDef.position.Set(0.0f, -1.0f);
-                auto body = m_World->CreateBody(&bodyDef);
-
-                b2CircleShape circle;
-                circle.m_radius = 0.001f;
-
-                b2FixtureDef fixtureDef;
-                fixtureDef.shape = &circle;
-                fixtureDef.density = 1.0f;
-                fixtureDef.friction = 0.2f;
-                fixtureDef.restitution = 0.4f;
-                body->CreateFixture(&fixtureDef);
-                m_Registry.emplace<RigidbodyComponent>(m_Banana[i], RigidbodyComponent::DYNAMIC, body);
-            }
-        }
     }
 
     void PBRScene::LoadScripts() {}
@@ -452,13 +423,6 @@ namespace LucreApp
                                                    ? Physics::VehicleType::KART
                                                    : Physics::VehicleType::CAR;
             SimulatePhysics(timestep, vehicleType);
-        }
-        UpdateBananas(timestep);
-
-        if (m_StartTimer)
-        {
-            m_StartTimer = false;
-            m_LaunchVolcanoTimer.Start();
         }
 
         if (m_CharacterAnimation)
@@ -631,12 +595,6 @@ namespace LucreApp
                     case ENGINE_KEY_R:
                     {
                         ResetScene();
-                        ResetBananas();
-                        break;
-                    }
-                    case ENGINE_KEY_G:
-                    {
-                        FireVolcano();
                         break;
                     }
                 }
@@ -686,33 +644,10 @@ namespace LucreApp
 
     void PBRScene::InitPhysics()
     {
-        // box2D
-        std::srand(time(nullptr));
-        m_World = std::make_unique<b2World>(GRAVITY);
-
-        {
-            b2BodyDef groundBodyDef;
-            groundBodyDef.position.Set(0.0f, 0.0f);
-
-            m_GroundBody = m_World->CreateBody(&groundBodyDef);
-            b2PolygonShape groundBox;
-            groundBox.SetAsBox(50.0f, 0.04f);
-            m_GroundBody->CreateFixture(&groundBox, 0.0f);
-        }
-
-        {
-            b2BodyDef localGroundBodyDef;
-            localGroundBodyDef.position.Set(0.0f, -10.0f);
-
-            b2Body* localGroundBody = m_World->CreateBody(&localGroundBodyDef);
-            b2PolygonShape localGroundBox;
-            localGroundBox.SetAsBox(50.0f, 0.1f);
-            localGroundBody->CreateFixture(&localGroundBox, 0.0f);
-        }
         // Jolt
         m_Physics = Physics::Create(*this);
         {
-            float heigtWaterSurface{WATER_HEIGHT};
+            float heigtWaterSurface{TERRAIN_HEIGHT};
             float zOffset{2.0f};
             float scaleY{0.4f};
             Physics::GroundSpec groundSpec{.m_Scale{5.0f, scaleY, 50.0f},                                 //
@@ -722,7 +657,7 @@ namespace LucreApp
             m_Physics->CreateGroundPlane(groundSpec); // 5x50 plane, with a small thickness
         }
         {
-            float heigtWaterSurface{WATER_HEIGHT};
+            float heigtWaterSurface{TERRAIN_HEIGHT};
             float zFightingOffset{-0.050f};
             float scaleY{0.4f};
             Physics::GroundSpec groundSpec{.m_Scale{500.0f, scaleY, 500.0f},                                      //
@@ -745,112 +680,11 @@ namespace LucreApp
         m_Physics->LoadModels(carParameters, kartParameters);
     }
 
-    void PBRScene::FireVolcano()
-    {
-        m_Fire = true;
-        m_GroundBody->SetTransform(b2Vec2(0.0f, -10.0f), 0.0f);
-
-        auto view = m_Registry.view<BananaComponent, RigidbodyComponent>();
-        for (auto banana : view)
-        {
-            auto& rigidbody = view.get<RigidbodyComponent>(banana);
-            auto body = static_cast<b2Body*>(rigidbody.m_Body);
-            body->SetTransform(b2Vec2(0.0f, -8.f), 0.0f);
-        }
-    }
-
-    void PBRScene::ResetBananas()
-    {
-        m_GroundBody->SetTransform(b2Vec2(0.0f, 0.0f), 0.0f);
-        auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
-
-        uint i = 0;
-        for (auto banana : view)
-        {
-            auto& transform = view.get<TransformComponent>(banana);
-            auto& rigidbody = view.get<RigidbodyComponent>(banana);
-            auto body = static_cast<b2Body*>(rigidbody.m_Body);
-            body->SetLinearVelocity(b2Vec2(0.0f, 0.01f));
-            body->SetAngularVelocity(0.0f);
-            if (i < 12)
-            {
-                body->SetTransform(b2Vec2(7.0f + 0.5 * i, 6.0f + i * 1.0f), 0.0f);
-                transform.SetTranslationZ(47.1f);
-            }
-            else
-            {
-                body->SetTransform(b2Vec2(7.0f + 0.5 * (i - 12), 6.0f + i * 1.0f), 0.0f);
-                transform.SetTranslationZ(43.0f);
-            }
-            i++;
-        }
-    }
-
     void PBRScene::SimulatePhysics(const Timestep& timestep, Physics::VehicleType vehicleType)
     {
-        // box2D
-        float step = timestep;
-
-        int velocityIterations = 6;
-        int positionIterations = 2;
-        m_World->Step(step, velocityIterations, positionIterations);
         // Jolt
         m_GamepadInputController->MoveVehicle(timestep, m_VehicleControl);
         m_Physics->OnUpdate(timestep, m_VehicleControl, vehicleType);
-    }
-
-    void PBRScene::UpdateBananas(const Timestep& timestep)
-    {
-        auto view = m_Registry.view<BananaComponent, TransformComponent, RigidbodyComponent>();
-
-        static constexpr float ROTATIONAL_SPEED = 3.0f;
-        auto rotationDelta = ROTATIONAL_SPEED * timestep;
-        for (auto banana : view)
-        {
-            auto& transform = view.get<TransformComponent>(banana);
-            auto& rigidbody = view.get<RigidbodyComponent>(banana);
-            auto body = static_cast<b2Body*>(rigidbody.m_Body);
-            b2Vec2 position = body->GetPosition();
-            transform.SetTranslationX(position.x - 2.5f);
-            transform.SetTranslationY(position.y + 3.5f);
-            transform.SetRotationY(transform.GetRotation().y + rotationDelta);
-        }
-
-        static uint index = 0;
-        if (m_Fire) // from volcano
-        {
-            static auto start = Engine::m_Engine->GetTime();
-            if ((Engine::m_Engine->GetTime() - start) > 100ms)
-            {
-                if (index < MAX_B)
-                {
-                    // random values in [-1.0f, 1.0f]
-                    float rVal = 2 * (static_cast<float>(rand()) / RAND_MAX) - 1.0f;
-                    // get new start time
-                    start = Engine::m_Engine->GetTime();
-
-                    // move to backgound on z-axis
-                    auto& transform = m_Registry.get<TransformComponent>(m_Banana[index]);
-                    transform.SetTranslationZ(5.0f);
-
-                    auto& rigidbody = m_Registry.get<RigidbodyComponent>(m_Banana[index]);
-                    auto body = static_cast<b2Body*>(rigidbody.m_Body);
-                    body->SetLinearVelocity(b2Vec2(0.1f + rVal * 4, 5.0f));
-                    body->SetTransform(b2Vec2(0.0f, 3.2f), 0.0f);
-
-                    index++;
-                }
-                else if ((Engine::m_Engine->GetTime() - start) > 1500ms)
-                {
-                    ResetBananas();
-                    m_Fire = false;
-                }
-            }
-        }
-        else
-        {
-            index = 0;
-        }
     }
 
     Camera& PBRScene::GetCamera() { return m_CameraControllers.GetActiveCameraController()->GetCamera(); }
@@ -971,5 +805,111 @@ namespace LucreApp
             m_KeyboardInputController->MoveInPlaneXZ(timestep, cameraTransform);
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
         }
+    }
+
+    PBRScene::IBLBuilder::IBLBuilder(IBLTextureFilenames const& filenames) : m_Initialzed{true}
+    {
+        for (uint index{0}; auto& imageFilepath : filenames)
+        {
+            bool fileExists = EngineCore::FileExists(imageFilepath);
+            CORE_ASSERT(fileExists, "IBLBuilder:: file not found " + imageFilepath);
+            if (!fileExists)
+            {
+                m_Initialzed = false;
+                break;
+            }
+            auto extension = EngineCore::GetFileExtension(imageFilepath);
+            std::transform(extension.begin(), extension.end(), extension.begin(),
+                           [](unsigned char c) { return tolower(c); });
+
+            if (extension == ".exr")
+            {
+                int width = 0, height = 0;
+                float* buffer; // will hold RGBA float data
+                const char* err = nullptr;
+                const uint numberOfChannels = 4;
+
+                int ret = LoadEXR(&buffer, &width, &height, imageFilepath.c_str(), &err);
+                if (ret != TINYEXR_SUCCESS)
+                {
+                    if (err)
+                    {
+                        std::string errorMessage("Failed to load EXR image: ");
+                        errorMessage += std::string(err) + std::string(", ") + imageFilepath;
+                        LOG_APP_CRITICAL("{0}", errorMessage);
+                        FreeEXRErrorMessage(err);
+                    }
+                    m_Initialzed = false;
+                    break;
+                }
+
+                if (ret != TINYEXR_SUCCESS)
+                {
+                    if (err)
+                    {
+                        LOG_APP_CRITICAL("{0}", err);
+                        FreeEXRErrorMessage(err);
+                    }
+                    m_Initialzed = false;
+                    break;
+                }
+
+                if (!buffer)
+                {
+                    std::string errorMessage("IBLBuilder: TinyEXR failed to load EXR image: ");
+                    errorMessage += imageFilepath + std::string("\n");
+                    LOG_APP_CRITICAL("{0}", errorMessage);
+                    m_Initialzed = false;
+                    break;
+                }
+
+                auto& texture = m_IBLTextures[index];
+                texture = Texture::Create();
+                bool textureOk = texture->Init(width, height, buffer, numberOfChannels);
+
+                free(buffer);
+                if (!textureOk)
+                {
+                    m_Initialzed = false;
+                    break;
+                }
+            }
+            else if (extension == ".hdr")
+            {
+                int width, height, channels;
+                const uint desiredNumberOfChannels = 4;
+
+                // stbi_loadf loads HDR image as floats
+                float* buffer = stbi_loadf(imageFilepath.c_str(), &width, &height, &channels, desiredNumberOfChannels);
+                if (!buffer)
+                {
+                    std::string errorMessage("IBLBuilder: STB failed to load HDR image: ");
+                    errorMessage += std::string(stbi_failure_reason()) + std::string("\n");
+                    LOG_APP_CRITICAL("{0}", errorMessage);
+                    m_Initialzed = false;
+                    break;
+                }
+
+                auto& texture = m_IBLTextures[index];
+                texture = Texture::Create();
+                bool textureOk = texture->Init(width, height, buffer, desiredNumberOfChannels);
+
+                stbi_image_free(buffer);
+                if (!textureOk)
+                {
+                    m_Initialzed = false;
+                    break;
+                }
+            }
+            else
+            {
+                LOG_APP_CRITICAL("unsupported extension '{0}'", extension);
+                m_Initialzed = false;
+                break;
+            }
+            LOG_APP_INFO("loaded {0}", imageFilepath);
+            ++index;
+        }
+        CORE_ASSERT(m_Initialzed, "IBLBuilder: failed to initialize");
     }
 } // namespace LucreApp
