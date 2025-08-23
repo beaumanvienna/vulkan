@@ -25,8 +25,6 @@
 
 #include "auxiliary/debug.h"
 #include <glm/gtx/matrix_decompose.hpp>
-#include "tinyexr/tinyexr.h"
-#include "stb_image.h"
 
 #include "auxiliary/math.h"
 #include "core.h"
@@ -35,10 +33,10 @@
 #include "events/mouseEvent.h"
 #include "gui/Common/UI/screen.h"
 #include "resources/resources.h"
+#include "renderer/hiResImage.h"
 
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
-#include "auxiliary/file.h"
 #include "pbrScene.h"
 
 namespace LucreApp
@@ -322,17 +320,17 @@ namespace LucreApp
         // IBL
         {
             IBLBuilder::IBLTextureFilenames iblTextureFilenames{
-                "application/lucre/scenes/pbrScene/BRDFIntegrationMap.exr",                       // BRDFIntegrationMap
-                "application/lucre/scenes/pbrScene/TeatroMassimo1k.hdr",                          // environment
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredDiffuse.exr",        // envPrefilteredDiffuse
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel0.exr", // envPrefilteredSpecularLevel0
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel1.exr", // envPrefilteredSpecularLevel1
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel2.exr", // envPrefilteredSpecularLevel2
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel3.exr", // envPrefilteredSpecularLevel3
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel4.exr", // envPrefilteredSpecularLevel4
-                "application/lucre/scenes/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel5.exr" // envPrefilteredSpecularLevel5
+                "application/lucre/models/assets/pbrScene/BRDFIntegrationMap.exr",                // BRDFIntegrationMap
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1k.hdr",                   // environment
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredDiffuse.exr", // envPrefilteredDiffuse
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel0.exr", // envPrefilteredSpecularLevel0
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel1.exr", // envPrefilteredSpecularLevel1
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel2.exr", // envPrefilteredSpecularLevel2
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel3.exr", // envPrefilteredSpecularLevel3
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel4.exr", // envPrefilteredSpecularLevel4
+                "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel5.exr" // envPrefilteredSpecularLevel5
             };
-            IBLBuilder iblBuilder(iblTextureFilenames);
+            m_IBLBuilder = std::make_shared<IBLBuilder>(iblTextureFilenames);
         }
     }
 
@@ -807,109 +805,55 @@ namespace LucreApp
         }
     }
 
-    PBRScene::IBLBuilder::IBLBuilder(IBLTextureFilenames const& filenames) : m_Initialzed{true}
+    PBRScene::IBLBuilder::IBLBuilder(IBLTextureFilenames const& filenames) : m_Initialized{false}
     {
-        for (uint index{0}; auto& imageFilepath : filenames)
+        std::vector<HiResImage> hiResImages;
+        hiResImages.reserve(IBLTextures::NUM_IBL_IMAGES);
+
+        for (auto& filename : filenames)
         {
-            bool fileExists = EngineCore::FileExists(imageFilepath);
-            CORE_ASSERT(fileExists, "IBLBuilder:: file not found " + imageFilepath);
-            if (!fileExists)
+            hiResImages.emplace_back(filename);
+            if (!hiResImages.back().IsInitialized())
             {
-                m_Initialzed = false;
-                break;
+                return;
             }
-            auto extension = EngineCore::GetFileExtension(imageFilepath);
-            std::transform(extension.begin(), extension.end(), extension.begin(),
-                           [](unsigned char c) { return tolower(c); });
-
-            if (extension == ".exr")
-            {
-                int width = 0, height = 0;
-                float* buffer; // will hold RGBA float data
-                const char* err = nullptr;
-                const uint numberOfChannels = 4;
-
-                int ret = LoadEXR(&buffer, &width, &height, imageFilepath.c_str(), &err);
-                if (ret != TINYEXR_SUCCESS)
-                {
-                    if (err)
-                    {
-                        std::string errorMessage("Failed to load EXR image: ");
-                        errorMessage += std::string(err) + std::string(", ") + imageFilepath;
-                        LOG_APP_CRITICAL("{0}", errorMessage);
-                        FreeEXRErrorMessage(err);
-                    }
-                    m_Initialzed = false;
-                    break;
-                }
-
-                if (ret != TINYEXR_SUCCESS)
-                {
-                    if (err)
-                    {
-                        LOG_APP_CRITICAL("{0}", err);
-                        FreeEXRErrorMessage(err);
-                    }
-                    m_Initialzed = false;
-                    break;
-                }
-
-                if (!buffer)
-                {
-                    std::string errorMessage("IBLBuilder: TinyEXR failed to load EXR image: ");
-                    errorMessage += imageFilepath + std::string("\n");
-                    LOG_APP_CRITICAL("{0}", errorMessage);
-                    m_Initialzed = false;
-                    break;
-                }
-
-                auto& texture = m_IBLTextures[index];
-                texture = Texture::Create();
-                bool textureOk = texture->Init(width, height, buffer, numberOfChannels);
-
-                free(buffer);
-                if (!textureOk)
-                {
-                    m_Initialzed = false;
-                    break;
-                }
-            }
-            else if (extension == ".hdr")
-            {
-                int width, height, channels;
-                const uint desiredNumberOfChannels = 4;
-
-                // stbi_loadf loads HDR image as floats
-                float* buffer = stbi_loadf(imageFilepath.c_str(), &width, &height, &channels, desiredNumberOfChannels);
-                if (!buffer)
-                {
-                    std::string errorMessage("IBLBuilder: STB failed to load HDR image: ");
-                    errorMessage += std::string(stbi_failure_reason()) + std::string("\n");
-                    LOG_APP_CRITICAL("{0}", errorMessage);
-                    m_Initialzed = false;
-                    break;
-                }
-
-                auto& texture = m_IBLTextures[index];
-                texture = Texture::Create();
-                bool textureOk = texture->Init(width, height, buffer, desiredNumberOfChannels);
-
-                stbi_image_free(buffer);
-                if (!textureOk)
-                {
-                    m_Initialzed = false;
-                    break;
-                }
-            }
-            else
-            {
-                LOG_APP_CRITICAL("unsupported extension '{0}'", extension);
-                m_Initialzed = false;
-                break;
-            }
-            LOG_APP_INFO("loaded {0}", imageFilepath);
-            ++index;
         }
-        CORE_ASSERT(m_Initialzed, "IBLBuilder: failed to initialize");
+
+        // textures with one mip level
+        IBLTextures iblTextures[] = {BRDFIntegrationMap, environment, envPrefilteredDiffuse};
+        for (auto ibltexture : iblTextures)
+        {
+            auto& hiResImage = hiResImages[ibltexture];
+            const uint mipLevels = 1;
+            uint width = hiResImage.GetWidth();
+            uint height = hiResImage.GetHeight();
+            float* buffer = hiResImage.GetBuffer();
+
+            auto& texture = m_IBLTextures[ibltexture];
+            texture = Texture::Create();
+            bool textureOk = texture->Init(width, height, buffer, mipLevels);
+            if (!textureOk)
+            {
+                return;
+            }
+            LOG_APP_INFO("loaded {0}", hiResImage.GetFilename());
+        }
+
+        // envPrefilteredSpecular with NUM_MIP_LEVELS_SPECULAR mip levels
+        {
+            std::ranges::subrange<std::vector<HiResImage>::iterator> hiResImageAllMipLevels = std::ranges::subrange(
+                hiResImages.begin() + envPrefilteredSpecularLevel0, hiResImages.begin() + envPrefilteredSpecularLevel5);
+            const uint mipLevels = hiResImageAllMipLevels.size();
+
+            auto& texture = m_IBLTextures[IBLTextures::envPrefilteredSpecularLevel0];
+            texture = Texture::Create();
+            //            bool textureOk = texture->Init(hiResImageAllMipLevels);
+            //            if (!textureOk)
+            //            {
+            //                return;
+            //            }
+        }
+        m_Initialized = true;
     }
+
 } // namespace LucreApp

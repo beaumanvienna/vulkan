@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -21,37 +21,38 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
-
-#include <memory>
-
 #include "engine.h"
-
 namespace GfxRenderEngine
 {
 
-    class Texture
+    // HiResImage: class to load an EXR and HDR from disk, to provide the data buffer, and free it
+    class HiResImage
     {
+    public:
+        enum ImageType
+        {
+            HDR = 1,
+            EXR,
+            UNDEFINED
+        };
 
     public:
-        static constexpr bool USE_SRGB = true;
-        static constexpr bool USE_UNORM = false;
+        HiResImage() = delete;
+        HiResImage(std::string const& filename);
+        ~HiResImage();
+        float* GetBuffer() const { return m_Buffer; }
+        bool IsInitialized() const { return m_Initialized; };
+        int GetWidth() const { return m_Width; }
+        int GetHeight() const { return m_Height; }
+        ImageType GetImageType() const { return m_ImageType; }
+        std::string& GetFilename() { return m_Filename; }
 
-    public:
-        virtual ~Texture() = default;
-
-        virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter,
-                          int magFilter) = 0;
-        virtual bool Init(const uint width, const uint height, float* data, const uint mipLevels,
-                          bool linearFilter = true) = 0;
-        virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) = 0;
-        virtual bool Init(const unsigned char* data, int length, bool sRGB) = 0;
-        virtual int GetWidth() const = 0;
-        virtual int GetHeight() const = 0;
-        virtual void Resize(uint width, uint height) = 0;
-        virtual void Blit(uint x, uint y, uint width, uint height, uint bpp, const void* data) = 0;
-        virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) = 0;
-        virtual void SetFilename(const std::string& filename) = 0;
-
-        static std::shared_ptr<Texture> Create();
+    private:
+        std::string m_Filename;
+        int m_Width;
+        int m_Height;
+        float* m_Buffer; // will hold RGBA float data
+        ImageType m_ImageType;
+        bool m_Initialized;
     };
 } // namespace GfxRenderEngine

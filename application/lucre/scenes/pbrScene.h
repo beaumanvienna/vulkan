@@ -86,20 +86,23 @@ namespace LucreApp
                 envPrefilteredSpecularLevel3,
                 envPrefilteredSpecularLevel4,
                 envPrefilteredSpecularLevel5,
-                NUM_IBL_TEXTURES
+                NUM_IBL_IMAGES
             };
-            using IBLTextureFilenames = std::array<std::string, IBLTextures::NUM_IBL_TEXTURES>;
+            using IBLTextureFilenames = std::array<std::string, IBLTextures::NUM_IBL_IMAGES>;
 
         public:
             IBLBuilder() = delete;
             IBLBuilder(IBLTextureFilenames const& filenames);
-            bool IsInitialized() { return m_Initialzed; }
+            bool IsInitialized() { return m_Initialized; }
 
         private:
-            static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTextures::NUM_IBL_TEXTURES -
+            // NUM_IBL_IMAGES: 9 images, but only BRDFint, env, prefilteredDiff, and prefilturedSpec (6 mip levels) as
+            // textures
+            static constexpr int NUM_OF_TEXTURES{4};
+            static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTextures::NUM_IBL_IMAGES -
                                                          IBLTextures::envPrefilteredSpecularLevel0};
-            std::array<std::shared_ptr<Texture>, IBLTextures::NUM_IBL_TEXTURES> m_IBLTextures;
-            bool m_Initialzed;
+            std::array<std::shared_ptr<Texture>, NUM_OF_TEXTURES> m_IBLTextures;
+            bool m_Initialized;
         };
 
         enum CameraTypes
@@ -139,6 +142,7 @@ namespace LucreApp
         CameraControllers m_CameraControllers;
         std::shared_ptr<Camera> m_LightView0, m_LightView1;
         std::shared_ptr<KeyboardInputController> m_KeyboardInputController;
+        std::shared_ptr<IBLBuilder> m_IBLBuilder;
 
         // game objects
         entt::entity m_Camera[CameraTypes::MaxCameraTypes];

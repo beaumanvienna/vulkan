@@ -40,7 +40,7 @@ namespace GfxRenderEngine
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter,
                           int magFilter) override;
-        virtual bool Init(const uint width, const uint height, float* data, const uint numberOfChannels,
+        virtual bool Init(const uint width, const uint height, float* data, const uint mipLevels,
                           bool linearFilter = true) override;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) override;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) override;
@@ -54,10 +54,11 @@ namespace GfxRenderEngine
         const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 
     private:
-        bool Create(const uint numberOfChannels = 4, const uint bytesPerChannel = 1, const bool generateMipmaps = true);
+        bool Create(const uint mipLevels = 0, const uint bytesPerChannel = 1, const bool generateMipmaps = true);
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
                           VkDeviceMemory& bufferMemory);
-        void CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+        void CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+                         const uint mipLevels = 0);
         void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
         void GenerateMipmaps();
 
