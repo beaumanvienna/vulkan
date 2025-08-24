@@ -807,51 +807,51 @@ namespace LucreApp
 
     PBRScene::IBLBuilder::IBLBuilder(IBLTextureFilenames const& filenames) : m_Initialized{false}
     {
-        std::vector<HiResImage> hiResImages;
-        hiResImages.reserve(IBLTextures::NUM_IBL_IMAGES);
+        { // textures with one mip level
+            auto iblTextures = std::to_array({BRDFIntegrationMap, environment, envPrefilteredDiffuse});
 
-        for (auto& filename : filenames)
-        {
-            hiResImages.emplace_back(filename);
-            if (!hiResImages.back().IsInitialized())
+            for (auto ibltexture : iblTextures)
             {
-                return;
+                // vector with size == 1 to satisfy the interface of Texture
+                std::vector<HiResImage> hiResImages;
+                hiResImages.emplace_back(filenames[ibltexture]);
+                if (!hiResImages.back().IsInitialized())
+                {
+                    return;
+                }
+
+                auto& texture = m_IBLTextures[ibltexture];
+                texture = Texture::Create();
+                bool textureOk = texture->Init(hiResImages);
+                if (!textureOk)
+                {
+                    return;
+                }
+                LOG_APP_INFO("loaded {0}", hiResImages.back().GetFilename());
             }
         }
 
-        // textures with one mip level
-        IBLTextures iblTextures[] = {BRDFIntegrationMap, environment, envPrefilteredDiffuse};
-        for (auto ibltexture : iblTextures)
-        {
-            auto& hiResImage = hiResImages[ibltexture];
-            const uint mipLevels = 1;
-            uint width = hiResImage.GetWidth();
-            uint height = hiResImage.GetHeight();
-            float* buffer = hiResImage.GetBuffer();
+        { // envPrefilteredSpecular with NUM_MIP_LEVELS_SPECULAR mip levels
+            std::vector<HiResImage> hiResImages;
+            hiResImages.reserve(NUM_MIP_LEVELS_SPECULAR);
 
-            auto& texture = m_IBLTextures[ibltexture];
+            for (uint index = 0; index < NUM_MIP_LEVELS_SPECULAR; ++index)
+            {
+                hiResImages.emplace_back(filenames[IBLTextures::envPrefilteredSpecularLevel0 + index]);
+                if (!hiResImages.back().IsInitialized())
+                {
+                    return;
+                }
+                LOG_APP_INFO("loaded {0}", hiResImages.back().GetFilename());
+            }
+
+            auto& texture = m_IBLTextures[IBLTextures::envPrefilteredSpecularLevel0];
             texture = Texture::Create();
-            bool textureOk = texture->Init(width, height, buffer, mipLevels);
+            bool textureOk = texture->Init(hiResImages);
             if (!textureOk)
             {
                 return;
             }
-            LOG_APP_INFO("loaded {0}", hiResImage.GetFilename());
-        }
-
-        // envPrefilteredSpecular with NUM_MIP_LEVELS_SPECULAR mip levels
-        {
-            std::ranges::subrange<std::vector<HiResImage>::iterator> hiResImageAllMipLevels = std::ranges::subrange(
-                hiResImages.begin() + envPrefilteredSpecularLevel0, hiResImages.begin() + envPrefilteredSpecularLevel5);
-            const uint mipLevels = hiResImageAllMipLevels.size();
-
-            auto& texture = m_IBLTextures[IBLTextures::envPrefilteredSpecularLevel0];
-            texture = Texture::Create();
-            //            bool textureOk = texture->Init(hiResImageAllMipLevels);
-            //            if (!textureOk)
-            //            {
-            //                return;
-            //            }
         }
         m_Initialized = true;
     }

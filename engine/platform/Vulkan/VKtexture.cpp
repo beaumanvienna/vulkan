@@ -114,29 +114,182 @@ namespace GfxRenderEngine
         return ok;
     }
 
-    // texture with floats
-    bool VK_Texture::Init(const uint width, const uint height, float* data, const uint mipLevels, bool linearFilter)
+    // create texture with mip maps from vector of high resolution images
+    bool VK_Texture::Init(std::vector<HiResImage> const& hiResImages, bool linearFilter)
     {
-        bool ok = false;
-        m_FileName = "float data";
-        m_Width = width;
-        m_Height = height;
-        m_LocalBuffer = reinterpret_cast<uchar*>(data);
-        linearFilter ? m_MinFilter = VK_FILTER_LINEAR : m_MinFilter = VK_FILTER_NEAREST;
-        linearFilter ? m_MagFilter = VK_FILTER_LINEAR : m_MagFilter = VK_FILTER_NEAREST;
-        m_MinFilterMip = VK_FILTER_LINEAR;
+        if (!hiResImages.size()) // sanity check
+        {
+            LOG_CORE_CRITICAL("Texture: hiResImages is empty");
+            return false;
+        }
+        for (auto const& hiResImage : hiResImages) // sanity check
+        {
+            if (!hiResImage.IsInitialized())
+            {
+                LOG_CORE_CRITICAL("Texture: Couldn't create texture from {0}", hiResImage.GetFilename());
+                return false;
+            }
+        }
 
-        if (m_LocalBuffer)
+        auto device = VK_Core::m_Device->Device();
+        m_FileName = hiResImages.size() == 1 ? "float data" : "float data with mip maps";
+
+        HiResImage const& mipLevel0 = hiResImages[0];
+        uint baseWidth = m_Width = mipLevel0.GetWidth();
+        uint baseHeight = m_Height = mipLevel0.GetHeight();
+
+        m_MinFilter = linearFilter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+        m_MagFilter = linearFilter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+        m_MinFilterMip = VK_FILTER_LINEAR;
+        m_MipLevels = hiResImages.size();
+
+        // create the image
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT; // 4x float32
+        imageInfo.extent = {baseWidth, baseHeight, 1};
+        imageInfo.mipLevels = m_MipLevels;
+        imageInfo.arrayLayers = 1;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
         {
-            const uint bytePerChannel = sizeof(float);
-            bool generateMipmaps = false;
-            ok = Create(mipLevels, bytePerChannel, generateMipmaps);
+            auto result = vkCreateImage(device, &imageInfo, nullptr, &m_TextureImage);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create image!");
+                return false;
+            }
         }
-        else
+
+        // allocate and bind memory
+        VkMemoryRequirements memReq;
+        vkGetImageMemoryRequirements(device, m_TextureImage, &memReq);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memReq.size;
+        allocInfo.memoryTypeIndex =
+            VK_Core::m_Device->FindMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
+        vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+
+        // copy regions
+        std::vector<VkBufferImageCopy> regions;
+        regions.resize(m_MipLevels);
+        VkDeviceSize offset = 0;
+
+        for (uint mipLevel = 0; auto& region : regions)
         {
-            LOG_CORE_CRITICAL("Texture: Couldn't load file {0}", m_FileName);
+            uint mipWidth = std::max(1u, baseWidth >> mipLevel);
+            uint mipHeight = std::max(1u, baseHeight >> mipLevel);
+            const uint bytesPerChannel = sizeof(float);
+            const uint numberOfChannels = 4;
+            VkDeviceSize levelSize = mipWidth * mipHeight * numberOfChannels * bytesPerChannel;
+
+            region.bufferOffset = offset;
+            region.bufferRowLength = 0;
+            region.bufferImageHeight = 0;
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.mipLevel = mipLevel;
+            region.imageSubresource.baseArrayLayer = 0;
+            region.imageSubresource.layerCount = 1;
+            region.imageOffset = {0, 0, 0};
+            region.imageExtent = {mipWidth, mipHeight, 1};
+
+            offset += levelSize;
+            ++mipLevel;
         }
-        return ok;
+
+        // create staging buffer for all mip levels
+        VkDeviceSize totalSize = 0;
+        std::vector<VkDeviceSize> levelSizes(m_MipLevels);
+        for (uint mipLevel = 0; mipLevel < m_MipLevels; ++mipLevel)
+        {
+            uint mipW = std::max(1u, baseWidth >> mipLevel);
+            uint mipH = std::max(1u, baseHeight >> mipLevel);
+            levelSizes[mipLevel] = mipW * mipH * 4 * sizeof(float);
+            totalSize += levelSizes[mipLevel];
+        }
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        CreateBuffer(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+                     stagingBufferMemory);
+
+        // copy mip data into staging buffer
+        void* data;
+        vkMapMemory(device, stagingBufferMemory, 0, totalSize, 0, &data);
+        uint8_t* dst = reinterpret_cast<uint8_t*>(data);
+        for (uint mipLevel = 0; mipLevel < m_MipLevels; ++mipLevel)
+        {
+            memcpy(dst, hiResImages[mipLevel].GetBuffer(), static_cast<size_t>(levelSizes[mipLevel]));
+            dst += levelSizes[mipLevel];
+        }
+        vkUnmapMemory(device, stagingBufferMemory);
+
+        // copy buffer to image
+        TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        VkCommandBuffer commandBuffer = VK_Core::m_Device->BeginSingleTimeCommands();
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, m_TextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                   static_cast<uint>(regions.size()), regions.data());
+        }
+        VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
+        TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+        // create image view
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = m_TextureImage;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = m_MipLevels;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        {
+            auto result = vkCreateImageView(device, &viewInfo, nullptr, &m_ImageView);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create image view!");
+                return false;
+            }
+        }
+
+        // create sampler
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = static_cast<float>(m_MipLevels);
+        samplerInfo.maxAnisotropy = 1.0f;
+        samplerInfo.anisotropyEnable = VK_FALSE;
+        {
+            auto result = vkCreateSampler(device, &samplerInfo, nullptr, &m_Sampler);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to create sampler!");
+                return false;
+            }
+        }
+        return true;
     }
 
     void VK_Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -193,7 +346,7 @@ namespace GfxRenderEngine
                                  VkMemoryPropertyFlags properties, const uint mipLevels)
     {
         auto device = VK_Core::m_Device->Device();
-        if (mipLevels == 0)
+        if (mipLevels == AUTO_MIP_LEVEL)
         {
             m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
         }
@@ -292,7 +445,7 @@ namespace GfxRenderEngine
         }
     }
 
-    bool VK_Texture::Create(const uint mipLevels, const uint bytesPerChannel, const bool generateMipmaps)
+    bool VK_Texture::Create(const uint mipLevels, const uint bytesPerChannel)
     {
         if (!m_LocalBuffer)
         {
@@ -342,7 +495,7 @@ namespace GfxRenderEngine
         };
         CreateImage(format, VK_IMAGE_TILING_OPTIMAL,
                     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, generateMipmaps);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mipLevels);
 
         TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -350,7 +503,7 @@ namespace GfxRenderEngine
                                              static_cast<uint>(m_Height), 1 /*layerCount*/
         );
 
-        if (generateMipmaps)
+        if (mipLevels != 1)
         {
             GenerateMipmaps();
         }
@@ -423,6 +576,7 @@ namespace GfxRenderEngine
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("failed to create image view!");
+                return false;
             }
         }
 

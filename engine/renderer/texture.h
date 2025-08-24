@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "engine.h"
+#include "renderer/hiResImage.h"
 
 namespace GfxRenderEngine
 {
@@ -41,10 +42,9 @@ namespace GfxRenderEngine
 
         virtual bool Init(const uint width, const uint height, bool sRGB, const void* data, int minFilter,
                           int magFilter) = 0;
-        virtual bool Init(const uint width, const uint height, float* data, const uint mipLevels,
-                          bool linearFilter = true) = 0;
         virtual bool Init(const std::string& fileName, bool sRGB, bool flip = true) = 0;
         virtual bool Init(const unsigned char* data, int length, bool sRGB) = 0;
+        virtual bool Init(std::vector<HiResImage> const& hiResImages, bool linearFilter = true) = 0;
         virtual int GetWidth() const = 0;
         virtual int GetHeight() const = 0;
         virtual void Resize(uint width, uint height) = 0;

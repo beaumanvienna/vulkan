@@ -40,12 +40,13 @@ namespace GfxRenderEngine
         HiResImage() = delete;
         HiResImage(std::string const& filename);
         ~HiResImage();
+
         float* GetBuffer() const { return m_Buffer; }
         bool IsInitialized() const { return m_Initialized; };
         int GetWidth() const { return m_Width; }
         int GetHeight() const { return m_Height; }
         ImageType GetImageType() const { return m_ImageType; }
-        std::string& GetFilename() { return m_Filename; }
+        std::string const& GetFilename() const { return m_Filename; }
 
     private:
         std::string m_Filename;
