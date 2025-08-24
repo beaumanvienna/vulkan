@@ -28,16 +28,20 @@
 
 namespace GfxRenderEngine
 {
-    HiResImage::HiResImage(std::string const& filename)
-        : m_Filename{filename}, m_Width{0}, m_Height{0}, m_Buffer{nullptr}, m_ImageType{ImageType::UNDEFINED},
-          m_Initialized{false}
+    HiResImage::HiResImage()
+        : m_Filename{}, m_Width{0}, m_Height{0}, m_Buffer{nullptr}, m_ImageType{ImageType::UNDEFINED}, m_Initialized{false}
+    {
+    }
+
+    bool HiResImage::Init(std::string const& filename)
     {
         bool fileExists = EngineCore::FileExists(filename);
         CORE_ASSERT(fileExists, "IBLBuilder::HiResImage file not found " + filename);
         if (!fileExists)
         {
-            return;
+            return false;
         }
+
         auto extension = EngineCore::GetFileExtension(filename);
         std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return tolower(c); });
 
@@ -52,10 +56,10 @@ namespace GfxRenderEngine
                 {
                     std::string errorMessage("IBLBuilder::HiResImage: TinyEXR failed to load EXR image: ");
                     errorMessage += std::string(err);
-                    LOG_APP_CRITICAL("{0} {1}", errorMessage, filename);
+                    LOG_APP_CRITICAL("{0}, filename '{1}'", errorMessage, filename);
                     FreeEXRErrorMessage(err);
                 }
-                return;
+                return false;
             }
             m_ImageType = HiResImage::ImageType::EXR;
         }
@@ -71,16 +75,19 @@ namespace GfxRenderEngine
                 std::string errorMessage("IBLBuilder::HiResImage: STB failed to load HDR image: ");
                 errorMessage += std::string(stbi_failure_reason());
                 LOG_APP_CRITICAL("{0} {1}", errorMessage, filename);
+                return false;
             }
             m_ImageType = HiResImage::ImageType::HDR;
         }
         else
         {
-            LOG_APP_CRITICAL("unsupported extension '{0}'", extension);
-            return;
+            LOG_APP_CRITICAL("unsupported extension '{0}' of filename {1}", extension, filename);
+            return false;
         }
         // all good
+        m_Filename = filename;
         m_Initialized = true;
+        return true;
     }
 
     HiResImage::HiResImage::~HiResImage()

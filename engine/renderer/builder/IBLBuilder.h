@@ -21,39 +21,42 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #pragma once
+
 #include "engine.h"
+#include "renderer/texture.h"
 namespace GfxRenderEngine
 {
 
-    // HiResImage: class to load an EXR and HDR from disk, to provide the data buffer, and free it
-    class HiResImage
+    // IBLBuilder: class to manage image-based lighting
+    class IBLBuilder
     {
     public:
-        enum ImageType
+        enum IBLTexture
         {
-            HDR = 1,
-            EXR,
-            UNDEFINED
+            BRDFIntegrationMap = 0,
+            environment,
+            envPrefilteredDiffuse,
+            envPrefilteredSpecularLevel0,
+            envPrefilteredSpecularLevel1,
+            envPrefilteredSpecularLevel2,
+            envPrefilteredSpecularLevel3,
+            envPrefilteredSpecularLevel4,
+            envPrefilteredSpecularLevel5,
+            NUM_IBL_IMAGES
         };
+        using IBLTextureFilenames = std::array<std::string, IBLTexture::NUM_IBL_IMAGES>;
 
     public:
-        HiResImage();
-        bool Init(std::string const& filename);
-        ~HiResImage();
-
-        float* GetBuffer() const { return m_Buffer; }
-        bool IsInitialized() const { return m_Initialized; };
-        int GetWidth() const { return m_Width; }
-        int GetHeight() const { return m_Height; }
-        ImageType GetImageType() const { return m_ImageType; }
-        std::string const& GetFilename() const { return m_Filename; }
+        IBLBuilder() = delete;
+        IBLBuilder(IBLTextureFilenames const& filenames);
+        bool IsInitialized() { return m_Initialized; }
 
     private:
-        std::string m_Filename;
-        int m_Width;
-        int m_Height;
-        float* m_Buffer; // will hold RGBA float data
-        ImageType m_ImageType;
+        // NUM_IBL_IMAGES: 9 images, but only BRDFint, env, prefilteredDiff, and prefilturedSpec (6 mip levels) as
+        // textures
+        static constexpr int NUM_OF_TEXTURES{4};
+        static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTexture::NUM_IBL_IMAGES - IBLTexture::envPrefilteredSpecularLevel0};
+        std::array<std::shared_ptr<Texture>, NUM_OF_TEXTURES> m_IBLTextures;
         bool m_Initialized;
     };
 } // namespace GfxRenderEngine

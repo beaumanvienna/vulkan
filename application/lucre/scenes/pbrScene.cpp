@@ -33,7 +33,6 @@
 #include "events/mouseEvent.h"
 #include "gui/Common/UI/screen.h"
 #include "resources/resources.h"
-#include "renderer/hiResImage.h"
 
 #include "application/lucre/UI/imgui.h"
 #include "application/lucre/scripts/duck/duckScript.h"
@@ -804,56 +803,4 @@ namespace LucreApp
             m_GamepadInputController->MoveInPlaneXZ(timestep, cameraTransform);
         }
     }
-
-    PBRScene::IBLBuilder::IBLBuilder(IBLTextureFilenames const& filenames) : m_Initialized{false}
-    {
-        { // textures with one mip level
-            auto iblTextures = std::to_array({BRDFIntegrationMap, environment, envPrefilteredDiffuse});
-
-            for (auto ibltexture : iblTextures)
-            {
-                // vector with size == 1 to satisfy the interface of Texture
-                std::vector<HiResImage> hiResImages;
-                hiResImages.emplace_back(filenames[ibltexture]);
-                if (!hiResImages.back().IsInitialized())
-                {
-                    return;
-                }
-
-                auto& texture = m_IBLTextures[ibltexture];
-                texture = Texture::Create();
-                bool textureOk = texture->Init(hiResImages);
-                if (!textureOk)
-                {
-                    return;
-                }
-                LOG_APP_INFO("loaded {0}", hiResImages.back().GetFilename());
-            }
-        }
-
-        { // envPrefilteredSpecular with NUM_MIP_LEVELS_SPECULAR mip levels
-            std::vector<HiResImage> hiResImages;
-            hiResImages.reserve(NUM_MIP_LEVELS_SPECULAR);
-
-            for (uint index = 0; index < NUM_MIP_LEVELS_SPECULAR; ++index)
-            {
-                hiResImages.emplace_back(filenames[IBLTextures::envPrefilteredSpecularLevel0 + index]);
-                if (!hiResImages.back().IsInitialized())
-                {
-                    return;
-                }
-                LOG_APP_INFO("loaded {0}", hiResImages.back().GetFilename());
-            }
-
-            auto& texture = m_IBLTextures[IBLTextures::envPrefilteredSpecularLevel0];
-            texture = Texture::Create();
-            bool textureOk = texture->Init(hiResImages);
-            if (!textureOk)
-            {
-                return;
-            }
-        }
-        m_Initialized = true;
-    }
-
 } // namespace LucreApp

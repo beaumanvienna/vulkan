@@ -26,6 +26,7 @@
 #include "renderer/cameraController.h"
 #include "renderer/cubemap.h"
 #include "renderer/renderer.h"
+#include "renderer/builder/IBLBuilder.h"
 #include "scene/components.h"
 #include "scene/scene.h"
 #include "scene/sceneLoader.h"
@@ -72,39 +73,6 @@ namespace LucreApp
         void SetCameraTransform(const Timestep& timestep = Timestep(0.1s));
 
     private:
-        class IBLBuilder
-        {
-        public:
-            enum IBLTextures
-            {
-                BRDFIntegrationMap = 0,
-                environment,
-                envPrefilteredDiffuse,
-                envPrefilteredSpecularLevel0,
-                envPrefilteredSpecularLevel1,
-                envPrefilteredSpecularLevel2,
-                envPrefilteredSpecularLevel3,
-                envPrefilteredSpecularLevel4,
-                envPrefilteredSpecularLevel5,
-                NUM_IBL_IMAGES
-            };
-            using IBLTextureFilenames = std::array<std::string, IBLTextures::NUM_IBL_IMAGES>;
-
-        public:
-            IBLBuilder() = delete;
-            IBLBuilder(IBLTextureFilenames const& filenames);
-            bool IsInitialized() { return m_Initialized; }
-
-        private:
-            // NUM_IBL_IMAGES: 9 images, but only BRDFint, env, prefilteredDiff, and prefilturedSpec (6 mip levels) as
-            // textures
-            static constexpr int NUM_OF_TEXTURES{4};
-            static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTextures::NUM_IBL_IMAGES -
-                                                         IBLTextures::envPrefilteredSpecularLevel0};
-            std::array<std::shared_ptr<Texture>, NUM_OF_TEXTURES> m_IBLTextures;
-            bool m_Initialized;
-        };
-
         enum CameraTypes
         {
             DefaultCamera = 0,
