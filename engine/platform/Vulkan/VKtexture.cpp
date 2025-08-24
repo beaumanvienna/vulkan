@@ -345,6 +345,7 @@ namespace GfxRenderEngine
     void VK_Texture::CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
                                  VkMemoryPropertyFlags properties, const uint mipLevels)
     {
+        CORE_ASSERT(mipLevels, "VK_Texture::CreateImage: mipLevels must be set");
         auto device = VK_Core::m_Device->Device();
         if (mipLevels == AUTO_MIP_LEVEL)
         {
@@ -447,7 +448,7 @@ namespace GfxRenderEngine
 
     bool VK_Texture::Create(const uint mipLevels, const uint bytesPerChannel)
     {
-        if (!m_LocalBuffer)
+        if ((!m_LocalBuffer) || (mipLevels == 0))
         {
             LOG_CORE_CRITICAL("failed to load texture image!");
             return false;
@@ -503,7 +504,7 @@ namespace GfxRenderEngine
                                              static_cast<uint>(m_Height), 1 /*layerCount*/
         );
 
-        if (mipLevels != 1)
+        if (m_MipLevels != 1)
         {
             GenerateMipmaps();
         }
