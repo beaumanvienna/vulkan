@@ -1067,6 +1067,14 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Renderer::LightingPassIBL()
+    {
+        if (m_CurrentCommandBuffer)
+        {
+            m_RenderSystemDeferredShading->LightingPassIBL(m_FrameInfo);
+        }
+    }
+
     void VK_Renderer::TransparencyPass(Registry& registry, ParticleSystem* particleSystem)
     {
         if (m_CurrentCommandBuffer)
@@ -1205,6 +1213,7 @@ namespace GfxRenderEngine
             "grass2.vert",
             "deferredShading.vert",
             "deferredShading.frag",
+            "deferredShadingIBL.frag",
             "skybox.vert",
             "skybox.frag",
             "shadowShaderAnimatedInstanced.vert",

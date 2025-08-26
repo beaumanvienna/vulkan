@@ -40,11 +40,16 @@ namespace GfxRenderEngine
         m_LightingDescriptorSets = lightingDescriptorSet;
         m_ShadowMapDescriptorSets = shadowMapDescriptorSet;
         CreateLightingPipeline(renderPass);
+
+        // IBL pipeline
+        CreateLightingPipelineLayoutIBL(lightingDescriptorSetLayouts);
+        CreateLightingPipelineIBL(renderPass);
     }
 
     VK_RenderSystemDeferredShading::~VK_RenderSystemDeferredShading()
     {
         vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(VK_Core::m_Device->Device(), m_LightingPipelineLayoutIBL, nullptr);
     }
 
     void
@@ -92,6 +97,76 @@ namespace GfxRenderEngine
     void VK_RenderSystemDeferredShading::LightingPass(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet)
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
+
+        std::vector<VkDescriptorSet> descriptorSets = {
+            frameInfo.m_GlobalDescriptorSet,
+            lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
+            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
+
+        vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                m_LightingPipelineLayout, // VkPipelineLayout layout
+                                0,                        // uint32_t         firstSet
+                                descriptorSets.size(),    // uint32_t         descriptorSetCount
+                                descriptorSets.data(),    // VkDescriptorSet* pDescriptorSets
+                                0,                        // uint32_t         dynamicOffsetCount
+                                nullptr                   // const uint32_t*  pDynamicOffsets
+        );
+
+        vkCmdDraw(frameInfo.m_CommandBuffer,
+                  3, // vertexCount
+                  1, // instanceCount
+                  0, // firstVertex
+                  0  // firstInstance
+        );
+    }
+
+    // IBL
+    void
+    VK_RenderSystemDeferredShading::CreateLightingPipelineLayoutIBL(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
+    {
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
+
+        VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
+        lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        lightingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
+        lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        lightingPipelineLayoutInfo.pushConstantRangeCount = 1;
+        lightingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr,
+                                             &m_LightingPipelineLayoutIBL);
+        if (result != VK_SUCCESS)
+        {
+            VK_Core::m_Device->PrintError(result);
+            LOG_CORE_CRITICAL("failed to create IBL pipeline layout!");
+        }
+    }
+
+    void VK_RenderSystemDeferredShading::CreateLightingPipelineIBL(VkRenderPass renderPass)
+    {
+        CORE_ASSERT(m_LightingPipelineLayoutIBL != nullptr, "IBL pipeline layout is null");
+
+        PipelineConfigInfo pipelineConfig{};
+
+        VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+        pipelineConfig.renderPass = renderPass;
+        pipelineConfig.pipelineLayout = m_LightingPipelineLayoutIBL;
+        pipelineConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+        pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_LIGHTING);
+        pipelineConfig.m_BindingDescriptions.clear(); // this pipeline is not using vertices
+        pipelineConfig.m_AttributeDescriptions.clear();
+
+        // create a pipeline
+        m_LightingPipelineIBL = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/deferredShading.vert.spv",
+                                                              "bin-int/deferredShadingIBL.frag.spv", pipelineConfig);
+    }
+
+    void VK_RenderSystemDeferredShading::LightingPassIBL(const VK_FrameInfo& frameInfo,
+                                                         VkDescriptorSet* lightingDescriptorSet)
+    {
+        m_LightingPipelineIBL->Bind(frameInfo.m_CommandBuffer);
 
         std::vector<VkDescriptorSet> descriptorSets = {
             frameInfo.m_GlobalDescriptorSet,

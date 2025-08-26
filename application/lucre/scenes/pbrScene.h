@@ -105,6 +105,7 @@ namespace LucreApp
 
         Renderer* m_Renderer;
         SceneLoaderJSON m_SceneLoaderJSON;
+        bool m_UseIBL;
 
         // all things camera
         CameraControllers m_CameraControllers;

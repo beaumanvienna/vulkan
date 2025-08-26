@@ -52,14 +52,23 @@ namespace GfxRenderEngine
         VK_RenderSystemDeferredShading& operator=(const VK_RenderSystemDeferredShading&) = delete;
 
         void LightingPass(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet = nullptr);
+        void LightingPassIBL(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet = nullptr);
 
     private:
         void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreateLightingPipeline(VkRenderPass renderPass);
 
+        void CreateLightingPipelineLayoutIBL(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreateLightingPipelineIBL(VkRenderPass renderPass);
+
     private:
+        // constant ambient light
         VkPipelineLayout m_LightingPipelineLayout;
         std::unique_ptr<VK_Pipeline> m_LightingPipeline;
+
+        // IBL as ambient light
+        VkPipelineLayout m_LightingPipelineLayoutIBL;
+        std::unique_ptr<VK_Pipeline> m_LightingPipelineIBL;
 
         const VkDescriptorSet* m_LightingDescriptorSets;
         const VkDescriptorSet* m_ShadowMapDescriptorSets;

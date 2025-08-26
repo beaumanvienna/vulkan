@@ -42,7 +42,8 @@ namespace LucreApp
 {
 
     PBRScene::PBRScene(const std::string& filepath, const std::string& alternativeFilepath)
-        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"}
+        : Scene(filepath, alternativeFilepath), m_SceneLoaderJSON{*this}, m_CandleParticleSystem{*this, "candles.json"},
+          m_UseIBL{true}
     {
     }
 
@@ -540,7 +541,14 @@ namespace LucreApp
 
             // light opaque objects
             m_Renderer->NextSubpass();
-            m_Renderer->LightingPass();
+            if (m_UseIBL)
+            {
+                m_Renderer->LightingPassIBL();
+            }
+            else
+            {
+                m_Renderer->LightingPass();
+            }
 
             // transparent objects
             m_Renderer->NextSubpass();
@@ -587,6 +595,11 @@ namespace LucreApp
                     case ENGINE_KEY_B:
                     {
                         m_DrawDebugMesh = !m_DrawDebugMesh;
+                        break;
+                    }
+                    case ENGINE_KEY_I:
+                    {
+                        m_UseIBL = !m_UseIBL;
                         break;
                     }
                     case ENGINE_KEY_R:

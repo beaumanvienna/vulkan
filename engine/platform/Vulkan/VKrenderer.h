@@ -105,6 +105,7 @@ namespace GfxRenderEngine
         virtual void SubmitWater(Scene& scene, bool reflection) override;
         virtual void NextSubpass() override;
         virtual void LightingPass() override;
+        virtual void LightingPassIBL() override;
         virtual void LightingPassWater(bool reflection) override;
         virtual void PostProcessingRenderpass() override;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem) override;
