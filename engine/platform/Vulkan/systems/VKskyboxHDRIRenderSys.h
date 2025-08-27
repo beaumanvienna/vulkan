@@ -22,32 +22,34 @@
 
 #pragma once
 
-#include <memory>
+#include <vector>
 
 #include "engine.h"
-#include "renderer/texture.h"
-#include "renderer/cubemap.h"
-#include "scene/pbrMaterial.h"
-#include "scene/pbrMultiMaterial.h"
+#include "scene/scene.h"
+
+#include "VKframeInfo.h"
+#include "VKpipeline.h"
 
 namespace GfxRenderEngine
 {
-
-    class MaterialDescriptor
+    class VK_RenderSystemSkyboxHDRI
     {
-    public:
-        virtual ~MaterialDescriptor() = default;
-
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          PbrMaterial::MaterialTextures& textures);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          std::shared_ptr<Cubemap> const& cubemap);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          std::shared_ptr<Texture> const& texture);
 
     public:
-        virtual Material::MaterialType GetMaterialType() const = 0;
+        VK_RenderSystemSkyboxHDRI(VkRenderPass renderPass, std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        ~VK_RenderSystemSkyboxHDRI();
+
+        VK_RenderSystemSkyboxHDRI(const VK_RenderSystemSkyboxHDRI&) = delete;
+        VK_RenderSystemSkyboxHDRI& operator=(const VK_RenderSystemSkyboxHDRI&) = delete;
+
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+
+    private:
+        void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
+        void CreatePipeline(VkRenderPass renderPass);
+
+    private:
+        VkPipelineLayout m_PipelineLayout;
+        std::unique_ptr<VK_Pipeline> m_Pipeline;
     };
 } // namespace GfxRenderEngine

@@ -61,9 +61,9 @@ namespace LucreApp
         {
             // set up camera
             float aspectRatio = 1.777f;
-            float yfov = 0.51f;
-            float znear = 0.1f;
-            float zfar = 1500.0f;
+            float yfov = 1.0f; // 57.3°
+            float znear = 0.5f;
+            float zfar = 250.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
             m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
@@ -317,11 +317,11 @@ namespace LucreApp
             m_CameraControllers.SetActiveCameraController(CameraTypes::DefaultCamera);
         }
 
-        // IBL
+        // IBL and skybox HDRI
         {
             IBLBuilder::IBLTextureFilenames iblTextureFilenames{
                 "application/lucre/models/assets/pbrScene/BRDFIntegrationMap.exr",                // BRDFIntegrationMap
-                "application/lucre/models/assets/pbrScene/TeatroMassimo1k.hdr",                   // environment
+                "application/lucre/models/assets/pbrScene/TeatroMassimo4k.hdr",                   // environment
                 "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredDiffuse.exr", // envPrefilteredDiffuse
                 "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel0.exr", // envPrefilteredSpecularLevel0
                 "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel1.exr", // envPrefilteredSpecularLevel1
@@ -331,6 +331,7 @@ namespace LucreApp
                 "application/lucre/models/assets/pbrScene/TeatroMassimo1kPrefilteredSpecularLevel5.exr" // envPrefilteredSpecularLevel5
             };
             m_IBLBuilder = std::make_shared<IBLBuilder>(iblTextureFilenames);
+            m_SkyboxHDRI = m_IBLBuilder->LoadSkyboxHDRI(m_Registry);
         }
     }
 
@@ -348,18 +349,6 @@ namespace LucreApp
 
     void PBRScene::LoadModels()
     {
-        {
-            std::vector<std::string> faces = {
-                "application/lucre/models/assets/Skybox/right.png", "application/lucre/models/assets/Skybox/left.png",
-                "application/lucre/models/assets/Skybox/top.png",   "application/lucre/models/assets/Skybox/bottom.png",
-                "application/lucre/models/assets/Skybox/front.png", "application/lucre/models/assets/Skybox/back.png"};
-
-            Builder builder;
-            m_Skybox = builder.LoadCubemap(faces, m_Registry);
-            auto view = m_Registry.view<TransformComponent>();
-            auto& skyboxTransform = view.get<TransformComponent>(m_Skybox);
-            skyboxTransform.SetScale(500.0f);
-        }
         { // directional lights
             {
                 m_Lightbulb0 =

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -91,6 +91,11 @@ namespace GfxRenderEngine
         m_Cubemaps = std::move(builder.m_Cubemaps); // used to manage lifetime
     }
     VK_Model::VK_Model(VK_Device* device, const TerrainBuilder& builder) : m_Device(device) { INIT_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const IBLBuilder& builder) : m_Device(device)
+    {
+        CopySubmeshes(builder.m_Submeshes);
+        CreateVertexBuffer(std::move(builder.m_Vertices));
+    }
 
     VK_Model::~VK_Model() {}
 
@@ -125,6 +130,11 @@ namespace GfxRenderEngine
                 case Material::MaterialType::MtCubemap:
                 {
                     m_SubmeshesCubemap.push_back(vkSubmesh);
+                    break;
+                }
+                case Material::MaterialType::MtSkyboxHDRI:
+                {
+                    m_SubmeshesSkyboxHDRI.push_back(vkSubmesh);
                     break;
                 }
                 default:
@@ -367,6 +377,20 @@ namespace GfxRenderEngine
     void VK_Model::DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for (auto& submesh : m_SubmeshesCubemap)
+        {
+            BindDescriptors(frameInfo, pipelineLayout, submesh);
+            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                      submesh.m_VertexCount,     // uint32_t        vertexCount
+                      1,                         // uint32_t        instanceCount
+                      submesh.m_FirstVertex,     // uint32_t        firstVertex
+                      0                          // uint32_t        firstInstance
+            );
+        }
+    }
+
+    void VK_Model::DrawSkyboxHDRI(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for (auto& submesh : m_SubmeshesSkyboxHDRI)
         {
             BindDescriptors(frameInfo, pipelineLayout, submesh);
             vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer

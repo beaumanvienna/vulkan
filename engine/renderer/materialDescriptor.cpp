@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -72,6 +72,24 @@ namespace GfxRenderEngine
         {
             case RendererAPI::VULKAN:
                 materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialTypes, cubemap);
+                break;
+            default:
+                materialDescriptor = nullptr;
+                break;
+        }
+
+        return materialDescriptor;
+    }
+
+    std::shared_ptr<MaterialDescriptor> MaterialDescriptor::Create(Material::MaterialType materialTypes,
+                                                                   std::shared_ptr<Texture> const& texture)
+    {
+        std::shared_ptr<MaterialDescriptor> materialDescriptor;
+
+        switch (RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                materialDescriptor = std::make_shared<VK_MaterialDescriptor>(materialTypes, texture);
                 break;
             default:
                 materialDescriptor = nullptr;

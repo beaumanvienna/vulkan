@@ -24,30 +24,15 @@
 
 #include <memory>
 
-#include "engine.h"
-#include "renderer/texture.h"
-#include "renderer/cubemap.h"
-#include "scene/pbrMaterial.h"
-#include "scene/pbrMultiMaterial.h"
+#include "engine/scene/material.h"
 
 namespace GfxRenderEngine
 {
-
-    class MaterialDescriptor
+    class SkyboxHDRIMaterial : public Material
     {
     public:
-        virtual ~MaterialDescriptor() = default;
-
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          PbrMaterial::MaterialTextures& textures);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          PbrMultiMaterial::PbrMultiMaterialTextures& multiTextures);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          std::shared_ptr<Cubemap> const& cubemap);
-        static std::shared_ptr<MaterialDescriptor> Create(Material::MaterialType materialTypes,
-                                                          std::shared_ptr<Texture> const& texture);
-
-    public:
-        virtual Material::MaterialType GetMaterialType() const = 0;
+        virtual ~SkyboxHDRIMaterial() {}
+        [[nodiscard]] virtual MaterialType GetType() const { return MaterialType::MtSkyboxHDRI; }
     };
+
 } // namespace GfxRenderEngine

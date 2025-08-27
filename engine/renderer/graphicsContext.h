@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -26,6 +26,7 @@
 #include "engine.h"
 #include "renderer/renderer.h"
 #include "renderer/builder/builder.h"
+#include "renderer/builder/IBLBuilder.h"
 #include "renderer/builder/gltfBuilder.h"
 #include "renderer/builder/terrainBuilder.h"
 #include "renderer/builder/fastgltfBuilder.h"
@@ -59,6 +60,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Model::ModelData& modelData) = 0;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) = 0;
         virtual std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) = 0;
+        virtual std::shared_ptr<Model> LoadModel(const IBLBuilder& builder) = 0;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) = 0;
 
         virtual uint GetContextWidth() const = 0;

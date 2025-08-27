@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -29,6 +29,7 @@
 #include "renderer/model.h"
 #include "renderer/buffer.h"
 #include "renderer/builder/builder.h"
+#include "renderer/builder/IBLBuilder.h"
 #include "renderer/builder/gltfBuilder.h"
 #include "renderer/builder/terrainBuilder.h"
 #include "renderer/builder/fastgltfBuilder.h"
@@ -92,6 +93,7 @@ namespace GfxRenderEngine
         VK_Model(VK_Device* device, const FbxBuilder& builder);
         VK_Model(VK_Device* device, const UFbxBuilder& builder);
         VK_Model(VK_Device* device, const TerrainBuilder& builder);
+        VK_Model(VK_Device* device, const IBLBuilder& builder);
         virtual ~VK_Model() override;
 
         VK_Model(const VK_Model&) = delete;
@@ -128,6 +130,8 @@ namespace GfxRenderEngine
                                          VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet);
         // cube map
         void DrawCubemap(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        // skybox HDRI
+        void DrawSkyboxHDRI(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
 
     private:
         void CopySubmeshes(std::vector<Submesh> const& submeshes);
@@ -145,5 +149,6 @@ namespace GfxRenderEngine
         std::vector<VK_Submesh> m_SubmeshesPbr{};
         std::vector<VK_Submesh> m_SubmeshesPbrMulti{};
         std::vector<VK_Submesh> m_SubmeshesCubemap{};
+        std::vector<VK_Submesh> m_SubmeshesSkyboxHDRI{};
     };
 } // namespace GfxRenderEngine

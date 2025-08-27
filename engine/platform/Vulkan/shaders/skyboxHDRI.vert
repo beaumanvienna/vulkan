@@ -1,5 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team 
-   https://github.com/beaumanvienna/vulkan
+/* Engine Copyright (c) 2025 Engine Development Team 
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -23,13 +22,9 @@
 #version 450
 #include "engine/platform/Vulkan/pointlights.h"
 
-// inputs
-layout(location = 0)       in  vec3  fragUVW;
+layout (location = 0) in vec3 inPosition;
 
-// outputs
-layout(location = 0)       out vec4  outColor;
-
-layout(set = 1, binding = 0) uniform samplerCube samplerCubeMap;
+layout (location = 0) out vec3 vDirection;
 
 struct PointLight
 {
@@ -56,13 +51,14 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant, std430) uniform Push
-{
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-} push;
-
 void main()
 {
-    outColor    = texture(samplerCubeMap, fragUVW);
+    vDirection = inPosition;
+
+    // Remove translation from view matrix to avoid parallax
+    mat4 viewRotOnly = mat4(mat3(ubo.m_View));
+
+    vec4 clipPos = ubo.m_Projection * viewRotOnly * vec4(inPosition, 0.0);
+    gl_Position = clipPos.xyww; // trick to always push to far plane
 }
+

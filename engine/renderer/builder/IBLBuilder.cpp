@@ -23,6 +23,7 @@
 #include <future>
 
 #include "core.h"
+#include "scene/skyboxHDRIMaterial.h"
 #include "renderer/builder/IBLBuilder.h"
 #include "renderer/hiResImage.h"
 
@@ -113,6 +114,81 @@ namespace GfxRenderEngine
             }
         }
         m_Initialized = true;
+    }
+
+    entt::entity IBLBuilder::LoadSkyboxHDRI(Registry& registry)
+    {
+        if (!m_Initialized)
+        {
+            LOG_CORE_CRITICAL("IBLBuilder::LoadSkyboxHDRI() not initialized!");
+            return entt::null;
+        }
+        ZoneScopedN("Builder::LoadSkyboxHDRI()");
+        entt::entity entity{entt::null};
+
+        m_Vertices.clear();
+        // Cube vertices for skybox (NDC directions)
+
+        auto skyboxVertices = std::to_array<glm::vec3>({// positions
+                                                        {-1.0f, 1.0f, -1.0f},  {-1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},
+                                                        {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, -1.0f},   {-1.0f, 1.0f, -1.0f},
+
+                                                        {-1.0f, -1.0f, 1.0f},  {-1.0f, -1.0f, -1.0f}, {-1.0f, 1.0f, -1.0f},
+                                                        {-1.0f, 1.0f, -1.0f},  {-1.0f, 1.0f, 1.0f},   {-1.0f, -1.0f, 1.0f},
+
+                                                        {1.0f, -1.0f, -1.0f},  {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f},
+                                                        {1.0f, 1.0f, 1.0f},    {1.0f, 1.0f, -1.0f},   {1.0f, -1.0f, -1.0f},
+
+                                                        {-1.0f, -1.0f, 1.0f},  {-1.0f, 1.0f, 1.0f},   {1.0f, 1.0f, 1.0f},
+                                                        {1.0f, 1.0f, 1.0f},    {1.0f, -1.0f, 1.0f},   {-1.0f, -1.0f, 1.0f},
+
+                                                        {-1.0f, 1.0f, -1.0f},  {1.0f, 1.0f, -1.0f},   {1.0f, 1.0f, 1.0f},
+                                                        {1.0f, 1.0f, 1.0f},    {-1.0f, 1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f},
+
+                                                        {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f},  {1.0f, -1.0f, -1.0f},
+                                                        {1.0f, -1.0f, -1.0f},  {-1.0f, -1.0f, 1.0f},  {1.0f, -1.0f, 1.0f}});
+
+        // create vertices
+        {
+            m_Vertices.reserve(skyboxVertices.size());
+            for (auto& skyboxVertex : skyboxVertices)
+            {
+                m_Vertices.emplace_back(
+                    /*pos*/ std::move(skyboxVertex), // emplace_back needs std::move
+                    /*col*/ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
+                    /*norm*/ glm::vec3{0.0f, 0.0f, 0.0f},
+                    /*uv*/ glm::vec2{0.0f, 0.0f});
+            }
+        }
+
+        {
+            Submesh submesh{};
+            submesh.m_FirstVertex = 0;
+            submesh.m_VertexCount = skyboxVertices.size();
+            auto material = std::make_shared<SkyboxHDRIMaterial>();
+            submesh.m_Material = material;
+            { // create material descriptor
+                auto materialDescriptor =
+                    MaterialDescriptor::Create(Material::MtSkyboxHDRI, m_IBLTextures[IBLTexture::environment]);
+                material->m_MaterialDescriptor = materialDescriptor;
+            }
+
+            m_Submeshes.push_back(submesh);
+        }
+
+        // create game object
+        {
+            auto model = Engine::m_Engine->LoadModel(*this);
+            entity = registry.Create();
+            MeshComponent mesh{"skyboxHDRI", model};
+            registry.emplace<MeshComponent>(entity, mesh);
+            TransformComponent transform{};
+            registry.emplace<TransformComponent>(entity, transform);
+            SkyboxHDRIComponent skyboxHDRIComponent{};
+            registry.emplace<SkyboxHDRIComponent>(entity, skyboxHDRIComponent);
+        }
+
+        return entity;
     }
 
 } // namespace GfxRenderEngine

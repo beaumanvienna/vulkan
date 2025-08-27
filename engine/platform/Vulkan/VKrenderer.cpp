@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -200,6 +200,11 @@ namespace GfxRenderEngine
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // cubemap
                 .Build();
 
+        m_MaterialDescriptorSetLayouts[Mt::MtSkyboxHDRI] =
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // texture
+                .Build();
+
         m_DescriptorSetLayoutRefractionReflection = VK_DescriptorSetLayout::Builder()
                                                         .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                                                     VK_SHADER_STAGE_FRAGMENT_BIT) // refraction
@@ -250,6 +255,10 @@ namespace GfxRenderEngine
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsCubemap = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_MaterialDescriptorSetLayouts[Mt::MtCubemap]->GetDescriptorSetLayout()};
+
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsSkyboxHDRI = {
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_MaterialDescriptorSetLayouts[Mt::MtSkyboxHDRI]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsShadowInstanced = {
             m_ShadowUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(),
@@ -355,6 +364,8 @@ namespace GfxRenderEngine
             std::make_unique<VK_RenderSystemGUIRenderer>(m_RenderPass->GetGUIRenderPass(), *m_GlobalDescriptorSetLayout);
         m_RenderSystemCubemap =
             std::make_unique<VK_RenderSystemCubemap>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsCubemap);
+        m_RenderSystemSkyboxHDRI =
+            std::make_unique<VK_RenderSystemSkyboxHDRI>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsSkyboxHDRI);
 
         CreateShadowMapDescriptorSets();
         CreateLightingDescriptorSets();
@@ -1082,6 +1093,7 @@ namespace GfxRenderEngine
             m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry, m_RefractionReflectionDescriptorSet);
             // sprites
             m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
             if (particleSystem)
             {
@@ -1216,6 +1228,8 @@ namespace GfxRenderEngine
             "deferredShadingIBL.frag",
             "skybox.vert",
             "skybox.frag",
+            "skyboxHDRI.vert",
+            "skyboxHDRI.frag",
             "shadowShaderAnimatedInstanced.vert",
             "shadowShaderAnimatedInstanced.frag",
             "shadowShaderInstanced.vert",

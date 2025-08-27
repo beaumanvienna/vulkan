@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -378,4 +378,5 @@ namespace GfxRenderEngine
     }
     std::shared_ptr<Model> Engine::LoadModel(const FbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
     std::shared_ptr<Model> Engine::LoadModel(const UFbxBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
+    std::shared_ptr<Model> Engine::LoadModel(const IBLBuilder& builder) { return m_GraphicsContext->LoadModel(builder); }
 } // namespace GfxRenderEngine

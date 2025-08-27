@@ -36,6 +36,7 @@
 #include "systems/VKshadowRenderSysInstanced.h"
 #include "systems/VKspriteRenderSys.h"
 #include "systems/VKcubemapRenderSys.h"
+#include "systems/VKskyboxHDRIRenderSys.h"
 #include "systems/VKspriteRenderSys2D.h"
 #include "systems/VKdebugRenderSys.h"
 #include "systems/VKlightSys.h"
@@ -181,6 +182,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemPostProcessing> m_RenderSystemPostProcessing;
         std::unique_ptr<VK_RenderSystemBloom> m_RenderSystemBloom;
         std::unique_ptr<VK_RenderSystemCubemap> m_RenderSystemCubemap;
+        std::unique_ptr<VK_RenderSystemSkyboxHDRI> m_RenderSystemSkyboxHDRI;
         std::unique_ptr<VK_RenderSystemSpriteRenderer> m_RenderSystemSpriteRenderer;
         std::unique_ptr<VK_RenderSystemSpriteRenderer2D> m_RenderSystemSpriteRenderer2D;
         std::unique_ptr<VK_RenderSystemGUIRenderer> m_RenderSystemGUIRenderer;

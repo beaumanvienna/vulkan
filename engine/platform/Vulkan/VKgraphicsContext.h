@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -52,6 +52,7 @@ namespace GfxRenderEngine
         virtual std::shared_ptr<Model> LoadModel(const Model::ModelData& modelData) override;
         virtual std::shared_ptr<Model> LoadModel(const FbxBuilder& builder) override;
         virtual std::shared_ptr<Model> LoadModel(const UFbxBuilder& builder) override;
+        virtual std::shared_ptr<Model> LoadModel(const IBLBuilder& builder) override;
         virtual void ToggleDebugWindow(const GenericCallback& callback = nullptr) override
         {
             m_Renderer->ToggleDebugWindow(callback);

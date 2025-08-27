@@ -186,6 +186,29 @@ namespace GfxRenderEngine
         }
     }
 
+    VK_MaterialDescriptor::VK_MaterialDescriptor(Material::MaterialType materialType,
+                                                 std::shared_ptr<Texture> const& texture)
+        : m_MaterialType{materialType}
+    {
+        switch (materialType)
+        {
+            case Material::MaterialType::MtSkyboxHDRI:
+            {
+                VkDescriptorImageInfo textureInfo = static_cast<VK_Texture*>(texture.get())->GetDescriptorImageInfo();
+
+                VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
+                    .WriteImage(0, textureInfo)
+                    .Build(m_DescriptorSet);
+                break;
+            }
+            default:
+            {
+                CORE_ASSERT(false, "unsupported material type");
+                break;
+            }
+        }
+    }
+
     VK_MaterialDescriptor::VK_MaterialDescriptor(VK_MaterialDescriptor const& other)
     {
         m_MaterialType = other.m_MaterialType;

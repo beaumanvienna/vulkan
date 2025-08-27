@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -142,6 +142,8 @@ namespace GfxRenderEngine
         m_MagFilter = linearFilter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
         m_MinFilterMip = VK_FILTER_LINEAR;
         m_MipLevels = hiResImages.size();
+        const uint RGBA = 4;
+        m_BytesPerPixel = sizeof(float) * RGBA;
 
         // create the image
         VkImageCreateInfo imageInfo{};
@@ -289,6 +291,11 @@ namespace GfxRenderEngine
                 return false;
             }
         }
+
+        m_ImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_DescriptorImageInfo.sampler = m_Sampler;
+        m_DescriptorImageInfo.imageView = m_ImageView;
+        m_DescriptorImageInfo.imageLayout = m_ImageLayout;
         return true;
     }
 

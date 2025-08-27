@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,6 +38,7 @@ namespace GfxRenderEngine
             MtCubemap,
             MtDiffuse,
             MtPbrMulti,
+            MtSkyboxHDRI,
             NUM_TYPES
         };
 

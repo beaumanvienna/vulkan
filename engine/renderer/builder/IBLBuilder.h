@@ -50,6 +50,7 @@ namespace GfxRenderEngine
         IBLBuilder() = delete;
         IBLBuilder(IBLTextureFilenames const& filenames);
         bool IsInitialized() { return m_Initialized; }
+        entt::entity LoadSkyboxHDRI(Registry& registry);
 
     private:
         // NUM_IBL_IMAGES: 9 images, but only BRDFint, env, prefilteredDiff, and prefilturedSpec (6 mip levels) as
@@ -58,5 +59,10 @@ namespace GfxRenderEngine
         static constexpr int NUM_MIP_LEVELS_SPECULAR{IBLTexture::NUM_IBL_IMAGES - IBLTexture::envPrefilteredSpecularLevel0};
         std::array<std::shared_ptr<Texture>, NUM_OF_TEXTURES> m_IBLTextures;
         bool m_Initialized;
+
+    public:
+        // HDRI skybox
+        std::vector<Vertex> m_Vertices;
+        std::vector<Submesh> m_Submeshes;
     };
 } // namespace GfxRenderEngine

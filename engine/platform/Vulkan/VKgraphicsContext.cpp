@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -106,6 +106,13 @@ namespace GfxRenderEngine
     }
 
     std::shared_ptr<Model> VK_Context::LoadModel(const UFbxBuilder& builder)
+    {
+        CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
+        auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);
+        return model;
+    }
+
+    std::shared_ptr<Model> VK_Context::LoadModel(const IBLBuilder& builder)
     {
         CORE_ASSERT(VK_Core::m_Device != nullptr, "device is null");
         auto model = std::make_shared<VK_Model>(VK_Core::m_Device, builder);

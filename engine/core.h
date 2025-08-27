@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -93,6 +93,7 @@ namespace GfxRenderEngine
         std::shared_ptr<Model> LoadModel(const Model::ModelData&);
         std::shared_ptr<Model> LoadModel(const FbxBuilder&);
         std::shared_ptr<Model> LoadModel(const UFbxBuilder&);
+        std::shared_ptr<Model> LoadModel(const IBLBuilder&);
         bool IsFullscreen() const { return m_Window->IsFullscreen(); }
 
         void EnableMousePointer() { m_Window->EnableMousePointer(); }
