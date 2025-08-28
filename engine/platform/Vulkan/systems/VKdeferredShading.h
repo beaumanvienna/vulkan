@@ -22,24 +22,28 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
-#include <unordered_map>
-#include <vulkan/vulkan.h>
 
 #include "engine.h"
-#include "renderer/camera.h"
 #include "scene/scene.h"
 
-#include "VKdevice.h"
-#include "VKpipeline.h"
 #include "VKframeInfo.h"
-#include "VKdescriptor.h"
+#include "VKpipeline.h"
 
 namespace GfxRenderEngine
 {
+
     class VK_RenderSystemDeferredShading
     {
+    public:
+        struct VK_PushConstantsIBL
+        {
+            // x: uMaxPrefilterMip, number of mips - 1
+            // y: reserve
+            // z: reserve
+            // w: reserve
+            glm::vec4 m_Values;
+        };
 
     public:
         VK_RenderSystemDeferredShading(VkRenderPass renderPass,
@@ -52,7 +56,9 @@ namespace GfxRenderEngine
         VK_RenderSystemDeferredShading& operator=(const VK_RenderSystemDeferredShading&) = delete;
 
         void LightingPass(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet = nullptr);
-        void LightingPassIBL(const VK_FrameInfo& frameInfo, VkDescriptorSet* lightingDescriptorSet = nullptr);
+        void LightingPassIBL(const VK_FrameInfo& frameInfo, float uMaxPrefilterMip,
+                             std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL,
+                             VkDescriptorSet* lightingDescriptorSet = nullptr);
 
     private:
         void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);

@@ -27,6 +27,7 @@
 #include "engine.h"
 #include "renderer/buffer.h"
 #include "renderer/cubemap.h"
+#include "renderer/texture.h"
 #include "scene/resource.h"
 
 namespace GfxRenderEngine
@@ -40,6 +41,7 @@ namespace GfxRenderEngine
             RtInstance = 0, // instance buffer
             RtInstanceSA,   // instance buffer + bone matrices
             RtGrass,        // grass shader
+            RtIBL,
             NUM_TYPES
         };
 
@@ -47,5 +49,7 @@ namespace GfxRenderEngine
         virtual ~ResourceDescriptor() = default;
 
         static std::shared_ptr<ResourceDescriptor> Create(Resources::ResourceBuffers& buffers);
+        static std::shared_ptr<ResourceDescriptor> Create(ResourceType resourceType,
+                                                          std::vector<std::shared_ptr<Texture>> const& textures);
     };
 } // namespace GfxRenderEngine

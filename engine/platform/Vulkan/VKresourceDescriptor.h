@@ -37,6 +37,7 @@ namespace GfxRenderEngine
         VK_ResourceDescriptor(Resources::ResourceBuffers& buffers);
         VK_ResourceDescriptor(VK_ResourceDescriptor const& other);
         VK_ResourceDescriptor(std::shared_ptr<ResourceDescriptor> const& resourceDescriptor);
+        VK_ResourceDescriptor(ResourceType resourceType, std::vector<std::shared_ptr<Texture>> const& textures);
 
         virtual ~VK_ResourceDescriptor();
 

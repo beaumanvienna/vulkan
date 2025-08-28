@@ -532,7 +532,8 @@ namespace LucreApp
             m_Renderer->NextSubpass();
             if (m_UseIBL)
             {
-                m_Renderer->LightingPassIBL();
+                m_Renderer->LightingPassIBL(m_IBLBuilder->NumMipLevelsSpecular() - 1, // uMaxPrefilterMip, number of mips - 1
+                                            m_IBLBuilder->GetResourceDescriptor());
             }
             else
             {

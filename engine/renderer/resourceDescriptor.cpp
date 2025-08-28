@@ -43,4 +43,22 @@ namespace GfxRenderEngine
 
         return resourceDescriptor;
     }
+
+    std::shared_ptr<ResourceDescriptor> ResourceDescriptor::Create(ResourceType resourceType,
+                                                                   std::vector<std::shared_ptr<Texture>> const& textures)
+    {
+        std::shared_ptr<ResourceDescriptor> resourceDescriptor;
+
+        switch (RendererAPI::GetAPI())
+        {
+            case RendererAPI::VULKAN:
+                resourceDescriptor = std::make_shared<VK_ResourceDescriptor>(resourceType, textures);
+                break;
+            default:
+                resourceDescriptor = nullptr;
+                break;
+        }
+
+        return resourceDescriptor;
+    }
 } // namespace GfxRenderEngine

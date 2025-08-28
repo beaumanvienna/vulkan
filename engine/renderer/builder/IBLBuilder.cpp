@@ -113,6 +113,14 @@ namespace GfxRenderEngine
                 return;
             }
         }
+
+        { // create resource descriptor
+            std::vector<std::shared_ptr<Texture>> textures = {m_IBLTextures[IBLTexture::envPrefilteredDiffuse],
+                                                              m_IBLTextures[IBLTexture::envPrefilteredSpecularLevel0],
+                                                              m_IBLTextures[IBLTexture::BRDFIntegrationMap]};
+            m_ResourceDescriptor = ResourceDescriptor::Create(ResourceDescriptor::ResourceType::RtIBL, textures);
+        }
+
         m_Initialized = true;
     }
 

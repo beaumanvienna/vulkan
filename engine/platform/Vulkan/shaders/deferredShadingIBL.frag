@@ -74,9 +74,73 @@ layout(set = 2, binding = 3) uniform ShadowUniformBuffer1
     mat4 m_View;
 } lightUboLowRes;
 
-const float PI = 3.14159265359;
+const float PI = 3.141592653589793;
 
-vec3 ACESFilm(vec3 color) {
+layout(push_constant, std430) uniform VK_PushConstantsIBL
+{
+    // x: uMaxPrefilterMip, number of mips - 1, use as push.m_Values.x
+    // y: reserve
+    // z: reserve
+    // w: reserve
+    vec4 m_Values; 
+} push;
+
+// IBL - envPrefilteredDiffuse
+layout(set = 3, binding = 0) uniform sampler2D uIrradianceMap;
+
+vec2 DirToLatLongUV(vec3 dir)
+{
+    // dir should be normalized
+    float phi   = atan(dir.z, dir.x);            // -PI..PI
+    float theta = acos(clamp(dir.y, -1.0, 1.0)); // 0..PI
+
+    float u = phi / (2.0 * PI) + 0.5;            // 0..1
+    float v = theta / PI;                        // 0..1
+
+    return vec2(u, v);
+}
+
+vec3 SampleIrradiance(vec3 N)
+{
+    vec2 uv = DirToLatLongUV(N);
+    vec3 irradiance = texture(uIrradianceMap, uv).rgb;
+    return irradiance;
+}
+
+// IBL - envPrefilteredSpecular
+layout(set = 3, binding = 1) uniform sampler2D uPrefilteredEnv; // has mip chain
+
+vec3 SamplePrefilteredEnv(vec3 R, float roughness)
+{
+    vec2 uv = DirToLatLongUV(R);
+
+    // Map roughness [0,1] → mip [0, uMaxPrefilterMip]
+    float uMaxPrefilterMip = push.m_Values.x;
+    float mip = roughness * uMaxPrefilterMip;
+
+    // Use textureLod to fetch specific mip (no filtering across mips)
+    vec3 prefiltered = textureLod(uPrefilteredEnv, uv, mip).rgb;
+    return prefiltered;
+}
+
+// IBL - BRDFIntegrationMap
+layout(set = 3, binding = 2) uniform sampler2D uBRDFLUT;
+
+vec3 ComputeSpecularIBL(vec3 N, vec3 V, vec3 F0, float roughness)
+{
+    vec3 R = reflect(-V, N);
+
+    vec3 prefiltered = SamplePrefilteredEnv(R, roughness); // use A or B above
+    vec2 brdf = texture(uBRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+
+    vec3 spec = prefiltered * (F0 * brdf.x + brdf.y);
+    return spec;
+}
+
+
+// tone mapping
+vec3 ACESFilm(vec3 color)
+{
     float a = 2.51f;
     float b = 0.03f;
     float c = 2.43f;
@@ -84,7 +148,8 @@ vec3 ACESFilm(vec3 color) {
     float e = 0.14f;
     return clamp((color*(a*color+b))/(color*(c*color+d)+e), 0.0, 1.0);
 }
-// ----------------------------------------------------------------------------
+
+// PBR
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness*roughness;

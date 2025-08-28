@@ -29,6 +29,7 @@
 #include "scene/sceneGraph.h"
 #include "scene/particleSystem.h"
 #include "renderer/camera.h"
+#include "renderer/resourceDescriptor.h"
 
 namespace GfxRenderEngine
 {
@@ -54,7 +55,8 @@ namespace GfxRenderEngine
         virtual void SubmitWater(Scene& scene, bool reflection) = 0;
         virtual void NextSubpass() = 0;
         virtual void LightingPass() = 0;
-        virtual void LightingPassIBL() = 0;
+        virtual void LightingPassIBL(float uMaxPrefilterMip,
+                                     std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL) = 0;
         virtual void LightingPassWater(bool reflection) = 0;
         virtual void PostProcessingRenderpass() = 0;
         virtual void TransparencyPass(Registry& registry, ParticleSystem* particleSystem = nullptr) = 0;

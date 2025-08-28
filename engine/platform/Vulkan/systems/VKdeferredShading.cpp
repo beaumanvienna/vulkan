@@ -26,7 +26,6 @@
 #include "VKmodel.h"
 
 #include "systems/VKdeferredShading.h"
-#include "systems/pushConstantData.h"
 
 #include "VKswapChain.h"
 
@@ -55,17 +54,11 @@ namespace GfxRenderEngine
     void
     VK_RenderSystemDeferredShading::CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
-        VkPushConstantRange pushConstantRange{};
-        pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
-
         VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
         lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         lightingPipelineLayoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
         lightingPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-        lightingPipelineLayoutInfo.pushConstantRangeCount = 1;
-        lightingPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        lightingPipelineLayoutInfo.pushConstantRangeCount = 0;
         auto result = vkCreatePipelineLayout(VK_Core::m_Device->Device(), &lightingPipelineLayoutInfo, nullptr,
                                              &m_LightingPipelineLayout);
         if (result != VK_SUCCESS)
@@ -98,10 +91,10 @@ namespace GfxRenderEngine
     {
         m_LightingPipeline->Bind(frameInfo.m_CommandBuffer);
 
-        std::vector<VkDescriptorSet> descriptorSets = {
-            frameInfo.m_GlobalDescriptorSet,
-            lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
-            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
+        auto descriptorSets = std::to_array<VkDescriptorSet>(
+            {frameInfo.m_GlobalDescriptorSet,
+             lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
+             m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]});
 
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 m_LightingPipelineLayout, // VkPipelineLayout layout
@@ -127,7 +120,7 @@ namespace GfxRenderEngine
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
-        pushConstantRange.size = sizeof(VK_PushConstantDataGeneric);
+        pushConstantRange.size = sizeof(VK_PushConstantsIBL);
 
         VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
         lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -163,23 +156,33 @@ namespace GfxRenderEngine
                                                               "bin-int/deferredShadingIBL.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemDeferredShading::LightingPassIBL(const VK_FrameInfo& frameInfo,
+    void VK_RenderSystemDeferredShading::LightingPassIBL(const VK_FrameInfo& frameInfo, float uMaxPrefilterMip,
+                                                         std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL,
                                                          VkDescriptorSet* lightingDescriptorSet)
     {
+        // bind pipeline
         m_LightingPipelineIBL->Bind(frameInfo.m_CommandBuffer);
 
-        std::vector<VkDescriptorSet> descriptorSets = {
-            frameInfo.m_GlobalDescriptorSet,
-            lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
-            m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex]};
+        // push constants
+        VK_PushConstantsIBL push{};
+        push.m_Values = glm::vec4(uMaxPrefilterMip /*number of mips - 1*/, 0.0f, 0.0f, 0.0f);
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, m_LightingPipelineLayoutIBL, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(VK_PushConstantsIBL), &push);
 
+        // bind descriptor sets
+        VK_ResourceDescriptor* VK_resourceDescriptorIBL = static_cast<VK_ResourceDescriptor*>(resourceDescriptorIBL.get());
+        VkDescriptorSet descriptorSetIBL = VK_resourceDescriptorIBL->GetDescriptorSet();
+        auto descriptorSets = std::to_array<VkDescriptorSet>(
+            {frameInfo.m_GlobalDescriptorSet,
+             lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
+             m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex], descriptorSetIBL});
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                m_LightingPipelineLayout, // VkPipelineLayout layout
-                                0,                        // uint32_t         firstSet
-                                descriptorSets.size(),    // uint32_t         descriptorSetCount
-                                descriptorSets.data(),    // VkDescriptorSet* pDescriptorSets
-                                0,                        // uint32_t         dynamicOffsetCount
-                                nullptr                   // const uint32_t*  pDynamicOffsets
+                                m_LightingPipelineLayoutIBL, // VkPipelineLayout layout
+                                0,                           // uint32_t         firstSet
+                                descriptorSets.size(),       // uint32_t         descriptorSetCount
+                                descriptorSets.data(),       // VkDescriptorSet* pDescriptorSets
+                                0,                           // uint32_t         dynamicOffsetCount
+                                nullptr                      // const uint32_t*  pDynamicOffsets
         );
 
         vkCmdDraw(frameInfo.m_CommandBuffer,

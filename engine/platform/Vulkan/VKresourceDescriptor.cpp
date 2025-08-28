@@ -119,6 +119,31 @@ namespace GfxRenderEngine
         }
     }
 
+    VK_ResourceDescriptor::VK_ResourceDescriptor(ResourceType resourceType,
+                                                 std::vector<std::shared_ptr<Texture>> const& textures)
+    {
+        switch (resourceType)
+        {
+            case RtIBL:
+            {
+                VK_DescriptorWriter descriptorWriter(GetResourceDescriptorSetLayout(resourceType));
+                for (uint index = 0; auto& texture : textures)
+                {
+                    VkDescriptorImageInfo textureInfo = static_cast<VK_Texture*>(texture.get())->GetDescriptorImageInfo();
+                    descriptorWriter.WriteImage(index, textureInfo);
+                    ++index;
+                }
+                descriptorWriter.Build(m_DescriptorSet);
+                break;
+            }
+            default:
+            {
+                CORE_ASSERT(false, "unsupported resource type");
+                break;
+            }
+        }
+    }
+
     VK_ResourceDescriptor::~VK_ResourceDescriptor() {}
 
     const VkDescriptorSet& VK_ResourceDescriptor::GetDescriptorSet() const { return m_DescriptorSet; }

@@ -175,6 +175,16 @@ namespace GfxRenderEngine
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT) // shader parameters
                 .Build();
 
+        m_ResourceDescriptorSetLayouts[Rt::RtIBL] = //
+            VK_DescriptorSetLayout::Builder()
+                .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // envPrefilteredDiffuse
+                .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // envPrefilteredSpecular
+                .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            VK_SHADER_STAGE_FRAGMENT_BIT) // BRDFIntegrationMap
+                .Build();
+
         m_LightingDescriptorSetLayout = VK_DescriptorSetLayout::Builder()
                                             .AddBinding(0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
                                                         VK_SHADER_STAGE_FRAGMENT_BIT) // g buffer position input attachment
@@ -245,7 +255,8 @@ namespace GfxRenderEngine
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout()};
+            m_ShadowMapDescriptorSetLayout->GetDescriptorSetLayout(),
+            m_ResourceDescriptorSetLayouts[Rt::RtIBL]->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPostProcessing = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
@@ -1078,11 +1089,13 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::LightingPassIBL()
+    void VK_Renderer::LightingPassIBL(float uMaxPrefilterMip,
+                                      std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL)
     {
         if (m_CurrentCommandBuffer)
         {
-            m_RenderSystemDeferredShading->LightingPassIBL(m_FrameInfo);
+
+            m_RenderSystemDeferredShading->LightingPassIBL(m_FrameInfo, uMaxPrefilterMip, resourceDescriptorIBL);
         }
     }
 
