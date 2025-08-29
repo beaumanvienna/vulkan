@@ -126,17 +126,16 @@ namespace GfxRenderEngine
         {
             case RtIBL:
             {
-                std::vector<VkDescriptorImageInfo> imageInfos;
-                imageInfos.reserve(textures.size());
+                const size_t RtIBL_NUM_TEXTURES = 3;
+                CORE_ASSERT((textures.size() == RtIBL_NUM_TEXTURES), "resource type IBL needs exactly three textures");
+                std::array<VkDescriptorImageInfo, RtIBL_NUM_TEXTURES> imageInfos;
 
-                for (auto& texture : textures)
-                {
-                    auto VK_texture = static_cast<VK_Texture*>(texture.get());
-                    imageInfos.push_back(VK_texture->GetDescriptorImageInfo());
-                }
+                imageInfos[0] = static_cast<VK_Texture*>(textures[0].get())->GetDescriptorImageInfo();
+                imageInfos[1] = static_cast<VK_Texture*>(textures[1].get())->GetDescriptorImageInfo();
+                imageInfos[2] = static_cast<VK_Texture*>(textures[2].get())->GetDescriptorImageInfo();
 
                 VK_DescriptorWriter writer(GetResourceDescriptorSetLayout(resourceType));
-                for (uint i = 0; i < imageInfos.size(); ++i)
+                for (uint32_t i = 0; i < imageInfos.size(); ++i)
                 {
                     // attention! this call takes imageInfo as reference
                     // and stores *** a pointer to this reference *** in VkWriteDescriptorSet

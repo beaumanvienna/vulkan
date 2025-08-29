@@ -23,7 +23,7 @@
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
-#version 450
+#version 460
 
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/shadowMapping.h"
@@ -186,8 +186,13 @@ void main()
     vec3 color = diffuse + specular;
 
     // Simple tonemap (Reinhard) + gamma
-    color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0 / 2.2));
+    //color = color / (color + vec3(1.0));
+    //color = pow(color, vec3(1.0 / 2.2));
+    //outColor = vec4(color, 1.0);
+    
+    // HDR tonemapping
+    //color = color / (color + vec3(1.0));
+    color = ACESFilm(color);
 
-    outColor = vec4(color, 1.0);
+    outColor = /*vec4(albedo, 1.0) * */vec4(color, 1.0);
 }
