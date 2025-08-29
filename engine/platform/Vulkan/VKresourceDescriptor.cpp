@@ -126,15 +126,25 @@ namespace GfxRenderEngine
         {
             case RtIBL:
             {
-                VK_DescriptorWriter descriptorWriter(GetResourceDescriptorSetLayout(resourceType));
-                for (uint index = 0; auto& texture : textures)
+                std::vector<VkDescriptorImageInfo> imageInfos;
+                imageInfos.reserve(textures.size());
+
+                for (auto& texture : textures)
                 {
                     auto VK_texture = static_cast<VK_Texture*>(texture.get());
-                    VkDescriptorImageInfo textureInfo = VK_texture->GetDescriptorImageInfo();
-                    descriptorWriter.WriteImage(index, textureInfo);
-                    ++index;
+                    imageInfos.push_back(VK_texture->GetDescriptorImageInfo());
                 }
-                bool success = descriptorWriter.Build(m_DescriptorSet);
+
+                VK_DescriptorWriter writer(GetResourceDescriptorSetLayout(resourceType));
+                for (uint i = 0; i < imageInfos.size(); ++i)
+                {
+                    // attention! this call takes imageInfo as reference
+                    // and stores *** a pointer to this reference *** in VkWriteDescriptorSet
+                    // --> image info must not be locally created in the for loop scope
+                    writer.WriteImage(i, imageInfos[i]);
+                }
+
+                bool success = writer.Build(m_DescriptorSet);
                 CORE_ASSERT(success, "descriptor writer failed");
                 break;
             }
