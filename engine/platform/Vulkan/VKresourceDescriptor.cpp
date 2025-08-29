@@ -129,11 +129,13 @@ namespace GfxRenderEngine
                 VK_DescriptorWriter descriptorWriter(GetResourceDescriptorSetLayout(resourceType));
                 for (uint index = 0; auto& texture : textures)
                 {
-                    VkDescriptorImageInfo textureInfo = static_cast<VK_Texture*>(texture.get())->GetDescriptorImageInfo();
+                    auto VK_texture = static_cast<VK_Texture*>(texture.get());
+                    VkDescriptorImageInfo textureInfo = VK_texture->GetDescriptorImageInfo();
                     descriptorWriter.WriteImage(index, textureInfo);
                     ++index;
                 }
-                descriptorWriter.Build(m_DescriptorSet);
+                bool success = descriptorWriter.Build(m_DescriptorSet);
+                CORE_ASSERT(success, "descriptor writer failed");
                 break;
             }
             default:

@@ -171,11 +171,14 @@ namespace GfxRenderEngine
 
         // bind descriptor sets
         VK_ResourceDescriptor* VK_resourceDescriptorIBL = static_cast<VK_ResourceDescriptor*>(resourceDescriptorIBL.get());
+        VkDescriptorSet globalDescriptorSet = frameInfo.m_GlobalDescriptorSet;
+        VkDescriptorSet lightingSet =
+            lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex];
+        VkDescriptorSet shadowMapDescriptorSet = m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex];
         VkDescriptorSet descriptorSetIBL = VK_resourceDescriptorIBL->GetDescriptorSet();
-        auto descriptorSets = std::to_array<VkDescriptorSet>(
-            {frameInfo.m_GlobalDescriptorSet,
-             lightingDescriptorSet ? *lightingDescriptorSet : m_LightingDescriptorSets[frameInfo.m_FrameIndex],
-             m_ShadowMapDescriptorSets[frameInfo.m_FrameIndex], descriptorSetIBL});
+        auto descriptorSets =
+            std::to_array<VkDescriptorSet>({globalDescriptorSet, lightingSet, shadowMapDescriptorSet, descriptorSetIBL});
+
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 m_LightingPipelineLayoutIBL, // VkPipelineLayout layout
                                 0,                           // uint32_t         firstSet

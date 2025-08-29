@@ -74,8 +74,6 @@ layout(set = 2, binding = 3) uniform ShadowUniformBuffer1
     mat4 m_View;
 } lightUboLowRes;
 
-const float PI = 3.141592653589793;
-
 layout(push_constant, std430) uniform VK_PushConstantsIBL
 {
     // x: uMaxPrefilterMip, number of mips - 1, use as push.m_Values.x
@@ -86,57 +84,65 @@ layout(push_constant, std430) uniform VK_PushConstantsIBL
 } push;
 
 // IBL - envPrefilteredDiffuse
-layout(set = 3, binding = 0) uniform sampler2D uIrradianceMap;
+layout(set = 3, binding = 0) uniform sampler2D uIrradianceMap; // pre-baked diffuse (lat-long)
 
+// IBL - envPrefilteredSpecular
+layout(set = 3, binding = 1) uniform sampler2D uPrefilteredEnv; // prefiltered specular as MIP-mapped lat-long
+
+// IBL - BRDFIntegrationMap
+layout(set = 3, binding = 2) uniform sampler2D uBRDFLUT;        // 2D BRDF LUT
+
+// =======================================
+// Helpers
+// =======================================
+const float PI = 3.141592653589793;
+
+// Direction -> lat-long UV in [0,1]^2
 vec2 DirToLatLongUV(vec3 dir)
 {
-    // dir should be normalized
+    dir = normalize(dir);
     float phi   = atan(dir.z, dir.x);            // -PI..PI
     float theta = acos(clamp(dir.y, -1.0, 1.0)); // 0..PI
-
-    float u = phi / (2.0 * PI) + 0.5;            // 0..1
-    float v = theta / PI;                        // 0..1
-
+    float u = phi / (2.0 * PI) + 0.5;            // wrap in U
+    float v = theta / PI;                        // clamp in V
     return vec2(u, v);
 }
 
+// Fresnel (roughness-aware)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+// Sample irradiance from a lat-long 2D texture (already convolved offline)
 vec3 SampleIrradiance(vec3 N)
 {
     vec2 uv = DirToLatLongUV(N);
-    vec3 irradiance = texture(uIrradianceMap, uv).rgb;
-    return irradiance;
+    return texture(uIrradianceMap, uv).rgb;
 }
 
-// IBL - envPrefilteredSpecular
-layout(set = 3, binding = 1) uniform sampler2D uPrefilteredEnv; // has mip chain
-
+// Sample prefiltered specular from a MIP-mapped lat-long 2D texture
 vec3 SamplePrefilteredEnv(vec3 R, float roughness)
 {
     vec2 uv = DirToLatLongUV(R);
-
-    // Map roughness [0,1] → mip [0, uMaxPrefilterMip]
-    float uMaxPrefilterMip = push.m_Values.x;
-    float mip = roughness * uMaxPrefilterMip;
-
-    // Use textureLod to fetch specific mip (no filtering across mips)
-    vec3 prefiltered = textureLod(uPrefilteredEnv, uv, mip).rgb;
-    return prefiltered;
+    float maxMip = push.m_Values.x;               // numMips - 1
+    float lod    = roughness * maxMip;            // linear mapping
+    return textureLod(uPrefilteredEnv, uv, lod).rgb;
 }
 
-// IBL - BRDFIntegrationMap
-layout(set = 3, binding = 2) uniform sampler2D uBRDFLUT;
-
+// Compute specular IBL using prefiltered env + BRDF LUT (split-sum)
 vec3 ComputeSpecularIBL(vec3 N, vec3 V, vec3 F0, float roughness)
 {
-    vec3 R = reflect(-V, N);
+    float NoV = max(dot(N, V), 0.0);
+    vec3  R   = reflect(-V, N);
 
-    vec3 prefiltered = SamplePrefilteredEnv(R, roughness); // use A or B above
-    vec2 brdf = texture(uBRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 prefiltered = SamplePrefilteredEnv(R, roughness);
+    vec2 brdf        = texture(uBRDFLUT, vec2(NoV, roughness)).rg;
+    vec3 F           = FresnelSchlickRoughness(NoV, F0, roughness);
 
-    vec3 spec = prefiltered * (F0 * brdf.x + brdf.y);
-    return spec;
+    // split-sum: prefiltered * (F * brdf.x + brdf.y)
+    return prefiltered * (F * brdf.x + brdf.y);
 }
-
 
 // tone mapping
 vec3 ACESFilm(vec3 color)
@@ -149,268 +155,39 @@ vec3 ACESFilm(vec3 color)
     return clamp((color*(a*color+b))/(color*(c*color+d)+e), 0.0, 1.0);
 }
 
-// PBR
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a = roughness*roughness;
-    float a2 = a*a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-
-    float nom   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return nom / denom;
-}
-// ----------------------------------------------------------------------------
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
-
-    float nom   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return nom / denom;
-}
-// ----------------------------------------------------------------------------
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
-}
-// ----------------------------------------------------------------------------
-vec3 FresnelSchlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-// ----------------------------------------------------------------------------
-// rand: returns a value between zero and one
-float Rand(vec2 co)
-{
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-// ----------------------------------------------------------------------------
-// 
-mat2 getGradientSampleMatrix() {
-    const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-    float noise0 = fract( magic.z * fract(dot(gl_FragCoord.xy, magic.xy)));
-    float rotX = cos( 2.0 * 3.1415926 * noise0);
-    float rotY = sin( 2.0 * 3.1415926 * noise0);
-    return mat2(vec2(rotX, rotY), vec2(-rotY, rotX));
-}
-
-// ----------------------------------------------------------------------------
+// =======================================
+// Main (deferred lighting resolve)
+// =======================================
 void main()
 {
-    // retrieve G buffer data
+    // G-buffer fetch
     vec3 fragPosition = subpassLoad(positionMap).rgb;
-    vec3 normal       = subpassLoad(normalMap).rgb;
-    vec4 albedo       = subpassLoad(diffuseMap);
+    vec3 N            = normalize(subpassLoad(normalMap).rgb);
+    vec3 albedo       = subpassLoad(diffuseMap).rgb;
     vec4 material     = subpassLoad(roughnessMetallicMap);
+    float roughness   = material.g;
+    float metallic    = material.b;
 
-    float roughness           = material.g;
-    float metallic            = material.b;
-    vec3  ambientLightColor   = ubo.m_AmbientLightColor.xyz * ubo.m_AmbientLightColor.w;
-
+    // View
     vec3 camPos = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
-
-    vec3 N = normalize(normal); // surface normal 
     vec3 V = normalize(camPos - fragPosition); // viewing vector
 
-    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
-    vec3 fragColor = albedo.rgb;
-    vec3 F0 = vec3(0.04);  // base reflectance
-    F0 = mix(F0, fragColor, metallic);
-    // reflectance equation
-    vec3 Lo = vec3(0.0);
+    // Base reflectivity
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
-    for (int i = 0; i < ubo.m_NumberOfActivePointLights; i++)
-    {
-        PointLight light = ubo.m_PointLights[i];
-        // calculate per-light radiance
-        vec3 L = normalize(light.m_Position.xyz - fragPosition); // inicdence vector
-        vec3 H = normalize(V + L); // halfway vector
-        float distance = length(light.m_Position.xyz - fragPosition);
-        float attenuation = 1.0 / (distance * distance * distance * distance); // attenuation of the light (not micro facet)
-        float lightIntensity = light.m_Color.w;
-        vec3 radiance = light.m_Color.rgb * lightIntensity * attenuation; // overall color and intensity
+    // Diffuse IBL (already convolved)
+    vec3 irradiance = SampleIrradiance(N);
+    vec3 diffuse    = irradiance * albedo * (1.0 - metallic);
 
-        // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   // normal distribution function from microfacet theory
-                                                        // the distribution function describes the fraction of micro facets in the dir of perfect reflection (halfway)
-        float G   = GeometrySmith(N, V, L, roughness);  // geometric attenuation
-        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); // Fresnel 
+    // Specular IBL
+    vec3 specular = ComputeSpecularIBL(N, V, F0, roughness);
 
-        vec3 numerator    = NDF * G * F; 
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
-        vec3 specular = numerator / denominator;
+    // Combine
+    vec3 color = diffuse + specular;
 
-        // kS is equal to Fresnel
-        vec3 kS = F;
-        // for energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-        vec3 kD = vec3(1.0) - kS;
-        // multiply kD by the inverse metalness such that only non-metals 
-        // have diffuse lighting, or a linear blend if partly metal (pure metals
-        // have no diffuse light).
-        kD *= 1.0 - metallic;  
+    // Simple tonemap (Reinhard) + gamma
+    color = color / (color + vec3(1.0));
+    color = pow(color, vec3(1.0 / 2.2));
 
-        // scale light by NdotL
-        float NdotL = max(dot(N, L), 0.0);
-
-        // add to outgoing radiance Lo
-        Lo += (kD * fragColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    }
-
-    if(ubo.m_NumberOfActiveDirectionalLights > 0)
-    {
-        // calculate radiance for a directional light
-        vec3 L = normalize(-ubo.m_DirectionalLight.m_Direction.xyz);
-        vec3 H = normalize(V + L);
-        float lightIntensity = ubo.m_DirectionalLight.m_Color.w;
-        vec3 radiance = ubo.m_DirectionalLight.m_Color.rgb * lightIntensity;
-
-        // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);  
-        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-
-        vec3 numerator    = NDF * G * F; 
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
-        vec3 specular = numerator / denominator;
-
-        // kS is equal to Fresnel
-        vec3 kS = F;
-        // for energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-        vec3 kD = vec3(1.0) - kS;
-        // multiply kD by the inverse metalness such that only non-metals 
-        // have diffuse lighting, or a linear blend if partly metal (pure metals
-        // have no diffuse light).
-        kD *= 1.0 - metallic;  
-
-        // scale light by NdotL
-        float NdotL = max(dot(N, L), 0.0);
-        float litPercentage = 1.0;
-        int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HIGH_RES;
-        int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
-
-        // compute total number of samples to take from the shadow map
-        int PCF_SIZE = 3;
-        int pcfSizeMinus1 = int(PCF_SIZE - 1);
-        float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
-        float numSamples = kernelSize * kernelSize;
-        
-        vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);
-        vec3 lightSpacePosistionNDCHiRes = lightSpacePosistionHiRes.xyz / lightSpacePosistionHiRes.w;
-
-        if (
-                abs(lightSpacePosistionNDCHiRes.x) > 1.0 ||
-                abs(lightSpacePosistionNDCHiRes.y) > 1.0 ||
-                abs(lightSpacePosistionNDCHiRes.z) > 1.0
-            )
-        {
-            // check low-resolution shadow map
-            vec4 lightSpacePosistionLowRes = lightUboLowRes.m_Projection * lightUboLowRes.m_View * vec4(fragPosition, 1.0);
-            vec3 lightSpacePosistionNDCLowRes = lightSpacePosistionLowRes.xyz / lightSpacePosistionLowRes.w;
-            if (
-                    abs(lightSpacePosistionNDCLowRes.x) > 1.0 ||
-                    abs(lightSpacePosistionNDCLowRes.y) > 1.0 ||
-                    abs(lightSpacePosistionNDCLowRes.z) > 1.0
-                )
-            {
-                litPercentage = 1.0;
-            }
-            else
-            {
-                // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
-                vec2 shadowMapCoord = lightSpacePosistionNDCLowRes.xy * 0.5 + 0.5;
-            
-                // Counter for the shadow map samples not in the shadow
-                float litCount = 0.0;
-            
-                // Take samples from the shadow map
-                float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_LOW_RES;
-                for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
-                {
-                    for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
-                    {
-                        // Compute coordinate for this PFC sample
-                        vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
-                        vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCLowRes.z);
-            
-                        // Check if the sample is in light
-                        litCount += texture(shadowMapTextureLowRes, pcfCoordinatePlusReference).x;
-                    }
-                }
-                litPercentage = litCount / numSamples;
-            }
-        }
-        else
-        {
-            #define NUM_KERNEL_SAMPLES 16
-            float scale = 3.0;
-            vec2 samples[NUM_KERNEL_SAMPLES] =
-            {
-                vec2(scale *  0.75, scale * -0.68),
-                vec2(scale * -0.12, scale *  0.62),
-                vec2(scale * -0.40, scale * -0.28),
-                vec2(scale * -0.79, scale * -0.66),
-                vec2(scale * -0.16, scale *  0.16),
-                vec2(scale *  0.90, scale *  0.80),
-                vec2(scale *  0.79, scale *  0.93),
-                vec2(scale * -0.04, scale *  0.27),
-                vec2(scale *  0.17, scale * -0.26),
-                vec2(scale *  0.29, scale * -0.43),
-                vec2(scale * -0.76, scale *  0.61),
-                vec2(scale *  0.16, scale *  0.60),
-                vec2(scale *  0.34, scale *  0.02),
-                vec2(scale *  0.18, scale * -0.80),
-                vec2(scale * -0.06, scale *  0.49),
-                vec2(scale *  0.48, scale * -0.31)
-            };
-
-            mat2 gradientMatrix = getGradientSampleMatrix();
-
-            // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
-            vec2 shadowMapCoord = lightSpacePosistionNDCHiRes.xy * 0.5 + 0.5;
-
-            // Counter for the shadow map samples not in the shadow
-            float litCount = 0.0;
-
-            // Take samples from the shadow map
-            float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_HIRES_RES;
-            for (int i = 0; i < NUM_KERNEL_SAMPLES; i++)
-            {
-                // Compute coordinate for this PFC sample
-                vec2 pcfCoordinate = shadowMapCoord + (gradientMatrix * samples[i]) * shadowmapTexelSize;
-                vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCHiRes.z);
-                // Check if the sample is in light
-                litCount += texture(shadowMapTextureHiRes, pcfCoordinatePlusReference).x;
-            }
-            litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.0);
-        }
-        // add to outgoing radiance Lo
-        Lo += (kD * fragColor / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    }
-
-    vec3 color = ambientLightColor + Lo;
-
-    // HDR tonemapping
-    //color = color / (color + vec3(1.0));
-    color = ACESFilm(color);
-
-    //outColor = albedo * vec4(color, 1.0);
-    outColor = vec4(normal, 1.0);
-
+    outColor = vec4(color, 1.0);
 }
