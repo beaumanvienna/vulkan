@@ -24,6 +24,7 @@
 
 #include <string>
 #include <memory>
+#include <bitset>
 
 #include "engine.h"
 #include "scene/sceneGraph.h"
@@ -84,5 +85,8 @@ namespace GfxRenderEngine
                                           bool parentDirtyFlag) = 0;
         virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) = 0;
         virtual std::shared_ptr<Texture> GetTextureAtlas() = 0;
+
+        virtual float& Exposure() = 0;
+        virtual std::bitset<32>& ShaderSettings0() = 0;
     };
 } // namespace GfxRenderEngine

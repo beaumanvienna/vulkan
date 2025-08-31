@@ -23,6 +23,7 @@
 #pragma once
 
 #include <vector>
+#include <bitset>
 
 #include "engine.h"
 #include "scene/scene.h"
@@ -39,10 +40,15 @@ namespace GfxRenderEngine
         struct VK_PushConstantsIBL
         {
             // x: uMaxPrefilterMip, number of mips - 1
+            // y: float exposure
+            // z: reserve
+            // w: reserve
+            glm::vec4 m_Values0;
+            // x: shader settings 0 (see shader.h)
             // y: reserve
             // z: reserve
             // w: reserve
-            glm::vec4 m_Values;
+            glm::ivec4 m_Values1;
         };
 
     public:
@@ -59,6 +65,8 @@ namespace GfxRenderEngine
         void LightingPassIBL(const VK_FrameInfo& frameInfo, float uMaxPrefilterMip,
                              std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL,
                              VkDescriptorSet* lightingDescriptorSet = nullptr);
+        float& Exposure() { return m_Exposure; }
+        std::bitset<32>& ShaderSettings0() { return m_ShaderSettings0; }
 
     private:
         void CreateLightingPipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
@@ -78,5 +86,8 @@ namespace GfxRenderEngine
 
         const VkDescriptorSet* m_LightingDescriptorSets;
         const VkDescriptorSet* m_ShadowMapDescriptorSets;
+
+        float m_Exposure{1.0f};
+        std::bitset<32> m_ShaderSettings0; // 32-bit mask, default constructor initializes all bits to zero
     };
 } // namespace GfxRenderEngine

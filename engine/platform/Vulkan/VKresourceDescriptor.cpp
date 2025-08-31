@@ -135,7 +135,7 @@ namespace GfxRenderEngine
                 imageInfos[2] = static_cast<VK_Texture*>(textures[2].get())->GetDescriptorImageInfo();
 
                 VK_DescriptorWriter writer(GetResourceDescriptorSetLayout(resourceType));
-                for (uint32_t i = 0; i < imageInfos.size(); ++i)
+                for (uint i = 0; i < imageInfos.size(); ++i)
                 {
                     // attention! this call takes imageInfo as reference
                     // and stores *** a pointer to this reference *** in VkWriteDescriptorSet

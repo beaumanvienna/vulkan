@@ -46,7 +46,7 @@ namespace LucreApp
     bool ImGUI::m_UseRoughness = false;
     float ImGUI::m_Metallic = 0.5f;
     bool ImGUI::m_UseMetallic = false;
-    float ImGUI::m_NormalMapIntensity = 0.9f;
+    float ImGUI::m_NormalMapIntensity = 1.0f;
     bool ImGUI::m_UseNormalMapIntensity = false;
     float ImGUI::m_PointLightIntensity = 1.0f;
     float ImGUI::m_AmbientLightIntensity = 0.1f;
@@ -60,6 +60,11 @@ namespace LucreApp
     float ImGUI::m_EmissiveStrength = 0.35;
     bool ImGUI::m_UseAnimation = false;
     bool ImGUI::m_RepeatAnimation = false;
+    float ImGUI::m_Exposure = 1.0f;
+    bool ImGUI::m_UseNewACES = true;
+    bool ImGUI::m_DoNotMultiplyColorOutWithAlbedo = true;
+    bool ImGUI::m_Reserved0 = false;
+    bool ImGUI::m_Reserved1 = false;
 
     void ImGUI::DebugWindow()
     {
@@ -264,6 +269,21 @@ namespace LucreApp
 
         // shadow map debug window
         ImGui::Checkbox("show shadow map", &m_ShowDebugShadowMap);
+
+        // use new ACES
+        ImGui::Checkbox("use new ACES", &m_UseNewACES);
+
+        // do not multiply color output with Albedo
+        ImGui::Checkbox("do not multiply color output with Albedo", &m_DoNotMultiplyColorOutWithAlbedo);
+
+        // reserved 0
+        ImGui::Checkbox("reserved 0", &m_Reserved0);
+
+        // reserved 1
+        ImGui::Checkbox("reserved 1", &m_Reserved1);
+
+        // exposure
+        ImGui::SliderFloat("exposure", &m_Exposure, 0.0f, 5.0f);
     }
 
     ImGuizmo::OPERATION ImGUI::GetGuizmoMode()

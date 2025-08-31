@@ -27,6 +27,7 @@
 
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/shadowMapping.h"
+#include "engine/platform/Vulkan/shader.h"
 
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionMap;
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput normalMap;
@@ -77,10 +78,16 @@ layout(set = 2, binding = 3) uniform ShadowUniformBuffer1
 layout(push_constant, std430) uniform VK_PushConstantsIBL
 {
     // x: uMaxPrefilterMip, number of mips - 1, use as push.m_Values.x
+    // y: float exposure
+    // z: reserve
+    // w: reserve
+    vec4 m_Values0;
+    
+    // x: shader settings 0 (see shader.h)
     // y: reserve
     // z: reserve
     // w: reserve
-    vec4 m_Values; 
+    ivec4 m_Values1;
 } push;
 
 // IBL - envPrefilteredDiffuse
@@ -96,6 +103,7 @@ layout(set = 3, binding = 2) uniform sampler2D uBRDFLUT;        // 2D BRDF LUT
 // Helpers
 // =======================================
 const float PI = 3.141592653589793;
+const float EPSILON = 1e-6;
 
 // Direction -> lat-long UV in [0,1]^2
 vec2 DirToLatLongUV(vec3 dir)
@@ -125,7 +133,7 @@ vec3 SampleIrradiance(vec3 N)
 vec3 SamplePrefilteredEnv(vec3 R, float roughness)
 {
     vec2 uv = DirToLatLongUV(R);
-    float maxMip = push.m_Values.x;               // numMips - 1
+    float maxMip = push.m_Values0.x;               // numMips - 1
     float lod    = roughness * maxMip;            // linear mapping
     return textureLod(uPrefilteredEnv, uv, lod).rgb;
 }
@@ -144,9 +152,43 @@ vec3 ComputeSpecularIBL(vec3 N, vec3 V, vec3 F0, float roughness)
     return prefiltered * (F * brdf.x + brdf.y);
 }
 
-// tone mapping
-vec3 ACESFilm(vec3 color)
+// ACES filmic tonemap
+vec3 RRTAndODTFit(vec3 v)
 {
+    vec3 a = v * (v + 0.0245786f) - 0.000090537f;
+    vec3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    return a / b;
+}
+
+// tone mapping
+vec3 ACESFilm(vec3 x)
+{
+    // Input transform to ACES color space
+    const mat3 ACESInputMat = mat3(
+         0.59719, 0.35458, 0.04823,
+         0.07600, 0.90834, 0.01566,
+         0.02840, 0.13383, 0.83777
+    );
+
+    // Output transform back to sRGB
+    const mat3 ACESOutputMat = mat3(
+         1.60475, -0.53108, -0.07367,
+        -0.10208,  1.10813, -0.00605,
+        -0.00327, -0.07276,  1.07602
+    );
+
+    x = ACESInputMat * x;
+
+    // Apply curve
+    x = RRTAndODTFit(x);
+
+    x = ACESOutputMat * x;
+
+    // Clamp to displayable range
+    return clamp(x, 0.0, 1.0);
+}
+
+vec3 ACESFilmFromLukas(vec3 color) {
     float a = 2.51f;
     float b = 0.03f;
     float c = 2.43f;
@@ -184,15 +226,34 @@ void main()
 
     // Combine
     vec3 color = diffuse + specular;
-
-    // Simple tonemap (Reinhard) + gamma
-    //color = color / (color + vec3(1.0));
-    //color = pow(color, vec3(1.0 / 2.2));
-    //outColor = vec4(color, 1.0);
     
-    // HDR tonemapping
-    //color = color / (color + vec3(1.0));
-    color = ACESFilm(color);
+    // Apply exposure before tonemapping
+    float exposure = push.m_Values0.y;
+    if (exposure > EPSILON)
+    {
+        color *= exposure;
+    }
 
-    outColor = /*vec4(albedo, 1.0) * */vec4(color, 1.0);
+    // Apply ACES tonemapper
+    if ((push.m_Values1.x & SHADER_SETTINGS0_USE_NEW_ACES) != 0)
+    {
+        color = ACESFilm(color);
+    }
+    else
+    {
+        color = ACESFilmFromLukas(color);
+    }
+
+    // Gamma correction is not required because we are using an SRGB color attachment. 
+    // The shader is expected to write the color in linear space. 
+    // The color will be converted into gamma space automatically.
+
+    if ((push.m_Values1.x & SHADER_SETTINGS0_DO_NOT_MULTIPLY_COLOR_OUT_WITH_ALBEDO) != 0)
+    {
+        outColor = vec4(color, 1.0);
+    }
+    else
+    {
+        outColor = vec4(albedo, 1.0) * vec4(color, 1.0);
+    }
 }

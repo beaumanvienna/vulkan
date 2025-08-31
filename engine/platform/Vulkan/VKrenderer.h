@@ -128,6 +128,8 @@ namespace GfxRenderEngine
         virtual void UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
                                           bool parentDirtyFlag) override;
         virtual void UpdateAnimations(Registry& registry, const Timestep& timestep) override;
+        virtual float& Exposure() override { return m_RenderSystemDeferredShading->Exposure(); }
+        virtual std::bitset<32>& ShaderSettings0() override { return m_RenderSystemDeferredShading->ShaderSettings0(); }
 
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 

@@ -74,6 +74,11 @@ namespace LucreApp
         static float m_EmissiveStrength;
         static bool m_UseAnimation;
         static bool m_RepeatAnimation;
+        static float m_Exposure;
+        static bool m_UseNewACES;
+        static bool m_DoNotMultiplyColorOutWithAlbedo;
+        static bool m_Reserved0;
+        static bool m_Reserved1;
 
     private:
         static void TraverseObjectTree(Scene& scene, uint const nodeIndex, uint const maxDepth);

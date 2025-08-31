@@ -165,7 +165,8 @@ namespace GfxRenderEngine
 
         // push constants
         VK_PushConstantsIBL push{};
-        push.m_Values = glm::vec4(uMaxPrefilterMip /*number of mips - 1*/, 0.0f, 0.0f, 0.0f);
+        push.m_Values0 = glm::vec4(uMaxPrefilterMip /*number of mips - 1*/, m_Exposure, 0.0f, 0.0f);
+        push.m_Values1 = glm::ivec4(static_cast<int>(m_ShaderSettings0.to_ulong()), 0.0f, 0.0f, 0.0f);
         vkCmdPushConstants(frameInfo.m_CommandBuffer, m_LightingPipelineLayoutIBL, VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                            sizeof(VK_PushConstantsIBL), &push);
 

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <bitset>
 
 #include "auxiliary/debug.h"
 #include <glm/gtx/matrix_decompose.hpp>
@@ -62,7 +63,7 @@ namespace LucreApp
             // set up camera
             float aspectRatio = 1.777f;
             float yfov = 1.0f; // 57.3°
-            float znear = 0.5f;
+            float znear = 0.1f;
             float zfar = 250.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
@@ -532,6 +533,13 @@ namespace LucreApp
             m_Renderer->NextSubpass();
             if (m_UseIBL)
             {
+                float& exposure = m_Renderer->Exposure();
+                exposure = ImGUI::m_Exposure;
+                std::bitset<32>& shaderSettings0 = m_Renderer->ShaderSettings0();
+                shaderSettings0[0] = ImGUI::m_UseNewACES;
+                shaderSettings0[1] = ImGUI::m_DoNotMultiplyColorOutWithAlbedo;
+                shaderSettings0[2] = ImGUI::m_Reserved0;
+                shaderSettings0[3] = ImGUI::m_Reserved1;
                 m_Renderer->LightingPassIBL(m_IBLBuilder->NumMipLevelsSpecular() - 1, // uMaxPrefilterMip, number of mips - 1
                                             m_IBLBuilder->GetResourceDescriptor());
             }
@@ -636,6 +644,15 @@ namespace LucreApp
 
     void PBRScene::ApplyDebugSettings()
     {
+        if (ImGUI::m_UseNormalMapIntensity)
+        {
+            Model::m_NormalMapIntensity = ImGUI::m_NormalMapIntensity;
+        }
+        else
+        {
+            Model::m_NormalMapIntensity = 1.0f;
+        }
+
         if (ImGUI::m_UseAmbientLightIntensity)
         {
             m_Renderer->SetAmbientLightIntensity(ImGUI::m_AmbientLightIntensity);
