@@ -64,7 +64,7 @@ namespace LucreApp
             float aspectRatio = 1.777f;
             float yfov = 1.0f; // 57.3°
             float znear = 0.1f;
-            float zfar = 250.0f;
+            float zfar = 1500.0f;
 
             PerspectiveCameraComponent perspectiveCameraComponent(aspectRatio, yfov, znear, zfar);
             m_CameraControllers[CameraTypes::DefaultCamera] = std::make_shared<CameraController>(perspectiveCameraComponent);
@@ -136,6 +136,13 @@ namespace LucreApp
             auto& directionalLightComponent1 = m_Registry.get<DirectionalLightComponent>(m_DirectionalLight1);
             m_DirectionalLights.push_back(&directionalLightComponent0);
             m_DirectionalLights.push_back(&directionalLightComponent1);
+        }
+
+        m_Terrain1 = m_Dictionary.Retrieve("SL::application/lucre/models/mario/toad harbor.glb::0::root");
+        if (m_Terrain1 != entt::null)
+        {
+            Water1Component water1Component{.m_Scale = {500.0f, 1.0f, 500.0f}, .m_Translation = {0.0f, WATER_HEIGHT, 0.0f}};
+            m_Registry.emplace<Water1Component>(m_Terrain1, water1Component);
         }
 
         { // physics
@@ -227,6 +234,10 @@ namespace LucreApp
 
                 loadColliderMesh("SL::application/lucre/models/mario/kicker long.glb::0::root", 2.0f,
                                  "application/lucre/models/mario/kicker long collider.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/toad harbor.glb::0::root", 5.0f,
+                                 "application/lucre/models/mario/toad harbor collision mesh.glb");
+                loadColliderMesh("SL::application/lucre/models/mario/bridge.glb::0::root", 5.0f,
+                                 "application/lucre/models/mario/bridge collision mesh.glb");
             }
 
             // kart
@@ -520,6 +531,63 @@ namespace LucreApp
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);
         m_Renderer->SubmitShadows(m_Registry, m_DirectionalLights);
+
+        if (m_Terrain1 != entt::null)
+        { // water
+            auto& water1Component = m_Registry.get<Water1Component>(m_Terrain1);
+            float& heightWater = water1Component.m_Translation.y;
+
+            Camera reflectionCamera = m_CameraControllers.GetActiveCameraController()->GetCamera();
+            auto view = m_Registry.view<TransformComponent>();
+            int activeCameraIndex = m_CameraControllers.GetActiveCameraIndex();
+            auto& cameraTransform = view.get<TransformComponent>(m_Camera[activeCameraIndex]);
+
+            {
+                // use the global mat4 in case the camera is parented to another object (run UpdateTransformCache)
+                glm::mat4 const& originalMat4 = cameraTransform.GetMat4Global();
+
+                // direction
+                glm::vec3 originalDirection = reflectionCamera.GetDirection();
+                glm::vec3 newDirction{originalDirection.x, -originalDirection.y, originalDirection.z};
+
+                // retrieve camera position
+                glm::vec3 originalPosition{originalMat4[3]};
+                glm::vec3 newPosition //
+                    {
+                        originalPosition.x,                                          //
+                        originalPosition.y - 2 * (originalPosition.y - heightWater), //
+                        originalPosition.z                                           //
+                    };
+
+                // set up camera
+                reflectionCamera.SetViewDirection(newPosition, newDirction);
+            }
+
+            static constexpr bool refraction = false;
+            static constexpr bool reflection = true;
+            std::array<bool, Renderer::WaterPasses::NUMBER_OF_WATER_PASSES> passes = {refraction, reflection};
+
+            for (bool pass : passes)
+            {
+                float sign = (pass == reflection) ? 1.0f : -1.0f;
+                glm::vec4 waterPlane{0.0f, sign, 0.0f, (-sign) * heightWater};
+                auto& camera =
+                    (pass == reflection) ? reflectionCamera : m_CameraControllers.GetActiveCameraController()->GetCamera();
+                m_Renderer->RenderpassWater(m_Registry, camera, pass, waterPlane);
+                // opaque objects
+                m_Renderer->SubmitWater(*this, pass);
+
+                // light opaque objects
+                m_Renderer->NextSubpass();
+                m_Renderer->LightingPassWater(pass);
+
+                // transparent objects
+                m_Renderer->NextSubpass();
+                m_Renderer->TransparencyPassWater(m_Registry, pass);
+
+                m_Renderer->EndRenderpassWater();
+            }
+        }
 
         { // 3D
             m_Renderer->Renderpass3D(m_Registry);

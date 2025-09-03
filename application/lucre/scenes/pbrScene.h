@@ -115,7 +115,7 @@ namespace LucreApp
 
         // game objects
         entt::entity m_Camera[CameraTypes::MaxCameraTypes];
-        entt::entity m_SkyboxHDRI, m_Lightbulb0, m_Lightbulb1;
+        entt::entity m_SkyboxHDRI, m_Lightbulb0, m_Lightbulb1, m_Terrain1;
         std::vector<DirectionalLightComponent*> m_DirectionalLights;
         entt::entity m_DirectionalLight0, m_DirectionalLight1;
         entt::entity m_Car, m_Kart;
@@ -123,6 +123,7 @@ namespace LucreApp
         std::array<entt::entity, 4> m_WheelsKart;
 
         // terrain
+        static constexpr float WATER_HEIGHT{3.0f};
         static constexpr float TERRAIN_HEIGHT{3.0f};
         void LoadTerrain();
 
