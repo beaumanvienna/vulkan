@@ -224,8 +224,14 @@ void main()
     // Specular IBL
     vec3 specular = ComputeSpecularIBL(N, V, F0, roughness);
 
+    float scale = 0.9;
+    float oneMinusScale = 1.0 - scale;
+
+    // JC tweak: make diffuse less specular
+    float s = oneMinusScale + smoothstep(0.0, 1.0, metallic) * scale;
+
     // Combine
-    vec3 color = diffuse + specular;
+    vec3 color = diffuse + specular * s;
     
     // Apply exposure before tonemapping
     float exposure = push.m_Values0.y;
