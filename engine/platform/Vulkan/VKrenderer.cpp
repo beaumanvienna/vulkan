@@ -1134,7 +1134,7 @@ namespace GfxRenderEngine
         {
             auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
             m_RenderSystemCubemap->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
         }
     }
 

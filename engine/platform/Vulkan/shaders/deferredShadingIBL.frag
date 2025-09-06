@@ -260,7 +260,7 @@ vec3 ComputePointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V,
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
     vec3 F  = FresnelSchlick(max(dot(H,V),0.0), F0);
 
-    float roughn = max(roughness, 0.1); // "minimum glossiness"
+    float roughn = max(roughness, 0.1); // "minimum roughness"
     float NDF = DistributionGGX(N, H, roughn);
     float G   = GeometrySmith(N, V, L, roughn);
 
