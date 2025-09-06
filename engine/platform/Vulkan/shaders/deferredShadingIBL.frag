@@ -253,7 +253,7 @@ vec3 ComputePointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V,
 
     float attenuation = 1.0 / max(pow(dist, 6.0), 0.001); 
 
-    vec3 radiance = light.m_Color.rgb * light.m_Color.w * attenuation * push.m_Values0.y;
+    vec3 radiance = light.m_Color.rgb * light.m_Color.w * attenuation;
 
     vec3 H = normalize(V + L);
 
@@ -455,7 +455,7 @@ void main()
     }
     
     // Apply exposure before tonemapping
-    float exposure = 1.0; // push.m_Values0.y;
+    float exposure = push.m_Values0.y;
     if (exposure > EPSILON)
     {
         color *= exposure;
