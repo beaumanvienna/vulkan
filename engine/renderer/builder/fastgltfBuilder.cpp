@@ -401,7 +401,7 @@ namespace GfxRenderEngine
                 case fastgltf::LightType::Point:
                 {
                     PointLightComponent pointLightComponent{};
-                    pointLightComponent.m_LightIntensity = glTFLight.intensity / 2500.0f;
+                    pointLightComponent.m_LightIntensity = glTFLight.intensity / 5000.0f;
                     pointLightComponent.m_Radius = glTFLight.range.has_value() ? glTFLight.range.value() : 0.1f;
                     pointLightComponent.m_Color = glm::make_vec3(glTFLight.color.data());
 

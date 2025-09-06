@@ -194,6 +194,88 @@ vec3 ACESFilmFromLukas(vec3 color) {
     return clamp((color*(a*color+b))/(color*(c*color+d)+e), 0.0, 1.0);
 }
 
+// ----------------------------------------------------------------------------
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness*roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+mat2 getGradientSampleMatrix() {
+    const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+    float noise0 = fract( magic.z * fract(dot(gl_FragCoord.xy, magic.xy)));
+    float rotX = cos( 2.0 * 3.1415926 * noise0);
+    float rotY = sin( 2.0 * 3.1415926 * noise0);
+    return mat2(vec2(rotX, rotY), vec2(-rotY, rotX));
+}
+
+
+vec3 ComputePointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V,
+                       vec3 albedo, float roughness, float metallic)
+{
+    vec3 L = light.m_Position.xyz - fragPos;
+    float dist = length(L);
+    L /= dist;
+
+    float attenuation = 1.0 / max(pow(dist, 6.0), 0.001); 
+
+    vec3 radiance = light.m_Color.rgb * light.m_Color.w * attenuation * push.m_Values0.y;
+
+    vec3 H = normalize(V + L);
+
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
+    vec3 F  = FresnelSchlick(max(dot(H,V),0.0), F0);
+
+    float roughn = max(roughness, 0.1); // "minimum glossiness"
+    float NDF = DistributionGGX(N, H, roughn);
+    float G   = GeometrySmith(N, V, L, roughn);
+
+    vec3 numerator = NDF * G * F;
+    float denom    = 4.0 * max(dot(N,V),0.0) * max(dot(N,L),0.0) + 0.001;
+    vec3 specular  = numerator / denom;
+
+    vec3 kS = F;
+    vec3 kD = (1.0 - kS) * (1.0 - metallic);
+
+    float NdotL = max(dot(N,L), 0.0);
+
+    return (kD * albedo / PI + specular) * radiance * NdotL;
+}
+
 // =======================================
 // Main (deferred lighting resolve)
 // =======================================
@@ -227,11 +309,153 @@ void main()
     // JC tweak: make diffuse less specular
     float s = oneMinusScale + smoothstep(0.0, 1.0, metallic) * scale;
 
+    
+    // point lights
+    vec3 Lo = vec3(0.0);
+    for (int i = 0; i < ubo.m_NumberOfActivePointLights; i++)
+    {
+        Lo += ComputePointLight(ubo.m_PointLights[i], fragPosition, N, V,
+                            albedo.rgb, roughness, metallic);
+    }
+
     // Combine
-    vec3 color = diffuse + specular * s;
+    vec3 color = Lo + diffuse + specular * s;
+
+    if(ubo.m_NumberOfActiveDirectionalLights > 0)
+    {
+        // calculate radiance for a directional light
+        vec3 L = normalize(-ubo.m_DirectionalLight.m_Direction.xyz);
+        vec3 H = normalize(V + L);
+        float lightIntensity = ubo.m_DirectionalLight.m_Color.w;
+        vec3 radiance = ubo.m_DirectionalLight.m_Color.rgb * lightIntensity;
+
+        // Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);   
+        float G   = GeometrySmith(N, V, L, roughness);  
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+
+        vec3 numerator    = NDF * G * F; 
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
+
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;  
+
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);
+        float litPercentage = 1.0;
+        int SHADOWMAP_SIZE_HIRES_RES = SHADOW_MAP_HIGH_RES;
+        int SHADOWMAP_SIZE_LOW_RES   = SHADOW_MAP_LOW_RES;
+
+        // compute total number of samples to take from the shadow map
+        int PCF_SIZE = 3;
+        int pcfSizeMinus1 = int(PCF_SIZE - 1);
+        float kernelSize = 2.0 * pcfSizeMinus1 + 1.0;
+        float numSamples = kernelSize * kernelSize;
+        
+        vec4 lightSpacePosistionHiRes = lightUboHiRes.m_Projection * lightUboHiRes.m_View * vec4(fragPosition, 1.0);
+        vec3 lightSpacePosistionNDCHiRes = lightSpacePosistionHiRes.xyz / lightSpacePosistionHiRes.w;
+
+        if (
+                abs(lightSpacePosistionNDCHiRes.x) > 1.0 ||
+                abs(lightSpacePosistionNDCHiRes.y) > 1.0 ||
+                abs(lightSpacePosistionNDCHiRes.z) > 1.0
+            )
+        {
+            // check low-resolution shadow map
+            vec4 lightSpacePosistionLowRes = lightUboLowRes.m_Projection * lightUboLowRes.m_View * vec4(fragPosition, 1.0);
+            vec3 lightSpacePosistionNDCLowRes = lightSpacePosistionLowRes.xyz / lightSpacePosistionLowRes.w;
+            if (
+                    abs(lightSpacePosistionNDCLowRes.x) > 1.0 ||
+                    abs(lightSpacePosistionNDCLowRes.y) > 1.0 ||
+                    abs(lightSpacePosistionNDCLowRes.z) > 1.0
+                )
+            {
+                litPercentage = 1.0;
+            }
+            else
+            {
+                // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
+                vec2 shadowMapCoord = lightSpacePosistionNDCLowRes.xy * 0.5 + 0.5;
+            
+                // Counter for the shadow map samples not in the shadow
+                float litCount = 0.0;
+            
+                // Take samples from the shadow map
+                float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_LOW_RES;
+                for (int x = -pcfSizeMinus1; x <= pcfSizeMinus1; x++)
+                {
+                    for (int y = -pcfSizeMinus1; y <= pcfSizeMinus1; y++)
+                    {
+                        // Compute coordinate for this PFC sample
+                        vec2 pcfCoordinate = shadowMapCoord + vec2(x, y) * shadowmapTexelSize;
+                        vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCLowRes.z);
+            
+                        // Check if the sample is in light
+                        litCount += texture(shadowMapTextureLowRes, pcfCoordinatePlusReference).x;
+                    }
+                }
+                litPercentage = litCount / numSamples;
+            }
+        }
+        else
+        {
+            #define NUM_KERNEL_SAMPLES 16
+            float scale = 3.0;
+            vec2 samples[NUM_KERNEL_SAMPLES] =
+            {
+                vec2(scale *  0.75, scale * -0.68),
+                vec2(scale * -0.12, scale *  0.62),
+                vec2(scale * -0.40, scale * -0.28),
+                vec2(scale * -0.79, scale * -0.66),
+                vec2(scale * -0.16, scale *  0.16),
+                vec2(scale *  0.90, scale *  0.80),
+                vec2(scale *  0.79, scale *  0.93),
+                vec2(scale * -0.04, scale *  0.27),
+                vec2(scale *  0.17, scale * -0.26),
+                vec2(scale *  0.29, scale * -0.43),
+                vec2(scale * -0.76, scale *  0.61),
+                vec2(scale *  0.16, scale *  0.60),
+                vec2(scale *  0.34, scale *  0.02),
+                vec2(scale *  0.18, scale * -0.80),
+                vec2(scale * -0.06, scale *  0.49),
+                vec2(scale *  0.48, scale * -0.31)
+            };
+
+            mat2 gradientMatrix = getGradientSampleMatrix();
+
+            // Translate from NDC to shadow map space (Vulkan's Z is already in [0..1])
+            vec2 shadowMapCoord = lightSpacePosistionNDCHiRes.xy * 0.5 + 0.5;
+
+            // Counter for the shadow map samples not in the shadow
+            float litCount = 0.0;
+
+            // Take samples from the shadow map
+            float shadowmapTexelSize = 1.0 / SHADOWMAP_SIZE_HIRES_RES;
+            for (int i = 0; i < NUM_KERNEL_SAMPLES; i++)
+            {
+                // Compute coordinate for this PFC sample
+                vec2 pcfCoordinate = shadowMapCoord + (gradientMatrix * samples[i]) * shadowmapTexelSize;
+                vec3 pcfCoordinatePlusReference = vec3(pcfCoordinate, lightSpacePosistionNDCHiRes.z);
+                // Check if the sample is in light
+                litCount += texture(shadowMapTextureHiRes, pcfCoordinatePlusReference).x;
+            }
+            litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.0);
+        }
+        // add to outgoing radiance Lo
+        color += (kD * albedo / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    }
     
     // Apply exposure before tonemapping
-    float exposure = push.m_Values0.y;
+    float exposure = 1.0; // push.m_Values0.y;
     if (exposure > EPSILON)
     {
         color *= exposure;

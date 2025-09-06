@@ -114,21 +114,21 @@ namespace LucreApp
 
         {
             // place static lights
-            float intensity = 5.0f;
+            float intensity = 1.0f;
             float lightRadius = 0.1f;
             float height1 = 5.4f;
-            std::vector<glm::vec3> lightPositions = {{5.6, height1, 0.7}};
+            auto lightPositions = std::to_array<glm::vec3>({{5.6, height1, 0.7}});
 
-            for (size_t i = 0; i < lightPositions.size(); ++i)
+            for (auto& lightPosition : lightPositions)
             {
                 auto entity = CreatePointLight(intensity, lightRadius);
                 auto& transform = m_Registry.get<TransformComponent>(entity);
-                transform.SetTranslation(lightPositions[i]);
+                transform.SetTranslation(lightPosition);
                 m_Registry.emplace<Group2>(entity, true);
             }
         }
         {
-            float intensity = 5.0f;
+            float intensity = 2.0f;
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             m_DirectionalLight0 = CreateDirectionalLight(intensity, color);
             m_DirectionalLight1 = CreateDirectionalLight(intensity, color);
@@ -190,7 +190,7 @@ namespace LucreApp
                     float liftWheels = 0.0f;
                     {
                         glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
+                        glm::vec3 translation{-0.039f, liftWheels, -0.035f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_LEFT, wheelTranslationTransform);
@@ -198,7 +198,7 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
+                        glm::vec3 translation{0.039f, liftWheels, -0.035f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_FRONT_RIGHT, wheelTranslationTransform);
@@ -206,7 +206,7 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{-wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
+                        glm::vec3 translation{-0.039f, liftWheels, 0.035f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_LEFT, wheelTranslationTransform);
@@ -214,7 +214,7 @@ namespace LucreApp
                     }
                     {
                         glm::vec3 scale{wheelScale, wheelScale, wheelScale};
-                        glm::vec3 translation{0.0f, liftWheels, 0.0f};
+                        glm::vec3 translation{0.039f, liftWheels, 0.035f};
                         glm::mat4 wheelTranslationTransform = createWheelTranslation(translation);
                         glm::mat4 wheelScaleTransform = createWheelScale(scale);
                         m_Physics->SetWheelTranslation(Physics::WHEEL_REAR_RIGHT, wheelTranslationTransform);
