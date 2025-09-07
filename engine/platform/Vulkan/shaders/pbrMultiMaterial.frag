@@ -71,6 +71,10 @@ struct PbrMaterial
     // byte 32 to 47
     vec3 m_EmissiveColor;
     float m_EmissiveStrength;
+
+    // 48 to 51
+    float m_ClearcoatFactor; // this shader is for terrain, so no clearcoat support
+    float m_ClearcoatRoughnessFactor;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer

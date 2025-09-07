@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -77,7 +77,8 @@ namespace GfxRenderEngine
             // glTF files list their required extensions
             constexpr auto extensions =
                 fastgltf::Extensions::KHR_mesh_quantization | fastgltf::Extensions::KHR_materials_emissive_strength |
-                fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_transform;
+                fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_transform |
+                fastgltf::Extensions::KHR_materials_clearcoat;
 
             constexpr auto gltfOptions = fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble |
                                          fastgltf::Options::LoadGLBBuffers | fastgltf::Options::LoadExternalBuffers |
@@ -654,6 +655,40 @@ namespace GfxRenderEngine
                 uint imageIndex = m_GltfAsset.textures[metallicRoughnessMapIndex].imageIndex.value();
                 materialTextures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_METALLIC_MAP;
+            }
+
+            if (glTFMaterial.clearcoat)
+            {
+                // clearcoat map
+                if (glTFMaterial.clearcoat->clearcoatTexture.has_value())
+                {
+                    uint clearcoatMapIndex = glTFMaterial.clearcoat->clearcoatTexture.value().textureIndex;
+                    uint imageIndex = m_GltfAsset.textures[clearcoatMapIndex].imageIndex.value();
+                    materialTextures[PbrMaterial::CLEARCOAT_MAP_INDEX] = m_Textures[imageIndex];
+                    pbrMaterialProperties.m_Features |= PbrMaterial::HAS_CLEARCOAT_MAP;
+                }
+                else
+                {
+                    pbrMaterialProperties.m_ClearcoatFactor = glTFMaterial.clearcoat->clearcoatFactor;
+                }
+
+                // clearcoat roughness map (not supported)
+                if (glTFMaterial.clearcoat->clearcoatRoughnessTexture.has_value())
+                {
+                    CORE_ASSERT(false, "clearcoat roughness map (not supported)");
+                    exit(0);
+                }
+                else
+                {
+                    pbrMaterialProperties.m_ClearcoatRoughnessFactor = glTFMaterial.clearcoat->clearcoatRoughnessFactor;
+                }
+
+                // clearcoat normal map (not supported)
+                if (glTFMaterial.clearcoat->clearcoatNormalTexture.has_value())
+                {
+                    CORE_ASSERT(false, "clearcoat normal map (not supported)");
+                    exit(0);
+                }
             }
 
             // emissive color and emissive strength

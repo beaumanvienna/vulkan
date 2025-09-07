@@ -33,6 +33,7 @@ layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap;
 layout(set = 1, binding = 3) uniform sampler2D emissiveMap;
 layout(set = 1, binding = 4) uniform sampler2D roughnessMap;
 layout(set = 1, binding = 5) uniform sampler2D metallicMap;
+layout(set = 1, binding = 6) uniform sampler2D clearcoatFactorMap;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
@@ -71,6 +72,10 @@ struct PbrMaterialProperties
     // byte 32 to 47
     vec3 m_EmissiveColor;
     float m_EmissiveStrength;
+
+    // 48 to 51
+    float m_ClearcoatFactor;
+    float m_ClearcoatRoughnessFactor;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -160,7 +165,21 @@ void main()
             metallic = push.m_PbrMaterialProperties.m_Metallic;
         }
     }
-    outMaterial = vec4(normalMapIntensity, roughness, metallic, 0.0);
+
+    // clearcoat
+    float clearcoatFactor;
+    if (bool(push.m_PbrMaterialProperties.m_Features & GLSL_HAS_EMISSIVE_MAP))
+    {
+        clearcoatFactor = texture(clearcoatFactorMap, fragUV).r;
+    }
+    else
+    {
+        clearcoatFactor = push.m_PbrMaterialProperties.m_ClearcoatFactor;
+    }
+    float clearcoatRoughnessFactor = push.m_PbrMaterialProperties.m_ClearcoatRoughnessFactor;
+
+    // material output to g-buffer
+    outMaterial = vec4(clearcoatFactor, roughness, metallic, clearcoatRoughnessFactor);
 
     // emissive material
     vec4 emissiveColor = vec4(push.m_PbrMaterialProperties.m_EmissiveColor.r, push.m_PbrMaterialProperties.m_EmissiveColor.g, push.m_PbrMaterialProperties.m_EmissiveColor.b, 1.0);

@@ -42,6 +42,7 @@ namespace GfxRenderEngine
             METALLIC_MAP_INDEX,
             ROUGHNESS_METALLIC_MAP_INDEX,
             EMISSIVE_MAP_INDEX,
+            CLEARCOAT_MAP_INDEX,
             NUM_TEXTURES
         };
 
@@ -56,7 +57,8 @@ namespace GfxRenderEngine
             HAS_METALLIC_MAP = GLSL_HAS_METALLIC_MAP,
             HAS_ROUGHNESS_METALLIC_MAP = GLSL_HAS_ROUGHNESS_METALLIC_MAP,
             HAS_EMISSIVE_COLOR = GLSL_HAS_EMISSIVE_COLOR,
-            HAS_EMISSIVE_MAP = GLSL_HAS_EMISSIVE_MAP
+            HAS_EMISSIVE_MAP = GLSL_HAS_EMISSIVE_MAP,
+            HAS_CLEARCOAT_MAP = GLSL_HAS_CLEARCOAT_MAP
         };
 
         struct PbrMaterialProperties
@@ -73,6 +75,10 @@ namespace GfxRenderEngine
             // byte 32 to 47
             glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
             float m_EmissiveStrength{1.0f};
+
+            // 48 to 51
+            float m_ClearcoatFactor{0.0f};
+            float m_ClearcoatRoughnessFactor{0.0f};
         };
 
     public:

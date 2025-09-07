@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -48,6 +48,7 @@ namespace GfxRenderEngine
                 std::shared_ptr<Texture> emissiveMap;
                 std::shared_ptr<Texture> roughnessMap;
                 std::shared_ptr<Texture> metallicMap;
+                std::shared_ptr<Texture> clearcoatFactorMap;
                 std::shared_ptr<Texture>& dummy = textureAtlas;
 
                 diffuseMap = textures[PbrMaterial::DIFFUSE_MAP_INDEX] ? textures[PbrMaterial::DIFFUSE_MAP_INDEX] : dummy;
@@ -59,6 +60,8 @@ namespace GfxRenderEngine
                 roughnessMap =
                     textures[PbrMaterial::ROUGHNESS_MAP_INDEX] ? textures[PbrMaterial::ROUGHNESS_MAP_INDEX] : dummy;
                 metallicMap = textures[PbrMaterial::METALLIC_MAP_INDEX] ? textures[PbrMaterial::METALLIC_MAP_INDEX] : dummy;
+                clearcoatFactorMap =
+                    textures[PbrMaterial::CLEARCOAT_MAP_INDEX] ? textures[PbrMaterial::CLEARCOAT_MAP_INDEX] : dummy;
 
                 {
                     auto& imageInfo0 = static_cast<VK_Texture*>(diffuseMap.get())->GetDescriptorImageInfo();
@@ -67,6 +70,7 @@ namespace GfxRenderEngine
                     auto& imageInfo3 = static_cast<VK_Texture*>(emissiveMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo4 = static_cast<VK_Texture*>(roughnessMap.get())->GetDescriptorImageInfo();
                     auto& imageInfo5 = static_cast<VK_Texture*>(metallicMap.get())->GetDescriptorImageInfo();
+                    auto& imageInfo6 = static_cast<VK_Texture*>(clearcoatFactorMap.get())->GetDescriptorImageInfo();
 
                     VK_DescriptorWriter(GetMaterialDescriptorSetLayout(materialType))
                         .WriteImage(0, imageInfo0)
@@ -75,6 +79,7 @@ namespace GfxRenderEngine
                         .WriteImage(3, imageInfo3)
                         .WriteImage(4, imageInfo4)
                         .WriteImage(5, imageInfo5)
+                        .WriteImage(6, imageInfo6)
                         .Build(m_DescriptorSet);
                 }
                 break;

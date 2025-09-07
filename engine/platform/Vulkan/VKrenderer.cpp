@@ -138,6 +138,8 @@ namespace GfxRenderEngine
                                                                     VK_SHADER_STAGE_FRAGMENT_BIT) // roughness map
                                                         .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                                                     VK_SHADER_STAGE_FRAGMENT_BIT) // metallic map
+                                                        .AddBinding(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                    VK_SHADER_STAGE_FRAGMENT_BIT) // clearcoat map
                                                         .Build();
 
         m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti] =

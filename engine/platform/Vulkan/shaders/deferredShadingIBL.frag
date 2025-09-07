@@ -72,7 +72,7 @@ layout(set = 2, binding = 3) uniform ShadowUniformBuffer1
     mat4 m_View;
 } lightUboLowRes;
 
-layout(push_constant, std430) uniform VK_PushConstantsIBL
+layout(push_constant) uniform VK_PushConstantsIBL
 {
     // x: uMaxPrefilterMip, number of mips - 1, use as push.m_Values.x
     // y: float exposure
@@ -243,9 +243,55 @@ mat2 getGradientSampleMatrix() {
     return mat2(vec2(rotX, rotY), vec2(-rotY, rotX));
 }
 
+vec3 ComputeClearCoat(vec3 N, vec3 V, vec3 L, vec3 H,
+                      float clearCoat, float clearCoatRoughness)
+{
+    // a tiny floor helps stability for mirror-like coats
+    float rc = clamp(clearCoatRoughness, 0.02, 1.0);
+    
+    // Fresnel at F0 = 0.04 for clear coat (IOR ~ 1.5)
+    float Fc = FresnelSchlickRoughness(max(dot(H, V), 0.0),
+                                       vec3(0.04), rc).r;
+
+    // Clear coat distribution (GGX but remapped roughness)
+    float NDF = DistributionGGX(N, H, rc);
+
+    // Geometry (Smith GGX with k for clear coat)
+    float G = GeometrySmith(N, V, L, rc);
+
+    // Denominator
+    float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
+
+    float spec = (NDF * G * Fc) / denom;
+
+    // Scale by clearCoat intensity
+    return vec3(clearCoat * spec);
+}
+
+vec3 ComputeClearcoatIBL(vec3 N, vec3 V, float clearCoat, float clearCoatRoughness)
+{
+    // a tiny floor helps stability for mirror-like coats
+    float rc = clamp(clearCoatRoughness, 0.02, 1.0);
+    
+    // Fixed F0 for clear coat (IOR ≈ 1.5 → ~0.04 reflectance)
+    vec3  F0 = vec3(0.04);
+
+    // Reflection vector
+    vec3 R = reflect(-V, N);
+
+    // Sample prefiltered environment with clear coat roughness
+    vec3 prefilteredColor = SamplePrefilteredEnv(R, rc);
+
+    // Fresnel for the clear coat layer
+    float NoV = max(dot(N, V), 0.0);
+    vec3  F   = FresnelSchlickRoughness(NoV, F0, rc);
+
+    // Weight by user factor
+    return prefilteredColor * F * clearCoat;
+}
 
 vec3 ComputePointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V,
-                       vec3 albedo, float roughness, float metallic)
+                       vec3 albedo, float roughness, float metallic, float clearcoatFactor, float clearcoatRoughnessFactor)
 {
     vec3 L = light.m_Position.xyz - fragPos;
     float dist = length(L);
@@ -273,7 +319,13 @@ vec3 ComputePointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V,
 
     float NdotL = max(dot(N,L), 0.0);
 
-    return (kD * albedo / PI + specular) * radiance * NdotL;
+    // Base PBR
+    vec3 baseLighting = (kD * albedo / PI + specular) * radiance * NdotL;
+
+    // Add clear coat (extra glossy lobe)
+    vec3 clearCoatSpec = ComputeClearCoat(N, V, L, H, clearcoatFactor, clearcoatRoughnessFactor) * radiance * NdotL;
+
+    return baseLighting + clearCoatSpec;
 }
 
 // =======================================
@@ -288,6 +340,8 @@ void main()
     vec4 material     = subpassLoad(roughnessMetallicMap);
     float roughness   = material.g;
     float metallic    = material.b;
+    float clearcoatFactor          = material.r;
+    float clearcoatRoughnessFactor = material.a;
 
     // View
     vec3 camPos = (inverse(ubo.m_View) * vec4(0.0,0.0,0.0,1.0)).xyz;
@@ -298,10 +352,22 @@ void main()
 
     // Diffuse IBL (already convolved)
     vec3 irradiance = SampleIrradiance(N);
-    vec3 diffuse    = irradiance * albedo * (1.0 - metallic);
+    vec3 diffuseIBL    = irradiance * albedo * (1.0 - metallic);
 
     // Specular IBL
-    vec3 specular = ComputeSpecularIBL(N, V, F0, roughness);
+    vec3 specularIBL = ComputeSpecularIBL(N, V, F0, roughness);
+    
+    // average clear-coat Fresnel seen by viewer
+    float Fc_noV = FresnelSchlickRoughness(max(dot(N, V), 0.0), vec3(0.04), clearcoatRoughnessFactor).r;
+
+    // Attenuate base layer by the top-coat reflection
+    float coatBlock = 1.0 - clearcoatFactor * Fc_noV;
+
+    // Apply to base IBL (you can also apply to direct specular if you like)
+    specularIBL *= coatBlock;
+    
+    // Clearcoat IBL
+    vec3 clearcoatIBL = ComputeClearcoatIBL(N, V, clearcoatFactor, clearcoatRoughnessFactor);
 
     float scale = 0.9;
     float oneMinusScale = 1.0 - scale;
@@ -315,11 +381,11 @@ void main()
     for (int i = 0; i < ubo.m_NumberOfActivePointLights; i++)
     {
         Lo += ComputePointLight(ubo.m_PointLights[i], fragPosition, N, V,
-                            albedo.rgb, roughness, metallic);
+                            albedo.rgb, roughness, metallic, clearcoatFactor, clearcoatRoughnessFactor);
     }
 
     // Combine
-    vec3 color = Lo + diffuse + specular * s;
+    vec3 color = Lo + diffuseIBL + specularIBL * s + clearcoatIBL;
 
     if(ubo.m_NumberOfActiveDirectionalLights > 0)
     {
@@ -450,8 +516,13 @@ void main()
             }
             litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.0);
         }
+
         // add to outgoing radiance Lo
         color += (kD * albedo / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        
+        // Add clear coat (extra glossy lobe)
+        vec3 clearCoatSpec = ComputeClearCoat(N, V, L, H, clearcoatFactor, clearcoatRoughnessFactor) * radiance * NdotL * litPercentage;
+        color += clearCoatSpec;
     }
     
     // Apply exposure before tonemapping
