@@ -385,7 +385,7 @@ void main()
     }
 
     // Combine
-    vec3 color = Lo + diffuseIBL + specularIBL * s + clearcoatIBL;
+    vec3 color = vec3(0.0);
 
     if(ubo.m_NumberOfActiveDirectionalLights > 0)
     {
@@ -396,8 +396,9 @@ void main()
         vec3 radiance = ubo.m_DirectionalLight.m_Color.rgb * lightIntensity;
 
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);  
+        float roughn = clamp(roughness, 0.1, 1.0);
+        float NDF = DistributionGGX(N, H, roughn);
+        float G   = GeometrySmith(N, V, L, roughn);  
         vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
 
         vec3 numerator    = NDF * G * F; 
@@ -517,12 +518,18 @@ void main()
             litPercentage = max(litCount / (NUM_KERNEL_SAMPLES), 0.0);
         }
 
+        color = Lo + diffuseIBL + specularIBL * s + clearcoatIBL * max(litPercentage, 0.1);
+
         // add to outgoing radiance Lo
         color += (kD * albedo / PI + specular) * radiance * NdotL * litPercentage;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
         
         // Add clear coat (extra glossy lobe)
         vec3 clearCoatSpec = ComputeClearCoat(N, V, L, H, clearcoatFactor, clearcoatRoughnessFactor) * radiance * NdotL * litPercentage;
         color += clearCoatSpec;
+    }
+    else
+    {
+        color = Lo + diffuseIBL + specularIBL * s + clearcoatIBL;
     }
     
     // Apply exposure before tonemapping
