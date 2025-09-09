@@ -80,6 +80,7 @@ namespace GfxRenderEngine
         SetupDebugMessenger();
         CreateSurface();
         PickPhysicalDevice();
+        CheckDeviceSupportsBindless();
         CreateLogicalDevice();
         CreateCommandPool();
     }
@@ -250,6 +251,17 @@ namespace GfxRenderEngine
         VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features{};
         physicalDeviceVulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         physicalDeviceVulkan12Features.timelineSemaphore = VK_TRUE;
+        // Enable bindless only if supported
+        if (m_DeviceSupportsBindless)
+        {
+            physicalDeviceVulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
+            physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+            physicalDeviceVulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+            physicalDeviceVulkan12Features.runtimeDescriptorArray = VK_TRUE;
+            physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+            physicalDeviceVulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+            physicalDeviceVulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+        }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -904,6 +916,48 @@ namespace GfxRenderEngine
     {
         ZoneScopedN("WaitIdle");
         vkDeviceWaitIdle(m_Device);
+    }
+
+    bool VK_Device::CheckDeviceSupportsBindless()
+    {
+        VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
+        indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+
+        VkPhysicalDeviceFeatures2 deviceFeatures2{};
+        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        deviceFeatures2.pNext = &indexingFeatures;
+
+        vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
+
+        auto const features = std::to_array<FeatureCheck>({
+            {"descriptorBindingPartiallyBound", indexingFeatures.descriptorBindingPartiallyBound},
+            {"descriptorBindingSampledImageUpdateAfterBind", indexingFeatures.descriptorBindingSampledImageUpdateAfterBind},
+            {"shaderSampledImageArrayNonUniformIndexing", indexingFeatures.shaderSampledImageArrayNonUniformIndexing},
+            {"runtimeDescriptorArray", indexingFeatures.runtimeDescriptorArray},
+            {"descriptorBindingVariableDescriptorCount", indexingFeatures.descriptorBindingVariableDescriptorCount},
+            {"shaderStorageBufferArrayNonUniformIndexing", indexingFeatures.shaderStorageBufferArrayNonUniformIndexing},
+            {"shaderStorageImageArrayNonUniformIndexing", indexingFeatures.shaderStorageImageArrayNonUniformIndexing},
+        });
+
+        bool allSupported = true;
+
+        for (const auto& feature : features)
+        {
+            if (feature.m_Value)
+            {
+                std::cout << "[+] " << feature.m_Name << " : supported\n";
+            }
+            else
+            {
+                std::cout << "[-] " << feature.m_Name << " : NOT supported\n";
+                allSupported = false;
+            }
+        }
+
+        m_DeviceSupportsBindless = allSupported;
+
+        LOG_CORE_INFO("device support bindless: {0}", (m_DeviceSupportsBindless ? "true" : "false"));
+        return m_DeviceSupportsBindless;
     }
 
     void VK_Device::PrintError(VkResult result)

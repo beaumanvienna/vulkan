@@ -61,6 +61,7 @@
 #include "VKdescriptor.h"
 #include "VKtexture.h"
 #include "VKbuffer.h"
+#include "VKbindless.h"
 
 namespace GfxRenderEngine
 {
@@ -204,7 +205,10 @@ namespace GfxRenderEngine
         bool m_FrameInProgress;
         VK_FrameInfo m_FrameInfo{};
 
-        // *** descriptor set layouts ***
+        // bindless
+        std::unique_ptr<VK_Bindless> m_Bindless;
+
+        // descriptor set layouts
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowMapDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_ShadowUniformBufferDescriptorSetLayout;
         std::unique_ptr<VK_DescriptorSetLayout> m_LightingDescriptorSetLayout;

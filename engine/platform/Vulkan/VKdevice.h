@@ -124,6 +124,12 @@ namespace GfxRenderEngine
             int m_QueueCount{0};
         };
 
+        struct FeatureCheck
+        {
+            std::string m_Name;
+            VkBool32 m_Value;
+        };
+
         void CreateInstance();
         void SetupDebugMessenger();
         void CreateSurface();
@@ -142,6 +148,7 @@ namespace GfxRenderEngine
         VkResult HasGflwRequiredInstanceExtensions();
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+        bool CheckDeviceSupportsBindless();
 
         VkInstance m_Instance{nullptr};
         QueueFamilyIndices m_QueueFamilyIndices{};
@@ -164,5 +171,6 @@ namespace GfxRenderEngine
         const std::vector<const char*> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                                                                      VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME};
 #endif
+        bool m_DeviceSupportsBindless{false};
     };
 } // namespace GfxRenderEngine

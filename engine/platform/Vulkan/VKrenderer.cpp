@@ -53,6 +53,8 @@ namespace GfxRenderEngine
         RecreateShadowMaps();
         CreateCommandBuffers();
 
+        m_Bindless = std::make_unique<VK_Bindless>();
+
         for (uint i = 0; i < m_ShadowUniformBuffers0.size(); ++i)
         {
             m_ShadowUniformBuffers0[i] =
@@ -307,6 +309,9 @@ namespace GfxRenderEngine
             gDummyBuffer->WriteToBuffer(&dummy);
             gDummyBuffer->Flush();
         }
+
+        m_Bindless->AddTexture(textureSpritesheet);
+        m_Bindless->AddTexture(textureFontAtlas);
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
