@@ -45,6 +45,7 @@ namespace GfxRenderEngine
         virtual bool Init(std::vector<HiResImage> const& hiResImages, bool linearFilter = true) override;
         virtual int GetWidth() const override { return m_Width; }
         virtual int GetHeight() const override { return m_Height; }
+        virtual uint GetTextureID() const override { return m_TextureID; }
         virtual void Resize(uint width, uint height) override;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bytesPerPixel, const void* data) override;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) override;
@@ -66,6 +67,7 @@ namespace GfxRenderEngine
         VkFilter SetFilterMip(int minFilter);
 
     private:
+        uint m_TextureID;
         std::string m_FileName;
         uchar* m_LocalBuffer;
         int m_Width, m_Height, m_BytesPerPixel;
@@ -92,5 +94,7 @@ namespace GfxRenderEngine
         static constexpr int TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST = 9985;
         static constexpr int TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR = 9986;
         static constexpr int TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR = 9987;
+        static uint m_GlobalTextureIDCounter;
+        static std::mutex m_Mutex;
     };
 } // namespace GfxRenderEngine

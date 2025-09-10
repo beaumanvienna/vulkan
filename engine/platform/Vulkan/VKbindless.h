@@ -30,7 +30,6 @@ namespace GfxRenderEngine
 {
     class VK_Bindless
     {
-
     public:
         VK_Bindless();
         ~VK_Bindless();
@@ -41,12 +40,12 @@ namespace GfxRenderEngine
         VK_Bindless(VK_Bindless&&) = delete;
         VK_Bindless& operator=(VK_Bindless&&) = delete;
 
-        uint AddTexture(std::shared_ptr<Texture> const& texture);
-        uint AddTexture(VK_Texture const& texture);
+        uint AddTexture(Texture* texture);
+        void UpdateBindlessDescriptorSets();
 
         VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_BindlessTextureSetLayout; }
         VkDescriptorSet GetDescriptorSet() const { return m_BindlessSetTextures; }
-        uint GetTextureCount() const { return m_Counter; }
+        uint GetTextureCount() const { return m_NextBindlessIndex; }
         uint GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
 
     private:
@@ -56,9 +55,14 @@ namespace GfxRenderEngine
 
     private:
         constexpr static int MAX_DESCRIPTOR = 16384;
-        uint m_Counter;
+        uint m_NextBindlessIndex;
         VkDescriptorSetLayout m_BindlessTextureSetLayout;
         VkDescriptorPool m_DescriptorPoolTextures;
         VkDescriptorSet m_BindlessSetTextures;
+        std::mutex m_Mutex; // protect shared data
+
+        // Map texture ID (e.g., from your asset manager) to bindless index
+        std::unordered_map<uint, uint> m_TextureIndexMap;
+        std::vector<Texture*> m_PendingUpdates;
     };
 } // namespace GfxRenderEngine

@@ -28,7 +28,6 @@
 
 namespace GfxRenderEngine
 {
-
     std::shared_ptr<Texture> Texture::Create()
     {
         std::shared_ptr<Texture> texture;

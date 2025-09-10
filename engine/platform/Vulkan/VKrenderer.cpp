@@ -310,8 +310,9 @@ namespace GfxRenderEngine
             gDummyBuffer->Flush();
         }
 
-        m_Bindless->AddTexture(textureSpritesheet);
-        m_Bindless->AddTexture(textureFontAtlas);
+        m_Bindless->AddTexture(textureSpritesheet.get());
+        m_Bindless->AddTexture(textureFontAtlas.get());
+        m_Bindless->UpdateBindlessDescriptorSets();
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {

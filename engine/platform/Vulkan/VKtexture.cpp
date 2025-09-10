@@ -30,6 +30,8 @@
 
 namespace GfxRenderEngine
 {
+    uint VK_Texture::m_GlobalTextureIDCounter = 0;
+    std::mutex VK_Texture::m_Mutex;
 
     VK_Texture::VK_Texture(bool nearestFilter)
         : m_FileName(""), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BytesPerPixel(0), m_MipLevels(0), m_sRGB(false)
@@ -37,6 +39,12 @@ namespace GfxRenderEngine
         nearestFilter ? m_MinFilter = VK_FILTER_NEAREST : m_MinFilter = VK_FILTER_LINEAR;
         nearestFilter ? m_MagFilter = VK_FILTER_NEAREST : m_MagFilter = VK_FILTER_LINEAR;
         m_MinFilterMip = VK_FILTER_LINEAR;
+
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_TextureID = m_GlobalTextureIDCounter;
+            ++m_GlobalTextureIDCounter;
+        }
     }
 
     VK_Texture::~VK_Texture()
