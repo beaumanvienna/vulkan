@@ -34,14 +34,20 @@ namespace GfxRenderEngine
     public:
         VK_Bindless();
         ~VK_Bindless();
-        uint AddTexture(std::shared_ptr<Texture> const& texture);
-        uint AddTexture(VK_Texture const& texture);
 
         // Not copyable or movable
         VK_Bindless(const VK_Bindless&) = delete;
         VK_Bindless& operator=(const VK_Bindless&) = delete;
         VK_Bindless(VK_Bindless&&) = delete;
         VK_Bindless& operator=(VK_Bindless&&) = delete;
+
+        uint AddTexture(std::shared_ptr<Texture> const& texture);
+        uint AddTexture(VK_Texture const& texture);
+
+        VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_BindlessTextureSetLayout; }
+        VkDescriptorSet GetDescriptorSet() const { return m_BindlessSetTextures; }
+        uint GetTextureCount() const { return m_Counter; }
+        uint GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
 
     private:
         void CreateDescriptorSetLayout();

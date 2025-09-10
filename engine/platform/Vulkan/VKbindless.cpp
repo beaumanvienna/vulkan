@@ -135,6 +135,11 @@ namespace GfxRenderEngine
 
     uint VK_Bindless::AddTexture(VK_Texture const& texture)
     {
+        if (m_Counter >= MAX_DESCRIPTOR)
+        {
+            LOG_CORE_CRITICAL("Bindless descriptor array overflow: exceeded {0}", MAX_DESCRIPTOR);
+            return 0; // ID == 0: this is the texture atlas
+        }
         uint returnValue = m_Counter;
 
         VkDescriptorImageInfo imageInfo;
