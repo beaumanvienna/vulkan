@@ -31,6 +31,9 @@ namespace GfxRenderEngine
     class VK_Bindless
     {
     public:
+        using BindlessID = uint;
+
+    public:
         VK_Bindless();
         ~VK_Bindless();
 
@@ -40,13 +43,13 @@ namespace GfxRenderEngine
         VK_Bindless(VK_Bindless&&) = delete;
         VK_Bindless& operator=(VK_Bindless&&) = delete;
 
-        uint AddTexture(Texture* texture);
+        BindlessID AddTexture(Texture* texture);
         void UpdateBindlessDescriptorSets();
 
-        VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_BindlessTextureSetLayout; }
-        VkDescriptorSet GetDescriptorSet() const { return m_BindlessSetTextures; }
-        uint GetTextureCount() const { return m_NextBindlessIndex; }
-        uint GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
+        [[nodiscard]] VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_BindlessTextureSetLayout; }
+        [[nodiscard]] VkDescriptorSet GetDescriptorSet() const { return m_BindlessSetTextures; }
+        [[nodiscard]] BindlessID GetTextureCount() const { return m_NextBindlessIndex; }
+        [[nodiscard]] BindlessID GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
 
     private:
         void CreateDescriptorSetLayout();
@@ -54,15 +57,18 @@ namespace GfxRenderEngine
         void CreateDescriptorSet();
 
     private:
-        constexpr static int MAX_DESCRIPTOR = 16384;
-        uint m_NextBindlessIndex;
+        constexpr static BindlessID MAX_DESCRIPTOR = 16384u;
+        constexpr static BindlessID BINDLESS_ID_TEXTURE_ATLAS = 0u;
+        BindlessID m_NextBindlessIndex;
         VkDescriptorSetLayout m_BindlessTextureSetLayout;
         VkDescriptorPool m_DescriptorPoolTextures;
         VkDescriptorSet m_BindlessSetTextures;
         std::mutex m_Mutex; // protect shared data
 
-        // Map texture ID (e.g., from your asset manager) to bindless index
-        std::unordered_map<uint, uint> m_TextureIndexMap;
+        // Map texture ID to bindless index
+        constexpr static size_t TEXTURE_ID_2_BINDLESS_ID_PREALLOC = 4096u;
+        std::unordered_map<Texture::TextureID, BindlessID> m_TextureID2BindlessID;
+        constexpr static size_t PENDING_UPDATES_PREALLOC = 256u;
         std::vector<Texture*> m_PendingUpdates;
     };
 } // namespace GfxRenderEngine

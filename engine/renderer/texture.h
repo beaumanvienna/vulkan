@@ -35,6 +35,9 @@ namespace GfxRenderEngine
     {
 
     public:
+        using TextureID = uint;
+
+    public:
         static constexpr bool USE_SRGB = true;
         static constexpr bool USE_UNORM = false;
 
@@ -48,7 +51,7 @@ namespace GfxRenderEngine
         virtual bool Init(std::vector<HiResImage> const& hiResImages, bool linearFilter = true) = 0;
         virtual int GetWidth() const = 0;
         virtual int GetHeight() const = 0;
-        virtual uint GetTextureID() const = 0;
+        virtual TextureID GetTextureID() const = 0;
         virtual void Resize(uint width, uint height) = 0;
         virtual void Blit(uint x, uint y, uint width, uint height, uint bpp, const void* data) = 0;
         virtual void Blit(uint x, uint y, uint width, uint height, int dataFormat, int type, const void* data) = 0;

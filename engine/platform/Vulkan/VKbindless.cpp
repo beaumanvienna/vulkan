@@ -27,8 +27,14 @@
 
 namespace GfxRenderEngine
 {
-    VK_Bindless::VK_Bindless() : m_NextBindlessIndex{0}
+    VK_Bindless::VK_Bindless()
+        : m_NextBindlessIndex{0}, m_BindlessTextureSetLayout{VK_NULL_HANDLE}, m_DescriptorPoolTextures{VK_NULL_HANDLE},
+          m_BindlessSetTextures{VK_NULL_HANDLE}
     {
+        // Reserve container capacities to avoid rehash/multiple allocations
+        m_TextureID2BindlessID.reserve(TEXTURE_ID_2_BINDLESS_ID_PREALLOC);
+        m_PendingUpdates.reserve(PENDING_UPDATES_PREALLOC);
+
         CreateDescriptorSetLayout();
         CreateDescriptorPool();
         CreateDescriptorSet();
@@ -37,26 +43,29 @@ namespace GfxRenderEngine
     VK_Bindless::~VK_Bindless()
     {
         std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+
         vkDestroyDescriptorSetLayout(VK_Core::m_Device->Device(), m_BindlessTextureSetLayout, nullptr);
         vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPoolTextures, nullptr);
+        m_BindlessTextureSetLayout = VK_NULL_HANDLE;
+        m_DescriptorPoolTextures = VK_NULL_HANDLE;
+        m_BindlessSetTextures = VK_NULL_HANDLE;
     }
 
     void VK_Bindless::CreateDescriptorSetLayout()
-    { // bindless array of sampled images (textures)
+    { // bindless array of combined image samplers (textures)
         VkDescriptorSetLayoutBinding bindlessTextureBinding{};
         bindlessTextureBinding.binding = 0;
         bindlessTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        bindlessTextureBinding.descriptorCount = MAX_DESCRIPTOR; // upper bound, large enough for Lucre
+        bindlessTextureBinding.descriptorCount = static_cast<uint>(MAX_DESCRIPTOR); // upper bound, large enough for Lucre
         bindlessTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
-        bindlessTextureBinding.pImmutableSamplers = nullptr;
 
-        VkDescriptorBindingFlags bindingFlags =
-            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+        auto bindingFlags = std::to_array<VkDescriptorBindingFlags>(
+            {VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT});
 
         VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
         bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-        bindingFlagsInfo.bindingCount = 1;
-        bindingFlagsInfo.pBindingFlags = &bindingFlags;
+        bindingFlagsInfo.bindingCount = static_cast<uint>(bindingFlags.size());
+        bindingFlagsInfo.pBindingFlags = bindingFlags.data();
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -72,14 +81,15 @@ namespace GfxRenderEngine
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to create descriptor set layout for bindless textures");
+                m_BindlessTextureSetLayout = VK_NULL_HANDLE;
             }
         }
     }
     void VK_Bindless::CreateDescriptorPool()
     {
         VkDescriptorPoolSize poolSize{};
-        poolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        poolSize.descriptorCount = MAX_DESCRIPTOR;
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = static_cast<uint>(MAX_DESCRIPTOR);
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -95,14 +105,14 @@ namespace GfxRenderEngine
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to create descriptor pool for bindless textures");
+                m_DescriptorPoolTextures = VK_NULL_HANDLE;
             }
         }
     }
 
     void VK_Bindless::CreateDescriptorSet()
     {
-        // Say you want exactly N textures in this set
-        uint descriptorCount = MAX_DESCRIPTOR;
+        uint descriptorCount = static_cast<uint>(MAX_DESCRIPTOR);
 
         VkDescriptorSetVariableDescriptorCountAllocateInfo countInfo{};
         countInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
@@ -123,31 +133,33 @@ namespace GfxRenderEngine
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to allocate bindless descriptor set!");
+                m_BindlessSetTextures = VK_NULL_HANDLE;
             }
         }
     }
 
-    uint VK_Bindless::AddTexture(Texture* texture)
+    VK_Bindless::BindlessID VK_Bindless::AddTexture(Texture* texture)
     {
-        uint textureId = texture->GetTextureID();
+        Texture::TextureID textureID = texture->GetTextureID();
 
-        // enter guarded code
-        std::lock_guard<std::mutex> lock(m_Mutex);
+        // guard map + pending vector
+        std::lock_guard<std::mutex> guard(m_Mutex);
 
         if (m_NextBindlessIndex >= MAX_DESCRIPTOR)
         {
             LOG_CORE_CRITICAL("Bindless descriptor array overflow: exceeded {0}", MAX_DESCRIPTOR);
-            return 0; // ID == 0: this is the texture atlas
+            return BINDLESS_ID_TEXTURE_ATLAS; // use texture atlas instead
         }
 
-        // check if the texture is already registered
-        if (m_TextureIndexMap.count(textureId))
+        // check if the texture is already registered (single lookup via find() plus iterator)
+        auto it = m_TextureID2BindlessID.find(textureID);
+        if (it != m_TextureID2BindlessID.end())
         {
-            return m_TextureIndexMap[textureId];
+            return it->second; // already registered
         }
 
         uint bindlessIndex = m_NextBindlessIndex;
-        m_TextureIndexMap[textureId] = bindlessIndex;
+        m_TextureID2BindlessID.emplace(textureID, bindlessIndex);
         m_PendingUpdates.push_back(texture);
         ++m_NextBindlessIndex;
 
@@ -159,34 +171,56 @@ namespace GfxRenderEngine
         // Lock the mutex for a short period to move pending items
         std::vector<Texture*> pendingUpdates;
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
+            std::lock_guard<std::mutex> guard(m_Mutex);
             if (m_PendingUpdates.empty())
             {
                 return; // No updates are needed
             }
             pendingUpdates = std::move(m_PendingUpdates);
+            m_PendingUpdates = {}; // as per discussion with Lukases and No Life
+            m_PendingUpdates.reserve(PENDING_UPDATES_PREALLOC);
         }
 
         // Prepare the writes outside the lock
-        std::vector<VkWriteDescriptorSet> descriptorWrites(pendingUpdates.size());
-        std::vector<VkDescriptorImageInfo> descriptorImageInfos(pendingUpdates.size());
+        const size_t numberOfUpdates = pendingUpdates.size();
+        std::vector<VkWriteDescriptorSet> descriptorWrites;
+        descriptorWrites.reserve(numberOfUpdates);
 
-        for (uint index = 0; auto& texture : pendingUpdates)
+        for (size_t index = 0; index < numberOfUpdates; ++index)
         {
-            const uint32_t bindlessIndex = m_TextureIndexMap.at(texture->GetTextureID());
+            Texture* texture = pendingUpdates[index];
+            Texture::TextureID textureID = texture->GetTextureID();
 
-            VkDescriptorImageInfo& imageInfo = descriptorImageInfos[index];
-            imageInfo = static_cast<VK_Texture*>(texture)->GetDescriptorImageInfo();
+            // find index; if missing, skip this texture
+            auto it = m_TextureID2BindlessID.find(textureID);
+            if (it == m_TextureID2BindlessID.end())
+            {
+                // should not happen, but skip defensively
+                LOG_CORE_WARN("Texture ID {} not found in bindless map while updating descriptors", textureID);
+                continue;
+            }
 
-            VkWriteDescriptorSet& writeInfo = descriptorWrites[index];
-            writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writeInfo.dstSet = m_BindlessSetTextures;
-            writeInfo.dstBinding = 0; // Assuming binding 0 for texture array
-            writeInfo.dstArrayElement = bindlessIndex;
-            writeInfo.descriptorCount = 1;
-            writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            writeInfo.pImageInfo = &imageInfo;
-            ++index;
+            const uint bindlessIndex = it->second;
+
+            const VkDescriptorImageInfo& imageInfo = static_cast<VK_Texture*>(texture)->GetDescriptorImageInfo();
+
+            descriptorWrites.emplace_back(VkWriteDescriptorSet{
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,    // sType
+                nullptr,                                   // pNext
+                m_BindlessSetTextures,                     // dstSet
+                0,                                         // dstBinding (Assuming binding 0 for texture array)
+                bindlessIndex,                             // dstArrayElement
+                1,                                         // descriptorCount
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, // descriptorType
+                &imageInfo,                                // pImageInfo
+                nullptr,                                   // pBufferInfo
+                nullptr                                    // pTexelBufferView
+            });
+        }
+
+        if (descriptorWrites.empty())
+        {
+            return;
         }
 
         {

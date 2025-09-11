@@ -30,7 +30,7 @@
 
 namespace GfxRenderEngine
 {
-    uint VK_Texture::m_GlobalTextureIDCounter = 0;
+    VK_Texture::TextureID VK_Texture::m_GlobalTextureIDCounter = 0;
     std::mutex VK_Texture::m_Mutex;
 
     VK_Texture::VK_Texture(bool nearestFilter)
