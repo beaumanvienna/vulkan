@@ -149,6 +149,7 @@ namespace GfxRenderEngine
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
         bool CheckDeviceSupportsBindless();
+        bool CheckBufferDeviceAddressFeature();
 
         VkInstance m_Instance{nullptr};
         QueueFamilyIndices m_QueueFamilyIndices{};
@@ -166,11 +167,14 @@ namespace GfxRenderEngine
         const std::vector<const char*> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef MACOSX
         const std::vector<const char*> m_RequiredDeviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset", VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME};
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset", VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME};
 #else
         const std::vector<const char*> m_RequiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                                     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME};
+                                                                     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+                                                                     VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME};
 #endif
         bool m_DeviceSupportsBindless{false};
+        bool m_DeviceSupportsBufferDeviceAddress{false};
     };
 } // namespace GfxRenderEngine

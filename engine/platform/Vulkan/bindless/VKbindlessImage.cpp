@@ -23,16 +23,16 @@
 #include <vulkan/vulkan.h>
 
 #include "VKcore.h"
-#include "VKbindless.h"
+#include "bindless/VKbindlessImage.h"
 
 namespace GfxRenderEngine
 {
-    VK_Bindless::VK_Bindless()
-        : m_NextBindlessIndex{0}, m_BindlessTextureSetLayout{VK_NULL_HANDLE}, m_DescriptorPoolTextures{VK_NULL_HANDLE},
-          m_BindlessSetTextures{VK_NULL_HANDLE}
+    VK_BindlessImage::VK_BindlessImage()
+        : m_NextBindlessIndex{0}, m_BindlessImageSetLayout{VK_NULL_HANDLE}, m_DescriptorPoolImages{VK_NULL_HANDLE},
+          m_BindlessSetImages{VK_NULL_HANDLE}
     {
         // Reserve container capacities to avoid rehash/multiple allocations
-        m_TextureID2BindlessID.reserve(TEXTURE_ID_2_BINDLESS_ID_PREALLOC);
+        m_ImageID2BindlessImageID.reserve(TEXTURE_ID_2_BINDLESS_ID_PREALLOC);
         m_PendingUpdates.reserve(PENDING_UPDATES_PREALLOC);
 
         CreateDescriptorSetLayout();
@@ -40,24 +40,24 @@ namespace GfxRenderEngine
         CreateDescriptorSet();
     }
 
-    VK_Bindless::~VK_Bindless()
+    VK_BindlessImage::~VK_BindlessImage()
     {
         std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
 
-        vkDestroyDescriptorSetLayout(VK_Core::m_Device->Device(), m_BindlessTextureSetLayout, nullptr);
-        vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPoolTextures, nullptr);
-        m_BindlessTextureSetLayout = VK_NULL_HANDLE;
-        m_DescriptorPoolTextures = VK_NULL_HANDLE;
-        m_BindlessSetTextures = VK_NULL_HANDLE;
+        vkDestroyDescriptorSetLayout(VK_Core::m_Device->Device(), m_BindlessImageSetLayout, nullptr);
+        vkDestroyDescriptorPool(VK_Core::m_Device->Device(), m_DescriptorPoolImages, nullptr);
+        m_BindlessImageSetLayout = VK_NULL_HANDLE;
+        m_DescriptorPoolImages = VK_NULL_HANDLE;
+        m_BindlessSetImages = VK_NULL_HANDLE;
     }
 
-    void VK_Bindless::CreateDescriptorSetLayout()
+    void VK_BindlessImage::CreateDescriptorSetLayout()
     { // bindless array of combined image samplers (textures)
-        VkDescriptorSetLayoutBinding bindlessTextureBinding{};
-        bindlessTextureBinding.binding = 0;
-        bindlessTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        bindlessTextureBinding.descriptorCount = static_cast<uint>(MAX_DESCRIPTOR); // upper bound, large enough for Lucre
-        bindlessTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
+        VkDescriptorSetLayoutBinding bindlessImageBinding{};
+        bindlessImageBinding.binding = 0;
+        bindlessImageBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        bindlessImageBinding.descriptorCount = static_cast<uint>(MAX_DESCRIPTOR); // upper bound, large enough for Lucre
+        bindlessImageBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT;
 
         auto bindingFlags = std::to_array<VkDescriptorBindingFlags>(
             {VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT});
@@ -71,24 +71,24 @@ namespace GfxRenderEngine
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.pNext = &bindingFlagsInfo;
         layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &bindlessTextureBinding;
+        layoutInfo.pBindings = &bindlessImageBinding;
 
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             auto result =
-                vkCreateDescriptorSetLayout(VK_Core::m_Device->Device(), &layoutInfo, nullptr, &m_BindlessTextureSetLayout);
+                vkCreateDescriptorSetLayout(VK_Core::m_Device->Device(), &layoutInfo, nullptr, &m_BindlessImageSetLayout);
             if (result != VK_SUCCESS)
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to create descriptor set layout for bindless textures");
-                m_BindlessTextureSetLayout = VK_NULL_HANDLE;
+                m_BindlessImageSetLayout = VK_NULL_HANDLE;
             }
         }
     }
-    void VK_Bindless::CreateDescriptorPool()
+    void VK_BindlessImage::CreateDescriptorPool()
     {
         VkDescriptorPoolSize poolSize{};
-        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
         poolSize.descriptorCount = static_cast<uint>(MAX_DESCRIPTOR);
 
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -100,17 +100,17 @@ namespace GfxRenderEngine
 
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-            auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &poolInfo, nullptr, &m_DescriptorPoolTextures);
+            auto result = vkCreateDescriptorPool(VK_Core::m_Device->Device(), &poolInfo, nullptr, &m_DescriptorPoolImages);
             if (result != VK_SUCCESS)
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to create descriptor pool for bindless textures");
-                m_DescriptorPoolTextures = VK_NULL_HANDLE;
+                m_DescriptorPoolImages = VK_NULL_HANDLE;
             }
         }
     }
 
-    void VK_Bindless::CreateDescriptorSet()
+    void VK_BindlessImage::CreateDescriptorSet()
     {
         uint descriptorCount = static_cast<uint>(MAX_DESCRIPTOR);
 
@@ -121,26 +121,26 @@ namespace GfxRenderEngine
 
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = m_DescriptorPoolTextures;
+        allocInfo.descriptorPool = m_DescriptorPoolImages;
         allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = &m_BindlessTextureSetLayout;
+        allocInfo.pSetLayouts = &m_BindlessImageSetLayout;
         allocInfo.pNext = &countInfo;
 
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-            auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &m_BindlessSetTextures);
+            auto result = vkAllocateDescriptorSets(VK_Core::m_Device->Device(), &allocInfo, &m_BindlessSetImages);
             if (result != VK_SUCCESS)
             {
                 VK_Core::m_Device->PrintError(result);
                 LOG_CORE_CRITICAL("Failed to allocate bindless descriptor set!");
-                m_BindlessSetTextures = VK_NULL_HANDLE;
+                m_BindlessSetImages = VK_NULL_HANDLE;
             }
         }
     }
 
-    VK_Bindless::BindlessID VK_Bindless::AddTexture(Texture* texture)
+    VK_BindlessImage::BindlessImageID VK_BindlessImage::AddImage(StorageImage* storageImage)
     {
-        Texture::TextureID textureID = texture->GetTextureID();
+        StorageImage::StorageImageID storageImageID = storageImage->GetStorageImageID();
 
         // guard map + pending vector
         std::lock_guard<std::mutex> guard(m_Mutex);
@@ -152,24 +152,24 @@ namespace GfxRenderEngine
         }
 
         // check if the texture is already registered (single lookup via find() plus iterator)
-        auto it = m_TextureID2BindlessID.find(textureID);
-        if (it != m_TextureID2BindlessID.end())
+        auto it = m_ImageID2BindlessImageID.find(storageImageID);
+        if (it != m_ImageID2BindlessImageID.end())
         {
             return it->second; // already registered
         }
 
         uint bindlessIndex = m_NextBindlessIndex;
-        m_TextureID2BindlessID.emplace(textureID, bindlessIndex);
-        m_PendingUpdates.push_back(texture);
+        m_ImageID2BindlessImageID.emplace(storageImageID, bindlessIndex);
+        m_PendingUpdates.push_back(storageImage);
         ++m_NextBindlessIndex;
 
         return bindlessIndex;
     }
 
-    void VK_Bindless::UpdateBindlessDescriptorSets()
+    void VK_BindlessImage::UpdateBindlessDescriptorSets()
     {
         // Lock the mutex for a short period to move pending items
-        std::vector<Texture*> pendingUpdates;
+        std::vector<StorageImage*> pendingUpdates;
         {
             std::lock_guard<std::mutex> guard(m_Mutex);
             if (m_PendingUpdates.empty())
@@ -188,33 +188,33 @@ namespace GfxRenderEngine
 
         for (size_t index = 0; index < numberOfUpdates; ++index)
         {
-            Texture* texture = pendingUpdates[index];
-            Texture::TextureID textureID = texture->GetTextureID();
+            StorageImage* storageImage = pendingUpdates[index];
+            StorageImage::StorageImageID storageImageID = storageImage->GetStorageImageID();
 
             // find index; if missing, skip this texture
-            auto it = m_TextureID2BindlessID.find(textureID);
-            if (it == m_TextureID2BindlessID.end())
+            auto it = m_ImageID2BindlessImageID.find(storageImageID);
+            if (it == m_ImageID2BindlessImageID.end())
             {
                 // should not happen, but skip defensively
-                LOG_CORE_WARN("Texture ID {} not found in bindless map while updating descriptors", textureID);
+                LOG_CORE_WARN("Image ID {} not found in bindless map while updating descriptors", storageImageID);
                 continue;
             }
 
             const uint bindlessIndex = it->second;
 
-            const VkDescriptorImageInfo& imageInfo = static_cast<VK_Texture*>(texture)->GetDescriptorImageInfo();
+            const VkDescriptorImageInfo& imageInfo = static_cast<VK_StorageImage*>(storageImage)->GetDescriptorImageInfo();
 
             descriptorWrites.emplace_back(VkWriteDescriptorSet{
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,    // sType
-                nullptr,                                   // pNext
-                m_BindlessSetTextures,                     // dstSet
-                0,                                         // dstBinding (Assuming binding 0 for texture array)
-                bindlessIndex,                             // dstArrayElement
-                1,                                         // descriptorCount
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, // descriptorType
-                &imageInfo,                                // pImageInfo
-                nullptr,                                   // pBufferInfo
-                nullptr                                    // pTexelBufferView
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, // sType
+                nullptr,                                // pNext
+                m_BindlessSetImages,                    // dstSet
+                0,                                      // dstBinding (Assuming binding 0 for texture array)
+                bindlessIndex,                          // dstArrayElement
+                1,                                      // descriptorCount
+                VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,       // descriptorType
+                &imageInfo,                             // pImageInfo
+                nullptr,                                // pBufferInfo
+                nullptr                                 // pTexelBufferView
             });
         }
 

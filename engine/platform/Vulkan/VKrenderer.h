@@ -61,7 +61,7 @@
 #include "VKdescriptor.h"
 #include "VKtexture.h"
 #include "VKbuffer.h"
-#include "VKbindless.h"
+#include "bindless/VKbindless.h"
 
 namespace GfxRenderEngine
 {

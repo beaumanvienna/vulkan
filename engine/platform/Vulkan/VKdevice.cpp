@@ -81,6 +81,7 @@ namespace GfxRenderEngine
         CreateSurface();
         PickPhysicalDevice();
         CheckDeviceSupportsBindless();
+        CheckBufferDeviceAddressFeature();
         CreateLogicalDevice();
         CreateCommandPool();
     }
@@ -256,11 +257,19 @@ namespace GfxRenderEngine
         {
             physicalDeviceVulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+            physicalDeviceVulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+            physicalDeviceVulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
             physicalDeviceVulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
             physicalDeviceVulkan12Features.runtimeDescriptorArray = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+        }
+
+        if (m_DeviceSupportsBufferDeviceAddress)
+        {
+            physicalDeviceVulkan12Features.bufferDeviceAddress = VK_TRUE;
+            physicalDeviceVulkan12Features.bufferDeviceAddressCaptureReplay = VK_TRUE;
         }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -929,15 +938,17 @@ namespace GfxRenderEngine
 
         vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
 
-        auto const features = std::to_array<FeatureCheck>({
-            {"descriptorBindingPartiallyBound", indexingFeatures.descriptorBindingPartiallyBound},
-            {"descriptorBindingSampledImageUpdateAfterBind", indexingFeatures.descriptorBindingSampledImageUpdateAfterBind},
-            {"shaderSampledImageArrayNonUniformIndexing", indexingFeatures.shaderSampledImageArrayNonUniformIndexing},
-            {"runtimeDescriptorArray", indexingFeatures.runtimeDescriptorArray},
-            {"descriptorBindingVariableDescriptorCount", indexingFeatures.descriptorBindingVariableDescriptorCount},
-            {"shaderStorageBufferArrayNonUniformIndexing", indexingFeatures.shaderStorageBufferArrayNonUniformIndexing},
-            {"shaderStorageImageArrayNonUniformIndexing", indexingFeatures.shaderStorageImageArrayNonUniformIndexing},
-        });
+        auto const features = std::to_array<FeatureCheck>(
+            {{"descriptorBindingPartiallyBound", indexingFeatures.descriptorBindingPartiallyBound},
+             {"descriptorBindingSampledImageUpdateAfterBind", indexingFeatures.descriptorBindingSampledImageUpdateAfterBind},
+             {"shaderSampledImageArrayNonUniformIndexing", indexingFeatures.shaderSampledImageArrayNonUniformIndexing},
+             {"runtimeDescriptorArray", indexingFeatures.runtimeDescriptorArray},
+             {"descriptorBindingVariableDescriptorCount", indexingFeatures.descriptorBindingVariableDescriptorCount},
+             {"shaderStorageBufferArrayNonUniformIndexing", indexingFeatures.shaderStorageBufferArrayNonUniformIndexing},
+             {"shaderStorageImageArrayNonUniformIndexing", indexingFeatures.shaderStorageImageArrayNonUniformIndexing},
+             {"descriptorBindingStorageImageUpdateAfterBind", indexingFeatures.descriptorBindingStorageImageUpdateAfterBind},
+             {"descriptorBindingStorageBufferUpdateAfterBind",
+              indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind}});
 
         bool allSupported = true;
 
@@ -958,6 +969,43 @@ namespace GfxRenderEngine
 
         LOG_CORE_INFO("device support bindless: {0}", (m_DeviceSupportsBindless ? "true" : "false"));
         return m_DeviceSupportsBindless;
+    }
+
+    bool VK_Device::CheckBufferDeviceAddressFeature()
+    {
+        // ----------------- feature enabling -----------------
+        VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
+        bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+
+        VkPhysicalDeviceFeatures2 deviceFeatures2{};
+        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        deviceFeatures2.pNext = &bufferDeviceAddressFeatures;
+
+        vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
+
+        auto const features = std::to_array<FeatureCheck>(
+            {{"bufferDeviceAddress", bufferDeviceAddressFeatures.bufferDeviceAddress},
+             {"bufferDeviceAddressCaptureReplay", bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay}});
+
+        bool allSupported = true;
+
+        for (const auto& feature : features)
+        {
+            if (feature.m_Value)
+            {
+                std::cout << "[+] " << feature.m_Name << " : supported\n";
+            }
+            else
+            {
+                std::cout << "[-] " << feature.m_Name << " : NOT supported\n";
+                allSupported = false;
+            }
+        }
+
+        m_DeviceSupportsBufferDeviceAddress = allSupported;
+
+        LOG_CORE_INFO("support buffer device address: {0}", (m_DeviceSupportsBufferDeviceAddress ? "true" : "false"));
+        return m_DeviceSupportsBufferDeviceAddress;
     }
 
     void VK_Device::PrintError(VkResult result)
