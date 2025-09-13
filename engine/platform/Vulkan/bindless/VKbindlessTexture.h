@@ -28,20 +28,20 @@
 
 namespace GfxRenderEngine
 {
-    class VK_Bindless
+    class VK_BindlessTexture
     {
     public:
         using BindlessID = uint;
 
     public:
-        VK_Bindless();
-        ~VK_Bindless();
+        VK_BindlessTexture();
+        ~VK_BindlessTexture();
 
         // Not copyable or movable
-        VK_Bindless(const VK_Bindless&) = delete;
-        VK_Bindless& operator=(const VK_Bindless&) = delete;
-        VK_Bindless(VK_Bindless&&) = delete;
-        VK_Bindless& operator=(VK_Bindless&&) = delete;
+        VK_BindlessTexture(const VK_BindlessTexture&) = delete;
+        VK_BindlessTexture& operator=(const VK_BindlessTexture&) = delete;
+        VK_BindlessTexture(VK_BindlessTexture&&) = delete;
+        VK_BindlessTexture& operator=(VK_BindlessTexture&&) = delete;
 
         BindlessID AddTexture(Texture* texture);
         void UpdateBindlessDescriptorSets();

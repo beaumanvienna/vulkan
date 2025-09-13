@@ -37,15 +37,34 @@ namespace GfxRenderEngine
     public:
         VK_StorageImage();
         virtual ~VK_StorageImage();
+
+        virtual bool Init(const uint width, const uint height) override;
+        virtual uint GetWidth() const override { return m_Width; }
+        virtual uint GetHeight() const override { return m_Height; }
         virtual StorageImageID GetStorageImageID() const override { return m_StorageImageID; }
+        virtual void Resize(uint width, uint height) override;
+
         const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 
     private:
+        bool CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+        void Destroy();
+
+    private:
         StorageImageID m_StorageImageID;
+
+        VkFormat m_StorageImageFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkImageLayout m_StorageImageLayout{VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED};
+        VkImage m_StorageImage{nullptr};
+        VkDeviceMemory m_StorageImageMemory{nullptr};
+        VkImageView m_StorageImageView{nullptr};
+
         VkDescriptorImageInfo m_DescriptorImageInfo{};
 
     private:
         static StorageImageID m_GlobalStorageImageIDCounter;
         static std::mutex m_Mutex;
+
+        uint m_Width, m_Height;
     };
 } // namespace GfxRenderEngine

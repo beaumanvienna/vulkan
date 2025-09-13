@@ -80,8 +80,7 @@ namespace GfxRenderEngine
         SetupDebugMessenger();
         CreateSurface();
         PickPhysicalDevice();
-        CheckDeviceSupportsBindless();
-        CheckBufferDeviceAddressFeature();
+        CheckForBindlessSupport();
         CreateLogicalDevice();
         CreateCommandPool();
     }
@@ -253,8 +252,9 @@ namespace GfxRenderEngine
         physicalDeviceVulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         physicalDeviceVulkan12Features.timelineSemaphore = VK_TRUE;
         // Enable bindless only if supported
-        if (m_DeviceSupportsBindless)
+        if (m_BindlessSupport)
         {
+            // device support for bindless
             physicalDeviceVulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
@@ -264,12 +264,14 @@ namespace GfxRenderEngine
             physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
-        }
-
-        if (m_DeviceSupportsBufferDeviceAddress)
-        {
+            // buffer device address
             physicalDeviceVulkan12Features.bufferDeviceAddress = VK_TRUE;
             physicalDeviceVulkan12Features.bufferDeviceAddressCaptureReplay = VK_TRUE;
+        }
+        else
+        {
+            LOG_CORE_CRITICAL("no bindless support");
+            exit(0);
         }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -1778,15 +1780,54 @@ namespace GfxRenderEngine
             vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &props);
             if ((props.linearTilingFeatures) || (props.optimalTilingFeatures) || (props.bufferFeatures))
             {
-                LOG_CORE_INFO("{0} ({1}): linearTilingFeatures {2:x},", formatStrings[index], candidates[index],
-                              static_cast<uint>(props.linearTilingFeatures));
-                LOG_CORE_INFO("                                                         : optimalTilingFeatures {0:x},",
-                              static_cast<uint>(props.optimalTilingFeatures));
-                LOG_CORE_INFO("                                                         : bufferFeatures {0:x},",
-                              static_cast<uint>(props.bufferFeatures));
+                LOG_CORE_INFO("{0} ({1}): linearTilingFeatures {2:x} ({3}),", formatStrings[index], candidates[index],
+                              static_cast<uint>(props.linearTilingFeatures),
+                              static_cast<uint>(props.linearTilingFeatures) & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT ? "yes"
+                                                                                                                  : "no");
+                LOG_CORE_INFO(
+                    "                                                         : optimalTilingFeatures {0:x} ({1}),",
+                    static_cast<uint>(props.optimalTilingFeatures),
+                    static_cast<uint>(props.optimalTilingFeatures) & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT ? "yes" : "no");
+                LOG_CORE_INFO("                                                         : bufferFeatures {0:x} ({1}),",
+                              static_cast<uint>(props.bufferFeatures),
+                              static_cast<uint>(props.bufferFeatures) & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT ? "yes" : "no");
             }
 
             ++index;
         }
+    }
+
+    bool VK_Device::CheckFormatSupportsStorageImage()
+    {
+        auto formats =
+            std::to_array<std::pair<VkFormat, const char*>>({std::pair{VK_FORMAT_R8G8B8A8_UNORM, "VK_FORMAT_R8G8B8A8_UNORM"},
+                                                             std::pair{VK_FORMAT_R32_SFLOAT, "VK_FORMAT_R32_SFLOAT"}});
+        m_FormatSupportsStorageImage = true;
+        for (auto& format : formats)
+        {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format.first, &props);
+            bool linearTilingSupportsStorageImage =
+                static_cast<uint>(props.linearTilingFeatures) & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
+            bool optimalTilingSupportsStorageImage =
+                static_cast<uint>(props.optimalTilingFeatures) & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
+            if (!(linearTilingSupportsStorageImage && optimalTilingSupportsStorageImage))
+            {
+                std::string str = std::string("format ") + format.second + " does not support storage image";
+                CORE_ASSERT(false, str);
+                m_FormatSupportsStorageImage = false;
+                break;
+            }
+        }
+        return m_FormatSupportsStorageImage;
+    }
+
+    bool VK_Device::CheckForBindlessSupport()
+    {
+        CheckDeviceSupportsBindless();
+        CheckBufferDeviceAddressFeature();
+        CheckFormatSupportsStorageImage();
+        m_BindlessSupport = m_DeviceSupportsBindless && m_DeviceSupportsBufferDeviceAddress && m_FormatSupportsStorageImage;
+        return m_BindlessSupport;
     }
 } // namespace GfxRenderEngine

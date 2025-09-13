@@ -35,7 +35,12 @@ namespace GfxRenderEngine
 
     public:
         virtual ~StorageImage() = default;
+
+        virtual bool Init(const uint width, const uint height) = 0;
+        virtual uint GetWidth() const = 0;
+        virtual uint GetHeight() const = 0;
         virtual StorageImageID GetStorageImageID() const = 0;
+        virtual void Resize(uint width, uint height) = 0;
 
         static std::shared_ptr<StorageImage> Create();
     };

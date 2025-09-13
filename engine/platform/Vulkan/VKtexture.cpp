@@ -52,10 +52,17 @@ namespace GfxRenderEngine
         auto device = VK_Core::m_Device->Device();
 
         std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-        vkDestroyImage(device, m_TextureImage, nullptr);
-        vkDestroyImageView(device, m_ImageView, nullptr);
         vkDestroySampler(device, m_Sampler, nullptr);
+        vkDestroyImageView(device, m_ImageView, nullptr);
         vkFreeMemory(device, m_TextureImageMemory, nullptr);
+        vkDestroyImage(device, m_TextureImage, nullptr);
+
+        m_ImageFormat = VK_FORMAT_UNDEFINED;
+        m_ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        m_TextureImage = nullptr;
+        m_ImageView = nullptr;
+        m_Sampler = nullptr;
+        m_TextureImageMemory = nullptr;
     }
 
     // create texture from raw memory
@@ -186,7 +193,15 @@ namespace GfxRenderEngine
         allocInfo.allocationSize = memReq.size;
         allocInfo.memoryTypeIndex =
             VK_Core::m_Device->FindMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
+        {
+            auto result = vkAllocateMemory(device, &allocInfo, nullptr, &m_TextureImageMemory);
+            if (result != VK_SUCCESS)
+            {
+                VK_Core::m_Device->PrintError(result);
+                LOG_CORE_CRITICAL("failed to allocate memory!");
+                return false;
+            }
+        }
         vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
 
         // copy regions

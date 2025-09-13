@@ -79,9 +79,9 @@ namespace GfxRenderEngine
         VkFilter m_MinFilterMip;
 
         VkFormat m_ImageFormat{VkFormat::VK_FORMAT_UNDEFINED};
+        VkImageLayout m_ImageLayout{VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED};
         VkImage m_TextureImage{nullptr};
         VkDeviceMemory m_TextureImageMemory{nullptr};
-        VkImageLayout m_ImageLayout{VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED};
         VkImageView m_ImageView{nullptr};
         VkSampler m_Sampler{nullptr};
 

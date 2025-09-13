@@ -52,7 +52,7 @@ namespace GfxRenderEngine
     }
 
     void VK_BindlessImage::CreateDescriptorSetLayout()
-    { // bindless array of combined image samplers (textures)
+    { // bindless array of storage images
         VkDescriptorSetLayoutBinding bindlessImageBinding{};
         bindlessImageBinding.binding = 0;
         bindlessImageBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;

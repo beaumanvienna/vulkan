@@ -150,6 +150,8 @@ namespace GfxRenderEngine
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
         bool CheckDeviceSupportsBindless();
         bool CheckBufferDeviceAddressFeature();
+        bool CheckFormatSupportsStorageImage();
+        bool CheckForBindlessSupport();
 
         VkInstance m_Instance{nullptr};
         QueueFamilyIndices m_QueueFamilyIndices{};
@@ -176,5 +178,7 @@ namespace GfxRenderEngine
 #endif
         bool m_DeviceSupportsBindless{false};
         bool m_DeviceSupportsBufferDeviceAddress{false};
+        bool m_FormatSupportsStorageImage{false};
+        bool m_BindlessSupport{false};
     };
 } // namespace GfxRenderEngine
