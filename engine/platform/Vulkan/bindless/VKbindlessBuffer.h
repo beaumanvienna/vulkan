@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -22,33 +22,36 @@
 
 #pragma once
 
-#include <memory>
-
-#include "engine.h"
+#include "VKbuffer.h"
 
 namespace GfxRenderEngine
 {
-
-    class Buffer
+    class VK_BindlessBuffer
     {
     public:
-        using BufferID = uint;
+        using BufferDeviceAddress = uint64_t;
 
     public:
-        enum class BufferUsage
-        {
-            UNIFORM_BUFFER_VISIBLE_TO_CPU,
-            STORAGE_BUFFER_VISIBLE_TO_CPU
-        };
+        VK_BindlessBuffer() = default;
+        ~VK_BindlessBuffer() = default;
 
-    public:
-        virtual ~Buffer() = default;
-        virtual void MapBuffer() = 0;
-        virtual void WriteToBuffer(const void* data) = 0;
-        virtual BufferID GetBufferID() const = 0;
-        virtual bool Flush() = 0;
+        // Not copyable or movable
+        VK_BindlessBuffer(const VK_BindlessBuffer&) = delete;
+        VK_BindlessBuffer& operator=(const VK_BindlessBuffer&) = delete;
+        VK_BindlessBuffer(VK_BindlessBuffer&&) = delete;
+        VK_BindlessBuffer& operator=(VK_BindlessBuffer&&) = delete;
 
-        static std::shared_ptr<Buffer> Create(uint size /*in bytes*/,
-                                              BufferUsage bufferUsage = BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
+        // Add buffer to the bindless map and return its GPU address
+        BufferDeviceAddress AddBuffer(Buffer* buffer);
+
+        // Get GPU address for a buffer ID
+        [[nodiscard]] BufferDeviceAddress GetBufferAddress(Buffer::BufferID bufferId);
+
+        // Remove buffer (optional, for cleanup)
+        void RemoveBuffer(Buffer::BufferID bufferId);
+
+    private:
+        std::mutex m_Mutex;
+        std::unordered_map<Buffer::BufferID, BufferDeviceAddress> m_BufferAddresses;
     };
 } // namespace GfxRenderEngine

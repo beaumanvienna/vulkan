@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -29,6 +29,8 @@
 
 namespace GfxRenderEngine
 {
+    VK_Buffer::BufferID VK_Buffer::m_GlobalBufferIDCounter = 0;
+    std::mutex VK_Buffer::m_Mutex;
     /**
      * Returns the minimum instance size required to be compatible with devices minOffsetAlignment
      *
@@ -47,11 +49,19 @@ namespace GfxRenderEngine
         return instanceSize;
     }
 
+    void VK_Buffer::CreateID()
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_BufferID = m_GlobalBufferIDCounter;
+        ++m_GlobalBufferIDCounter;
+    }
+
     VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
                          VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment)
         : m_Device(VK_Core::m_Device), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
           m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
     {
+        CreateID();
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_BufferSize = m_AlignmentSize * m_InstanceCount;
         m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
@@ -59,6 +69,7 @@ namespace GfxRenderEngine
 
     VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device)
     {
+        CreateID();
         switch (bufferUsage)
         {
             case Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU:
@@ -90,7 +101,7 @@ namespace GfxRenderEngine
             {
                 m_InstanceSize = size;
                 m_InstanceCount = 1;
-                m_UsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+                m_UsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
                 VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;

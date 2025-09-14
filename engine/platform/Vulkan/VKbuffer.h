@@ -65,6 +65,7 @@ namespace GfxRenderEngine
             auto result = Flush(VK_WHOLE_SIZE /*VkDeviceSize size*/, 0 /*VkDeviceSize offset*/);
             return result == VkResult::VK_SUCCESS;
         }
+        virtual BufferID GetBufferID() const { return m_BufferID; }
         VkDescriptorBufferInfo DescriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkResult Invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
@@ -83,6 +84,7 @@ namespace GfxRenderEngine
         VkDeviceSize GetBufferSize() const { return m_BufferSize; }
 
     private:
+        void CreateID();
         static VkDeviceSize GetAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
     private:
@@ -90,6 +92,7 @@ namespace GfxRenderEngine
         void* m_Mapped = nullptr;
         VkBuffer m_Buffer = VK_NULL_HANDLE;
         VkDeviceMemory m_Memory = VK_NULL_HANDLE;
+        BufferID m_BufferID;
 
         VkDeviceSize m_BufferSize;
         uint m_InstanceCount;
@@ -97,5 +100,9 @@ namespace GfxRenderEngine
         VkDeviceSize m_AlignmentSize;
         VkBufferUsageFlags m_UsageFlags;
         VkMemoryPropertyFlags m_MemoryPropertyFlags;
+
+    private:
+        static std::mutex m_Mutex;
+        static BufferID m_GlobalBufferIDCounter;
     };
 } // namespace GfxRenderEngine

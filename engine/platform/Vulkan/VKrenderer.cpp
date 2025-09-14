@@ -55,6 +55,7 @@ namespace GfxRenderEngine
 
         m_BindlessTexture = std::make_unique<VK_BindlessTexture>();
         m_BindlessImage = std::make_unique<VK_BindlessImage>();
+        m_BindlessBuffer = std::make_unique<VK_BindlessBuffer>();
 
         for (uint i = 0; i < m_ShadowUniformBuffers0.size(); ++i)
         {
@@ -304,8 +305,8 @@ namespace GfxRenderEngine
         VkDescriptorImageInfo imageInfo1 = textureFontAtlas->GetDescriptorImageInfo();
 
         { // a dummy buffer
-            uint dummy = 0xffffffff;
-            gDummyBuffer = Buffer::Create(sizeof(uint));
+            uint dummy = 0xffdeadff;
+            gDummyBuffer = Buffer::Create(sizeof(uint), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
             gDummyBuffer->MapBuffer();
             gDummyBuffer->WriteToBuffer(&dummy);
             gDummyBuffer->Flush();
@@ -314,6 +315,8 @@ namespace GfxRenderEngine
         m_BindlessTexture->AddTexture(textureSpritesheet.get());
         m_BindlessTexture->AddTexture(textureFontAtlas.get());
         m_BindlessTexture->UpdateBindlessDescriptorSets();
+
+        m_BindlessBuffer->AddBuffer(gDummyBuffer.get());
 
         for (uint i = 0; i < VK_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
         {
