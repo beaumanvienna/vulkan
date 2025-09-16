@@ -41,6 +41,10 @@ namespace GfxRenderEngine
         // byte 16 to 31
         int m_Features{0};
         glm::vec3 m_Spare0{0.0f};
+
+        // byte 32 to 48
+        uint64 m_VertexBufferDeviceAddress{0};
+        uint64 m_IndexBufferDeviceAddress{0};
     };
 
 } // namespace GfxRenderEngine

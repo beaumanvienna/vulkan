@@ -31,7 +31,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        using StorageImageID = uint;
+        using StorageImageID = uint;  // unique ID for all storage images to be generated
+        using BindlessImageID = uint; // to index into bindless storage image table
 
     public:
         virtual ~StorageImage() = default;

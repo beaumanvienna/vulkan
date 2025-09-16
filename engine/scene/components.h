@@ -203,6 +203,11 @@ namespace GfxRenderEngine
         float m_EmissiveStrength{1.f};
     };
 
+    struct PbrBindlessMaterialTag
+    {
+        float m_EmissiveStrength{1.f};
+    };
+
     struct PbrMultiMaterialTag
     {
         float m_EmissiveStrength{1.f};

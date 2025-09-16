@@ -28,8 +28,6 @@ namespace GfxRenderEngine
 {
     class VK_BindlessBuffer
     {
-    public:
-        using BufferDeviceAddress = uint64_t;
 
     public:
         VK_BindlessBuffer() = default;
@@ -42,16 +40,16 @@ namespace GfxRenderEngine
         VK_BindlessBuffer& operator=(VK_BindlessBuffer&&) = delete;
 
         // Add buffer to the bindless map and return its GPU address
-        BufferDeviceAddress AddBuffer(Buffer* buffer);
+        VK_Buffer::BufferDeviceAddress AddBuffer(Buffer* buffer);
 
         // Get GPU address for a buffer ID
-        [[nodiscard]] BufferDeviceAddress GetBufferAddress(Buffer::BufferID bufferId);
+        [[nodiscard]] VK_Buffer::BufferDeviceAddress GetBufferAddress(Buffer::BufferID bufferId);
 
         // Remove buffer (optional, for cleanup)
         void RemoveBuffer(Buffer::BufferID bufferId);
 
     private:
         std::mutex m_Mutex;
-        std::unordered_map<Buffer::BufferID, BufferDeviceAddress> m_BufferAddresses;
+        std::unordered_map<Buffer::BufferID, VK_Buffer::BufferDeviceAddress> m_BufferAddresses;
     };
 } // namespace GfxRenderEngine

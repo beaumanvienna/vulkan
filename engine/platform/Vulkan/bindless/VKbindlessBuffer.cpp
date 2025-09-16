@@ -25,10 +25,11 @@
 
 namespace GfxRenderEngine
 {
-    VK_BindlessBuffer::BufferDeviceAddress VK_BindlessBuffer::AddBuffer(Buffer* buffer)
+    VK_Buffer::BufferDeviceAddress VK_BindlessBuffer::AddBuffer(Buffer* buffer)
     {
         if (buffer == nullptr)
         {
+            CORE_ASSERT(buffer, "VK_BindlessBuffer: AddBuffer buffer is null");
             return 0;
         }
 
@@ -36,7 +37,7 @@ namespace GfxRenderEngine
         addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
         addressInfo.buffer = static_cast<VK_Buffer*>(buffer)->GetBuffer();
 
-        BufferDeviceAddress gpuAddress = vkGetBufferDeviceAddress(VK_Core::m_Device->Device(), &addressInfo);
+        VK_Buffer::BufferDeviceAddress gpuAddress = vkGetBufferDeviceAddress(VK_Core::m_Device->Device(), &addressInfo);
 
         {
             std::lock_guard<std::mutex> lock(m_Mutex);
@@ -46,7 +47,7 @@ namespace GfxRenderEngine
         return gpuAddress;
     }
 
-    VK_BindlessBuffer::BufferDeviceAddress VK_BindlessBuffer::GetBufferAddress(Buffer::BufferID bufferId)
+    VK_Buffer::BufferDeviceAddress VK_BindlessBuffer::GetBufferAddress(Buffer::BufferID bufferId)
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 

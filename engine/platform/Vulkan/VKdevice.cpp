@@ -259,9 +259,11 @@ namespace GfxRenderEngine
             physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
-            physicalDeviceVulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-            physicalDeviceVulkan12Features.runtimeDescriptorArray = VK_TRUE;
+            physicalDeviceVulkan12Features.descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
             physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+            physicalDeviceVulkan12Features.runtimeDescriptorArray = VK_TRUE;
+            physicalDeviceVulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+            physicalDeviceVulkan12Features.shaderUniformBufferArrayNonUniformIndexing = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
             physicalDeviceVulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
             // buffer device address
@@ -945,17 +947,21 @@ namespace GfxRenderEngine
 
         vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &deviceFeatures2);
 
-        auto const features = std::to_array<FeatureCheck>(
-            {{"descriptorBindingPartiallyBound", indexingFeatures.descriptorBindingPartiallyBound},
-             {"descriptorBindingSampledImageUpdateAfterBind", indexingFeatures.descriptorBindingSampledImageUpdateAfterBind},
-             {"shaderSampledImageArrayNonUniformIndexing", indexingFeatures.shaderSampledImageArrayNonUniformIndexing},
-             {"runtimeDescriptorArray", indexingFeatures.runtimeDescriptorArray},
-             {"descriptorBindingVariableDescriptorCount", indexingFeatures.descriptorBindingVariableDescriptorCount},
-             {"shaderStorageBufferArrayNonUniformIndexing", indexingFeatures.shaderStorageBufferArrayNonUniformIndexing},
-             {"shaderStorageImageArrayNonUniformIndexing", indexingFeatures.shaderStorageImageArrayNonUniformIndexing},
-             {"descriptorBindingStorageImageUpdateAfterBind", indexingFeatures.descriptorBindingStorageImageUpdateAfterBind},
-             {"descriptorBindingStorageBufferUpdateAfterBind",
-              indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind}});
+        auto const features = std::to_array<FeatureCheck>({
+            {"descriptorBindingPartiallyBound              ", indexingFeatures.descriptorBindingPartiallyBound},
+            {"descriptorBindingSampledImageUpdateAfterBind ", indexingFeatures.descriptorBindingSampledImageUpdateAfterBind},
+            {"descriptorBindingStorageImageUpdateAfterBind ", indexingFeatures.descriptorBindingStorageImageUpdateAfterBind},
+            {"descriptorBindingStorageBufferUpdateAfterBind",
+             indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind},
+            {"descriptorBindingUniformBufferUpdateAfterBind",
+             indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind},
+            {"descriptorBindingVariableDescriptorCount     ", indexingFeatures.descriptorBindingVariableDescriptorCount},
+            {"runtimeDescriptorArray                       ", indexingFeatures.runtimeDescriptorArray},
+            {"shaderSampledImageArrayNonUniformIndexing    ", indexingFeatures.shaderSampledImageArrayNonUniformIndexing},
+            {"shaderUniformBufferArrayNonUniformIndexing   ", indexingFeatures.shaderUniformBufferArrayNonUniformIndexing},
+            {"shaderStorageBufferArrayNonUniformIndexing   ", indexingFeatures.shaderStorageBufferArrayNonUniformIndexing},
+            {"shaderStorageImageArrayNonUniformIndexing    ", indexingFeatures.shaderStorageImageArrayNonUniformIndexing},
+        });
 
         bool allSupported = true;
 

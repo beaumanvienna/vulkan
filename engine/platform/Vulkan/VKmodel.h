@@ -72,11 +72,13 @@ namespace GfxRenderEngine
             stagingBuffer.Map();
             stagingBuffer.WriteToBuffer((void*)vertices.data());
 
-            m_VertexBuffer = std::make_unique<VK_Buffer>(
-                vertexSize, m_VertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            m_VertexBuffer =
+                std::make_unique<VK_Buffer>(vertexSize, m_VertexCount,
+                                            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-            m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_VertexBuffer->GetBuffer(), bufferSize);
+            VK_Core::m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_VertexBuffer->GetBuffer(), bufferSize);
         }
 
     public:
@@ -115,11 +117,15 @@ namespace GfxRenderEngine
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                              VK_Submesh const& submesh, bool bindResources);
 
+        VK_Buffer::BufferDeviceAddress GetVertexBufferDeviceAddress() const;
+        VK_Buffer::BufferDeviceAddress GetIndexBufferDeviceAddress() const;
+
         void Draw(VkCommandBuffer commandBuffer);
         void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);
 
         // draw pbr materials
         void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount);
 
@@ -137,14 +143,11 @@ namespace GfxRenderEngine
         void CopySubmeshes(std::vector<Submesh> const& submeshes);
 
     private:
-        VK_Device* m_Device;
         std::unique_ptr<VK_Buffer> m_VertexBuffer;
+        std::unique_ptr<VK_Buffer> m_IndexBuffer;
 
         uint m_VertexCount{0};
         uint m_IndexCount{0};
-
-        bool m_HasIndexBuffer{false};
-        std::unique_ptr<VK_Buffer> m_IndexBuffer;
 
         std::vector<VK_Submesh> m_SubmeshesPbr{};
         std::vector<VK_Submesh> m_SubmeshesPbrMulti{};

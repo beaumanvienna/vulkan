@@ -244,6 +244,10 @@ namespace GfxRenderEngine
             m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
             m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
 
+        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrBindless = {
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), m_BindlessTexture->GetDescriptorSetLayout(),
+            m_BindlessImage->GetDescriptorSetLayout()};
+
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrMultiMaterial = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
             m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti]->GetDescriptorSetLayout(),
@@ -363,7 +367,8 @@ namespace GfxRenderEngine
         m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
         m_RenderSystemPbrSA =
             std::make_unique<VK_RenderSystemPbrSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrSA);
-
+        m_RenderSystemPbrBindless =
+            std::make_unique<VK_RenderSystemPbrBindless>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrBindless);
         m_RenderSystemGrass =
             std::make_unique<VK_RenderSystemGrass>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
 
@@ -863,6 +868,7 @@ namespace GfxRenderEngine
     {
         VertexCtrl vertexCtrl = {};
         m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
@@ -1011,11 +1017,12 @@ namespace GfxRenderEngine
                                                  &camera,
                                                  m_GlobalDescriptorSetsWater[renderpassIndex]};
 
-            VertexCtrl vertexCtrl;
+            VertexCtrl vertexCtrl = {};
             vertexCtrl.m_ClippingPlane = clippingPlane;
             vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
 
             m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
@@ -1070,6 +1077,7 @@ namespace GfxRenderEngine
 
             // 3D objects
             m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbrBindless->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry);
@@ -1086,6 +1094,8 @@ namespace GfxRenderEngine
 
             // 3D objects
             m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemPbrBindless->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                                      m_BindlessImage.get());
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
@@ -1246,6 +1256,8 @@ namespace GfxRenderEngine
             "pointLight.frag",
             "pbr.vert",
             "pbr.frag",
+            "pbrBindless.vert",
+            "pbrBindless.frag",
             "pbrSA.vert",
             "grass.vert",
             "grass2.vert",
@@ -1332,4 +1344,6 @@ namespace GfxRenderEngine
     }
 
     std::shared_ptr<Texture> VK_Renderer::GetTextureAtlas() { return gTextureAtlas; }
+
+    Texture::BindlessTextureID VK_Renderer::AddTexture(Texture* texture) { return m_BindlessTexture->AddTexture(texture); }
 } // namespace GfxRenderEngine

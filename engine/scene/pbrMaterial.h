@@ -76,9 +76,21 @@ namespace GfxRenderEngine
             glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
             float m_EmissiveStrength{1.0f};
 
-            // 48 to 51
+            // byte 48 to 63
             float m_ClearcoatFactor{0.0f};
             float m_ClearcoatRoughnessFactor{0.0f};
+            float m_Reserve0;
+            float m_Reserve1;
+
+            // byte 64 to 95
+            uint m_DiffuseMap{0};
+            uint m_NormalMap{0};
+            uint m_RoughnessMap{0};
+            uint m_MetallicMap{0};
+            uint m_RoughnessMetallicMap{0};
+            uint m_EmissiveMap{0};
+            uint m_ClearcoatMap{0};
+            uint m_Reserve2{0};
         };
 
     public:

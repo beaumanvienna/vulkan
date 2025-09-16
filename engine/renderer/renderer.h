@@ -88,5 +88,7 @@ namespace GfxRenderEngine
 
         virtual float& Exposure() = 0;
         virtual std::bitset<32>& ShaderSettings0() = 0;
+
+        virtual Texture::BindlessTextureID AddTexture(Texture* texture) = 0;
     };
 } // namespace GfxRenderEngine

@@ -17,8 +17,8 @@ Features:
 
 - A Vulkan renderer with support for 2D and 3D scenes
 - Support for 3D file formats Obj Wavefront (<a href="https://github.com/tinyobjloader/tinyobjloader">tinyobj</a>), glTF (<a href="https://github.com/spnda/fastgltf">fastgltf</a>), and FBX (<a href="https://github.com/ufbx/ufbx">ufbx</a> and <a href="https://github.com/assimp/assimp">asset importer</a>)
-- Physically-based rendering (PBR), materials based on Blender's roughness-metallic workflow, normal mapping
-- Point lights, directional lights with cascaded shadows, and deferred shading, instancing of models on the GPU
+- Physically-based rendering (PBR), image-based lighting (IBL), materials based on Blender's roughness-metallic workflow, normal mapping, clear coat material
+- Point lights, directional lights with cascaded shadows, and deferred shading, instancing of models on the GPU, bindless material handles (textures and storage images), BDA support for storage buffer
 - Post-processing (Bloom), skeletal animations
 - Scene management with scene descriptions, multi-threaded background loading, and scene saving based on <a href="https://github.com/simdjson/simdjson">simdjson</a>
 - Hotplug gamepad support based on <a href="https://github.com/libsdl-org/SDL">SDL2</a> and a <a href="https://github.com/mdqinc/SDL_GameControllerDB">controller database</a>

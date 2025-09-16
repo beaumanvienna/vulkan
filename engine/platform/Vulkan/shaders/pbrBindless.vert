@@ -24,8 +24,6 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
-#extension GL_ARB_gpu_shader_int64 : require
-#include "engine/renderer/skeletalAnimation/joints.h"
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 #include "engine/platform/Vulkan/shader.h"
@@ -35,8 +33,6 @@ layout(location = 1) in vec4 color;
 layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
 layout(location = 4) in vec3 tangent;
-layout(location = 5) in ivec4 jointIds;
-layout(location = 6) in vec4 weights;
 
 struct PointLight
 {
@@ -64,10 +60,6 @@ struct VertexCtrl
     // byte 16 to 31
     int m_Features;
     vec3 m_Spare0;
-
-    // byte 32 to 48
-    uint64 m_VertexBufferDeviceAddress;
-    uint64 m_IndexBufferDeviceAddress;
 };
 
 layout(push_constant, std430) uniform PushVertex
@@ -88,15 +80,10 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 2, binding = 0) readonly buffer InstanceUniformBuffer
+layout(set = 2, binding = 0) readonly buffer InstanceBuffer
 {
     InstanceData m_InstanceData[MAX_INSTANCE];
 } uboInstanced;
-
-layout(set = 2, binding = 1) uniform SkeletalAnimationShaderData
-{
-    mat4 m_FinalJointsMatrices[MAX_JOINTS];
-} skeletalAnimation;
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -106,39 +93,20 @@ layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    vec4 animatedPosition = vec4(0.0f);
-    mat4 jointTransform = mat4(0.0f);
-    for (int i = 0; i < MAX_JOINT_INFLUENCE; ++i)
-    {
-        if (weights[i] == 0)
-            continue;
-        if (jointIds[i] >=MAX_JOINTS) 
-        {
-            animatedPosition = vec4(position,1.0f);
-            jointTransform = mat4(1.0f);
-            break;
-        }
-        vec4 localPosition  = skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * vec4(position,1.0f);
-        animatedPosition += localPosition * weights[i];
-        jointTransform += skeletalAnimation.m_FinalJointsMatrices[jointIds[i]] * weights[i];
-    }
-
     mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 instanceNormalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
 
     // projection * view * model * position
-    vec4 positionWorld = modelMatrix * animatedPosition;
+    vec4 positionWorld = modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
     if (bool(push.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
     {
         gl_ClipDistance[0] = dot(positionWorld, push.m_VertexCtrl.m_ClippingPlane);
-        //gl_ClipDistance[0] = dot(positionWorld, vec4(0.0, -1.0, 0.0, 1.0)); // refraction
     }
-    fragPosition = positionWorld.xyz;
 
-    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix) * mat3(jointTransform)));
-    fragNormal = normalize(normalMatrix * normal);
-    fragTangent = normalize(normalMatrix * tangent);
+    fragPosition = positionWorld.xyz;
+    fragNormal = mat3(normalMatrix) * normal;
+    fragTangent = mat3(normalMatrix) * tangent;
 
     fragUV = uv;
     fragColor = color;

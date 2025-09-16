@@ -18,12 +18,7 @@
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-   Encapsulates a vulkan buffer
-   Based on https://github.com/blurrypiano/littleVulkanEngine/blob/main/src/lve_buffer.cpp
-   Initially based off VulkanBuffer by Sascha Willems -
-   https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h */
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "VKbuffer.h"
 
@@ -56,18 +51,27 @@ namespace GfxRenderEngine
         ++m_GlobalBufferIDCounter;
     }
 
+    void VK_Buffer::SetBufferDeviceAddress()
+    {
+        VkBufferDeviceAddressInfo addressInfo{};
+        addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        addressInfo.buffer = m_Buffer;
+        m_BufferDeviceAddress = vkGetBufferDeviceAddress(VK_Core::m_Device->Device(), &addressInfo);
+    }
+
     VK_Buffer::VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
                          VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment)
-        : m_Device(VK_Core::m_Device), m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount},
-          m_UsageFlags{usageFlags}, m_MemoryPropertyFlags{memoryPropertyFlags}
+        : m_InstanceSize{instanceSize}, m_InstanceCount{instanceCount}, m_UsageFlags{usageFlags},
+          m_MemoryPropertyFlags{memoryPropertyFlags}
     {
         CreateID();
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_BufferSize = m_AlignmentSize * m_InstanceCount;
-        m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+        VK_Core::m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+        SetBufferDeviceAddress();
     }
 
-    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage) : m_Device(VK_Core::m_Device)
+    VK_Buffer::VK_Buffer(uint size, Buffer::BufferUsage bufferUsage)
     {
         CreateID();
         switch (bufferUsage)
@@ -79,13 +83,13 @@ namespace GfxRenderEngine
                 m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
                 m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
-                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+                VkDeviceSize minOffsetAlignment = VK_Core::m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
 
                 m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
                 m_BufferSize = m_AlignmentSize * m_InstanceCount;
-                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+                VK_Core::m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
 #ifdef DEBUG
-                auto maxUniformBufferRange = m_Device->m_Properties.limits.maxUniformBufferRange;
+                auto maxUniformBufferRange = VK_Core::m_Device->m_Properties.limits.maxUniformBufferRange;
                 if (m_BufferSize > maxUniformBufferRange)
                 {
                     std::string str =
@@ -104,11 +108,11 @@ namespace GfxRenderEngine
                 m_UsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
-                VkDeviceSize minOffsetAlignment = m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
+                VkDeviceSize minOffsetAlignment = VK_Core::m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;
 
                 m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
                 m_BufferSize = m_AlignmentSize * m_InstanceCount;
-                m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
+                VK_Core::m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
                 break;
             }
             default:
@@ -116,6 +120,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("unrecognized buffer usage");
             }
         }
+        SetBufferDeviceAddress();
     }
 
     VK_Buffer::~VK_Buffer()
@@ -123,9 +128,20 @@ namespace GfxRenderEngine
         Unmap();
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-            vkDestroyBuffer(m_Device->Device(), m_Buffer, nullptr);
-            vkFreeMemory(m_Device->Device(), m_Memory, nullptr);
+            vkDestroyBuffer(VK_Core::m_Device->Device(), m_Buffer, nullptr);
+            vkFreeMemory(VK_Core::m_Device->Device(), m_Memory, nullptr);
         }
+        m_Buffer = VK_NULL_HANDLE;
+        m_Memory = VK_NULL_HANDLE;
+        m_BufferID = 0;
+        m_BufferDeviceAddress = 0;
+
+        m_BufferSize = 0;
+        m_InstanceCount = 0;
+        m_InstanceSize = 0;
+        m_AlignmentSize = 0;
+        m_UsageFlags = 0;
+        m_MemoryPropertyFlags = 0;
     }
 
     /**
@@ -144,7 +160,7 @@ namespace GfxRenderEngine
         {
             LOG_CORE_CRITICAL("VkResult VK_Buffer::Map(...): Called map on buffer before create");
         }
-        auto result = vkMapMemory(m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
+        auto result = vkMapMemory(VK_Core::m_Device->Device(), m_Memory, offset, size, 0, &m_Mapped);
         if (result != VK_SUCCESS)
         {
             VK_Core::m_Device->PrintError(result);
@@ -166,7 +182,7 @@ namespace GfxRenderEngine
         {
             {
                 std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-                vkUnmapMemory(m_Device->Device(), m_Memory);
+                vkUnmapMemory(VK_Core::m_Device->Device(), m_Memory);
             }
             m_Mapped = nullptr;
         }
@@ -219,7 +235,7 @@ namespace GfxRenderEngine
         VkResult result;
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-            result = vkFlushMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+            result = vkFlushMappedMemoryRanges(VK_Core::m_Device->Device(), 1, &mappedRange);
         }
         return result;
     }
@@ -242,7 +258,7 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(m_Device->Device(), 1, &mappedRange);
+        return vkInvalidateMappedMemoryRanges(VK_Core::m_Device->Device(), 1, &mappedRange);
     }
 
     /**

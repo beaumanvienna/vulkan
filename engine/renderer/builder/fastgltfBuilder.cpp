@@ -354,8 +354,8 @@ namespace GfxRenderEngine
 
                 // material tags (can have multiple tags)
                 {
-                    PbrMaterialTag pbrMaterialTag{};
-                    m_Registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+                    PbrBindlessMaterialTag pbrBindlessMaterialTag{};
+                    m_Registry.emplace<PbrBindlessMaterialTag>(entity, pbrBindlessMaterialTag);
                 }
 
                 if (m_SkeletalAnimation)
@@ -605,6 +605,7 @@ namespace GfxRenderEngine
 
     void FastgltfBuilder::LoadMaterials()
     {
+        Renderer* renderer = Engine::m_Engine->GetRenderer();
         size_t numMaterials = m_GltfAsset.materials.size();
         m_Materials.resize(numMaterials);
         m_MaterialTextures.resize(numMaterials);
@@ -630,6 +631,7 @@ namespace GfxRenderEngine
                 uint imageIndex = m_GltfAsset.textures[diffuseMapIndex].imageIndex.value();
                 materialTextures[PbrMaterial::DIFFUSE_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterialProperties.m_Features |= PbrMaterial::HAS_DIFFUSE_MAP;
+                pbrMaterialProperties.m_DiffuseMap = renderer->AddTexture(m_Textures[imageIndex].get());
             }
 
             // normal map
@@ -640,6 +642,7 @@ namespace GfxRenderEngine
                 materialTextures[PbrMaterial::NORMAL_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterialProperties.m_NormalMapIntensity = glTFMaterial.normalTexture.value().scale;
                 pbrMaterialProperties.m_Features |= PbrMaterial::HAS_NORMAL_MAP;
+                pbrMaterialProperties.m_NormalMap = renderer->AddTexture(m_Textures[imageIndex].get());
             }
 
             // constant values for roughness and metallicness
@@ -655,6 +658,7 @@ namespace GfxRenderEngine
                 uint imageIndex = m_GltfAsset.textures[metallicRoughnessMapIndex].imageIndex.value();
                 materialTextures[PbrMaterial::ROUGHNESS_METALLIC_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterialProperties.m_Features |= PbrMaterial::HAS_ROUGHNESS_METALLIC_MAP;
+                pbrMaterialProperties.m_RoughnessMetallicMap = renderer->AddTexture(m_Textures[imageIndex].get());
             }
 
             if (glTFMaterial.clearcoat)
@@ -666,6 +670,7 @@ namespace GfxRenderEngine
                     uint imageIndex = m_GltfAsset.textures[clearcoatMapIndex].imageIndex.value();
                     materialTextures[PbrMaterial::CLEARCOAT_MAP_INDEX] = m_Textures[imageIndex];
                     pbrMaterialProperties.m_Features |= PbrMaterial::HAS_CLEARCOAT_MAP;
+                    pbrMaterialProperties.m_ClearcoatMap = renderer->AddTexture(m_Textures[imageIndex].get());
                 }
                 else
                 {
@@ -704,6 +709,7 @@ namespace GfxRenderEngine
                 uint imageIndex = m_GltfAsset.textures[emissiveTextureIndex].imageIndex.value();
                 materialTextures[PbrMaterial::EMISSIVE_MAP_INDEX] = m_Textures[imageIndex];
                 pbrMaterialProperties.m_Features |= PbrMaterial::HAS_EMISSIVE_MAP;
+                pbrMaterialProperties.m_EmissiveMap = renderer->AddTexture(m_Textures[imageIndex].get());
             }
 
             ++materialIndex;

@@ -38,6 +38,8 @@ namespace GfxRenderEngine
 {
     class VK_Buffer : public Buffer
     {
+    public:
+        using BufferDeviceAddress = uint64_t;
 
     public:
         VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,
@@ -82,24 +84,26 @@ namespace GfxRenderEngine
         VkBufferUsageFlags GetUsageFlags() const { return m_UsageFlags; }
         VkMemoryPropertyFlags GetMemoryPropertyFlags() const { return m_MemoryPropertyFlags; }
         VkDeviceSize GetBufferSize() const { return m_BufferSize; }
+        BufferDeviceAddress GetBufferDeviceAddress() const { return m_BufferDeviceAddress; }
 
     private:
         void CreateID();
+        void SetBufferDeviceAddress();
         static VkDeviceSize GetAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
     private:
-        VK_Device* m_Device;
-        void* m_Mapped = nullptr;
-        VkBuffer m_Buffer = VK_NULL_HANDLE;
-        VkDeviceMemory m_Memory = VK_NULL_HANDLE;
-        BufferID m_BufferID;
+        void* m_Mapped{nullptr};
+        VkBuffer m_Buffer{VK_NULL_HANDLE};
+        VkDeviceMemory m_Memory{VK_NULL_HANDLE};
+        BufferID m_BufferID{0};
+        BufferDeviceAddress m_BufferDeviceAddress{0};
 
-        VkDeviceSize m_BufferSize;
-        uint m_InstanceCount;
-        VkDeviceSize m_InstanceSize;
-        VkDeviceSize m_AlignmentSize;
-        VkBufferUsageFlags m_UsageFlags;
-        VkMemoryPropertyFlags m_MemoryPropertyFlags;
+        VkDeviceSize m_BufferSize{0};
+        uint m_InstanceCount{0};
+        VkDeviceSize m_InstanceSize{0};
+        VkDeviceSize m_AlignmentSize{0};
+        VkBufferUsageFlags m_UsageFlags{0};
+        VkMemoryPropertyFlags m_MemoryPropertyFlags{0};
 
     private:
         static std::mutex m_Mutex;

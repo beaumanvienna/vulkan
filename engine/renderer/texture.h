@@ -35,7 +35,8 @@ namespace GfxRenderEngine
     {
 
     public:
-        using TextureID = uint;
+        using TextureID = uint;         // unique ID for all textures to be generated
+        using BindlessTextureID = uint; // to index into bindless texture table
 
     public:
         static constexpr bool USE_SRGB = true;

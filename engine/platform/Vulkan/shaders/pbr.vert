@@ -24,6 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#extension GL_ARB_gpu_shader_int64 : require
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 #include "engine/platform/Vulkan/shader.h"
@@ -60,6 +61,10 @@ struct VertexCtrl
     // byte 16 to 31
     int m_Features;
     vec3 m_Spare0;
+
+    // byte 32 to 48
+    uint64 m_VertexBufferDeviceAddress;
+    uint64 m_IndexBufferDeviceAddress;
 };
 
 layout(push_constant, std430) uniform PushVertex

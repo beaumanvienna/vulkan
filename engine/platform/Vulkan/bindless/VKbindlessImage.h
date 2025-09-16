@@ -31,9 +31,6 @@ namespace GfxRenderEngine
     class VK_BindlessImage
     {
     public:
-        using BindlessImageID = uint;
-
-    public:
         VK_BindlessImage();
         ~VK_BindlessImage();
 
@@ -43,13 +40,13 @@ namespace GfxRenderEngine
         VK_BindlessImage(VK_BindlessImage&&) = delete;
         VK_BindlessImage& operator=(VK_BindlessImage&&) = delete;
 
-        BindlessImageID AddImage(StorageImage* storageImage);
+        StorageImage::BindlessImageID AddImage(StorageImage* storageImage);
         void UpdateBindlessDescriptorSets();
 
         [[nodiscard]] VkDescriptorSetLayout GetDescriptorSetLayout() const { return m_BindlessImageSetLayout; }
         [[nodiscard]] VkDescriptorSet GetDescriptorSet() const { return m_BindlessSetImages; }
-        [[nodiscard]] BindlessImageID GetImageCount() const { return m_NextBindlessIndex; }
-        [[nodiscard]] BindlessImageID GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
+        [[nodiscard]] StorageImage::BindlessImageID GetImageCount() const { return m_NextBindlessIndex; }
+        [[nodiscard]] StorageImage::BindlessImageID GetMaxDescriptors() const { return MAX_DESCRIPTOR; }
 
     private:
         void CreateDescriptorSetLayout();
@@ -57,17 +54,17 @@ namespace GfxRenderEngine
         void CreateDescriptorSet();
 
     private:
-        constexpr static BindlessImageID MAX_DESCRIPTOR = 16384u;
-        constexpr static BindlessImageID BINDLESS_ID_TEXTURE_ATLAS = 0u;
-        BindlessImageID m_NextBindlessIndex;
+        constexpr static StorageImage::BindlessImageID MAX_DESCRIPTOR = 16384u;
+        constexpr static StorageImage::BindlessImageID BINDLESS_ID_TEXTURE_ATLAS = 0u;
+        StorageImage::BindlessImageID m_NextBindlessIndex;
         VkDescriptorSetLayout m_BindlessImageSetLayout;
         VkDescriptorPool m_DescriptorPoolImages;
         VkDescriptorSet m_BindlessSetImages;
-        std::mutex m_Mutex; // protect shared data
+        std::mutex m_TableAccessMutex; // protect shared data
 
         // Map texture ID to bindless index
         constexpr static size_t TEXTURE_ID_2_BINDLESS_ID_PREALLOC = 4096u;
-        std::unordered_map<StorageImage::StorageImageID, BindlessImageID> m_ImageID2BindlessImageID;
+        std::unordered_map<StorageImage::StorageImageID, StorageImage::BindlessImageID> m_ImageID2BindlessImageID;
         constexpr static size_t PENDING_UPDATES_PREALLOC = 256u;
         std::vector<StorageImage*> m_PendingUpdates;
     };

@@ -50,6 +50,7 @@
 #include "systems/bloom/VKbloomRenderSystem.h"
 #include "systems/VKpostprocessingSys.h"
 #include "systems/VKdeferredShading.h"
+#include "systems/VKpbrBindlessSys.h"
 
 #include "water/VKwater1Sys.h"
 #include "water/VKwaterRenderPass.h"
@@ -134,6 +135,8 @@ namespace GfxRenderEngine
         virtual float& Exposure() override { return m_RenderSystemDeferredShading->Exposure(); }
         virtual std::bitset<32>& ShaderSettings0() override { return m_RenderSystemDeferredShading->ShaderSettings0(); }
 
+        virtual Texture::BindlessTextureID AddTexture(Texture* texture) override;
+
         void ToggleDebugWindow(const GenericCallback& callback = nullptr) { m_Imgui = Imgui::ToggleDebugWindow(callback); }
 
         VK_DescriptorSetLayout& GetMaterialDescriptorSetLayout(Material::MaterialType materialType);
@@ -179,6 +182,7 @@ namespace GfxRenderEngine
         std::unique_ptr<VK_RenderSystemWater1> m_RenderSystemWater1;
         std::unique_ptr<VK_RenderSystemPbrMultiMaterial> m_RenderSystemPbrMultiMaterial;
         std::unique_ptr<VK_RenderSystemPbr> m_RenderSystemPbr;
+        std::unique_ptr<VK_RenderSystemPbrBindless> m_RenderSystemPbrBindless;
         std::unique_ptr<VK_RenderSystemPbrSA> m_RenderSystemPbrSA;
         std::unique_ptr<VK_RenderSystemGrass> m_RenderSystemGrass;
         std::unique_ptr<VK_RenderSystemGrass2> m_RenderSystemGrass2;

@@ -71,7 +71,7 @@ namespace GfxRenderEngine
     m_Animations = std::move(builder.m_Animations);    \
     m_ShaderDataUbo = builder.m_ShaderData;
 
-    VK_Model::VK_Model(const Model::ModelData& modelData) : m_Device(VK_Core::m_Device)
+    VK_Model::VK_Model(const Model::ModelData& modelData)
     {
         ZoneScopedNC("VK_Model(FastgltfBuilder)", 0x00ffff);
 
@@ -82,16 +82,16 @@ namespace GfxRenderEngine
         m_Animations = std::move(modelData.m_Animations);
         m_ShaderDataUbo = std::move(modelData.m_ShaderData);
     }
-    VK_Model::VK_Model(VK_Device* device, const UFbxBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
-    VK_Model::VK_Model(VK_Device* device, const GltfBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
-    VK_Model::VK_Model(VK_Device* device, const FbxBuilder& builder) : m_Device(device) { INIT_GLTF_AND_FBX_MODEL(); }
-    VK_Model::VK_Model(VK_Device* device, const Builder& builder) : m_Device(device)
+    VK_Model::VK_Model(VK_Device* device, const UFbxBuilder& builder) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const GltfBuilder& builder) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const FbxBuilder& builder) { INIT_GLTF_AND_FBX_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const Builder& builder)
     {
         INIT_MODEL();
         m_Cubemaps = std::move(builder.m_Cubemaps); // used to manage lifetime
     }
-    VK_Model::VK_Model(VK_Device* device, const TerrainBuilder& builder) : m_Device(device) { INIT_MODEL(); }
-    VK_Model::VK_Model(VK_Device* device, const IBLBuilder& builder) : m_Device(device)
+    VK_Model::VK_Model(VK_Device* device, const TerrainBuilder& builder) { INIT_MODEL(); }
+    VK_Model::VK_Model(VK_Device* device, const IBLBuilder& builder)
     {
         CopySubmeshes(builder.m_Submeshes);
         CreateVertexBuffer(std::move(builder.m_Vertices));
@@ -151,8 +151,7 @@ namespace GfxRenderEngine
     void VK_Model::CreateIndexBuffer(const std::vector<uint>& indices)
     {
         m_IndexCount = static_cast<uint>(indices.size());
-        m_HasIndexBuffer = (m_IndexCount > 0);
-        if (!m_HasIndexBuffer)
+        if (!m_IndexCount)
         {
             return;
         }
@@ -166,9 +165,10 @@ namespace GfxRenderEngine
         stagingBuffer.WriteToBuffer((void*)indices.data());
 
         m_IndexBuffer = std::make_unique<VK_Buffer>(indexSize, m_IndexCount,
-                                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_IndexBuffer->GetBuffer(), bufferSize);
+        VK_Core::m_Device->CopyBuffer(stagingBuffer.GetBuffer(), m_IndexBuffer->GetBuffer(), bufferSize);
     }
 
     void VK_Model::Bind(VkCommandBuffer commandBuffer)
@@ -177,7 +177,7 @@ namespace GfxRenderEngine
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
-        if (m_HasIndexBuffer)
+        if (m_IndexBuffer)
         {
             vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
@@ -198,7 +198,7 @@ namespace GfxRenderEngine
                                    VK_Submesh const& submesh)
     {
         const VkDescriptorSet& materialDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet};
+        auto descriptorSets = std::to_array<VkDescriptorSet>({frameInfo.m_GlobalDescriptorSet, materialDescriptorSet});
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
                                 pipelineLayout,                  // VkPipelineLayout       layout,
@@ -206,7 +206,7 @@ namespace GfxRenderEngine
                                 descriptorSets.size(),           // uint32_t               descriptorSetCount,
                                 descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
                                 0,                               // uint32_t               dynamicOffsetCount,
-                                nullptr                          // const uint32_t*        pDynamicOffsets);
+                                nullptr                          // const uint32_t*        pDynamicOffsets
         );
     }
 
@@ -215,8 +215,8 @@ namespace GfxRenderEngine
     {
         const VkDescriptorSet& materialDescriptorSet = submesh.m_MaterialDescriptor.GetDescriptorSet();
         const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet,
-                                                       resourceDescriptorSet};
+        auto descriptorSets =
+            std::to_array<VkDescriptorSet>({frameInfo.m_GlobalDescriptorSet, materialDescriptorSet, resourceDescriptorSet});
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
                                 pipelineLayout,                  // VkPipelineLayout       layout,
@@ -224,7 +224,7 @@ namespace GfxRenderEngine
                                 descriptorSets.size(),           // uint32_t               descriptorSetCount,
                                 descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
                                 0,                               // uint32_t               dynamicOffsetCount,
-                                nullptr                          // const uint32_t*        pDynamicOffsets);
+                                nullptr                          // const uint32_t*        pDynamicOffsets
         );
     }
 
@@ -258,7 +258,7 @@ namespace GfxRenderEngine
 
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
-        if (m_HasIndexBuffer)
+        if (m_IndexBuffer)
         {
             vkCmdDrawIndexed(commandBuffer, // VkCommandBuffer commandBuffer
                              m_IndexCount,  // uint32_t        indexCount
@@ -281,7 +281,7 @@ namespace GfxRenderEngine
 
     void VK_Model::DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh)
     {
-        if (m_HasIndexBuffer)
+        if (m_IndexBuffer)
         {
             vkCmdDrawIndexed(commandBuffer,           // VkCommandBuffer commandBuffer
                              submesh.m_IndexCount,    // uint32_t        indexCount
@@ -312,6 +312,15 @@ namespace GfxRenderEngine
         }
     }
 
+    void VK_Model::DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    {
+        for (auto& submesh : m_SubmeshesPbr)
+        {
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
+            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+        }
+    }
+
     void VK_Model::DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
     {
         for (auto& submesh : m_SubmeshesPbrMulti)
@@ -321,8 +330,8 @@ namespace GfxRenderEngine
                 *static_cast<VK_MaterialDescriptor*>(submesh.m_Material->m_MaterialDescriptor.get());
             const VkDescriptorSet& materialDescriptorSet = materialDescriptor.GetDescriptorSet();
             const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
-            std::vector<VkDescriptorSet> descriptorSets = {frameInfo.m_GlobalDescriptorSet, materialDescriptorSet,
-                                                           resourceDescriptorSet};
+            auto descriptorSets =
+                std::to_array({frameInfo.m_GlobalDescriptorSet, materialDescriptorSet, resourceDescriptorSet});
             vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
                                     pipelineLayout,                  // VkPipelineLayout       layout,
@@ -330,7 +339,7 @@ namespace GfxRenderEngine
                                     descriptorSets.size(),           // uint32_t               descriptorSetCount,
                                     descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
                                     0,                               // uint32_t               dynamicOffsetCount,
-                                    nullptr                          // const uint32_t*        pDynamicOffsets);
+                                    nullptr                          // const uint32_t*        pDynamicOffsets
             );
             PushConstantsPbrMulti(frameInfo, pipelineLayout, submesh);
             DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
@@ -366,7 +375,7 @@ namespace GfxRenderEngine
                                                VK_Submesh const& submesh, VkDescriptorSet const& shadowDescriptorSet)
     {
         VkDescriptorSet localDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {shadowDescriptorSet, localDescriptorSet};
+        auto descriptorSets = std::to_array<VkDescriptorSet>({shadowDescriptorSet, localDescriptorSet});
         CORE_ASSERT(localDescriptorSet, "resource descriptor set empty");
         vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2,
                                 descriptorSets.data(), 0, nullptr);
@@ -400,5 +409,18 @@ namespace GfxRenderEngine
                       0                          // uint32_t        firstInstance
             );
         }
+    }
+
+    VK_Buffer::BufferDeviceAddress VK_Model::GetVertexBufferDeviceAddress() const
+    {
+        return m_VertexBuffer->GetBufferDeviceAddress();
+    }
+
+    VK_Buffer::BufferDeviceAddress VK_Model::GetIndexBufferDeviceAddress() const
+    {
+#ifdef DEBUG
+        CORE_HARD_STOP("VK_Model::GetIndexBufferDeviceAddress(): index buffer must be provided");
+#endif
+        return m_IndexBuffer->GetBufferDeviceAddress();
     }
 } // namespace GfxRenderEngine

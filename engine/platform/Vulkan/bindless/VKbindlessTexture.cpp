@@ -138,12 +138,18 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_BindlessTexture::BindlessID VK_BindlessTexture::AddTexture(Texture* texture)
+    Texture::BindlessTextureID VK_BindlessTexture::AddTexture(Texture* texture)
     {
+        if (texture == nullptr)
+        {
+            CORE_ASSERT(texture, "VK_BindlessTexture: AddTexture texture is null");
+            return 0;
+        }
+
         Texture::TextureID textureID = texture->GetTextureID();
 
         // guard map + pending vector
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_TableAccessMutex);
 
         if (m_NextBindlessIndex >= MAX_DESCRIPTOR)
         {
@@ -171,7 +177,7 @@ namespace GfxRenderEngine
         // Lock the mutex for a short period to move pending items
         std::vector<Texture*> pendingUpdates;
         {
-            std::lock_guard<std::mutex> guard(m_Mutex);
+            std::lock_guard<std::mutex> guard(m_TableAccessMutex);
             if (m_PendingUpdates.empty())
             {
                 return; // No updates are needed

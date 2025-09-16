@@ -138,12 +138,18 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_BindlessImage::BindlessImageID VK_BindlessImage::AddImage(StorageImage* storageImage)
+    StorageImage::BindlessImageID VK_BindlessImage::AddImage(StorageImage* storageImage)
     {
+        if (storageImage == nullptr)
+        {
+            CORE_ASSERT(storageImage, "VK_BindlessImage: AddImage storage image is null");
+            return 0;
+        }
+
         StorageImage::StorageImageID storageImageID = storageImage->GetStorageImageID();
 
         // guard map + pending vector
-        std::lock_guard<std::mutex> guard(m_Mutex);
+        std::lock_guard<std::mutex> guard(m_TableAccessMutex);
 
         if (m_NextBindlessIndex >= MAX_DESCRIPTOR)
         {
@@ -171,7 +177,7 @@ namespace GfxRenderEngine
         // Lock the mutex for a short period to move pending items
         std::vector<StorageImage*> pendingUpdates;
         {
-            std::lock_guard<std::mutex> guard(m_Mutex);
+            std::lock_guard<std::mutex> guard(m_TableAccessMutex);
             if (m_PendingUpdates.empty())
             {
                 return; // No updates are needed
