@@ -65,6 +65,7 @@ namespace GfxRenderEngine
           m_MemoryPropertyFlags{memoryPropertyFlags}
     {
         CreateID();
+        m_UsageFlags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_BufferSize = m_AlignmentSize * m_InstanceCount;
         VK_Core::m_Device->CreateBuffer(m_BufferSize, m_UsageFlags, m_MemoryPropertyFlags, m_Buffer, m_Memory);
@@ -80,7 +81,7 @@ namespace GfxRenderEngine
             {
                 m_InstanceSize = size;
                 m_InstanceCount = 1;
-                m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                m_UsageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 m_MemoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
                 VkDeviceSize minOffsetAlignment = VK_Core::m_Device->m_Properties.limits.minUniformBufferOffsetAlignment;

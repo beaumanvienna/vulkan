@@ -364,7 +364,8 @@ namespace GfxRenderEngine
         m_RenderSystemPbrMultiMaterial = std::make_unique<VK_RenderSystemPbrMultiMaterial>(
             m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrMultiMaterial);
 
-        m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
+        // m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(),
+        // descriptorSetLayoutsPbr);
         m_RenderSystemPbrSA =
             std::make_unique<VK_RenderSystemPbrSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrSA);
         m_RenderSystemPbrBindless =
@@ -867,7 +868,7 @@ namespace GfxRenderEngine
     void VK_Renderer::EndRenderpassWater()
     {
         VertexCtrl vertexCtrl = {};
-        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+        //        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
@@ -1021,7 +1022,7 @@ namespace GfxRenderEngine
             vertexCtrl.m_ClippingPlane = clippingPlane;
             vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
 
-            m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+            // m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
@@ -1076,7 +1077,7 @@ namespace GfxRenderEngine
             auto& registry = scene.GetRegistry();
 
             // 3D objects
-            m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
+            // m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemPbrBindless->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
             m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
@@ -1093,7 +1094,7 @@ namespace GfxRenderEngine
             auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
 
             // 3D objects
-            m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            // m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
             m_RenderSystemPbrBindless->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
                                                       m_BindlessImage.get());
             m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);

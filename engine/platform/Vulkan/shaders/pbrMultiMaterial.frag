@@ -24,6 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#extension GL_EXT_scalar_block_layout : require
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/material.h"
 
@@ -71,10 +72,6 @@ struct PbrMaterial
     // byte 32 to 47
     vec3 m_EmissiveColor;
     float m_EmissiveStrength;
-
-    // 48 to 51
-    float m_ClearcoatFactor; // this shader is for terrain, so no clearcoat support
-    float m_ClearcoatRoughnessFactor;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -90,9 +87,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant, std430) uniform PushFragment
+layout(push_constant, scalar) uniform PushFragment
 {
-    layout(offset = 32) PbrMaterial m_PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
+    layout(offset = 44) PbrMaterial m_PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
 } push;
 
 void main()

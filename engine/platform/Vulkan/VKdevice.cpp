@@ -251,6 +251,7 @@ namespace GfxRenderEngine
         VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features{};
         physicalDeviceVulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         physicalDeviceVulkan12Features.timelineSemaphore = VK_TRUE;
+        physicalDeviceVulkan12Features.scalarBlockLayout = VK_TRUE;
         // Enable bindless only if supported
         if (m_BindlessSupport)
         {
@@ -280,6 +281,7 @@ namespace GfxRenderEngine
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.shaderClipDistance = VK_TRUE;
         deviceFeatures.fillModeNonSolid = VK_TRUE;
+        deviceFeatures.shaderInt64 = VK_TRUE;
 
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -34,7 +34,7 @@ namespace GfxRenderEngine
     public:
         struct PbrMultiMaterialProperties
         {
-            PbrMaterial::PbrMaterialProperties m_PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
+            PbrMaterial::PbrMaterialPropertiesNoBindless m_PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
         };
         struct PbrMultiMaterialTextures
         {

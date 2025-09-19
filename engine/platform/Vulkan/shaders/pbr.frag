@@ -24,6 +24,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#extension GL_EXT_scalar_block_layout : require
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/material.h"
 
@@ -73,9 +74,18 @@ struct PbrMaterialProperties
     vec3 m_EmissiveColor;
     float m_EmissiveStrength;
 
-    // 48 to 51
+    // byte 48 to 63
     float m_ClearcoatFactor;
     float m_ClearcoatRoughnessFactor;
+    uint m_DiffuseMap;
+    uint m_NormalMap;
+
+    // byte 64 to 83
+    uint m_RoughnessMap;
+    uint m_MetallicMap;
+    uint m_RoughnessMetallicMap;
+    uint m_EmissiveMap;
+    uint m_ClearcoatMap;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
@@ -91,9 +101,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(push_constant, std430) uniform PushFragment
+layout(push_constant, scalar) uniform PushFragment
 {
-    layout(offset = 32) PbrMaterialProperties m_PbrMaterialProperties;
+    layout(offset = 44) PbrMaterialProperties m_PbrMaterialProperties;
 } push;
 
 void main()

@@ -32,19 +32,19 @@ namespace GfxRenderEngine
     {
         ENABLE_CLIPPING_PLANE = GLSL_ENABLE_CLIPPING_PLANE
     };
-
+#pragma pack(push, 1)
     struct VertexCtrl
     {
         // byte 0 to 15
         glm::vec4 m_ClippingPlane{0.0f};
 
-        // byte 16 to 31
-        int m_Features{0};
-        glm::vec3 m_Spare0{0.0f};
-
-        // byte 32 to 48
+        // byte 16 to 39
         uint64 m_VertexBufferDeviceAddress{0};
         uint64 m_IndexBufferDeviceAddress{0};
-    };
+        uint64 m_InstanceBufferDeviceAddress{0};
 
+        // byte 40 to 43
+        int m_Features{0};
+    };
+#pragma pack(pop)
 } // namespace GfxRenderEngine

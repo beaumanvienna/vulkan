@@ -61,6 +61,7 @@ namespace GfxRenderEngine
             HAS_CLEARCOAT_MAP = GLSL_HAS_CLEARCOAT_MAP
         };
 
+#pragma pack(push, 1)
         struct PbrMaterialProperties
         { // align data to blocks of 16 bytes
             // byte 0 to 15
@@ -79,19 +80,35 @@ namespace GfxRenderEngine
             // byte 48 to 63
             float m_ClearcoatFactor{0.0f};
             float m_ClearcoatRoughnessFactor{0.0f};
-            float m_Reserve0;
-            float m_Reserve1;
-
-            // byte 64 to 95
             uint m_DiffuseMap{0};
             uint m_NormalMap{0};
+
+            // byte 64 to 83
             uint m_RoughnessMap{0};
             uint m_MetallicMap{0};
             uint m_RoughnessMetallicMap{0};
             uint m_EmissiveMap{0};
             uint m_ClearcoatMap{0};
-            uint m_Reserve2{0};
         };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+        struct PbrMaterialPropertiesNoBindless
+        { // align data to blocks of 16 bytes
+            // byte 0 to 15
+            uint m_Features{0};
+            float m_Roughness{0.0f};
+            float m_Metallic{0.0f};
+            float m_NormalMapIntensity{1.0f};
+
+            // byte 16 to 31
+            glm::vec4 m_DiffuseColor{1.0f, 1.0f, 1.0f, 1.0f};
+
+            // byte 32 to 47
+            glm::vec3 m_EmissiveColor{0.0f, 0.0f, 0.0f};
+            float m_EmissiveStrength{1.0f};
+        };
+#pragma pack(pop)
 
     public:
         virtual ~PbrMaterial() {}

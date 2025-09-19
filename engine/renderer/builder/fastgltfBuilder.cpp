@@ -1019,10 +1019,23 @@ namespace GfxRenderEngine
                 {
                     CORE_HARD_STOP("fastgltfLoader: number of multi materials insufficient");
                 }
-                material.m_PbrMultiMaterialProperties = {m_Materials[0].m_PbrMaterialProperties, //
-                                                         m_Materials[1].m_PbrMaterialProperties, //
-                                                         m_Materials[2].m_PbrMaterialProperties, //
-                                                         m_Materials[3].m_PbrMaterialProperties};
+                for (uint i = 0; i < GLSL_NUM_MULTI_MATERIAL; ++i)
+                {
+                    material.m_PbrMultiMaterialProperties.m_PbrMaterialProperties[i] = {
+                        .m_Features = m_Materials[i].m_PbrMaterialProperties.m_Features,
+                        .m_Roughness = m_Materials[i].m_PbrMaterialProperties.m_Roughness,
+                        .m_Metallic = m_Materials[i].m_PbrMaterialProperties.m_Metallic,
+                        .m_NormalMapIntensity = m_Materials[i].m_PbrMaterialProperties.m_NormalMapIntensity,
+
+                        // byte 16 to 31
+                        .m_DiffuseColor = m_Materials[i].m_PbrMaterialProperties.m_DiffuseColor,
+
+                        // byte 32 to 47
+                        .m_EmissiveColor = m_Materials[i].m_PbrMaterialProperties.m_EmissiveColor,
+                        .m_EmissiveStrength = m_Materials[i].m_PbrMaterialProperties.m_EmissiveStrength //
+                    };
+                }
+
                 material.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], //
                                                        m_MaterialTextures[1], //
                                                        m_MaterialTextures[2], //
@@ -1049,7 +1062,7 @@ namespace GfxRenderEngine
         }
 
         LOG_CORE_INFO("material assigned (fastgltf): material index {0}", materialIndex);
-    }
+    } // namespace GfxRenderEngine
 
     void FastgltfBuilder::CalculateTangents(Model::ModelData& modelData)
     {

@@ -317,7 +317,12 @@ namespace GfxRenderEngine
         for (auto& submesh : m_SubmeshesPbr)
         {
             PushConstantsPbr(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
+            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                      submesh.m_VertexCount,     // uint32_t        vertexCount
+                      submesh.m_InstanceCount,   // uint32_t        instanceCount
+                      submesh.m_FirstVertex,     // uint32_t        firstVertex
+                      0                          // uint32_t        firstInstance
+            );
         }
     }
 
@@ -419,7 +424,10 @@ namespace GfxRenderEngine
     VK_Buffer::BufferDeviceAddress VK_Model::GetIndexBufferDeviceAddress() const
     {
 #ifdef DEBUG
-        CORE_HARD_STOP("VK_Model::GetIndexBufferDeviceAddress(): index buffer must be provided");
+        if (!m_IndexBuffer)
+        {
+            CORE_HARD_STOP("VK_Model::GetIndexBufferDeviceAddress(): index buffer must be provided");
+        }
 #endif
         return m_IndexBuffer->GetBufferDeviceAddress();
     }

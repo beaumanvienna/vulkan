@@ -24,15 +24,32 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_scalar_block_layout : require
+
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 #include "engine/platform/Vulkan/shader.h"
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 uv;
-layout(location = 4) in vec3 tangent;
+struct Vertex
+{
+    vec3 m_Position;
+    vec4 m_Color;
+    vec3 m_Normal;
+    vec2 m_Uv;
+    vec3 m_Tangent;
+};
+
+layout(buffer_reference, scalar) readonly buffer VertexBuffer
+{
+    Vertex m_Vertices[];
+};
+
+layout(buffer_reference, scalar) readonly buffer IndexBuffer
+{
+    uint m_Indices[];
+};
 
 struct PointLight
 {
@@ -57,12 +74,16 @@ struct VertexCtrl
     // byte 0 to 15
     vec4 m_ClippingPlane;
 
-    // byte 16 to 31
+    // byte 16 to 39
+    uint64_t m_VertexBufferDeviceAddress;
+    uint64_t m_IndexBufferDeviceAddress;
+    uint64_t m_InstanceBufferDeviceAddress;
+
+    // byte 40 to 43
     int m_Features;
-    vec3 m_Spare0;
 };
 
-layout(push_constant, std430) uniform PushVertex
+layout(push_constant, scalar) uniform PushVertex
 {
     layout(offset = 0) VertexCtrl m_VertexCtrl;
 } push;
@@ -80,10 +101,10 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
     int m_NumberOfActiveDirectionalLights;
 } ubo;
 
-layout(set = 2, binding = 0) readonly buffer InstanceBuffer
+layout(buffer_reference, scalar) readonly buffer InstanceBuffer
 {
-    InstanceData m_InstanceData[MAX_INSTANCE];
-} uboInstanced;
+    InstanceData m_Data[];
+};
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -93,8 +114,25 @@ layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+    VertexBuffer vertexBuffer = VertexBuffer(push.m_VertexCtrl.m_VertexBufferDeviceAddress);
+    IndexBuffer indexBuffer = IndexBuffer(push.m_VertexCtrl.m_IndexBufferDeviceAddress);
+
+    uint index = indexBuffer.m_Indices[gl_VertexIndex];
+
+    vec3 position = vertexBuffer.m_Vertices[index].m_Position;
+    vec4 color  = vertexBuffer.m_Vertices[index].m_Color;
+    vec3 normal  = vertexBuffer.m_Vertices[index].m_Normal;
+    vec2 uv  = vertexBuffer.m_Vertices[index].m_Uv;
+    vec3 tangent  = vertexBuffer.m_Vertices[index].m_Tangent;
+
+    // Create a reference to the buffer from the BDA
+    InstanceBuffer instanceBuffer = InstanceBuffer(push.m_VertexCtrl.m_InstanceBufferDeviceAddress);
+
+    // Index into it using gl_InstanceIndex
+    InstanceData instanceData = instanceBuffer.m_Data[gl_InstanceIndex];
+
+    mat4 modelMatrix  = instanceData.m_ModelMatrix;
+    mat4 normalMatrix = instanceData.m_NormalMatrix;
 
     // projection * view * model * position
     vec4 positionWorld = modelMatrix * vec4(position, 1.0);

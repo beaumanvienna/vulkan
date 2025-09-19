@@ -96,8 +96,8 @@ namespace GfxRenderEngine
         VK_Pipeline::SetColorBlendState(pipelineConfig, attachmentCount, blAttachments.data());
 
         // create a pipeline
-        m_Pipeline =
-            std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbr.vert.spv", "bin-int/pbr.frag.spv", pipelineConfig);
+        m_Pipeline = std::make_unique<VK_Pipeline>(VK_Core::m_Device, "bin-int/pbrBindless.vert.spv",
+                                                   "bin-int/pbrBindless.frag.spv", pipelineConfig);
     }
 
     void VK_RenderSystemPbrBindless::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
@@ -135,16 +135,18 @@ namespace GfxRenderEngine
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
-            { // update instance buffer on the GPU
-                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
-                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
-                instanceBuffer->Update();
-            }
+            // update instance buffer on the GPU
+            InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+            VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+            instanceBuffer->Update();
+
             if (mesh.m_Enabled)
             {
                 auto model = static_cast<VK_Model*>(mesh.m_Model.get());
                 m_VertexCtrl.m_VertexBufferDeviceAddress = model->GetVertexBufferDeviceAddress();
                 m_VertexCtrl.m_IndexBufferDeviceAddress = model->GetIndexBufferDeviceAddress();
+                m_VertexCtrl.m_InstanceBufferDeviceAddress =
+                    static_cast<VK_Buffer*>(instanceBuffer->GetBuffer().get())->GetBufferDeviceAddress();
                 PushConstantsVertexCtrl(frameInfo);
                 model->DrawPbrBindless(frameInfo, m_PipelineLayout);
             }
