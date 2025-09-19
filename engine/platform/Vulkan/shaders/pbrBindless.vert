@@ -37,8 +37,10 @@ struct Vertex
     vec3 m_Position;
     vec4 m_Color;
     vec3 m_Normal;
-    vec2 m_Uv;
+    vec2 m_UV;
     vec3 m_Tangent;
+    ivec4 m_JointIds;
+    vec4 m_Weights;
 };
 
 layout(buffer_reference, scalar) readonly buffer VertexBuffer
@@ -122,7 +124,7 @@ void main()
     vec3 position = vertexBuffer.m_Vertices[index].m_Position;
     vec4 color  = vertexBuffer.m_Vertices[index].m_Color;
     vec3 normal  = vertexBuffer.m_Vertices[index].m_Normal;
-    vec2 uv  = vertexBuffer.m_Vertices[index].m_Uv;
+    vec2 uv  = vertexBuffer.m_Vertices[index].m_UV;
     vec3 tangent  = vertexBuffer.m_Vertices[index].m_Tangent;
 
     // Create a reference to the buffer from the BDA
