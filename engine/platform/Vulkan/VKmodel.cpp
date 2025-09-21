@@ -335,7 +335,7 @@ namespace GfxRenderEngine
             PushConstantsBindless(frameInfo, pipelineLayout, submesh, drawCallInfo);
 
             vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
-                      submesh.m_VertexCount,     // uint32_t        vertexCount
+                      submesh.m_IndexCount,      // uint32_t        vertexCount (index count is used(!))
                       submesh.m_InstanceCount,   // uint32_t        instanceCount
                       0,                         // uint32_t        firstVertex
                       0                          // uint32_t        firstInstance
