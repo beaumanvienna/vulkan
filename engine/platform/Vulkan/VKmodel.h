@@ -28,6 +28,7 @@
 #include "engine.h"
 #include "renderer/model.h"
 #include "renderer/buffer.h"
+#include "renderer/shader.h"
 #include "renderer/builder/builder.h"
 #include "renderer/builder/IBLBuilder.h"
 #include "renderer/builder/gltfBuilder.h"
@@ -103,12 +104,16 @@ namespace GfxRenderEngine
 
         virtual void CreateVertexBuffer(const std::vector<Vertex>& vertices) override;
         virtual void CreateIndexBuffer(const std::vector<uint>& indices) override;
+        virtual Buffer::BufferDeviceAddress GetVertexBufferDeviceAddress() const override;
+        virtual Buffer::BufferDeviceAddress GetIndexBufferDeviceAddress() const override;
 
         void Bind(VkCommandBuffer commandBuffer);
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
         void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                               VK_Submesh const& submesh);
+        void PushConstantsBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                   VK_Submesh const& submesh, DrawCallInfo& drawCallInfo);
         void PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                                    VK_Submesh const& submesh);
 
@@ -117,15 +122,13 @@ namespace GfxRenderEngine
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                              VK_Submesh const& submesh, bool bindResources);
 
-        VK_Buffer::BufferDeviceAddress GetVertexBufferDeviceAddress() const;
-        VK_Buffer::BufferDeviceAddress GetIndexBufferDeviceAddress() const;
-
         void Draw(VkCommandBuffer commandBuffer);
         void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);
 
         // draw pbr materials
         void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
+        void DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                             DrawCallInfo& drawCallInfo);
         void DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
         void DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount);
 

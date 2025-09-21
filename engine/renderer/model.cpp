@@ -54,4 +54,14 @@ namespace GfxRenderEngine
     float Model::m_NormalMapIntensity = 1.0f;
 
     SkeletalAnimations& Model::GetAnimations() { return *(m_Animations.get()); }
+
+    Buffer::BufferDeviceAddress Model::GetMeshBufferDeviceAddress() const
+    {
+        return m_MeshBuffer.get()->GetBufferDeviceAddress();
+    }
+
+    Buffer::BufferDeviceAddress Submesh::GetMaterialBufferDeviceAddress() const
+    {
+        return m_Material.get()->GetMaterialBufferDeviceAddress();
+    }
 } // namespace GfxRenderEngine

@@ -62,6 +62,8 @@ namespace GfxRenderEngine
 
     std::shared_ptr<Buffer> VK_InstanceBuffer::GetBuffer() { return m_Ubo; }
 
+    Buffer::BufferDeviceAddress VK_InstanceBuffer::GetBufferDeviceAddress() { return m_Ubo.get()->GetBufferDeviceAddress(); }
+
     const glm::mat4& VK_InstanceBuffer::GetModelMatrix(uint index) { return m_DataInstances[index].m_ModelMatrix; }
 
     const glm::mat4& VK_InstanceBuffer::GetNormalMatrix(uint index) { return m_DataInstances[index].m_NormalMatrix; }

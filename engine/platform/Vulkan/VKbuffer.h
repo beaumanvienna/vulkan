@@ -38,8 +38,6 @@ namespace GfxRenderEngine
 {
     class VK_Buffer : public Buffer
     {
-    public:
-        using BufferDeviceAddress = uint64_t;
 
     public:
         VK_Buffer(VkDeviceSize instanceSize, uint instanceCount, VkBufferUsageFlags usageFlags,

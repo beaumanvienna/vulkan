@@ -312,15 +312,32 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    void VK_Model::PushConstantsBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                         VK_Submesh const& submesh, DrawCallInfo& drawCallInfo)
+    {
+        drawCallInfo.m_SubmeshInfo = {submesh.m_FirstIndex, submesh.m_FirstVertex};
+        drawCallInfo.m_MaterialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress();
+
+        constexpr VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, // VkCommandBuffer     commandBuffer,
+                           pipelineLayout,            // VkPipelineLayout    layout,
+                           stageFlags,                // VkShaderStageFlags  stageFlags,
+                           0,                         // uint32_t            offset,
+                           sizeof(DrawCallInfo),      // uint32_t            size,
+                           &drawCallInfo);            // const void*         pValues
+    }
+
+    void VK_Model::DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                   DrawCallInfo& drawCallInfo)
     {
         for (auto& submesh : m_SubmeshesPbr)
         {
-            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
+            PushConstantsBindless(frameInfo, pipelineLayout, submesh, drawCallInfo);
+
             vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
                       submesh.m_VertexCount,     // uint32_t        vertexCount
                       submesh.m_InstanceCount,   // uint32_t        instanceCount
-                      submesh.m_FirstVertex,     // uint32_t        firstVertex
+                      0,                         // uint32_t        firstVertex
                       0                          // uint32_t        firstInstance
             );
         }
@@ -416,12 +433,12 @@ namespace GfxRenderEngine
         }
     }
 
-    VK_Buffer::BufferDeviceAddress VK_Model::GetVertexBufferDeviceAddress() const
+    Buffer::BufferDeviceAddress VK_Model::GetVertexBufferDeviceAddress() const
     {
         return m_VertexBuffer->GetBufferDeviceAddress();
     }
 
-    VK_Buffer::BufferDeviceAddress VK_Model::GetIndexBufferDeviceAddress() const
+    Buffer::BufferDeviceAddress VK_Model::GetIndexBufferDeviceAddress() const
     {
 #ifdef DEBUG
         if (!m_IndexBuffer)

@@ -25,6 +25,7 @@
 
 #include "core.h"
 #include "scene/scene.h"
+#include "renderer/shader.h"
 #include "renderer/instanceBuffer.h"
 #include "renderer/builder/fastgltfBuilder.h"
 #include "renderer/materialDescriptor.h"
@@ -366,6 +367,18 @@ namespace GfxRenderEngine
 
                 // submit to engine
                 m_Models[gltfNodeIndex] = Engine::m_Engine->LoadModel(modelData);
+
+                { // create mesh buffer
+                    MeshBufferData meshBufferData = {
+                        .m_VertexBufferDeviceAddress = m_Models[gltfNodeIndex].get()->GetVertexBufferDeviceAddress(),
+                        .m_IndexBufferDeviceAddress = m_Models[gltfNodeIndex].get()->GetIndexBufferDeviceAddress(),
+                        .m_InstanceBufferDeviceAddress = instanceBuffer.get()->GetBufferDeviceAddress()};
+                    auto& buffer = m_Models[gltfNodeIndex].get()->GetMeshBuffer();
+                    buffer = Buffer::Create(sizeof(meshBufferData), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                    buffer.get()->MapBuffer();
+                    buffer.get()->WriteToBuffer(&meshBufferData);
+                    buffer.get()->Flush();
+                }
             }
             else
             {
@@ -712,6 +725,13 @@ namespace GfxRenderEngine
                 pbrMaterialProperties.m_EmissiveMap = renderer->AddTexture(m_Textures[imageIndex].get());
             }
 
+            { // create material buffer
+                auto& buffer = material.GetMaterialBuffer();
+                buffer = Buffer::Create(sizeof(pbrMaterialProperties), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                buffer.get()->MapBuffer();
+                buffer.get()->WriteToBuffer(&pbrMaterialProperties);
+                buffer.get()->Flush();
+            }
             ++materialIndex;
         }
     }

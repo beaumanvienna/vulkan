@@ -48,6 +48,7 @@ namespace GfxRenderEngine
         virtual const glm::mat4& GetModelMatrix(uint index) override;
         virtual const glm::mat4& GetNormalMatrix(uint index) override;
         virtual std::shared_ptr<Buffer> GetBuffer() override;
+        virtual Buffer::BufferDeviceAddress GetBufferDeviceAddress() override;
         void Update();
 
     private:

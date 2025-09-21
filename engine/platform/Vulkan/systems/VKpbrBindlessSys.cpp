@@ -45,16 +45,11 @@ namespace GfxRenderEngine
     void VK_RenderSystemPbrBindless::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange0{};
-        pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange0.offset = 0;
-        pushConstantRange0.size = sizeof(VertexCtrl);
+        pushConstantRange0.size = sizeof(DrawCallInfo);
 
-        VkPushConstantRange pushConstantRange1{};
-        pushConstantRange1.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange1.offset = sizeof(VertexCtrl);
-        pushConstantRange1.size = sizeof(PbrMaterial::PbrMaterialProperties);
-
-        auto pushConstantRanges = std::to_array({pushConstantRange0, pushConstantRange1});
+        auto pushConstantRanges = std::to_array({pushConstantRange0});
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -100,21 +95,16 @@ namespace GfxRenderEngine
                                                    "bin-int/pbrBindless.frag.spv", pipelineConfig);
     }
 
-    void VK_RenderSystemPbrBindless::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
-
-    void VK_RenderSystemPbrBindless::PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemPbrBindless::SetVertexCtrl(VertexCtrl const& vertexCtrl)
     {
-        vkCmdPushConstants(frameInfo.m_CommandBuffer,  // VkCommandBuffer     commandBuffer,
-                           m_PipelineLayout,           // VkPipelineLayout    layout,
-                           VK_SHADER_STAGE_VERTEX_BIT, // VkShaderStageFlags  stageFlags,
-                           0,                          // uint32_t            offset,
-                           sizeof(VertexCtrl),         // uint32_t            size,
-                           &m_VertexCtrl);             // const void*         pValues
+        m_DrawCallInfo.m_VertexCtrl = vertexCtrl;
     }
 
     void VK_RenderSystemPbrBindless::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
                                                     VK_BindlessTexture* bindlessTexture, VK_BindlessImage* bindlessImage)
     {
+        bindlessTexture->UpdateBindlessDescriptorSets();
+        bindlessImage->UpdateBindlessDescriptorSets();
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
         { // bind descriptor sets
             auto descriptorSets = std::to_array(
@@ -143,12 +133,8 @@ namespace GfxRenderEngine
             if (mesh.m_Enabled)
             {
                 auto model = static_cast<VK_Model*>(mesh.m_Model.get());
-                m_VertexCtrl.m_VertexBufferDeviceAddress = model->GetVertexBufferDeviceAddress();
-                m_VertexCtrl.m_IndexBufferDeviceAddress = model->GetIndexBufferDeviceAddress();
-                m_VertexCtrl.m_InstanceBufferDeviceAddress =
-                    static_cast<VK_Buffer*>(instanceBuffer->GetBuffer().get())->GetBufferDeviceAddress();
-                PushConstantsVertexCtrl(frameInfo);
-                model->DrawPbrBindless(frameInfo, m_PipelineLayout);
+                m_DrawCallInfo.m_MeshBufferDeviceAddress = model->GetMeshBufferDeviceAddress();
+                model->DrawPbrBindless(frameInfo, m_PipelineLayout, m_DrawCallInfo);
             }
         }
     }

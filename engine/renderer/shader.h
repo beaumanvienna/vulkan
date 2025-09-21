@@ -38,13 +38,46 @@ namespace GfxRenderEngine
         // byte 0 to 15
         glm::vec4 m_ClippingPlane{0.0f};
 
-        // byte 16 to 39
-        uint64 m_VertexBufferDeviceAddress{0};
-        uint64 m_IndexBufferDeviceAddress{0};
-        uint64 m_InstanceBufferDeviceAddress{0};
+        // byte 16 to 23
+        uint m_Features{0};
+        int m_Reserve0{0};
+    };
+#pragma pack(pop)
 
-        // byte 40 to 43
-        int m_Features{0};
+#pragma pack(push, 1)
+    struct SubmeshInfo
+    {
+        // byte 0 to 7
+        uint m_FirstIndex{0};
+        int m_VertexOffset{0};
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    struct MeshBufferData
+    {
+        // byte 0 to 23
+        Buffer::BufferDeviceAddress m_VertexBufferDeviceAddress{0};
+        Buffer::BufferDeviceAddress m_IndexBufferDeviceAddress{0};
+        Buffer::BufferDeviceAddress m_InstanceBufferDeviceAddress{0};
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    struct DrawCallInfo
+    {
+        // per mesh (never changes after mesh upload)
+        // byte 0 to 7
+        Buffer::BufferDeviceAddress m_MeshBufferDeviceAddress;
+
+        // byte 8 to 31
+        VertexCtrl m_VertexCtrl; // per render pass (water or main 3D pass)
+
+        // per submesh
+        // byte 32 to 39
+        Buffer::BufferDeviceAddress m_MaterialBufferDeviceAddress;
+        // byte 40 to 47
+        SubmeshInfo m_SubmeshInfo;
     };
 #pragma pack(pop)
 } // namespace GfxRenderEngine

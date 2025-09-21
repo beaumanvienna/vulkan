@@ -98,12 +98,13 @@ namespace GfxRenderEngine
     struct Submesh
     {
         uint m_FirstIndex;
-        uint m_FirstVertex;
+        int m_FirstVertex;
         uint m_IndexCount;
         uint m_VertexCount;
         uint m_InstanceCount;
         std::shared_ptr<Material> m_Material;
         Resources m_Resources;
+        Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress() const;
     };
 
     class Model
@@ -131,6 +132,10 @@ namespace GfxRenderEngine
         virtual void CreateIndexBuffer(const std::vector<uint>& indices) = 0;
 
         SkeletalAnimations& GetAnimations();
+        Buffer::BufferDeviceAddress GetMeshBufferDeviceAddress() const;
+        std::shared_ptr<Buffer>& GetMeshBuffer() { return m_MeshBuffer; }
+        virtual Buffer::BufferDeviceAddress GetVertexBufferDeviceAddress() const = 0;
+        virtual Buffer::BufferDeviceAddress GetIndexBufferDeviceAddress() const = 0;
 
         static float m_NormalMapIntensity;
 
@@ -141,5 +146,6 @@ namespace GfxRenderEngine
         std::shared_ptr<SkeletalAnimations> m_Animations;
         std::shared_ptr<Armature::Skeleton> m_Skeleton;
         std::shared_ptr<Buffer> m_ShaderDataUbo;
+        std::shared_ptr<Buffer> m_MeshBuffer;
     };
 } // namespace GfxRenderEngine

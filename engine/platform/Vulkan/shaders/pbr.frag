@@ -1,8 +1,5 @@
 /* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -103,7 +100,7 @@ layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 
 layout(push_constant, scalar) uniform PushFragment
 {
-    layout(offset = 44) PbrMaterialProperties m_PbrMaterialProperties;
+    layout(offset = 24) PbrMaterialProperties m_PbrMaterialProperties;
 } push;
 
 void main()

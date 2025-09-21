@@ -1,8 +1,5 @@
 /* Engine Copyright (c) 2025 Engine Development Team 
    https://github.com/beaumanvienna/vulkan
-   *
-   * PBR rendering; parts of this code are based on https://learnopengl.com/PBR/Lighting
-   *
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -32,81 +29,9 @@
 #include "engine/platform/Vulkan/resource.h"
 #include "engine/platform/Vulkan/shader.h"
 
-struct Vertex
-{
-    vec3 m_Position;
-    vec4 m_Color;
-    vec3 m_Normal;
-    vec2 m_UV;
-    vec3 m_Tangent;
-    ivec4 m_JointIds;
-    vec4 m_Weights;
-};
-
-layout(buffer_reference, scalar) readonly buffer VertexBuffer
-{
-    Vertex m_Vertices[];
-};
-
-layout(buffer_reference, scalar) readonly buffer IndexBuffer
-{
-    uint m_Indices[];
-};
-
-struct PointLight
-{
-    vec4 m_Position; // ignore w
-    vec4 m_Color;    // w is intensity
-};
-
-struct DirectionalLight
-{
-    vec4 m_Direction; // ignore w
-    vec4 m_Color;     // w is intensity
-};
-
-struct InstanceData
-{
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-};
-
-struct VertexCtrl
-{
-    // byte 0 to 15
-    vec4 m_ClippingPlane;
-
-    // byte 16 to 39
-    uint64_t m_VertexBufferDeviceAddress;
-    uint64_t m_IndexBufferDeviceAddress;
-    uint64_t m_InstanceBufferDeviceAddress;
-
-    // byte 40 to 43
-    int m_Features;
-};
-
-layout(push_constant, scalar) uniform PushVertex
-{
-    layout(offset = 0) VertexCtrl m_VertexCtrl;
-} push;
-
-layout(set = 0, binding = 0) uniform GlobalUniformBuffer
-{
-    mat4 m_Projection;
-    mat4 m_View;
-
-    // point light
-    vec4 m_AmbientLightColor;
-    PointLight m_PointLights[MAX_LIGHTS];
-    DirectionalLight m_DirectionalLight;
-    int m_NumberOfActivePointLights;
-    int m_NumberOfActiveDirectionalLights;
-} ubo;
-
-layout(buffer_reference, scalar) readonly buffer InstanceBuffer
-{
-    InstanceData m_Data[];
-};
+// pbrBindless.h contains the declartion of the types
+// and the definition of buffers and push constants
+#include "engine/platform/Vulkan/shaders/pbrBindless.h"
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -116,19 +41,28 @@ layout(location = 4) out vec3 fragTangent;
 
 void main()
 {
-    VertexBuffer vertexBuffer = VertexBuffer(push.m_VertexCtrl.m_VertexBufferDeviceAddress);
-    IndexBuffer indexBuffer = IndexBuffer(push.m_VertexCtrl.m_IndexBufferDeviceAddress);
+    // mesh buffer has BDAs for vertex, index, and instance buffers
+    MeshBuffer mesh = MeshBuffer(push.m_Constants.m_MeshBufferDeviceAddress);
 
-    uint index = indexBuffer.m_Indices[gl_VertexIndex];
+    // Index lookup
+    IndexBuffer indexBuffer = IndexBuffer(mesh.m_Data.m_IndexBufferDeviceAddress);
+    uint index = indexBuffer.m_Indices[push.m_Constants.m_SubmeshInfo.m_FirstIndex + gl_VertexIndex];
+    index += push.m_Constants.m_SubmeshInfo.m_VertexOffset;
 
-    vec3 position = vertexBuffer.m_Vertices[index].m_Position;
-    vec4 color  = vertexBuffer.m_Vertices[index].m_Color;
-    vec3 normal  = vertexBuffer.m_Vertices[index].m_Normal;
-    vec2 uv  = vertexBuffer.m_Vertices[index].m_UV;
-    vec3 tangent  = vertexBuffer.m_Vertices[index].m_Tangent;
+    // Vertex fetch
+    VertexBuffer vertexBuffer = VertexBuffer(mesh.m_Data.m_VertexBufferDeviceAddress);
+    Vertex vertex = vertexBuffer.m_Vertices[index];
+
+    vec3  position = vertex.m_Position;
+    vec4  color    = vertex.m_Color;
+    vec3  normal   = vertex.m_Normal;
+    vec2  uv       = vertex.m_UV;
+    vec3  tangent  = vertex.m_Tangent;
+    ivec4 jointIds = vertex.m_JointIds;
+    vec4  weights  = vertex.m_Weights;
 
     // Create a reference to the buffer from the BDA
-    InstanceBuffer instanceBuffer = InstanceBuffer(push.m_VertexCtrl.m_InstanceBufferDeviceAddress);
+    InstanceBuffer instanceBuffer = InstanceBuffer(mesh.m_Data.m_InstanceBufferDeviceAddress);
 
     // Index into it using gl_InstanceIndex
     InstanceData instanceData = instanceBuffer.m_Data[gl_InstanceIndex];
@@ -139,9 +73,9 @@ void main()
     // projection * view * model * position
     vec4 positionWorld = modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
-    if (bool(push.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
+    if (bool(push.m_Constants.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
     {
-        gl_ClipDistance[0] = dot(positionWorld, push.m_VertexCtrl.m_ClippingPlane);
+        gl_ClipDistance[0] = dot(positionWorld, push.m_Constants.m_VertexCtrl.m_ClippingPlane);
     }
 
     fragPosition = positionWorld.xyz;

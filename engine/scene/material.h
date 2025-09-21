@@ -23,6 +23,7 @@
 #pragma once
 
 #include "engine.h"
+#include "engine/renderer/buffer.h"
 #include "engine/platform/Vulkan/material.h"
 
 namespace GfxRenderEngine
@@ -45,10 +46,18 @@ namespace GfxRenderEngine
     public:
         virtual ~Material() {}
         [[nodiscard]] virtual MaterialType GetType() const = 0;
+        [[nodiscard]] Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress() const
+        {
+            return m_MaterialBuffer.get()->GetBufferDeviceAddress();
+        }
+        std::shared_ptr<Buffer>& GetMaterialBuffer() { return m_MaterialBuffer; }
 
     public:
         static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
         std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
+
+    private:
+        std::shared_ptr<Buffer> m_MaterialBuffer;
     };
 
 } // namespace GfxRenderEngine

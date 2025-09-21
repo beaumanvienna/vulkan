@@ -83,12 +83,15 @@ namespace GfxRenderEngine
             uint m_DiffuseMap{0};
             uint m_NormalMap{0};
 
-            // byte 64 to 83
+            // byte 64 to 79
             uint m_RoughnessMap{0};
             uint m_MetallicMap{0};
             uint m_RoughnessMetallicMap{0};
             uint m_EmissiveMap{0};
+
+            // byte 80 to 87
             uint m_ClearcoatMap{0};
+            uint m_Reserve0{0};
         };
 #pragma pack(pop)
 

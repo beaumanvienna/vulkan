@@ -40,6 +40,7 @@ namespace GfxRenderEngine
         virtual const glm::mat4& GetModelMatrix(uint index) = 0;
         virtual const glm::mat4& GetNormalMatrix(uint index) = 0;
         virtual std::shared_ptr<Buffer> GetBuffer() = 0;
+        virtual Buffer::BufferDeviceAddress GetBufferDeviceAddress() = 0;
 
         static std::shared_ptr<InstanceBuffer> Create(uint numInstances);
     };

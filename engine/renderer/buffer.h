@@ -33,6 +33,7 @@ namespace GfxRenderEngine
     {
     public:
         using BufferID = uint;
+        using BufferDeviceAddress = uint64;
 
     public:
         enum class BufferUsage
@@ -47,6 +48,7 @@ namespace GfxRenderEngine
         virtual void WriteToBuffer(const void* data) = 0;
         virtual BufferID GetBufferID() const = 0;
         virtual bool Flush() = 0;
+        virtual BufferDeviceAddress GetBufferDeviceAddress() const = 0;
 
         static std::shared_ptr<Buffer> Create(uint size /*in bytes*/,
                                               BufferUsage bufferUsage = BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);

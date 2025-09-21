@@ -58,11 +58,10 @@ namespace GfxRenderEngine
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
-        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
 
     private:
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VertexCtrl m_VertexCtrl{};
+        DrawCallInfo m_DrawCallInfo;
     };
 } // namespace GfxRenderEngine

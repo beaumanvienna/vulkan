@@ -61,13 +61,9 @@ struct VertexCtrl
     // byte 0 to 15
     vec4 m_ClippingPlane;
 
-    // byte 16 to 39
-    uint64_t m_VertexBufferDeviceAddress;
-    uint64_t m_IndexBufferDeviceAddress;
-    uint64_t m_InstanceBufferDeviceAddress;
-
-    // byte 40 to 43
-    int m_Features;
+    // byte 16 to 23
+    uint m_Features;
+    int m_Reserve0;
 };
 
 layout(push_constant, std430) uniform PushVertex
