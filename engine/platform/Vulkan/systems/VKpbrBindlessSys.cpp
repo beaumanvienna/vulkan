@@ -72,6 +72,11 @@ namespace GfxRenderEngine
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+
+        // we don’t bind vertex buffers, instead we are using BDA
+        pipelineConfig.m_BindingDescriptions.clear();
+        pipelineConfig.m_AttributeDescriptions.clear();
+
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_GEOMETRY);

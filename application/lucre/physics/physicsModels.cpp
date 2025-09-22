@@ -138,7 +138,7 @@ namespace GfxRenderEngine
         // (note that if we had used CreateBody then we could have set the velocity straight on the body before
         // adding it to the physics system)
         bodyInterface.SetLinearVelocity(m_MushroomID, 2.0f * JPH::Vec3(0.0f, 0.0f, -2.5f));
-        bodyInterface.SetRestitution(m_MushroomID, 0.8f);
+        bodyInterface.SetRestitution(m_MushroomID, 0.5f);
     }
 
     void PhysicsBase::CreateSphere(glm::vec3 const& scale, glm::vec3 const& translation)
@@ -184,7 +184,7 @@ namespace GfxRenderEngine
         // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
         // (note that if we had used CreateBody then we could have set the velocity straight on the body before
         // adding it to the physics system)
-        bodyInterface.SetRestitution(m_SphereID, 0.8f);
+        bodyInterface.SetRestitution(m_SphereID, 0.5f);
     }
 
     void PhysicsBase::CreateCar(RVec3 const& position, JPH::Quat const& rotation)
@@ -444,7 +444,7 @@ namespace GfxRenderEngine
         const float scaleFriction = 1.0f;
 
         JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
-        
+
         // Create collision testers
         mKartTesters[0] = new VehicleCollisionTesterRay(Layers::MOVING);
         mKartTesters[1] = new VehicleCollisionTesterCastSphere(Layers::MOVING, 0.5f * wheel_width);
