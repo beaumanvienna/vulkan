@@ -1,33 +1,7 @@
 {
     "file format identifier": 1.2,
     "description": "pbr scene",
-    "author": "Copyright (c) 2024 Engine Development Team",
-    "terrainMultiMaterial":
-    [
-        {
-            "filename": "application/lucre/terrainDescriptions/terrain1.json",
-            "instances":
-            [
-                {
-                    "transform":
-                    {
-                        "scale":
-                        [
-                            1, 1, 1
-                        ],
-                        "rotation":
-                        [
-                            0, -0, 0
-                        ],
-                        "translation":
-                        [
-                            -6.20567, -10, -3.96664
-                        ]
-                    }
-                }
-            ]
-        }
-    ],
+    "author": "Copyright (c) 2025 Engine Development Team",
     "fastgltf files":
     [
         {

@@ -51,7 +51,14 @@ namespace GfxRenderEngine
         material->m_MaterialDescriptor =                                   //
             MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, //
                                        material->m_PbrMultiMaterialTextures);
-
+        { // create material buffer
+            auto& buffer = material->GetMaterialBuffer();
+            buffer = Buffer::Create(sizeof(material->m_PbrMultiMaterialProperties),
+                                    Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+            buffer.get()->MapBuffer();
+            buffer.get()->WriteToBuffer(&material->m_PbrMultiMaterialProperties);
+            buffer.get()->Flush();
+        }
         return true;
     }
 
