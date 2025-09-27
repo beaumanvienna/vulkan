@@ -228,34 +228,6 @@ namespace GfxRenderEngine
         );
     }
 
-    // multi-instance
-    void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                    VK_Submesh const& submesh)
-    {
-        auto& pbrMaterialProperties = static_cast<PbrMaterial*>(submesh.m_Material.get())->m_PbrMaterialProperties;
-        vkCmdPushConstants(frameInfo.m_CommandBuffer,                  // VkCommandBuffer     commandBuffer,
-                           pipelineLayout,                             // VkPipelineLayout    layout,
-                           VK_SHADER_STAGE_FRAGMENT_BIT,               // VkShaderStageFlags  stageFlags,
-                           sizeof(VertexCtrl),                         // uint32_t            offset,
-                           sizeof(PbrMaterial::PbrMaterialProperties), // uint32_t            size,
-                           &pbrMaterialProperties);                    // const void*         pValues
-    }
-
-    void VK_Model::PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                         VK_Submesh const& submesh)
-    {
-        auto pbrMultiMaterial = static_cast<PbrMultiMaterial*>(submesh.m_Material.get());
-        CORE_ASSERT(pbrMultiMaterial->GetType() == Material::MaterialType::MtPbrMulti,
-                    "material must be MaterialType::MtPbrMulti");
-        auto& pbrMultiMaterialProperties = pbrMultiMaterial->m_PbrMultiMaterialProperties;
-        vkCmdPushConstants(frameInfo.m_CommandBuffer,                            // VkCommandBuffer     commandBuffer,
-                           pipelineLayout,                                       // VkPipelineLayout    layout,
-                           VK_SHADER_STAGE_FRAGMENT_BIT,                         // VkShaderStageFlags  stageFlags,
-                           sizeof(VertexCtrl),                                   // uint32_t            offset,
-                           sizeof(PbrMultiMaterial::PbrMultiMaterialProperties), // uint32_t            size,
-                           &pbrMultiMaterialProperties);                         // const void*         pValues
-    }
-
     void VK_Model::Draw(VkCommandBuffer commandBuffer)
     {
         if (m_IndexBuffer)
@@ -302,18 +274,8 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
-    {
-        for (auto& submesh : m_SubmeshesPbr)
-        {
-            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
-            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
-        }
-    }
-
-    void VK_Model::PushConstantsBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                         VK_Submesh const& submesh, DrawCallInfo& drawCallInfo)
+    void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                    VK_Submesh const& submesh, DrawCallInfo& drawCallInfo)
     {
         drawCallInfo.m_SubmeshInfo = {submesh.m_FirstIndex, submesh.m_FirstVertex};
         drawCallInfo.m_MaterialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress();
@@ -323,17 +285,49 @@ namespace GfxRenderEngine
                            pipelineLayout,            // VkPipelineLayout    layout,
                            stageFlags,                // VkShaderStageFlags  stageFlags,
                            0,                         // uint32_t            offset,
-                           sizeof(DrawCallInfo),      // uint32_t            size,
+                           sizeof(drawCallInfo),      // uint32_t            size,
                            &drawCallInfo);            // const void*         pValues
     }
 
-    void VK_Model::DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                   DrawCallInfo& drawCallInfo)
+    void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                    VK_Submesh const& submesh, DrawCallInfoMultiMaterial& drawCallInfoMultiMaterial)
+    {
+        drawCallInfoMultiMaterial.m_SubmeshInfo = {submesh.m_FirstIndex, submesh.m_FirstVertex};
+        for (auto& materialBufferDeviceAddress : drawCallInfoMultiMaterial.m_MaterialBufferDeviceAddresses)
+        {
+            materialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress();
+        }
+
+        constexpr VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        vkCmdPushConstants(frameInfo.m_CommandBuffer,         // VkCommandBuffer     commandBuffer,
+                           pipelineLayout,                    // VkPipelineLayout    layout,
+                           stageFlags,                        // VkShaderStageFlags  stageFlags,
+                           0,                                 // uint32_t            offset,
+                           sizeof(drawCallInfoMultiMaterial), // uint32_t            size,
+                           &drawCallInfoMultiMaterial);       // const void*         pValues
+    }
+
+    void VK_Model::PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                                    VK_Submesh const& submesh, DrawCallInfoGrass& drawCallInfoGrass)
+    {
+        drawCallInfoGrass.m_SubmeshInfo = {submesh.m_FirstIndex, submesh.m_FirstVertex};
+        drawCallInfoGrass.m_MaterialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress();
+
+        constexpr VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        vkCmdPushConstants(frameInfo.m_CommandBuffer, // VkCommandBuffer     commandBuffer,
+                           pipelineLayout,            // VkPipelineLayout    layout,
+                           stageFlags,                // VkShaderStageFlags  stageFlags,
+                           0,                         // uint32_t            offset,
+                           sizeof(drawCallInfoGrass), // uint32_t            size,
+                           &drawCallInfoGrass);       // const void*         pValues
+    }
+
+    // regular Pbr
+    void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, DrawCallInfo& drawCallInfo)
     {
         for (auto& submesh : m_SubmeshesPbr)
         {
-            PushConstantsBindless(frameInfo, pipelineLayout, submesh, drawCallInfo);
-
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh, drawCallInfo);
             vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
                       submesh.m_IndexCount,      // uint32_t        vertexCount (index count is used(!))
                       submesh.m_InstanceCount,   // uint32_t        instanceCount
@@ -343,43 +337,34 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Model::DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout)
+    // Pbr with multi material
+    void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                           DrawCallInfoMultiMaterial& drawCallInfoMultiMaterial)
     {
         for (auto& submesh : m_SubmeshesPbrMulti)
         {
-
-            VK_MaterialDescriptor& materialDescriptor =
-                *static_cast<VK_MaterialDescriptor*>(submesh.m_Material->m_MaterialDescriptor.get());
-            const VkDescriptorSet& materialDescriptorSet = materialDescriptor.GetDescriptorSet();
-            const VkDescriptorSet& resourceDescriptorSet = submesh.m_ResourceDescriptor.GetDescriptorSet();
-            auto descriptorSets =
-                std::to_array({frameInfo.m_GlobalDescriptorSet, materialDescriptorSet, resourceDescriptorSet});
-            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
-                                    pipelineLayout,                  // VkPipelineLayout       layout,
-                                    0,                               // uint32_t               firstSet,
-                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
-                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
-                                    0,                               // uint32_t               dynamicOffsetCount,
-                                    nullptr                          // const uint32_t*        pDynamicOffsets
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh, drawCallInfoMultiMaterial);
+            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                      submesh.m_IndexCount,      // uint32_t        vertexCount (index count is used(!))
+                      submesh.m_InstanceCount,   // uint32_t        instanceCount
+                      0,                         // uint32_t        firstVertex
+                      0                          // uint32_t        firstInstance
             );
-            PushConstantsPbrMulti(frameInfo, pipelineLayout, submesh);
-            DrawSubmesh(frameInfo.m_CommandBuffer, submesh);
         }
     }
 
-    void VK_Model::DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount)
+    // pbr for grass
+    void VK_Model::DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                           DrawCallInfoGrass& drawCallInfoGrass, int instanceCount)
     {
         for (auto& submesh : m_SubmeshesPbr)
         {
-            BindDescriptors(frameInfo, pipelineLayout, submesh, true /*bind resources*/);
-            PushConstantsPbr(frameInfo, pipelineLayout, submesh);
-            vkCmdDrawIndexed(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
-                             submesh.m_IndexCount,      // uint32_t        indexCount
-                             instanceCount,             // uint32_t        instanceCount
-                             submesh.m_FirstIndex,      // uint32_t        firstIndex
-                             submesh.m_FirstVertex,     // int32_t         vertexOffset
-                             0                          // uint32_t        firstInstance
+            PushConstantsPbr(frameInfo, pipelineLayout, submesh, drawCallInfoGrass);
+            vkCmdDraw(frameInfo.m_CommandBuffer, // VkCommandBuffer commandBuffer
+                      submesh.m_IndexCount,      // uint32_t        vertexCount (index count is used(!))
+                      instanceCount,             // uint32_t        instanceCount
+                      0,                         // uint32_t        firstVertex
+                      0                          // uint32_t        firstInstance
             );
         }
     }

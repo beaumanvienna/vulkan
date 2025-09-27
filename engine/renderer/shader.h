@@ -24,6 +24,7 @@
 
 #include "engine.h"
 #include "engine/platform/Vulkan/shader.h"
+#include "scene/grass.h"
 
 namespace GfxRenderEngine
 {
@@ -56,10 +57,11 @@ namespace GfxRenderEngine
 #pragma pack(push, 1)
     struct MeshBufferData
     {
-        // byte 0 to 23
+        // byte 0 to 31
         Buffer::BufferDeviceAddress m_VertexBufferDeviceAddress{0};
         Buffer::BufferDeviceAddress m_IndexBufferDeviceAddress{0};
         Buffer::BufferDeviceAddress m_InstanceBufferDeviceAddress{0};
+        Buffer::BufferDeviceAddress m_SkeletalAnimationBufferDeviceAddress{0};
     };
 #pragma pack(pop)
 
@@ -78,6 +80,45 @@ namespace GfxRenderEngine
         Buffer::BufferDeviceAddress m_MaterialBufferDeviceAddress;
         // byte 40 to 47
         SubmeshInfo m_SubmeshInfo;
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    struct DrawCallInfoMultiMaterial
+    {
+        // per mesh (never changes after mesh upload)
+        // byte 0 to 7
+        Buffer::BufferDeviceAddress m_MeshBufferDeviceAddress;
+
+        // byte 8 to 31
+        VertexCtrl m_VertexCtrl; // per render pass (water or main 3D pass)
+
+        // per submesh
+        // byte 32 to 63
+        std::array<Buffer::BufferDeviceAddress, GLSL_NUM_MULTI_MATERIAL> m_MaterialBufferDeviceAddresses;
+        // byte 64 to 71
+        SubmeshInfo m_SubmeshInfo;
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    struct DrawCallInfoGrass
+    {
+        // per mesh (never changes after mesh upload)
+        // byte 0 to 7
+        Buffer::BufferDeviceAddress m_MeshBufferDeviceAddress;
+
+        // byte 8 to 31
+        VertexCtrl m_VertexCtrl; // per render pass (water or main 3D pass)
+
+        // per submesh
+        // byte 32 to 39
+        Buffer::BufferDeviceAddress m_MaterialBufferDeviceAddress;
+        // byte 40 to 47
+        SubmeshInfo m_SubmeshInfo;
+
+        // byte 48 to 71
+        Grass::GrassParameters m_GrassParameters;
     };
 #pragma pack(pop)
 } // namespace GfxRenderEngine

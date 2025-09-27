@@ -93,7 +93,7 @@ namespace GfxRenderEngine
         }
 
         auto meshView = registry.Get().view<MeshComponent, TransformComponent, InstanceTag>(
-            entt::exclude<SkeletalAnimationTag, GrassTag, Grass2Tag>);
+            entt::exclude<SkeletalAnimationTag, Grass1Tag, Grass2Tag>);
         for (auto entity : meshView)
         {
             auto& mesh = meshView.get<MeshComponent>(entity);

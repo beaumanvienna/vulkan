@@ -21,16 +21,19 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #version 450
+#extension GL_EXT_nonuniform_qualifier : require
+#extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
 #extension GL_EXT_scalar_block_layout : require
+
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/material.h"
 
-layout(set = 1, binding = 0) uniform sampler2D diffuseMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 1) uniform sampler2D normalMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 2) uniform sampler2D roughnessMetallicMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 3) uniform sampler2D emissiveMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 4) uniform sampler2D roughnessMap[GLSL_NUM_MULTI_MATERIAL];
-layout(set = 1, binding = 5) uniform sampler2D metallicMap[GLSL_NUM_MULTI_MATERIAL];
+// pbrBindless.h contains the declartion of the types
+// and the definition of buffers and push constants
+#include "engine/platform/Vulkan/shaders/pbr.h"
+
+layout(set = 1, binding = 0) uniform sampler2D bindlessTextures[];
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
@@ -44,49 +47,26 @@ layout (location = 2) out vec4 outColor;
 layout (location = 3) out vec4 outMaterial;
 layout (location = 4) out vec4 outEmissive;
 
-struct PointLight
+struct DrawCallInfoMultiMaterial
 {
-    vec4 m_Position;  // ignore w
-    vec4 m_Color;     // w is intensity
+    // Per mesh (never changes after mesh upload)
+    // byte 0 to 7
+    BDA m_MeshBufferDeviceAddress; // BDA to MeshBufferData struct
+
+    // Per renderpass (water or main 3D pass)
+    // byte 8 to 31
+    VertexCtrl m_VertexCtrl;
+
+    // Per submesh
+    // byte 32 to 63
+    BDA m_MaterialBuffer[GLSL_NUM_MULTI_MATERIAL /*4*/]; // BDAs to MaterialBuffer structs
+    // byte 64 to 71
+    SubmeshInfo m_SubmeshInfo;
 };
 
-struct DirectionalLight
+layout(push_constant, scalar) uniform Push
 {
-    vec4 m_Direction;  // ignore w
-    vec4 m_Color;     // w is intensity
-};
-
-struct PbrMaterial
-{
-    int m_Features;
-    float m_Roughness;
-    float m_Metallic;
-    float m_NormalMapIntensity;
-
-    // byte 16 to 31
-    vec4 m_DiffuseColor;
-
-    // byte 32 to 47
-    vec3 m_EmissiveColor;
-    float m_EmissiveStrength;
-};
-
-layout(set = 0, binding = 0) uniform GlobalUniformBuffer
-{
-    mat4 m_Projection;
-    mat4 m_View;
-
-    // point light
-    vec4 m_AmbientLightColor;
-    PointLight m_PointLights[MAX_LIGHTS];
-    DirectionalLight m_DirectionalLight;
-    int m_NumberOfActivePointLights;
-    int m_NumberOfActiveDirectionalLights;
-} ubo;
-
-layout(push_constant, scalar) uniform PushFragment
-{
-    layout(offset = 24) PbrMaterial m_PbrMaterial[GLSL_NUM_MULTI_MATERIAL];
+    layout(offset = 0) DrawCallInfoMultiMaterial m_Constants;
 } push;
 
 void main()
@@ -111,22 +91,25 @@ void main()
 
     for (int i = 0; i < GLSL_NUM_MULTI_MATERIAL; ++i)
     {
+        MaterialBuffer inMaterial = MaterialBuffer(push.m_Constants.m_MaterialBuffer[i]);
+        PbrMaterialProperties pbrMaterialProperties = inMaterial.m_PbrMaterialProperties;
+
         vec2 uv = uvScale[i] * fragUV;
         // color
-        if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_DIFFUSE_MAP))
+        if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_DIFFUSE_MAP))
         {
-            col[i] = texture(diffuseMap[i], uv) * push.m_PbrMaterial[i].m_DiffuseColor;
+            col[i] = texture(bindlessTextures[pbrMaterialProperties.m_DiffuseMap], uv) * pbrMaterialProperties.m_DiffuseColor;
         }
         else
         {
-            col[i] = vec4(fragColor.r, fragColor.g, fragColor.b, fragColor.a);
+            col[i] = fragColor;
         }
 
         // normal
-        float normalMapIntensity = push.m_PbrMaterial[i].m_NormalMapIntensity;
-        if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_NORMAL_MAP))
+        float normalMapIntensity = pbrMaterialProperties.m_NormalMapIntensity;
+        if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_NORMAL_MAP))
         {
-            vec3 normalTangentSpace = texture(normalMap[i],uv).xyz * 2 - vec3(1.0, 1.0, 1.0);
+            vec3 normalTangentSpace = texture(bindlessTextures[pbrMaterialProperties.m_NormalMap],uv).xyz * 2 - vec3(1.0, 1.0, 1.0);
             normalTangentSpace = mix(vec3(0.0, 0.0, 1.0), normalTangentSpace, normalMapIntensity);
             normal[i] = vec4(normalize(TBN * normalTangentSpace), 1.0);
         }
@@ -139,42 +122,42 @@ void main()
         float roughness;
         float metallic;
 
-        if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_ROUGHNESS_METALLIC_MAP))
+        if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_ROUGHNESS_METALLIC_MAP))
         {
-            roughness = texture(roughnessMetallicMap[i], uv).g;
-            metallic = texture(roughnessMetallicMap[i], uv).b;
+            roughness = texture(bindlessTextures[pbrMaterialProperties.m_RoughnessMetallicMap], uv).g;
+            metallic = texture(bindlessTextures[pbrMaterialProperties.m_RoughnessMetallicMap], uv).b;
         }
         else
         {
-            if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_ROUGHNESS_MAP))
+            if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_ROUGHNESS_MAP))
             {
-                roughness = texture(roughnessMap[i], uv).r; // gray scale
+                roughness = texture(bindlessTextures[pbrMaterialProperties.m_RoughnessMap], uv).r; // gray scale
             }
             else
             {
-                roughness = push.m_PbrMaterial[i].m_Roughness;
+                roughness = pbrMaterialProperties.m_Roughness;
             }
-            if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_METALLIC_MAP))
+            if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_METALLIC_MAP))
             {
-                metallic = texture(metallicMap[i], uv).r; // gray scale
+                metallic = texture(bindlessTextures[pbrMaterialProperties.m_MetallicMap], uv).r; // gray scale
             }
             else
             {
-                metallic = push.m_PbrMaterial[i].m_Metallic;
+                metallic = pbrMaterialProperties.m_Metallic;
             }
         }
         material[i] = vec4(normalMapIntensity, roughness, metallic, 0.0);
 
         // emissive material
-        vec4 emissiveColor = vec4(push.m_PbrMaterial[i].m_EmissiveColor.r, push.m_PbrMaterial[i].m_EmissiveColor.g, push.m_PbrMaterial[i].m_EmissiveColor.b, 1.0);
-        if (bool(push.m_PbrMaterial[i].m_Features & GLSL_HAS_EMISSIVE_MAP))
+        vec4 emissiveColor = vec4(pbrMaterialProperties.m_EmissiveColor, 1.0);
+        if (bool(pbrMaterialProperties.m_Features & GLSL_HAS_EMISSIVE_MAP))
         {
-            vec4 fragEmissiveColor = texture(emissiveMap[i], uv);
-            emissive[i] = fragEmissiveColor * emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
+            vec4 fragEmissiveColor = texture(bindlessTextures[pbrMaterialProperties.m_EmissiveMap], uv);
+            emissive[i] = fragEmissiveColor * emissiveColor * pbrMaterialProperties.m_EmissiveStrength;
         }
         else
         {
-            emissive[i] = emissiveColor * push.m_PbrMaterial[i].m_EmissiveStrength;
+            emissive[i] = emissiveColor * pbrMaterialProperties.m_EmissiveStrength;
         }
     }
 

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -34,12 +34,11 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "bindless/VKbindlessTexture.h"
+#include "bindless/VKbindlessImage.h"
 
 namespace GfxRenderEngine
 {
-    class Camera;
-    class Scene;
-
     class VK_RenderSystemGrass2
     {
 
@@ -50,17 +49,17 @@ namespace GfxRenderEngine
         VK_RenderSystemGrass2(const VK_RenderSystemGrass2&) = delete;
         VK_RenderSystemGrass2& operator=(const VK_RenderSystemGrass2&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry, VK_BindlessTexture* bindlessTexture,
+                            VK_BindlessImage* bindlessImage);
         void SetVertexCtrl(VertexCtrl const& vertexCtrl);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
-        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
 
     private:
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VertexCtrl m_VertexCtrl{};
+        DrawCallInfoGrass m_DrawCallInfoGrass{};
     };
 } // namespace GfxRenderEngine

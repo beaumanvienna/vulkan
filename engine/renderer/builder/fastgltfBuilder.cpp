@@ -355,8 +355,8 @@ namespace GfxRenderEngine
 
                 // material tags (can have multiple tags)
                 {
-                    PbrBindlessMaterialTag pbrBindlessMaterialTag{};
-                    m_Registry.emplace<PbrBindlessMaterialTag>(entity, pbrBindlessMaterialTag);
+                    PbrMaterialTag pbrMaterialTag{};
+                    m_Registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
                 }
 
                 if (m_SkeletalAnimation)
@@ -372,7 +372,9 @@ namespace GfxRenderEngine
                     MeshBufferData meshBufferData = {
                         .m_VertexBufferDeviceAddress = m_Models[gltfNodeIndex].get()->GetVertexBufferDeviceAddress(),
                         .m_IndexBufferDeviceAddress = m_Models[gltfNodeIndex].get()->GetIndexBufferDeviceAddress(),
-                        .m_InstanceBufferDeviceAddress = instanceBuffer.get()->GetBufferDeviceAddress()};
+                        .m_InstanceBufferDeviceAddress = instanceBuffer.get()->GetBufferDeviceAddress(),
+                        .m_SkeletalAnimationBufferDeviceAddress =
+                            m_ShaderData ? m_ShaderData.get()->GetBufferDeviceAddress() : 0};
                     auto& buffer = m_Models[gltfNodeIndex].get()->GetMeshBuffer();
                     buffer = Buffer::Create(sizeof(meshBufferData), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                     buffer.get()->MapBuffer();

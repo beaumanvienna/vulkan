@@ -22,6 +22,7 @@
 
 #pragma once
 #include "engine.h"
+#include "renderer/buffer.h"
 
 namespace GfxRenderEngine
 {
@@ -39,18 +40,34 @@ namespace GfxRenderEngine
             float m_ScaleY;
         };
 
-        struct GrassShaderData
+#pragma pack(push, 1)
+        struct GrassShaderData1
+        {
+            int m_Height;
+            int m_Index;
+        };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+        struct GrassShaderData2
         {
             glm::vec4 m_Translation;
             glm::vec4 m_Rotation;
         };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
         struct GrassParameters
         {
-            int m_Width;  // not used
-            int m_Height; // not used
+            // byte 0 to 15
+            int m_Width;
+            int m_Height;
             float m_ScaleXZ;
             float m_ScaleY;
-        };
+
+            // byte 16 to 23
+            Buffer::BufferDeviceAddress m_GrassBufferDeviceAddress;
+        }; // 24 bytes
+#pragma pack(pop)
     } // namespace Grass
 } // namespace GfxRenderEngine

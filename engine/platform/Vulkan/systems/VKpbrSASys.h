@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -36,6 +36,8 @@
 #include "VKpipeline.h"
 #include "VKframeInfo.h"
 #include "VKdescriptor.h"
+#include "bindless/VKbindlessTexture.h"
+#include "bindless/VKbindlessImage.h"
 
 namespace GfxRenderEngine
 {
@@ -49,17 +51,17 @@ namespace GfxRenderEngine
         VK_RenderSystemPbrSA(const VK_RenderSystemPbrSA&) = delete;
         VK_RenderSystemPbrSA& operator=(const VK_RenderSystemPbrSA&) = delete;
 
-        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry);
+        void RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry, VK_BindlessTexture* bindlessTexture,
+                            VK_BindlessImage* bindlessImage);
         void SetVertexCtrl(VertexCtrl const& vertexCtrl);
 
     private:
         void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts);
         void CreatePipeline(VkRenderPass renderPass);
-        void PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo);
 
     private:
         VkPipelineLayout m_PipelineLayout;
         std::unique_ptr<VK_Pipeline> m_Pipeline;
-        VertexCtrl m_VertexCtrl{};
+        DrawCallInfo m_DrawCallInfo{};
     };
 } // namespace GfxRenderEngine

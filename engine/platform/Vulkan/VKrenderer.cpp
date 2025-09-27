@@ -240,28 +240,9 @@ namespace GfxRenderEngine
             m_DescriptorSetLayoutRefractionReflection->GetDescriptorSetLayout()};
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbr = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
-            m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrBindless = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), m_BindlessTexture->GetDescriptorSetLayout(),
-            m_BindlessImage->GetDescriptorSetLayout()};
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrMultiMaterial = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti]->GetDescriptorSetLayout(),
-            m_ResourceDescriptorSetLayouts[Rt::RtInstance]->GetDescriptorSetLayout()};
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsGrass = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
-            m_ResourceDescriptorSetLayouts[Rt::RtGrass]->GetDescriptorSetLayout()};
-
-        std::vector<VkDescriptorSetLayout> descriptorSetLayoutsPbrSA = {
-            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(),
-            m_MaterialDescriptorSetLayouts[Mt::MtPbr]->GetDescriptorSetLayout(),
-            m_ResourceDescriptorSetLayouts[Rt::RtInstanceSA]->GetDescriptorSetLayout()};
+            m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), //
+            m_BindlessTexture->GetDescriptorSetLayout(),           //
+            m_BindlessImage->GetDescriptorSetLayout()};            //
 
         std::vector<VkDescriptorSetLayout> descriptorSetLayoutsLighting = {
             m_GlobalDescriptorSetLayout->GetDescriptorSetLayout(), m_LightingDescriptorSetLayout->GetDescriptorSetLayout(),
@@ -360,21 +341,20 @@ namespace GfxRenderEngine
 
         m_RenderSystemWater1 =
             std::make_unique<VK_RenderSystemWater1>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsWater1);
-
-        m_RenderSystemPbrMultiMaterial = std::make_unique<VK_RenderSystemPbrMultiMaterial>(
-            m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrMultiMaterial);
-
-        // m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(),
-        // descriptorSetLayoutsPbr);
+        // regular pbr
+        m_RenderSystemPbr = std::make_unique<VK_RenderSystemPbr>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
+        // pbr with skeletal animation
         m_RenderSystemPbrSA =
-            std::make_unique<VK_RenderSystemPbrSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrSA);
-        m_RenderSystemPbrBindless =
-            std::make_unique<VK_RenderSystemPbrBindless>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbrBindless);
+            std::make_unique<VK_RenderSystemPbrSA>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
+        // pbr grass shader according to height and density map
         m_RenderSystemGrass =
-            std::make_unique<VK_RenderSystemGrass>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
-
+            std::make_unique<VK_RenderSystemGrass>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
+        // pbr grass shader according to placement mesh
         m_RenderSystemGrass2 =
-            std::make_unique<VK_RenderSystemGrass2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsGrass);
+            std::make_unique<VK_RenderSystemGrass2>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
+        // multiple pbr materials according to altitude for terrain
+        m_RenderSystemPbrMultiMaterial =
+            std::make_unique<VK_RenderSystemPbrMultiMaterial>(m_RenderPass->Get3DRenderPass(), descriptorSetLayoutsPbr);
 
         m_RenderSystemShadowInstanced = std::make_unique<VK_RenderSystemShadowInstanced>(
             m_ShadowMap[ShadowMaps::HIGH_RES]->GetShadowRenderPass(),
@@ -868,8 +848,7 @@ namespace GfxRenderEngine
     void VK_Renderer::EndRenderpassWater()
     {
         VertexCtrl vertexCtrl = {};
-        //        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
-        m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
         m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
@@ -1022,8 +1001,7 @@ namespace GfxRenderEngine
             vertexCtrl.m_ClippingPlane = clippingPlane;
             vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
 
-            // m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
-            m_RenderSystemPbrBindless->SetVertexCtrl(vertexCtrl);
+            m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
             m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
             m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
@@ -1077,12 +1055,12 @@ namespace GfxRenderEngine
             auto& registry = scene.GetRegistry();
 
             // 3D objects
-            // m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrBindless->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
-            m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry);
+            m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+            m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+            m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+            m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(),
+                                                           m_BindlessImage.get());
         }
     }
 
@@ -1094,13 +1072,16 @@ namespace GfxRenderEngine
             auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
 
             // 3D objects
-            // m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemPbrBindless->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
-                                                      m_BindlessImage.get());
-            m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+            m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                              m_BindlessImage.get());
+            m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                                m_BindlessImage.get());
+            m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                                m_BindlessImage.get());
+            m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                                 m_BindlessImage.get());
+            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry,
+                                                           m_BindlessTexture.get(), m_BindlessImage.get());
         }
     }
 
@@ -1257,8 +1238,6 @@ namespace GfxRenderEngine
             "pointLight.frag",
             "pbr.vert",
             "pbr.frag",
-            "pbrBindless.vert",
-            "pbrBindless.frag",
             "pbrSA.vert",
             "grass.vert",
             "grass2.vert",

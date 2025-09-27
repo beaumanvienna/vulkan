@@ -24,10 +24,12 @@
 #include "core.h"
 #include "renderer/image.h"
 #include "renderer/model.h"
+#include "renderer/shader.h"
 #include "renderer/instanceBuffer.h"
 #include "renderer/builder/terrainBuilder.h"
 #include "auxiliary/file.h"
 #include "scene/scene.h"
+#include "scene/grass.h"
 
 namespace GfxRenderEngine
 {
@@ -298,6 +300,28 @@ namespace GfxRenderEngine
 
                     PbrMaterialTag pbrMaterialTag{};
                     registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
+
+                    { // create material buffer
+                        auto& buffer = material->GetMaterialBuffer();
+                        buffer = Buffer::Create(sizeof(material->m_PbrMaterialProperties),
+                                                Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                        buffer.get()->MapBuffer();
+                        buffer.get()->WriteToBuffer(&material->m_PbrMaterialProperties);
+                        buffer.get()->Flush();
+                    }
+
+                    { // create mesh buffer
+                        MeshBufferData meshBufferData = {
+                            .m_VertexBufferDeviceAddress = model.get()->GetVertexBufferDeviceAddress(),
+                            .m_IndexBufferDeviceAddress = model.get()->GetIndexBufferDeviceAddress(),
+                            .m_InstanceBufferDeviceAddress = instanceTag.m_InstanceBuffer->GetBufferDeviceAddress(),
+                            .m_SkeletalAnimationBufferDeviceAddress = 0};
+                        auto& buffer = model.get()->GetMeshBuffer();
+                        buffer = Buffer::Create(sizeof(meshBufferData), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                        buffer.get()->MapBuffer();
+                        buffer.get()->WriteToBuffer(&meshBufferData);
+                        buffer.get()->Flush();
+                    }
                 }
 
                 instanceTag.m_InstanceBuffer->SetInstanceData(instanceIndex, transform.GetMat4Global(),
@@ -331,7 +355,7 @@ namespace GfxRenderEngine
                 uint grassInstances = 0;
                 {
                     {
-                        std::vector<Terrain::GrassShaderData> bufferData(heightMapSize);
+                        std::vector<Grass::GrassShaderData1> bufferData(heightMapSize);
                         for (uint mapIndex = 0; mapIndex < heightMapSize; ++mapIndex)
                         {
                             float normalizedRandom = std::rand() / static_cast<float>(RAND_MAX);
@@ -346,26 +370,14 @@ namespace GfxRenderEngine
                             }
                         }
                         CORE_ASSERT(grassInstances, "no grass placed");
+                        size_t sizeOfBufferDataElement =
+                            sizeof(decltype(bufferData)::value_type); // type-safe version of sizeof(Grass::GrassShaderData1)
                         auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
-                        ubo = Buffer::Create(grassInstances * sizeof(Terrain::GrassShaderData),
+                        ubo = Buffer::Create(grassInstances * sizeOfBufferDataElement,
                                              Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                         ubo->MapBuffer();
                         // update ubo
                         ubo->WriteToBuffer(bufferData.data());
-                        ubo->Flush();
-                    }
-
-                    {
-                        Terrain::GrassParameters grassParameters{.m_Width = heightMap.Width(),
-                                                                 .m_Height = heightMap.Height(),
-                                                                 .m_ScaleXZ = grassSpec.m_ScaleXZ,
-                                                                 .m_ScaleY = grassSpec.m_ScaleY};
-                        int bufferSize = sizeof(Terrain::GrassParameters);
-                        auto& ubo = resourceBuffers[Resources::MULTI_PURPOSE_BUFFER];
-                        ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
-                        ubo->MapBuffer();
-                        // update ubo
-                        ubo->WriteToBuffer(&grassParameters);
                         ubo->Flush();
                     }
 
@@ -379,8 +391,15 @@ namespace GfxRenderEngine
                     {
                         auto rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
                         auto& grassNode = sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
-                        GrassTag grassTag{grassInstances};
-                        registry.emplace<GrassTag>(grassNode.GetGameObject(), grassTag);
+                        Grass1Tag grass1Tag{
+                            .m_InstanceCount = grassInstances,
+                            .m_GrassParameters = {.m_Width = heightMap.Width(),
+                                                  .m_Height = heightMap.Height(),
+                                                  .m_ScaleXZ = grassSpec.m_ScaleXZ,
+                                                  .m_ScaleY = 0.0f,
+                                                  .m_GrassBufferDeviceAddress =
+                                                      resourceBuffers[Resources::HEIGHTMAP]->GetBufferDeviceAddress()}};
+                        registry.emplace<Grass1Tag>(grassNode.GetGameObject(), grass1Tag);
 
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);
                         transform.SetRotation(terrainSpec.m_GrassSpec.m_Rotation);

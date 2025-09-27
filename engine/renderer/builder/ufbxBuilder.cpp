@@ -240,6 +240,20 @@ namespace GfxRenderEngine
             }
             m_Model = Engine::m_Engine->LoadModel(*this);
 
+            { // create mesh buffer
+                MeshBufferData meshBufferData = {
+                    .m_VertexBufferDeviceAddress = m_Model.get()->GetVertexBufferDeviceAddress(),
+                    .m_IndexBufferDeviceAddress = m_Model.get()->GetIndexBufferDeviceAddress(),
+                    .m_InstanceBufferDeviceAddress = m_InstanceBuffer.get()->GetBufferDeviceAddress(),
+                    .m_SkeletalAnimationBufferDeviceAddress =
+                        m_ShaderData ? m_ShaderData.get()->GetBufferDeviceAddress() : 0};
+                auto& buffer = m_Model.get()->GetMeshBuffer();
+                buffer = Buffer::Create(sizeof(meshBufferData), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                buffer.get()->MapBuffer();
+                buffer.get()->WriteToBuffer(&meshBufferData);
+                buffer.get()->Flush();
+            }
+
             // material tags (can have multiple tags)
             {
                 PbrMaterialTag pbrMaterialTag{};

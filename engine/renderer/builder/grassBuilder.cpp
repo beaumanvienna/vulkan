@@ -136,7 +136,7 @@ namespace GfxRenderEngine
             Resources::ResourceBuffers resourceBuffers;
             uint grassInstances = maskData.m_Quads.size();
             { // instance buffer
-                std::vector<Grass::GrassShaderData> bufferData(grassInstances);
+                std::vector<Grass::GrassShaderData2> bufferData(grassInstances);
                 for (uint quadIndex{0}; auto& quad : maskData.m_Quads)
                 {
                     Vertex& v0 = maskData.m_Vertices[quad.m_Indices[0]];
@@ -183,26 +183,14 @@ namespace GfxRenderEngine
                     ++quadIndex;
                 }
 
+                size_t sizeOfBufferDataElement =
+                    sizeof(decltype(bufferData)::value_type); // type-safe version of sizeof(Grass::GrassShaderData2)
                 auto& ubo = resourceBuffers[Resources::HEIGHTMAP];
-                ubo = Buffer::Create(grassInstances * sizeof(Grass::GrassShaderData),
+                ubo = Buffer::Create(grassInstances * sizeOfBufferDataElement,
                                      Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                 ubo->MapBuffer();
                 // update ubo
                 ubo->WriteToBuffer(bufferData.data());
-                ubo->Flush();
-            }
-
-            { // grass parameters
-                int bufferSize = sizeof(Grass::GrassParameters);
-                Grass::GrassParameters grassParameters{.m_Width = 1,  // not used
-                                                       .m_Height = 1, // not used
-                                                       .m_ScaleXZ = m_GrassSpec.m_ScaleXZ,
-                                                       .m_ScaleY = m_GrassSpec.m_ScaleY};
-                auto& ubo = resourceBuffers[Resources::MULTI_PURPOSE_BUFFER];
-                ubo = Buffer::Create(bufferSize, Buffer::BufferUsage::UNIFORM_BUFFER_VISIBLE_TO_CPU);
-                ubo->MapBuffer();
-                // update ubo
-                ubo->WriteToBuffer(&grassParameters);
                 ubo->Flush();
             }
 
@@ -216,7 +204,14 @@ namespace GfxRenderEngine
             {
                 auto rootNode = sceneGraph.GetNodeByGameObject(grassEntityRoot);
                 auto& grassNode = sceneGraph.GetNode(rootNode.GetChild(0)); // grass model must be single game object
-                Grass2Tag grass2Tag{grassInstances};
+                Grass2Tag grass2Tag{
+                    .m_InstanceCount = grassInstances,
+                    .m_GrassParameters = {.m_Width = 1,  // not used
+                                          .m_Height = 1, // not used
+                                          .m_ScaleXZ = m_GrassSpec.m_ScaleXZ,
+                                          .m_ScaleY = m_GrassSpec.m_ScaleY,
+                                          .m_GrassBufferDeviceAddress =
+                                              resourceBuffers[Resources::HEIGHTMAP]->GetBufferDeviceAddress()}};
                 registry.emplace<Grass2Tag>(grassNode.GetGameObject(), grass2Tag);
 
                 auto& transform = registry.get<TransformComponent>(grassEntityRoot);

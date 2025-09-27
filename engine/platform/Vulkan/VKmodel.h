@@ -110,13 +110,6 @@ namespace GfxRenderEngine
         void Bind(VkCommandBuffer commandBuffer);
         void UpdateAnimation(const Timestep& timestep, uint frameCounter);
 
-        void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                              VK_Submesh const& submesh);
-        void PushConstantsBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                   VK_Submesh const& submesh, DrawCallInfo& drawCallInfo);
-        void PushConstantsPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                                   VK_Submesh const& submesh);
-
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
                              VK_Submesh const& submesh);
         void BindDescriptors(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
@@ -126,11 +119,18 @@ namespace GfxRenderEngine
         void DrawSubmesh(VkCommandBuffer commandBuffer, Submesh const& submesh);
 
         // draw pbr materials
-        void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawPbrBindless(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
-                             DrawCallInfo& drawCallInfo);
-        void DrawPbrMulti(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout);
-        void DrawGrass(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, int instanceCount);
+        void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                              VK_Submesh const& submesh, DrawCallInfo& drawCallInfo);
+        void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                              VK_Submesh const& submesh, DrawCallInfoMultiMaterial& drawCallInfoMultiMaterial);
+        void PushConstantsPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                              VK_Submesh const& submesh, DrawCallInfoGrass& drawCallInfoGrass);
+
+        void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout, DrawCallInfo& drawCallInfo);
+        void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                     DrawCallInfoMultiMaterial& drawCallInfoMultiMaterial);
+        void DrawPbr(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,
+                     DrawCallInfoGrass& drawCallInfoGrass, int instanceCount);
 
         // draw shadow
         void DrawShadowInstanced(const VK_FrameInfo& frameInfo, const VkPipelineLayout& pipelineLayout,

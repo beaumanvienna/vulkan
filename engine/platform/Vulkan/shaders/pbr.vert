@@ -22,66 +22,16 @@
 
 #version 450
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_scalar_block_layout : require
+
 #include "engine/platform/Vulkan/pointlights.h"
 #include "engine/platform/Vulkan/resource.h"
 #include "engine/platform/Vulkan/shader.h"
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 uv;
-layout(location = 4) in vec3 tangent;
-
-struct PointLight
-{
-    vec4 m_Position; // ignore w
-    vec4 m_Color;    // w is intensity
-};
-
-struct DirectionalLight
-{
-    vec4 m_Direction; // ignore w
-    vec4 m_Color;     // w is intensity
-};
-
-struct InstanceData
-{
-    mat4 m_ModelMatrix;
-    mat4 m_NormalMatrix;
-};
-
-struct VertexCtrl
-{
-    // byte 0 to 15
-    vec4 m_ClippingPlane;
-
-    // byte 16 to 23
-    uint m_Features;
-    int m_Reserve0;
-};
-
-layout(push_constant, std430) uniform PushVertex
-{
-    layout(offset = 0) VertexCtrl m_VertexCtrl;
-} push;
-
-layout(set = 0, binding = 0) uniform GlobalUniformBuffer
-{
-    mat4 m_Projection;
-    mat4 m_View;
-
-    // point light
-    vec4 m_AmbientLightColor;
-    PointLight m_PointLights[MAX_LIGHTS];
-    DirectionalLight m_DirectionalLight;
-    int m_NumberOfActivePointLights;
-    int m_NumberOfActiveDirectionalLights;
-} ubo;
-
-layout(set = 2, binding = 0) readonly buffer InstanceBuffer
-{
-    InstanceData m_InstanceData[MAX_INSTANCE];
-} uboInstanced;
+// pbrBindless.h contains the declartion of the types
+// and the definition of buffers and push constants
+#include "engine/platform/Vulkan/shaders/pbr.h"
 
 layout(location = 0) out vec3 fragPosition;
 layout(location = 1) out vec4 fragColor;
@@ -89,17 +39,62 @@ layout(location = 2) out vec3 fragNormal;
 layout(location = 3) out vec2 fragUV;
 layout(location = 4) out vec3 fragTangent;
 
+layout(push_constant, scalar) uniform Push
+{
+    layout(offset = 0) DrawCallInfo m_Constants;
+} push;
+
 void main()
 {
-    mat4 modelMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_ModelMatrix;
-    mat4 normalMatrix = uboInstanced.m_InstanceData[gl_InstanceIndex].m_NormalMatrix;
+    vec3  position;
+    vec4  color;
+    vec3  normal;
+    vec2  uv;
+    vec3  tangent;
+    ivec4 jointIds;
+    vec4  weights;
+    InstanceBuffer instanceBuffer;
+    InstanceData instanceData;
+    mat4 modelMatrix;
+    mat4 normalMatrix;
+    
+    {
+        // mesh buffer has BDAs for vertex, index, and instance buffers
+        MeshBuffer mesh = MeshBuffer(push.m_Constants.m_MeshBufferDeviceAddress);
+
+        // Index lookup
+        IndexBuffer indexBuffer = IndexBuffer(mesh.m_Data.m_IndexBufferDeviceAddress);
+        uint index = indexBuffer.m_Indices[push.m_Constants.m_SubmeshInfo.m_FirstIndex + gl_VertexIndex];
+        index += push.m_Constants.m_SubmeshInfo.m_VertexOffset;
+
+        // Vertex fetch
+        VertexBuffer vertexBuffer = VertexBuffer(mesh.m_Data.m_VertexBufferDeviceAddress);
+        Vertex vertex = vertexBuffer.m_Vertices[index];
+
+        position = vertex.m_Position;
+        color    = vertex.m_Color;
+        normal   = vertex.m_Normal;
+        uv       = vertex.m_UV;
+        tangent  = vertex.m_Tangent;
+        jointIds = vertex.m_JointIds;
+        weights  = vertex.m_Weights;
+
+        // Create a reference to the buffer from the BDA
+        instanceBuffer = InstanceBuffer(mesh.m_Data.m_InstanceBufferDeviceAddress);
+
+        // Index into it using gl_InstanceIndex
+        instanceData = instanceBuffer.m_Data[gl_InstanceIndex];
+
+        modelMatrix  = instanceData.m_ModelMatrix;
+        normalMatrix = instanceData.m_NormalMatrix;
+    }
 
     // projection * view * model * position
     vec4 positionWorld = modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.m_Projection * ubo.m_View * positionWorld;
-    if (bool(push.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
+    if (bool(push.m_Constants.m_VertexCtrl.m_Features & GLSL_ENABLE_CLIPPING_PLANE))
     {
-        gl_ClipDistance[0] = dot(positionWorld, push.m_VertexCtrl.m_ClippingPlane);
+        gl_ClipDistance[0] = dot(positionWorld, push.m_Constants.m_VertexCtrl.m_ClippingPlane);
     }
 
     fragPosition = positionWorld.xyz;

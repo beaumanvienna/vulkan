@@ -70,10 +70,11 @@ struct  SubmeshInfo
 
 struct MeshBufferData
 {
-    // byte 0 to 23
+    // byte 0 to 31
     BDA m_VertexBufferDeviceAddress;
     BDA m_IndexBufferDeviceAddress;
     BDA m_InstanceBufferDeviceAddress;
+    BDA m_SkeletalAnimationBufferDeviceAddress;
 };
 
 struct PbrMaterialProperties
@@ -111,7 +112,7 @@ struct DrawCallInfo
 {
     // Per mesh (never changes after mesh upload)
     // byte 0 to 7
-    BDA m_MeshBufferDeviceAddress;     // BDA to MeshBufferData struct
+    BDA m_MeshBufferDeviceAddress; // BDA to MeshBufferData struct
 
     // Per renderpass (water or main 3D pass)
     // byte 8 to 31
@@ -148,12 +149,6 @@ layout(buffer_reference, scalar) readonly buffer MaterialBuffer
 {
     PbrMaterialProperties m_PbrMaterialProperties;
 };
-
-layout(push_constant, scalar) uniform Push
-{
-    layout(offset = 0) DrawCallInfo m_Constants;
-} push;
-
 
 layout(set = 0, binding = 0) uniform GlobalUniformBuffer
 {

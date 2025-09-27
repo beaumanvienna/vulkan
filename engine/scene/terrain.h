@@ -39,19 +39,6 @@ namespace GfxRenderEngine
             Instance(entt::entity entity) : m_Entity{entity} {}
         };
 
-        struct GrassParameters
-        {
-            int m_Width;
-            int m_Height; // not used,
-            float m_ScaleXZ;
-            float m_ScaleY;
-        };
-
-        struct GrassShaderData
-        {
-            int m_Height;
-            int m_Index;
-        };
         struct TerrainDescription
         {
             std::string m_Filename;

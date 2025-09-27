@@ -48,16 +48,11 @@ namespace GfxRenderEngine
     void VK_RenderSystemGrass2::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
     {
         VkPushConstantRange pushConstantRange0{};
-        pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange0.offset = 0;
-        pushConstantRange0.size = sizeof(VertexCtrl);
+        pushConstantRange0.size = sizeof(m_DrawCallInfoGrass);
 
-        VkPushConstantRange pushConstantRange1{};
-        pushConstantRange1.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        pushConstantRange1.offset = sizeof(VertexCtrl);
-        pushConstantRange1.size = sizeof(PbrMaterial::PbrMaterialProperties);
-
-        std::array<VkPushConstantRange, 2> pushConstantRanges = {pushConstantRange0, pushConstantRange1};
+        auto pushConstantRanges = std::to_array({pushConstantRange0});
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -80,6 +75,11 @@ namespace GfxRenderEngine
         PipelineConfigInfo pipelineConfig{};
 
         VK_Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+
+        // we don’t bind vertex buffers, instead we are using BDA
+        pipelineConfig.m_BindingDescriptions.clear();
+        pipelineConfig.m_AttributeDescriptions.clear();
+
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_PipelineLayout;
         pipelineConfig.subpass = static_cast<uint>(VK_RenderPass::SubPasses3D::SUBPASS_GEOMETRY);
@@ -103,37 +103,47 @@ namespace GfxRenderEngine
                                                    pipelineConfig);
     }
 
-    void VK_RenderSystemGrass2::SetVertexCtrl(VertexCtrl const& vertexCtrl) { m_VertexCtrl = vertexCtrl; }
-
-    void VK_RenderSystemGrass2::PushConstantsVertexCtrl(const VK_FrameInfo& frameInfo)
+    void VK_RenderSystemGrass2::SetVertexCtrl(VertexCtrl const& vertexCtrl)
     {
-        vkCmdPushConstants(frameInfo.m_CommandBuffer,  // VkCommandBuffer     commandBuffer,
-                           m_PipelineLayout,           // VkPipelineLayout    layout,
-                           VK_SHADER_STAGE_VERTEX_BIT, // VkShaderStageFlags  stageFlags,
-                           0,                          // uint32_t            offset,
-                           sizeof(VertexCtrl),         // uint32_t            size,
-                           &m_VertexCtrl);             // const void*         pValues
+        m_DrawCallInfoGrass.m_VertexCtrl = vertexCtrl;
     }
 
-    void VK_RenderSystemGrass2::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry)
+    void VK_RenderSystemGrass2::RenderEntities(const VK_FrameInfo& frameInfo, Registry& registry,
+                                               VK_BindlessTexture* bindlessTexture, VK_BindlessImage* bindlessImage)
     {
+        bindlessTexture->UpdateBindlessDescriptorSets();
+        bindlessImage->UpdateBindlessDescriptorSets();
         m_Pipeline->Bind(frameInfo.m_CommandBuffer);
-        PushConstantsVertexCtrl(frameInfo);
+        { // bind descriptor sets
+            auto descriptorSets = std::to_array(
+                {frameInfo.m_GlobalDescriptorSet, bindlessTexture->GetDescriptorSet(), bindlessImage->GetDescriptorSet()});
+            vkCmdBindDescriptorSets(frameInfo.m_CommandBuffer,       // VkCommandBuffer        commandBuffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS, // VkPipelineBindPoint    pipelineBindPoint,
+                                    m_PipelineLayout,                // VkPipelineLayout       layout,
+                                    0,                               // uint32_t               firstSet,
+                                    descriptorSets.size(),           // uint32_t               descriptorSetCount,
+                                    descriptorSets.data(),           // const VkDescriptorSet* pDescriptorSets,
+                                    0,                               // uint32_t               dynamicOffsetCount,
+                                    nullptr                          // const uint32_t*        pDynamicOffsets
+            );
+        }
 
         auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag, Grass2Tag>();
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
-            { // update instance buffer on the GPU
-                InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
-                VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
-                instanceBuffer->Update();
-            }
+            // update instance buffer on the GPU
+            InstanceTag& instanced = view.get<InstanceTag>(mainInstance);
+            VK_InstanceBuffer* instanceBuffer = static_cast<VK_InstanceBuffer*>(instanced.m_InstanceBuffer.get());
+            instanceBuffer->Update();
+
             if (mesh.m_Enabled)
             {
                 int instanceCount = view.get<Grass2Tag>(mainInstance).m_InstanceCount;
-                static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
-                static_cast<VK_Model*>(mesh.m_Model.get())->DrawGrass(frameInfo, m_PipelineLayout, instanceCount);
+                auto model = static_cast<VK_Model*>(mesh.m_Model.get());
+                m_DrawCallInfoGrass.m_MeshBufferDeviceAddress = model->GetMeshBufferDeviceAddress();
+                m_DrawCallInfoGrass.m_GrassParameters = view.get<Grass2Tag>(mainInstance).m_GrassParameters;
+                model->DrawPbr(frameInfo, m_PipelineLayout, m_DrawCallInfoGrass, instanceCount);
             }
         }
     }

@@ -28,6 +28,7 @@
 #include "entt.hpp"
 
 #include "engine.h"
+#include "grass.h"
 
 namespace GfxRenderEngine
 {
@@ -203,11 +204,6 @@ namespace GfxRenderEngine
         float m_EmissiveStrength{1.f};
     };
 
-    struct PbrBindlessMaterialTag
-    {
-        float m_EmissiveStrength{1.f};
-    };
-
     struct PbrMultiMaterialTag
     {
         float m_EmissiveStrength{1.f};
@@ -239,14 +235,16 @@ namespace GfxRenderEngine
         std::shared_ptr<Image> m_HeightMap;
     };
 
-    struct GrassTag
+    struct Grass1Tag
     {
         uint m_InstanceCount{0};
+        Grass::GrassParameters m_GrassParameters{};
     };
 
     struct Grass2Tag
     {
         uint m_InstanceCount{0};
+        Grass::GrassParameters m_GrassParameters{};
     };
 
     struct Water1Component
