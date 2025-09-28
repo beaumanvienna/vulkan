@@ -396,7 +396,7 @@ namespace GfxRenderEngine
                             .m_GrassParameters = {.m_Width = heightMap.Width(),
                                                   .m_Height = heightMap.Height(),
                                                   .m_ScaleXZ = grassSpec.m_ScaleXZ,
-                                                  .m_ScaleY = 0.0f,
+                                                  .m_ScaleY = grassSpec.m_ScaleY,
                                                   .m_GrassBufferDeviceAddress =
                                                       resourceBuffers[Resources::HEIGHTMAP]->GetBufferDeviceAddress()}};
                         registry.emplace<Grass1Tag>(grassNode.GetGameObject(), grass1Tag);

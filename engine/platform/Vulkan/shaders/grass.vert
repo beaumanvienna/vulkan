@@ -125,8 +125,8 @@ void main()
         // Create a reference to the buffer from the BDA
         instanceBuffer = InstanceBuffer(mesh.m_Data.m_InstanceBufferDeviceAddress);
 
-        // Index into it using gl_InstanceIndex
-        instanceData = instanceBuffer.m_Data[gl_InstanceIndex];
+        // this is used for the base model
+        instanceData = instanceBuffer.m_Data[0];
 
         baseModelMatrix = instanceData.m_ModelMatrix;
         normalMatrix    = instanceData.m_NormalMatrix;
