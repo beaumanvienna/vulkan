@@ -213,6 +213,7 @@ namespace GfxRenderEngine
                                           .m_GrassBufferDeviceAddress =
                                               resourceBuffers[Resources::HEIGHTMAP]->GetBufferDeviceAddress()}};
                 registry.emplace<Grass2Tag>(grassNode.GetGameObject(), grass2Tag);
+                registry.remove<PlainPBRTag>(grassNode.GetGameObject());
 
                 auto& transform = registry.get<TransformComponent>(grassEntityRoot);
                 transform.SetRotation(m_GrassSpec.m_Rotation);

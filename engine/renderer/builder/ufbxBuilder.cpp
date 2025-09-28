@@ -265,6 +265,11 @@ namespace GfxRenderEngine
                 SkeletalAnimationTag skeletalAnimationTag{};
                 m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
             }
+            else
+            {
+                PlainPBRTag plainPBRTag{};
+                m_Registry.emplace<PlainPBRTag>(entity, plainPBRTag);
+            }
         }
         else
         {

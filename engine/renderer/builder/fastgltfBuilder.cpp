@@ -364,6 +364,11 @@ namespace GfxRenderEngine
                     SkeletalAnimationTag skeletalAnimationTag{};
                     m_Registry.emplace<SkeletalAnimationTag>(entity, skeletalAnimationTag);
                 }
+                else
+                {
+                    PlainPBRTag plainPBRTag{};
+                    m_Registry.emplace<PlainPBRTag>(entity, plainPBRTag);
+                }
 
                 // submit to engine
                 m_Models[gltfNodeIndex] = Engine::m_Engine->LoadModel(modelData);

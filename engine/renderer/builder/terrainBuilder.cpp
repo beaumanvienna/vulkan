@@ -301,6 +301,9 @@ namespace GfxRenderEngine
                     PbrMaterialTag pbrMaterialTag{};
                     registry.emplace<PbrMaterialTag>(entity, pbrMaterialTag);
 
+                    PlainPBRTag plainPBRTag{};
+                    registry.emplace<PlainPBRTag>(entity, plainPBRTag);
+
                     { // create material buffer
                         auto& buffer = material->GetMaterialBuffer();
                         buffer = Buffer::Create(sizeof(material->m_PbrMaterialProperties),
@@ -400,6 +403,7 @@ namespace GfxRenderEngine
                                                   .m_GrassBufferDeviceAddress =
                                                       resourceBuffers[Resources::HEIGHTMAP]->GetBufferDeviceAddress()}};
                         registry.emplace<Grass1Tag>(grassNode.GetGameObject(), grass1Tag);
+                        registry.remove<PlainPBRTag>(grassNode.GetGameObject());
 
                         auto& transform = registry.get<TransformComponent>(grassEntityRoot);
                         transform.SetRotation(terrainSpec.m_GrassSpec.m_Rotation);

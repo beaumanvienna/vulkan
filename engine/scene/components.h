@@ -230,6 +230,11 @@ namespace GfxRenderEngine
         uint m_Tag{0};
     };
 
+    struct PlainPBRTag
+    {
+        uint m_Tag{0};
+    };
+
     struct TerrainComponent
     {
         std::shared_ptr<Image> m_HeightMap;

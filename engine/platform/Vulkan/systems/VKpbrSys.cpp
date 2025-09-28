@@ -121,8 +121,7 @@ namespace GfxRenderEngine
             );
         }
 
-        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag>(
-            entt::exclude<SkeletalAnimationTag, Grass1Tag, Grass2Tag>);
+        auto view = registry.view<MeshComponent, TransformComponent, PbrMaterialTag, InstanceTag, PlainPBRTag>();
         for (auto mainInstance : view)
         {
             auto& mesh = view.get<MeshComponent>(mainInstance);
