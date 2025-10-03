@@ -120,7 +120,7 @@ namespace GfxRenderEngine
         std::string m_DictionaryPrefix;
         fastgltf::Asset m_GltfAsset;
         std::vector<std::shared_ptr<Model>> m_Models;
-        std::vector<PbrMaterial> m_Materials;
+        std::vector<std::shared_ptr<PbrMaterial>> m_Materials;
         std::vector<PbrMaterial::MaterialTextures> m_MaterialTextures{};
         std::vector<std::shared_ptr<Texture>> m_Textures{};
         Material::MaterialType m_MaterialType{Material::MaterialType::MtPbr};

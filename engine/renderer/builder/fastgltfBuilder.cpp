@@ -631,10 +631,11 @@ namespace GfxRenderEngine
         m_MaterialTextures.resize(numMaterials);
 
         uint materialIndex = 0;
-        for (PbrMaterial& material : m_Materials)
+        for (std::shared_ptr<PbrMaterial>& material : m_Materials)
         {
+            material = std::make_shared<PbrMaterial>();
             fastgltf::Material& glTFMaterial = m_GltfAsset.materials[materialIndex];
-            PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material.m_PbrMaterialProperties;
+            PbrMaterial::PbrMaterialProperties& pbrMaterialProperties = material->m_PbrMaterialProperties;
             PbrMaterial::MaterialTextures& materialTextures = m_MaterialTextures[materialIndex];
 
             // diffuse color aka base color factor
@@ -733,7 +734,7 @@ namespace GfxRenderEngine
             }
 
             { // create material buffer
-                auto& buffer = material.GetMaterialBuffer();
+                auto& buffer = material->GetMaterialBuffer();
                 buffer = Buffer::Create(sizeof(pbrMaterialProperties), Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
                 buffer.get()->MapBuffer();
                 buffer.get()->WriteToBuffer(&pbrMaterialProperties);
@@ -773,7 +774,7 @@ namespace GfxRenderEngine
                 size_t materialIndex = glTFPrimitive.materialIndex.value();
                 CORE_ASSERT(materialIndex < m_Materials.size(),
                             "LoadVertexData: glTFPrimitive.materialIndex must be less than m_Materials.size()");
-                diffuseColor = m_Materials[materialIndex].m_PbrMaterialProperties.m_DiffuseColor;
+                diffuseColor = m_Materials[materialIndex]->m_PbrMaterialProperties.m_DiffuseColor;
             }
 
             // Vertices
@@ -1022,19 +1023,23 @@ namespace GfxRenderEngine
             case Material::MaterialType::MtPbr:
             { // pbr material
 
-                auto material = std::make_shared<PbrMaterial>();
-                submesh.m_Material = material;
+                std::shared_ptr<PbrMaterial> material;
 
                 // material
                 if (materialIndex != Gltf::GLTF_NOT_USED)
                 {
-                    *material = m_Materials[materialIndex];
+                    material = m_Materials[materialIndex];
                     material->m_MaterialTextures = m_MaterialTextures[materialIndex];
-                }
 
-                // create material descriptor
-                material->SetMaterialDescriptor(
-                    MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures));
+                    // create material descriptor
+                    material->SetMaterialDescriptor(
+                        MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures));
+                }
+                else
+                {
+                    material = std::make_shared<PbrMaterial>();
+                }
+                submesh.m_Material = material;
                 break;
             }
             case Material::MaterialType::MtPbrMulti:
@@ -1050,43 +1055,7 @@ namespace GfxRenderEngine
                 for (uint i = 0; i < PbrMultiMaterial::NUM_MULTI_MATERIAL; ++i)
                 {
                     auto& material = pbrMultiMaterial.GetMaterial(i);
-                    material = std::make_shared<PbrMaterial>();
-                    material->m_PbrMaterialProperties = {
-                        .m_Features = m_Materials[i].m_PbrMaterialProperties.m_Features,
-                        .m_Roughness = m_Materials[i].m_PbrMaterialProperties.m_Roughness,
-                        .m_Metallic = m_Materials[i].m_PbrMaterialProperties.m_Metallic,
-                        .m_NormalMapIntensity = m_Materials[i].m_PbrMaterialProperties.m_NormalMapIntensity,
-
-                        // byte 16 to 31
-                        .m_DiffuseColor = m_Materials[i].m_PbrMaterialProperties.m_DiffuseColor,
-
-                        // byte 32 to 47
-                        .m_EmissiveColor = m_Materials[i].m_PbrMaterialProperties.m_EmissiveColor,
-                        .m_EmissiveStrength = m_Materials[i].m_PbrMaterialProperties.m_EmissiveStrength,
-
-                        // byte 48 to 63
-                        .m_ClearcoatFactor = 0.0f,
-                        .m_ClearcoatRoughnessFactor = 0.0f,
-                        .m_DiffuseMap = m_Materials[i].m_PbrMaterialProperties.m_DiffuseMap,
-                        .m_NormalMap = m_Materials[i].m_PbrMaterialProperties.m_NormalMap,
-
-                        // byte 64 to 79
-                        .m_RoughnessMap = m_Materials[i].m_PbrMaterialProperties.m_RoughnessMap,
-                        .m_MetallicMap = m_Materials[i].m_PbrMaterialProperties.m_MetallicMap,
-                        .m_RoughnessMetallicMap = m_Materials[i].m_PbrMaterialProperties.m_RoughnessMetallicMap,
-                        .m_EmissiveMap = m_Materials[i].m_PbrMaterialProperties.m_EmissiveMap,
-
-                        // byte 80 to 87
-                        .m_ClearcoatMap = m_Materials[i].m_PbrMaterialProperties.m_ClearcoatMap,
-                        .m_Reserve0 = 0};
-                    { // create material buffer
-                        auto& buffer = material->GetMaterialBuffer();
-                        buffer = Buffer::Create(sizeof(material->m_PbrMaterialProperties),
-                                                Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
-                        buffer.get()->MapBuffer();
-                        buffer.get()->WriteToBuffer(&material->m_PbrMaterialProperties);
-                        buffer.get()->Flush();
-                    }
+                    material = m_Materials[i];
                 }
 
                 pbrMultiMaterial.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], //
