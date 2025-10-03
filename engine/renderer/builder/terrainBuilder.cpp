@@ -198,9 +198,8 @@ namespace GfxRenderEngine
         fastgltfBuilder.Load(instanceCount);
 
         // create material descriptor
-        material->m_MaterialDescriptor =                                   //
-            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, //
-                                       material->m_PbrMultiMaterialTextures);
+        material->SetMaterialDescriptor(
+            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, material->m_PbrMultiMaterialTextures));
 
         return true;
     }
@@ -286,7 +285,7 @@ namespace GfxRenderEngine
                         PbrMaterial::MaterialTextures materialTextures;
 
                         auto materialDescriptor = MaterialDescriptor::Create(Material::MtPbr, materialTextures);
-                        material->m_MaterialDescriptor = materialDescriptor;
+                        material->SetMaterialDescriptor(materialDescriptor);
                     }
                     { // create resource descriptor
                         Resources::ResourceBuffers resourceBuffers;

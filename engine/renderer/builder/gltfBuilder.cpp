@@ -854,8 +854,8 @@ namespace GfxRenderEngine
             }
 
             // create material descriptor
-            material->m_MaterialDescriptor =
-                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
+            material->SetMaterialDescriptor(
+                MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures));
         }
 
         { // resources

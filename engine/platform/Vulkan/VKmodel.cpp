@@ -102,7 +102,7 @@ namespace GfxRenderEngine
     VK_Submesh::VK_Submesh(Submesh const& submesh)
         : Submesh{submesh.m_FirstIndex,    submesh.m_FirstVertex, submesh.m_IndexCount, submesh.m_VertexCount,
                   submesh.m_InstanceCount, submesh.m_Material,    submesh.m_Resources},
-          m_MaterialDescriptor(submesh.m_Material->m_MaterialDescriptor),
+          m_MaterialDescriptor(submesh.m_Material->GetMaterialDescriptor()),
           m_ResourceDescriptor(submesh.m_Resources.m_ResourceDescriptor)
     {
     }
@@ -293,9 +293,10 @@ namespace GfxRenderEngine
                                     VK_Submesh const& submesh, DrawCallInfoMultiMaterial& drawCallInfoMultiMaterial)
     {
         drawCallInfoMultiMaterial.m_SubmeshInfo = {submesh.m_FirstIndex, submesh.m_FirstVertex};
-        for (auto& materialBufferDeviceAddress : drawCallInfoMultiMaterial.m_MaterialBufferDeviceAddresses)
+        for (uint index{0}; auto& materialBufferDeviceAddress : drawCallInfoMultiMaterial.m_MaterialBufferDeviceAddresses)
         {
-            materialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress();
+            materialBufferDeviceAddress = submesh.GetMaterialBufferDeviceAddress(index);
+            ++index;
         }
 
         constexpr VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;

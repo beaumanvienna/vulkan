@@ -1033,22 +1033,25 @@ namespace GfxRenderEngine
                 }
 
                 // create material descriptor
-                material->m_MaterialDescriptor =
-                    MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures);
+                material->SetMaterialDescriptor(
+                    MaterialDescriptor::Create(Material::MaterialType::MtPbr, material->m_MaterialTextures));
                 break;
             }
             case Material::MaterialType::MtPbrMulti:
             { // pbr multi material
                 submesh.m_Material = m_ExternalMaterial;
-                PbrMultiMaterial& material = *static_cast<PbrMultiMaterial*>(m_ExternalMaterial.get());
+                PbrMultiMaterial& pbrMultiMaterial = *static_cast<PbrMultiMaterial*>(m_ExternalMaterial.get());
 
-                if ((m_Materials.size() < GLSL_NUM_MULTI_MATERIAL) || (m_MaterialTextures.size() < GLSL_NUM_MULTI_MATERIAL))
+                if ((m_Materials.size() < PbrMultiMaterial::NUM_MULTI_MATERIAL) ||
+                    (m_MaterialTextures.size() < PbrMultiMaterial::NUM_MULTI_MATERIAL))
                 {
                     CORE_HARD_STOP("fastgltfLoader: number of multi materials insufficient");
                 }
-                for (uint i = 0; i < GLSL_NUM_MULTI_MATERIAL; ++i)
+                for (uint i = 0; i < PbrMultiMaterial::NUM_MULTI_MATERIAL; ++i)
                 {
-                    material.m_PbrMultiMaterialProperties.m_PbrMaterialProperties[i] = {
+                    auto& material = pbrMultiMaterial.GetMaterial(i);
+                    material = std::make_shared<PbrMaterial>();
+                    material->m_PbrMaterialProperties = {
                         .m_Features = m_Materials[i].m_PbrMaterialProperties.m_Features,
                         .m_Roughness = m_Materials[i].m_PbrMaterialProperties.m_Roughness,
                         .m_Metallic = m_Materials[i].m_PbrMaterialProperties.m_Metallic,
@@ -1059,14 +1062,37 @@ namespace GfxRenderEngine
 
                         // byte 32 to 47
                         .m_EmissiveColor = m_Materials[i].m_PbrMaterialProperties.m_EmissiveColor,
-                        .m_EmissiveStrength = m_Materials[i].m_PbrMaterialProperties.m_EmissiveStrength //
-                    };
+                        .m_EmissiveStrength = m_Materials[i].m_PbrMaterialProperties.m_EmissiveStrength,
+
+                        // byte 48 to 63
+                        .m_ClearcoatFactor = 0.0f,
+                        .m_ClearcoatRoughnessFactor = 0.0f,
+                        .m_DiffuseMap = m_Materials[i].m_PbrMaterialProperties.m_DiffuseMap,
+                        .m_NormalMap = m_Materials[i].m_PbrMaterialProperties.m_NormalMap,
+
+                        // byte 64 to 79
+                        .m_RoughnessMap = m_Materials[i].m_PbrMaterialProperties.m_RoughnessMap,
+                        .m_MetallicMap = m_Materials[i].m_PbrMaterialProperties.m_MetallicMap,
+                        .m_RoughnessMetallicMap = m_Materials[i].m_PbrMaterialProperties.m_RoughnessMetallicMap,
+                        .m_EmissiveMap = m_Materials[i].m_PbrMaterialProperties.m_EmissiveMap,
+
+                        // byte 80 to 87
+                        .m_ClearcoatMap = m_Materials[i].m_PbrMaterialProperties.m_ClearcoatMap,
+                        .m_Reserve0 = 0};
+                    { // create material buffer
+                        auto& buffer = material->GetMaterialBuffer();
+                        buffer = Buffer::Create(sizeof(material->m_PbrMaterialProperties),
+                                                Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
+                        buffer.get()->MapBuffer();
+                        buffer.get()->WriteToBuffer(&material->m_PbrMaterialProperties);
+                        buffer.get()->Flush();
+                    }
                 }
 
-                material.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], //
-                                                       m_MaterialTextures[1], //
-                                                       m_MaterialTextures[2], //
-                                                       m_MaterialTextures[3]};
+                pbrMultiMaterial.m_PbrMultiMaterialTextures = {m_MaterialTextures[0], //
+                                                               m_MaterialTextures[1], //
+                                                               m_MaterialTextures[2], //
+                                                               m_MaterialTextures[3]};
                 // the material descriptor is handled externally
                 break;
             }

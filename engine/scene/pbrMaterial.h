@@ -115,11 +115,32 @@ namespace GfxRenderEngine
 
     public:
         virtual ~PbrMaterial() {}
-        [[nodiscard]] virtual MaterialType GetType() const { return MaterialType::MtPbr; }
+        [[nodiscard]] virtual MaterialType GetType() const override { return MaterialType::MtPbr; }
+
+        [[nodiscard]] virtual Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress(uint index = 0) const override
+        {
+            return m_MaterialBuffer.get()->GetBufferDeviceAddress();
+        }
+
+        virtual std::shared_ptr<Buffer>& GetMaterialBuffer(uint index = 0) override { return m_MaterialBuffer; }
+
+        virtual void SetMaterialDescriptor(std::shared_ptr<MaterialDescriptor> materialDescriptor, uint index = 0) override
+        {
+            m_MaterialDescriptor = materialDescriptor;
+        }
+
+        virtual std::shared_ptr<MaterialDescriptor>& GetMaterialDescriptor(uint index = 0) override
+        {
+            return m_MaterialDescriptor;
+        }
 
     public:
         PbrMaterialProperties m_PbrMaterialProperties;
         MaterialTextures m_MaterialTextures;
+
+    private:
+        std::shared_ptr<Buffer> m_MaterialBuffer;
+        std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
     };
 
 } // namespace GfxRenderEngine

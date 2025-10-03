@@ -46,18 +46,10 @@ namespace GfxRenderEngine
     public:
         virtual ~Material() {}
         [[nodiscard]] virtual MaterialType GetType() const = 0;
-        [[nodiscard]] Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress() const
-        {
-            return m_MaterialBuffer.get()->GetBufferDeviceAddress();
-        }
-        std::shared_ptr<Buffer>& GetMaterialBuffer() { return m_MaterialBuffer; }
-
-    public:
-        static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
-        std::shared_ptr<MaterialDescriptor> m_MaterialDescriptor;
-
-    private:
-        std::shared_ptr<Buffer> m_MaterialBuffer;
+        [[nodiscard]] virtual Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress(uint index = 0) const = 0;
+        virtual std::shared_ptr<Buffer>& GetMaterialBuffer(uint index = 0) = 0;
+        virtual void SetMaterialDescriptor(std::shared_ptr<MaterialDescriptor> materialDescriptor, uint index = 0) = 0;
+        virtual std::shared_ptr<MaterialDescriptor>& GetMaterialDescriptor(uint index = 0) = 0;
     };
 
 } // namespace GfxRenderEngine

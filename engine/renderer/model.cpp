@@ -60,8 +60,8 @@ namespace GfxRenderEngine
         return m_MeshBuffer.get()->GetBufferDeviceAddress();
     }
 
-    Buffer::BufferDeviceAddress Submesh::GetMaterialBufferDeviceAddress() const
+    Buffer::BufferDeviceAddress Submesh::GetMaterialBufferDeviceAddress(uint index) const
     {
-        return m_Material.get()->GetMaterialBufferDeviceAddress();
+        return m_Material.get()->GetMaterialBufferDeviceAddress(index);
     }
 } // namespace GfxRenderEngine

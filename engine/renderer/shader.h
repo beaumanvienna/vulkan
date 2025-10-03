@@ -95,7 +95,7 @@ namespace GfxRenderEngine
 
         // per submesh
         // byte 32 to 63
-        std::array<Buffer::BufferDeviceAddress, GLSL_NUM_MULTI_MATERIAL> m_MaterialBufferDeviceAddresses;
+        std::array<Buffer::BufferDeviceAddress, PbrMultiMaterial::NUM_MULTI_MATERIAL> m_MaterialBufferDeviceAddresses;
         // byte 64 to 71
         SubmeshInfo m_SubmeshInfo;
     };

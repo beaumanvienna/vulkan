@@ -149,17 +149,17 @@ namespace GfxRenderEngine
         m_MaterialDescriptorSetLayouts[Mt::MtPbrMulti] =
             VK_DescriptorSetLayout::Builder()
                 .AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // diffuse color map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // diffuse color map
                 .AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // normal map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // normal map
                 .AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // roughness metallic map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // roughness metallic map
                 .AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // emissive map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // emissive map
                 .AddBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // roughness map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // roughness map
                 .AddBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,
-                            Material::NUM_MULTI_MATERIAL) // metallic map
+                            PbrMultiMaterial::NUM_MULTI_MATERIAL) // metallic map
                 .Build();
 
         m_ResourceDescriptorSetLayouts[Rt::RtInstance] =

@@ -178,7 +178,7 @@ namespace GfxRenderEngine
             { // create material descriptor
                 auto materialDescriptor =
                     MaterialDescriptor::Create(Material::MtSkyboxHDRI, m_IBLTextures[IBLTexture::environment]);
-                material->m_MaterialDescriptor = materialDescriptor;
+                material->SetMaterialDescriptor(materialDescriptor);
             }
 
             m_Submeshes.push_back(submesh);

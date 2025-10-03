@@ -104,7 +104,7 @@ namespace GfxRenderEngine
         uint m_InstanceCount;
         std::shared_ptr<Material> m_Material;
         Resources m_Resources;
-        Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress() const;
+        Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress(uint index = 0) const;
     };
 
     class Model

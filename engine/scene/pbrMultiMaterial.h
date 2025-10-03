@@ -32,22 +32,53 @@ namespace GfxRenderEngine
     class PbrMultiMaterial : public Material
     {
     public:
-        struct PbrMultiMaterialProperties
-        {
-            PbrMaterial::PbrMaterialPropertiesNoBindless m_PbrMaterialProperties[GLSL_NUM_MULTI_MATERIAL];
-        };
+        static constexpr uint NUM_MULTI_MATERIAL = GLSL_NUM_MULTI_MATERIAL;
+
         struct PbrMultiMaterialTextures
         {
-            PbrMaterial::MaterialTextures m_MaterialTextures[GLSL_NUM_MULTI_MATERIAL];
+            PbrMaterial::MaterialTextures m_MaterialTextures[NUM_MULTI_MATERIAL];
         };
+#pragma pack(push, 1)
+        struct Parameters
+        {
+            glm::vec2 m_Vertical{};
+            glm::vec2 m_Altitude{};
+            glm::vec2 m_Lowness{};
+        };
+#pragma pack(pop)
 
     public:
         virtual ~PbrMultiMaterial() {}
-        [[nodiscard]] virtual MaterialType GetType() const { return MaterialType::MtPbrMulti; }
+
+        [[nodiscard]] virtual MaterialType GetType() const override { return MaterialType::MtPbrMulti; }
+
+        [[nodiscard]] virtual Buffer::BufferDeviceAddress GetMaterialBufferDeviceAddress(uint index = 0) const override
+        {
+            return m_MaterialArray[index]->GetMaterialBufferDeviceAddress(index);
+        }
+
+        virtual std::shared_ptr<Buffer>& GetMaterialBuffer(uint index = 0) override
+        {
+            return m_MaterialArray[index]->GetMaterialBuffer();
+        }
+
+        virtual void SetMaterialDescriptor(std::shared_ptr<MaterialDescriptor> materialDescriptor, uint index = 0) override
+        {
+            m_MaterialArray[index]->SetMaterialDescriptor(materialDescriptor);
+        }
+
+        virtual std::shared_ptr<MaterialDescriptor>& GetMaterialDescriptor(uint index = 0) override
+        {
+            return m_MaterialArray[index]->GetMaterialDescriptor(index);
+        }
+
+        std::shared_ptr<PbrMaterial>& GetMaterial(uint index) { return m_MaterialArray[index]; };
 
     public:
-        PbrMultiMaterialProperties m_PbrMultiMaterialProperties;
         PbrMultiMaterialTextures m_PbrMultiMaterialTextures;
+
+    private:
+        std::array<std::shared_ptr<PbrMaterial>, NUM_MULTI_MATERIAL> m_MaterialArray;
     };
 
 } // namespace GfxRenderEngine

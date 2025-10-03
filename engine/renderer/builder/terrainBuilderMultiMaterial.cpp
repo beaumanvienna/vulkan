@@ -41,22 +41,25 @@ namespace GfxRenderEngine
             return false;
         }
 
-        auto material = std::make_shared<PbrMultiMaterial>();
+        auto pbrMultiMaterial = std::make_shared<PbrMultiMaterial>();
 
-        FastgltfBuilder fastgltfBuilder(terrainSpec.m_FilepathMesh, scene, material);
+        FastgltfBuilder fastgltfBuilder(terrainSpec.m_FilepathMesh, scene, pbrMultiMaterial);
         fastgltfBuilder.SetDictionaryPrefix("TLMM"); // terrain loader multi material
         fastgltfBuilder.Load(instanceCount);
 
         // create material descriptor
-        material->m_MaterialDescriptor =                                   //
-            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, //
-                                       material->m_PbrMultiMaterialTextures);
-        { // create material buffer
-            auto& buffer = material->GetMaterialBuffer();
-            buffer = Buffer::Create(sizeof(material->m_PbrMultiMaterialProperties),
+        pbrMultiMaterial->SetMaterialDescriptor(
+            MaterialDescriptor::Create(Material::MaterialType::MtPbrMulti, pbrMultiMaterial->m_PbrMultiMaterialTextures));
+
+        // create material buffers
+        for (uint index = 0; index < PbrMultiMaterial::NUM_MULTI_MATERIAL; ++index)
+        {
+            auto& pbrMaterial = pbrMultiMaterial->GetMaterial(index);
+            auto& buffer = pbrMultiMaterial->GetMaterialBuffer(index);
+            buffer = Buffer::Create(sizeof(pbrMaterial->m_PbrMaterialProperties),
                                     Buffer::BufferUsage::STORAGE_BUFFER_VISIBLE_TO_CPU);
             buffer.get()->MapBuffer();
-            buffer.get()->WriteToBuffer(&material->m_PbrMultiMaterialProperties);
+            buffer.get()->WriteToBuffer(&pbrMaterial->m_PbrMaterialProperties);
             buffer.get()->Flush();
         }
         return true;

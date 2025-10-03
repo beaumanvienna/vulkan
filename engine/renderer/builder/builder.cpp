@@ -194,7 +194,7 @@ namespace GfxRenderEngine
             submesh.m_Material = material;
             { // create material descriptor
                 auto materialDescriptor = MaterialDescriptor::Create(Material::MtCubemap, m_Cubemaps[0]);
-                material->m_MaterialDescriptor = materialDescriptor;
+                material->SetMaterialDescriptor(materialDescriptor);
             }
 
             m_Submeshes.push_back(submesh);
