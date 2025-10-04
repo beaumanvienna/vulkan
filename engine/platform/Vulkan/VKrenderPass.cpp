@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -898,6 +898,7 @@ namespace GfxRenderEngine
 
     void VK_RenderPass::DestroyGBuffers()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkDestroyImageView(m_Device->Device(), m_GBufferPositionView, nullptr);
         vkDestroyImage(m_Device->Device(), m_GBufferPositionImage, nullptr);
         vkFreeMemory(m_Device->Device(), m_GBufferPositionImageMemory, nullptr);

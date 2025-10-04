@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -88,16 +88,22 @@ namespace GfxRenderEngine
     VK_Device::~VK_Device()
     {
         m_LoadPool.reset();
-        vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
-        vkDestroyDevice(m_Device, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyCommandPool(m_Device, m_GraphicsCommandPool, nullptr);
+            vkDestroyDevice(m_Device, nullptr);
+        }
 
         if (m_EnableValidationLayers)
         {
             DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
         }
 
-        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-        vkDestroyInstance(m_Instance, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+            vkDestroyInstance(m_Instance, nullptr);
+        }
     }
 
     void VK_Device::LoadPool(ThreadPool& threadPoolPrimary, ThreadPool& threadPoolSecondary)

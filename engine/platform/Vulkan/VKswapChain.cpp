@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -53,11 +53,13 @@ namespace GfxRenderEngine
     {
         for (auto imageView : m_SwapChainImageViews)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkDestroyImageView(m_Device->Device(), imageView, nullptr);
         }
 
         if (m_SwapChain != nullptr)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkDestroySwapchainKHR(m_Device->Device(), m_SwapChain, nullptr);
             m_SwapChain = nullptr;
         }
@@ -65,6 +67,7 @@ namespace GfxRenderEngine
         // cleanup synchronization objects
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkDestroySemaphore(m_Device->Device(), m_RenderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(m_Device->Device(), m_ImageAvailableSemaphores[i], nullptr);
             vkDestroyFence(m_Device->Device(), m_InFlightFences[i], nullptr);

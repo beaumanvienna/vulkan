@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -44,6 +44,7 @@ namespace GfxRenderEngine
 
     VK_ShadowMap::~VK_ShadowMap()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkDestroyImageView(m_Device->Device(), m_ShadowDepthImageView, nullptr);
         vkDestroyImage(m_Device->Device(), m_ShadowDepthImage, nullptr);
         vkFreeMemory(m_Device->Device(), m_ShadowDepthImageMemory, nullptr);

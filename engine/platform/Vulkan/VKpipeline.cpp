@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -37,6 +37,7 @@ namespace GfxRenderEngine
 
     VK_Pipeline::~VK_Pipeline()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkDestroyShaderModule(m_Device->Device(), m_VertShaderModule, nullptr);
         vkDestroyShaderModule(m_Device->Device(), m_FragShaderModule, nullptr);
         vkDestroyPipeline(m_Device->Device(), m_GraphicsPipeline, nullptr);
@@ -131,6 +132,7 @@ namespace GfxRenderEngine
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             auto result = vkCreateGraphicsPipelines(m_Device->Device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                                     &m_GraphicsPipeline);
             if (result != VK_SUCCESS)

@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2024 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -133,11 +133,13 @@ namespace GfxRenderEngine
     {
         for (auto& uploadSemaphore : m_UploadSemaphores)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkDestroySemaphore(m_Device, uploadSemaphore.second, nullptr);
         }
 
         for (auto& commandPool : m_CommandPools)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkDestroyCommandPool(m_Device, commandPool.second, nullptr);
         }
     }
@@ -198,6 +200,7 @@ namespace GfxRenderEngine
     void VK_Pool::ResetCommandPool()
     {
         VkCommandPoolResetFlags flags{VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT};
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         vkResetCommandPool(m_Device, GetCommandPool(), flags);
     }
 
@@ -207,6 +210,7 @@ namespace GfxRenderEngine
         for (auto& threadID : threadpool.GetThreadIDs())
         {
             uint64 hash = std::hash<std::thread::id>()(threadID);
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkResetCommandPool(m_Device, m_CommandPools[hash], flags);
         }
     }

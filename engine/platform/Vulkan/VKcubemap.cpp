@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -38,6 +38,7 @@ namespace GfxRenderEngine
 
     VK_Cubemap::~VK_Cubemap()
     {
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         auto device = VK_Core::m_Device->Device();
 
         vkDestroyImage(device, m_CubemapImage, nullptr);
@@ -96,7 +97,10 @@ namespace GfxRenderEngine
             LOG_APP_CRITICAL("unsupported layout transition!");
         }
 
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        }
 
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
         m_ImageLayout = newLayout;
@@ -150,7 +154,10 @@ namespace GfxRenderEngine
             }
         }
 
-        vkBindImageMemory(device, m_CubemapImage, m_CubemapImageMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindImageMemory(device, m_CubemapImage, m_CubemapImageMemory, 0);
+        }
     }
 
     void VK_Cubemap::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
@@ -189,8 +196,10 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("failed to allocate buffer memory!");
             }
         }
-
-        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        }
     }
 
     bool VK_Cubemap::Create()
@@ -257,8 +266,11 @@ namespace GfxRenderEngine
 
         TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyBuffer(device, stagingBuffer, nullptr);
+            vkFreeMemory(device, stagingBufferMemory, nullptr);
+        }
 
         // Create a texture sampler
         // In Vulkan, textures are accessed by samplers

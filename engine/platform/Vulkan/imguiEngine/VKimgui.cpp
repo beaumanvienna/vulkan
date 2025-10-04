@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -100,7 +100,10 @@ namespace GfxRenderEngine
         init_info.MinImageCount = 2;
         init_info.ImageCount = imageCount;
         init_info.CheckVkResultFn = VKCheckResult;
-        ImGui_ImplVulkan_Init(&init_info, renderPass);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            ImGui_ImplVulkan_Init(&init_info, renderPass);
+        }
 
         // upload fonts, this is done by recording and submitting a one time use command buffer
         // which can be done easily bye using some existing helper functions on the lve device object

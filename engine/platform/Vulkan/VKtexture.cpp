@@ -202,7 +202,10 @@ namespace GfxRenderEngine
                 return false;
             }
         }
-        vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindImageMemory(device, m_TextureImage, m_TextureImageMemory, 0);
+        }
 
         // copy regions
         std::vector<VkBufferImageCopy> regions;
@@ -250,14 +253,20 @@ namespace GfxRenderEngine
 
         // copy mip data into staging buffer
         void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, totalSize, 0, &data);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkMapMemory(device, stagingBufferMemory, 0, totalSize, 0, &data);
+        }
         uint8_t* dst = reinterpret_cast<uint8_t*>(data);
         for (uint mipLevel = 0; mipLevel < m_MipLevels; ++mipLevel)
         {
             memcpy(dst, hiResImages[mipLevel].GetBuffer(), static_cast<size_t>(levelSizes[mipLevel]));
             dst += levelSizes[mipLevel];
         }
-        vkUnmapMemory(device, stagingBufferMemory);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkUnmapMemory(device, stagingBufferMemory);
+        }
 
         // copy buffer to image
         TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -270,8 +279,11 @@ namespace GfxRenderEngine
         VK_Core::m_Device->EndSingleTimeCommands(commandBuffer);
         TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkDestroyBuffer(device, stagingBuffer, nullptr);
+            vkFreeMemory(device, stagingBufferMemory, nullptr);
+        }
 
         // create image view
         VkImageViewCreateInfo viewInfo{};

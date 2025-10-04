@@ -21,6 +21,7 @@
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 #include "VKbuffer.h"
+#include "VKdevice.h"
 
 namespace GfxRenderEngine
 {
@@ -259,6 +260,7 @@ namespace GfxRenderEngine
         mappedRange.memory = m_Memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
+        std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
         return vkInvalidateMappedMemoryRanges(VK_Core::m_Device->Device(), 1, &mappedRange);
     }
 

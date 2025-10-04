@@ -94,7 +94,11 @@ namespace GfxRenderEngine
                 return false;
             }
         }
-        vkBindImageMemory(device, m_StorageImage, m_StorageImageMemory, 0);
+
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkBindImageMemory(device, m_StorageImage, m_StorageImageMemory, 0);
+        }
 
         // create image view
         VkImageViewCreateInfo viewInfo{};

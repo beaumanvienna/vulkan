@@ -596,8 +596,11 @@ namespace GfxRenderEngine
 
     void VK_Renderer::FreeCommandBuffers()
     {
-        vkFreeCommandBuffers(m_Device->Device(), m_Device->GetCommandPool(), static_cast<uint>(m_CommandBuffers.size()),
-                             m_CommandBuffers.data());
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkFreeCommandBuffers(m_Device->Device(), m_Device->GetCommandPool(), static_cast<uint>(m_CommandBuffers.size()),
+                                 m_CommandBuffers.data());
+        }
         m_CommandBuffers.clear();
     }
 
@@ -635,6 +638,7 @@ namespace GfxRenderEngine
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             auto result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
             if (result != VK_SUCCESS)
             {
@@ -656,6 +660,7 @@ namespace GfxRenderEngine
         auto commandBuffer = GetCurrentCommandBuffer();
         {
             ZoneScopedN("vkEndCommandBuffer");
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             auto result = vkEndCommandBuffer(commandBuffer);
             if (result != VK_SUCCESS)
             {
@@ -708,7 +713,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -740,7 +748,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -831,7 +842,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -880,7 +894,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -913,7 +930,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = static_cast<uint>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -942,7 +962,10 @@ namespace GfxRenderEngine
         renderPassInfo.clearValueCount = 0;
         renderPassInfo.pClearValues = nullptr;
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        }
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -961,7 +984,10 @@ namespace GfxRenderEngine
         CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
-        vkCmdEndRenderPass(commandBuffer);
+        {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
+            vkCmdEndRenderPass(commandBuffer);
+        }
     }
 
     void VK_Renderer::BeginFrame(Camera* camera)
@@ -1157,6 +1183,7 @@ namespace GfxRenderEngine
     {
         if (m_CurrentCommandBuffer)
         {
+            std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkCmdNextSubpass(m_CurrentCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
