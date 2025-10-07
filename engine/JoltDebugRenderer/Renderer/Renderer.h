@@ -27,12 +27,12 @@
 #pragma once
 
 #include <Image/Surface.h>
-#include <Renderer/Frustum.h>
-#include <Renderer/PipelineState.h>
-#include <Renderer/VertexShader.h>
-#include <Renderer/PixelShader.h>
-#include <Renderer/RenderPrimitive.h>
-#include <Renderer/RenderInstances.h>
+#include <JoltDebugRenderer/Renderer/Frustum.h>
+#include <JoltDebugRenderer/Renderer/PipelineState.h>
+#include <JoltDebugRenderer/Renderer/VertexShader.h>
+#include <JoltDebugRenderer/Renderer/PixelShader.h>
+#include <JoltDebugRenderer/Renderer/RenderPrimitive.h>
+#include <JoltDebugRenderer/Renderer/RenderInstances.h>
 #include <memory>
 
 #include "renderer/camera.h"

@@ -26,8 +26,8 @@
 
 #include <TestFramework.h>
 
-#include <Renderer/Font.h>
-#include <Renderer/Renderer.h>
+#include <JoltDebugRenderer/Renderer/Font.h>
+#include <JoltDebugRenderer/Renderer/Renderer.h>
 #include <Image/Surface.h>
 #include <Utils/ReadData.h>
 #include <Jolt/Core/Profiler.h>

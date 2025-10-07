@@ -17,6 +17,7 @@ JPH_CLANG_SUPPRESS_WARNING("-Wswitch")
 JPH_MSVC_SUPPRESS_WARNING(4061) // enumerator 'X' in switch of enum 'X' is not explicitly handled by a case label
 JPH_MSVC_SUPPRESS_WARNING(4062) // enumerator 'X' in switch of enum 'X' is not handled
 
+#undef JPH_PLATFORM_WINDOWS // added by jc 10/6/25
 #ifdef JPH_PLATFORM_WINDOWS
 
 // Targeting Windows 10 and above

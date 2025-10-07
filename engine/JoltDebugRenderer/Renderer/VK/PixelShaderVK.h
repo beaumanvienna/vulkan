@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <Renderer/PixelShader.h>
+#include <JoltDebugRenderer/Renderer/PixelShader.h>
 
 #include <vulkan/vulkan.h>
 namespace JPH

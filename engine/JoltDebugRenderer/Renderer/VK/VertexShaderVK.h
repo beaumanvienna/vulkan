@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <Renderer/VertexShader.h>
+#include <JoltDebugRenderer/Renderer/VertexShader.h>
 
 #include <vulkan/vulkan.h>
 namespace JPH

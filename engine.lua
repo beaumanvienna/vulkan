@@ -8,7 +8,10 @@ project "engine"
 
     defines
     {
-        "ENGINE_VERSION=\"0.9.0\""
+        "ENGINE_VERSION=\"0.9.0\"",
+        "JPH_PROFILE_ENABLED",
+        "JPH_DEBUG_RENDERER",
+        "JPH_OBJECT_STREAM"
     }
 
     files 

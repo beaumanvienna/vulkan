@@ -26,7 +26,7 @@
 
 #include <TestFramework.h>
 
-#include <Renderer/Renderer.h>
+#include <JoltDebugRenderer/Renderer/Renderer.h>
 #include "core.h"
 namespace JPH
 {

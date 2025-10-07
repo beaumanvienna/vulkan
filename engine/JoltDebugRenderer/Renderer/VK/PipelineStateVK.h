@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include <Renderer/PipelineState.h>
-#include <Renderer/VK/VertexShaderVK.h>
-#include <Renderer/VK/PixelShaderVK.h>
+#include <JoltDebugRenderer/Renderer/PipelineState.h>
+#include <JoltDebugRenderer/Renderer/VK/VertexShaderVK.h>
+#include <JoltDebugRenderer/Renderer/VK/PixelShaderVK.h>
 namespace JPH
 {
     class RendererVK;

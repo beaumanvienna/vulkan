@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <Renderer/Texture.h>
+#include <JoltDebugRenderer/Renderer/Texture.h>
 
 #include <vulkan/vulkan.h>
 

@@ -35,7 +35,7 @@
 #include <Jolt/Jolt.h>
 
 // debug rendering
-#include <Renderer/DebugRendererImp.h>
+#include <JoltDebugRenderer/Renderer/DebugRendererImp.h>
 
 namespace GfxRenderEngine
 {

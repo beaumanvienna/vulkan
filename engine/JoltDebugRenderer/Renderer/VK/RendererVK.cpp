@@ -44,17 +44,6 @@
 #include "VKrenderer.h"
 #include "core.h"
 
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#ifdef JPH_PLATFORM_WINDOWS
-#include <vulkan/vulkan_win32.h>
-#include <Window/ApplicationWindowWin.h>
-#elif defined(JPH_PLATFORM_LINUX)
-#elif defined(JPH_PLATFORM_MACOS)
-#include <vulkan/vulkan_metal.h>
-#include <Window/ApplicationWindowMacOS.h>
-#endif
-JPH_SUPPRESS_WARNINGS_STD_END
-
 namespace JPH
 {
     RendererVK::~RendererVK()

@@ -26,7 +26,7 @@
 
 #include <TestFramework.h>
 
-#include <Renderer/RenderPrimitive.h>
+#include <JoltDebugRenderer/Renderer/RenderPrimitive.h>
 namespace JPH
 {
     void RenderPrimitive::ReleaseVertexBuffer()

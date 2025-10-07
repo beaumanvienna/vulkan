@@ -44,7 +44,7 @@
 #include <Jolt/Core/UnorderedMap.h>
 
 #include "TestFramework.h"
-#include <Renderer/Renderer.h>
+#include <JoltDebugRenderer/Renderer/Renderer.h>
 #include "engine/platform/Vulkan/VKswapChain.h"
 
 namespace JPH

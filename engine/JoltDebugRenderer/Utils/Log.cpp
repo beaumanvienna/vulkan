@@ -5,6 +5,7 @@
 #include <TestFramework.h>
 #include <Utils/Log.h>
 #include <cstdarg>
+#undef JPH_PLATFORM_WINDOWS // added by jc 10/6/25
 
 // Trace to TTY
 void TraceImpl(const char *inFMT, ...)

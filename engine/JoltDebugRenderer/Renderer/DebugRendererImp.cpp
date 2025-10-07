@@ -36,9 +36,9 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
-#include <Renderer/DebugRendererImp.h>
-#include <Renderer/Renderer.h>
-#include <Renderer/Font.h>
+#include <JoltDebugRenderer/Renderer/DebugRendererImp.h>
+#include <JoltDebugRenderer/Renderer/Renderer.h>
+#include <JoltDebugRenderer/Renderer/Font.h>
 
 #include "core.h"
 #include "auxiliary/file.h"

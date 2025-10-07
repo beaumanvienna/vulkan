@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include <Renderer/VK/RendererVK.h>
-#include <Renderer/RenderInstances.h>
+#include <JoltDebugRenderer/Renderer/VK/RendererVK.h>
+#include <JoltDebugRenderer/Renderer/RenderInstances.h>
 namespace JPH
 {
     class RenderPrimitive;

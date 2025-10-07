@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include <Renderer/RenderPrimitive.h>
-#include <Renderer/VK/RendererVK.h>
-#include <Renderer/VK/BufferVK.h>
+#include <JoltDebugRenderer/Renderer/RenderPrimitive.h>
+#include <JoltDebugRenderer/Renderer/VK/RendererVK.h>
+#include <JoltDebugRenderer/Renderer/VK/BufferVK.h>
 namespace JPH
 {
     /// Vulkan implementation of a render primitive

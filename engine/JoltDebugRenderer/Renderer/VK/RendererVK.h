@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include <Renderer/Renderer.h>
-#include <Renderer/VK/ConstantBufferVK.h>
-#include <Renderer/VK/TextureVK.h>
+#include <JoltDebugRenderer/Renderer/Renderer.h>
+#include <JoltDebugRenderer/Renderer/VK/ConstantBufferVK.h>
+#include <JoltDebugRenderer/Renderer/VK/TextureVK.h>
 #include <Jolt/Core/UnorderedMap.h>
 
 #include <vulkan/vulkan.h>
