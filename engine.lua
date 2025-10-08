@@ -8,10 +8,7 @@ project "engine"
 
     defines
     {
-        "ENGINE_VERSION=\"0.9.0\"",
-        "JPH_PROFILE_ENABLED",
-        "JPH_DEBUG_RENDERER",
-        "JPH_OBJECT_STREAM"
+        "ENGINE_VERSION=\"0.9.0\""
     }
 
     files 
@@ -115,6 +112,9 @@ project "engine"
     filter "system:windows"
         defines
         {
+            "JPH_PROFILE_ENABLED",
+            "JPH_DEBUG_RENDERER",
+            "JPH_OBJECT_STREAM"
         }
         files 
         {
