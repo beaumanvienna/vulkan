@@ -64,13 +64,22 @@ namespace GfxRenderEngine
             m_SwapChain = nullptr;
         }
 
-        // cleanup synchronization objects
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
+        { // cleanup synchronization objects
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
-            vkDestroySemaphore(m_Device->Device(), m_RenderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(m_Device->Device(), m_ImageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(m_Device->Device(), m_InFlightFences[i], nullptr);
+            for (auto& sema : m_ImageAvailableSemaphores)
+            {
+                vkDestroySemaphore(m_Device->Device(), sema, nullptr);
+            }
+
+            for (auto& sema : m_RenderFinishedSemaphores)
+            {
+                vkDestroySemaphore(m_Device->Device(), sema, nullptr);
+            }
+
+            for (auto& fence : m_InFlightFences)
+            {
+                vkDestroyFence(m_Device->Device(), fence, nullptr);
+            }
         }
     }
 
@@ -109,7 +118,7 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = buffers;
 
-        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[m_CurrentFrame]};
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[*imageIndex]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -247,27 +256,41 @@ namespace GfxRenderEngine
 
     void VK_SwapChain::CreateSyncObjects()
     {
+        // imageCount(): query swapchain images count
+        const size_t swapchainImageCount = ImageCount();
         m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_RenderFinishedSemaphores.resize(swapchainImageCount);
         m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        m_ImagesInFlight.resize(ImageCount(), VK_NULL_HANDLE);
+        m_ImagesInFlight.resize(swapchainImageCount, VK_NULL_HANDLE);
 
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        for (auto& sema : m_ImageAvailableSemaphores)
+        {
+            if (vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &sema) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create synchronization objects for a frame! (ImageAvailable)");
+            }
+        }
+
+        for (auto& sema : m_RenderFinishedSemaphores)
+        {
+            if (vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &sema) != VK_SUCCESS)
+            {
+                LOG_CORE_CRITICAL("failed to create synchronization objects for a frame! (RenderFinished)");
+            }
+        }
 
         VkFenceCreateInfo fenceInfo = {};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        for (auto& fence : m_InFlightFences)
         {
-            if (vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
-                    VK_SUCCESS ||
-                vkCreateSemaphore(m_Device->Device(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
-                    VK_SUCCESS ||
-                vkCreateFence(m_Device->Device(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS)
+            if (vkCreateFence(m_Device->Device(), &fenceInfo, nullptr, &fence) != VK_SUCCESS)
             {
-                LOG_CORE_CRITICAL("failed to create synchronization objects for a frame!");
+                LOG_CORE_CRITICAL("failed to create synchronization objects for a frame! (InFlightFences)");
             }
         }
     }
