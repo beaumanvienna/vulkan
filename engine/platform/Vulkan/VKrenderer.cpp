@@ -616,7 +616,7 @@ namespace GfxRenderEngine
         CORE_ASSERT(!m_FrameInProgress, "frame must not be in progress");
 
         {
-            auto result = m_SwapChain->AcquireNextImage(&m_CurrentImageIndex);
+            auto result = m_SwapChain->AcquireNextImage(m_CurrentImageIndex);
 
             if (result == VK_ERROR_OUT_OF_DATE_KHR)
             {
@@ -668,7 +668,7 @@ namespace GfxRenderEngine
                 LOG_CORE_CRITICAL("recording of command buffer failed");
             }
         }
-        auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, &m_CurrentImageIndex);
+        auto result = m_SwapChain->SubmitCommandBuffers(&commandBuffer, m_CurrentImageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             ZoneScopedN("Recreate()");

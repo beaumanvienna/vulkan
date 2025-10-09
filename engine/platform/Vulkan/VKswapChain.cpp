@@ -83,7 +83,7 @@ namespace GfxRenderEngine
         }
     }
 
-    VkResult VK_SwapChain::AcquireNextImage(uint* imageIndex)
+    VkResult VK_SwapChain::AcquireNextImage(uint& imageIndex)
     {
         PROFILE_SCOPE("waitFor InFlightFences");
         vkWaitForFences(m_Device->Device(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE,
@@ -91,20 +91,20 @@ namespace GfxRenderEngine
 
         auto result = vkAcquireNextImageKHR(m_Device->Device(), m_SwapChain, std::numeric_limits<uint64>::max(),
                                             m_ImageAvailableSemaphores[m_CurrentFrame], // must be a not signaled semaphore
-                                            VK_NULL_HANDLE, imageIndex);
+                                            VK_NULL_HANDLE, &imageIndex);
 
         return result;
     }
 
-    VkResult VK_SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex)
+    VkResult VK_SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint& imageIndex)
     {
-        if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
+        if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE)
         {
             ZoneScopedN("SCB waitFence"); // SCB: submit command buffers
             PROFILE_SCOPE("waitFor ImagesInFlight");
-            vkWaitForFences(m_Device->Device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(m_Device->Device(), 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
         }
-        m_ImagesInFlight[*imageIndex] = m_InFlightFences[m_CurrentFrame];
+        m_ImagesInFlight[imageIndex] = m_InFlightFences[m_CurrentFrame];
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -118,7 +118,7 @@ namespace GfxRenderEngine
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = buffers;
 
-        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[*imageIndex]};
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[imageIndex]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -146,7 +146,7 @@ namespace GfxRenderEngine
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = m_SwapChains;
 
-        presentInfo.pImageIndices = imageIndex;
+        presentInfo.pImageIndices = &imageIndex;
 
         VkResult result{};
         {

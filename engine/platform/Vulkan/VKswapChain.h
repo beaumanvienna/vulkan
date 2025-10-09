@@ -58,8 +58,8 @@ namespace GfxRenderEngine
             return static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height);
         }
 
-        VkResult AcquireNextImage(uint* imageIndex);
-        VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint* imageIndex);
+        VkResult AcquireNextImage(uint& imageIndex);
+        VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint& imageIndex);
         bool CompareSwapFormats(const VK_SwapChain& swapChain) const;
 
     private:
