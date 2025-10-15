@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -47,6 +47,7 @@ namespace GfxRenderEngine
         void Start();
         bool IsRunning() const;
         Sprite GetSprite();
+        void OnUpdate();
 
     private:
         uint m_Frames;
@@ -54,6 +55,7 @@ namespace GfxRenderEngine
         float m_TimeFactor;
         SpriteSheet* m_Spritesheet;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_CurrentTime;
         uint m_PreviousFrame;
     };
 } // namespace GfxRenderEngine

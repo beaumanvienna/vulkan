@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -89,17 +89,17 @@ namespace GfxRenderEngine
         auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent2D>();
         for (auto entity : view)
         {
-            auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataSpriteRenderer2D push{};
-            push.m_MVP = camera->GetProjectionMatrix() * camera->GetViewMatrix() * transform.GetMat4Local();
-
-            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(VK_PushConstantDataSpriteRenderer2D), &push);
-
             auto& mesh = view.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
+                auto& transform = view.get<TransformComponent>(entity);
+                VK_PushConstantDataSpriteRenderer2D push{};
+                push.m_MVP = camera->GetProjectionMatrix() * camera->GetViewMatrix() * transform.GetMat4Local();
+
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataSpriteRenderer2D), &push);
+
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
                 static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
             }

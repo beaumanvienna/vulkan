@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -56,7 +56,7 @@ namespace LucreApp
         );
         m_WalkAnimation.Create(150ms /* per frame */, &m_SpritesheetWalk);
         m_WalkAnimation.Start();
-        for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
+        for (uint i = 0; i < WALK_ANIMATION_SPRITES; ++i)
         {
             Builder builder{};
 
@@ -83,7 +83,7 @@ namespace LucreApp
 
         // cloud
         {
-            for (uint i = 0; i < 2; i++)
+            for (uint i = 0; i < 2; ++i)
             {
                 m_Clouds[i] = m_Registry.Create();
 
@@ -108,7 +108,7 @@ namespace LucreApp
         float scaleHero = windowHeight * 0.08f / m_SpritesheetWalk.GetSprite(0).GetHeight();
 
         m_GuybrushWalkDelta = windowHeight * 0.16f;
-        for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
+        for (uint i = 0; i < WALK_ANIMATION_SPRITES; ++i)
         {
             auto sprite = Sprite2D(m_SpritesheetWalk.GetSprite(i));
             sprite.SetScale(scaleHero);
@@ -149,7 +149,7 @@ namespace LucreApp
 
         // clouds
         {
-            for (uint i = 0; i < 2; i++)
+            for (uint i = 0; i < 2; ++i)
             {
                 auto& transform = m_Registry.get<TransformComponent>(m_Clouds[i]);
                 transform = TransformComponent(m_CloudSprite.GetMat4());
@@ -203,6 +203,7 @@ namespace LucreApp
         // walk animation
         {
             static float walkOffset = m_InitialPositionX;
+            m_WalkAnimation.OnUpdate();
             if (!m_WalkAnimation.IsRunning())
             {
                 m_WalkAnimation.Start();
@@ -210,30 +211,24 @@ namespace LucreApp
                 if (walkOffset > m_EndPositionX)
                 {
                     walkOffset = m_InitialPositionX;
+                    m_IsRunning = false;
                 }
             }
 
-            static uint previousFrame = 0;
-            if (m_WalkAnimation.IsNewFrame())
+            for (uint i = 0; i < WALK_ANIMATION_SPRITES; ++i)
             {
-                auto& previousMesh = m_Registry.get<MeshComponent>(m_Guybrush[previousFrame]);
-                previousMesh.m_Enabled = false;
-                uint currentFrame = m_WalkAnimation.GetCurrentFrame();
-                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
-                currentMesh.m_Enabled = true;
+                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[i]);
+                currentMesh.m_Enabled = false;
             }
-            else
-            {
-                previousFrame = m_WalkAnimation.GetCurrentFrame();
-            }
-            float frameTranslationX =
-                0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * m_WalkAnimation.GetCurrentFrame();
 
-            for (uint i = 0; i < WALK_ANIMATION_SPRITES; i++)
-            {
-                auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[i]);
-                transform.SetTranslationX(frameTranslationX + walkOffset);
-            }
+            uint currentFrame = m_WalkAnimation.GetCurrentFrame();
+            auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
+            currentMesh.m_Enabled = true;
+
+            float frameTranslationX = 0.1f / static_cast<float>(m_WalkAnimation.GetFrames()) * currentFrame;
+
+            auto& transform = m_Registry.get<TransformComponent>(m_Guybrush[currentFrame]);
+            transform.SetTranslationX(frameTranslationX + walkOffset);
         }
         MoveClouds(timestep);
         // draw new scene

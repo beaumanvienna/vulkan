@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -88,20 +88,20 @@ namespace GfxRenderEngine
         auto view = registry.view<MeshComponent, TransformComponent, SpriteRendererComponent>();
         for (auto entity : view)
         {
-            auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
-            auto& transform = view.get<TransformComponent>(entity);
-            VK_PushConstantDataGeneric push{};
-            push.m_ModelMatrix = transform.GetMat4Local();
-            push.m_NormalMatrix = transform.GetNormalMatrix();
-            push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
-            push.m_NormalMatrix[3].y = spriteRendererComponent.m_Metallic;
-            vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(VK_PushConstantDataGeneric), &push);
-
             auto& mesh = view.get<MeshComponent>(entity);
             if (mesh.m_Enabled)
             {
+                auto& spriteRendererComponent = view.get<SpriteRendererComponent>(entity);
+                auto& transform = view.get<TransformComponent>(entity);
+                VK_PushConstantDataGeneric push{};
+                push.m_ModelMatrix = transform.GetMat4Local();
+                push.m_NormalMatrix = transform.GetNormalMatrix();
+                push.m_NormalMatrix[3].x = spriteRendererComponent.m_Roughness;
+                push.m_NormalMatrix[3].y = spriteRendererComponent.m_Metallic;
+                vkCmdPushConstants(frameInfo.m_CommandBuffer, m_PipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(VK_PushConstantDataGeneric), &push);
+
                 static_cast<VK_Model*>(mesh.m_Model.get())->Bind(frameInfo.m_CommandBuffer);
                 static_cast<VK_Model*>(mesh.m_Model.get())->Draw(frameInfo.m_CommandBuffer);
             }

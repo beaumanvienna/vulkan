@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2023 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -194,21 +194,21 @@ namespace LucreApp
     void MainScene::OnUpdate(const Timestep& timestep)
     {
         {
-            static uint previousFrame = 0;
+            m_HornAnimation.OnUpdate();
             if (!m_HornAnimation.IsRunning())
+            {
                 m_HornAnimation.Start();
-            if (m_HornAnimation.IsNewFrame())
-            {
-                auto& previousMesh = m_Registry.get<MeshComponent>(m_Guybrush[previousFrame]);
-                previousMesh.m_Enabled = false;
-                uint currentFrame = m_HornAnimation.GetCurrentFrame();
-                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
-                currentMesh.m_Enabled = true;
             }
-            else
+
+            for (uint i = 0; i < m_HornAnimation.GetFrames(); ++i)
             {
-                previousFrame = m_HornAnimation.GetCurrentFrame();
+                auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[i]);
+                currentMesh.m_Enabled = false;
             }
+
+            uint currentFrame = m_HornAnimation.GetCurrentFrame();
+            auto& currentMesh = m_Registry.get<MeshComponent>(m_Guybrush[currentFrame]);
+            currentMesh.m_Enabled = true;
         }
 
         if (m_StartTimer)

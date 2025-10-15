@@ -1,4 +1,4 @@
-/* Engine Copyright (c) 2022 Engine Development Team
+/* Engine Copyright (c) 2025 Engine Development Team
    https://github.com/beaumanvienna/vulkan
 
    Permission is hereby granted, free of charge, to any person
@@ -64,14 +64,14 @@ namespace GfxRenderEngine
     void SpriteAnimation::Start()
     {
         m_PreviousFrame = -1;
-        m_StartTime = Engine::m_Engine->GetTime();
+        m_StartTime = m_CurrentTime;
     }
 
-    bool SpriteAnimation::IsRunning() const { return (Engine::m_Engine->GetTime() - m_StartTime) < m_Duration; }
+    bool SpriteAnimation::IsRunning() const { return (m_CurrentTime - m_StartTime) < m_Duration; }
 
     uint SpriteAnimation::GetCurrentFrame() const
     {
-        Duration timeElapsed = Engine::m_Engine->GetTime() - m_StartTime;
+        Duration timeElapsed = m_CurrentTime - m_StartTime;
         uint index = static_cast<uint>(timeElapsed.count() * m_TimeFactor);
         return std::min(index, m_Frames - 1);
     }
@@ -83,4 +83,6 @@ namespace GfxRenderEngine
         m_PreviousFrame = currentFrame;
         return isNewFrame;
     }
+
+    void SpriteAnimation::OnUpdate() { m_CurrentTime = Engine::m_Engine->GetTime(); }
 } // namespace GfxRenderEngine
