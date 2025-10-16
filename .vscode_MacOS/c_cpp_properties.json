@@ -9,6 +9,7 @@
                 "vendor",
                 "vendor/imgui",
                 "resources",
+                "vendor/sfml/include",
                 "vendor/spdlog/include",
                 "vendor/yaml-cpp/include",
                 "vendor/fastgltf/include",
