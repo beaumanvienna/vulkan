@@ -66,7 +66,7 @@ namespace GfxRenderEngine
         virtual void GUIRenderpass(Camera* camera) = 0;
         virtual uint GetFrameCounter() = 0;
 
-        virtual void BeginFrame(Camera* camera) = 0;
+        virtual bool BeginFrame(Camera* camera) = 0;
         virtual void RenderpassWater(Registry& registry, Camera& camera, bool reflection,
                                      glm::vec4 const& clippingPlane) = 0;
         virtual void EndRenderpassWater() = 0;

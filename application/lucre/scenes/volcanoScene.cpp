@@ -275,7 +275,10 @@ namespace LucreApp
         SetDirectionalLight(m_DirectionalLight1, m_Lightbulb1, m_LightView1, 1 /*shadow renderpass*/);
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        if (!m_Renderer->BeginFrame(&m_CameraController->GetCamera()))
+        {
+            return;
+        }
         m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);

@@ -526,7 +526,10 @@ namespace LucreApp
         }
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraControllers.GetActiveCameraController()->GetCamera());
+        if (!m_Renderer->BeginFrame(&m_CameraControllers.GetActiveCameraController()->GetCamera()))
+        {
+            return;
+        }
         m_Renderer->UpdateTransformCache(*this, SceneGraph::ROOT_NODE, glm::mat4(1.0f), false);
         m_Renderer->UpdateAnimations(m_Registry, timestep);
         m_Renderer->ShowDebugShadowMap(ImGUI::m_ShowDebugShadowMap);

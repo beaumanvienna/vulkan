@@ -98,7 +98,7 @@ namespace GfxRenderEngine
         int GetFrameIndex() const;
 
         virtual bool Init() override;
-        virtual void BeginFrame(Camera* camera) override;
+        virtual bool BeginFrame(Camera* camera) override;
         virtual void Renderpass3D(Registry& registry) override;
         virtual void RenderpassWater(Registry& registry, Camera& camera, bool reflection,
                                      glm::vec4 const& clippingPlane) override;

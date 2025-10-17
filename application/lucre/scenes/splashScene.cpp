@@ -168,7 +168,10 @@ namespace LucreApp
         }
 
         // draw new scene
-        m_Renderer->BeginFrame(&m_CameraController->GetCamera());
+        if (!m_Renderer->BeginFrame(&m_CameraController->GetCamera()))
+        {
+            return;
+        }
         m_Renderer->Renderpass3D(m_Registry);
 
         // skip geometry and lighting passes

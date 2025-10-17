@@ -30,6 +30,17 @@
 #include "VKwindow.h"
 #include "VKshader.h"
 
+// The do { ... } while(0) idiom ensures that the macro behaves like a single statement, even if used inside an if without
+// braces.
+#define CHECK_VALID_CMD_BUFFER()     \
+    do                               \
+    {                                \
+        if (!m_CurrentCommandBuffer) \
+        {                            \
+            return;                  \
+        }                            \
+    } while (0)
+
 namespace GfxRenderEngine
 {
 
@@ -564,10 +575,28 @@ namespace GfxRenderEngine
         VK_Core::m_DepthAttachmentFormat = m_RenderPass->GetDepthFormat();
 
         // water renderpasses
-        m_WaterRenderPass[WaterPasses::REFRACTION] =
-            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
-        m_WaterRenderPass[WaterPasses::REFLECTION] =
-            std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), VkExtent2D{1280, 720});
+
+        // --- Determine water renderpass extent ---
+        VkExtent2D swapExtent = m_SwapChain->GetSwapChainExtent();
+
+        // Define the width scaling ratio (so that at 1920x1080, we get ~1280x720)
+        constexpr float waterResolutionRatio = 1.546875f; // 1920 / 1280 = 1.546875
+
+        // Scale down the width
+        float scaledWidth = static_cast<float>(swapExtent.width) / waterResolutionRatio;
+
+        // Maintain the same aspect ratio as the swapchain
+        float aspectRatio = static_cast<float>(swapExtent.height) / static_cast<float>(swapExtent.width);
+        float scaledHeight = scaledWidth * aspectRatio;
+
+        // Convert to integer extents
+        VkExtent2D waterExtent{};
+        waterExtent.width = static_cast<uint32_t>(std::max(1.0f, scaledWidth));
+        waterExtent.height = static_cast<uint32_t>(std::max(1.0f, scaledHeight));
+
+        // --- Create water renderpasses ---
+        m_WaterRenderPass[WaterPasses::REFRACTION] = std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), waterExtent);
+        m_WaterRenderPass[WaterPasses::REFLECTION] = std::make_unique<VK_WaterRenderPass>(*m_SwapChain.get(), waterExtent);
     }
 
     void VK_Renderer::RecreateShadowMaps()
@@ -615,6 +644,7 @@ namespace GfxRenderEngine
         ZoneScopedN("VK_Renderer::BeginFrame()");
         CORE_ASSERT(!m_FrameInProgress, "frame must not be in progress");
 
+        ++m_FrameCounter; // count every frame, even after resize when it is skipped
         {
             auto result = m_SwapChain->AcquireNextImage(m_CurrentImageIndex);
 
@@ -623,15 +653,14 @@ namespace GfxRenderEngine
                 Recreate();
                 return nullptr;
             }
-
-            if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+            else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
             {
                 LOG_CORE_CRITICAL("failed to acquire next swap chain image");
+                return nullptr;
             }
         }
 
         m_FrameInProgress = true;
-        m_FrameCounter++;
 
         auto commandBuffer = GetCurrentCommandBuffer();
 
@@ -672,7 +701,6 @@ namespace GfxRenderEngine
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             ZoneScopedN("Recreate()");
-            m_Window->ResetWindowResizedFlag();
             Recreate();
         }
         else if (result != VK_SUCCESS)
@@ -693,6 +721,7 @@ namespace GfxRenderEngine
         CreateDescriptorSetRefractionReflection();
         CreateRenderSystemBloom();
         CreatePostProcessingDescriptorSets();
+        m_Window->ResetWindowResizedFlag();
     }
 
     void VK_Renderer::BeginShadowRenderPass0(VkCommandBuffer commandBuffer)
@@ -767,6 +796,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::SubmitShadows(Registry& registry, const std::vector<DirectionalLightComponent*>& directionalLights)
     {
+        CHECK_VALID_CMD_BUFFER();
+
         // this function supports one directional light
         // with a high-resolution and
         // with a low-resolution component
@@ -861,6 +892,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndRenderpassWater()
     {
+        CHECK_VALID_CMD_BUFFER();
+
         VertexCtrl vertexCtrl = {};
         m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
         m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
@@ -981,6 +1014,8 @@ namespace GfxRenderEngine
 
     void VK_Renderer::EndRenderPass(VkCommandBuffer commandBuffer)
     {
+        CHECK_VALID_CMD_BUFFER();
+
         CORE_ASSERT(m_FrameInProgress, "frame must be in progress");
         CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer(), "command buffer must be current command buffer");
 
@@ -990,67 +1025,69 @@ namespace GfxRenderEngine
         }
     }
 
-    void VK_Renderer::BeginFrame(Camera* camera)
+    bool VK_Renderer::BeginFrame(Camera* camera)
     {
         m_CurrentCommandBuffer = BeginFrame();
-        if (m_CurrentCommandBuffer)
+
+        if (!m_CurrentCommandBuffer)
         {
-            m_FrameInfo = {m_CurrentFrameIndex,
-                           m_CurrentImageIndex,
-                           0.0f, /* m_FrameTime */
-                           m_CurrentCommandBuffer,
-                           camera,
-                           m_GlobalDescriptorSets[m_CurrentFrameIndex]};
+            return false;
         }
+
+        m_FrameInfo = {m_CurrentFrameIndex,
+                       m_CurrentImageIndex,
+                       0.0f, /* m_FrameTime */
+                       m_CurrentCommandBuffer,
+                       camera,
+                       m_GlobalDescriptorSets[m_CurrentFrameIndex]};
+        return true;
     }
 
     void VK_Renderer::RenderpassWater(Registry& registry, Camera& camera, bool reflection, glm::vec4 const& clippingPlane)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            GlobalUniformBuffer ubo{};
-            ubo.m_Projection = camera.GetProjectionMatrix();
-            ubo.m_View = camera.GetViewMatrix();
-            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
-            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
-            m_UniformBuffersWater[renderpassIndex]->WriteToBuffer(&ubo);
-            m_UniformBuffersWater[renderpassIndex]->Flush();
+        CHECK_VALID_CMD_BUFFER();
 
-            m_FrameInfoWater[renderpassIndex] = {m_CurrentFrameIndex,
-                                                 m_CurrentImageIndex,
-                                                 0.0f, /* m_FrameTime */
-                                                 m_CurrentCommandBuffer,
-                                                 &camera,
-                                                 m_GlobalDescriptorSetsWater[renderpassIndex]};
+        GlobalUniformBuffer ubo{};
+        ubo.m_Projection = camera.GetProjectionMatrix();
+        ubo.m_View = camera.GetViewMatrix();
+        ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
+        auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+        m_UniformBuffersWater[renderpassIndex]->WriteToBuffer(&ubo);
+        m_UniformBuffersWater[renderpassIndex]->Flush();
 
-            VertexCtrl vertexCtrl = {};
-            vertexCtrl.m_ClippingPlane = clippingPlane;
-            vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
+        m_FrameInfoWater[renderpassIndex] = {m_CurrentFrameIndex,
+                                             m_CurrentImageIndex,
+                                             0.0f, /* m_FrameTime */
+                                             m_CurrentCommandBuffer,
+                                             &camera,
+                                             m_GlobalDescriptorSetsWater[renderpassIndex]};
 
-            m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
-            m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
-            m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
-            m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
-            m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
+        VertexCtrl vertexCtrl = {};
+        vertexCtrl.m_ClippingPlane = clippingPlane;
+        vertexCtrl.m_Features = GLSL_ENABLE_CLIPPING_PLANE;
 
-            BeginWaterRenderPass(m_CurrentCommandBuffer, renderpassIndex);
-        }
+        m_RenderSystemPbr->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbrSA->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemGrass->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemGrass2->SetVertexCtrl(vertexCtrl);
+        m_RenderSystemPbrMultiMaterial->SetVertexCtrl(vertexCtrl);
+
+        BeginWaterRenderPass(m_CurrentCommandBuffer, renderpassIndex);
     }
 
     void VK_Renderer::Renderpass3D(Registry& registry)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            GlobalUniformBuffer ubo{};
-            ubo.m_Projection = m_FrameInfo.m_Camera->GetProjectionMatrix();
-            ubo.m_View = m_FrameInfo.m_Camera->GetViewMatrix();
-            ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
-            m_LightSystem->Update(m_FrameInfo, ubo, registry);
-            m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
-            m_UniformBuffers[m_CurrentFrameIndex]->Flush();
+        CHECK_VALID_CMD_BUFFER();
 
-            Begin3DRenderPass(m_CurrentCommandBuffer);
-        }
+        GlobalUniformBuffer ubo{};
+        ubo.m_Projection = m_FrameInfo.m_Camera->GetProjectionMatrix();
+        ubo.m_View = m_FrameInfo.m_Camera->GetViewMatrix();
+        ubo.m_AmbientLightColor = {1.0f, 1.0f, 1.0f, m_AmbientLightIntensity};
+        m_LightSystem->Update(m_FrameInfo, ubo, registry);
+        m_UniformBuffers[m_CurrentFrameIndex]->WriteToBuffer(&ubo);
+        m_UniformBuffers[m_CurrentFrameIndex]->Flush();
+
+        Begin3DRenderPass(m_CurrentCommandBuffer);
     }
 
     void VK_Renderer::UpdateTransformCache(Scene& scene, uint const nodeIndex, glm::mat4 const& parentMat4,
@@ -1076,112 +1113,103 @@ namespace GfxRenderEngine
 
     void VK_Renderer::Submit(Scene& scene)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            auto& registry = scene.GetRegistry();
+        CHECK_VALID_CMD_BUFFER();
 
-            // 3D objects
-            m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
-            m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
-            m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
-            m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
-            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(),
-                                                           m_BindlessImage.get());
-        }
+        auto& registry = scene.GetRegistry();
+
+        // 3D objects
+        m_RenderSystemPbr->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+        m_RenderSystemPbrSA->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+        m_RenderSystemGrass->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+        m_RenderSystemGrass2->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(), m_BindlessImage.get());
+        m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfo, registry, m_BindlessTexture.get(),
+                                                       m_BindlessImage.get());
     }
 
     void VK_Renderer::SubmitWater(Scene& scene, bool reflection)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            auto& registry = scene.GetRegistry();
-            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+        CHECK_VALID_CMD_BUFFER();
 
-            // 3D objects
-            m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
-                                              m_BindlessImage.get());
-            m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
-                                                m_BindlessImage.get());
-            m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
-                                                m_BindlessImage.get());
-            m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
-                                                 m_BindlessImage.get());
-            m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry,
-                                                           m_BindlessTexture.get(), m_BindlessImage.get());
-        }
+        auto& registry = scene.GetRegistry();
+        auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+
+        // 3D objects
+        m_RenderSystemPbr->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                          m_BindlessImage.get());
+        m_RenderSystemPbrSA->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                            m_BindlessImage.get());
+        m_RenderSystemGrass->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                            m_BindlessImage.get());
+        m_RenderSystemGrass2->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                             m_BindlessImage.get());
+        m_RenderSystemPbrMultiMaterial->RenderEntities(m_FrameInfoWater[renderpassIndex], registry, m_BindlessTexture.get(),
+                                                       m_BindlessImage.get());
     }
 
     void VK_Renderer::LightingPass()
     {
-        if (m_CurrentCommandBuffer)
-        {
-            m_RenderSystemDeferredShading->LightingPass(m_FrameInfo);
-        }
+        CHECK_VALID_CMD_BUFFER();
+
+        m_RenderSystemDeferredShading->LightingPass(m_FrameInfo);
     }
 
     void VK_Renderer::LightingPassIBL(float uMaxPrefilterMip,
                                       std::shared_ptr<ResourceDescriptor> const& resourceDescriptorIBL)
     {
-        if (m_CurrentCommandBuffer)
-        {
+        CHECK_VALID_CMD_BUFFER();
 
-            m_RenderSystemDeferredShading->LightingPassIBL(m_FrameInfo, uMaxPrefilterMip, resourceDescriptorIBL);
-        }
+        m_RenderSystemDeferredShading->LightingPassIBL(m_FrameInfo, uMaxPrefilterMip, resourceDescriptorIBL);
     }
 
     void VK_Renderer::TransparencyPass(Registry& registry, ParticleSystem* particleSystem)
     {
-        if (m_CurrentCommandBuffer)
+        CHECK_VALID_CMD_BUFFER();
+
+        m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry, m_RefractionReflectionDescriptorSet);
+        // sprites
+        m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
+        m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfo, registry);
+        m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
+        if (particleSystem)
         {
-            m_RenderSystemWater1->RenderEntities(m_FrameInfo, registry, m_RefractionReflectionDescriptorSet);
-            // sprites
-            m_RenderSystemCubemap->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfo, registry);
-            m_RenderSystemSpriteRenderer->RenderEntities(m_FrameInfo, registry);
-            if (particleSystem)
-            {
-                m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
-            }
-            m_LightSystem->Render(m_FrameInfo, registry);
-            m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
+            m_RenderSystemSpriteRenderer->DrawParticles(m_FrameInfo, particleSystem);
         }
+        m_LightSystem->Render(m_FrameInfo, registry);
+        m_RenderSystemDebug->RenderEntities(m_FrameInfo, m_ShowDebugShadowMap);
     }
 
     void VK_Renderer::LightingPassWater(bool reflection)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            auto& lightingDescriptorSet = reflection ? m_LightingDescriptorSetsWater[WaterPasses::REFLECTION]
-                                                     : m_LightingDescriptorSetsWater[WaterPasses::REFRACTION];
-            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
-            m_RenderSystemDeferredShading->LightingPass(m_FrameInfoWater[renderpassIndex], &lightingDescriptorSet);
-        }
+        CHECK_VALID_CMD_BUFFER();
+        auto& lightingDescriptorSet = reflection ? m_LightingDescriptorSetsWater[WaterPasses::REFLECTION]
+                                                 : m_LightingDescriptorSetsWater[WaterPasses::REFRACTION];
+        auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+        m_RenderSystemDeferredShading->LightingPass(m_FrameInfoWater[renderpassIndex], &lightingDescriptorSet);
     }
 
     void VK_Renderer::TransparencyPassWater(Registry& registry, bool reflection)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
-            m_RenderSystemCubemap->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-            m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
-        }
+        CHECK_VALID_CMD_BUFFER();
+
+        auto renderpassIndex = reflection ? WaterPasses::REFLECTION : WaterPasses::REFRACTION;
+        m_RenderSystemCubemap->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
+        m_RenderSystemSkyboxHDRI->RenderEntities(m_FrameInfoWater[renderpassIndex], registry);
     }
 
     void VK_Renderer::PostProcessingRenderpass()
     {
-        if (m_CurrentCommandBuffer)
-        {
-            EndRenderPass(m_CurrentCommandBuffer); // end 3D renderpass
-            m_RenderSystemBloom->RenderBloom(m_FrameInfo);
-            BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
-            m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
-        }
+        CHECK_VALID_CMD_BUFFER();
+
+        EndRenderPass(m_CurrentCommandBuffer); // end 3D renderpass
+        m_RenderSystemBloom->RenderBloom(m_FrameInfo);
+        BeginPostProcessingRenderPass(m_CurrentCommandBuffer);
+        m_RenderSystemPostProcessing->PostProcessingPass(m_FrameInfo);
     }
 
     void VK_Renderer::NextSubpass()
     {
-        if (m_CurrentCommandBuffer)
+        CHECK_VALID_CMD_BUFFER();
+
         {
             std::lock_guard<std::mutex> guard(VK_Core::m_Device->m_DeviceAccessMutex);
             vkCmdNextSubpass(m_CurrentCommandBuffer, VK_SUBPASS_CONTENTS_INLINE);
@@ -1190,36 +1218,33 @@ namespace GfxRenderEngine
 
     void VK_Renderer::GUIRenderpass(Camera* camera)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            EndRenderPass(m_CurrentCommandBuffer); // end post processing renderpass
-            BeginGUIRenderPass(m_CurrentCommandBuffer);
+        CHECK_VALID_CMD_BUFFER();
 
-            // set up orthogonal camera
-            m_GUIViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-        }
+        EndRenderPass(m_CurrentCommandBuffer); // end post processing renderpass
+        BeginGUIRenderPass(m_CurrentCommandBuffer);
+
+        // set up orthogonal camera
+        m_GUIViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
     }
 
     void VK_Renderer::Submit2D(Camera* camera, Registry& registry)
     {
-        if (m_CurrentCommandBuffer)
-        {
-            m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry, camera);
-        }
+        CHECK_VALID_CMD_BUFFER();
+
+        m_RenderSystemSpriteRenderer2D->RenderEntities(m_FrameInfo, registry, camera);
     }
 
     void VK_Renderer::EndScene()
     {
-        if (m_CurrentCommandBuffer)
-        {
-            // built-in editor GUI runs last
-            m_Imgui->NewFrame();
-            m_Imgui->Run();
-            m_Imgui->Render(m_CurrentCommandBuffer);
+        CHECK_VALID_CMD_BUFFER();
 
-            EndRenderPass(m_CurrentCommandBuffer); // end GUI render pass
-            EndFrame();
-        }
+        // built-in editor GUI runs last
+        m_Imgui->NewFrame();
+        m_Imgui->Run();
+        m_Imgui->Render(m_CurrentCommandBuffer);
+
+        EndRenderPass(m_CurrentCommandBuffer); // end GUI render pass
+        EndFrame();
     }
 
     int VK_Renderer::GetFrameIndex() const
