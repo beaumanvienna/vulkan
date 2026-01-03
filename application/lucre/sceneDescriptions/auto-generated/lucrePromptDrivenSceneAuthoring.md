@@ -69,7 +69,7 @@ application/lucre/sceneDescriptions/auto-generated/stub.glb
 > **Y is up**.  
 > The image shows the ring in an upright position.  
 >  
-> Please issue an **Asset Catalog file** according to the attached **Lucre Scene Authoring Spec**.  
+> Issue an **Asset Catalog file** according to the attached **Lucre Scene Authoring Spec**.  
 >  
 > To load the file, use:  
 > `application/lucre/sceneDescriptions/auto-generated/ring.glb`  
@@ -88,7 +88,7 @@ application/lucre/sceneDescriptions/auto-generated/stub.glb
 >  
 > The image shows the cylinder in a **lying position**, with its symmetry axis aligned to the **z axis**.  
 >  
-> Please issue an **Asset Catalog file** according to the attached **Lucre Scene Authoring Spec**.  
+> Issue an **Asset Catalog file** according to the attached **Lucre Scene Authoring Spec**.  
 >  
 > To load the file, use:  
 > `application/lucre/sceneDescriptions/auto-generated/stub.glb`  
