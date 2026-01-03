@@ -1,11 +1,13 @@
 # Prompt‑Driven Scene Authoring in Lucre
 
+![rings on path](scene_path_p1_rings_and_stubs.png)   
+
 This document describes a **prompt‑engineered workflow** for generating procedural scenes in **Lucre** using:
 - an **Asset Catalog**
 - a **Scene Description** (Lucre runtime format)
 - natural‑language prompts as the authoring interface
 
-The example showcased here produces a curved 3D path visualized with **rings** and **stubs**, fully generated from prompts and compiled into a valid Lucre scene description.
+The example showcased here produces a curved 3D path visualized with **rings** and **stubs**, fully generated from prompts and compiled into a valid Lucre scene description [Lucre scene description](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md)
 
 ---
 
@@ -20,7 +22,7 @@ The workflow consists of three conceptual layers:
    Declares *what assets exist*, their semantic meaning, and placement conventions.
 
 3. **Scene Description (runtime)**  
-   A concrete, fully expanded Lucre scene description JSON consumed directly by the engine.
+   A concrete, fully expanded [Lucre Scene Description JSON](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md) consumed directly by the engine.
 
 Natural‑language prompts are used to *generate* steps (2) and (3).
 
@@ -57,7 +59,7 @@ application/lucre/sceneDescriptions/auto-generated/stub.glb
 
 ---
 
-## 3. Prompts Used (Proofread)
+## 3. Prompts Used
 
 ### 3.1 Ring Asset Catalog Prompt
 
@@ -96,7 +98,7 @@ application/lucre/sceneDescriptions/auto-generated/stub.glb
 
 ---
 
-## 4. Scene Generation Prompt (Proofread)
+## 4. Scene Generation Prompt
 
 > Create a **scene description** according to the attached **Lucre Scene Description file format specification**.
 >
@@ -121,7 +123,7 @@ The generated scene:
 
 - Contains **procedurally placed ring instances** aligned to the path tangent
 - Uses **dense stub placement** to visualize curvature and elevation changes
-- Is fully expanded into a **standard Lucre Scene Description JSON**
+- Is fully expanded into a **standard [Lucre Scene Description JSON](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md)**
 - Loads directly in the Lucre engine without any runtime changes
 
 This confirms that:
@@ -150,4 +152,4 @@ It is a strong foundation for future tooling such as:
 ---
 
 **Status:** validated in-engine  
-**Next step:** formalize the authoring compiler / transpiler
+
