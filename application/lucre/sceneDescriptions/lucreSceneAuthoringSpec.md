@@ -1,7 +1,7 @@
 # Lucre Scene Authoring (Prompt) File Format Specification
 
 Copyright (c) 2026 JC Technolabs  
-License: MIT (tooling-side authoring format; outputs Lucre Scene Description JSON)
+License: MIT (tooling-side authoring format; outputs [Lucre Scene Description JSON](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md))
 
 ---
 
@@ -9,7 +9,7 @@ License: MIT (tooling-side authoring format; outputs Lucre Scene Description JSO
 
 This document specifies a **tooling-side authoring format** intended for *prompt-engineering* and procedural scene construction for the **Lucre** engine.
 
-- The **Lucre runtime** currently consumes only the **Lucre Scene Description JSON** (the “scene description file”).  
+- The **Lucre runtime** currently consumes only the **[Lucre Scene Description JSON](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md)** (the “scene description file”).  
 - This authoring format is a **higher-level description** that is designed to be compiled/transpiled into the existing scene description file format.
 
 The intent is to support statements like:
@@ -59,7 +59,7 @@ The key words **MUST**, **MUST NOT**, **SHALL**, **SHOULD**, **MAY**, and **OPTI
 
 ### 3.3 Output Scene Description File
 
-The authoring tool MUST output a standard Lucre Scene Description JSON that the engine already loads.
+The authoring tool MUST output a standard [Lucre Scene Description JSON](https://github.com/beaumanvienna/vulkan/blob/master/application/lucre/sceneDescriptions/lucreSceneDescriptionSpec.md) that the engine already loads.
 
 ---
 
