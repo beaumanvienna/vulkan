@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "assets": [
+    {
+      "id": "ring_1m_gold",
+      "source": {
+        "type": "gltf",
+        "filename": "application/lucre/sceneDescriptions/auto-generated/ring.glb"
+      },
+      "semantics": {
+        "shape": "ring",
+        "nominalDiameter_m": 1.0,
+        "tags": [
+          "gold"
+        ]
+      },
+      "placement": {
+        "pivot": "center",
+        "upAxis": "+Y",
+        "forwardAxis": "+Z"
+      }
+    },
+    {
+      "id": "stub_0_05m_gold",
+      "source": {
+        "type": "gltf",
+        "filename": "application/lucre/sceneDescriptions/auto-generated/stub.glb"
+      },
+      "semantics": {
+        "shape": "cylinder",
+        "nominalDiameter_m": 0.05,
+        "nominalHeight_m": 0.05,
+        "tags": [
+          "gold",
+          "stub"
+        ]
+      },
+      "placement": {
+        "pivot": "center",
+        "upAxis": "+Y",
+        "forwardAxis": "+Z"
+      }
+    }
+  ]
+}
