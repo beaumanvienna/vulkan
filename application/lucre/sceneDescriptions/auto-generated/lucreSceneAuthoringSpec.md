@@ -69,6 +69,8 @@ The authoring tool MUST output a standard [Lucre Scene Description JSON](https:/
 - Angles are in **radians** unless a field explicitly supports degrees.
 - Coordinate system MUST match the engine conventions used by scene description files (typically +Y up).
 
+**Authoring scale convention:** Dimension fields in this authoring format describe the asset’s **real-world size when placed with instance `scale: [1,1,1]`**. For semantic dimension fields, the prefix `authoring*` is RECOMMENDED (e.g., `authoringDiameter_m`, `authoringExtents_m`). 
+
 ---
 
 ## 5. Asset Catalog JSON Specification
@@ -104,7 +106,7 @@ The authoring tool MUST output a standard [Lucre Scene Description JSON](https:/
   },
   "semantics": {
     "shape": "ring",
-    "nominalDiameter_m": 1.0
+    "authoringDiameter_m": 1.0
   },
   "placement": {
     "pivot": "center",
@@ -146,9 +148,11 @@ This object is tooling-only metadata. The Lucre runtime does not consume it.
 
 | Field | Type | Required | Description |
 |---|---:|:---:|---|
+
+**Dimension fields:** Tools SHOULD treat `authoring*` dimension fields as authoritative sizes at instance scale `[1,1,1]`. 
 | `shape` | string | OPTIONAL | Example: `"ring"`, `"tree"`, `"platform"`. |
-| `nominalDiameter_m` | number | OPTIONAL | Example for rings. |
-| `nominalSize_m` | array[3] | OPTIONAL | Approx bounding box (x,y,z) in meters. |
+| `authoringDiameter_m` | number | OPTIONAL | Ring diameter in meters at instance scale `[1,1,1]`.|
+| `authoringExtents_m` | array[3] | OPTIONAL | Approx bounding box extents `(x,y,z)` in meters at instance scale `[1,1,1]`.|
 | `tags` | array[string] | OPTIONAL | Free-form tags (e.g., `"collectible"`, `"obstacle"`). |
 
 ---
@@ -425,7 +429,7 @@ This authoring format intentionally does NOT:
     {
       "id": "ring_1m",
       "source": { "type": "gltf", "filename": "application/lucre/models/props/ring.glb" },
-      "semantics": { "shape": "ring", "nominalDiameter_m": 1.0 },
+      "semantics": { "shape": "ring", "authoringDiameter_m": 1.0 },
       "placement": { "pivot": "center", "forwardAxis": "+Z", "upAxis": "+Y" }
     }
   ]
