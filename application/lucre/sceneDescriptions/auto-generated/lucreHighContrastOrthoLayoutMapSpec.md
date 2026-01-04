@@ -1,7 +1,8 @@
 # Lucre High-Contrast Ortho Layout Map Specification (AI-Readable)
 
-This document defines a **high-contrast, orthographic (top-down) layout map** format intended for prompt-driven scene authoring in **Lucre**.  
-The output is an **AI-readable planning image** (not concept art) that can be reliably converted into:
+This document defines a **single, annotated, high-contrast orthographic layout map** format intended for prompt-driven scene authoring in **Lucre**.
+
+The output is an **AI-readable planning image** (not realism, not concept art) that can be reliably converted into:
 1) an **asset list**, and  
 2) a **Lucre Scene Description JSON** using an asset catalog.
 
@@ -11,232 +12,257 @@ The output is an **AI-readable planning image** (not concept art) that can be re
 
 The layout map is designed to:
 - be **strictly orthographic** (no perspective, no foreshortening),
-- convey **clear semantic regions** (hedge, walkway, grass, water, etc.),
-- include a **metric reference** (grid/checkerboard) so distances can be measured,
-- include **explicit annotations** (labels + markers) for key landmarks.
-
-The map should be easy to parse by humans, AI, and simple tooling (color masking / flood-fill).
-
----
-
-## 2. Output Format
-
-### 2.1 Image requirements
-- **Projection:** Orthographic top-down (map view).
-- **Camera:** perfectly vertical, looking down (no tilt).
-- **Style:** flat colors, **no shadows**, **no textures**, **no lighting**, **no noise**.
-- **Edges:** crisp boundaries (hard transitions).
-- **Resolution:** 2048×2048 recommended (minimum 1024×1024).
-- **Background:** neutral (white or light gray) and consistent.
-
-### 2.2 Two deliverables (recommended)
-Produce **two images** for each layout:
-
-1) **`layout_clean.png`**  
-   - Only color-coded regions and the grid.  
-   - **No text**, no arrows, no overlays besides the grid.  
-   - Intended for segmentation / automated processing.
-
-2) **`layout_annotated.png`**  
-   - Same as clean map **plus** labels/arrows/markers.  
-   - Intended for debugging + communicating intent.
-
-If only one image is produced, it must be the **annotated** one.
+- convey **clear semantic regions** (hedge, walkway, grass, building footprint, etc.),
+- include a **visible, numbered metric grid** so distances can be measured unambiguously,
+- include **explicit annotations** (legend + markers + labels) for key landmarks and dimensions,
+- be **optimized for retrieval** of translation/rotation/scale (high contrast, crisp edges, minimal categories),
+- enforce a **1:1 translation** from the generated concept art (no guessing, no creative add-ons).
 
 ---
 
-## 3. Coordinate System and Units
+## 2. Required Deliverables
 
-### 3.1 World axes convention (Lucre)
+### 2.1 Layout map (single, annotated, required)
+Produce **one** layout map image that is:
+- **Top-down orthographic**
+- Flat colors, high contrast, crisp edges.
+- **Always annotated** (legend + labels + markers + numbered grid).
+
+> The spec does **not** allow an unannotated map variant.  
+> Everything in Section 6 (Annotations) is **always applicable**.
+
+---
+
+## 3. Accuracy and Alignment Requirements (No Guessing)
+
+### 3.1 1:1 geometry rule
+The layout map must be a **direct, 1:1 translation** of the concept art:
+- Every hedge, opening, gate, path, lawn, wall/footprint, and POI that exists in the concept
+  must exist in here defined map at the **same position and footprint**
+- Do **not** add, remove, “improve”, stylize, or “symmetrize” geometry.
+- Do **not** introduce extra elements “because it looks nice”.
+- If something is unclear in the concept art, **stop and ask JC** (do not infer).
+
+### 3.2 Camera and framing lock
+the concept art and the orthographic map must share:
+- identical framing (same bounds / crop),
+- identical orientation (north-up),
+- identical scale (1m grid matches the same physical area in both images).
+
+### 3.3 Consistency check (must be possible visually)
+A human must be able to quickly “flip between” the images and confirm:
+- the maze footprint matches,
+- path widths and openings match,
+- hedge widths match,
+- POI locations match.
+
+---
+
+## 4. Coordinate System and Units
+
+### 4.1 World axes convention (Lucre)
 - **X/Z** form the horizontal plane.
 - **Y** is up.
 - The layout map depicts the **X/Z plane**.
 
-### 3.2 Origin marker
+### 4.2 Origin marker (required)
 The map must include a clearly labeled origin marker:
-- **Red filled circle** labeled: `ORIGIN (0,0,0) — fountain center`  
-  (or another chosen anchor if the prompt specifies it).
+- **Red filled circle** labeled: `ORIGIN (0,0,0)` plus a short anchor description (e.g., `fountain center`).
 
-### 3.3 Metric reference
-The map must include a metric reference that is unambiguous.
+If the prompt specifies a different anchor, follow the prompt exactly and label it.
 
-**Preferred: Checkerboard grid**
-- Alternating black/white squares.
-- **Each square = 1 meter × 1 meter**.
-- Grid covers the entire map or at least the playable region plus margins.
-- Label at top: `CHECKERBOARD: 1m spacing`.
+### 4.3 Metric grid (required, numbered)
+A visible grid is mandatory:
 
-Alternative: Line grid with scale bar `0m — 5m — 10m` (only if checkerboard is undesirable).
+- **Grid cell size:** **1m × 1m**.
+- **Grid lines:** thin, high-contrast lines that do not overwhelm the regions.
+- **Numbering:**
+  - Along the top and left margins, print integer coordinates at regular intervals (e.g., every 1m or every 2m),
+    so every cell can be referenced.
+  - The numbering must make it unambiguous which direction increases X and which increases Z.
+  - Include labels: `+X →` and `+Z ↓` (or `+Z ↑`, but be consistent and state it).
+
+Optional (allowed) but not required:
+- Checkerboard background **outside** the playable region to emphasize scale.
+- A small scale bar `0m — 5m — 10m` in the margin.
 
 ---
 
-## 4. Color Coding (Semantic Layers)
+## 5. Rendering Style Rules (Optimized for Parsing)
+
+- **Flat fills only:** no textures, no shading, no shadows, no lighting, no noise.
+- **No realism:** this is a planning map, not a render.
+- **Crisp boundaries:** hard transitions, minimal anti-aliasing.
+- **One color per semantic region:** no gradients.
+
+Resolution:
+- 2048×2048 recommended (minimum 1024×1024).
+
+---
+
+## 6. Annotation Rules (Always Required)
+
+### 6.1 Mandatory on-map text
+The annotated map must include:
+- `NORTH` arrow (top of image is north).
+- `ORIGIN (0,0,0)` marker label.
+- `GRID: 1m spacing` label.
+- A **legend** that maps colors to meaning (Section 7 palette).
+
+### 6.2 Mandatory dimension labels
+The map must explicitly label, in meters:
+- hedge width (e.g., `HEDGE WIDTH = 1.0m`),
+- primary path / walkway width (e.g., `PATH WIDTH = 3.0m`).
+
+If multiple hedge/path widths exist, label each distinct width near an example segment.
+
+### 6.3 Markers (required symbols)
+Use consistent marker shapes:
+- **Fountain footprint:** red circle (centered).
+- **Statue footprint:** red square (centered).
+- **Benches:** gold/yellow rectangles with a short orientation arrow if facing matters.
+- **Gate openings:** clearly marked (see Section 8.3).
+
+Place labels in margins when possible and use leader lines/arrows to avoid occluding geometry.
+
+---
+
+## 7. Color Coding (Semantic Layers)
 
 The layout uses **flat, unique colors** per category. Colors must not be reused.
 
-Recommended palette (RGB / HEX), chosen for high contrast:
+Recommended palette (HEX), chosen for high contrast:
 
-### 4.1 Walkable surfaces
-- **Walkway (pebble / sand path):** `#1E4CFF` (blue)
-- **Grass lawn (open play area):** `#78FF78` (light green)
+### 7.1 Walkable surfaces
+- **Walkway (pebble/sand path):** `#1E4CFF` (blue)
+- **Grass lawn:** `#78FF78` (light green)
 
-### 4.2 Barriers / borders
+### 7.2 Barriers / borders
 - **Hedge / wall (solid barrier):** `#006400` (dark green)
-- **Mansion footprint / building boundary:** `#8B6B4A` (brown)
+- **Building footprint (mansion / walls):** `#8B6B4A` (brown)
 
-### 4.3 Points of interest
-- **Fountain basin footprint:** `#FF0000` (red circle)
-- **Statue footprint:** `#FF0000` (red square)
-- **Bench footprint:** `#FFD966` (gold/yellow rectangle)
+### 7.3 Points of interest
+- **Fountain marker:** `#FF0000` (red circle)
+- **Statue marker:** `#FF0000` (red square)
+- **Bench footprint:** `#FFD966` (gold rectangle)
 - **Round bushes:** `#FFF000` (bright yellow circles)
 
-### 4.4 Reserved / optional
-- **Water (if different from fountain):** `#00D5FF` (cyan)
+### 7.4 Optional categories (only if present in concept art)
+- **Water (non-fountain):** `#00D5FF` (cyan)
 - **Flowerbeds:** `#FF4FD8` (magenta)
 - **Trees (canopy footprint):** `#00A86B` (teal-green)
 
 **Rules:**
-- Every semantic category must be a **single solid color** (no gradients).
-- Regions must be **fully filled** (no hatching unless explicitly requested).
-- Do not anti-alias boundaries if possible (or keep it minimal).
+- Only include optional categories if they exist in the concept art.
+- Do not introduce new categories “just in case”.
 
 ---
 
-## 5. Geometry Rules
+## 8. Geometry Rules (Map Semantics)
 
-### 5.1 No perspective artifacts
-- No vanishing points.
-- No painterly blending.
-- All shapes are drawn in **plan view**.
+### 8.1 No perspective artifacts
+All geometry must be plan view. No vanishing points.
 
-### 5.2 Snapping
-- Prefer snapping hedge and walkway edges to the 1m grid (unless the prompt demands curves).
-- Curves are allowed, but should be clearly drawn and continuous with consistent thickness.
+### 8.2 Snapping
+Prefer snapping hedge and walkway edges to the 1m grid **when the concept art is grid-aligned**.
+If the concept art intentionally contains non-grid-aligned geometry, preserve it exactly.
 
-### 5.3 Thickness semantics
-The prompt or spec must define thicknesses in meters. Example:
-- Hedge width: **1.0 m**
-- Walkway width: **3.0 m**
+### 8.3 Openings and gates (must be explicit)
+Entrances/openings must be obvious and machine-readable:
+- Leave a clear gap in the hedge color region where the opening is.
+- Optionally add a small label: `GATE OPENING` and/or a thin outline.
 
-If not specified by the user, the **annotated** image must label:
-- `HEDGE WIDTH = ?m`
-- `PATH WIDTH = ?m`
+Do not “almost close” openings with fuzzy edges.
 
 ---
 
-## 6. Annotation Rules (Annotated Map Only)
+## 9. Scene Authoring Constraints (Asset Placement Friendly)
 
-### 6.1 Mandatory labels
-The annotated map must include:
-- `CHECKERBOARD: 1m spacing`
-- `NORTH` arrow (top of image is north)
-- `ORIGIN (0,0,0)` marker label
-- A legend mapping colors to meaning (hedge, walkway, grass, etc.)
-
-### 6.2 Markers
-Use:
-- **Red circle** = fountain center
-- **Red square** = statue center
-- **Yellow circles** = round bushes centers
-- **Gold rectangles** = benches (include orientation if meaningful)
-
-### 6.3 Text placement
-- Put labels in margins when possible.
-- Use thin leader lines/arrows to avoid occluding regions.
-
----
-
-## 7. Scene Authoring Constraints
-
-The map is intended to be converted into instances from an asset catalog. Therefore:
+This map is intended to be converted into instances from an asset catalog. Therefore:
 - Avoid shapes that require **non-uniform scaling** to match.
-- Prefer modular lengths aligned to common module sizes (e.g. 2m, 1m, 0.5m).
-- If a segment length is not an integer multiple of a module length, label it explicitly:
-  - `HEDGE SEGMENT LENGTH = 3.2m (4×0.8m modules)`
+- Prefer modular lengths aligned to common module sizes (e.g., 2m, 1m, 0.5m),
+  **but only if the concept art already uses those lengths**.
+
+If a segment length is not an integer multiple of an available module length:
+- Keep the geometry correct in the map,
+- and label it explicitly (e.g., `HEDGE SEGMENT = 3.2m`).
 
 ---
 
-## 8. Required Output Checklist
+## 10. Required Output Checklist (Hard Requirements)
 
-Before delivering a layout map, verify:
-- [ ] Orthographic top-down, no perspective.
-- [ ] High contrast, flat fills, no shading/texture.
-- [ ] 1m checkerboard grid present + labeled.
-- [ ] Legend present (annotated map).
-- [ ] Origin marker present and labeled.
+Before delivering the two images, verify:
+
+### Alignment
+- [ ] concept art is top-down orthographic (no perspective).
+- [ ] map is camera-matched to concept art  (same framing/orientation/scale).
+- [ ] Layout contains **no added or missing geometry** versus concept art.
+
+### Parsing quality
+- [ ] Flat fills only; no shading/texture/noise.
+- [ ] Crisp boundaries.
+- [ ] Unique colors per semantic category.
+
+### Grid + annotations
+- [ ] Visible **1m grid** overlaid on the playable region.
+- [ ] Grid is **numbered** with clear +X and +Z direction.
 - [ ] North arrow present.
-- [ ] All semantic categories use unique, consistent colors.
-- [ ] Hedge / path widths stated or implied by grid.
-- [ ] Clean map version provided (recommended).
+- [ ] Origin marker present and labeled.
+- [ ] Legend present.
+- [ ] Hedge width and path width labeled in meters.
 
 ---
 
-## 9. Prompt Template for Generating a Layout Map
+## 11. Prompt Template (Use This Exactly)
 
-Use this template when you provide a garden prompt.
-
-### 9.1 Clean map prompt
+### 11.1 Concept art prompt 
 ```
-Create a STRICTLY ORTHOGRAPHIC, TOP-DOWN layout map (no perspective) for the following scene:
+Create ONE image: concept art for this scene:
 
 [SCENE DESCRIPTION]
 
-Output a high-contrast planning map suitable for AI asset placement:
-- Flat solid colors only, no shading, no textures, no shadows.
+Hard constraints:
+- The geometry (hedges/paths/lawns/openings/POIs) must be clearly readable.
+- Do NOT add random elements beyond what the scene description requires.
+```
+
+### 11.2 Layout map prompt 
+```
+Create ONE image: a HIGH-CONTRAST, TOP-DOWN ORTHOGRAPHIC layout map that is a 1:1 translation of the provided concept art image.
+
+Hard constraints:
+- Must match the concept art geometry exactly (no guessing, no creative changes, no extra objects).
+- Flat solid colors only. No shading, no textures, no shadows.
 - Crisp boundaries.
-- Include a full-image checkerboard where each square is exactly 1m x 1m.
-- The map represents the X/Z plane; Y is up in the engine.
-- Place a labeled origin marker: a red circle labeled "ORIGIN (0,0,0) — fountain center".
-- Add a north arrow (top of image is north).
-- Use this color legend exactly:
-  - Walkway (pebble/sand): #1E4CFF
-  - Grass: #78FF78
-  - Hedge/wall: #006400
-  - Mansion footprint: #8B6B4A
-  - Fountain footprint: #FF0000 (circle)
-  - Statue footprint: #FF0000 (square)
-  - Bench footprint: #FFD966 (rectangle)
-  - Round bushes: #FFF000 (circles)
 
-Do NOT draw any 3D perspective. Do NOT render realism. This is a map, not concept art.
+Grid (required):
+- Overlay a visible 1m x 1m grid across the entire playable region.
+- Number the grid along the margins and label axes directions: +X and +Z.
+- Label: "GRID: 1m spacing".
+
+Annotations (required):
+- Add NORTH arrow (top is north).
+- Add origin marker: a red circle labeled "ORIGIN (0,0,0) — [anchor]".
+- Add a legend mapping colors to categories.
+- Label hedge width and path width in meters.
+
+Use this exact color legend:
+- Walkway: #1E4CFF
+- Grass: #78FF78
+- Hedge: #006400
+- Building footprint: #8B6B4A
+- Fountain marker: #FF0000 (circle)
+- Statue marker: #FF0000 (square)
+- Bench: #FFD966
+- Round bushes: #FFF000
+
+This is NOT a realism render. It must be optimized for extracting translation/rotation/scale.
+If anything is unclear in the concept art, stop and ask JC.
 ```
-
-### 9.2 Annotated map prompt (optional second image)
-```
-Create a second version of the same map with annotations:
-- Add a legend with text labels for each color category.
-- Label hedge width and walkway width in meters.
-- Label the statue (red square) and fountain (red circle).
-- Add arrows/leader lines where helpful, without obscuring the map.
-Keep the underlying geometry identical to the clean map.
-```
-
----
-
-## 10. Example Scene Constraints (Garden)
-
-If the user prompt is a garden:
-- Maze area should be ~25% of the playable garden.
-- Include an English garden vibe (formal hedges, symmetry, borders).
-- Include a walkway with two benches.
-- Border a mansion (croft/wayne-manor-like footprint).
-
-All of these must be encoded as **plan-view geometry**.
-
----
-
-## 11. Notes for Robust AI Parsing
-
-To make downstream conversion easier:
-- Keep hedge segments straight unless a curve is explicitly required.
-- Keep stubs/openings obvious (don’t hide openings behind vegetation).
-- Avoid ambiguous “soft edges” around flowerbeds; use hard shapes.
-- Prefer fewer categories over many micro-categories early on.
 
 ---
 
 ## 12. Versioning
-
 - **Spec version:** 1.0
-- Increment minor version when adding categories or constraints.
-- Increment major version if changing coordinate conventions or color rules.
+- Increment minor version for small clarifications.
+- Increment major version for changes to grid/axes/color rules.

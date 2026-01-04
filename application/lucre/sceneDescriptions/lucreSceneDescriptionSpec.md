@@ -19,13 +19,12 @@ The format is **JSON-based** and designed to:
 This specification is derived directly from:
 - Existing scene JSON files
 - The C++ scene loader and serializer implementation
-- The JC Workflow File Format document structure (used as a template)
 
 ---
 
 ## 1. Introduction
 
-Lucre scenes are described declaratively using JSON files.  
+Lucre scenes are described declaratively using JSON files. JSON does not allow comments. Do not add comments to the JSON output.
 A scene file defines **what assets exist** in a scene and **how they are placed**, but does **not** encode rendering pipelines, ECS runtime state, or GPU resources directly.
 
 The scene loader is responsible for:
@@ -40,6 +39,25 @@ The scene loader is responsible for:
 The key words **MUST**, **MUST NOT**, **SHALL**, **SHOULD**, **MAY**, and **OPTIONAL** are to be interpreted as described in RFC 2119.
 
 ---
+
+## 2.1 Mandatory Authoring Rules (Strict, No Creativity)
+
+These rules apply **whenever an AI (or any automated tool)** generates a Lucre Scene Description JSON from *any* input source (prompt text, orthographic map, concept art, annotated layout, etc.).
+
+- The provided input is the **single source of truth**. The generator **MUST** translate the input into a scene description **1:1**.
+- The generator **MUST NOT** add, remove, “improve”, “fill in”, infer, embellish, or otherwise introduce **any** objects, geometry, or layout details that are not explicitly present in the provided input.
+- If an element is ambiguous / not fully specified by the input, the generator **MUST** stop and ask JC for clarification (do **not** guess).
+- Every instance **MUST** have explicitly determined:
+  - **translation** (position),
+  - **rotation** (orientation), and
+  - **scale** (uniform or non-uniform only if explicitly allowed by the caller/spec).
+- The generator **MUST NOT** default rotation to “no rotation” unless the input explicitly implies that the object is axis-aligned with zero rotation (or the caller explicitly requests zero rotation).
+- The generator **MUST NOT** “snap”, “quantize”, or “approximate” placements unless the input explicitly defines snapping/rounding rules (e.g., a numbered grid).
+- The generator **MUST** use the asset catalog as the authoritative source for asset IDs/paths and nominal dimensions at scale (1,1,1). If the requested real‑world size differs, the generator **MUST** compute the required scale from the catalog dimensions (and follow any uniform-scaling constraints given by the caller).
+- The output **MUST** be a valid Lucre Scene Description JSON that conforms to this spec (no extra fields, no missing required fields).
+
+---
+
 
 ## 3. Scene JSON Specification
 
